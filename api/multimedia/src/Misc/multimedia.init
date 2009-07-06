@@ -1,0 +1,18 @@
+;*=====================================================================*/
+;*    .../project/bigloo/api/multimedia/src/Misc/multimedia.init       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 15:51:09 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Multimedia init file.                                        */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'multimedia
+		  :basename "bigloomultimedia"
+		  :module-init '__multimedia-music
+		  :module-eval '__multimedia-makelib)

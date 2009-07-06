@@ -1,0 +1,83 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/extension.texi               @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 16:33:41 1998                          @c
+@c    Last change :  Mon Nov 19 06:40:05 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Extensions                                                       @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Extension                                                        @c
+@c ------------------------------------------------------------------- @c
+@node User Extensions, Bee, Compiler Description, Top
+@comment  node-name,  next,  previous,  up
+@chapter User Extensions
+@cindex user extensions
+
+The extension package system allows the language compiled by Bigloo to be
+extended and this is achieved by associating an @emph{extension file} with a
+suffix. The @emph{extension file} is loaded at the beginning of a compilation
+and it can do three things: call extern programs (unix programs); define
+macros; modify the values of some of the compiler's variables (for example,
+the list of the libraries to be linked with). The Bigloo's initializing
+procedure is the following:
+
+@itemize @bullet
+@item If it exists, Bigloo loads the runtime-command file, see 
+Section @ref{Compiler Description}.
+
+@item It then parses the command line to find the source file to compile.
+
+@item It extracts the source file suffix and looks it up in its
+@code{*auto-mode*} variable.
+@vindex *auto-mode* 
+
+@item  If the suffix is found, the associated file is loaded. This
+file could contain a function named @code{*extend-entry*} 
+which must accept a list as argument. It is 
+invoked with the Bigloo's unparsed arguments.
+@vindex *extend-entry* 
+
+@item The result of the @code{*extend-entry*} application has to be a
+regular list of arguments and these are parsed by Bigloo.
+@end itemize
+
+For now, two extension packages exist: the Meroon package which
+is a native version of the Christian Queinnec object
+language; the Camloo [SerranoWeis94] package which is a front
+end compiler for the Caml language [Caml-light]
+
+Furthermore, Bigloo supports the @code{-extend} option which forces 
+the usage of an extension file. When Bigloo encounters this option, it
+immediately loads the extension file, invoking the function 
+@code{*extend-entry*} with the list of arguments which have not 
+been parsed yet.
+
+The extension files are always sought in the directory containing the
+Bigloo's libraries.
+
+@c ------------------------------------------------------------------- @c
+@c    User pass                                                        @c
+@c ------------------------------------------------------------------- @c
+@section User pass
+
+Bigloo allows the user to add a special pass to the regular compilation,
+this pass taking place @emph{before} macro expansion. There are
+two ways to add a user pass.
+
+@itemize @bullet
+@item Add a compiled pass: The module @code{user_user} 
+(in the ``comptime/User/user.scm'' file) is the user entry pass point. 
+To add a compiled pass, put the code of the pass in this directory, import
+your new modules in @code{user_user} and modify the @code{user-walk} function.
+
+@item Add an interpreted pass: Set the value of @code{*user-pass*},
+which has to be a unary function, in your @code{.bigloorc} file and 
+Bigloo will invoke it with the code as argument.
+@vindex *user-pass*
+@end itemize
+
+
+

@@ -1,0 +1,40 @@
+#*---------------------------------------------------------------------*/
+#*    Copyright (c) 1997 by Manuel Serrano. All rights reserved.       */
+#*                                                                     */
+#*                                     ,--^,                           */
+#*                               _ ___/ /|/                            */
+#*                           ,;'( )__, ) '                             */
+#*                          ;;  //   L__.                              */
+#*                          '   \    /  '                              */
+#*                               ^   ^                                 */
+#*                                                                     */
+#*                                                                     */
+#*    This program is distributed in the hope that it will be useful.  */
+#*    Use and copying of this software and preparation of derivative   */
+#*    works based upon this software are permitted, so long as the     */
+#*    following conditions are met:                                    */
+#*           o credit to the authors is acknowledged following current */
+#*             academic behaviour                                      */
+#*           o no fees or compensation are charged for use, copies, or */
+#*             access to this software                                 */
+#*           o this copyright notice is included intact.               */
+#*      This software is made available AS IS, and no warranty is made */
+#*      about the software or its performance.                         */
+#*                                                                     */
+#*      Bug descriptions, use reports, comments or suggestions are     */
+#*      welcome Send them to                                           */
+#*        Manuel Serrano -- Manuel.Serrano@cui.unige.ch                */
+#*---------------------------------------------------------------------*/
+
+This directory contains an example of connecting Bigloo and the Xlib.
+It uses Cigloo, the C to Bigloo foreign clauses translator. The connection
+is declared in one Bigloo include file named `xlib.sch' which is 
+automatically produced.
+
+Before creating the `xlib.sch' file you need to have already
+installed both Bigloo and Cigloo. To create the `xlib.sch' file, edit
+the Makefile and set the variables `INCLUDEDIR' and `XINCLUDEDIR' to the
+appropriate value according to your configuration. Then just type `make'.
+
+When the `xlib.sch' is created, you can install it in the current
+Bigloo libraries directory using the command `make install'.

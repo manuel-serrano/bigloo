@@ -1,0 +1,122 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/enforcedcnstalign           */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Jan  3 09:59:43 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Give the constant alignment on the current architecture          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+
+struct { char *c; char tc[5]; } __attribute__ ((aligned (8))) str1;
+struct { char *c; char tc[6]; } __attribute__ ((aligned (8))) str2;
+struct { char *c; char tc[7]; } __attribute__ ((aligned (8))) str3;
+struct { char *c; char tc[8]; } __attribute__ ((aligned (8))) str4;
+
+int
+get_alignment( long p )
+{
+   int i = 0;
+
+   while( !(p & (1<<i)) ) i++;
+
+   return i;
+}
+
+int main () 
+{ 
+   if( get_alignment( (long)&str1 ) <= 1 )
+   {
+      puts( "0" );
+      exit( 0 );
+   }
+   if( get_alignment( (long)&str2 ) <= 1 )
+   {
+      puts( "0" );
+      exit( 0 );
+   }
+   if( get_alignment( (long)&str3 ) <= 1 )
+   {
+      puts( "0" );
+      exit( 0 );
+   }
+   if( get_alignment( (long)&str4 ) <= 1 )
+   {
+      puts( "0" );
+      exit( 0 );
+   }
+
+   puts( "1" );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+sh -c "$compile"
+
+if [ $? = "0" ]; then
+   \rm -f $file.*
+   eval $aout
+else
+   \rm -f $file.*
+   exit $?
+fi
+
+rm -f $aout
+rm -f $aout*

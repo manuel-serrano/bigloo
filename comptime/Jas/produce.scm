@@ -1,0 +1,138 @@
+(module jas_produce
+   (import jas_classfile jas_lib)
+   (export (produce ::binary-port ::obj) ) )
+
+;;
+;; Binary output
+;;
+(define (outchar outchan n)
+   (output-char outchan n) )
+
+(define (outbyte outchan n)
+   (outchar outchan (integer->char (bit-and n #xFF))) )
+
+(define (outshort outchan n)
+   (outbyte outchan (bit-rsh n 8))
+   (outbyte outchan (bit-and n #xFF)) )
+
+(define (outint outchan n)
+   (outshort outchan (bit-rsh n 16))
+   (outshort outchan (bit-and n #xFFFF)) )
+
+(define (produce outchan classfile)
+   (with-access::classfile classfile (pool pool-size flags me super interfaces
+					   fields methods attributes )
+      (outshort outchan #xCAFE)
+      (outshort outchan #xBABE)
+      (outshort outchan 3)
+      (outshort outchan 45)
+      (produce-pool outchan pool-size (reverse pool))
+      (outshort outchan flags)
+      (outshort outchan me)
+      (outshort outchan super)
+      (produce-interfaces outchan interfaces)
+      (produce-fields outchan fields)
+      (produce-methods outchan methods)
+      (produce-attributes outchan attributes) ))
+
+(define (produce-pool outchan size pool)
+   (outshort outchan size)
+   (for-each (lambda (cpinfo) (produce-cpinfo outchan cpinfo)) pool) )
+
+(define (produce-cpinfo outchan cpinfo)
+   (outbyte outchan (car cpinfo))
+   (case (car cpinfo)
+      ((1)
+       (let ( (str (string->utf8 (cdr cpinfo))) )
+	  (let ( (n (string-length str)) )
+	     (if (> n #xFFFF)
+		 (error "as" "constant string too long" n)
+		 (outshort outchan n) ))
+	  (produce-string outchan str) ))
+      ((3 4 5 6 7 8 9 10 11 12)
+       (for-each (lambda (n) (outshort outchan n)) (cdr cpinfo)) )
+      (else (error "as" "bad cpinfo tag" (car cpinfo))) ))
+
+(define (produce-string outchan s)
+   (let ( (n (string-length s)) )
+      (define (walk i)
+	 (if (=fx i n)
+	     'ok
+	     (begin (outbyte outchan (char->integer (string-ref s i)))
+		    (walk (+fx i 1)) )))
+      (walk 0) ))
+
+(define (produce-interfaces outchan interfaces)
+   (outshort outchan (length interfaces))
+   (for-each (lambda (n) (outshort outchan n)) interfaces) )
+
+(define (produce-fields outchan fields)
+   (outshort outchan (length fields))
+   (for-each (lambda (field) (produce-field outchan field)) fields) )
+
+(define (produce-field outchan field)
+   (with-access::field field (flags name pname descriptor attributes)
+      (outshort outchan flags)
+      (outshort outchan pname)
+      (outshort outchan descriptor)
+      (produce-attributes outchan attributes) ))
+
+(define (produce-methods outchan methods)
+   (outshort outchan (length methods))
+   (for-each (lambda (method) (produce-method outchan method)) methods) )
+
+(define (produce-method outchan method)
+   (with-access::method method (flags pname descriptor attributes)
+      (outshort outchan flags)
+      (outshort outchan pname)
+      (outshort outchan descriptor)
+      (produce-attributes outchan attributes) ))
+
+(define (produce-attributes outchan attributes)
+   (outshort outchan (length attributes))
+   (for-each (lambda (attribute) (produce-attribute outchan attribute))
+	     attributes ))
+
+(define (produce-attribute outchan attribute)
+   (outshort outchan (attribute-name attribute))
+   (outint outchan (attribute-size attribute))
+   (let ( (info (attribute-info attribute)) (type (attribute-type attribute)) )
+      (case type
+	 ((bytevector)
+	  (produce-string outchan info) )
+	 ((code)
+	  (produce-code outchan info) )
+	 ((srcfile)
+	  (outshort outchan info) )
+	 ((linenumber)
+	  (outshort outchan (length info))
+	  (for-each (lambda (slot) (outshort outchan (car slot))
+			           (outshort outchan (cdr slot)) )
+		    info ))
+	 ((localvariable)
+	  (outshort outchan (length info))
+	  (for-each (lambda (slot) (for-each (lambda (n) (outshort outchan n))
+					     slot ))
+		    info ))
+	 (else (error "produce-attribute" "bad attribute type" type)) )))
+
+(define (produce-code outchan code)
+   (match-case code
+      ((?maxstk ?maxlocal ?bytecode  ?handlers . ?attributes)
+       (outshort outchan maxstk)
+       (outshort outchan maxlocal)
+       (outint outchan (length bytecode))
+       (for-each (lambda (b) (outbyte outchan b)) bytecode)
+       (outshort outchan (length handlers))
+       (for-each (lambda (h)
+		    (match-case h
+		       ((?beg ?end ?label ?type)
+			(outshort outchan beg)
+			(outshort outchan end)
+			(outshort outchan label)
+			(outshort outchan type) )
+		       (else (error "produce-code" "bad handler" h)) ))
+		handlers )
+       (produce-attributes outchan attributes) )
+      (else (error "produce-code" "bad code attribute" code)) ))
+

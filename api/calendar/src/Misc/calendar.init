@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/calendar/src/Misc/calendar.init      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 19:44:02 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Calendar init file.                                          */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'calendar
+		  :srfi '(calendar)
+		  :basename "bigloocalendar"
+		  :module-init '__calendar_types
+		  :module-eval '__calendar_makelib
+		  :class-init "bigloo.calendar.types"
+		  :class-eval "bigloo.calendar.make-lib")
+

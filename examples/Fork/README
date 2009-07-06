@@ -1,0 +1,6 @@
+This example illustrates the use of C functions into
+Bigloo. This program uses the Unix functions fork, wait and
+sleep to fork and wait for child process. This program
+illustrate how to import C functions. This operation require
+Bigloo extern module clause that can be automatically produced
+by the Cigloo tools

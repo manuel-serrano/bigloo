@@ -1,0 +1,102 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/gchavestartblocking         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Dec 19 09:25:20 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the GC version                                             */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+gcdir=gc-boehm
+gcincdir=/usr/include/gc
+gclibdir=/usr/lib
+gclib=gc
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gcincdir=*)
+      gcincdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gclibdir=*)
+      gclibdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gclib=*)
+      gclib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --dlopen=*)
+      dlopen="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib >/dev/null 2> configure.log"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test1                                                            */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <gc.h>
+#include <stdio.h>
+extern GC_start_blocking();
+
+main( int argc, char *argv[] ) {
+   GC_init();
+   if( GC_start_blocking() ) puts( "yes" ); else puts( "yes" );
+   return 0;
+}
+EOF
+
+if eval $compile 2> /dev/null; then
+   $aout 2> /dev/null;
+   rm -f $aout
+else
+   echo "no"
+   rm -f $aout
+fi
+
+\rm -f $file.*
+
+exit 0;

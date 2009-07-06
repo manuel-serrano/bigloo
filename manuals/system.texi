@@ -1,0 +1,464 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/system.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jan 21 06:38:01 2002                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2002 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    The system programming facilities                                @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    System programming ...                                           @c
+@c ------------------------------------------------------------------- @c
+@node System Programming, Date, Hash Tables, Standard Library
+@comment  node-name,  next,  previous,  up
+@section System programming
+@cindex System programming
+
+@menu 
+* Operating System Interface::  
+* Files::          
+* Process::       
+* Socket::
+* SSL::
+@end menu
+
+@c -- Operating system interface ------------------------------------- @c
+@node Operating System Interface, Files, , System Programming
+@comment  node-name,  next,  previous,  up
+@subsection Operating System interface
+@cindex operating system interface
+
+@deffn {bigloo procedure} register-exit-function! proc
+Register @var{proc} as an exit functions. @var{Proc} is a procedure
+accepting of one argument. This argument is the numerical value which
+is the status of the exit call. The registered functions are called when the 
+execution ends. 
+@end deffn
+
+@deffn {bigloo procedure} exit int
+Apply all the registered exit functions then stops an execution, 
+returning the integer @var{int}.
+@end deffn
+
+@deffn {bigloo procedure} signal n proc
+Provides a signal handler for the operating system dependent signal
+@var{n}. @var{proc} is a procedure of one argument.
+@end deffn
+
+@deffn {bigloo procedure} get-signal-handler n
+Returns the current handler associated with signal @var{n} or
+@code{#f} if no handler is installed.
+@end deffn
+
+@deffn {bigloo procedure} system . strings
+Append all the arguments @var{strings} and invoke the native host
+@code{system} command on that new string which returns an integer.
+@end deffn
+
+@deffn {bigloo procedure} system->string . strings
+Append all the arguments @var{strings} and invoke the native host
+@code{system} command on that new string. If the command completes,
+@code{system->string} returns a string made of the output of the
+command.
+@end deffn
+
+@deffn {bigloo procedure} getenv string
+Returns the string value of the Unix shell's @var{string} variable. If no
+such variable is bound, @code{getenv} returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} putenv string val
+Adds or modifies the global environment variable @var{string} so that
+it is bound to @var{val} after the call. This facility is not supported
+by all back-end. In particular, the JVM back-end does not support it.
+@end deffn
+
+@deffn {bigloo procedure} date
+Returns the current date in a @code{string}. See also @ref{Date}.
+@end deffn
+
+@deffn {bigloo procedure} sleep micros
+Sleeps for a delay during at least @var{micros} microseconds.
+@end deffn
+
+@deffn {bigloo procedure} command-line
+Returns a list of strings which are the Unix command line arguments.
+@end deffn
+
+@deffn {bigloo procedure} executable-name
+Returns the name of the running executable.
+@end deffn
+
+@deffn {bigloo procedure} os-class
+Gives the OS class (e.g. @samp{unix}).
+@end deffn
+
+@deffn {bigloo procedure} os-name
+Gives the OS name (e.g. @samp{Linux}).
+@end deffn
+
+@deffn {bigloo procedure} os-arch
+Gives the host architecture (e.g. @samp{i386}).
+@end deffn
+
+@deffn {bigloo procedure} os-version
+Gives the operating system version (e.g. @samp{RedHat 2.0.27}).
+@end deffn
+
+@deffn {bigloo procedure} os-tmp
+Gives the regular temporary directory (e.g. @samp{/tmp}).
+@end deffn
+
+@deffn {bigloo procedure} os-charset
+Gives the charset used for encoding names of the file system 
+(e.g. @samp{UTF-8}).
+@end deffn
+
+@deffn {bigloo procedure} file-separator
+Gives the operating system file separator (e.g. @samp{#\/}).
+@end deffn
+
+@deffn {bigloo procedure} path-separator
+Gives the operating system file path separator (e.g.@samp{#\:}).
+@end deffn
+
+For additional functions (such as @code{directory->list})
+see @ref{Input and Output}.
+
+@deffn {bigloo procedure} unix-path->list
+Converts a Unix path to a Bigloo list of strings.
+
+@smalllisp
+(unix-path->list ".")           @result{} (".")
+(unix-path->list ".:/usr/bin")  @result{} ("." "/usr/bin")
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} hostname
+Returns the fully qualified name of the current host.
+@end deffn
+
+@deffn {bigloo procedure} time thunk
+Evaluates the @var{thunk} and returns four values: the result of calling
+@var{thunk}, the actual execution time, the system time, and the user time.
+
+@smalllisp
+(multiple-value-bind (res rtime stime utime)
+  (time (lambda () (fib 35)))
+  (print "real: " rtime " sys: " stime " user: " utime))
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} getuid
+@deffnx {bigloo procedure} setuid uid
+The procedure @code{getuid} returns the UID of the user the current process
+is executed on behalf of.
+
+The procedure @code{setuid} set the UID of the current process. In case of
+failure, this procedure raises an error.
+@end deffn
+
+@deffn {bigloo procedure} getpwnam name
+@deffnx {bigloo procedure} getpwuid uid
+These two procedures returns information about a user. The procedure 
+@code{getpwname} accepts a string denoting the user name as argument. The
+procedure @code{getpwuid} accepts an UID as returned by the procedure
+@code{getuid}.
+
+If the user is found, these two procedures returns a list of seven elements:
+
+@itemize @bullet
+@item the user name,
+@item his encrypted password,
+@item his uid,
+@item his group id,
+@item his real name,
+@item his home directory,
+@item his preferred shell.
+@end itemize
+
+When no user is found, these procedures returns @code{#f}.
+@end deffn
+
+
+@c -- File name ------------------------------------------------------ @c
+@node Files, Process, Operating System Interface, System Programming
+@comment  node-name,  next,  previous,  up
+@subsection Files
+@cindex file handling
+
+See @ref{Input and Output} for file and directory handling. This
+section only deals with @emph{name} handling. Four procedures exist to
+manipulate Unix filenames.
+
+@deffn {bigloo procedure} basename string
+Returns a copy of @var{string} where the longest prefix ending in @samp{/} is
+deleted if any existed.
+@end deffn
+
+@deffn {bigloo procedure} prefix string
+Returns a copy of @var{string} where the suffix starting by
+the char @samp{#\.} is deleted. If no prefix is found,
+the result of @code{prefix} is a copy of @code{string}. For
+instance:
+
+@smalllisp
+(prefix "foo.scm") 
+   @result{} "foo"
+(prefix "./foo.scm") 
+   @result{} "./foo"
+(prefix "foo.tar.gz") 
+   @result{} "foo.tar"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} suffix string
+Returns a new string which is the suffix of @var{string}. If no
+suffix is found, this function returns an empty string. For instance,
+
+@smalllisp
+(suffix "foo.scm") 
+   @result{} "scm"
+(suffix "./foo.scm") 
+   @result{} "scm"
+(suffix "foo.tar.gz") 
+   @result{} "gz"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} dirname string
+Returns a new string which is the directory component of @var{string}.
+For instance:
+
+@smalllisp
+(dirname "abc/def/ghi") 
+   @result{} "abc/def"
+(dirname "abc") 
+   @result{}  "."
+(dirname "abc/") 
+   @result{} "abc"
+(dirname "/abc") 
+   @result{} "/"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} pwd
+Returns the current working directory.
+@end deffn
+
+@deffn {bigloo procedure} chdir dir-name
+Changes the current directory to @var{dir-name}. On success, @code{chdir}
+returns @code{#t}. On failure it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} make-file-name dir-name name
+Make an absolute file-name from a directory name @var{dir-name} and a relative
+name @var{name}.
+@end deffn
+
+@deffn {bigloo procedure} make-file-path dir-name name . names
+Make an absolute file-name from a directory name @var{dir-name} and a relative
+name @var{name}s.
+@end deffn
+
+@deffn {bigloo procedure} file-name->list name
+Explodes a file name into a list.
+
+@smalllisp @noindent
+(file-name->list "/etc/passwd")
+   @result{} '("" "etc" "passwd")
+(file-name->list "etc/passwd")
+   @result{} '("etc" "passwd")
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} file-name-canonicalize name
+@deffnx {bigloo procedure} file-name-canonicalize! name
+@deffnx {bigloo procedure} file-name-unix-canonicalize name
+@deffnx {bigloo procedure} file-name-unix-canonicalize! name
+@cindex &io-malformed-url-error
+Canonicalizes a file name. If the file name is malformed this function
+raises an @code{&io-malformed-url-error} exception. 
+
+The function @code{file-name-canonicalize!} may returns its argument
+if no changes in the string is needed. Otherwise, as 
+@code{file-name-canonicalize} is returns a new string.
+
+In addition to handling @code{..} directory name, the function 
+@code{file-name-unix-canonicalize} also handles the @code{~} character.
+
+@smalllisp @noindent
+(file-name-canonicalize "/etc/passwd")
+   @result{} "/etc/passwd"
+(file-name-canonicalize "/etc/../tmp/passwd")
+   @result{} "/tmp/passwd"
+(file-name-canonicalize "~/passwd")
+   @result{} "~/passwd"
+(file-name-unix-canonicalize "~/passwd")
+   @result{} "/home/a-user/passwd"
+(file-name-unix-canonicalize "~foo/passwd")
+   @result{} "/home/foo/passwd"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} relative-file-name name base
+Builds a file name relative to @var{base}.
+
+@smalllisp @noindent
+(relative-file-name "/etc/passwd" "/etc"
+   @result{} "passwd"
+@end smalllisp
+@end deffn
+
+
+@deffn {bigloo procedure} find-file/path name path
+Search, in sequence, in the directory list @var{path} for the file
+@var{name}.  If @var{name} is an absolute name, then @var{path} is not
+used to find the file. If @var{name} is a relative name, the function
+@code{make-file-name} is used to build absolute name from @var{name} and
+the directories in @var{path}. The current path is not included
+automatically in the list of @var{path}. In consequence, to check the
+current directory one may add @code{"."} to the @var{path} list. On
+success, the absolute file name is returned. On failure,
+@code{#f} is returned. Example:
+
+@smalllisp @noindent
+(find-file/path "/etc/passwd" '("/toto" "/titi")) 
+   @result{} "/etc/passwd"
+(find-file/path "passwd" '("/toto" "/etc"))
+   @result{} "/etc/passwd"
+(find-file/path "pass-wd" '("." "/etc"))
+   @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} make-static-library-name name
+Make a static library name from
+@var{name} by adding the static library regular suffix.
+@end deffn
+
+@deffn {bigloo procedure} make-shared-library-name name
+Make a shared library name from
+@var{name} by adding the shared library regular suffix.
+@end deffn
+
+@deffn {bigloo procedure} file-exists? string
+This procedure returns @code{#t} if the file @var{string} exists. Otherwise
+it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} file-gzip? string
+This procedure returns @code{#t} if and only if the file @var{string} exists
+and can be unzip by Bigloo. Otherwise it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} delete-file string
+Deletes the file named @var{string}. The result of this procedure
+is @code{#t} is the operation succeeded. The result is @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} rename-file string1 string2
+Renames the file @var{string1} as @var{string2}. The two files have to
+be located on the same file system. If the renaming succeeds, the result
+is @code{#t}, otherwise it is @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} copy-file string1 string2
+Copies the file @var{string1} into @var{string2}. If the copy succeeds, 
+the result is @code{#t}, otherwise it is @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} directory? string
+This procedure returns @code{#t} if the file @var{string} exists and is a
+directory. Otherwise it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} make-directory string
+Creates a new directory named @var{string}. It returns @code{#t} if the
+directory was created. It returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} make-directories string
+Creates a new directory named @var{string}, including any necessary
+but nonexistent parent directories. It returns @code{#t} if the
+directory was created. It returns @code{#f} otherwise. Note that 
+if this operation fails it may have succeeded in creating some 
+of the necessary parent directories.
+@end deffn
+
+@deffn {bigloo procedure} delete-directory string
+Deletes the directory named @var{string}. The directory must be empty
+in order to be deleted. The result of this procedure is unspecified.
+@end deffn
+
+@deffn {bigloo procedure} directory->list string
+@deffnx {bigloo procedure} directory->path-list string
+If file @var{string} exists and is a directory, the function 
+@code{directory->list} returns the list of files in @var{string}.
+The function @code{directory->path-list} returns a list of files
+whose dirname is @var{string}.
+@end deffn
+
+@deffn {bigloo procedure} file-modification-time string
+The date (in second) of the last modification for file @var{string}. The
+number of seconds is represented by a value that may be converted into
+a date by the means of @code{seconds->date} (see @ref{Date}).
+@end deffn
+
+@deffn {bigloo procedure} file-size string
+Returns the size (in bytes) for file @var{string}. The return type is
+@code{long}. If an full-sized integer is needed, one may write:
+
+@smalllisp
+(let ((sz::llong (file-size <PATH>)))
+ ...)
+
+On error, @code{-1} is returned.
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} file-uid string
+@deffnx {bigloo procedure} file-gid string
+The functions return the user id (an integer) and group id (an integer) 
+for file @var{string}. On error, @code{-1} is returned.
+@end deffn
+
+@deffn {bigloo procedure} file-mode string
+Returns the file access mode (an integer). On error @code{-1} is returned.
+@end deffn
+
+@deffn {bigloo procedure} chmod string [option]
+Change the access mode of the file named @var{string}. The @var{option}
+must be either a list of the following symbols @code{read}, @code{write} 
+and @code{execute} or an integer. If the operation succeeds, @code{chmod} 
+returns @code{#t}. It returns @code{#f} otherwise. The argument 
+@var{option} can also be an integer that represents the native file
+permission.
+Example:
+
+@smalllisp
+(chmod (make-file-name (getenv "HOME") ".bigloorc") 'read 'write)
+(chmod (make-file-name (getenv "HOME") ".bigloorc") #o777)
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Process                                                          @c
+@c ------------------------------------------------------------------- @c
+@include process.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Socket                                                           @c
+@c ------------------------------------------------------------------- @c
+@include socket.texi
+
+@c ------------------------------------------------------------------- @c
+@c    SSL Socket                                                       @c
+@c ------------------------------------------------------------------- @c
+@include ssl.texi

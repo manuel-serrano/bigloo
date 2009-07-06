@@ -1,0 +1,34 @@
+You note that Bigloo doesn't work on SPARC GNU/Linux.  I just built it
+and it seems to run.  First I made this patch to the gc directory
+(reported to Boehm):
+
+1999-11-24  Dave Love  <d.love@dl.ac.uk>
+
+	* gcconfig.h: Test for __sparc__, not sparc on GNU/Linux.
+
+*** gcconfig.h	1999/11/24 18:53:55	1.1
+--- gcconfig.h	1999/11/24 18:54:09
+***************
+*** 147,153 ****
+  #    define M68K
+  #    define mach_type_known
+  # endif
+! # if defined(LINUX) && defined(sparc)
+  #    define SPARC
+  #    define mach_type_known
+  # endif
+--- 147,153 ----
+  #    define M68K
+  #    define mach_type_known
+  # endif
+! # if defined(LINUX) && defined(__sparc__)
+  #    define SPARC
+  #    define mach_type_known
+  # endif
+
+
+I also had to change the optimization from -O3 to -O2 with gcc 2.95.2.
+Otherwise it failed to build the heap with a Lisp error on a bad value
+#f.  Then I tried to repeat the error and it failed to fail...
+Possibly an uninitialized variable somewhere?  Not much I can do about
+it!

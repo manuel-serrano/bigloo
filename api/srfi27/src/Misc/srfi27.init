@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/srfi27/src/Misc/srfi27.init.in       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Mon Apr 20 08:52:45 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Srfi27 init file.                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'srfi27
+		  :srfi '(srfi27)
+		  :basename "bigloosrfi27"
+		  :module-init '__srfi27_bibtex
+		  :module-eval '__srfi27_makelib
+		  :class-init "bigloo.srfi27.bibtex"
+		  :class-eval "bigloo.srfi27.make-lib")
+

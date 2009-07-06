@@ -1,0 +1,36 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/examples/Lib/point.init              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Dec 19 12:52:33 1998                          */
+;*    Last change :  Mon Jun 11 07:39:00 2007 (serrano)                */
+;*    -------------------------------------------------------------    */
+;*    The initialization file for the point library                    */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The mapping from the Bigloo name to the actual OS lib.           */
+;*---------------------------------------------------------------------*/
+(declare-library! 'point
+                  :srfi '(point)
+                  :version "1.0"
+                  :module-init 'point
+                  :eval-init '__make-point-lib)
+
+;*---------------------------------------------------------------------*/
+;*    Additional path                                                  */
+;*---------------------------------------------------------------------*/
+(cond-expand
+  (bigloo-compile
+   (set! *ld-options*
+	 (string-append "-L/usr/lib " *ld-options*))
+   (set! *additional-include-foreign*
+	 (cons "point.h" *additional-include-foreign*)))
+  (bigloo-eval
+   #unspecified))
+      
+;*---------------------------------------------------------------------*/
+;*    point ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-macro (point x y)
+   `(make-point ,x ,y))

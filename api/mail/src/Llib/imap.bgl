@@ -1,0 +1,453 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/mail/src/Llib/imap.bgl           */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
+;*    Last change :  Sun Apr 26 04:20:36 2009 (serrano)                */
+;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Bigloo declaration and specific part for the Erick           */
+;*    Gallesio's IMAP Scheme library                                   */
+;*    -------------------------------------------------------------    */
+;*    IMAP is specified in the RFC 3501 (Internet Message Access       */
+;*    Protocol - version 4rev1) which may be found at:                 */
+;*      http://tools.ietf.org/html/rfc3501                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module __mail_imap
+   
+   (import __mail_mailbox
+	   __mail_rfc2822)
+
+   (export (class &imap-parse-error::&io-parse-error)
+	   (class &imap-error::&mailbox-error)
+
+	   (class imap::mailbox
+	      (socket::socket read-only)
+	      (%separator-cache::obj (default #f)))
+	   
+	   (imap-login::socket ::socket ::bstring ::bstring)
+	   (imap-logout::bool  ::socket)
+	   (imap-capability::pair-nil ::socket)
+	   (imap-separator::bstring ::socket)
+	   (imap-folders::pair-nil ::socket)
+	   (imap-folder-select ::socket ::bstring)
+	   (imap-folder-create! ::socket ::bstring)
+	   (imap-folder-delete! ::socket ::bstring)
+	   (imap-folder-rename! ::socket ::bstring ::bstring)
+	   (imap-folder-subscribe! ::socket ::bstring)
+	   (imap-folder-unsubscribe! ::socket ::bstring)
+	   (imap-folder-exists?::bool ::socket ::bstring)
+	   (imap-folder-status::pair-nil ::socket ::bstring)
+	   (imap-folder-poll ::socket)
+	   (imap-folder-expunge! ::socket)
+	   (imap-folder-search ::socket request)
+	   (imap-folder-search-header ::socket header value)
+	   (imap-folder-search-keyword ::socket keyword)
+	   (imap-folder-uids::pair-nil ::socket)
+
+	   (imap-folder-messages::pair-nil ::socket)
+	   (imap-folder-headers::pair-nil ::socket)
+	   (imap-folder-bodies::pair-nil ::socket)
+	   (imap-folder-sizes::pair-nil ::socket)
+	   (imap-folder-internal-dates::pair-nil ::socket)
+	   (imap-folder-flags::pair-nil ::socket)
+	   (imap-folder-infos::pair-nil ::socket)
+	   (imap-folder-header-fields::pair-nil ::socket ::bstring)
+	   
+	   (imap-message::bstring ::socket ::int)
+	   (imap-message-body::bstring ::socket ::int . ::obj)
+	   (imap-message-header*::pair-nil ::socket ::obj)
+	   (imap-message-header::bstring ::socket ::int)
+	   (imap-message-header-list::pair-nil ::socket ::obj)
+	   (imap-message-header-field::bstring ::socket ::int ::bstring)
+	   (imap-message-info ::socket ::int)
+	   (imap-message-flags ::socket ::int)
+	   (imap-message-size::int ::socket ::int)
+	   (imap-message-flags-change! ::socket ::int ::obj)
+	   (imap-message-flags-set! ::socket ::int ::obj)
+	   (imap-message-flags-unset*! ::socket ::obj ::obj)
+	   (imap-message-flags-unset! ::socket ::int ::obj)
+	   (imap-message-delete! ::socket ::int)
+	   (imap-message-undelete! ::socket ::int)
+	   (imap-message-flagged! ::socket ::int)
+	   (imap-message-unflagged! ::socket ::int)
+	   (imap-message-copy! ::socket ::int ::bstring)
+	   (imap-message-move! ::socket ::int ::bstring)
+	   (imap-message-create! ::socket ::bstring ::bstring)))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ::imap ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::imap p print-slot)
+   (with-access::imap o (socket)
+      (display "#<imap path=" p)
+      (display " socket=" p)
+      (print-slot socket p)
+      (display ">\n" p)))
+
+;*---------------------------------------------------------------------*/
+;*    Bigloo specific part                                             */
+;*---------------------------------------------------------------------*/
+(define-macro (regexp-match l1 l2)
+   (cond
+      ((string=? l1 "\"([^\"]*)\"(.*)")
+       `(let* ((s ,l2)
+	       (p (open-input-string s))
+	       (r (read/rp *regexp-match1* p)))
+	   (close-input-port p)
+	   (if (pair? r)
+	       (cons s r)
+	       #f)))
+      ((string=? l1 "{([0-9]+)}(.*)")
+       `(let* ((s ,l2)
+	       (p (open-input-string s))
+	       (r (read/rp *regexp-match2* p)))
+	   (close-input-port p)
+	   (if (pair? r)
+	       (cons s r)
+	       #f)))
+      ((string=? l1 "(\\[[^\\[\\]]+\\])?(.*)")
+       `(let* ((s ,l2)
+	       (p (open-input-string s))
+	       (r (read/rp *regexp-match3* p)))
+	   (close-input-port p)
+	   (if (pair? r)
+	       (cons s r)
+	       #f)))
+      ((string=? l1 "([^ (){}\\[\\]]+(?:\\[[^\\[\\]]+\\])?)(.*)")
+       `(let* ((s ,l2)
+	       (p (open-input-string s))
+	       (r (read/rp *regexp-match4* p)))
+	   (close-input-port p)
+	   (if (pair? r)
+	       (cons s r)
+	       #f)))
+      (else
+       (warning 'regexp-match "Not implemented" l1)
+       `(pregexp-match ,l1 ,l2))))
+
+;*---------------------------------------------------------------------*/
+;*    *regexp-all* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *regexp-all*
+   (regular-grammar ()
+      ((* all) (the-string))
+      (else #f)))
+      
+;*---------------------------------------------------------------------*/
+;*    *regexp-match1* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *regexp-match1*
+   (regular-grammar ()
+      ((: #\" (* (out #\")) #\")
+       (let* ((w (the-substring 1 -1))
+	      (r (read/rp *regexp-all* (the-port))))
+	  (if (string? r)
+	      (list w r)
+	      #f)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    *regexp-match2* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *regexp-match2*
+   (regular-grammar ()
+      ((: #\{ (+ digit) #\})
+       (let* ((w (the-substring 1 -1))
+	      (r (read/rp *regexp-all* (the-port))))
+	  (if (string? r)
+	      (list w r)
+	      #f)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    *regexp-match3* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *regexp-match3*
+   (regular-grammar ()
+      ((: #\[ (+ (out #\])) #\])
+       (let* ((w (the-substring 1 -1))
+	      (r (read/rp *regexp-all* (the-port))))
+	  (if (string? r)
+	      (list w r)
+	      #f)))
+      (else
+       (list #f (read/rp *regexp-all* (the-port))))))
+
+;*---------------------------------------------------------------------*/
+;*    *regexp-match4* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *regexp-match4*
+   (regular-grammar ()
+      ((: (+ (out " (){}[]")) (? (: #\[ (+ (out "[]")) #\])))
+       (let* ((w (the-string))
+	      (r (read/rp *regexp-all* (the-port))))
+	  (if (string? r)
+	      (list w r)
+	      #f)))
+      (else
+       (list #f (read/rp *regexp-all* (the-port))))))
+       
+;*---------------------------------------------------------------------*/
+;*    void ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (void . l) #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    string-starts-with? ...                                          */
+;*---------------------------------------------------------------------*/
+(define-macro (string-starts-with? str prefix)
+   `(substring-at? ,str ,prefix 0))
+
+;*---------------------------------------------------------------------*/
+;*    imap-debug ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-macro (imap-debug)
+   '(>=fx (bigloo-debug) 3))
+
+;*---------------------------------------------------------------------*/
+;*    read-n-chars ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (read-n-chars num port)
+   (if (=fx num 0)
+       ""
+       (let ((s (read-chars num port)))
+	  (if (eof-object? s)
+	      (format "error, cannot read ~a characters" num)
+	      (if (=fx (string-length s) num)
+		  s
+		  (let loop ((num (-fx num (string-length s)))
+			     (acc (list s)))
+		     (let ((s (read-chars num port)))
+			(cond
+			   ((eof-object? s)
+			    (apply string-append (reverse! (cons s acc))))
+			   ((=fx (string-length s) num)
+			    (apply string-append (reverse! (cons s acc))))
+			   (else
+			    (loop (-fx num (string-length s))
+				  (cons s acc)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    parse-error ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (parse-error proc message obj port)
+   (raise
+    (instantiate::&imap-parse-error
+       (proc proc)
+       (msg message)
+       (obj (if (char? obj)
+		(string-append "{" (string obj) "}" (read-line port))
+		obj))
+       (fname (input-port-name port))
+       (location (input-port-position port)))))
+
+;*---------------------------------------------------------------------*/
+;*    %imap-read-error ...                                             */
+;*---------------------------------------------------------------------*/
+(define (%imap-read-error msg obj)
+   (raise
+    (instantiate::&imap-parse-error
+       (proc 'imap-read)
+       (msg msg)
+       (obj obj))))
+
+;*---------------------------------------------------------------------*/
+;*    %imap-login-error ...                                            */
+;*---------------------------------------------------------------------*/
+(define (%imap-login-error msg obj)
+   (raise
+    (instantiate::&imap-error
+       (proc 'imap-login)
+       (msg msg)
+       (obj obj))))
+   
+;*---------------------------------------------------------------------*/
+;*    %imap-command-error ...                                          */
+;*---------------------------------------------------------------------*/
+(define (%imap-command-error proc msg obj)
+   (raise
+    (instantiate::&imap-error
+       (proc proc)
+       (msg msg)
+       (obj obj))))
+
+;*---------------------------------------------------------------------*/
+;*    imap-message-header-list ...                                     */
+;*---------------------------------------------------------------------*/
+(define (imap-message-header-list mbox i)
+   (mail-header->list (imap-message-header mbox i)))
+
+;*---------------------------------------------------------------------*/
+;*    define-imap-method ...                                           */
+;*---------------------------------------------------------------------*/
+(define-macro (define-imap-method id mbox . rest)
+   
+   (define (id-of-id id)
+      (let* ((name (symbol->string id))
+	     (i (string-contains name "::")))
+	 (cond
+	    ((not i)
+	     id)
+	    ((=fx i 0)
+	     'o)
+	    (else
+	     (string->symbol (substring name 0 i))))))
+	     
+   (let* ((mname (symbol->string (id-of-id id)))
+	  (fname (string-append "imap-"
+				(substring mname 8 (string-length mname)))))
+      `(define-method (,id ,mbox ,@rest)
+	  (with-access::imap ,(id-of-id mbox) (socket)
+	     (,(string->symbol fname) socket ,@(map id-of-id rest))))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-close ::imap ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-close m::imap)
+   (with-access::imap m (socket)
+      (imap-logout socket)))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-prefix ::imap ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-prefix m::imap)
+   (with-access::imap m (socket)
+      (let ((folders (imap-folders socket)))
+	 (if (null? folders)
+	     #f
+	     (let* ((sep (imap-separator socket))
+		    (p (car folders))
+		    (lp (string-length p)))
+		(when (every? (lambda (f)
+				 (let ((lf (string-length f)))
+				    (and (>fx lf lp)
+					 (substring-at? f p 0)
+					 (=fx (string-index f sep) lp))))
+			      (cdr folders))
+		   p))))))
+
+;*---------------------------------------------------------------------*/
+;*    wrapping methods                                                 */
+;*---------------------------------------------------------------------*/
+(define-imap-method mailbox-separator m::imap)
+
+(define-imap-method mailbox-folders m::imap)
+(define-imap-method mailbox-folder-create! m::imap s::bstring)
+(define-imap-method mailbox-folder-delete! m::imap s::bstring)
+(define-imap-method mailbox-folder-rename! m::imap s1::bstring s2::bstring)
+(define-imap-method mailbox-folder-subscribe! m::imap s::bstring)
+(define-imap-method mailbox-folder-unsubscribe! m::imap s::bstring)
+(define-imap-method mailbox-folder-exists?::bool m::imap s::bstring)
+(define-imap-method mailbox-folder-status::pair-nil m::imap s::bstring)
+(define-imap-method mailbox-folder-poll m::imap)
+(define-imap-method mailbox-folder-expunge! m::imap)
+(define-imap-method mailbox-folder-search m::imap request)
+(define-imap-method mailbox-folder-search-header m::imap header value)
+(define-imap-method mailbox-folder-search-keyword m::imap keyword)
+(define-imap-method mailbox-folder-uids::pair-nil m::imap)
+
+(define-imap-method mailbox-folder-messages::pair-nil m::imap)
+(define-imap-method mailbox-folder-headers::pair-nil m::imap)
+(define-imap-method mailbox-folder-bodies::pair-nil m::imap)
+(define-imap-method mailbox-folder-sizes::pair-nil m::imap)
+(define-imap-method mailbox-folder-flags::pair-nil m::imap)
+(define-imap-method mailbox-folder-infos::pair-nil m::imap)
+(define-imap-method mailbox-folder-header-fields::pair-nil m::imap s::bstring)
+
+(define-imap-method mailbox-message m::imap i::int)
+(define-imap-method mailbox-message-body m::imap i::int)
+(define-imap-method mailbox-message-flags m::imap i::int)
+(define-imap-method mailbox-message-header::bstring m::imap i::int)
+(define-imap-method mailbox-message-header-list::pair-nil m::imap i::int)
+(define-imap-method mailbox-message-header-field::bstring m::imap i::int s::bstring)
+(define-imap-method mailbox-message-info m::imap i::int)
+(define-imap-method mailbox-message-flags m::imap i::int)
+(define-imap-method mailbox-message-size::int m::imap i::int)
+(define-imap-method mailbox-message-delete! m::imap i::int)
+(define-imap-method mailbox-message-move! m::imap i::int s::bstring)
+(define-imap-method mailbox-message-create! m::imap s1::bstring s2::bstring)
+(define-imap-method mailbox-message-copy! m::imap i::int s::bstring)
+(define-imap-method mailbox-message-create! m::imap s1::bstring s2::bstring)
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-separator ::imap ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-separator m::imap)
+   (with-access::imap m (socket %separator-cache)
+      (unless (string? %separator-cache)
+	 (set! %separator-cache (imap-separator socket)))
+      %separator-cache))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-hostname ::imap ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-hostname m::imap)
+   (with-access::imap m (socket)
+      (socket-hostname socket)))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-select! ::imap ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-select! m::imap s)
+   (with-access::imap m (socket %mutex folder-selection %selection-cache)
+      (with-lock %mutex
+	 (lambda ()
+	    (if (and (string? folder-selection) (string=? folder-selection s))
+		%selection-cache
+		(let ((cache (imap-folder-select socket s)))
+		   (set! %selection-cache cache)
+		   (set! folder-selection s)
+		   cache))))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-unselect! ::imap ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-unselect! m::imap)
+   (with-access::imap m (socket %mutex folder-selection %selection-cache)
+      (with-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e) #unspecified)
+	       (imap-folder-select socket ""))
+	    (set! %selection-cache #f)
+	    (set! %selection-cache #f)
+	    (set! folder-selection #f)))))
+   
+;*---------------------------------------------------------------------*/
+;*    mailbox-message-path ::imap ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-message-path m::imap i)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-dates ::imap ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-dates m::imap)
+   (with-access::imap m (socket)
+      (map! rfc2822-date->date (imap-folder-internal-dates socket))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-delete-messages! ::imap ...                       */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-delete-messages! m::imap)
+   (with-access::imap m (socket)
+      (for-each (lambda (uid)
+		   (imap-message-delete! socket uid))
+		(imap-folder-uids socket))
+      (imap-folder-expunge! socket)))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-message-flags-set! ::imap ...                            */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-message-flags-set! m::imap i::int flags)
+   (with-access::imap m (socket)
+      ;; Recent cannot be added so we have to delete it from user lists
+      ;; when specified.
+      (imap-message-flags-change! socket i (delete "\\Recent" flags))))

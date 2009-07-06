@@ -1,0 +1,92 @@
+Requirements:
+-------------
+  In order to build .NET binaries from Bigloo programs, you need the
+three primary DotGNU (http://www.dotgnu.org) Portable.NET tools
+(http://www.southern-storm.com.au/portable_net.html) version 0.6.0
+or higher.  These tools must be built (./configure, make, make install)
+in the following order:
+    - treecc (an internal build tool)
+    - pnet (runtime engine, C# compiler, and other tools)
+    - pnetlib (.NET runtime library)
+  .NET binaries produced by Bigloo can be run on any .NET platform
+with the restrictions/specificities detailed below.
+
+Special step for Microsoft VM:
+------------------------------
+  By default, binaries produced by Portable.NET tools only run on
+Portable.NET and Mono (http://www.go-mono.com) virtual machines.
+
+  We provide in the pnet2ms directory a tool that allows conversion of
+binaries produced by Portable.NET to binaries compatible with all
+three .NET VMs.  This tool requires that you have the Microsoft .NET
+Framework Software Development Kit 1.0 or greater (available in
+Microsoft Visual Studio .NET or at
+http://msdn.microsoft.com/netframework).  It has been tested on
+Windows 2000 and Windows XP but it should run on other Windows
+flavors. (Note that .NET is not supported at all on Windows 95 and
+incompletely on Windows 98/ME and Windows NT4).
+
+  Once Bigloo is installed, you must first register the Bigloo key
+pair that will be used to sign the runtime libraries.  We provide such
+a pair in pnet2ms/bigloo.dotnetkey.  Registering the key pair under
+the name "Bigloo" is done by using the MS sn tool (located in the .NET
+Framework under the Bin directory) with the following options:
+     sn -i bigloo.dotnetkey Bigloo
+
+  Then, Bigloo .NET runtime DLLs must be converted and integrated to
+the Global Assembly Cache, with a command like:
+
+    pnet2ms -register /usr/local/lib/bigloo/2.6b/*.dll
+
+  Finally, in order to convert your own .NET binaries, just use
+
+    pnet2ms mydotnetbinary.exe
+
+    Additional command-line options are:
+      -initlocals     force all local variables to be initialized to their
+                      default value upon function entrance 
+                      (for PEVerify to succeed)
+      -k              Keep intermediate files
+      -register       Register DLLs in the Global Assembly Cache
+      -v              Enable verbose mode
+      -v1             Enable very verbose mode
+      -v2             Enable very very verbose mode
+
+  Note that if you want to verify these binaries using MS peverify,
+you must specify the -initlocals option, which will force all local
+variables to be initialized to their default value upon function
+entrance (which is indeed a strange requirement for a bytecode
+verifier, but whatever...).
+
+Known Bigloo .NET runtime limitations:
+--------------------------------------
+  As for the C and Java backends, Bigloo programs can have access to
+classes written in any other language that compiles into .NET
+bytecode.  However, access to Bigloo classes and functions from
+another language is not yet supported in the .NET backend.
+
+Known .NET VM limitations:
+--------------------------
+  Portable.NET runtime libraries are not completely implemented yet.
+As of version 0.6.0, lacks mainly concern processes and threads.
+
+  Mono runtime libraries are quite complete but, as of version 0.23,
+still have bugs, mostly concerning processes. We experienced a lot
+of crashes with version 0.24 to 0.28 under Windows at least.
+
+  For the time being, only the Microsoft VM completely implements the
+ECMA .NET standard (you bet) and only this VM allows complete and
+reliable use of Bigloo runtime.
+
+  For all these 3 VMs, the Bigloo .NET runtime includes as much
+workarounds of know bugs as possible.
+
+Examples:
+---------
+  The directory bigloo/examples/DNet contains a small example
+that illustrates bi-directional communications between Bigloo
+code and C# code. In particular, this example shows how to 
+invoke a Bigloo procedure from C#.
+
+  The recette test suite also contains various example of blending
+Bigloo code and C# source code.

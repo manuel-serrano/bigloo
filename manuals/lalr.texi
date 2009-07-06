@@ -1,0 +1,300 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/lalr.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 09:23:46 1998                          @c
+@c    Last change :  Mon Nov 12 15:18:01 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentaion for the lalr compiler                           @c
+@c    (copyright 1995 Dominique Boucher).                              @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    lalr ...                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Lalr Parsing, Posix Regular Expressions, Regular Parsing, Top
+@comment  node-name,  next,  previous,  up
+@chapter Lalr(1) parsing
+@cindex Lalr parsing
+
+Regular grammar generators, like Lex, are often coupled with tools,
+such as Yacc and Bison, that can generate parsers for more powerful
+languages, namely (a subset of) context-free languages. These tools
+take as input a description of the language to be recognized and
+generate a parser for that language, written in some other language
+(for example, Yacc and Bison generate parsers written in C). The user
+must always be aware of the generated parser and that is a nuisance.
+Bigloo provides such a tool that overcomes this annoyance. It
+generates parsers for the class of Lalr(1) grammars in a more
+opaque way.
+
+@menu
+* Grammar Definition::          
+* Precedence and Associativity::
+* The Parsing Function::        
+* The Regular Grammar::         
+* Debugging Lalr Grammars::         
+* A Simple Example::            
+@end menu
+
+@c -- Grammar definition --------------------------------------------- @c
+@node Grammar Definition, Precedence and Associativity, , Lalr Parsing
+@comment  node-name,  next,  previous,  up
+@section Grammar definition
+@cindex lalr(1) grammar definition
+
+An lalr(1) grammar is defined by the form:
+
+@deffn {bigloo syntax} lalr-grammar term-def non-term-def@dots{}
+
+@var{term-def} is a list of terminal elements of the grammar.  Terminals can
+grouped together to form precedence groups by including the related symbols
+in a sub-lists of the @var{term-def} list.  Each precedence group must start
+with one of the keywords @code{left:}, @code{right:} or @code{none:}-- this
+indicates the associativity of the terminal symbol.  Here is a sample
+@var{term-def} which declares eight terminals:
+@smalllisp
+(terminal-1 terminal-2
+ (left: terminal-3 terminal-4)
+ terminal-5
+ (right: terminal-6)
+ (none: terminal-7)
+ terminal-8)
+@end smalllisp
+
+In this case, @code{terminal-3} and @code{terminal-4} both have the same
+precedence, which is greater than the precedence assigned to
+@code{terminal-6}. No precedence was assigned to symbols @code{terminal-1},
+@code{terminal-2}, @code{terminal-5} or @code{terminal-8}.
+
+Each @var{non-term-def} is a list whose first element is the
+non-terminal being defined, i.e. a symbol. The remaining elements are
+the production rules associated with this non-terminal. Each rule is a
+list whose first element is the rule itself (a list of symbols) and
+the other elements are the semantic actions associated with that
+particular rule.  
+
+For example, consider the following grammar:
+@example
+@var{E} @expansion{} @var{E1} + @var{id} @{@var{E}.val := @var{E1}.val + @var{id}.val@}
+      | @var{id} @{@var{E}.val := @var{id}.val@}  
+@end example
+
+With Bigloo, it would be written:
+@smalllisp
+(lalr-grammar
+  (plus id)
+  (e
+   ((e plus id)   (+ e id))
+   ((id)          id)))
+@end smalllisp
+
+The semantic value of a symbol in a rule can be accessed by simply
+using the name of the symbol in the semantic action associated with
+the rule. Because a rule can contain multiple occurrences of the same
+symbol, Bigloo provides a way to access these occurrences
+separately. To do so, the name of each occurrence must be suffixed by
+@code{@@}@var{var} where @var{var} is the name of a variable that will be
+bound to the semantic value of the occurrence. For example, if the
+rule is
+
+@example
+   ifstmt @expansion{} if E then Stmt else Stmt
+@end example
+
+then, in Bigloo, it would look like
+@smalllisp
+(if-stmt
+ ((if e then stmt@@conseq else stmt@@altern)
+  (if (eval e) 
+      (eval conseq) 
+      (eval altern))))
+@end smalllisp
+@end deffn
+
+@c -- Grammar definition --------------------------------------------- @c
+@node Precedence and Associativity, The Parsing Function, Grammar Definition, Lalr Parsing
+@section Precedence and associativity
+@cindex Lalr precedence and associativity
+
+The bigloo lalr(1) parser generator supports operator precedence and
+associativity.  The method for specifying the precedence for terminal symbols
+is described in @ref{Grammar Definition}.  Precedence is assigned to each
+non-terminal production from the precedence of the last terminal symbol 
+appearing in that production.
+
+Typically, when the parser generator encounters a shift/reduce conflict, it
+produces a warning message, then chooses to reduce.  When a parser generator
+has precedence and associativity information, it can make a much more
+sophisticated decision.
+
+Let's use this simple calculator grammar as an example:
+@smalllisp
+(lalr-grammar
+ ((left: op-mult op-div)
+  (left: op-add op-sub)
+  op-lparen op-rparen
+  op-semicolon
+  number)
+
+ (file
+   (())
+   ((file stmt)))
+ (stmt
+   ((expr op-semicolon) (print expr)))
+ (expr
+   ((number) number)
+   ((expr@@a op-add expr@@b) (+ a b))
+   ((expr@@a op-sub expr@@b) (- a b))
+   ((expr@@a op-mult expr@@b) (* a b))
+   ((expr@@a op-div expr@@b) (/ a b))
+   ((op-lparen expr op-rparen) expr))))
+@end smalllisp
+
+Let's start with this input:
+@example
+1 + 2 * 3;
+@end example
+
+At the point where the parser has read @code{1 + 2} and the lookahead symbol
+is @code{*}, the parser encounters a shift/reduce conflict.  Should it first
+reduce by the @code{(expr op-add expr)} production or shift the @code{*} in
+the hopes of reducing the latter expression first?
+
+The @code{(expr op-add expr)} production has gotten its precedence from the
+@code{op-add} terminal symbol.  This is the precedence of the reduce.  The
+precedence of the shift comes from the precedence assigned to the lookahead
+terminal symbol, which is @code{op-mult}.  Since @code{op-mult} has higher
+precedence, the parser generator in this state chooses to shift and does not
+produce a warning.
+
+Here's an example which we can use to demonstrate associativity:
+@example
+1 + 2 - 3;
+@end example
+
+The parser generator encounters a similar shift/reduce conflict this time,
+except that when it tries to determine whether to shift or reduce, it finds
+that both actions have the same precedence.  In this case, the parser
+generator looks at the associativity of the precedence group containing the
+@code{op-add} and @code{op-sub}.  Since these are declared to be
+left-associative, the parser generator chooses to reduce from this state,
+effectively calculating the @code{1 + 2}.  Had these symbols been 
+right-associative, the parser would have chosen to shift, effectively
+calculating @code{2 - 3} first.  If these symbols had been declared
+non-associative with the @code{none:} keyword, the parser would generate an
+error if it ever encountered this state.
+
+@c -- The parsing function ------------------------------------------- @c
+@node The Parsing Function, The Regular Grammar, Precedence and Associativity, Lalr Parsing
+@comment  node-name,  next,  previous,  up
+@section The parsing function
+@cindex the lalr(1) parsing function
+
+Once a grammar has been defined, it can be used to parse some input
+using the following function:
+
+@deffn {bigloo procedure} read/lalrp lg rg port [emptyp]
+This function takes three, possibly four, arguments. The first, @var{lg}, is
+the Lalr(1) grammar. The second, @var{rg}, is the lexical analyzer that feeds
+the grammar with tokens. The third argument, @var{port}, is the port that
+contains the input to be parsed. The last argument, @var{emptyp}, if
+provided, should be a function of one argument. It is called with each new
+token read from the port and should return @code{#t} if the token denotes the
+end of input. The result of the call is the value computed by the semantic
+actions of the production rules.
+@end deffn
+
+@c -- The regular grammar -------------------------------------------- @c
+@node  The Regular Grammar, Debugging Lalr Grammars, The Parsing Function, Lalr Parsing
+@comment  node-name,  next,  previous,  up
+@section The regular grammar
+@cindex Lalr grammar and Regular grammar
+
+In order to work properly, the regular grammar used with an
+Lalr(1) grammar should follow some conventions:
+
+@itemize @bullet
+
+@item If a semantic value is to be associated with the token just
+parsed, the regular grammar should return a pair whose @code{car} is the
+token name (a symbol) and the @code{cdr} is the semantic value. 
+@item If there is no value associated with the token, the regular
+grammar can return just the token name. When used in conjunction with
+an Lalr grammar, regular grammar should never return @code{#f} as a token
+value. This is specially true when the regular grammar detects the end of
+parsing. In that case, the regular grammar @emph{must not} return the 
+@code{#f} value. A good way to handle end-of-file is illustrated in the 
+following example:
+
+@smalllisp
+(let ((g (regular-grammar ()
+             ...
+             (else 
+              (let ((c (the-failure)))
+                 (if (eof-object? c)
+                     c
+                     (error 'rgc "Illegal character" c))))))
+      (l (lalr-grammar ...)))
+   (read/lalrp l g (current-input-port)))
+@end smalllisp
+
+This way, the Lalr grammar will automatically handles the end-of-file.
+@end itemize
+
+@c -- debugging ------------------------------------------------------ @c
+@node Debugging Lalr Grammars, A Simple Example, The Regular Grammar, Lalr Parsing
+@section Debugging Lalr Grammars
+@cindex Debugging Lalr Grammars
+
+Currently the debugging facility for debugging Lalr grammars is very
+limited. When the parameter @code{bigloo-debug} is set to a value
+greater or equal to 3, the Lalr engine outputs all of the state
+changes the parser is going through.
+
+@c -- A simple example ----------------------------------------------- @c
+@node A Simple Example,  , Debugging Lalr Grammars, Lalr Parsing
+@comment  node-name,  next,  previous,  up
+@section A simple example
+@cindex a simple example of Lalr(1) parsing
+Here is the code for a simple calculator implemented by an Lalr(1)
+grammar:
+
+@smalllisp
+(begin
+  (read/lalrp
+   (lalr-grammar
+    (nl plus mult minus div const lpar rpar)
+    (lines
+     (())
+     ((lines expression nl)    (display "--> ") 
+                               (display expression) 
+                               (newline))
+     ((lines nl)))
+    (expression
+     ((expression plus term)   (+ expression term))
+     ((expression minus term)  (- expression term))
+     ((term)                   term))
+    (term
+     ((term mult factor)       (* term factor))
+     ((term div factor)        (/ term factor))
+     ((factor)                 factor))
+    (factor
+     ((lpar expression rpar)   expression)
+     ((const)                  const)))
+
+   (regular-grammar ()
+    ((+ (or #\tab #\space)) (ignore))
+    (#\newline              'nl)
+    ((+ digit)              (cons 'const (string->number (the-string))))
+    (#\+                    'plus)
+    (#\-                    'minus)
+    (#\*                    'mult)
+    (#\/                    'div)
+    (#\(                    'lpar)
+    (#\)                    'rpar))
+
+   (current-input-port))
+  (reset-eof (current-input-port)))
+@end smalllisp
+

@@ -1,0 +1,21 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/pkgcomp/src/Misc/pkgcomp.init.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sat Feb 10 07:38:58 2007 (serrano)                */
+;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The PKGCOMP init file.                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'pkgcomp
+		  :srfi '(pkgcomp)
+		  :basename "bigloopkgcomp"
+		  :module-init '@configure
+		  :module-eval '@makelib
+		  :class-init "bigloo.pkgcomp.configure"
+		  :class-eval "bigloo.pkgcomp.make-lib")

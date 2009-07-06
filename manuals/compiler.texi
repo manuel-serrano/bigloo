@@ -1,0 +1,229 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/scribe/examples/info/compiler.texi          @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 16:02:39 1998                          @c
+@c    Last change :  Wed Oct 24 13:47:14 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Compiler description                                             @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Compiler description                                             @c
+@c ------------------------------------------------------------------- @c
+@node Compiler Description, User Extensions, SRFIs, Top
+@comment  node-name,  next,  previous,  up@chapter Compiler description
+@chapter Compiler description
+@cindex Compiler description
+
+@c ------------------------------------------------------------------- @c
+@c    C requirement                                                    @c
+@c ------------------------------------------------------------------- @c
+@section C requirement
+@cindex C requirement
+
+Instead of producing assembly code, Bigloo produces C code.
+This C code is ISO-C compliant [IsoC]. So, it is necessary
+to have an ISO-C compiler. The current version has been
+@c developed with @code{gcc} @xref{Top, , Stallman95,gcc.info}.
+developed with @code{gcc} [Stallman95].
+
+@c ------------------------------------------------------------------- @c
+@c    JVM requirement                                                  @c
+@c ------------------------------------------------------------------- @c
+@section JVM requirement
+@cindex JVM requirement
+
+In order to compile the Bigloo JVM back-end, you have to be provided
+with a JDK 1.2 or more recent (available at @code{http://www.javasoft.com}).
+The JVM must support for @code{-noverify} option because, by default,
+Bigloo produces JVM code that is not conform to the rules enforced by
+the Java byte code verifiers.
+
+@c ------------------------------------------------------------------- @c
+@c    Running .NET programs on Microsoft .NET platforms                @c
+@c ------------------------------------------------------------------- @c
+@section Running .NET programs on Microsoft .NET platforms
+@cindex .NET requirement
+
+Bigloo uses Portable.NET assembler and linker to produce .NET binaries.  As
+such, produced binaries are linked and signed against Portable.NET runtime
+libraries and are rejected by Microsoft .NET platforms.  In order to run
+Bigloo .NET binaries on Microsoft .NET platforms, binaries must first be
+disassembled and then reassembled and linked against Microsoft runtime
+libraries.
+
+The pnet2ms utility automates this process. Before the first use of
+pnet2ms, a public+private key pair must first be registered to the
+"Bigloo" container. You may either use the provided pair in the
+bigloo.dotnetkey file or generate your own using:
+@display
+          sn -k bigloo.dotnetkey
+@end display
+The pair must be registered using:
+@display
+          sn -i bigloo.dotnetkey Bigloo
+@end display
+
+The pnet2ms program can be ran with:
+@display
+  pnet2ms myprogram.exe
+@end display
+
+Additional command-line options are:
+@display
+  -initlocals     force all local variables to be initialized to their
+                  default value upon function entrance 
+                  (for PEVerify to succeed)
+  -k              Keep intermediate files
+  -register       Register DLLs in the Global Assembly Cache
+  -v              Enable verbose mode
+  -v2             Enable very verbose mode
+  -v3             Enable very very verbose mode
+@end display
+
+@c ------------------------------------------------------------------- @c
+@c    Linking                                                          @c
+@c ------------------------------------------------------------------- @c
+@section Linking
+@cindex linking
+
+It is easier to use Bigloo for linking object files which have been
+compiled by Bigloo. An easy way to perform this operation is, after
+having compiled all the files using the @code{-c} option, to invoke
+Bigloo with the name of the compiled files.
+
+When Bigloo is only given object file name as argument, it
+searches in the current directory and the directory named in the
+@code{*load-path*} list the Scheme source file in order to
+perform a correct link. Scheme source files are supposed to be
+ended by the suffix @code{.scm}. Additional suffixes can be added
+using the @code{-suffix} option. Hence, if source files are named
+foo1.sc and foo2.sc, a link command line could look like:
+
+@display
+bigloo -suffix sc foo1.o foo2.o -o foo
+@end display
+
+Note: In order to understand how the Bigloo linkers operates and which
+libraries it uses, it might be useful to  use the @code{-v2} option
+which unveil all the details of the compilation and the link.
+
+@c ------------------------------------------------------------------- @c
+@c    The compiler environment and options                             @c
+@c ------------------------------------------------------------------- @c
+@section The compiler environment and options
+@cindex The compiler environment and options
+
+There are four ways to change the behaviour of Bigloo. Flags on the
+command line, the @code{option} module clause runtime-command file and
+environment variables @xref{Modules}. When the compiler is invoked, it
+first gets the environment variables, then it scans the
+runtime-command file and, at end, it parses the command line.  If the
+same option is set many times, Bigloo uses the last one.
+
+@c -- Efficiency ----------------------------------------------------- @c
+@subsection Efficiency
+@cindex Efficiency
+
+In order to get maximum speed, compile with the @code{-Obench} option.
+This will enable all compiler optimization options and disable dynamic
+type checks. To improve arithmetic performance see next section.
+
+@c -- stack allocations ---------------------------------------------- @c
+@subsection Stack allocation
+@cindex Stack allocation
+
+When the @code{-fstack} flag is enabled, the compiler may automatically
+replace some heap allocations with stack allocations. This may improve
+performance because stack allocations are handled more efficiently than
+heap allocations. On some cases, @code{-fstack} may also cause slow down
+or memory extra retentions. In this last case, when compile 
+using @code{-fstack} the program will consume more memory. Unfortunately,
+this is nasty phenomenon is unpredictable (it depends on the nature of
+the source file).
+
+@c -- genericity ----------------------------------------------------- @c
+@subsection Genericity of arithmetic procedures
+@cindex Genericity of arithmetic procedures
+
+By default, arithmetic procedures are generic. This means that it is
+allowed to use them with flonum and fixnum. This feature, of course,
+implies performances penalty. To improve performance, you may use
+specialized procedures (such as @code{+fx}, @code{=fx}, @dots{} or
+@code{+fl}, @code{=fl}, @dots{}) but, it is possible to suppress the
+genericity and to make all generic arithmetic procedures (@code{=} for
+example) fixnum ones. For this you must use the compiler option
+@code{-farithmetic}, or add the following module clause @code{(option
+(set! *genericity* #f))} in your module declaration.
+
+@c -- Safety --------------------------------------------------------- @c
+@subsection Safety
+@cindex safety
+
+It is possible to generate @emph{safe} or @emph{unsafe} code. 
+The safety's scope is @code{type}, @code{arity}, @code{version} and
+@code{range}.
+Let's see an example: 
+
+@smalllisp
+(define (foo f v indice)
+   (car (f (vector-ref v indice))))
+@end smalllisp
+
+In safe mode, the result of the compilation will be:
+
+@smalllisp
+(define (foo f v indice)
+  (let ((pair 
+        (if (and (procedure? f)
+              @r{;; type check}
+              (= (procedure-arity f) 1))
+              @r{;; arity check}
+           (if (vector? v)
+              @r{;; type check}
+              (if (and (integer? k)
+                    @r{;; type check}
+                    (>= k 0)
+                    @r{;; range check}
+                    (< k (vector-length v)))
+                    @r{;; range check}
+                (f (vector-ref v indice))
+                (error ...))
+              (error ...))
+           (error ...))))
+    (if (pair? pair)
+       @r{;; type check}
+       (car pair)
+       (error ...))))
+@end smalllisp
+
+It is possible to remove some or all safe checks. For example, here is
+the result of the compilation where safe check on types have been removed:
+
+@smalllisp
+(define (foo f v indice)
+  (let ((pair (if (= (procedure-arity f) 1)
+             @r{;; arity check}
+             (if (and (>= k 0)
+                   @r{;; range check}
+                   (< k (vector-length v)))
+                   @r{;; range check}
+                (f (vector-ref v indice))
+                (error ...))
+             (error ...))))
+     (car pair)))
+@end smalllisp
+
+@c -- The runtime-command file --------------------------------------- @c
+@subsection The runtime-command file
+@cindex The runtime-command file
+@pindex .bigloorc
+
+Each Bigloo's user can use a special configuration file. This file must
+be named ``@code{.bigloorc}'' or ``@code{~/.bigloorc}''. Bigloo tries to
+load one of these in this order. This file is a Scheme file. Bigloo
+exports variables which allow the user to change the behavior of the
+compiler.  All these variables can be checked using the -help2 option.
+
+The Bigloo's runtime command file is read before the arguments are parsed.

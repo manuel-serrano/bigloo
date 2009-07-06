@@ -1,0 +1,108 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bench/Makefile.bench                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Jul 28 08:48:01 2000                          */
+#*    Last change :  Wed Oct 24 12:56:27 2007 (serrano)                */
+#*    Copyright   :  2000-07 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    The generic Makefile to handle benchmarks.                       */
+#*    -------------------------------------------------------------    */
+#*    This Makefile must be invoked defining the BENCH variable        */
+#*    such as:                                                         */
+#*       (cd pseudoknot; make -f ../Makefile.bench BENCH=pseudoknot)   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Default configuration                                            */
+#*---------------------------------------------------------------------*/
+include ../../Makefile.config
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+BIGLOO		= $(BOOTBIGLOO)
+BGLOPTFLAGS	= -Obench -q +rm -w
+BFLAGS		= $(BGLOPTFLAGS)
+LNFLAGS		= $(BGLOPTFLAGS) -static-bigloo
+JAVA		= java
+RUN		= ../run.sh
+NBRUN		= 1
+
+#*---------------------------------------------------------------------*/
+#*    Objects and sources                                              */
+#*---------------------------------------------------------------------*/
+
+#*--- scm -------------------------------------------------------------*/
+SCM_FILE	= $(BENCH)
+
+SCM_SRC		= $(SCM_FILE:%=%.scm)
+SCM_OBJ		= $(SCM_FILE:%=%.o)
+SCM_CLASS	= $(SCM_FILE:%=%.class)
+
+#*---------------------------------------------------------------------*/
+#*    All objects and sources                                          */
+#*---------------------------------------------------------------------*/
+SRC		= $(C_SRC) $(SCM_SRC)
+OBJ		= $(C_OBJ) $(SCM_OBJ)
+CLASS		= $(SCM_CLASS)
+
+POPULATION	= $(SRC:%=bench/$(BENCH)/%) bench/$(BENCH)/Makefile
+
+#*---------------------------------------------------------------------*/
+#*    the goals.                                                       */
+#*---------------------------------------------------------------------*/
+pop:
+	@ echo $(POPULATION)
+
+clean:
+	@ find . \( -name '*[~%]'                   \
+                       -o -name '.??*[~%]'          \
+                       -o -name '#*#'               \
+                       -o -name '?*#'               \
+                       -o -name \*core \)           \
+                     -type f -exec rm {} \;   
+	@- \rm -f $(OBJ)
+	@- \rm -f $(OBJ)
+	@- \rm -f $(BENCH) 
+
+#*---------------------------------------------------------------------*/
+#*    compile ...                                                      */
+#*---------------------------------------------------------------------*/
+.PHONY: compile-c compile-jvm
+compile-c:
+	@ echo "$(BENCH): "
+	@ echo "  bigloo: $(BIGLOO)"
+	@ echo "  bflags: $(LNFLAGS)"
+	@ echo "  cflags: $(CFLAGS)"
+	@ echo "  compilation:"
+	@ echo "  - compiling $(BENCH) (C)" 1>&2
+	$(RUN) --bench=$(BENCH) --run=$(NBRUN) \
+           "$(BIGLOO) $(BFLAGS) $(LNFLAGS) $(SCM_SRC) -o $(BENCH)"
+
+compile-jvm:
+	@ echo "$(BENCH): "
+	@ echo "  bigloo: $(BIGLOO)"
+	@ echo "  bflags: -jvm"
+	@ echo "  compilation:"
+	@ echo "  - compiling $(BENCH) (JVM)" 1>&2
+	$(RUN) --bench=$(BENCH) --run=$(NBRUN) \
+           "$(BIGLOO) $(BFLAGS) -jvm $(SCM_SRC) -o $(BENCH).class"
+
+#*---------------------------------------------------------------------*/
+#*    run ...                                                          */
+#*---------------------------------------------------------------------*/
+.PHONY: run-c run-jvm
+run-c:
+	@ echo "  execution (C):"
+	@ echo "  - running $(BENCH) (C)" 1>&2;
+	$(RUN) --bench=$(BENCH) --run=$(NBRUN) "./$(BENCH)"
+	@ $(MAKE) -s clean
+
+run-jvm:
+	@ echo "  execution (JVM):"
+	@ echo "  - running $(BENCH) (JVM)" 1>&2;
+	$(RUN) --bench=$(BENCH) --run=$(NBRUN) "$(JAVA) ./$(BENCH).class"
+	@ $(MAKE) -s clean
+
+

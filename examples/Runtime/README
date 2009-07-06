@@ -1,0 +1,2 @@
+This programs defines a runtime function and provides a `read eval print'
+loop that uses it. This program illustrates the foreign interface.

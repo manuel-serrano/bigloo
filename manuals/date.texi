@@ -1,0 +1,159 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/date.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Wed Feb  5 17:17:13 2003                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2003 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Date manager                                                     @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Date                                                             @c
+@c ------------------------------------------------------------------- @c
+@node Date, Digest, System Programming, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Date
+@cindex Date
+@cindex Calendar
+@cindex Time
+
+@deffn {bigloo procedure} date? obj
+Returns @code{#t} if and only if @var{obj} is a @emph{date} as returned
+by @code{make-date}, @code{current-date}, or @code{seconds->date}. It
+returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} make-date #!key (sec 0) (min 0) (hour 0) (day 0) (month 0) (year 1970) timezone (dst -1)
+Creates a @code{date} object from the integer values passed as argument.
+
+The argument @var{timezone}, if provided, is expressed in minute.
+
+Example:
+@smalllisp
+(write (make-date :sec 0 :min 22 :hour 17 :day 5 :month 2 :year 2003 :dst 0))
+  @print{} #<date:Wed Feb  5 17:22:00 2003>
+@end smalllisp
+
+The argument @var{dst} is either @code{-1} when the information is not
+available, @code{0} when daylight saving is disabled, @code{1} when daylight
+saving is enabled.
+@end deffn
+
+@deffn {bigloo procedure} date-copy date #!key sec min hour day month year
+Creates a new date from the argument @var{date}. 
+
+Example:
+@smalllisp
+(date-copy (current-date) 1 0 0)
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} current-date
+Returns a @code{date} object representing the current date.
+@end deffn
+
+@deffn {bigloo procedure} current-seconds
+@deffnx {bigloo procedure} current-microseconds
+Returns an @code{elong} integer representing the current epoch (i.e., the
+date since 0:00:00 UTC on the morning of 1 January 1970, expressed
+in seconds (resp. in micro seconds).
+@end deffn
+
+@deffn {bigloo procedure} date->seconds
+@deffnx {bigloo procedure} seconds->date
+Convert from @code{date} and @code{elong}.
+@end deffn
+
+@deffn {bigloo procedure} date->string date
+@deffnx {bigloo procedure} date->utc-string date
+@deffnx {bigloo procedure} seconds->string elong
+@deffnx {bigloo procedure} seconds->utc-string elong
+Construct a textual representation of the date passed in argument
+@end deffn
+
+@deffn {bigloo procedure} date-second date
+Returns the number of seconds of a date, in the range @code{0...59}.
+@end deffn
+
+@deffn {bigloo procedure} date-minute date
+Returns the minute of a date, in the range @code{0...59}.
+@end deffn
+
+@deffn {bigloo procedure} date-hour date
+Returns the hour of a date, in the range @code{0...23}.
+@end deffn
+
+@deffn {bigloo procedure} date-day date
+Returns the day of a date, in the range @code{1...31}.
+@end deffn
+
+@deffn {bigloo procedure} date-wday date
+@deffnx {bigloo procedure} date-week-day date
+Returns the week day of a date, in the range @code{1...7}.
+@end deffn
+
+@deffn {bigloo procedure} date-yday date
+@deffnx {bigloo procedure} date-year-day date
+Returns the year day of a date, in the range @code{1...366}.
+@end deffn
+
+@deffn {bigloo procedure} date-month date
+Returns the month of a date, in the range @code{1...12}.
+@end deffn
+
+@deffn {bigloo procedure} date-year date
+Returns the year of a date.
+@end deffn
+
+@deffn {bigloo procedure} date-timezone date
+Returns the timezone of a date.
+@end deffn
+
+@deffn {bigloo procedure} date-is-dst date
+Returns @code{-1} if the information is not available, @code{0} is the
+date does not contain daylight saving adjustment, @code{1} if it
+contains a daylight saving adjustment.
+@end deffn
+
+@deffn {bigloo procedure} integer->second
+Converts a Bigloo fixnum integer into a second number.
+@end deffn
+
+@deffn {bigloo procedure} day-seconds
+Returns the number of seconds contained in one day.
+@end deffn
+
+@deffn {bigloo procedure} day-name int
+@deffnx {bigloo procedure} day-aname int
+Return the name and the abbreviated name of a week day.
+@end deffn
+
+@deffn {bigloo procedure} month-name int
+@deffnx {bigloo procedure} month-aname int
+Return the name and the abbreviated name of a month.
+@end deffn
+
+@deffn {bigloo procedure} date-month-length date
+Return the length of the month of @var{date}.
+@end deffn
+
+@deffn {bigloo procedure} leap-year? int
+Returns @code{#t} if and only if the year @var{int} is a leap year. 
+Returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} rfc2822-date->date string
+@deffnx {bigloo procedure} rfc2822-parse-date input-port
+Parses RFC2822 string representing a date. These functions produce
+a Bigloo date object.
+@end deffn
+
+@deffn {bigloo procedure} date->rfc2822-date date
+Converts a Bigloo date into a string representation compliant with the RFC2822
+format.
+@end deffn
+
+

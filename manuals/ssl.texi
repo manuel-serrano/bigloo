@@ -1,0 +1,268 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/socket.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Jun 30 08:09:52 1998                          @c
+@c    Last change :  Mon Jan  7 10:47:50 2002 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Socket support                                                   @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    SSL Socket support                                               @c
+@c ------------------------------------------------------------------- @c
+@node SSL, , Socket, System Programming
+@comment  node-name,  next,  previous,  up
+@subsection SSL
+@cindex SSL support
+@cindex SSL
+
+@menu 
+* SSL Sockets::
+* Certificates::
+* Private Keys::
+@end menu
+
+Bigloo allows access to SSL sockets, certificates and private keys, in
+order to build secure encrypted and/or signed communications.
+
+@node SSL Sockets, Certificates, , SSL
+@comment  node-name,  next,  previous,  up
+@subsubsection SSL Sockets
+@cindex SSL Sockets
+
+Bigloo defines SSL sockets, on systems that support them, as first
+class objects. SSL Sockets permits processes to communicate even if
+they are on different machines securely via encrypted
+connections. SSL Sockets are useful for creating secure client-server
+applications.
+
+@deffn {SSL library procedure} make-ssl-client-socket hostname port-number #!key (buffer #t) (timeout 0) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
+@cindex unbufferized socket port
+
+@code{make-ssl-client-socket} returns a new client socket object. This
+object satisfies the  @code{socket?} predicate (see @ref{Socket})
+can be used in any context where a socket created by @code{make-client-socket}
+can be used.
+
+A SSL client socket establishes a link between the running application
+(client) and a remote application (server) listening on port
+@var{port-number} of @var{hostname}. If optional argument @var{bufsiz}
+is lesser or equal to @code{1} then the input port associated with the socket is
+unbuffered. This is useful for socket clients connected to servers
+that do not emit #\Newline character after emissions. The optional
+argument @var{buffer} can either be:
+
+@itemize @bullet
+@item A positive fixnum, this gives the size of the buffer.
+@item The boolean @code{#t}, a buffer is allocated.
+@item The boolean @code{#f}, the socket is unbufferized.
+@item A string, it is used as buffer.
+@end itemize
+
+If the optional argument @var{timeout} is
+@code{0}, the execution blocks until the connection is established. If
+the @var{timeout} is provided, the execution unblocks after
+@var{timeout} microseconds unless the connection is established. If
+the @var{protocol} option argument is given, it specifies the
+encryption protocol. Accepted values are @code{'sslv2}, @code{'sslv3},
+@code{'sslv23} (alias @code{'ssl}), @code{'tls} (alias @code{'tlsv1})
+or @code{'dtls} (alias @code{'dtlsv1}). The default value is
+@code{'sslv23}.
+
+The SSL socket will sign the connection using the optional arguments
+@var{cert} (for the certificate) and @var{pkey} (for the private key).
+The certificate @var{cert} must be of type @code{certificate}, and
+the private key @var{pkey} must be of type @code{private-key}.
+If any of those two arguments is given, they must both be given.
+If those optional arguments are missing the connection will be encrypted
+but not signed from the client side.
+
+The @var{CAs} optional argument specifies the list of certificates to
+trust as CA (Certificate Authority) for the connection. It must be a 
+list of values of type @code{certificate}. If the list is empty, the
+default list of trusted CA is used (set by the system). Note that
+giving a list of trusted certificates turns on the peer (server)
+certificate validation: an @code{&io-error} will be raised if the peer
+(server) certificate is not signed directly or indirectly by one of the
+certificates in @var{CAs}.
+
+The @var{accepted-certs} optional argument gives a list of certificate
+objects (of type @code{certificate}) which are accepted as peer (server)
+certificate. If @var{accepted-certs} is @code{#f} then every peer (server)
+certificate is accepted (aside from eventual certificate validation).
+If @var{accepted-certs} is a list, the peer (server) certificate must
+match one of the given certificates. Otherwise, an @code{&io-error} 
+will be raised.
+
+If the connection cannot be established, an @code{&io-error} is raised
+(see @ref{Errors Assertions and Traces}).
+
+When a socket is used in unbufferized mode the characters available on
+the input port @emph{must} be read exclusively with @code{read-char}
+or @code{read-line}. It is forbidden to use @code{read} or any regular
+grammar.  This limitation is imposed by Rgc (see @ref{Regular Parsing}) that
+intrinsicly associates buffers with regular grammars. If the current Rgc
+implementation is improved on the coming version this restriction will
+be eliminated.
+
+The function @code{make-ssl-client-socket} is defined in the SSL library.
+A module that needs this facility must then use a @code{library} clause
+(see @ref{Modules}). The SSL library can also be loaded from the interpreter
+using the @code{library-load} function (see @ref{Bigloo Libraries}).
+
+@smalllisp
+(module imap
+   (library ssl)
+   (main main))
+
+(let* ((s (make-ssl-client-socket "localhost" 993))
+       (p (socket-output s)))
+   (display "string" p)
+   (newline p)
+   (display "abc" p)
+   (flush-output-port p)
+   (let loop ()
+      (loop)))
+@end smalllisp
+
+@end deffn
+
+@deffn {SSL library procedure} client-socket-use-ssl! socket #!key (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
+Returns an SSL socket built from a socket obtained by @code{make-client-socket} 
+(see @ref{Socket}). Depending on the implementation and back-end the
+returned socket may or may not be @code{eq?} to @var{socket}.
+@end deffn
+
+@deffn {SSL library procedure} make-ssl-server-socket #!key (port 0) (name #f) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
+@cindex unbufferized socket port
+
+@code{make-ssl-server-socket} returns a new server socket object which
+satisfies the @code{socket?} predicate and which can be used in any
+context where a socket created by @code{make-server-socket} can be
+used (see @ref{Socket}).
+
+A SSL server socket opens the port @var{port} on the current host
+@var{name} (the server), 
+and allows remote applications (clients) to connect to it.
+listening on port @var{port-number} of @var{hostname}. If the optional
+argument @var{port} is not given or is @code{0}, the server socket will
+use the first availailable port number. If the optional argument 
+@var{name} is given, the server socket will be bound to the network 
+interface representing the given host name. If it is @code{#f} (the default)
+the socket will be bound on every local network interface.
+If the @var{protocol} option argument is
+given, it specifies the encryption protocol. Accepted values are
+@code{'sslv2}, @code{'sslv3}, @code{'sslv23} (alias @code{'ssl}), 
+@code{'tls} (alias @code{'tlsv1})
+or @code{'dtls} (alias @code{'dtlsv1}). The default value is @code{'sslv23}.
+
+The SSL socket will sign the connection using the optional arguments
+@var{cert} (for the certificate) and @var{pkey} (for the private key).
+The certificate @var{cert} must be of type @code{certificate}, and
+the private key @var{pkey} must be of type @code{private-key}.
+If any of those two arguments is given, they must both be given.
+If those optional arguments are missing the connection will be encrypted
+but not signed from the server side, which means the peer (client) will
+have to provide a certificate/private key pair to encrypt the connection,
+and that seldom happens. Typical SSL servers provide their certificate
+and private key.
+
+Note that since the peer (client) certificate is only known when we
+are accepting a client socket (with @code{socket-accept}) the @var{CAs}
+and @var{accepted-certs} optional arguments are only checked during
+the accept operation of a server socket.
+
+The @var{CAs} optional argument specifies the list of certificates to
+trust as CA (Certificate Authority) for the connection. It must be a 
+list of values of type @code{certificate}. If the list is empty, the
+default list of trusted CA is used (set by the system). Note that
+giving a list of trusted certificates turns on the peer (client)
+certificate validation: an @code{&io-error} will be raised if the peer
+(client) certificate is not signed directly or indirectly by one of the
+certificates in @var{CAs} when accepting the client socket.
+
+The @var{accepted-certs} optional argument gives a list of certificate
+objects (of type @code{certificate}) which are accepted as peer (client)
+certificate. If @var{accepted-certs} is @code{#f} then every peer (client)
+certificate is accepted (aside from eventual certificate validation).
+If @var{accepted-certs} is a list, the peer (client) certificate must
+match one of the given certificates. Otherwise, an @code{&io-error} 
+will be raised when accepting the client socket.
+
+If the connection cannot be established, an @code{&io-error} is raised
+(see @ref{Errors Assertions and Traces}).
+
+The function @code{make-ssl-server-socket} is defined in the SSL library.
+A module that needs this facility must then use a @code{library} clause
+(see @ref{Modules}). The SSL library can also be loaded from the interpreter
+using the @code{library-load} function (see @ref{Bigloo Libraries}).
+
+@smalllisp
+(module secure-echo
+   (library ssl))
+
+(let* ((cert (read-certificate "/etc/ssl/my_cert.crt"))
+       (pkey (read-private-key "/etc/ssl/my_key.pkey"))
+       (cas (read-pem-file "/etc/ssl/ca.cert"))
+       (s (make-ssl-server-socket 1055 :CAs cas :cert cert :pkey pkey))
+       (cs (socket-accept s))
+       (ip (socket-input cs))
+       (op (socket-output cs)))
+   (let loop ((e (read i)))
+      (when (not (eof-object? e))
+         (write e o)
+         (loop (read i))))
+   (socket-close s))
+@end smalllisp
+
+@end deffn
+
+@node Certificates, Private Keys, SSL Sockets, SSL
+@comment  node-name,  next,  previous,  up
+@subsubsection Certificates
+@cindex Certificates
+
+@deffn {SSL library procedure} read-certificate file
+Reads an X509 certificate stored in PEM format in the given @var{file} name.
+If the file cannot be read, it raises an
+@code{&io-error} condition. Otherwise the certificate is returned.
+@end deffn
+
+@deffn {SSL library procedure} read-pem-file file
+Reads a list of  X509 certificate stored in PEM format in the given @var{file} 
+name.
+If the file cannot be read, it raises an
+@code{&io-error} condition. Otherwise the list of certificate contained in
+the file is returned.
+@end deffn
+
+@deffn {SSL library procedure} certificate? obj
+Returns @code{#t} if @var{obj} is an SSL certificate.
+Otherwise returns @code{#f}.
+@end deffn
+
+@deffn {SSL library procedure} certificate-subject cert
+Returns the CommonName (CN) part of the subject of the given certificate.
+@end deffn
+
+@deffn {SSL library procedure} certificate-issuer cert
+Returns the CommonName (CN) part of the issuer of the given certificate.
+@end deffn
+
+@node Private Keys, , Certificates, SSL
+@comment  node-name,  next,  previous,  up
+@subsubsection Private Keys
+@cindex Private Keys
+
+@deffn {SSL library procedure} read-private-key file
+Reads a private key stored in PEM format in the given @var{file} name.
+If the file cannot be read, it raises an
+@code{&io-error} condition. Otherwise the private key is returned.
+@end deffn
+
+@deffn {SSL library procedure} private-key? obj
+Returns @code{#t} if @var{obj} is an SSL private key.
+Otherwise returns @code{#f}.
+@end deffn
+

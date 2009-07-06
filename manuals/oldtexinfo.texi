@@ -1,0 +1,21 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/oldtexinfo.texi              @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Thu Jan 14 14:54:04 1999                          @c
+@c    Last change :  Thu Nov 11 07:22:47 1999 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Texinfo backward compatibility                                   @c
+@c =================================================================== @c
+
+@ifinfo
+@ifset oldinfo
+@macro url {u}
+@code{\u}
+@end macro
+
+@macro email {e}
+@code{\e}
+@end macro
+@end ifset
+@end ifinfo

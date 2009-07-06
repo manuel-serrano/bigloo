@@ -1,0 +1,86 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/thread                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Mon Apr 20 19:33:33 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking native threads (quite obvious)                          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=""
+tmp=/tmp
+user=bigloo
+posixos="unix"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --posixos=*|-posixos=*)
+      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+case $posixos in
+   linux)
+     if [ "`uname -m`" = "ppc" ]; then
+       echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS $cflags";
+     else
+       echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS -DTHREAD_LOCAL_ALLOC $cflags";
+     fi;;
+
+   cygwin)
+     echo "-DGC_WIN32_THREADS -D_REENTRANT -DGC_THREADS -DMAX_THREADS=256 $cflags";;
+
+   mingw)
+     echo "-D_REENTRANT -DGC_WIN32_PTHREADS -DGC_PTHREADS -DGC_WIN32_THREADS $cflags";;
+
+   unix)
+     case `uname -s` in
+       solaris*|SunOS*)
+         echo "-DGC_SOLARIS_PTHREADS -D_REENTRANT -DGC_THREADS $cflags";;
+
+       HP-UX*)
+         echo "-DGC_HPUX_THREADS -DGC_THREADS $cflags";;
+
+       FreeBSD*)
+          echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
+ 
+       Darwin*)
+          echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
+
+       *)
+          echo "no";;
+     esac;;
+
+   *)
+     echo "no";;
+esac
+
+exit 0

@@ -1,0 +1,231 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/comptime/Inline/size.scm             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
+;*    Last change :  Thu Mar 23 14:06:01 2006 (serrano)                */
+;*    Copyright   :  1996-2006 Manuel Serrano, see LICENSE file        */
+;*    -------------------------------------------------------------    */
+;*    The size an ast node.                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module inline_size
+   
+   (include "Ast/node.sch")
+   
+   (static  (wide-class sized-sequence::sequence (size::long read-only))
+	    (wide-class sized-select::select (size::long read-only))
+	    (wide-class sized-let-fun::let-fun (size::long read-only))
+	    (wide-class sized-let-var::let-var (size::long read-only)))
+	      
+   (export  (generic node-size::long ::node)))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (node-size::long node::node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::atom ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::atom)
+   1)
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::var ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::var)
+   1)
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::kwote ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::kwote)
+   1)
+       
+;*---------------------------------------------------------------------*/
+;*    node-size ::sequence ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sequence)
+   (let loop ((nodes (sequence-nodes node))
+	      (size  0))
+      (if (null? nodes)
+	  (begin
+	     (widen!::sized-sequence node (size size))
+	     size)
+	  (loop (cdr nodes) (+fx size (node-size (car nodes)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sized-sequence ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sized-sequence)
+   (sized-sequence-size node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::app ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::app)
+   (let loop ((args  (app-args node))
+	      (size  (node-size (app-fun node))))
+      (if (null? args)
+	  size
+	  (loop (cdr args) (+fx size (node-size (car args)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::app-ly ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::app-ly)
+   (+fx 1 (+fx (node-size (app-ly-fun node)) (node-size (app-ly-arg node)))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::funcall ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::funcall)
+   (let loop ((args  (funcall-args node))
+	      (size  (node-size (funcall-fun node))))
+      (if (null? args)
+	  size
+	  (loop (cdr args) (+fx size (node-size (car args)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::cast ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::cast)
+   (with-access::cast node (arg)
+      (node-size arg)))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::extern ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::extern)
+   (let loop ((args (extern-expr* node))
+	      (size 1))
+      (if (null? args)
+	  size
+	  (loop (cdr args) (+fx size (node-size (car args)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::setq ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::setq)
+   (+fx 2 (node-size (setq-value node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::conditional ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::conditional)
+   (let* ((test-size  (node-size (conditional-test node)))
+	  (true-size  (node-size (conditional-true node)))
+	  (false-size (node-size (conditional-false node))))
+      (+fx 1 (+fx test-size (+fx true-size false-size)))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::fail ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::fail)
+   (let* ((proc-size (node-size (fail-proc node)))
+	  (msg-size  (node-size (fail-msg node)))
+	  (obj-size  (node-size (fail-obj node))))
+      (+fx 2 (+fx proc-size (+fx msg-size obj-size)))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::select ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::select)
+   (let loop ((clauses (select-clauses node))
+	      (size    (+fx 1 (node-size (select-test node)))))
+      (if (null? clauses)
+	  (begin
+	     (widen!::sized-select node (size size))
+	     size)
+	  (loop (cdr clauses)
+		(+fx size (+fx (if (pair? (car (car clauses)))
+				   (length (car (car clauses)))
+				   1)
+			       (node-size (cdr (car clauses)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sized-select ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sized-select)
+   (sized-select-size node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::let-fun ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::let-fun)
+   (let loop ((locals (let-fun-locals node))
+	      (size   (+fx (length (let-fun-locals node))
+			   (node-size (let-fun-body node))))) 
+      (if (null? locals)
+	  (begin
+	     (widen!::sized-let-fun node (size size))
+	     (+fx 1 size))
+	  (loop (cdr locals)
+		(+fx size
+		     (+fx 1 (node-size (sfun-body (local-value (car locals))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sized-let-fun ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sized-let-fun)
+   (sized-let-fun-size node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::let-var ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::let-var)
+   (let loop ((bindings (let-var-bindings node))
+	      (size     (node-size (let-var-body node))))
+      (if (null? bindings)
+	  (begin
+	     (widen!::sized-let-var node (size size))
+	     size)
+	  (loop (cdr bindings)
+		(+fx size (node-size (cdr (car bindings))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sized-let-var ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sized-let-var)
+   (sized-let-var-size node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::set-ex-it ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::set-ex-it)
+   (+fx 2 (node-size (set-ex-it-body node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::jump-ex-it ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::jump-ex-it)
+   (+fx 1
+	(+fx (node-size (jump-ex-it-exit node))
+	     (node-size (jump-ex-it-value node)))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::make-box ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::make-box)
+   (+fx 1 (node-size (make-box-value node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::box-ref ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::box-ref)
+   2)
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::box-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::box-set!)
+   (+fx 2 (node-size (box-set!-value node))))
+
+
+
+
+   

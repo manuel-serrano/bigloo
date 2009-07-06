@@ -1,0 +1,51 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/weakptr.texi                 @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Stephane Epardaud                                 @c
+@c    Creation    :  Sat Feb 23 07:41:58 2002                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2002 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Weak Pointers                                                    @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    The weak pointers                                                @c
+@c ------------------------------------------------------------------- @c
+@node Weak Pointers, Hash Tables, Bit Manipulation, Standard Library
+@section Weak Pointers
+
+Bigloo may support weak pointers. In order to activate this support,
+Bigloo must be configured with the @code{finalization} enabled.
+That is, the @code{configure} script must be invoked with
+the option @code{--finalization=yes}. When the finalization and weak
+pointers support is enabled, Bigloo defines the @code{cond-expand}
+properties @code{bigloo-finalizer} and @code{bigloo-weakptr}.
+Then a program may test the support with expressions such as:
+
+@smallexample
+(cond-expand
+  (bigloo-weakptr <something>)
+  (else <something-else>))
+@end smallexample
+
+Weak pointers are pointers to objects which can be collected by the
+garbage collector if they are weakly pointed to. An object is weakly
+pointed to if the only pointers to it are weak pointers. Weakly
+pointed objects can be collected by the garbage collector, and all the
+weak pointers to such objects will cease to point to it and point to
+@code{#unspecified} instead.
+
+@deffn {bigloo procedure} make-weakptr data
+Creates a weak pointer to @var{data}.
+@end deffn
+
+@deffn {bigloo procedure} weakptr? obj
+Returns @code{#t} if @var{obj} is a weak pointer, constructed by
+@code{make-weakptr}.
+@end deffn
+
+@deffn {bigloo procedure} weakptr-data ptr
+Returns the data object pointed to by @var{ptr}. If the object has been
+collected, it returns @code{#unspecified}.
+@end deffn

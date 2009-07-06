@@ -1,0 +1,4 @@
+This directory contains the Bigloo APIs. Some APIs are stable some are
+unstable. The stable ones are described in the Bigloo manual. The unstable
+are not described. It is safer to use only the APIs that are described
+in the Bigloo manual. Use the other ones at your own risk.

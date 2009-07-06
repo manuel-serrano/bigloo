@@ -1,0 +1,14 @@
+For maximum performance, it is recommended to:
+
+* configure Bigloo with the --benchmark=yes option. This option will
+enable hardware specific compilation option. In general, this speeds
+up the performance but it has the drawback to produce hardware
+specific code. For instance, when benchmark mode is enable, Bigloo
+modules compiled for an Athlon processor won't run on an Intel
+processor.
+
+* compile the Bigloo modules with the -Obench option.
+
+For the record, it has been noticed that on the bglstone benchmarks
+suite, on a Linux/Pentium III platform, configuring and compiling
+in benchmark mode improve the performance of about 10%.

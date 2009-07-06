@@ -1,0 +1,40 @@
+;*=====================================================================*/
+;*    .../project/bigloo/api/gstreamer/src/Misc/gstreamer.init.in      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The GSTREAMER init file.                                         */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'gstreamer
+		  :srfi (if @GSTREAMERAUDIO@
+			    '(gstreamer gstreamer-audio)
+			    '(gstreamer))
+		  :basename "bigloogstreamer"
+		  :module-init '__gstreamer_gstreamer
+		  :module-eval '__gstreamer_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; gstreamer includes
+    (set! *additional-include-foreign*
+	  (cons "gst/gst.h" *additional-include-foreign*))
+    ;; required multimedia
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
+    ;; gstreamer C compilation options
+    (set! *cc-options*
+	  (string-append "@GSTREAMERCFLAGS@ " *cc-options*))
+    ;; gstreamer libraries
+    (set! *ld-post-options*
+	  (string-append "@GSTREAMERLIBS@ " *ld-post-options*))))
+

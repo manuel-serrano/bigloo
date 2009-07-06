@@ -1,0 +1,2 @@
+In order to be able to compile Bigloo on a Silicon Graphics you must have
+installed gmake on your machine and use it when installing Bigloo.

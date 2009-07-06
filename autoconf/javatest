@@ -1,0 +1,106 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/javatest                    */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Wed Jun 29 16:30:29 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking the Java setting                                        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+java=
+jflags=
+jvflags=
+javac=
+jcflags=
+tmp=/tmp
+user=bigloo
+cpsep=:
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --java=*|-java=*)
+      java="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --jflags=*|-jflags=*)
+      jflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --jvflags=*|-jvflags=*)
+      jvflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --javac=*|-javac=*)
+      javac="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --jcflags=*|-jcflags=*)
+      jcflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cpsep=*|-cpsep=*)
+      cpsep="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=jtest
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$javac $jcflags $file.java >/dev/null 2> /dev/null"
+if [ "$CLASSPATH " = " " ]; then
+   run="$java -classpath . $jflags $jvflags jtest toto tutu titi >/dev/null 2> /dev/null"
+else
+   run="$java -classpath '"".$cpsep$CLASSPATH""' $jflags $jvflags jtest toto tutu titi >/dev/null 2> /dev/null"
+fi
+
+#*---------------------------------------------------------------------*/
+#*    The test Class file                                              */
+#*---------------------------------------------------------------------*/
+if( test -f $file.java ); then
+   rm -f $file.java || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.java <<EOF
+class jtest {
+   public static void main( String[] args ) {
+      System.out.println( "Success: " + args[ 1 ] );
+   }
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile 2> /dev/null; then
+   if eval $run 2> /dev/null; then
+     \rm -f $file*
+     exit 0
+   else
+     echo "Java run command [$run] failed" >> configure.log
+     exit 1
+   fi
+else
+   echo "Java compilation command [$compile] failed" >> configure.log
+   exit 2
+fi

@@ -1,0 +1,100 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/macosx                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Oct 22 11:07:08 1997                          */
+#*    Last change :  Sat Oct 15 11:14:27 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if the underlying is MacOSX >= 10.3                        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=
+cflags=""
+tmp=/tmp
+user=bigloo
+posixos="unix"
+cgcflags="-DSILENT -DNO_SIGNALS -DNO_DEBUGGING -Iinclude"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --posixos=*|-posixos=*)
+      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if [ "$cc " = " " ]; then
+  cc=gcc
+fi
+
+#*---------------------------------------------------------------------*/
+#*    OS detection                                                     */
+#*---------------------------------------------------------------------*/
+case $posixos in
+   linux)
+     exit 1;;
+
+   cygwin)
+     exit 1;;
+
+   mingw)
+     exit 1;;
+
+   unix)
+     case `uname -s` in
+       Darwin*|darwin*)
+         break;;
+
+       *)
+         exit 1;;
+     esac
+     break;;
+esac
+  
+file1=$tmp/actest1$user
+
+if( test -f $file1.c ); then
+   rm -f $file1.c || exit $?
+fi
+
+cat > $file1.c <<EOF
+int foo( int x ) {
+   return x + 1;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Build the MacOSX shared library                                  */
+#*---------------------------------------------------------------------*/
+$cc -c $cflags $file1.c -c && mv `basename $file1.o` $file1.o \
+ && $cc -dynamiclib -single_module $file1.o -o $file1.dylib -lc 2>&1 | grep "unrecognized" 2> /dev/null > /dev/null \
+ && /bin/rm $file1.* && exit 1
+
+/bin/rm $file1.*
+exit 0
+

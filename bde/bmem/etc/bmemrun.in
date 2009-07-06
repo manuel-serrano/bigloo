@@ -1,0 +1,50 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bde/bmem/etc/bmemrun.in              */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Sun Apr 20 09:35:07 2003                          */
+#*    Last change :  Fri Aug 22 08:49:44 2008 (serrano)                */
+#*    Copyright   :  2003-08 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    The script shell to monitor memory allocations of Bigloo prgms   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Configuration                                                    */
+#*---------------------------------------------------------------------*/
+lib=<fildir>/bmem/bmem.so
+exe=a.out
+bmon=
+
+#*---------------------------------------------------------------------*/
+#*    Argument parsing                                                 */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    -h|--help)
+      echo "bglmemrun: [options] exe [arg1] [arg2]..." >&2;
+      echo "  -h|--help          -- This message" >&2;
+      exit 0;;
+
+    *)
+      exe=$1;
+      shift;
+      args=$*;
+      if [ "$bmon " = " " ]; then
+        bmon="`echo $exe | sed 's/[.][^.]*$//'`.bmem";
+        bmon=`basename $bmon`;
+      fi;
+      break;;
+
+  esac
+  shift
+done
+
+#*---------------------------------------------------------------------*/
+#*    Run the program                                                  */
+#*---------------------------------------------------------------------*/
+LD_PRELOAD="$lib" $exe $args

@@ -1,0 +1,20 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/api/ssl/src/Posix/bglssl.h           */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Oct 17 21:06:52 2006                          */
+/*    Last change :  Tue Oct 17 21:08:41 2006 (serrano)                */
+/*    Copyright   :  2006 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    BGL SSL include file                                             */
+/*=====================================================================*/
+
+#include <openssl/ssl.h>
+
+#define BGLSSL_SSLV2  1
+#define BGLSSL_SSLV3  2
+#define BGLSSL_SSLV23 3
+#define BGLSSL_TLSV1  4
+#define BGLSSL_DTLSV1 5
+
+#define BGLSSL_HAVE_DTLS @HAVEDTLS@

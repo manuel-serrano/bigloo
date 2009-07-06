@@ -1,0 +1,131 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ccpic                       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Mon Feb 23 16:06:12 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking if the compiler and linker support -f[pic|PIC]          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=""
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+# The default pic value
+if [ "$cflags " = " " ]; then
+  cflags=-fPIC
+fi
+
+#*---------------------------------------------------------------------*/
+#*    gcc tuning                                                       */
+#*---------------------------------------------------------------------*/
+if [ "$cc" = "gcc" ]; then 
+  eflags=-Werror
+else
+  eflags=
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $eflags $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+direction( int new_addr )
+{
+   static int *old_addr;
+   static int flag = 0;
+
+   if( !flag )
+   {
+      old_addr = &new_addr;
+      flag = 1;
+      direction( 2 );
+   }
+   else
+   {
+      old_addr > &new_addr ? puts( "1" ) : puts( "0" );
+   }
+}
+
+main( int argc, char *argv[] )
+{
+   direction( 1 );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+cflags=-fPIC
+compile="$cc $eflags $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+if eval $compile; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+cflags=-fpic
+compile="$cc $eflags $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+if eval $compile; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+\rm -f $file.*
+echo ""
+exit 0

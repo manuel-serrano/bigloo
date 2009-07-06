@@ -1,0 +1,90 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/typing.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 13:53:41 1998                          @c
+@c    Last change :  Wed Dec 19 06:54:22 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Explicit typing                                                  @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Explicit typing                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Explicit Typing, C Interface, Parameters, Top
+@comment  node-name,  next,  previous,  up
+@chapter Explicit typing
+@cindex explicit typing
+
+Bigloo supports @emph{type annotation} or @emph{type information}. As shown in
+Section ref Module declaration, these annotations can be written both in
+the module clauses and in module bodies although module body type
+information is optional. It helps the compiler to produce better quality
+code and to reject incorrectly typed programs. Type annotations can describe
+both the result and formal parameter types for global functions and also
+types for local variable. Due to our module language design (in particular
+module initialization), Scheme global variables @emph{cannot} support type
+information.
+
+@emph{Warning: } All type annotations are ignore by the interpreter.
+
+Module body type annotations are introduced by the following
+special forms.
+
+@deffn {bigloo syntax} define (f[::type] [a[::type]]@dots{}) body
+@deffnx {bigloo syntax} define-inline (f[::type] [a[::type]]@dots{}) body
+@deffnx {bigloo syntax} let ((var[::type] @dots{}) @dots{}) body
+@deffnx {bigloo syntax} let loop ((var[::type] @dots{}) @dots{}) body
+@deffnx {bigloo syntax} let* ((var[::type] @dots{}) @dots{}) body
+@deffnx {bigloo syntax} letrec ((var[::type] @dots{}) @dots{}) body
+@deffnx {bigloo syntax} labels ((var[::type] (var[::type]@dots{}) b) @dots{}) body
+
+Type annotations are optional. That is, for any of these
+constructions, if a type annotation is missing, Bigloo uses
+the default generic type @code{obj} instead.
+
+Here is an example of type annotated program:
+
+@smalllisp
+(module example
+   (export (vector-fill!::vector ::vector ::obj)))
+
+(define (vector-fill! v filler)
+  (let loop ((i::long (- (vector-length v) 1)))
+     (if (< i 0)
+         v
+         (begin
+            (vector-set! v i filler)
+            (loop (- i 1))))))
+
+(let ((v::vector (make-vector 3 4)))
+   (vector-fill! v "dummy"))
+@end smalllisp
+
+The types that can be used in annotations are any of: 
+
+@itemize @bullet
+@item the basic Scheme types @code{pair}, @code{null}, @code{bstring},
+@code{bint} (presented in Section @ref{Defining an extern type}).
+@item the basic extern types @code{long}, @code{int}, @code{char}, 
+@code{string} presented in Section @ref{Defining an extern type}.
+@item the compound extern types described in Section 
+@ref{Defining an extern type}.
+@item the types introduced by class declarations (Section 
+@ref{Class declaration}).
+@end itemize
+
+
+When a function that contains type annotation is exported, the type 
+annotations must be written in the prototype of the function in
+the export clause. In that case the type annotation need to be
+written in the function definition:
+
+@smalllisp
+(module foo
+   (export (succ::int ::int)))
+
+(define (succ x) (+ 1 x))
+@end smalllisp
+@end deffn
+

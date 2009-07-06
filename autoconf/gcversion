@@ -1,0 +1,134 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/gcversion                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Dec 19 08:55:28 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the GC version                                             */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+gcdir=gc-boehm
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gcincdir=*|-gcincdir=*)
+      gcdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout -I $gcdir >/dev/null 2> configure.log"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test1                                                            */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <gc.h>
+#include <stdio.h>
+
+#if( GC_ALPHA_VERSION == 255 ) 
+#undef GC_ALPHA_VERSION
+#define GC_ALPHA_VERSION 0
+#endif
+
+main( int argc, char *argv[] ) {
+   printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_ALPHA_VERSION );
+   return 0;
+}
+EOF
+
+if eval $compile 2> /dev/null; then
+   $aout
+   rm -f $aout
+   rm -f $file.*
+   exit 0;
+fi
+
+cat > $file.c <<EOF
+#include <gc.h>
+#include <../version.h>
+#include <stdio.h>
+
+#if( GC_ALPHA_VERSION == 255 ) 
+#undef GC_ALPHA_VERSION
+#define GC_ALPHA_VERSION 0
+#endif
+
+main( int argc, char *argv[] ) {
+   printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_ALPHA_VERSION );
+   return 0;
+}
+EOF
+
+if eval $compile 2> /dev/null; then
+   $aout
+   rm -f $aout
+   rm -f $file.*
+   exit 0;
+fi
+
+cat > $file.c <<EOF
+#include <gc.h>
+#include <../version.h>
+#include <stdio.h>
+
+main( int argc, char *argv[] ) {
+   printf( "%d%02d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR );
+   return 0;
+}
+EOF
+
+if eval $compile 2> /dev/null; then
+   $aout
+   rm -f $aout
+   rm -f $file.*
+   exit 0;
+fi
+
+rm -f $aout
+rm -f $file.*
+echo "000"
+exit 0

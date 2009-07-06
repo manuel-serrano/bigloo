@@ -1,0 +1,146 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/libraries.skb                    */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Oct  8 05:11:58 2001                          */
+;*    Last change :  Mon Dec 17 16:48:18 2007 (serrano)                */
+;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Bigloo libraries                                                 */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Tools                                                            */
+;*---------------------------------------------------------------------*/
+(define (lib name file descr author version)
+  (tr (td :align 'left (ref :url file :text name))
+      (td :align 'left descr)
+      (td :align 'left author)
+      (td :align 'center version)))
+
+;*---------------------------------------------------------------------*/
+;*    Benchmarking                                                     */
+;*---------------------------------------------------------------------*/
+(chapter :title "Libraries" :number #f :toc #f :file #t
+
+ (section :title "Introduction" :number #f :toc #f [
+A Bigloo library is a collection of Bigloo pre-compiled modules and extern
+object files. Once installed, Bigloo modules may be linked with a library.
+For that a ,(tt "library") module clause must be used. For instance,
+let's suppose a Bigloo program making use of the ,(code "format") Command
+Lisp facility:
+
+,(linebreak 2)
+,(center (frame :width 95. 
+		(prog :class 'example 
+		      (source :language bigloo :file "src/library.scm"))))
+
+,(linebreak 1)
+The Bigloo documentation contains an entire 
+,(ref :url "doc/bigloo.html#libraries" :text "chapter") that details how to 
+build a library. In addition check the libraries presented below.
+])
+
+ (section :title "Available libraries" :number #f :toc #f [
+,(table
+    :width 100.
+    ;; table header
+    (tr :class 'header
+       (th (bold "Library"))
+       (th :width "3*" (bold "Description"))
+       (th (bold "Author"))
+       (th (bold "Bigloo version")))
+    ;; lib-expample
+    (lib "lib-example.tar.gz"
+	 (string-append "ftp://" *ftp-host* *ftp-dir* "/" *libs-dir* "/"
+			"lib-example.tar.gz")
+	 "An example of library making use of C functions"
+	 "M. Serrano"
+	 "2.0")
+    ;; format
+    (lib "format.tar.gz"
+	 (string-append "ftp://" *ftp-host* *ftp-dir* "/" *libs-dir* "/"
+			"format.tar.gz")
+	 "A Bigloo implementation of the Common Lisp format facility"
+	 "A. Mellan and D Lutzebaeck"
+	 "2.0b")
+    ;; biglook
+    (lib "biglook"
+	 *biglook-url*
+	 "The Biglook graphic toolkit library"
+	 "E. Gallesio, M. Serrano."
+	 "3.0a")
+    ;; HtmlQuery.tar.gz
+    (lib "HtmlQuery.tar.gz"
+	 "http://www.laurent-bloch.org/article.php3?id_article=32"
+	 [A CGI toolbox Bigloo library (see ,(ref :url "contribs/HtmlQuery.readme" :text "README") file)]
+	 "L. Bloch"
+	 "2.0e")
+    ;; A Postgress connection
+    (lib "PgBgl.tar.gz"
+	 "http://www.laurent-bloch.org/article.php3?id_article=32"
+	 "A Postgress connection"
+	 "L. Bloch"
+	 "2.1a")
+    ;; Senior
+    (lib "Senior"
+	 "http://www-sop.inria.fr/mimosa/rp/Senior/"
+	 "Reactive programming with Bigloo"
+	 "J. Demaria"
+	 "2.2b"))])
+
+ (section :title "Available SRFI libraries" :number #f :toc #f [
+,(table
+  :width 100.
+  ;; table header
+  (tr :class 'header
+      (th (bold "Library"))
+      (th :width "3*" (bold "Description"))
+      (th (bold "Author"))
+      (th (bold "Bigloo version")))
+  ;; srfi-1
+  (lib "srfi-1.tar.gz"
+       (string-append "ftp://" *ftp-host* *ftp-dir* "/" *libs-dir* "/"
+		      "srfi-1.tar.gz")
+       "A Bigloo implementation of SRFI-1 List library"
+       "O. Shivers"
+       "2.1b")
+  ;; srfi-11
+  (lib "srfi-11"
+       "http://web.mit.edu/farr/www/srfi-11/"
+       "A Bigloo implementation of SRFI-11 let-values and let*-values"
+       "W. M. Farr"
+       "2.8")  
+  ;; srfi-14
+  (lib "srfi-14.tar.gz"
+       (string-append "ftp://" *ftp-host* *ftp-dir* "/" *libs-dir* "/"
+		      "srfi-14.tar.gz")
+       "A Bigloo implementation of SRFI-14 charset library"
+       "O. Shivers"
+       "2.5b")
+    ;; srfi-43
+  (lib "srfi 43"
+       "http://web.mit.edu/farr/www/vector-lib/vector-lib.html"
+       "The vector lib (SRFI 43) implementation for Bigloo"
+       "W. M. Farr"
+       "2.6")
+    ;; srfi-32
+  (lib "srfi 32"
+       "http://web.mit.edu/farr/www/srfi-32/srfi-32.html"
+       "The vector sorting (SRFI 32) implementation for Bigloo"
+       "W. M. Farr"
+       "2.6")
+    ;; srfi-78
+  (lib "srfi 78"
+       "http://web.mit.edu/farr/www/srfi-78/srfi-78.html"
+       "Lightweight Testing"
+       "W. M. Farr"
+       "???")
+  )]))
+		
+
+	  
+	  
+
+
+

@@ -1,0 +1,62 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/benchmark.scr                    */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Oct  6 01:31:40 2001                          */
+;*    Last change :  Wed Jan  2 12:20:42 2002 (serrano)                */
+;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Benchmarking                                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Benchmarking                                                     */
+;*---------------------------------------------------------------------*/
+(chapter  :title "Benchmarks" :number #f :toc #f :file #t
+
+ ;; Introduction
+ (paragraph [
+The ,(ref :url (string-append "ftp://"
+			       *ftp-host* *ftp-dir* "/" *apps-dir*
+			       "/" *bglstone.tar.gz*)
+	  :text "bglstone") package enables Bigloo
+benchmarking. It benchmarks both C and JVM back-ends. It has been
+used to produce the results of that web page.
+,(linebreak)
+This page is not aimed at comparing Bigloo with other Scheme
+compilers. It is aimed at informing which hardware/software
+platform enables faster Bigloo executions.])
+
+ ;; The benchmarks
+ (paragraph [
+The programs used for this experiment are:
+,(itemize (item [,(bold "Beval:") The Bigloo evaluator.])
+	  (item [,(bold "Bigloo:") A part of the bootstrap of the Bigloo compiler.])
+	  (item [,(bold "Nucleic:") A floating point intensive program.]))])
+
+ (paragraph [
+We present here ratios between the tested platform and a Laptop equipped with
+Pentium 233Mhz and 128MB, running Linux 2.2.])
+
+ ;; the C back-end
+ (section :title "C back-end" :number #f :toc #f [
+We have benchmarked the C back-end on various hardware and software
+platforms. 
+,(linebreak 3)
+,(center (image :file "bench/c.png")
+	 (linebreak 2)
+	 (bold [Fig. 1. Relative values. Higher is better.]))])
+ 
+ ;; the JVM back-end
+ (section :title "JVM back-end" :number #f :toc #f [
+We have benchmarked the JVM back-end on various hardware and software
+platforms using the same test as the C back-end. 
+,(linebreak 3)
+,(center (image :file "bench/jvm.png")
+	 (linebreak 2)
+	 (bold [Fig. 2. Relative values. Higher is better.]))]))
+
+
+	 
+
+

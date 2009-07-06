@@ -1,0 +1,35 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/old-bigloo.scr                   */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
+;*    Last change :  Mon Jan  7 16:56:06 2002 (serrano)                */
+;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Bigloo web page                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Global configuration                                             */
+;*---------------------------------------------------------------------*/
+(define *manuel-serrano*
+  "http://www-sop.inria.fr/mimosa/personnel/Manuel.Serrano")
+
+;*---------------------------------------------------------------------*/
+;*    Document style                                                   */
+;*---------------------------------------------------------------------*/
+(style 'web-move)
+
+;*---------------------------------------------------------------------*/
+;*    Document                                                         */
+;*---------------------------------------------------------------------*/
+(document :title "Bigloo homepage"
+	  :author (author :name "Manuel Serrano"
+			  :affiliation "Inria Sophia-Antipolis"
+			  :url *manuel-serrano*
+			  :email "Manuel.Serrano@inria.fr"
+			  :address `("2004 route des Lucioles - BP 93"
+				     "F-06902 Sophia Antipolis, Cedex"
+				     "France"))
+(moveto *bigloo.url* [The Bigloo home page]))
+	  

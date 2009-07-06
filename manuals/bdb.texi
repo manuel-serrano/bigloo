@@ -1,0 +1,647 @@
+\input texinfo    @c -*-texinfo-*-
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/bdb.texi                     @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Jun 13 08:31:55 1998                          @c
+@c    Last change :  Fri Oct 12 14:46:00 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentation for Bdb                                        @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Title                                                            @c
+@c ------------------------------------------------------------------- @c
+@comment %**start of header
+@setfilename bdb.info
+@settitle Bdb
+@syncodeindex vr cp
+@syncodeindex pg cp
+@syncodeindex fn cp
+
+@footnotestyle separate
+@ifinfo
+@paragraphindent 2
+@end ifinfo
+@finalout
+@comment %**end of header
+
+@c Before release, run C-u C-c C-u C-a (texinfo-all-menus-update with a
+@c prefix arg).  This updates the node pointers, which texinfmt.el needs.
+
+@c Set smallbook if printing in smallbook format so the example of the
+@c smallbook font is actually written using smallbook; in bigbook, a kludge
+@c is used for TeX output.
+@c  @smallbook                                                         @c
+@c  @set smallbook                                                     @c
+@c @@clear smallbook
+
+@set update-month Nov 1999
+@set update-date @value{update-month}
+
+@c Currently undocumented command, 5 December 1993:
+@c
+@c nwnode          (Same as node, but no warnings; for `makeinfo'.)
+
+@ifinfo
+This file documents BDB, a symbol debugger for the Bigloo Scheme compiler.
+
+Copyright (C) 1998 Manuel Serrano
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Free Software Foundation.
+@end ifinfo
+
+@c ------------------------------------------------------------------- @c
+@c    Backward compatibility                                           @c
+@c ------------------------------------------------------------------- @c
+@include oldtexinfo.texi
+
+@c ------------------------------------------------------------------- @c
+@c    The title page                                                   @c
+@c ------------------------------------------------------------------- @c
+@setchapternewpage odd
+
+@shorttitlepage Bdb
+
+@titlepage
+@c use the new format for titles
+@title Bdb
+@subtitle The ``Bigloo Debugger''
+@subtitle @value{update-month}
+
+@author Manuel@: Serrano
+
+@c Include the Distribution inside the titlepage so
+@c that headings are turned off.
+
+@page
+@end titlepage
+
+@c ------------------------------------------------------------------- @c
+@c    Dir entry                                                        @c
+@c ------------------------------------------------------------------- @c
+@ifinfo
++@dircategory The Algorithmic Language Scheme
+@direntry
+* bdb: (bdb).                   The Bigloo symbolic debugger
+@end direntry
+@end ifinfo
+
+@c ------------------------------------------------------------------- @c
+@c    The main menu                                                    @c
+@c ------------------------------------------------------------------- @c
+@ifinfo
+@node Top, Copying, (dir), (dir)
+
+@display
+                           ("`-/")_.-'"``-._
+                            . . `; -._    )-;-,_`)
+                            v   '  _  )`-.\  ``-'
+                          _.- _..-_/ / ((.'
+                        ((,.-'   ((,/
+@end display
+
+BDB is a symbol debugger for the Bigloo Scheme compiler.
+It has been developed at the University of Nice since the summer of 1998.
+
+This release of BDB may still contain a lot of bugs. If you notice
+any, please forgive me and send a mail message to the following
+address: @email{Manuel.Serrano@@unice.fr}.
+
+New versions may be found at @url{http://kaolin.unice.fr/Bigloo}.
+
+This is the BDB documentation, @w{@value{update-date},} for BDB Version 1.0.
+@end ifinfo
+
+@menu
+* Copying::                     
+* Overview::                    
+* Running::                     
+* Stopping::                    
+* Continuing::                    
+* Stack::                    
+* Emacs::              
+* Bibliography::
+* Index::                       
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Copying                                                          @c
+@c ------------------------------------------------------------------- @c
+@node Copying, Overview, Top, Top
+@comment  node-name, next, previous,  up
+@unnumbered Bdb Copying Conditions
+@cindex Copying conditions
+@cindex Conditions for copying Bdb
+
+@display
+This program is free software; you can redistribute it            
+and/or modify it under the terms of the GNU General Public        
+License as published by the Free Software Foundation; either      
+version 2 of the License, or (at your option) any later version.  
+                                                                  
+This program is distributed in the hope that it will be useful,   
+but WITHOUT ANY WARRANTY; without even the implied warranty of    
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     
+GNU General Public License for more details.                      
+                                                                  
+You should have received a copy of the GNU General Public         
+License along with this program; if not, write to the Free        
+Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,   
+MA 02111-1307, USA. 
+@end display
+                                                                     
+Bug descriptions, use reports, comments or suggestions are     
+welcome. Send them to Manuel Serrano -- @email{Manuel.Serrano@@unice.fr}
+
+New versions or updates may be found at:
+@url{http://kaolin.unice.fr/~serrano/bigloo/bigloo.html}.
+
+BDB is a symbol debugger for programs compiled with Bigloo, compiler for
+an extended version of the Scheme programming language.@refill
+
+This is the BDB documentation, @w{@value{update-date},} for BDB Version 1.0.
+
+@c ------------------------------------------------------------------- @c
+@c    Bye                                                              @c
+@c ------------------------------------------------------------------- @c
+@ifhtml
+@chapter Table of contents
+@contents
+@summarycontents
+@end ifhtml
+
+@c ------------------------------------------------------------------- @c
+@c    Overview                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Overview, Running, Copying, Top
+@comment  node-name,  next,  previous,  up
+@chapter Overview
+@cindex Overview
+
+BDB is a symbolic debugger for programs compiled and linked with Bigloo
+@iftex
+[Bigloo]
+@end iftex
+@ifinfo
+@xref{Top, , Bigloo,bigloo.info}. 
+@end ifinfo
+BDB allows to stop executions by the
+means of breakpoints. It allows to step inside the source code, to
+inspect global and local variables, to inspect the execution stack and
+to evaluate Bigloo expression. Bigloo is designed to interleave Scheme
+and C code. In consequence, debugging Bigloo programs requires the
+ability to step into C code. BDB allows that because BDB knows how to
+handle C code and C data structures. BDB is built on the top of GDB
+@iftex
+[Gdb]
+@end iftex
+@ifinfo
+@xref{Gdb, Gdb, Gdb, gdb.info}. 
+@end ifinfo
+In consequence, all GDB commands are available to BDB. 
+
+When a Bigloo program stops because of an error, BDB stops the execution
+in the error handler and gives you the opportunity to inspect the data
+structure of your program.
+
+@c ------------------------------------------------------------------- @c
+@c    Running Programs Under BDB                                       @c
+@c ------------------------------------------------------------------- @c
+@node Running, Stopping, Overview, Top
+@comment  node-name,  next,  previous,  up
+@chapter Running Programs Under BDB
+@cindex Running Programs Under BDB
+
+@menu
+* Solaris Run::
+* Scheme vs C::
+* Compilation::                 
+* Starting::                   
+* Stopping::
+* Stack::
+@end menu
+
+Other informations may be found at @xref{Running, , Gdb, gdb.info}.
+
+@c -- Solaris Run ---------------------------------------------------- @c
+@node Solaris Run, Scheme vs C, Running, Running
+@comment  node-name,  next,  previous,  up
+@section Solaris Run
+
+On the Solaris platform, the normal initialization process of the Garbage
+Collector is to raise a @code{SIGSEGV} signal. You can safely ignore
+this signal. Simply emit a |continue| when the execution first stops
+because of that signal.
+
+@c -- Scheme vs C ---------------------------------------------------- @c
+@node Scheme vs C, Compilation, Solaris Run, Running
+@comment  node-name,  next,  previous,  up
+@section Scheme vs C
+
+BDB is able to debug both Scheme and C code. Commands to inspect
+variables and code are the same for Scheme and C. The general convention
+adopted by BDB is to represent Scheme symbols in uppercase. This distinction
+is of importance because the BDB treatment is different for a Scheme expression
+and for a C expression. For instance, the command
+
+@smalllisp
+break main
+@end smalllisp
+
+sets a breakpoint into a C function named @code{main}. While the command
+
+@smalllisp
+break MAIN
+@end smalllisp
+
+sets a breakpoint into a Scheme function named @code{main}.
+
+@c -- Compilation ---------------------------------------------------- @c
+@node Compilation, Starting , Scheme vs C, Running
+@comment  node-name,  next,  previous,  up
+@section Compilation
+
+BDB requires special compilation mode for Bigloo and C files. Some of
+the files may not be compiled in that special mode. For those, BDB
+won't be able to step over the code. It is mandatory that, @emph{at
+least}, the Bigloo module that contains the main entry point is compiled
+with debugging informations 
+@iftex
+[Bigloo, Modules].
+@end iftex
+@ifinfo
+@xref{Modules, , Bigloo, bigloo.info}.
+@end ifinfo
+
+The two options that tells Bigloo to produce BDB code are @code{-gbdb} and
+@code{-gbdb2}. The second delivers more runtime informations but may 
+enlarge the size of the binary file. The option to use when compiling
+C code is the regular debugging option (e.g. @code{-g})
+@iftex
+[Gdb, Compilation].
+@end iftex
+@ifinfo
+@xref{Compilation, , Gdb, gdb.info}.
+@end ifinfo
+
+There is no need to link programs with static version of the libraries
+although setting up breakpoints in library code is enabled only for
+static libraries. On some platforms linking with static versions of the
+libraries will prevent the debugger from getting confused when loading
+a dynamic library (e.g. it may happen that the debugger @emph{steps}
+the dynamic code loader).
+
+@c -- Starting ------------------------------------------------------- @c
+@node Starting, , Compilation, Running
+@comment  node-name,  next,  previous,  up
+@section Starting
+
+@table @code
+@item run
+@itemx r
+@cindex run
+
+Use the @code{run} command to start your program under BDB. You must
+first specify the program name with an argument to BDB, or by using the
+@code{file} command 
+@iftex
+[Gdb, Starting].
+@end iftex
+@ifinfo
+@xref{Starting, , Gdb, gdb.info}.
+@end ifinfo
+@end table
+ 
+@table @emph
+@item The arguments.
+Specify the arguments passed to your program as the arguments of the
+@code{run} command. If no arguments are specified and this run invocation
+is not the first one, previous arguments to the last @code{run} command
+are used
+@iftex
+[Gdb, Starting].
+@end iftex
+@ifinfo
+@xref{Starting, , Gdb, gdb.info}.
+@end ifinfo
+
+@item The standard input and output.
+The current BDB version is unable to debug interactive programs. This is a
+major flaw remedied by the graphical version of BDB (namely KBDB).
+
+@end table
+
+@c ------------------------------------------------------------------- @c
+@c    Stopping and Continuing                                          @c
+@c ------------------------------------------------------------------- @c
+@node Stopping, Continuing, Running, Top
+@comment  node-name,  next,  previous,  up
+@chapter Stopping
+@cindex Stopping
+
+In addition to the GDB commands, BDB enables breakpoints inside
+Bigloo source code 
+@iftex
+[Gdb, Stopping].
+@end iftex
+@ifinfo
+@xref{Stopping, , Gdb, gdb.info}.
+@end ifinfo
+
+@menu
+* Set Breaks::
+* Conditions::
+@end menu
+
+@c -- Set Breaks ----------------------------------------------------- @c
+@node Set Breaks, Conditions, Stopping, Stopping
+@comment  node-name,  next,  previous,  up 
+@section Setting breakpoints
+
+You may use any of the GDB commands to set breakpoints
+@iftex
+[Gdb, Set Breaks].
+@end iftex
+@ifinfo
+@xref{Set Breaks, , Gdb, gdb.info}. 
+@end ifinfo
+The key point is that none of these
+commands know Bigloo identifiers. Setting breakpoints inside Bigloo
+functions requires special BDB commands:
+
+@table @code
+@item break FUNCTION
+@itemx b FUNCTION
+@cindex break
+Set a breakpoint at entry to the function @var{FUNCTION}. IF @var{FUNCTION}
+is an  uppercase symbol, @var{FUNCTION} is interpreted as the name of a Bigloo
+function. If @var{FUNCTION} contains at least one lower case character it 
+is interpreted as the name of a C function.
+
+@item tbreak FUNCTION
+@itemx tb FUNCTION
+@cindex tbreak
+Set a temporary breakpoint at entry to the function @var{FUNCTION}.
+
+@end table
+
+@c -- Conditions ----------------------------------------------------- @c
+@node Conditions, , Set Breaks, Stopping
+@section Break conditions
+@comment  node-name,  next,  previous,  up
+
+Conditions may be associated with breakpoints inside debugged code.
+The syntax is:
+
+@table @code
+@item bcond BNUM EXPRESSION
+@cindex bcond
+Specify @var{EXPRESSION} as the break condition for breakpoint number 
+@var{BNUM}. @var{EXPRESSION} is an expression that is evaluated in the 
+environment of the breakpoint. That is @var{EXPRESSION} may uses local 
+variables. If @var{EXPRESSION} is made of uppercase symbols, it is
+interpreted as a Bigloo expression and is thus evaluated by the Bigloo
+interpreter. Otherwise it is interpreted as a C expression.
+@end table
+
+@c ------------------------------------------------------------------- @c
+@c    Continuing                                                       @c
+@c ------------------------------------------------------------------- @c
+@node Continuing, Stack, Stopping, Top
+@comment  node-name,  next,  previous,  up
+@chapter Continuing execution after a breakpoint
+@cindex Continuing execution after a breakpoint
+
+When the execution has stopped at a breakpoint several commands allow the
+execution to be resumed:
+
+You may use any of the GDB commands to resume an execution
+@iftex
+[Gdb, Continuing and Stepping].
+@end iftex
+@ifinfo
+@xref{Continuing and Stepping, , Gdb, gdb.info}. 
+@end ifinfo
+No distinction is made between Bigloo and C code. That is, it is
+possible when stepping a Bigloo function to enter a C function and vice
+versa. BDB does not try to hide the execution of C functions. Each code
+compiled in debug mode is visible from BDB.
+
+@table @code
+
+@item continue [IGNORE-COUNT]
+@itemx c [IGNORE-COUNT]
+@cindex continue
+Resume program execution at the address where your program last
+stopped; any breakpoints set at that address are bypassed.  The
+optional argument IGNORE-COUNT allows you to specify a further
+number of times to ignore a breakpoint at this location.
+
+@item step [COUNT]
+@itemx s [COUNT]
+@cindex step
+Continue running your program until control reaches a different
+Scheme source line, then stop it and return control to BDB.  This command
+is abbreviated @code{bs}.
+
+@item next [COUNT]
+@itemx n [COUNT]
+@cindex next
+Continue to the next source line in the current (innermost) stack
+frame.  This is similar to @code{step}, but function calls that appear
+within the line of code are executed without stopping.  Execution
+stops when control reaches a different line of code at the
+original stack level that was executing when you gave the @code{next}
+command.  This command is abbreviated @code{n}.
+
+An argument COUNT is a repeat count, as for @code{step}.
+
+The @code{next} command now only stops at the first instruction of a
+source line.  This prevents the multiple stops that used to occur
+in switch statements, for loops, etc.
+
+@item finish
+@itemx f
+@cindex finish
+Continue running until just after the function in the selected stack
+frame returns.  Print the returned value (if any).
+
+@item until
+@itemx u
+@cindex buntil
+Continue running until a source line past the current line, in the
+current stack frame, is reached.  This command is used to avoid
+single stepping through a loop more than once.  It is like the
+@code{next} command, except that when @code{until} encounters a jump, it
+automatically continues execution until the program counter is
+greater than the address of the jump.
+
+This means that when you reach the end of a loop after single
+stepping through it, @code{until} makes your program continue execution
+until it exits the loop.  In contrast, a `next' command at the end
+of a loop simply steps back to the beginning of the loop, which
+forces you to step through the next iteration.
+
+@code{until} always stops your program if it attempts to exit the
+current stack frame.
+
+@item return [EXPRESSION]
+@item r [EXPRESSION]
+@cindex return
+
+You may return from a function, using the @code{return} GDB command
+@iftex
+[Gdb, Returning].
+@end iftex
+@ifinfo
+@xref{Returning, , Gdb, gdb.info}.
+@end ifinfo
+
+This cancels the execution of a function call.
+If you give an @var{EXPRESSION} argument, its value is used as the function's
+return value.
+@end table
+
+@c ------------------------------------------------------------------- @c
+@c    Stack                                                            @c
+@c ------------------------------------------------------------------- @c
+@node Stack, Emacs, Continuing, Top
+@comment  node-name,  next,  previous,  up
+@chapter Examining the Stack
+@cindex Examining the Stack
+
+When your program has stopped, the first thing you need to know is
+where it stopped and how it got there. All GDB commands apply here
+@xref{Stack, , Gdb, gdb.info}. These commands let you inspect and browse
+the C stack. In addition you may inspect the stack restricted to Bigloo
+stack frames.
+
+@table @code
+@item info stack
+@itemx i s
+@cindex info stack
+Print the current stack frames. These frames may be inspected in turn
+with the @code{frame} command.
+
+@item info args
+@itemx i a
+@cindex info args
+Print the arguments of the selected frame, each on a separate line.
+
+@item cinfo args
+@itemx ci a
+@cindex cinfo args
+If the current stack frame belongs to a Bigloo function then the arguments
+hold Bigloo values. The @code{info args} displays the Bigloo values
+of these arguments. In some situation it is useful to access the C 
+representation for these arguments. This can be achieved by the 
+@code{cinfo args} command that forces BDB not to interpret the current 
+function as a Bigloo function.
+
+@item info locals
+@itemx i l
+@cindex info locals
+Print the local variables of the selected frame, each on a separate
+line. 
+
+@item cinfo locals
+@itemx ci a
+@cindex cinfo locals
+
+Print the local variables as if they were C variables, each on a separate
+line.
+@end table
+
+@c ------------------------------------------------------------------- @c
+@c    Emacs                                                            @c
+@c ------------------------------------------------------------------- @c
+@node Emacs, Bibliography, Stack, Top
+@comment  node-name,  next,  previous,  up
+@chapter Using BDB under Emacs
+@cindex emacs
+
+A special interface allows you to use Emacs to view (and edit)
+the source files for the program you are debugging with BDB.
+
+To use this interface, use the command @code{M-x bdb} in Emacs or click the
+@code{Bdb} icon of the Bee tool bar 
+@iftex
+[Bigloo, Bee]
+@end iftex
+@ifinfo
+@xref{Bee, , Bigloo, bigloo.info}.
+@end ifinfo
+Give the executable file you want to debug as an argument. This command
+starts BDB as a subprocess of Emacs, with input and output through a
+newly created Emacs buffer.
+
+Breakpoints may be set by the means of mouse clicks. Once a buffer is
+connected to the debugger (connection is automatic when the execution
+thread stops inside a buffer, or connection may be explicitly requested
+with the @code{Connect} icon), a left margin is printed. Clicking
+@kbd{@key{button-3}} on the margin will pop up a menu that enables
+breakpoint settings.
+
+Breakpoints may be disabled or deleted by the means of mouse menu. Click
+@kbd{@key{button-2}} on a breakpoint icon.
+
+The @code{M-x bdb} provides facilities for displaying all kinds of information
+such as stack frames, automatic display, source code browsing, stepping, etc.
+
+@c ------------------------------------------------------------------- @c
+@c    Bibliography                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Bibliography, Index, Emacs, Top
+@unnumbered Bibliography
+
+@itemize @bullet
+@item [Bigloo]
+M. Serrano.
+@samp{Bigloo User Manual}
+@url{http://kaolin.unice.fr/~serrano/bigloo/bigloo.html}
+
+@item [Gdb]
+R. Stallman
+@samp{Gdb}
+@code{http://www.cygnus.com/gdb/}
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Index                                                            @c
+@c ------------------------------------------------------------------- @c
+@node Index,  , Bibliography, Top
+@comment  node-name,  next,  previous,  up
+@unnumbered Index
+
+@printindex cp
+ 
+@c ------------------------------------------------------------------- @c
+@c    Bye                                                              @c
+@c ------------------------------------------------------------------- @c
+@ifinfo
+@contents
+@summarycontents
+@end ifinfo
+@bye
+
+@c  LocalWords:  BDB GDB Bigloo

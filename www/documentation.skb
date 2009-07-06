@@ -1,0 +1,39 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/documentation.scr                */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Oct  5 05:10:12 2001                          */
+;*    Last change :  Wed Jan  2 12:19:13 2002 (serrano)                */
+;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Bigloo documentation                                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The chapter                                                      */
+;*---------------------------------------------------------------------*/
+(chapter :title "Documentation" :number #f :file #t [
+Bigloo documentation is available in various formats. You may download the documentation or browse the html from this site. ,(linebreak) ,(linebreak)]
+	 
+
+;*--- Browsing the documentation --------------------------------------*/
+(section :title "Browsing the documentation" :number #f :toc #f [
+
+Instead of dowloading the documentation you may browse the
+,(ref :url "doc/bigloo.html" :text "Bigloo") documentation from this site.
+
+,(linebreak 2)
+You may also browse the documentation of the Scheme programming language,
+the
+,(ref :url "doc/r5rs.html"
+      :text "Revised(5) Report on the Algorithmic Language Scheme").])
+
+
+;*--- Downloading the Documentation -----------------------------------*/
+(section :title "Downloading the Documentation" :number #f :toc #f
+
+	 (itemize (item [The Bigloo reference manual is availabe in
+,(itemize (item (ref :url "doc/bigloo.ps" :text "Postscript"))
+	  (item (ref :url "doc/bigloo.pdf" :text "PDF"))
+	  (item (ref :url "doc/bigloo.dvi" :text "DVI"))
+	  (item (ref :url "doc/bigloo.info.tar.gz" :text "Info")))]))))

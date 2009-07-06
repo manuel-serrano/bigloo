@@ -1,0 +1,437 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/bee.texi                     @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sun Aug 16 11:06:11 1998                          @c
+@c    Last change :  Wed Nov 21 15:51:54 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Bee                                                              @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Extension                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Bee, Global Index, User Extensions, Top
+@comment  node-name,  next,  previous,  up
+@chapter Bigloo Development Environment
+@cindex bigloo development environment
+
+Bigloo release 2.0 or more recent contains an Integrated Development 
+Environment. This environment proposes some services:
+
+@itemize @bullet
+@item Automatic Makefile creation and update.
+@item Code browsing.
+@item Revision control.
+@item Symbol debugging.
+@item Profiling.
+@item On-line documentation.
+@item Source code interpretation.
+@item Source code expansion.
+@item Literate programming.
+@end itemize
+
+The environment relies on Bigloo tools:
+@itemize @bullet
+@item @code{bglafile}: a Module access file generator (@pxref{Module Access File}).
+@item @code{bglmake}: a Makefile creator.
+@item @code{bgldepend}: a that creates Bigloo dependencies in makefiles.
+@item @code{bglpp}: a pretty printer.
+@item @code{bglprof}: a profiler
+@item @code{bgltags}: a generator of tag file for Emacs.
+@end itemize
+
+Each of these tools comes with a dedicated manual page and are not described
+in this documentation. 
+
+Extra tools are required for the environment to go its full speed:
+@itemize @bullet
+@item @code{Emacs} version 21 (or more recent) (@url{http://www.emacs.org/})
+or @code{Xemacs} version 20.4 (or more recent)
+(@url{http://www.xemacs.org/}).
+@item @code{prcs} version 1.2.1 or more recent
+(@url{http://prcs.sourceforge.net/}).
+@item @code{gdb} version 4.17 or more recent 
+(@url{http://www.cygnus.com/gdb/}).
+@item @code{gprof} (@url{ftp:/prep.ai.mit.edu:pub/gnu/}).
+@item @code{texinfo} (@url{ftp:/prep.ai.mit.edu:pub/gnu/}).
+@item @code{gmake} (@url{ftp:/prep.ai.mit.edu:pub/gnu/}).
+@end itemize
+
+
+The following document describes the @sc{Bee}, the Bigloo Emacs
+Environment.
+
+@menu
+* Installing the Bee::
+* Entering the Bee::
+* The Bee Root Directory::
+* Building a Makefile::
+* Compiling::
+* Interpreting::
+* Pretty Printing::
+* Expansing::
+* On-line documentation::
+* Searching for source code::
+* Importing and Exporting::
+* Debugging::
+* Profiling::
+* Revision control::
+* Literate Programming::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Installing the Bee                                               @c
+@c ------------------------------------------------------------------- @c
+@node Installing the Bee, Entering the Bee, Bee, Bee
+@comment  node-name,  next,  previous,  up
+@section Installing the @sc{Bee}
+@cindex installing the bee
+
+The standard procedure for installing Bigloo handles the compilation
+of all tools required by the @sc{Bee}. Additional Emacs-lisp code have
+to be appended to your @code{.emacs} file:
+
+@smalllisp
+(autoload 'bdb "bdb" "bdb mode" t)
+(autoload 'bee-mode "bee-mode" "bee mode" t)
+
+(setq auto-mode-alist
+      (append '(("\\.scm$" . bee-mode)
+                ("\\.sch$" . bee-mode)
+                ("\\.scme$" . bee-mode)
+                ("\\.bgl$" . bee-mode)
+                ("\\.bee$" . bee-mode))
+              auto-mode-alist))
+@end smalllisp
+
+This code will force @code{emacs} to switch to @sc{Bee} mode when editing
+Scheme source files.
+
+@c ------------------------------------------------------------------- @c
+@c    Entering the Bee                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Entering the Bee, The Bee Root Directory, Installing the Bee, Bee
+@comment  node-name,  next,  previous,  up
+@section Entering the Bee
+@cindex Entering the Bee
+
+Once, your @code{.emacs} is updated, to start the @sc{Bee} you just need
+to edit a file suffixed with one of the suffix listed in
+@var{auto-mode-alist} with Emacs. You may either enter the Bee within
+Emacs with @code{ESC-X: bee-mode}.
+ 
+@c ------------------------------------------------------------------- @c
+@c    the bee root directory                                           @c
+@c ------------------------------------------------------------------- @c
+@node The Bee Root Directory, Building a Makefile, Entering the Bee, Bee
+@comment  node-name,  next,  previous,  up
+@section The @emph{Bee Root Directory}
+@cindex the bee root directory
+
+The @emph{Bee Root Directory} is the directory that contains information
+files that describe a project. When editing a file, the @sc{Bee} tries to
+automatically setup the @emph{Bee Root Directory}. For that, it seeks one
+of the following file: @code{Makefile}, @code{.afile} or @code{.etags}.
+This search unwind directories until the root directory is reached or until
+the number of scanned directories is more than the value of the list
+variable @code{bee-root-search-depth}.
+
+An alternative @emph{Bee Root Directory} may be set. This is done clicking
+on the @code{Root} of the tool bar icon.
+
+@c ------------------------------------------------------------------- @c
+@c    Building a Makefile                                              @c
+@c ------------------------------------------------------------------- @c
+@node Building a Makefile, Compiling, The Bee Root Directory, Bee
+@comment  node-name,  next,  previous,  up
+@section Building a Makefile
+@cindex building a makefile
+
+Once, the @emph{Bee Root Directory} has been setup (it is printed on the
+left part to the Emacs modeline), a @code{Makefile} can be automatically
+produced. It can be achieved clicking on the @code{Mkmf} icon
+of the tool bar, using the popup menu (@kbd{button-3}) entries, or using
+one of the two keyboard bindings @kbd{C-c C-c C-a} or @kbd{C-c C-c C-l}.
+When creating a @code{Makefile}, you will be asked to give a file name.
+This file must be the one that is the main entry point of your program
+or the one that implements an library heap file.
+
+When the @code{Makefile} already exists, using the same bindings update 
+Makefile, re-generate @code{.afile} and @code{.etags} files.
+
+@c ------------------------------------------------------------------- @c
+@c    Compiling                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Compiling, Interpreting, Building a Makefile, Bee
+@comment  node-name,  next,  previous,  up
+@section Compiling
+@cindex Compiling
+
+Once a @code{Makefile} exists, it is possible to compile a program
+(or a library). Use either the tool bar icon @code{Compile}, the popup
+menu entry or @kbd{C-c C-c C-c}. If no @code{Makefile} exists, the @sc{Bee}
+will emit a single file compilation.
+
+@c ------------------------------------------------------------------- @c
+@c    Interpreting                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Interpreting, Pretty Printing, Compiling, Bee
+@comment  node-name,  next,  previous,  up
+@section Interpreting
+@cindex Interpreting
+
+Scheme source code may be interpreted within the @sc{Bee} instead of
+been compiled prior to be executed. This facility could be convenient
+for fast prototyping. A @emph{Read eval print} loop (henceforth
+@emph{Repl}) could be spawned using the @code{Repl} icon of the tool
+bar, using the popup menu entry or using the @kbd{C-c C-r C-r} binding.
+
+Parts or the whole buffer may be sent to @emph{repl}.
+
+@itemize @bullet
+@item @kbd{C-c C-r b} sends the whole buffer.
+@item @kbd{C-c C-r d} sends the define form the cursor is in.
+@item @kbd{C-c C-r l} sends the s-expression that preceeds the cursor.
+@item @kbd{C-c C-r t} sends the top level s-expression the cursor is in.
+@item @kbd{C-c C-r r} sends the marked region.
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Pretty printing                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Pretty Printing, Expansing, Interpreting, Bee
+@comment  node-name,  next,  previous,  up
+@section Pretty Printing
+@cindex pretty printing
+
+The whole buffer may be pretty printed (long source lines are split) using the
+@code{Lisp} icon of the tool bar, using the popup menu entry of using
+@kbd{C-c C-i @key{tab}}.
+
+Parts or the buffer may be indented (no line is split).
+
+@itemize @bullet
+@item @kbd{C-c C-i d} indents the define form the cursor is in.
+@item @kbd{C-c C-i l} indents the s-expression that preceeds the cursor.
+@item @kbd{C-c C-i t} indents the top level s-expression the cursor is in.
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    expansing                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Expansing, On-line documentation, Pretty Printing, Bee
+@comment  node-name,  next,  previous,  up
+@section Expansing
+@cindex Expansing
+
+For debug purposes, result of the source code macro expansion may be
+checked within the @sc{Bee}. 
+
+Parts or the whole buffer may be sent to @emph{repl}.
+
+@itemize @bullet
+@item @kbd{C-c C-e C-e} expands the whole buffer.
+@item @kbd{C-c C-e C-d} expands the define form the cursor is in.
+@item @kbd{C-c C-e C-l} expands the s-expression that preceeds the cursor.
+@item @kbd{C-c C-e C-t} expands the top level s-expression the cursor is in.
+@item @kbd{C-c C-e C-r} expands the marked region.
+@end itemize
+
+When a part of the buffer is expanded (by opposition to the whole buffer), the
+buffer is scan for macro definitions. These macros will be used for expanding
+the requested form.
+
+@c ------------------------------------------------------------------- @c
+@c    On-line documentation                                            @c
+@c ------------------------------------------------------------------- @c
+@node On-line documentation, Searching for source code, Expansing, Bee
+@comment  node-name,  next,  previous,  up
+@section On-line Documentation
+@cindex on-line documentation
+
+On-line documentation may be popped up. This is always done, clicking on
+the @code{Info} icon of the tool bar or @kbd{C-c C-d i}. If an emacs
+region is active, the documentation about that region will be popped up.
+If the cursor is at a Scheme identifier, the documentation of that
+identifier will be printed. Otherwise, the user will be prompted for the
+Section of the documentation to be printed.
+
+Clicking on the @code{?} icon tool bar, pops up a short description of
+the Bigloo compiler options. 
+
+The @sc{Bee} uses @code{info} files for printing On-line
+documentation. It always search the standard documentation and the
+standard definition of Scheme. It is possible to add extra @code{info}
+files to be searched.  The @sc{Bee} always checks for a directory
+@code{info} in the @emph{Bee Root Directory}. If such a directory
+exists, contained file will be considered for the search of a document.
+
+@c ------------------------------------------------------------------- @c
+@c    Searching for source code                                        @c
+@c ------------------------------------------------------------------- @c
+@node Searching for source code, Importing and Exporting, On-line documentation, Bee
+@comment  node-name,  next,  previous,  up
+@section Searching for Source Code
+@cindex searching for source code
+
+Searching for source (variable declaration, module definition, variable
+usage) is supported by the @sc{Bee}. Clicking on the @code{Find} icon of
+the tool bar will pops up the definition of the variable the cursor is
+in or the definition of the module the cursor is in. These two
+operations may be requested using @kbd{C-x 5 .} for searching a variable
+definition, @kbd{C-c C-d m} for a module definition.
+
+Information and usages of a variable may be printed using either the
+@code{Doc} icon of the tool bar or the @kbd{C-c C-d u} key binding.
+
+@c ------------------------------------------------------------------- @c
+@c    Importing and Exporting                                          @c
+@c ------------------------------------------------------------------- @c
+@node Importing and Exporting, Debugging ,Searching for source code, Bee
+@comment  node-name,  next,  previous,  up
+@section Importing and Exporting
+@cindex Importing and Exporting
+
+Bigloo bindings (functions and variables) may be automatically inserted
+in an export module clause (@pxref{Modules}). Bring the cursor to an
+identifier of a binding that has to be exported then, either click on
+the @code{Export} tool bar icon or use the @kbd{C-c C-m b} key binding.
+
+Bigloo bindings may be automatically inserted in an import module clause.
+Bring the cursor to an identifier of a binding that has to be imported.
+Either click on the @code{Import} tool bar icon or use the 
+@kbd{C-c C-m i} key binding. The @sc{Bee}, will search the modules for
+the wanted binding. 
+
+Foreign bindings (e.g. C variables and C functions) may be automatically
+inserted in the file module clause. Click on the @code{Extern} tool bar
+icon or use the key binding @kbd{C-c C-m c} to import whole the definition
+of an extern file. You will, be prompted an extern file name to be imported.
+This operation @emph{automatically updates} the @code{Makefile} for reflecting
+that the extern file is required in the compilation.
+
+@c ------------------------------------------------------------------- @c
+@c    Debugging                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Debugging, Profiling, Importing and Exporting, Bee
+@comment  node-name,  next,  previous,  up
+@section Debugging
+@cindex debugging
+
+The Bigloo symbolic Debugger may be spawned either clicking on the
+@code{Bdb} tool bar icon or using the key binding @kbd{C-c C-b C-b}.
+Once the debugger is not is possible to connect the current buffer to
+the debugger. This is done using the tool bar icon @code{Connect} or the
+key binding @kbd{C-c C-b c}. This enables breakpoints to be inserted using
+mouse clicks.
+
+@c ------------------------------------------------------------------- @c
+@c    Profiling                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Profiling, Revision control, Debugging, Bee
+@comment  node-name,  next,  previous,  up
+@section Profiling
+@cindex profiling
+
+Automatically produced @code{Makefile} provides entry for profiling. In
+order to get a profile you must first compile your application for
+profiling.  This is done using a popup menu entry or the @kbd{C-c C-p c}
+key binding. Once your program compiled you can run for profile using a
+popup menu entry of the @kbd{C-c C-p r} key binding. This last will run
+your program, run @code{bglprof} to get the profile and this will pops up
+a window displaying the profile informations.
+
+@c ------------------------------------------------------------------- @c
+@c    Revision control                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Revision control, Literate Programming, Profiling, Bee
+@comment  node-name,  next,  previous,  up
+@section Revision Control
+@cindex revision control
+
+Submitting a new revision is done using @kbd{C-c C-v i} or using
+an menu bar entry. This builds an new revision for the entire project.
+The file that compose the project are listed in the @code{pop} entry
+of the @emph{Bee Root Directory} @code{Makefile}.
+
+Checking out an older version of the file currently edited is done using
+the key binding @kbd{C-c C-v C-o}. This is not a retrieval of the entire
+project. Global check out may be performed manually. 
+
+Comparing the version of the file currently edited with older one is
+done using @kbd{C-c C-v d}. A @emph{diff} of the two buffers will be
+popped up.
+
+With both checking out and comparison of versions. A window presenting
+all the available version will be popped up to let you choose which
+version you would like to inspect.
+
+@c ------------------------------------------------------------------- @c
+@c    Literate Programming                                             @c
+@c ------------------------------------------------------------------- @c
+@node Literate Programming, , Revision control, Bee
+@comment  node-name,  next,  previous,  up
+@section Literate Programming
+@cindex literate programming
+
+The @sc{Bee} does not provide real @emph{Literate Programming}. The reason
+is that we think that when editing documentation we want to benefit the
+full power of context-sensitive editors and we don't want to edit the
+documentation is the same editor @emph{mode} as the one we use when editing
+source code. Nevertheless it is possible to place anchors within the source
+file to the corresponding documentation file. Then, by the means of simple
+mouse clicks, it becomes possible to edit the documentation of peace of
+codes. The current @sc{Bee} literate programming system only supports the
+@emph{Texinfo} file format.
+
+For that purpose three anchors are available: @code{path}, @code{node} and
+@code{deffn}. All anchor have to be delimited with @code{@@} characters.
+
+@itemize @bullet
+@item @code{path}: this anchor set the path to the file containing the 
+documentation. Thus,
+
+@smalllisp
+(module foo
+   ;; @@path manuals/foo.texi@@
+   ...)
+@end smalllisp
+
+Tells the @sc{Bee} that the documentation for the module @code{foo} is located
+in the file named @code{manuals/foo.texi}.
+
+@item @code{node}: sets the name of the node that documents this particular
+source file code.
+
+@smalllisp
+(module foo
+   ;; @@path manuals/foo.texi@@
+   ;; @@node Foo@@
+   ...)
+@end smalllisp
+
+@item @code{deffn}: each variable binding may point to its documentation.
+For that, it suffices to use the @code{deffn} anchor just before the 
+variable definition or within the s-expression that defines the variable.
+
+@smalllisp
+;; @@deffn foo@@
+(define (foo . chars)
+   ...)
+@end smalllisp
+or
+@smalllisp
+(define (foo . chars)
+   ;; @@deffn foo@@
+   ...)
+@end smalllisp
+
+When clicking on that anchor, the @sc{Bee} will search the documentation file
+named by the @code{path} anchor and within that file, will search for a 
+@emph{texinfo} @code{deffn} command that defines the variable named in the 
+anchor.
+@end itemize
+
+
+

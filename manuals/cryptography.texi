@@ -1,0 +1,83 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/cryptography.texi            @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun  9 11:05:22 2008                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2008 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Cryptography                                                     @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Cryptography                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Cryptography, Errors Assertions and Traces, Command Line Parsing, Top
+@comment  node-name,  next,  previous,  up
+@chapter Cryptography
+@cindex cryptography
+
+Bigloo provides several functions for encrypting and decrypting documents.
+These are described in the chapter.
+
+@c -- AES ------------------------------------------------------------ @c
+@section Advanced Encryption Standard (AES)
+
+Bigloo support the symmetric AES crypto-system (also known as Rijndael) in
+@emph{Counter} mode. 
+
+@deffn {bigloo procedure} aes-ctr-encrypt text password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-encrypt-mmap mmap password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-encrypt-string string password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-encrypt-port iport password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-encrypt-file filename password [nbits 128]
+The function @code{aes-ctr-encrypt} encrypts its parameter into a string
+that is the result of the function. The argument @var{text} is either a
+string, a memory mapped area, an input-port, or a file name. The argument
+@var{password} is a string containing the password used for encrypting
+the text. The optional argument @var{nbits} must either be @code{128},
+@code{192}, or @code{256}.
+@end deffn
+
+@deffn {bigloo procedure} aes-ctr-decrypt text password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-decrypt-mmap mmap password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-decrypt-string string password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-decrypt-port iport password [nbits 128]
+@deffnx {bigloo procedure} aes-ctr-decrypt-file filename password [nbits 128]
+The function @code{aes-ctr-decrypt} decrypts a text previously encrypted with
+@code{aes-ctr-encrypt}.
+@end deffn
+
+@c  {*-- RSA ------------------------------------------------------------*}  @c
+@c  @section Rivest, Shamir, and Adleman (RSA)                         @c
+@c                                                                     @c
+@c  Bigloo support the asymmetric RSA crypto-system.                   @c
+@c                                                                     @c
+@c  @deffn {bigloo procedure} make-rsa-key-pair [:size 1024] [:show-trace #f]  @c
+@c  Creates a pair of public/private RSA key.                          @c
+@c  @end deffn                                                         @c
+@c                                                                     @c
+@c  @deffn {bigloo procedure} public-rsa-key                           @c
+@c  @deffnx {bigloo procedure} private-rsa-key                         @c
+@c  Returns the public (respec. private) key of a RSA key pair as produced  @c
+@c  by*}ode{make-rsa-key-pair}.                                        @c
+@c  @end deffn                                                         @c
+@c                                                                     @c
+@c  @deffn {bigloo procedure} rsa-encrypt-string string key            @c
+@c  Encrypts a string of characters with a key.                        @c
+@c                                                                     @c
+@c  @smalllisp                                                         @c
+@c  (define key (make-rsa-key-pair))                                   @c
+@c  (define private-key (private-rsa-key key))                         @c
+@c  (define public-key (public-rsa-key key))                           @c
+@c  (define encrypted (rsa-encrypt-string "foo" public-key))           @c
+@c  @end smalllisp                                                     @c
+@c  @end deffn                                                         @c
+@c                                                                     @c
+@c  @deffn {bigloo procedure} rsa-encrypt-string string key            @c
+@c  Encrypts a string of characters with a key.                        @c
+@c  @smalllisp                                                         @c
+@c  (rsa-decrypt-string encrypted private-key)                         @c
+@c  @end smalllisp                                                     @c
+@c  @end deffn                                                         @c
+@c                                                                     @c

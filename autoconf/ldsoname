@@ -1,0 +1,185 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ldsoname                    */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 14:04:49 1995                          */
+#*    Last change :  Thu Jul 12 02:23:13 2007 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking for shared libraries                                    */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+ldopt=
+ld=
+tmp=/tmp
+user=bigloo
+soname=-Wl,-soname
+posixos="unix"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ldopt=*|-ldopt=*)
+      ldopt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ld=*|-ld=*)
+      ld="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --soname=*|-soname=*)
+      soname="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --posixos=*|-posixos=*)
+      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+#*---------------------------------------------------------------------*/
+#*    We know that on some platform, the GC does not support shared    */
+#*    libraries (e.g. BSD, Mac PPC).                                   */
+#*---------------------------------------------------------------------*/
+if [ "$posixos" = "linux" ]; then
+  mach=`uname -m`
+  case $mach in
+    ppc)
+      exit 1;;
+    *)
+      ;;
+  esac
+fi
+
+file=actest$user
+aout=actest$user
+obj=`basename $file`
+
+#*---------------------------------------------------------------------*/
+#*    Guessed option                                                   */
+#*---------------------------------------------------------------------*/
+if( test "$ldopt" = "" ); then
+
+cat > $file-guess.c <<EOF
+int main () 
+{
+#if( defined( sparc ) && !defined( linux ) )
+#  if( defined( __svr4__) || defined( __SVR4 ) )
+      puts( "-G" );
+#  else
+      puts( "-Bstatic" );
+#  endif
+#else
+   puts( "-shared" );
+#endif
+}
+EOF
+
+if $cc $cflags -o $aout $file-guess.c >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   exit 1
+fi
+
+ldopt=`./$aout`
+\rm -f $file-guess*
+fi
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file-lib.c <<EOF
+int fun () { int x =0; x++; return x++; }
+EOF
+
+cat > $file.c <<EOF
+int main () { fun(); }
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -c $file-lib.c -o $obj-lib.o >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We build a library                                               */
+#*---------------------------------------------------------------------*/
+$ld $ldopt -o $file.so $obj-lib.o $soname=$file.so > /dev/null 2> /dev/null
+if [ ! -f $file.so ]; then
+  soopt=-Wl,$soname
+  $ld $ldopt -o $file.so $obj-lib.o $soopt=$file.so > /dev/null 2> /dev/null
+
+  if [ ! -f $file.so ]; then
+    soopt=-Wl,-soname
+    $ld $ldopt -o $file.so $obj-lib.o $soopt=$file.so > /dev/null 2> /dev/null
+  fi
+
+  if [ ! -f $file.so ]; then
+    soopt=-soname
+    $ld $ldopt -o $file.so $obj-lib.o $soopt=$file.so > /dev/null 2> /dev/null
+  fi
+else
+  soopt=$soname
+fi
+
+if [ ! -f $file.so ]; then
+  \rm -f $file*
+  \rm -f $obj-lib.o
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    linking test                                                     */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -o $aout $file.c $file.so >/dev/null 2>&1
+then
+   true
+else
+   res=$?
+   \rm -f $file*
+   exit $res
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We try to run ranlib                                             */
+#*---------------------------------------------------------------------*/
+\rm -f $file*
+echo $soopt
+

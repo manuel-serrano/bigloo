@@ -1,0 +1,95 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/search.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Apr 11 07:43:31 2006                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2006 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Fast search algorithms                                           @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Fast search                                                      @c
+@c ------------------------------------------------------------------- @c
+@node Fast search, Structures and Records, Pattern Matching, Top
+@comment  node-name,  next,  previous,  up
+@chapter Fast search
+@cindex fast string search
+
+This chapters details the Bigloo's API for fast string search algorithms.
+
+@menu
+* Knuth - Morris - Pratt::
+@end menu
+
+
+@c ------------------------------------------------------------------- @c
+@c    Class declaration                                                @c
+@c ------------------------------------------------------------------- @c
+@node Knuth - Morris - Pratt, , , Fast search
+@comment  node-name,  next,  previous,  up@section Class declaration
+@section Knuth, Morris, and Pratt
+@cindex Knuth, Morris, and Pratt
+
+Bigloo supports an implementation of the @emph{Knuth, Morris, and Pratt}
+algorithm on strings and memory mapped area, @xref{Memory mapped area}.
+
+@deffn {bigloo procedure} kmp-table pattern
+This function creates a @emph{kmp}-table used for fast search.
+@end deffn
+
+@deffn {bigloo procedure} kmp-mmap kmp-table mmap offset
+@deffnx {bigloo procedure} kmp-string kmp-table string offset
+This function searches the @var{pattern} described by @var{kmp-table}
+in the memory mapped area @var{mmap} (respec. in the @var{string}). 
+The search starts at @var{offset}. If an occurrence
+is found, its position in the @var{mmap} is returned. Otherwise
+@code{-1} is returned.
+
+For the sake of the example, here is a prototypal implementation of
+the Usenix command @code{grep}:
+
+@smalllisp
+(define (main args)
+   (cond
+      ((null? (cdr args))
+       (fprintf (current-error-port) "Usage: grep STRING [FILE]...")
+       (exit 0))
+      (else
+       (let ((t (kmp-table (cadr args))))
+	  (for-each (lambda (f) (grep-file t f)) (cddr args))))))
+
+(define (grep-file t file)
+   (let* ((mm (open-mmap file read: #t write: #f))
+	  (ls (mmap-length mm)))
+      (let loop ((o 0))
+	 (unless (>=fx o ls)
+	    (let ((n (kmp-mmap t mm o)))
+	       (when (>fx n 0)
+		  (print file ":" (mmap-line mm ls n))
+		  (loop (+fx n 1))))))
+      (close-mmap mm)))
+
+(define (mmap-line mm ls n)
+   (let ((b 0)
+	 (e (elong->fixnum ls)))
+      ;; beginning
+      (let loop ((i n))
+	 (when (>fx i 0)
+	    (if (char=? (mmap-ref mm i) #\Newline)
+		(set! b (+fx i 1))
+		(loop (-fx i 1)))))
+      ;; end
+      (let loop ((i n))
+	 (when (<fx i ls)
+	    (if (char=? (mmap-ref mm i) #\Newline)
+		(set! e i)
+		(loop (+fx i 1)))))
+      (mmap-substring mm b (- e b))))
+@end smalllisp
+@end deffn
+
+
+
+

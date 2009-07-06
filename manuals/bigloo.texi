@@ -1,0 +1,673 @@
+\input texinfo    @c -*-texinfo-*-
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/bigloo.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Jun 13 08:31:55 1998                          @c
+@c    Last change :  Tue Jan 15 14:57:31 2002 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentation for Bigloo                                     @c
+@c =================================================================== @c
+@setfilename bigloo.info
+
+@c ------------------------------------------------------------------- @c
+@c    The version                                                      @c
+@c ------------------------------------------------------------------- @c
+@include version.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Title                                                            @c
+@c ------------------------------------------------------------------- @c
+@comment %**start of header
+@settitle Bigloo @value{edition}
+@syncodeindex vr cp
+@syncodeindex pg cp
+@syncodeindex fn cp
+@value{bigloovers}
+
+@set edition @value{bigloovers}
+@set update-month @value{bigloodate}
+@set update-date @value{update-month}
+@set bigloo-url http://www.inria.fr/mimosa/fp/Bigloo
+@set bigloo-mail bigloo@@sophia.inria.fr
+
+@footnotestyle separate
+@ifinfo
+@paragraphindent 2
+@end ifinfo
+@finalout
+@comment %**end of header
+
+@set R5RS @url{@value{bigloo-url}/doc/r5rs.html}
+@ifinfo
+@c @ref{Top, , , r5rs.info}.
+@set R5RS @ref{Top, , , r5rs.info}
+@end ifinfo 
+@iftex 
+@set R5RS @value{[R5RS]}
+@end iftex
+
+@c Before release, run C-u C-c C-u C-a (texinfo-all-menus-update with a
+@c prefix arg).  This updates the node pointers, which texinfmt.el needs.
+
+@c Set smallbook if printing in smallbook format so the example of the
+@c smallbook font is actually written using smallbook; in bigbook, a kludge
+@c is used for TeX output.
+@c  @smallbook                                                         @c
+@c  @set smallbook                                                     @c
+@c @@clear smallbook
+
+@c Currently undocumented command, 5 December 1993:
+@c
+@c nwnode          (Same as node, but no warnings; for `makeinfo'.)
+
+@ifinfo
+This file documents Bigloo, an implementation of an extended version
+of the Scheme programming language.
+
+Copyright (C) 1992-99, 2000-08 Manuel Serrano
+
+@display
+This program is free software; you can redistribute it            
+and/or modify it under the terms of the GNU General Public        
+License as published by the Free Software Foundation; either      
+version 2 of the License, or (at your option) any later version.  
+                                                                  
+This program is distributed in the hope that it will be useful,   
+but WITHOUT ANY WARRANTY; without even the implied warranty of    
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     
+GNU General Public License for more details.                      
+                                                                  
+You should have received a copy of the GNU General Public         
+License along with this program; if not, write to the Free        
+Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,   
+MA 02111-1307, USA. 
+@end display
+@end ifinfo
+
+@c ------------------------------------------------------------------- @c
+@c    Backward compatibility                                           @c
+@c ------------------------------------------------------------------- @c
+@include oldtexinfo.texi
+
+@c ------------------------------------------------------------------- @c
+@c    The title page                                                   @c
+@c ------------------------------------------------------------------- @c
+@setchapternewpage odd
+
+@c @ifinfo
+@c @shorttitlepage Bigloo
+@c @end ifinfo
+
+@ifhtml
+<BODY bgcolor="#ffefd5" text="#000000" link="#0000ff"vlink="#551a8b" alink="#ff0000" background="">
+@end ifhtml
+@titlepage
+@c use the new format for titles
+@title Bigloo
+@subtitle A ``practical Scheme compiler''
+@subtitle User manual for version @value{edition}
+@subtitle @value{update-month}
+
+@author{Manuel Serrano}
+
+@c Include the Distribution inside the titlepage so
+@c that headings are turned off.
+
+@page
+@vskip 0pt plus 1filll
+@c This file documents Bigloo, an implementation of an extended version
+@c of the Scheme programming language.
+
+@c @unnumbered Copyright
+
+Copyright @copyright{} 1992-99, 2000-02 Manuel Serrano
+
+@display
+This program is free software; you can redistribute it            
+and/or modify it under the terms of the GNU General Public        
+License as published by the Free Software Foundation; either      
+version 2 of the License, or (at your option) any later version.  
+                                                                  
+This program is distributed in the hope that it will be useful,   
+but WITHOUT ANY WARRANTY; without even the implied warranty of    
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     
+GNU General Public License for more details.                      
+                                                                  
+You should have received a copy of the GNU General Public         
+License along with this program; if not, write to the Free        
+Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,   
+MA 02111-1307, USA.    
+@end display
+@end titlepage
+
+@c ------------------------------------------------------------------- @c
+@c    Dir entry                                                        @c
+@c ------------------------------------------------------------------- @c
+@ifinfo
+@dircategory The Algorithmic Language Scheme
+@direntry
+* bigloo: (bigloo).            The Bigloo Scheme compiler
+@end direntry
+@end ifinfo
+
+@c ------------------------------------------------------------------- @c
+@c    The main menu                                                    @c
+@c ------------------------------------------------------------------- @c
+@ifinfo
+@node Top, Acknowledgements, (dir), (dir)
+@cindex bigloo
+
+@display
+
+                                    ,--^, 
+                              _ ___/ /|/  
+                          ,;'( )__, ) '   
+                         ;;  //   L__.    
+                         '   \    /  '    
+                              ^   ^       
+
+
+@end display
+@end ifinfo
+
+@menu
+* Acknowledgements::               Brief history and helpers
+* Overview::                       A brief summary of Bigloo facilities
+* Modules::                        Modules description
+* Core Language::                  Syntax, expressions and definitions
+* DSSSL Support::                  DSSSL keyword and optional arguments
+* Standard Library::               The Bigloo standard library
+* Pattern Matching::               Non linear Bigloo pattern matching
+* Fast search::                    Fast string search algorithms.
+* Structures and Records::         Various Record data types.
+* Object System::                  Documentation for the Bigloo object layer
+* Regular Parsing::                Pre-compiled regular grammars
+* Lalr Parsing::                   Pre-compiled Lalr grammars
+* Posix Regular Expressions::      Posix Regular Expressions
+* Command Line Parsing::           Parsing binaries command line invocation
+* Cryptography::                   Cryptography 
+* Errors Assertions and Traces::   Bigloo error handling and Bigloo assertions
+* Threads::                        Bigloo multi-threading
+* Database library::               Database access
+* Multimedia library::             Multimedia programming
+* Mail library::                   Mail related technologies
+* Eval::                           Use of the interpreter
+* Macro Expansion::                The two available macro schemes
+* Parameters::                     Controlling the global programs behaviors
+* Explicit Typing::                Improving the compiler's code quality
+* C Interface::                    Interfacing to C
+* Java Interface::                 Interfacing to Java
+* SRFIs::                          SRFIs supported by Bigloo 
+* Bigloo Libraries::               Creating and using your own libraries
+* Extending the Runtime System::   Adding new primitive data types
+* Compiler Description::           Interfacing with the compiler
+* User Extensions::                User compiler extensions
+* Bee::                            The Bigloo development environment
+* Global Index::                   Global Bigloo document index
+* Library Index::                  Index for forms, functions and variables
+* Bibliography::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Acknowledgements                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Acknowledgements, Overview, Top, Top
+@comment  node-name,  next,  previous,  up
+@setchapternewpage off
+@unnumbered Acknowledgements
+@cindex Acknowledgements
+@setchapternewpage odd
+
+Bigloo has been developed at Inria-Rocquencourt by the Icsla team from 1991
+to 1994, at the University of Montreal in 1995 and at Digital's Western
+Research laboratory in 1996, University of Geneva during 1997 and from the
+end of 1997 at the University of Nice.
+
+I would like to express my gratitude to @emph{Hans J. Boehm} for his Garbage
+Collector [BoehmWeiser88, Boehm91], @emph{Jean-Marie Geffroy} for his
+pattern-matching compiler [QueinnecGeffroy92], @emph{Dominique Boucher} for his
+Lalr grammar compiler, @emph{William Clinger} for his syntax expansion
+implementation and @emph{Dorai Sitaram} for his contribution with the
+@code{pregexp} package and its documentation. I also
+especially thank @emph{Christian Queinnec} for all his useful remarks, help,
+suggestions and teaching.
+
+Other people have helped me by providing useful remarks, bug fixes
+or code improvements. I thank all of them and especially @emph{Luc Moreau}, 
+@emph{John Gerard Malecki}, @emph{David Halls} and @emph{David Gurr}.
+
+I thank @emph{Barrie Stott} for his help in making much of the documentation
+more idiomatic. Of course, any remaining errors are still mine.
+
+This release of Bigloo may still contain bugs. If you notice
+any, please forgive me and send a mail message to the following
+address: @email{@value{bigloo-mail}}.
+
+@ifhtml
+New versions may be found at @url{@value{bigloo-url}}.
+@end ifhtml
+
+This is Bigloo documentation version @value{bigloovers}, @w{@value{update-date}}.
+
+@c ------------------------------------------------------------------- @c
+@c    Bye                                                              @c
+@c ------------------------------------------------------------------- @c
+@ifhtml
+@chapter Table of contents
+@contents
+@summarycontents
+@end ifhtml
+
+@c ------------------------------------------------------------------- @c
+@c    Overview                                                         @c
+@c ------------------------------------------------------------------- @c
+@c @node Overview, Program Structure, Copying, Top
+@node Overview, Modules, Acknowledgements, Top
+@comment  node-name,  next,  previous,  up
+@chapter Overview of Bigloo
+@cindex Overview of Bigloo
+
+Bigloo is an implementation of an extended version of the Scheme
+programming language. Without its extensions Bigloo does not entirely
+conform to Scheme as defined in the Revised(5) Report on on the
+Algorithmic Language Scheme (henceforth R5RS) (see @ref{Top,,,r5rs.info}).
+The two reasons are:
+
+@itemize @bullet
+@item Bigloo produces C files. C code uses the C stack, so some
+programs can't be properly tail recursive. Nevertheless all
+simple tail recursions are compiled without stack consumption.
+
+@item Alternatively, Bigloo may produce JVM (Java Virtual Machine byte code)
+class files. These classes may use regular Java classes.
+
+@item Bigloo can also produce .NET class files. These classes may use 
+regular .NET machines such as mono.
+
+@item Bigloo is a module compiler. It compiles
+modules into `.o', `.class', or `.obj' files that must be linked together to 
+produce stand alone executable programs, JVM jar files, or .NET programs.
+@end itemize
+
+However, we designed Bigloo to be as close as possible to the
+R5RS. Hence, when Bigloo includes a feature that is extracted from
+Scheme and implemented as normal, this feature is only mentioned in this
+document and not fully described.
+
+@section SRFI
+
+The Bigloo version @value{bigloovers} supports the following SRFIs:
+
+@itemize @bullet
+@item @code{srfi-0} (conditional execution).
+@item @code{srfi-2} (AND-LET*: an AND with local bindings, a guarded LET* special form).
+@item @code{srfi-6} (Basic String Ports).
+@item @code{srfi-8} (Binding to multiple values).
+@item @code{srfi-9} (@emph{Records} specification).
+@item @code{srfi-18} (Multithreading support). 
+@item @code{srfi-22} (script interpreter invocation). 
+@item @code{srfi-28} (Basic Format Strings). 
+@item @code{srfi-30} (Multi-line comments).
+@end itemize
+
+@section Separate compilation
+
+To allow and stimulate separate compilation, Bigloo compiles
+modules instead of entire programs. A module is composed of
+a module declaration and a module body, where a module body can be
+thought of as an incomplete Scheme program. 
+
+Bigloo strictly enforces variable bindings. That is, it is illegal in a
+body to refer to unbound variables.
+
+In a module declaration, some variables can be declared to be
+immutable functions. For such variables, the compiler can then check
+if the number of arguments for some function calls are correct or
+not. When an arity mismatch is detected, Bigloo signals an error and
+aborts the compilation process.
+
+@section C interface
+
+The goal of the design of Bigloo is to allow the merging of high and low
+level programming. This means that Bigloo is designed to be fully connected
+to the already existing outside world of C.
+
+This connection has two components: a function call interface and a data
+storage interface. Bigloo code is able to call C code and vice versa; Bigloo
+data storage is accessible from C and vice versa. There are no frontiers
+between the Bigloo and C worlds.
+
+@section Java interface
+
+Since release 2.3, Bigloo is able to produce Java Virtual Machine byte
+codes in addition to C code. By producing class files, it is possible
+to connect Scheme code and Java code in the same spirit as the Scheme and
+C connection.
+
+This connection has two components: a function call interface and a data
+storage interface. Bigloo code is able to call Java code and vice versa;
+Bigloo data storage is accessible from Java and vice versa. There are no
+frontiers between the Bigloo and Java worlds.
+
+@section Object language
+
+Since release 1.9, Bigloo has included an object system. This
+system belongs to the @sc{Clos} [Bobrow et al. 88] object
+system family but whose design has been mainly inspired by
+C. Queinnec's @sc{Meroon} [Queinnec93]. It
+is based on @emph{ad-hoc} polymorphism (generic functions and methods),
+uses single inheritance and mono-dispatch, and provides the user with
+introspection facilities.
+
+@section Threads
+
+Since release 2.4d, Bigloo has included a thread library. Bigloo
+supports Fair threads that are cooperative threads run by a fair
+scheduler which gives them equal access to the processor. Fair threads
+can communicate using broadcast events and their semantics does not
+depends on the executing platform. Fine control over fair threads
+execution is possible allowing the programming of specific
+user-defined scheduling strategies.
+
+@section SQL
+
+Since release 2.7b, Bigloo includes a SQL binding. Namely, the C Bigloo
+runtime system can access the facilities offered by SQLite
+(@url{http://www.sqlite.org/}).
+
+
+@section Type annotations
+
+Type information, related to variable or function definitions, can be added
+to the source code. If no type information is provided, runtime checks will
+be introduced by the compiler to ensure normal execution, provided that the
+user has not used compilation flags to prevents this. If type information is
+added, the compiler statically type checks the program and refuses ones that
+prove to be incorrect.
+
+@section Unicode support
+
+Bigloo supports UCS-2 Character encoding and also provides conversion
+functions between UTF-8 and UCS-2. It still maintains traditional
+ISO-LATIN1 characters and strings.
+
+@section DSSSL
+
+Bigloo helps the DSSSL programmer by supporting keywords, named constants
+and keyword functions.
+
+@c ------------------------------------------------------------------- @c
+@c    The modules                                                      @c
+@c ------------------------------------------------------------------- @c
+@include modules.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Core language                                                    @c
+@c ------------------------------------------------------------------- @c
+@include core.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Dsssl                                                            @c
+@c ------------------------------------------------------------------- @c
+@include dsssl.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Standard library                                                 @c
+@c ------------------------------------------------------------------- @c
+@include stdlib.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Pattern matching                                                 @c
+@c ------------------------------------------------------------------- @c
+@include match.texi
+
+@c ------------------------------------------------------------------- @c
+@c    search                                                           @c
+@c ------------------------------------------------------------------- @c
+@include search.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Structures                                                       @c
+@c ------------------------------------------------------------------- @c
+@include struct.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Object                                                           @c
+@c ------------------------------------------------------------------- @c
+@include object.texi
+
+@c ------------------------------------------------------------------- @c
+@c    rgc                                                              @c
+@c ------------------------------------------------------------------- @c
+@include rgc.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Lalr                                                             @c
+@c ------------------------------------------------------------------- @c
+@include lalr.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Pregexp                                                          @c
+@c ------------------------------------------------------------------- @c
+@include pregexp.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Command Line Parsing                                             @c
+@c ------------------------------------------------------------------- @c
+@include cmdline.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Cryptography                                                     @c
+@c ------------------------------------------------------------------- @c
+@include cryptography.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Error handling                                                   @c
+@c ------------------------------------------------------------------- @c
+@include error.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Fair threads                                                     @c
+@c ------------------------------------------------------------------- @c
+@include thread.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Database                                                         @c
+@c ------------------------------------------------------------------- @c
+@include database.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Multimedia                                                       @c
+@c ------------------------------------------------------------------- @c
+@include multimedia.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Mail                                                             @c
+@c ------------------------------------------------------------------- @c
+@include mail.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Eval                                                             @c
+@c ------------------------------------------------------------------- @c
+@include eval.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Macro                                                            @c
+@c ------------------------------------------------------------------- @c
+@include macro.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Params                                                           @c
+@c ------------------------------------------------------------------- @c
+@include params.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Typing                                                           @c
+@c ------------------------------------------------------------------- @c
+@include typing.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Foreign interface                                                @c
+@c ------------------------------------------------------------------- @c
+@include foreign.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Java interface                                                   @c
+@c ------------------------------------------------------------------- @c
+@include java.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Library                                                          @c
+@c ------------------------------------------------------------------- @c
+@include library.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Custom                                                           @c
+@c ------------------------------------------------------------------- @c
+@include custom.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Srfi                                                             @c
+@c ------------------------------------------------------------------- @c
+@include srfi.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Compiler                                                         @c
+@c ------------------------------------------------------------------- @c
+@include compiler.texi
+@include option.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Extension                                                        @c
+@c ------------------------------------------------------------------- @c
+@include extension.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Bee                                                              @c
+@c ------------------------------------------------------------------- @c
+@include bee.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Index                                                            @c
+@c ------------------------------------------------------------------- @c
+@node Global Index, Library Index, Bee, Top
+@comment  node-name,  next,  previous,  up
+@chapter Global Index
+
+@printindex cp
+
+@c ------------------------------------------------------------------- @c
+@c    Library Index                                                    @c
+@c ------------------------------------------------------------------- @c
+@node Library Index, Bibliography, Global Index, Top
+@comment  node-name,  next,  previous,  up
+@chapter Library Index
+
+@printindex pg
+
+@c ------------------------------------------------------------------- @c
+@c    Bibliography                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Bibliography, , Library Index, Top
+@unnumbered Bibliography
+
+@itemize @bullet
+@item [Bobrow et al. 88]
+D. Bobrow, L. DeMichiel, R. Gabriel, S. Keene, G. Kiczales and D. Moon.
+@samp{Common lisp object system specification.}
+In @emph{special issue}, number 23 in @sc{Sigplan} Notices, September 1988.
+
+
+@item [BoehmWeiser88]
+H.J. Boehm and M. Weiser.
+@samp{Garbage collection in an unco-@-operative environment.}
+@emph{Software---Practice and Experience}, 
+18(9):807--820, Sept-@-ember 1988.
+
+@item [Boehm91]
+H.J. Boehm.
+@samp{Space efficient conservative garbage collection.}
+In @emph{Conference on Programming Language Design and Implementation}, 
+number 28, 6 in @sc{Sigplan} Notices, pages 197--206, 1991.
+
+@item [Caml-light]
+P. Weis and X. Leroy.
+@samp{Le langage CAML}.
+@emph{InterEditions, Paris, 1993.}
+
+@item [Dsssl96]
+@ ISO/IEC.
+@samp{Information technology, Processing Languages, Document
+Style Semantics and Specification Languages (dsssl).}
+@emph{Technical Report 10179 :1996(E), ISO, 1996.}
+
+@item [Dybvig et al. 86]
+K. Dybvig, D. Friedman, and C. Haynes.
+@samp{Expansion-passing style: Beyond conventional macros.}
+In @emph{Conference on Lisp and Functional Programming}, 
+pages 143--150, 1986.
+
+@item [Gallesio95]
+E. Gallesio.
+@samp{STk Reference Manual.}
+Technical Report RT 95-31a, 
+I3S-CNRS/University of Nice--Sophia Antipolis, July 1995.
+
+@item [IsoC] 
+ISO/IEC.
+@samp{9899 programming language --- C.}
+@emph{Technical Report DIS 9899, ISO, July 1990.}
+
+@item [Les75]
+M.E. Lesk.
+@samp{Lex --- a lexical analyzer generator.}
+Computing Science Technical Report 39~39, AT&T Bell Laboratories,
+Murray Hill, N.J., 1975.
+
+@item [Queinnec93]
+C. Queinnec.
+@samp{Designing @sc{meroon} v3.}
+In @emph{Workshop on Object-Oriented Programming in Lisp}, 1993.
+
+@item [QueinnecGeffroy92]
+C. Queinnec and J-M. Geffroy.
+@samp{Partial evaluation applied to symbolic pattern matching with
+intelligent backtrack.}
+In M. Billaud, P. Casteran, MM. Corsini, K. Musumbu, and A. Rauzy:
+Editors, @emph{Workshop on Static Analysis}, 
+number 81-82 in bigre, pages 109--117, Bordeaux (France), September 1992.
+
+@item [R5RS]
+R Kelsey, W. Clinger and J. Rees: Editors.
+@samp{The Revised(5) Report on the Algorithmic Language Scheme}.
+ 
+@item [Stallman95]
+R. Stallman.
+@samp{Using and Porting GNU CC.}
+for version 2.7.2 ISBN 1-882114-66-3, Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA 02111-1307, USA, November 1995.
+
+@item [SerranoWeis94]
+M. Serrano and P. Weis. 
+@samp{1+1=1: an optimizing Caml compiler.}
+In @emph{ACM SIGPLAN} Workshop on ML and its Applications,
+pages 101--111, Orlando (Florida, USA), June 1994. ACM SIGPLAN, INRIA RR 2265.
+
+@item [Steele90]
+G. Steele.
+@samp{COMMON LISP (The language)}.
+@emph{Digital Press (DEC)}, Burlington MA (USA), 2nd edition, 1990.
+
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Bye                                                              @c
+@c ------------------------------------------------------------------- @c
+@iftex
+@chapter Table of contents
+@contents
+@summarycontents
+@end iftex
+ 
+@bye

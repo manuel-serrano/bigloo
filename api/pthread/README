@@ -1,0 +1,8 @@
+This is a straightforward implementation of the Posix Threads in Bigloo.
+This is not to be confused with the Fair Threads which constitutes the 
+"official" Bigloo's concurrent programming model.
+
+The Bigloo threads implementation requires a support for native
+Posix threads from the host operating system, except for JVM and
+.NET back-ends. In consequence the thread implementation is uneasy
+to port.

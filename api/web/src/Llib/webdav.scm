@@ -1,0 +1,377 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/web/src/Llib/webdav.scm          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
+;*    Last change :  Tue Oct 14 13:57:52 2008 (serrano)                */
+;*    Copyright   :  2007-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    WebDAV client side support.                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module __web_webdav
+   
+   (import __web_xml)
+   
+   (export (webdav-directory->path-list::pair-nil ::bstring
+						  #!key (timeout 0) (proxy #f))
+	   (webdav-directory->list::pair-nil ::bstring
+					     #!key (timeout 0) (proxy #f))
+	   (webdav-file-exists?::bool ::bstring
+				      #!key (timeout 0) (proxy #f))
+	   (webdav-directory?::bool ::bstring
+				    #!key (timeout 0) (proxy #f))
+	   (webdav-file-modification-time::elong ::bstring
+						 #!key (timeout 0) (proxy #f))
+	   (webdav-file-size::elong ::bstring
+				    #!key (timeout 0) (proxy #f))
+	   (webdav-delete-file::bool ::bstring
+				     #!key (timeout 0) (proxy #f))
+	   (webdav-delete-directory::bool ::bstring
+					  #!key (timeout 0) (proxy #f))
+	   (webdav-make-directory::bool ::bstring
+					#!key (timeout 0) (proxy #f))
+	   (webdav-make-directories::bool ::bstring
+					  #!key (timeout 0) (proxy #f))
+	   (webdav-rename-file::bool ::bstring ::bstring
+				     #!key (timeout 0) (proxy #f))
+	   (webdav-copy-file::bool ::bstring ::bstring
+				   #!key (timeout 0) (proxy #f))
+	   (webdav-put-file::bool ::bstring ::obj
+				  #!key (timeout 0) (proxy #f))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-prop ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-struct webdav-prop path modified size type)
+
+;*---------------------------------------------------------------------*/
+;*    webdav-header ...                                                */
+;*---------------------------------------------------------------------*/
+(define (webdav-header)
+   '((connection: "close")))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-propfind ...                                              */
+;*---------------------------------------------------------------------*/
+(define (webdav-propfind url timeout proxy #!optional (header (webdav-header)))
+   (let loop ((url url))
+      (multiple-value-bind (proto login host port abspath)
+	 (url-parse url)
+	 (let ((socket (http :method 'PROPFIND
+			  :host host
+			  :port port
+			  :timeout timeout
+			  :path abspath
+			  :header header
+			  :proxy proxy
+			  :login login
+			  :body "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<propfind xmlns=\"DAV:\">
+ <prop>
+  <resourcetype xmlns=\"DAV:\"/>
+  <getlastmodified xmlns=\"DAV:\"/>
+  <getcontentlength xmlns=\"DAV:\"/>
+ </prop>
+</propfind>")))
+	    (unwind-protect
+	       (with-handler
+		  (lambda (e)
+		     (if (&http-redirection? e)
+			 (loop (&http-redirection url))
+			 (raise e)))
+		  (http-parse-response (socket-input socket)
+				       (socket-output socket)
+				       webdav-response-parser))
+	       (socket-close socket))))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-directory->path-list ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Returns the list of files of a webdav repository. The            */
+;*    files can be obtained with regular HTTP GET commands.            */
+;*---------------------------------------------------------------------*/
+(define (webdav-directory->path-list url #!key (timeout 0) (proxy #f))
+   (multiple-value-bind (protocol userinfo host port _)
+      (url-parse url)
+      (map (lambda (x)
+	      (if userinfo
+		  (format "~a://~a@~a:~a~a" protocol userinfo host port
+			  (webdav-prop-path x))
+		  (format "~a://~a:~a~a" protocol host port
+			  (webdav-prop-path x))))
+	   (webdav-propfind url timeout proxy))))
+      
+;*---------------------------------------------------------------------*/
+;*    webdav-directory->list ...                                       */
+;*---------------------------------------------------------------------*/
+(define (webdav-directory->list url #!key (timeout 0) (proxy #f))
+   (map (lambda (x)
+	   (basename (webdav-prop-path x)))
+	(webdav-propfind url timeout proxy)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-file-exists? ...                                          */
+;*---------------------------------------------------------------------*/
+(define (webdav-file-exists? url #!key (timeout 0) (proxy #f))
+   (pair? (webdav-propfind url timeout proxy '((depth: 0)))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-directory? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (webdav-directory? url #!key (timeout 0) (proxy #f))
+   (let ((r (webdav-propfind url timeout proxy '((depth: 0)))))
+      (and (pair? r) (eq? (webdav-prop-type (car r)) 'directory))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-file-modification-time ...                                */
+;*---------------------------------------------------------------------*/
+(define (webdav-file-modification-time url #!key (timeout 0) (proxy #f))
+   (let ((r (webdav-propfind url timeout proxy '((depth: 1)))))
+      (if (pair? r)
+	  (date->seconds (rfc2822-date->date (webdav-prop-modified (car r))))
+	  #e-1)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-file-size ...                                             */
+;*---------------------------------------------------------------------*/
+(define (webdav-file-size url #!key (timeout 0) (proxy #f))
+   (let ((r (webdav-propfind url timeout proxy '((depth: 1)))))
+      (if (pair? r)
+	  (string->elong (webdav-prop-size (car r)))
+	  #e-1)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-request ...                                               */
+;*---------------------------------------------------------------------*/
+(define (webdav-request method return url timeout proxy header body)
+   (let loop ((url url))
+      (multiple-value-bind (proto login host port abspath)
+	 (url-parse url)
+	 (let ((socket (http :method method
+			  :host host
+			  :port port
+			  :timeout timeout
+			  :path abspath
+			  :proxy proxy
+			  :header header
+			  :login login
+			  :body body)))
+	    (close-output-port (socket-output socket))
+	    (unwind-protect
+	       (with-handler
+		  (lambda (e)
+		     (if (&http-redirection? e)
+			 (loop (&http-redirection url))
+			 (raise e)))
+		  (http-parse-response (socket-input socket)
+				       (socket-output socket)
+				       (lambda (ip status header clen tenc)
+					  (if (memq status return)
+					      #t #unspecified))))
+	       (socket-close socket))))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-delete-file ...                                           */
+;*---------------------------------------------------------------------*/
+(define (webdav-delete-file url #!key (timeout 0) (proxy #f))
+   (if (and (webdav-file-exists? url :timeout timeout :proxy proxy)
+	    (not (webdav-directory? url :timeout timeout :proxy proxy)))
+       (eq? (webdav-request 'DELETE '(200) url timeout proxy (webdav-header) #f)
+	    #t)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-directory ...                                             */
+;*---------------------------------------------------------------------*/
+(define (webdav-delete-directory url #!key (timeout 0) (proxy #f))
+   (if (and (webdav-file-exists? url :timeout timeout :proxy proxy)
+	    (webdav-directory? url :timeout timeout :proxy proxy)
+	    (null? (webdav-directory->path-list url :timeout timeout :proxy proxy)))
+       (eq? (webdav-request 'DELETE '(200) url timeout proxy (webdav-header) #f)
+	    #t)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-make-directory ...                                        */
+;*---------------------------------------------------------------------*/
+(define (webdav-make-directory url #!key (timeout 0) (proxy #f))
+   (let ((len (string-length url)))
+      (if (=fx len 0)
+	  #f
+	  (let ((url (if (char=? (string-ref url (-fx len 1)) #\/)
+			 url
+			 (string-append url "/"))))
+	     (eq? (webdav-request 'MKCOL '(201) url timeout proxy (webdav-header) #f)
+		  #t)))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-make-directories ...                                      */
+;*---------------------------------------------------------------------*/
+(define (webdav-make-directories url #!key (timeout 0) (proxy #f))
+   (or (webdav-make-directory url)
+       (multiple-value-bind (proto login host port abspath)
+	  (url-parse url)
+	  (let ((dpath (dirname abspath))
+		(dname (dirname url)))
+	     (if (or (string=? dpath "") (webdav-file-exists? dname))
+		 #f
+		 (begin
+		    (webdav-make-directories dname)
+		    (webdav-make-directory url)))))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-rename-file ...                                           */
+;*---------------------------------------------------------------------*/
+(define (webdav-rename-file url dst #!key (timeout 0) (proxy #f))
+   (eq? (webdav-request 'MOVE '(201 204) url timeout proxy
+			`((destination: ,dst) ,@(webdav-header)) #f) #t))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-copy-file ...                                             */
+;*---------------------------------------------------------------------*/
+(define (webdav-copy-file url dst #!key (timeout 0) (proxy #f))
+   (when (and (webdav-file-exists? url)
+	      (not (webdav-directory? url)))
+      (eq? (webdav-request 'COPY '(201 204) url timeout proxy
+			   `((destination: ,dst) ,@(webdav-header)) #f) #t)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-put-file ...                                              */
+;*---------------------------------------------------------------------*/
+(define (webdav-put-file url obj #!key (timeout 0) (proxy #f))
+   (eq? (webdav-request 'PUT '(201 204) url timeout proxy (webdav-header) obj)
+	#t))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-response-parser ...                                       */
+;*---------------------------------------------------------------------*/
+(define (webdav-response-parser ip status header clen tenc)
+   (let ((x (xml-parse ip
+		       :content-length clen
+		       :encoding 'ISO-8859-1
+		       :procedure vector)))
+      (case status
+	 ((207) (webdav-responses x))
+	 ((200) (webdav-response x '()))
+	 ((401) (raise (instantiate::&access-control-exception
+			  (message "Authentication required")
+			  (permission 401))))
+	 (else '()))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-attribute-namespace ...                                      */
+;*---------------------------------------------------------------------*/
+(define (xml-attribute-namespace attributes)
+   (let loop ((a attributes))
+      (when (pair? a)
+	 (let ((s (symbol->string (caar a))))
+	    (if (substring-at? s "xmlns:" 0)
+		(cons (string->symbol (substring s 6 (string-length s)))
+		      (cdar a))
+		(loop (cdr a)))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-markup/namespace ...                                         */
+;*---------------------------------------------------------------------*/
+(define (xml-markup/namespace m xmlns)
+   (let* ((s (symbol->string m))
+	  (i (string-index s #\:)))
+      (if i
+	  (let* ((prefix (string->symbol (substring s 0 i)))
+		 (base (substring s (+fx i 1) (string-length s)))
+		 (ns (assq prefix xmlns)))
+	     (if (pair? ns)
+		 (string->symbol (string-append (cdr ns) base))
+		 m))
+	  m)))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-find-node ...                                             */
+;*---------------------------------------------------------------------*/
+(define (webdav-find-node xml xmlns search default)
+   (let loop ((xml xml)
+	      (xmlns xmlns)
+	      (err #t))
+      (cond
+	 ((vector? xml)
+	  (let* ((el xml)
+		 (att (vector-ref el 1))
+		 (ns (xml-attribute-namespace att))
+		 (xmlns (if ns (cons ns xmlns) xmlns))
+		 (m (xml-markup/namespace (vector-ref el 0) xmlns))
+		 (body (vector-ref el 2)))
+	     (if (eq? m search)
+		 (values body xmlns)
+		 (loop body xmlns #f))))
+	 ((pair? xml)
+	  (or (loop (car xml) xmlns #f)
+	      (loop (cdr xml) xmlns err)))
+	 (err
+	  (or default
+	      (raise (instantiate::&io-parse-error
+			(obj xml)
+			(proc 'webdav)
+			(msg (format "Cannot find ~a node" search))))))
+	 (else
+	  #f))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-response ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Traverse the response tree, handling the namespaces and          */
+;*    stopping at a DAV:response markup.                               */
+;*---------------------------------------------------------------------*/
+(define (webdav-response xml xmlns)
+   (multiple-value-bind (body xmlns)
+      (webdav-find-node xml xmlns 'DAV:response #f)
+      (let ((href (multiple-value-bind (href _)
+		     (webdav-find-node body xmlns 'DAV:href #f)
+		     (car href))))
+	 (multiple-value-bind (prop xmlns2)
+	    (webdav-find-node body xmlns 'DAV:propstat #f)
+	    (let ((status (multiple-value-bind (status _)
+			     (webdav-find-node prop xmlns2 'DAV:status #f)
+			     (car status))))
+	       (multiple-value-bind (_ code _)
+		  (http-parse-status-line (open-input-string status))
+		  (case code
+		     ((200)
+		      (let ((lm (multiple-value-bind (lastmodified _)
+				   (webdav-find-node
+				    prop xmlns2 'DAV:getlastmodified #f)
+				   (car lastmodified)))
+			    (clen (multiple-value-bind (clength _)
+				     (webdav-find-node
+				      prop xmlns2 'DAV:getcontentlength #f)
+				     (car clength)))
+			    (ty (multiple-value-bind (ty xmlns3)
+				   (webdav-find-node
+				    prop xmlns2 'DAV:resourcetype #f)
+				   (cond
+				      ((not ty)
+				       'file)
+				      ((multiple-value-bind (d _)
+					  (webdav-find-node
+					   ty xmlns3 'DAV:collection #t)
+					  (not (eq? d #t)))
+				       'directory)
+				      (else
+				       'file)))))
+			 (webdav-prop href lm clen ty)))
+		     ((404)
+		      #f)
+		     (else
+		      (raise (instantiate::&io-parse-error
+				(obj status)
+				(proc 'webdav)
+				(msg "Illegal status code")))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    webdav-responses ...                                             */
+;*---------------------------------------------------------------------*/
+(define (webdav-responses xml)
+   (multiple-value-bind (n xmlns)
+      (webdav-find-node xml '() 'DAV:multistatus #f)
+      (filter-map (lambda (n) (webdav-response n xmlns)) n)))

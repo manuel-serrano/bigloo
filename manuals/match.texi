@@ -1,0 +1,185 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/match.texi                   @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 09:55:20 1998                          @c
+@c    Last change :  Mon Nov 12 15:17:43 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The Bigloo pattern matching compiler (Jean-Marie Geffroy).       @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Pattern Matching ...                                             @c
+@c ------------------------------------------------------------------- @c
+@node Pattern Matching, Fast search, Standard Library, Top
+@comment  node-name,  next,  previous,  up
+@chapter Pattern Matching
+@cindex pattern matching
+
+Pattern matching is a key feature of most modern functional programming
+languages since it allows clean and secure code to be
+written. Internally, ``pattern-matching forms'' should be translated
+(compiled) into cascades of ``elementary tests'' where code is made as
+efficient as possible, avoiding redundant tests; Bigloo's ``pattern
+matching compiler'' provides this. The technique used is described in
+details in [QueinnecGeffroy92], and the code generated can be considered
+optimal @footnote{In the cases of pattern matching in lists and vectors,
+not in structures for the moment.} due to the way this ``pattern
+compiler'' was obtained.
+
+The ``pattern language'' allows the expression of a wide variety of patterns,
+including:
+
+@itemize @bullet
+
+@item Non-linear patterns: pattern variables can appear more than
+once, allowing comparison of subparts of the datum (through @code{eq?})
+
+@item Recursive patterns on lists: for example, checking that the
+datum is a list of zero or more @code{a}s followed by zero or more 
+@code{b}s.
+
+@item Pattern matching on lists as well as on vectors and structures, 
+and record types.
+
+@end itemize
+
+@menu
+* Bigloo Pattern Matching Facilities::  
+* The Pattern Language::        
+@end menu
+
+
+@c -- Bigloo pattern matching facilities ----------------------------- @c
+@node Bigloo Pattern Matching Facilities, The Pattern Language, , Pattern Matching
+@comment  node-name,  next,  previous,  up
+@section Bigloo pattern matching facilities
+
+Only two special forms are provided for this in Bigloo: @code{match-case} 
+and @code{match-lambda}.
+
+@deffn {bigloo syntax} match-case key clause@dots{}
+The argument @var{key} may be any expression and each @var{clause} has the form
+
+@smalllisp
+(@var{pattern} @var{s-expression}@dots{})
+@end smalllisp
+
+@emph{Semantics: } A @code{match-case} expression is evaluated as
+follows. @var{key} is evaluated and the result is compared with each
+successive pattern. If the pattern in some @var{clause} yields a match, then
+the expressions in that @var{clause} are evaluated from left to right in an
+environment where the pattern variables are bound to the corresponding
+subparts of the datum, and the result of the last expression in that
+@var{clause} is returned as the result of the @code{match-case} expression.
+If no @var{pattern} in any @var{clause} matches the datum, then, if there is an
+@code{else} clause, its expressions are evaluated and the result of the last
+is the result of the whole @code{match-case} expression; otherwise the result
+of the @code{match-case} expression is unspecified.
+
+The equality predicate used is @code{eq?}.
+
+@smalllisp
+(match-case '(a b a)
+   ((?x ?x) 'foo)
+   ((?x ?- ?x) 'bar))
+   @result{} bar
+@end smalllisp
+@end deffn
+
+The following syntax is also available:
+
+@deffn {bigloo syntax} match-lambda clause@dots{}
+
+It expands into a lambda-expression expecting an argument which, once
+applied to an expression, behaves exactly like a @code{match-case}
+expression.
+
+@smalllisp
+((match-lambda
+   ((?x ?x) 'foo)
+   ((?x ?- ?x) 'bar))
+ '(a b a))
+   @result{} bar
+@end smalllisp
+@end deffn
+
+@c -- The pattern language ------------------------------------------- @c
+@node  The Pattern Language,  , Bigloo Pattern Matching Facilities, Pattern Matching
+@comment  node-name,  next,  previous,  up
+@section The pattern language
+@cindex the pattern language
+
+The syntax for <pattern> is:
+
+@smallexample
+<pattern> @expansion{}                @emph{Matches:}
+
+  <atom>                    @r{the <atom>.}
+| (@code{kwote} <atom>)            @r{any expression @code{eq?} to @code{<atom>}.}
+| (@code{and} <pat1> ... <patn>)   @r{if all of @code{<pat@var{i}>} match.}
+| (@code{or} <pat1> ... ...<patn>) @r{if any of @code{<pat1>} through @code{<patn>} matches.}
+| (@code{not} <pat>)               @r{if @code{<pat>} doesn't match.}
+| (@code{?} <predicate>)           @r{if @code{<predicate>} is true.}
+| (<pat1> ... <patn>)       @r{a list of n elements. Here, @code{...} is a}
+                            @r{meta-character denoting a finite repetition}
+                            @r{of patterns.}
+| <pat> ...                 @r{a (possibly empty) repetition}
+                            @r{of @code{<pat>} in a list.}
+| #(<pat> ... <patn>)       @r{a vector of @var{n} elements.}
+| #@{<struct> <pat> ... @}    @r{a structure.}
+| @code{?}<id>                     @r{anything, and binds @code{id} as a variable.}
+| @code{?-}                        @r{anything.}
+| @code{??-}                       @r{any (possibly empty) repetition of anything}
+                            @r{in a list.}
+| @code{???-}                      @r{any end of list.}
+@end smallexample
+
+@noindent
+@emph{Remark: } @code{and, or, not, check} and @code{kwote} must be
+quoted in order to be treated as literals. This is the only justification
+for having the @code{kwote} pattern since, by convention, any atom which is
+not a keyword is quoted.
+
+@unnumberedsubsubsec Explanations through examples
+
+@itemize @bullet
+@item @code{?-} matches any s-expr
+
+@item @code{a} matches the atom @code{'a}.
+
+@item @code{?a} matches any expression, and binds the variable @code{a} to
+this expression.
+
+@item @code{(? integer?)} matches any integer
+
+@item @code{(a (a b))} matches the only list @code{'(a (a b))}.
+
+@item @code{???-} can only appear at the end of a list, and always succeeds.
+For instance, @code{(a ???-)} is equivalent to @code{(a . ?-)}.
+
+@item when occurring in a list, @code{??-} matches any sequence of anything:
+@code{(a ??- b)} matches any list whose @code{car} is @code{a} and last
+@code{car} is @code{b}. 
+
+@item @code{(a ...)} matches any list of @code{a}'s, possibly empty.
+
+@item @code{(?x ?x)} matches any list of length 2 whose @code{car} is 
+ @emph{eq} to its @code{cadr}
+
+@item @code{((and (not a) ?x) ?x)} matches any list of length 2 whose 
+@code{car} is not @emph{eq} to @code{'a} but is @emph{eq} to its @code{cadr}
+
+@item @code{#(?- ?- ???-)} matches any vector whose length is at least 2.
+
+@item @code{#@{foo (?- . ?-) (? integer?)@}} matches any structure or
+record @code{foo} whose first and second fields are respectively a pair and an
+integer. You can provide only the fields you want to test. The order is not
+relevant.
+@end itemize
+
+@emph{Remark: } @code{??-} and @code{...} patterns can not appear
+inside a vector, where you should use @code{???-}: For example, 
+@code{#(a ??- b)} or @code{#(a...)} are invalid patterns, whereas 
+@code{#(a ???-)} is valid and matches any vector whose first element 
+is the atom @code{a}.

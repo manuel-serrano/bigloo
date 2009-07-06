@@ -1,0 +1,23 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/srfi1/src/Misc/srfi1.init        */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Thu Oct 25 11:39:01 2007 (serrano)                */
+;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The SRFI init file.                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'srfi1
+		  :srfi '(srfi-1)
+		  :basename "bigloosrfi1"
+		  :module-init '__srfi1
+		  :module-eval '__srfi1_makelib
+		  :class-init "bigloo.srfi1.srfi1"
+		  :class-eval "bigloo.srfi1.make-lib")
+
+

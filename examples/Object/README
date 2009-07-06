@@ -1,0 +1,3 @@
+his example makes use of the Bigloo object system. It contains
+the definition of classes, generic functions and methodes. It
+instantiate objects and illustrates how to use them.

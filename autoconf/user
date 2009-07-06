@@ -1,0 +1,55 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/user                        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Wed May 18 06:43:58 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Find the user name in order to stamp each configure file.        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+posixos="unix"
+
+#*---------------------------------------------------------------------*/
+#*    arguments parsing                                                */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --posixos=*|-posixos=*)
+      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+if [ "$USER " = " " ]; then
+  if [ "$USERNAME " = " " ]; then
+    user=`sh -c whoami 2>/dev/null`
+
+    if [ "$user " = " " ]; then
+       user=`sh -c /usr/ucb/whoami 2>/dev/null`;
+       if [ "$user " = " " ]; then
+          user=$LOGNAME;
+          if [ "$user " = " " ]; then
+             user=bigloo
+          fi
+       fi
+    fi
+  else
+    user=$USERNAME
+  fi
+else
+  user=$USER
+fi
+
+echo $user

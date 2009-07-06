@@ -1,0 +1,29 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/database.texi                @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Fri Feb 10 09:22:48 2006                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2006 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Database                                                         @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Database ...                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Database library, Multimedia library, Threads, Top
+@comment  node-name,  next,  previous,  up
+@chapter Database library
+@cindex database
+
+Bigloo supports database programming. The current version proposes
+a SQLite binding.
+
+@menu
+* SQLite::
+@end menu
+
+@include sqlite.texi
+
+

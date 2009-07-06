@@ -1,0 +1,1026 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/object.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 15:09:03 1998                          @c
+@c    Last change :  Mon Nov 12 15:11:18 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The Bigloo objects                                               @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Bigloo's objects                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Object System, Regular Parsing, Structures and Records, Top
+@comment  node-name,  next,  previous,  up
+@chapter Object System
+@cindex Object System
+@cindex Object
+
+Bigloo's object system is designed to be as simple as possible and
+belongs to the @sc{Clos} [Bobrow et al. 88] object system family
+in that it uses @emph{classes}, @emph{generic functions} and
+@emph{methods}. Its design has been strongly influenced by C. Queinnec's
+@sc{Meroon} [Queinnec93] It does not include any meta object protocol.
+
+
+@menu
+* Class declaration::
+* Creating and accessing objects::           
+* Generic functions::           
+* Widening and shrinking::      
+* Object library::              
+* Object serialization::        
+* Equality::                    
+* Introspection::               
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Class declaration                                                @c
+@c ------------------------------------------------------------------- @c
+@node Class declaration, Creating and accessing objects, , Object System
+@comment  node-name,  next,  previous,  up@section Class declaration
+@section Class declaration
+@cindex Class declaration
+
+Classes are defined in a module declaration. A class declaration can
+take place in a compiled or interpreted module. If a class declaration
+takes place in a static module clause (see Section @ref{Module
+Declaration}) its scope is limited to the current module but if it
+takes place in an export module clause, its scope is extended to all
+modules that import the current module. The syntax of a class
+declaration is:
+
+@deffn {bigloo module clause} class ident field @dots{}
+
+@example
+<class> @expansion{} @code{(class} <ident> <constructor>? <field>+@code{)}
+     | @code{(final-class} <ident> <constructor>? <field>+@code{)}
+     | @code{(wide-class} <ident> <constructor>? <field>+@code{)}
+     | @code{(abstract-class} <ident> <constructor>? <field>+@code{)}
+<constructor> @expansion{} @code{(} <expr> @code{)}
+<field> @expansion{} <ident>
+     | @code{(*} <ident>@code{)}
+     | @code{(}<ident> <field-prop>@code{)}
+     | @code{(*} <ident> <field-prop>@code{)}
+<field-prop> @expansion{} @code{read-only}
+     | @code{(get} <bigloo-exp>@code{)}
+     | @code{(set} <bigloo-exp>@code{)}
+     | @code{(default} <bigloo-exp>@code{)}
+     | @code{(info} <bigloo-exp>@code{)}
+@end example
+@pindex class
+@pindex final-class
+@pindex wide-class
+@pindex abstract-class
+
+A class is a Bigloo type and the class identifier is extracted from the
+<ident> of the class definition. If <ident> is also a
+<typed-ident>, the type part of this identifier denote the super-class
+of the class. If <ident> is a <@sc{Ieee}-ident>, the super-class of
+the class is the root of the inheritance tree, the @code{object} class. This
+@code{object} class is the only pre-existing class.
+
+@emph{Final classes} can only be sub-classed by @emph{wide classes}.
+@emph{Wide classes} (only for compiled modules) can only inherit from @emph{final classes}. 
+@emph{abstract classes} can't be instantiated. 
+
+Wide-classes cannot be defined within the interpreter.
+
+The optional constructor is an expression that must evaluate to a one
+argument function. This function is automatically invoked each time
+a new class instance is created. The constructor is passed the fresh
+instance. If a class has not defined a constructor the super class'
+constructors are searched. The first constructor found is invoked. 
+A constructor may be a generic function with a method specified
+for one or more classes.
+
+A class field may be a @emph{typed class field} which is achieved
+by using a <typed-ident> instead of a <@sc{Ieee}-ident>
+for the <ident> value. 
+
+A class field defined as @code{(* ...)} is an indexed field and holds a
+sequence of items. The length of this sequence is defined at allocation
+time.
+
+Field marked with @code{read-only} declaration are immutables.
+
+@code{Default} declarations allow default field values. For
+indexed fields, the default value is the default value of each
+element of the sequence.
+
+For the means of an example, the traditional points and colored points 
+can be defined as:
+@smalllisp
+(module example
+   (static (abstract-class pt)
+           (class point::pt
+              x::double 
+              y::double)
+           (class point-C::point 
+              (color::string read-only))))
+@end smalllisp
+
+We illustrate indexed fields, final and wide classes by the example:
+@smalllisp
+(module example
+   (export (final-class person 
+               (name::string (default "Jones"))
+               (sex read-only)
+               (* children::person))
+           (wide-class married-person::person
+               mate::person)))
+@end smalllisp
+
+Fields may be virtual. A field is virtual as soon as its declaration
+contain a @code{get} attribute. Virtual fields have no 
+physical implementation within the instance. When defining a virtual
+field, the class declaration implements a @emph{getter} and a @emph{setter}
+if that field is not a read only field. Access to the virtual field will
+rely on invocation of the user @emph{getter} and user @emph{setter}. For
+instance:
+
+@smalllisp
+(module example
+   (static (class complex
+              mag::double
+              angle::double              
+              (real::double (get (lambda (p)
+                                    (with-access::complex p (mag angle)
+                                       (* mag (cos angle)))))
+                            read-only)
+              (imag::double (get (lambda (p)
+                                    (with-access::complex p (mag angle)
+                                       (* mag (sin angle)))))
+                            read-only))))
+
+(let ((p (instantiate::complex (mag 1.0) (angle 2.18))))
+   (with-access::complex p (real imag)
+      (print "real: " real)
+      (print "imag: " imag)))
+@end smalllisp
+
+Virtual fields cannot be associated default values. Virtual fields may
+not be indexed fields. If a virtual field is not provided with a 
+setter it must be annotated as read only.
+
+@code{Info} declarations allow arbitrary user information field values.
+This value can be retrieved by introspection, by the means of the
+@code{class-field-info} introspection function.
+
+For the means of an example, with add to information to the slot of
+the point class.
+@smalllisp
+(module example
+   (static (class point 
+              (x::double (info '(range 0.0 10.0)))
+              (y::double (info '(range -1.0 1.0)))))
+@end smalllisp
+
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Creating and accessing objects                                   @c
+@c ------------------------------------------------------------------- @c
+@node  Creating and accessing objects, Generic functions, Class declaration, Object System
+@comment  node-name,  next,  previous,  up
+@section Creating and accessing objects
+@cindex Creating and accessing objects
+
+Bigloo automatically creates functions to allocate and manipulate objects.
+Let us suppose the class declaration:
+@smalllisp
+(class @var{class}
+   @var{field1}::@var{type1}
+   (* @var{field2}::@var{type2}))
+@end smalllisp
+
+Theses functions are:
+@itemize @bullet
+
+@item A nil instance:
+@smalllisp
+(@var{class}-nil::@var{class})
+@end smalllisp
+
+This function returns the NIL pre-existing class instance. This instance plays 
+the role of @code{void *} in C or @code{null} in Java. The value of each field
+is unspecified but correct with respect to the Bigloo type system. Each 
+call to @code{@var{class}-nil} returns the same object (in the sense of 
+@code{eq?}).
+
+@item A creator:
+@smalllisp
+(make-@var{class}::@var{class} ::@var{type1} ::long ::@var{type2})
+@end smalllisp
+
+This function allocates a fresh instance of @var{class} and fills the field
+values with the argument. The length of the indexed field @var{field2} is
+given as argument of the function.
+
+Example:
+@smalllisp
+(class truc 
+   x::char 
+   (* y::bstring))
+@end smalllisp
+
+The prototype of the allocation function is:
+@smalllisp
+(make-truc::truc x::char 
+                 y-len::long 
+                 y::bstring)
+@end smalllisp
+
+The indexed values of the @code{y} and @code{z} fields will be set
+to the values of the formal parameters @code{y} and @code{z} respectively. 
+
+@item A filler:
+@smalllisp
+(fill-@var{class}! ::@var{class} ::@var{type1} ::long ::@var{type2})
+@end smalllisp
+
+This function accepts the same arguments as the creator augmented with
+one allocated instance. This instance is filled up with the provided values.
+For indexed fields, the same initial value is used to fill up the array
+of values.
+
+@item A type checker:
+@smalllisp
+(@var{class}?::bool @var{obj}::obj)
+@end smalllisp
+
+This function returns @code{#t} if @var{obj} is an instance
+of @var{class} or an instance of a sub-class of @var{class}, otherwise,
+it returns @code{#f}.
+
+@item Accessors and mutators:
+@smalllisp
+(@var{class}-@var{field_1}::@var{type_1} ::@var{class})
+(@var{class}-@var{field_1}-set!::obj ::@var{class} ::@var{type_1})
+(@var{class}-@var{field_2}-len::long ::@var{class})
+(@var{class}-@var{field_2}-ref::@var{type_2} ::@var{class} ::long)
+(@var{class}-@var{field_2}-set!::obj ::@var{class} ::long ::@var{type_2})
+@end smalllisp
+
+Declaring a field @code{read-only} prevents Bigloo from
+generating an associated @code{@var{class}-@var{field_i}-set!}
+function. The length of the indexed field is @code{
+read-only}. Thus they do not have mutator functions.
+
+@end itemize
+
+Some syntax helps with allocation and access to objects.
+@deffn {bigloo syntax} with-access::@var{class} obj (binding@dots{}) body
+@pindex with-access
+
+A reference to any of the variables defined in as a @var{binding} is
+replaced by the appropriate field access form. This is true for both
+reference and assignment. A @var{binding} is either a symbol or a list
+of two symbols. In the first place, it denotes a field. In the second
+case, it denotes an aliases field.
+
+For instance:
+@smalllisp
+(with-access::point p (x (y1 y))
+   (with-access::point p2 (y)
+      (set! x (- x))
+      (set! y1 (- y1 y))))
+@r{is equivalent to:}
+(begin
+   (point-x-set! p (- (point-x p)))
+   (point-y-set! p (- (point-y p) (point-y p2))))
+@end smalllisp
+
+When an indexed field is referenced inside the binding part of a
+@code{with-access} form, the functions that accesses and changes the
+fields are bound inside the body of the @code{with-access}. In addition,
+a variable reporting the length of the field is also bound. For a field
+@var{fd}, the getter function is @code{(@var{fd}-ref @var{offset})}, the
+setter is @code{(@var{fd}-set! @var{offset} @var{value})}, the length
+variable is @code{@var{fd}-len}.
+For instance:
+@smalllisp
+(with-access::truc o (y)
+   (print "length: " y-len)
+   (print "old y-ref(0): " (y-ref 0))
+   (y-set! 0 "foo")
+   (print "new y-ref(0): " (y-ref 0)))
+@r{is equivalent to:}
+(begin
+   (print "length: " (truc-y-len o))
+   (print "old y-ref(0): " (truc-y-ref o 0))
+   (truc-y-set! o 0 "foo")
+   (print "new y-ref(0): " (truc-y-ref o 0)))
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo syntax} instantiate::@var{class} (ident value)@dots{}
+@pindex instantiate
+This forms allocates object of class @var{class} and fills the fields with
+values found in the list of parameters (note that field are explicitly
+named and that there is no ordering for field naming). Field values which
+are not provided in the parameter list must have been declared with a
+@code{default} value which is used to initialize the corresponding
+field.
+
+For instance:
+@smalllisp
+(make-point 0 0)
+@end smalllisp
+is equivalent to:
+@smalllisp
+(instantiate::point (x 0) (y 0))
+@end smalllisp
+
+Indexed field must be provided with exactly two values. The first is the 
+length of the indexed field and the second is the default value of each 
+element of the indexed field.
+@end deffn
+
+@deffn {bigloo syntax} co-instantiate ((@var{var} @var{value}) @dots{}) body
+
+This form is only available from compiled modules. In other words, it
+is not available from the interpreter. It permits the creation of
+recursive instances. It is specially useful for creating instances for
+which class declarations contain cyclic type references (for instance
+a class @code{c1} for a which a field is declared of class @code{c2}
+and a class @code{c2} for which a class is declared of type
+@code{c1}). The syntax of a @code{co-instantiate} form is similar to a
+@code{let} form. However the only legal @var{values} are
+@code{instantiate} forms. The variables introduced in the binding of a
+@code{co-instantiate} form are bound in @var{body}. In addition, they
+are @emph{partially} bound in the @var{values} expressions. In a
+@var{value} position, a variable @var{var} can only be used to set the
+value of a field of an instantiated class. It cannot be used in any
+calculus. Example:
+
+@smalllisp
+(module obj-example
+   (export (class c1 a b o2::c2)
+           (class c2 x y o1::c1)))
+
+(co-instantiate ((o1 (instantiate::c1
+                        (a 10)
+                        (b 20)
+                        (o2 o2)))
+                 (o2 (instantiate::c2
+                        (x 10)
+                        (y 20)
+                        (o1 o1))))
+   (+ (c2-x (c1-o2 o1)) (c2-y (c1-o2 x))))
+                                       @result{} 30
+@end smalllisp
+@end deffn
+
+@deffn {bigloo syntax} duplicate::@var{class} obj (ident value)@dots{}
+@pindex duplicate
+This forms allocates an instance of class @var{class}. The field
+values of the new object are picked up from the field values of
+the @var{old} object unless they are explicitly given in the parameter
+list.
+
+For instance:
+@smalllisp
+(with-access::point old (x)
+   (make-point x 10))
+@end smalllisp
+is equivalent to:
+@smalllisp
+(duplicate::point old (y 10))
+@end smalllisp
+
+Indexed field must be provided with exactly two values. The first is the 
+length of the indexed field and the second is the default value of each 
+element of the indexed field.
+
+Here is an example of creations and mutations of a complex object:
+@smalllisp
+(module foo
+   (export (class named-tab
+              name::string
+              (* els::int))))
+
+;; a function that prints a named-tab
+(define (print-tab tab)
+   (display* (named-tab-name tab) ": ")
+   (let loop ((i (-fx (named-tab-els-len tab) 1)))
+      (if (=fx i -1)
+          (newline)
+          (begin
+             (display* #\( i 
+                       " "
+                       (named-tab-els-ref tab i)
+                       ") ")
+             (loop (-fx i 1))))))
+
+;; we allocate a named-tab object with
+;; 5 els, each of them initialized to 0
+(define a-tab (instantiate::named-tab
+                 (name "example")
+                 (els 5 0)))
+
+;; we print its elements
+(print-tab a-tab) 
+
+;; we change the values of the indexed field
+;; els by setting values from 0 to 4
+(let loop ((i (-fx (named-tab-els-len a-tab) 1)))
+   (if (=fx i -1)
+       'done
+       (begin
+          (named-tab-els-set! a-tab i i)
+          (loop (-fx i 1)))))
+
+;; we re-print it
+(print-tab a-tab)
+@end smalllisp
+
+@noindent
+This will produce the following output:
+@smalllisp
+example: (4 0) (3 0) (2 0) (1 0) (0 0) 
+example: (4 4) (3 3) (2 2) (1 1) (0 0) 
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Generic functions                                                @c
+@c ------------------------------------------------------------------- @c
+@node  Generic functions, Widening and shrinking, Creating and accessing objects, Object System
+@comment  node-name,  next,  previous,  up
+@section Generic functions
+@cindex Generic functions
+
+A generic function is a bag of specific functions known as methods. When
+invoked on a Bigloo object, a generic function determines the class of the
+discriminating variable (corresponding to the first argument of the generic
+function) and invokes the appropriate method. Generic functions implement
+single inheritance and each is defined using the @code{define-generic} 
+Bigloo syntax.
+
+@deffn {bigloo syntax} define-generic (name arg@dots{}) default-body
+
+A generic function can be defined with a default body which will
+be evaluated if no method can be found for the discriminating
+variable. The default default-body signals an error.
+@end deffn
+
+As an example, here is a possible definition of the @code{object-display} 
+generic function:
+
+@smalllisp
+(define-generic (object-display obj::object . op)
+   (let ((port (if (pair? op) 
+                   (car op) 
+                   (current-output-port))))
+      (display "#\|" port)
+      (display (class-name (object-class obj)) port)
+      (display "\|" port)))
+@end smalllisp
+
+Methods can be defined to specialize a generic function and such
+methods must have a
+compatible variable list. That is, the first argument of the
+method must be a sub-type (i.e. belong to a sub-class) of the
+first argument of the generic function. Other formal parameters
+must be of same types. Moreover, the result type of the method
+must be a sub-type of the result of the generic function.
+
+@deffn {bigloo syntax} define-method (name arg@dots{}) body
+@deffnx {bigloo syntax} call-next-method
+If there is no appropriate method, an error is signaled.
+
+Methods can use the form @code{(call-next-method)} to invoke the method
+that would have been called if not present. The @code{(call-next-method)}
+cannot be used out of method definition.
+example:
+@smalllisp
+(define-method (object-display p::person . op)
+   (let ((port (if (pair? op) 
+                   (car op) 
+                   (current-output-port))))
+      (fprint port "firstname : " (person-fname p))
+      (fprint port "name      : " (person-name p))
+      (fprint port "sex       : " (person-sex p))
+      p))
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Widening and shrinking                                           @c
+@c ------------------------------------------------------------------- @c
+@node  Widening and shrinking, Object library, Generic functions, Object System
+@comment  node-name,  next,  previous,  up
+@section Widening and shrinking
+@cindex Widening and shrinking
+
+Bigloo introduces a new kind of inheritance: @emph{widening}. This allows an
+object to be temporarily @emph{widened} (that is transformed into an object
+of another class, a @emph{wide-class}) and then @emph{shrink-ed} (that is
+reshaped to its original class). This mechanism is very useful for
+implementing short-term data storage. For instance, Bigloo compilation
+passes are implemented using the @emph{widening/shrinking} mechanism. On
+entry to a pass, objects are widened with the specific pass fields and, on
+exit from a pass, objects are shrunk in order to forget the information
+related to this pass.
+
+Only instances of @emph{final classes} can be widened and objects can
+only be widened in order to become instances of @emph{wide classes}. 
+Widening is performed by the @code{widen!} syntax:
+
+@deffn {bigloo syntax} widen!::@var{wide-class} obj (id value) @dots{}
+@pindex widen!
+
+The object @var{obj} is widened to be instance of the wide class
+@var{wide-class}. Fields values are either picked up from the
+parameter list of the @code{widen!} form or
+from the default values in the declaration of the wide class.
+@end deffn
+
+Objects are shrunk using the @code{shrink!} syntax:
+
+@deffn {bigloo syntax} shrink! obj
+@end deffn
+
+Here is a first example:
+@smalllisp
+(module example
+   (static (final-class point 
+              (x (default 0))
+              (y (default 0)))
+           (wide-class named-point::point name)))
+
+(define *point* (instantiate::point))
+@end smalllisp
+
+Two classes have been declared and an instance @code{*point*} of
+@code{point} has been allocated. For now, @code{*point*} is an instance
+of @code{point} but not an instance of @code{named-point} and this can
+be checked by:
+@smalllisp
+(print (named? *point*))           @expansion{} #t
+(print (named-point? *point*))     @expansion{} #f
+@end smalllisp
+
+Now, we @emph{widen} @code{*point*}...
+@smalllisp
+(let ((n-point (widen!::named-point *point* 
+                  (name "orig"))))
+@end smalllisp
+
+And we check that now, @code{n-point} is an instance of
+@code{named-point}. Since @code{named-point} is a subclass of 
+@code{point}, @code{n-point} still is an instance of @code{point}.
+
+@smalllisp
+(print (named-point? n-point))  @expansion{} #t
+(print (named? n-point))        @expansion{} #t
+@end smalllisp
+
+
+Widening affects the objects themselves. It does not operate any
+copy operation. Hence, @code{*point*} and @code{n-point} are @code{eq?}.
+
+@smalllisp
+(print (eq? n-point *point*))   @expansion{} #t
+@end smalllisp
+
+To end this example, we @emph{shrink} @code{n-point} and check 
+its class.
+@smalllisp
+(shrink! n-point)
+(print (named-point? *point*))) @expansion{} #f
+@end smalllisp
+
+Here is a more complex example:
+
+We illustrate widening and shrinking using our ``wedding simulator''. 
+First let us define three classes, @code{person} (for man and woman), 
+@code{married-woman} and @code{married-man}:
+@smalllisp
+(module wedding
+   (static (final-class person 
+               name::string
+               fname::string
+               (sex::symbol read-only))
+           (wide-class married-man::person
+               mate::person)
+           (wide-class married-woman::person
+               maiden-name::string
+               mate::person)))
+@end smalllisp
+As we can see people are allowed to change their name but not their sex.
+
+The identity of a person can be printed as
+@smalllisp
+(define-method (object-display p::person . op)
+   (with-access::person p (name fname sex)
+      (print "firstname : " fname)
+      (print "name      : " name)
+      (print "sex       : " sex)
+      p))
+@end smalllisp
+
+A married woman's identity is printed by (we suppose an equivalent method 
+definition for married-man)
+@smalllisp
+(define-method (object-display p::married-woman . op)
+   (with-access::married-woman p (name fname sex mate)
+      (call-next-method)
+      (print "married to: " (person-fname mate) 
+                            " " 
+                            (person-name mate))
+      p))
+@end smalllisp
+
+We create a person with the @code{birth} function:
+@smalllisp
+(define (birth name::string fname::string sex)
+   [assert (sex) (memq sex '(male female))]
+   (instantiate::person 
+      (name name)
+      (fname fname)
+      (sex sex)))
+@end smalllisp
+
+We celebrate a wedding using the @code{get-married!} function:
+@smalllisp
+(define (get-married! woman::person man::person)
+   (if (not (and (eq? (person-sex woman) 'female)
+                 (eq? (person-sex man) 'male)))
+       (error "get-married" 
+              "Illegal wedding" 
+              (cons woman man))
+       (let* ((mname (person-name woman))
+              (wife  (widen!::married-woman woman
+                      (maiden-name mname)
+                      (mate man))))
+          (person-name-set! wife (person-name man))
+          (widen!::married-man man
+             (mate woman)))))
+@end smalllisp
+
+We can check if two people are married by
+@smalllisp
+(define (couple? woman::person man::person)
+   (and (married-woman? woman)
+        (married-man? man)
+        (eq? (married-woman-mate woman) man)
+        (eq? (married-man-mate man) woman)))
+@end smalllisp
+
+Now let us study the life a @code{Junior} @code{Jones} and
+@code{Pamela} @code{Smith}. Once upon a time...
+@smalllisp
+(define *junior* (birth "Jones" "Junior" 'male))
+(define *pamela* (birth "Smith" "Pamela" 'female))
+@end smalllisp
+
+Later on, they met each other and ... they got married:
+@smalllisp
+(define *old-boy-junior* *junior*)
+(define *old-girl-pamela* *pamela*)
+(get-married! *pamela* *junior*)
+@end smalllisp
+
+This union can be checked:
+@smalllisp
+(couple? *pamela* *junior*)               
+   @result{} #t
+@end smalllisp
+
+We can look at the new identity of @code{*pamela*}
+@smalllisp
+(print *pamela*)
+   @print{} name      : Jones
+      firstname : Pamela
+      sex       : FEMALE
+      married to: Junior Jones
+@end smalllisp
+
+But @code{*pamela*} and @code{*junior*} still are the same persons:
+@smalllisp
+(print (eq? *old-boy-junior* *junior*))   @result{} #t
+(print (eq? *old-girl-pamela* *pamela*))  @result{} #t
+@end smalllisp
+
+Unfortunately all days are not happy days. After having been married
+@code{*pamela*} and @code{*junior*} have divorced:
+@smalllisp
+(define (divorce! woman::person man::person)
+   (if (not (couple? woman man))
+       (error "divorce!"
+              "Illegal divorce"
+              (cons woman man))
+       (let ((mname (married-woman-maiden-name 
+                      woman)))
+          (begin
+             (shrink! woman)
+             (person-name-set! woman mname))
+          (shrink! man))))
+
+(divorce! *pamela* *junior*)
+@end smalllisp
+
+We can look at the new identity of @code{*pamela*}
+@smalllisp
+(print *pamela*)
+   @print{} name      : Smith
+      firstname : Pamela
+      sex       : FEMALE
+@end smalllisp
+
+And @code{*pamela*} and @code{*junior*} still are the same persons:
+@smalllisp
+(print (eq? *old-boy-junior* *junior*))   @result{} #t
+(print (eq? *old-girl-pamela* *pamela*))  @result{} #t
+@end smalllisp
+
+@c ------------------------------------------------------------------- @c
+@c    Object library                                                   @c
+@c ------------------------------------------------------------------- @c
+@node  Object library, Object serialization, Widening and shrinking, Object System
+@comment  node-name,  next,  previous,  up
+@section Object library
+@cindex Object library
+
+@subsection Classes handling
+No type denotes Bigloo's classes. These objects are handled
+by the following library functions:
+
+@deffn {bigloo procedure} find-class symbol
+Returns, if any, the class named @var{symbol}.
+@end deffn
+
+@deffn {bigloo procedure} class? obj
+Returns @code{#t} if and only if @var{obj} is a class.
+@end deffn
+
+@deffn {bigloo procedure} class-super class
+Returns the @emph{super-class} of @var{class}.
+@end deffn
+
+@deffn {bigloo procedure} class-subclasses class
+Returns the @emph{subclasses} of @var{class}.
+@end deffn
+
+@deffn {bigloo procedure} class-name class
+Returns the name (a symbol) of @var{class}.
+@end deffn
+
+@deffn {bigloo procedure} object-constructor class
+Returns @var{class}'s constructor.
+@end deffn
+
+@deffn {bigloo procedure} object-class object
+Returns the class that @var{object} belongs to.
+@end deffn
+
+@subsection Object handling
+@deffn {bigloo procedure} wide-object? object
+Returns @code{#t} if @var{object} is a wide object otherwise it returns 
+@code{#f}.
+@end deffn
+
+@deffn {bigloo generic} object-display object [port]
+This generic function is invoked by @code{display} to display objects.
+@end deffn
+
+@deffn {bigloo generic} object-write object [port]
+This generic function is invoked by @code{write} to write objects.
+@end deffn
+
+@deffn {bigloo generic} object->struct object
+@deffnx {bigloo procedure} struct->object struct
+These functions converts objects into Scheme structures and vice-versa.
+@end deffn
+
+@deffn {bigloo generic} object-equal? object obj
+This generic function is invoked by @code{equal?} when the first argument
+is an instance of @code{object}.
+@end deffn
+
+@deffn {bigloo generic} object-hashnumber object
+This generic function returns an hash number of @var{object}.
+@end deffn
+
+@deffn {bigloo procedure} is-a? obj class
+Returns @code{#t} if @var{obj} belongs to @var{class} otherwise it
+returns @code{#f}.
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Object serialization                                             @c
+@c ------------------------------------------------------------------- @c
+@node Object serialization, Equality, Object library, Object System
+@comment  node-name,  next,  previous,  up
+@section Object serialization
+@cindex Object serialization
+
+Objects can be @emph{serialized} and @emph{un-serialized} using
+the regular @code{string->obj} and @code{obj->string}
+functions. Objects can be stored on disk and restored from disk
+by the use of the @code{output-obj} and @code{input-obj}
+functions.
+
+In addition to this standard serialization mechanism, custom object
+serializers and un-serializers can be specified by the means of the
+@code{register-class-serialization!} function (see Section
+@ref{Serialization}.
+
+@c ------------------------------------------------------------------- @c
+@c    Equality                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Equality, Introspection, Object serialization, Object System
+@comment  node-name,  next,  previous,  up
+@section Equality
+@cindex Equality
+
+Two objects can be compared with the @code{equal?} function. Two object
+are equal if and only if they belong to a same class, all their field
+values are equal and all their super class's field values are equal.
+
+@c ------------------------------------------------------------------- @c
+@c    Introspection                                                    @c
+@c ------------------------------------------------------------------- @c
+@node Introspection,  , Equality, Object System
+@comment  node-name,  next,  previous,  up
+@section Introspection
+@cindex Introspection
+
+Bigloo provides the programmer with some object introspection facilities.
+See section @pxref{Object library} for information on classes and
+objects handling. Introspection facilities are, by default, available
+for all classes. However, in order to shrink the code size generation,
+it may be useful to disable class introspection. This decision can be
+taken on a per class basis (i.e., one class may be provided with
+introspection facilities while another one is not). The compiler
+option @code{-fno-reflection} 
+(see Chapter @ref{Compiler Description}) prevents the
+compiler to generate the code required for introspecting the classes
+defined in the compiled module.
+
+@deffn {bigloo procedure} class-fields class
+Returns the a description of the fields of @var{class}. This description
+is a list of field descriptions where each field description can be accessed by
+the means of the following library functions. The fields are those 
+@emph{directly} defined in @var{class}. That is @code{class-fields} does not
+return fields defined in super classes of @var{class}.
+@end deffn
+
+@deffn {bigloo procedure} class-all-fields class
+Returns the a description of the fields of @var{class}. This description
+is a list of field descriptions where each field description can be accessed by
+the means of the following library functions. By contrast with 
+@code{class-fields}, this function returns fields that are also defined in
+the super classes of @var{class}.
+in th
+@end deffn
+
+@deffn {bigloo procedure} find-class-field class symbol
+Returns the field named @var{symbol} from class @var{class}. Returns 
+@code{#f} is such a field does not exist.
+@end deffn
+
+@deffn {bigloo procedure} class-field? obj
+Returns #t if @var{obj} is a class field descriptor. Otherwise returns #f.
+@end deffn
+
+@deffn {bigloo procedure} class-field-name field
+Returns the name of the @var{field}. The name is a symbol.
+@end deffn
+
+@deffn {bigloo procedure} class-field-indexed? field
+Returns @code{#t} if the described field is indexed and @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} class-field-accessor field
+Returns a procedure of one argument. Applying this function to an object
+returns the value of the field described by @var{field}.
+@end deffn
+
+@deffn {bigloo procedure} class-field-len-accessor field
+A one argument function is returned. Applying this function to an object
+returns the length value of the field described by field. It is an error
+to apply @code{class-field-len-accessor} to a non-indexed field.
+@end deffn
+
+@deffn {bigloo procedure} class-field-mutable? field
+Returns @code{#t} if the described field is mutable and @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} class-field-mutator field
+Returns a procedure of three, or two, arguments depending on whether
+the field is indexed or not. Applying this function to an object
+changes the value of the field described by @var{field}. It is an
+error to apply @code{class-field-mutator} to an immutable field.
+@end deffn
+
+@deffn {bigloo procedure} class-field-info field
+Returns the information associated to @var{field} (this the class declaration
+@code{info} attribute).
+@end deffn
+
+
+For means of an example, here is a possible implementation of the
+@code{equal?} test for objects:
+
+@smalllisp
+(define (object-equal? obj1 obj2)
+   (define (class-field-equal? fd)
+      (let ((get-value (class-field-accessor fd)))
+         (if (not (class-field-indexed? fd))
+             (equal? (get-value obj1)
+                     (get-value obj2))
+             (let* ((len (class-field-len-accessor
+                          fd)))
+                    (len1 (len obj1))
+                    (len2 (len obj2)))
+                (and (=fx len1 len2)
+                     (let loop ((i 0))
+                        (cond
+                           ((=fx i len1)
+                            #t)
+                           ((equal?
+                             (get-value obj1 i)
+                             (get-value obj2 i))
+                            (loop (+fx i 1)))
+                           (else
+                            #f))))))))
+   (let ((class1 (object-class obj1))
+         (class2 (object-class obj2)))
+      (cond
+         ((not (eq? class1 class2))
+          #f)
+         (else
+          (let loop ((fields (class-fields class1))
+                     (class  class1))
+             (cond
+                ((null? fields)
+                 (let ((super (class-super class)))
+                    (if (class? super)
+                        (loop (class-fields super)
+                              super)
+                        #t)))
+                ((class-field-equal? (car fields))
+                 (loop (cdr fields) class))
+                (else
+                 #f)))))))
+@end smalllisp
+
+@deffn {bigloo procedure} class-creator class
+Returns the creator for @var{class}. The creator is a function for which
+the arity depends on the number of slots the class provides 
+(see Section @pxref{Creating and accessing objects}).
+
+When an instance is allocated by the means of the @code{class-creator}, as
+for direct instantiation, the class constructor is 
+@emph{automatically} invoked.
+Example:
+@smalllisp
+(module foo
+   (main main)
+   (static (class c1 (c1-constructor))))
+
+(define c1-constructor
+   (let ((count 0))
+      (lambda (inst)
+	 (set! count (+ 1 count))
+	 (print "creating instance: " count)
+	 inst)))
+
+(define (main argv)
+   (let ((o1 (instantiate::c1))
+	 (o2 (instantiate::c1))
+	 (o3 ((class-creator c1))))
+      'done))
+   @print{} creating instance: 1
+      creating instance: 2
+      creating instance: 3
+@end smalllisp
+
+For each indexed field, two values must be sent to the function returned
+by @code{class-creator}. The first value denotes the size of the indexed
+field. The second value denotes the initial values of the fields. For instance:
+@smalllisp
+(module example
+   (export (class point x y (* z))))
+
+(let ((create (class-creator point)))
+   (print (create 10 23 5 3)))
+@end smalllisp
+
+Produces
+  @print{} #|POINT [X: 10] [Y: 23] [Z: 3 3 3 3 3]|
+@end deffn
+
+@deffn {bigloo procedure} class-nil class
+Returns the NIL creator for @var{class}.
+@end deffn
+
+@deffn {bigloo procedure} class-predicate class
+Returns the predicate for @var{class}. This predicate returns @code{#t}
+when applied to object of type @var{class}. It returns @code{#f} otherwise.
+@end deffn

@@ -1,0 +1,682 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD>
+<!-- SPOD - Scheme Plain Old Documentation, version 0.9 -->
+<!-- (c) 2004 Hans Oesterholt-Dijkema <hdnews@gawab.com> -->
+<!--  -->
+<!-- License: LGPL, see www.gnu.org for details. -->
+<!--  -->
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<STYLE TYPE="text/css">
+<!--
+/* 
+   $Id: README.mingw.html 1.1 Sat, 02 Apr 2005 07:03:49 +0200 serrano $
+
+   Why invent the weel again?
+
+   This style sheet originates from cpan.org and has been extended
+   with various indent levels and has modified colours.
+*/
+
+BODY {
+  background: white;
+  color: black;
+  font-family: arial,sans-serif;
+  margin: 0;
+  padding: 1ex;
+}
+
+TABLE {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-width: 0;
+  color: inherit;
+}
+
+IMG { border: 0; }
+FORM { margin: 0; }
+input { margin: 2px; }
+
+A.fred {
+  text-decoration: none;
+}
+
+A:link, A:visited {
+  background: transparent;
+  color: #008855;
+}
+
+A[href="#POD_ERRORS"] {
+  background: transparent;
+  color: #FF0000;
+}
+
+TD {
+  margin: 0;
+  padding: 0;
+}
+
+DIV {
+  border-width: 0;
+}
+
+DT {
+  margin-top: 1em;
+}
+
+.credits TD {
+  padding: 0.5ex 2ex;
+}
+
+.huge {
+  font-size: 32pt;
+}
+
+.s {
+  background: #dddddd;
+  color: inherit;
+}
+
+.s TD, .r TD {
+  padding: 0.2ex 1ex;
+  vertical-align: baseline;
+}
+
+TH {
+  background: #bbbbbb;
+  color: inherit;
+  padding: 0.4ex 1ex;
+  text-align: left;
+}
+
+TH A:link, TH A:visited {
+  background: transparent;
+  color: black;
+}
+
+.box {
+  border: 1px solid #006699;
+  margin: 1ex 0;
+  padding: 0;
+}
+
+.distfiles TD {
+  padding: 0 2ex 0 0;
+  vertical-align: baseline;
+}
+
+.manifest TD {
+  padding: 0 1ex;
+  vertical-align: top;
+}
+
+.l1 {
+  font-weight: bold;
+}
+
+.l2 {
+  font-weight: normal;
+}
+
+.t1, .t2, .t3, .t4  {
+  background: #006699;
+  color: white;
+}
+.t4 {
+  padding: 0.2ex 0.4ex;
+}
+.t1, .t2, .t3  {
+  padding: 0.5ex 1ex;
+}
+
+/* IE does not support  .box>.t1  Grrr */
+.box .t1, .box .t2, .box .t3 {
+  margin: 0;
+}
+
+.t1 {
+  font-size: 1.4em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.t2 {
+  font-size: 1.0em;
+  font-weight: bold;
+  text-align: left;
+}
+
+.t3 {
+  font-size: 1.0em;
+  font-weight: normal;
+  text-align: left;
+}
+
+/* width: 100%; border: 0.1px solid #FFFFFF; */ /* NN4 hack */
+
+.datecell {
+  text-align: center;
+  width: 17em;
+}
+
+.cell {
+  padding: 0.2ex 1ex;
+  text-align: left;
+}
+
+.label {
+  background: #aaaaaa;
+  color: black;
+  font-weight: bold;
+  padding: 0.2ex 1ex;
+  text-align: right;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.categories {
+  border-bottom: 3px double #006699;
+  margin-bottom: 1ex;
+  padding-bottom: 1ex;
+}
+
+.categories TABLE {
+  margin: auto;
+}
+
+.categories TD {
+  padding: 0.5ex 1ex;
+  vertical-align: baseline;
+}
+
+.path A {
+  background: transparent;
+  color: #006699;
+  font-weight: bold;
+}
+
+.pages {
+  background: #dddddd;
+  color: #006699;
+  padding: 0.2ex 0.4ex;
+}
+
+.path {
+  background: #dddddd;
+  border-bottom: 1px solid #006699;
+  color: #006699;
+ /*  font-size: 1.4em;*/
+  margin: 1ex 0;
+  padding: 0.5ex 1ex;
+}
+
+.menubar TD {
+  background: #006699;
+  color: white;
+}
+
+.menubar {
+  background: #006699;
+  color: white;
+  margin: 1ex 0;
+  padding: 1px;
+}
+
+.menubar .links     {
+  background: transparent;
+  color: white;
+  padding: 0.2ex;
+  text-align: left;
+}
+
+.menubar .searchbar {
+  background: black;
+  color: black;
+  margin: 0px;
+  padding: 2px;
+  text-align: right;
+}
+
+A.m:link, A.m:visited {
+  background: #006699;
+  color: white;
+  font: bold 10pt Arial,Helvetica,sans-serif;
+text-decoration: none;
+}
+
+A.o:link, A.o:visited {
+  background: #006699;
+  color: #ccffcc;
+  font: bold 10pt Arial,Helvetica,sans-serif;
+text-decoration: none;
+}
+
+A.o:hover {
+  background: transparent;
+  color: #ff6600;
+  text-decoration: underline;
+}
+
+A.m:hover {
+  background: transparent;
+  color: #ff6600;
+  text-decoration: underline;
+}
+
+table.dlsip     {
+  background: #dddddd;
+  border: 0.4ex solid #dddddd;
+}
+
+.spod {
+  background: white;
+  color: black;
+  font-family: arial,sans-serif;
+  margin: 0;
+  padding: 1ex;
+}
+
+.spod PRE     {
+  background: #eeeeee;
+  border: 1px solid #888888;
+  color: black;
+  padding: 1em;
+  white-space: pre;
+}
+
+.spod H1      {
+  background: transparent;
+  color: #008866;
+  font-size: large;
+}
+
+.spod H2      {
+  background: transparent;
+  color: #008866;
+  font-size: medium;
+}
+
+.spod H3	{
+  background: transparent;
+  color: #000000;
+  font-size: normal;
+}
+
+
+.spod .itemindent {
+	margin-left: -1em;
+   margin-bottom: -0.5em;
+}
+.spod .itemcolor {
+	color: #205555;
+}
+
+.spod .indent1 {
+	margin-left: 1em;
+}
+
+.spod .indent2 {
+	margin-left: 2em;
+}
+
+.spod .indent3 {
+	margin-left: 3em;
+}
+
+.spod .indent4 {
+	margin-left: 4em;
+}
+
+.spod .indent5 {
+	margin-left: 5em;
+}
+
+.spod .indent6 {
+	margin-left: 6em;
+}
+
+.spod .indent7 {
+	margin-left: 7em;
+}
+
+.spod IMG     {
+  vertical-align: top;
+}
+
+.spod .header {
+  text-decoration: none;
+}
+
+.spod .text {
+  text-decoration: none;
+}
+
+.spod .text PRE     {
+  background: #eeeeee;
+  border: 1px solid #888888;
+  color: black;
+  padding: 1em;
+  white-space: pre;
+}
+
+.spod .text H1      {
+  background: transparent;
+  color: #008866;
+  font-size: large;
+}
+
+.spod .text H2      {
+  background: transparent;
+  color: #008866;
+  font-size: medium;
+}
+
+.spod .text H3	{
+  background: transparent;
+  color: #000000;
+  font-size: normal;
+}
+
+
+.spod .text .itemindent {
+	margin-left: -1em;
+   margin-bottom: -0.5em;
+}
+.spod .text .itemcolor {
+	color: #205555;
+}
+
+.spod .text .indent1 {
+	margin-left: 1em;
+}
+
+.spod .text .indent2 {
+	margin-left: 2em;
+}
+
+.spod .text .indent3 {
+	margin-left: 3em;
+}
+
+.spod .text .indent4 {
+	margin-left: 4em;
+}
+
+.spod .text .indent5 {
+	margin-left: 5em;
+}
+
+.spod .text .indent6 {
+	margin-left: 6em;
+}
+
+.spod .text .indent7 {
+	margin-left: 7em;
+}
+
+.spod .text IMG     {
+  vertical-align: top;
+}
+
+.spod .text .header {
+  text-decoration: none;
+}
+
+
+/* Table of contents */
+
+.spod .toc A  {
+  text-decoration: none;
+}
+
+.spod .toc .indent1 {
+	margin-left: 1em;
+}
+
+.spod .toc .indent2 {
+	margin-left: 2em;
+}
+
+.spod .toc .indent3 {
+	margin-left: 3em;
+}
+
+.spod .toc .indent4 {
+	margin-left: 4em;
+}
+
+.spod .toc .indent5 {
+	margin-left: 5em;
+}
+
+.spod .toc .indent6 {
+	margin-left: 6em;
+}
+
+.spod .toc .indent7 {
+	margin-left: 7em;
+}
+
+.spod .toc LI {
+  line-height: 1.2em;
+  list-style-type: none;
+}
+
+.faq DT {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.chmenu {
+  background: black;
+  color: red;
+  font: bold 1.1em Arial,Helvetica,sans-serif;
+  margin: 1ex auto;
+  padding: 0.5ex;
+}
+
+.chmenu TD {
+  padding: 0.2ex 1ex;
+}
+
+.chmenu A:link, .chmenu A:visited  {
+  background: transparent;
+  color: white;
+  text-decoration: none;
+}
+
+.chmenu A:hover {
+  background: transparent;
+  color: #ff6600;
+  text-decoration: underline;
+}
+
+.column {
+  padding: 0.5ex 1ex;
+  vertical-align: top;
+}
+
+.datebar {
+  margin: auto;
+  width: 14em;
+}
+
+.date {
+  background: transparent;
+  color: #008000;
+}
+
+.tiny {
+	font-size: 0.7em;
+}
+-->
+</STYLE>
+<TITLE>README.mingw - Instaling bigloo on Windows MinGW system.</TITLE>
+</HEAD>
+<BODY>
+<DIV class=spod>
+<DIV class=toc><A NAME="_top"><H1>Contents</H1></A><A HREF="#Name"><DIV class=indent1>
+Name</DIV>
+</A><A HREF="#Version"><DIV class=indent1>
+Version</DIV>
+</A><A HREF="#Some_data"><DIV class=indent1>
+Some data</DIV>
+</A><A HREF="#Version_History"><DIV class=indent1>
+Version History</DIV>
+</A><A HREF="#August_30__2004"><DIV class=indent2>
+August 30, 2004</DIV>
+</A><A HREF="#Introduction"><DIV class=indent1>
+Introduction</DIV>
+</A><A HREF="#Why_a_MinGW_port"><DIV class=indent1>
+Why a MinGW port?</DIV>
+</A><A HREF="#What_s_the_difference_from_the_MSVC_port"><DIV class=indent1>
+What's the difference from the MSVC port?</DIV>
+</A><A HREF="#Restrictions"><DIV class=indent1>
+Restrictions</DIV>
+</A><A HREF="#Configuring_bigloo_for_MinGW"><DIV class=indent1>
+Configuring bigloo for MinGW</DIV>
+</A><A HREF="#Known_Issues"><DIV class=indent1>
+Known Issues</DIV>
+</A><A HREF="#SSL"><DIV class=indent1>
+SSL</DIV>
+</A><A HREF="#Author"><DIV class=indent1>
+Author</DIV>
+</A></DIV><DIV class=text><DIV class=header><A NAME="Name"></A><A HREF="#top"><H1>Name</H1></A></DIV>
+<P>README.mingw - Instaling bigloo on Windows MinGW system.
+</P>
+<DIV class=header><A NAME="Version"></A><A HREF="#top"><H1>Version</H1></A></DIV>
+<P>@VERSION@
+</P>
+<DIV class=header><A NAME="Some_data"></A><A HREF="#top"><H1>Some data</H1></A></DIV>
+<P>Initial&#160date&#160of&#160writing&#160&#160&#160: March 21, 2004 Hans Oesterholt-Dijkema
+</P>
+<P>This readme is in Plain Old Documentation (POD) format.
+It can be processed by Perl's <CODE>pod2html</CODE>, or better even by 
+Hans Oesterholt's <CODE>spod2html</CODE> (which at the moment of writing
+has not yet entered the public domain). To convert the document using
+<CODE>spod2html</CODE> use '<CODE>spod2html --pod README.mingw</CODE>'. It will generate
+<CODE>README.mingw.html</CODE>.
+</P>
+<DIV class=header><A NAME="Version_History"></A><A HREF="#top"><H1>Version History</H1></A></DIV>
+<P><CODE>Initial&#160date&#160of&#160writing&#160&#160&#160: March 21, 2004 Hans Oesterholt-Dijkema</CODE>
+<CODE>Last&#160revision&#160&#160&#160&#160&#160&#160&#160&#160&#160&#160&#160&#160&#160: August 30, 2004 Hans Oesterholt-Dijkema</CODE>
+</P>
+<DIV class=header><A NAME="August_30__2004"></A><A HREF="#top"><H2>August 30, 2004</H2></A></DIV>
+<P>I removed a couple of bugs from the mingw bigloo 2.6d version. In <CODE>cprocess.c</CODE>,
+I had to include <B>malloc.h</B> to get a working <B>alloca</B> function. This made
+the recette crash on the process tests. 
+</P>
+<P>In <CODE>os.scm</CODE>, the <B>dirname</B> function didn't work right. This generated 
+errors in the recette.
+</P>
+<P>In <CODE>recette/string.scm</CODE> a <B>unix-path-&gt;list</B> function working on
+a UNIX Path would yield a wrong result, as the path separator on windows
+is ';', not ':'. I changed the test.
+</P>
+<P>I also added a bigger stack size in the <B>ldextraopt</B> configuration script.
+</P>
+<DIV class=header><A NAME="Introduction"></A><A HREF="#top"><H1>Introduction</H1></A></DIV>
+<P>This README handles the MinGW Port of Bigloo. 
+</P>
+<DIV class=header><A NAME="Why_a_MinGW_port"></A><A HREF="#top"><H1>Why a MinGW port?</H1></A></DIV>
+<P>MinGW and Win32 are different things. Although MinGW compiles for
+Win32 (together with MSYS) it behaves quite Unix Like. 
+</P>
+<P>But why not use the MSVC port of bigloo?  The answer to this is 
+straightforward. A MinGW user wants to be able to use <CODE>gnu make</CODE>, <CODE><B>bmake</B></CODE> 
+that is. He/she wants to use <CODE>./configure</CODE> for making his/hers projects. 
+Mostly a MinGW user is a Unix minded person that wants to be able
+to compile hers/his software on a Windows platform, so that she/he
+can support the big group of Windows users.
+</P>
+<P>The short answer: A MinGW user is  a Unix user that can't
+go around Windows. 
+</P>
+<DIV class=header><A NAME="What_s_the_difference_from_the_MSVC_port"></A><A HREF="#top"><H1>What's the difference from the MSVC port?</H1></A></DIV>
+<P>Not so much. The MinGW port is closer to Unix, so it does have some
+of both worlds. It e.g. uses Posix Threads where possible. It handles
+bot Unix paths and Windows paths. It uses a similar compiler scheme
+to the unix source, but needs a bit of windows there too. On the 
+other side: it uses a <B>lot</B> of the MSVC port code base. It just 
+sets the right directive to reuse that code.
+</P>
+<DIV class=header><A NAME="Restrictions"></A><A HREF="#top"><H1>Restrictions</H1></A></DIV>
+<DIV class=indent1>
+<UL>
+<LI>
+<P>The MinGW Port can't do dynamic libraries. gcc won't make the right
+exception code to use in dll's for Boehm's GC as opposed to MSVC. If
+you want dynamic libraries: use the MSVC port.
+</P>
+<LI>
+<P>The MinGW port is a <I>Native Backend only</I> port. You can't do the
+JVM nor the DOTNET port. Use the MSVC port for those.
+</P>
+<LI>
+<P>The fair threads code contains some signal handling code that can't
+be used on windows. I don't know the impact of that.
+</P>
+</UL>
+</DIV>
+<DIV class=header><A NAME="Configuring_bigloo_for_MinGW"></A><A HREF="#top"><H1>Configuring bigloo for MinGW</H1></A></DIV>
+<P>Start an MSYS session. You can only compile bigloo for MinGW from 
+an MSYS session. See to it that you have the redhat posix thread
+port in your MinGW system. See to it that <CODE>c:/MinGW/bin</CODE> is in
+your path.
+</P>
+<P>Now you can type e.g.:
+</P>
+<PRE> tar xzf bigloo2.6d.tar.gz
+ cd bigloo2.6d
+ ./configure --prefix=c:/progs/bigloo --jvm=no --dotnet=no
+ make
+ make install
+</PRE>
+<P>To run the recette you can use 
+</P>
+<PRE> make test
+</PRE>
+<DIV class=header><A NAME="SSL"></A><A HREF="#top"><H1>SSL</H1></A></DIV>
+In order to enable the Bigloo SSL binding, proceed as follows:
+<UL>
+<LI>
+Download the win32 openssl installer from
+ <TT>http://www.slproweb.com/products/Win32OpenSSL.html</TT> and run it.</LI>
+<LI>Copy the openssl directory found in the include</LI>
+directory of the openssl installation to your
+<TT>mingw/include</TT> directory.</LI>
+<LI>Copy the <TT>libeay32.a</TT> and <TT>ssleay32.a</TT> libraries from
+the <TT>lib/mingw</TT> directory from the openssl installation
+to your <TT>mingw/directory</TT>.</LI>
+<LI>Proceed to the Bigloo configuration and installation as usual.</LI>
+</UL>
+<DIV class=header><A NAME="Known_Issues"></A><A HREF="#top"><H1>Known Issues</H1></A></DIV>
+<DIV class=indent1>
+<UL>
+<LI>
+<P>Compiling fthreads, the garbage collector code has a declaration
+problem (in any case, with <CODE>gcc 3.3.3</CODE>). The prototype for 
+<CODE>GC_CreateThread</CODE> needs to be changed. 
+</P>
+<PRE> HANDLE WINAPI GC_CreateThread(...)
+</PRE>
+<P>becomes
+</P>
+<PRE> GC_API HANDLE GC_CreateThread(...)
+</PRE>
+<LI>
+<P>The patch alters a <CODE>.scm</CODE> file, that need to be recompiled.
+So you need bigloo to apply the patch. Mostly the unix bigloo will
+do this job, but I personally ran into problems with <CODE>runtime/Llib/os.scm</CODE>.
+I needed to compile a windows bigloo before altering this file.
+Maybe the MSCV port of bigloo can be of help to bootstrap these <CODE>.scm</CODE>
+files.
+</P>
+</UL>
+</DIV>
+<DIV class=header><A NAME="Author"></A><A HREF="#top"><H1>Author</H1></A></DIV>
+<P>Hans Oesterholt-Dijkema &lt;hdnews -at- gawab -dot- com&gt;
+</P>
+</DIV><br><p>
+<!-- generated by spod:to-html 0.9-->
+</DIV>
+</BODY></HTML>

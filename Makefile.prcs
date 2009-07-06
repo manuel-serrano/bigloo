@@ -1,0 +1,41 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/Makefile.prcs                        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug 16 06:16:43 2006                          */
+#*    Last change :  Wed Aug 16 08:48:59 2006 (serrano)                */
+#*    Copyright   :  2006 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    The PRCS specific part of the Bigloo Makefile                    */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    populate ...                                                     */
+#*---------------------------------------------------------------------*/
+populate: bigloo.prj
+	prcs populate bigloo `$(MAKE) popfilelist`
+
+bigloo.prj:
+	@ cat bigloo.prj | sed -e s,"(Populate-Ignore ())","(Populate-Ignore (\"\\\\\\\\\\.o\\$$\" \"\\\\\\\\\\~$$\" \"\\\\\\\\\\.log\\$$\" \"\\\\\\\\\\.ps\\$$\" \"\\\\\\\\\\.aux\\$$\" \"\\\\\\\\\\.date_of_backup\\$$\" \"\\\\\\\\\\.so\\$$\" \"\\\\\\\\\\.a\\$$\" \"if_not_there\\$$\" \"if_mach\\$$\" \"threadlibs\\$$\"))", > bigloo.dprj; $(RM) -f bigloo.prj; mv bigloo.dprj bigloo.prj
+
+#*---------------------------------------------------------------------*/
+#*    branch ...                                                       */
+#*---------------------------------------------------------------------*/
+branch:
+
+#*---------------------------------------------------------------------*/
+#*    revision ...                                                     */
+#*---------------------------------------------------------------------*/
+revision: populate
+	prcs checkin -r$(RELEASE).@ bigloo
+	@ (revision=`prcs info -r $(RELEASE).@ | awk '{ print $$2 }'` && \
+           $(RM) -f $(BIGLOO).$(RELEASE).*.gz > /dev/null 2>&1 && \
+           cp $(BOOTBINDIR)/bigloo $(BOOTBINDIR)/"bigloo.$$revision" && \
+           echo "$(BOOTBINDIR)/bigloo.$$revision.gz:" && \
+           $(GZIP) "$(BOOTBINDIR)/bigloo.$$revision")
+
+#*---------------------------------------------------------------------*/
+#*    checkout ...                                                     */
+#*---------------------------------------------------------------------*/
+checkout:
+	@ (mkdir bigloo && cd bigloo && prcs checkout -r$(RELEASE).@ bigloo)

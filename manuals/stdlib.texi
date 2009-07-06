@@ -1,0 +1,2032 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/stdlib.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Jun 13 09:08:34 1998                          @c
+@c    Last change :  Mon Nov 19 21:01:14 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentation for Bigloo standard library                    @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Module body                                                      @c
+@c ------------------------------------------------------------------- @c
+@node Standard Library, Pattern Matching, DSSSL Support, Top
+@comment  node-name,  next,  previous,  up
+@chapter Standard Library
+
+This chapter presents the Bigloo standard library. Bigloo is mostly
+R5RS compliant but it proposes many extensions to this standard.
+In a first section (@ref{Scheme Library})
+the Bigloo R5RS support is presented. This section also contains various
+function that are not standard (for instance, various functions used
+to manage a file system). Then, in the following sections
+(@ref{Serialization}, @ref{Bit Manipulation}, and @ref{System Programming}
+Bigloo specific extensions are presented. Bigloo input and output facilities
+constitue a large superset of the standard Scheme definition. For this
+reason they are presented in a separate section (@ref{Input and Output}).
+
+@menu
+* Scheme Library::   
+* Input and Output::    
+* Serialization::              
+* Bit Manipulation::            
+* Weak Pointers::
+* Hash Tables::   
+* System Programming::
+* Date::
+* Digest::
+* Internet::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Base Library                                                     @c
+@c ------------------------------------------------------------------- @c
+@node Scheme Library, Input and Output, , Standard Library
+@comment  node-name,  next,  previous,  up
+@section Scheme Library
+@cindex Module body language
+
+When the definition of a procedure or a special form is the
+same in Bigloo and Scheme, we just mention its name;
+otherwise, we explain it and qualify it as a ``bigloo
+procedure''.
+
+@menu
+* Booleans::                    
+* Equivalence Predicates::      
+* Pairs And Lists::             
+* Symbols::                     
+* Keywords::                    
+* Numbers::                     
+* Characters::                  
+* UCS-2 Characters::            
+* Strings::                     
+* Unicode (UCS-2) Strings::     
+* Vectors::                     
+* Homogeneous Vectors (SRFI-4)::                     
+* Control Features::            
+@end menu
+
+@c -- booleans ------------------------------------------------------- @c
+@node  Booleans, Equivalence Predicates, , Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Booleans
+@cindex Booleans
+The standard boolean objects are @code{#t} and @code{#f}.
+Note: the empty list is true.
+
+@deffn {library procedure} not obj
+@code{not} returns @t{#t} if @var{obj} is false, and returns
+@code{#f} otherwise.
+
+@smalllisp
+(not #t)                               @result{} #f
+(not 3)                                @result{} #f
+(not (list 3))                         @result{} #f
+(not #f)                               @result{} #t
+(not '())                              @result{} #f
+(not (list))                           @result{} #f
+(not 'nil)                             @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} boolean?  obj
+@code{Boolean?} returns @t{#t} if @var{obj} is either @t{#t} or
+@t{#f} and returns @t{#f} otherwise.
+
+@smalllisp
+(boolean? #f)                          @result{} #t
+(boolean? 0)                           @result{} #f
+(boolean? '())                         @result{} #f
+@end smalllisp
+@end deffn
+
+@c -- Equivalence predicates ----------------------------------------- @c
+@node Equivalence Predicates, Pairs And Lists, Booleans, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Equivalence predicates
+@cindex Equivalence predicates
+
+@deffn {procedure} eqv? obj1 obj2
+@deffnx {procedure} eq? obj1 obj2
+@code{eqv?} and @code{eq?} are equivalent in Bigloo.
+
+@smalllisp
+(eq? 'a 'a)                            @result{}  #t
+(eq? '(a) '(a))                        @result{}  @emph{unspecified}
+(eq? (list 'a) (list 'a))              @result{}  #f
+(eq? "a" "a")                          @result{}  @emph{unspecified}
+(eq? "" "")                            @result{}  @emph{unspecified}
+(eq? '() '())                          @result{}  #t
+(eq? 2 2)                              @result{}  @emph{unspecified}
+(eq? #\A #\A)                          @result{}  @emph{unspecified}
+(eq? car car)                          @result{}  #t
+(let ((n (+ 2 3)))
+  (eq? n n))                           @result{}  @emph{unspecified}
+(let ((x '(a)))
+  (eq? x x))                           @result{}  #t
+(let ((x '#()))
+  (eq? x x))                           @result{}  #t
+(let ((p (lambda (x) x)))
+  (eq? p p))                           @result{}  #t
+@end smalllisp
+
+Since Bigloo implements @code{eqv?} as @code{eq?}, the behavior is not
+always conforming to R5RS.
+@smalllisp
+(eqv? 'a 'a)                           @result{}  #t
+(eqv? 'a 'b)                           @result{}  #f
+(eqv? 2 2)                             @result{}  #t
+(eqv? '() '())                         @result{}  #t
+(eqv? 100000000 100000000)             @result{}  #t
+(eqv? (cons 1 2) (cons 1 2))           @result{}  #f
+(eqv? (lambda () 1)
+      (lambda () 2))                   @result{}  #f
+(eqv? #f 'nil)                         @result{}  #f
+(let ((p (lambda (x) x)))
+  (eqv? p p))                          @result{}  @emph{unspecified}
+@end smalllisp
+
+
+The following examples illustrate cases in which the above rules do
+not fully specify the behavior of @samp{eqv?}.  All that can be said
+about such cases is that the value returned by @samp{eqv?} must be a
+boolean.
+
+@smalllisp
+(eqv? "" "")                           @result{}  @emph{unspecified}
+(eqv? '#() '#())                       @result{}  @emph{unspecified}
+(eqv? (lambda (x) x)
+      (lambda (x) x))                  @result{}  @emph{unspecified}
+(eqv? (lambda (x) x)
+      (lambda (y) y))                  @result{}  @emph{unspecified}
+
+(define gen-counter
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) n))))
+(let ((g (gen-counter)))
+  (eqv? g g))                          @result{}  #t
+(eqv? (gen-counter) (gen-counter))
+                                       @result{}  #f
+(define gen-loser
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) 27))))
+(let ((g (gen-loser)))
+  (eqv? g g))                          @result{}  #t
+(eqv? (gen-loser) (gen-loser))
+                                       @result{}  @emph{unspecified}
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g))))
+  (eqv? f g))
+                                       @result{}  @emph{unspecified}
+
+(letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
+         (g (lambda () (if (eqv? f g) 'g 'both))))
+  (eqv? f g))
+                                       @result{}  #f
+(eqv? '(a) '(a))                       @result{}  @emph{unspecified}
+(eqv? "a" "a")                         @result{}  @emph{unspecified}
+(eqv? '(b) (cdr '(a b)))               @result{}  @emph{unspecified}
+(let ((x '(a)))
+  (eqv? x x))                          @result{}  #t
+@end smalllisp
+
+@end deffn
+
+@deffn {library procedure} equal? obj1 obj2
+@smalllisp
+(equal? 'a 'a)                         @result{}  #t
+(equal? '(a) '(a))                     @result{}  #t
+(equal? '(a (b) c)
+        '(a (b) c))                    @result{}  #t
+(equal? "abc" "abc")                   @result{}  #t
+(equal? 2 2)                           @result{}  #t
+(equal? (make-vector 5 'a)
+        (make-vector 5 'a))            @result{}  #t
+(equal? (lambda (x) x)
+        (lambda (y) y))                @result{}  @emph{unspecified}
+@end smalllisp
+@end deffn
+
+@xref{Equivalence predicates,,r5rs.info,R5RS}, for more details.
+
+@c -- Pairs and lists ------------------------------------------------ @c
+@node Pairs And Lists, Symbols, Equivalence Predicates, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Pairs and lists
+@cindex Pairs and lists
+
+The form @code{()} is @emph{illegal}. 
+
+@deffn {procedure} pair? obj
+@end deffn
+
+@deffn {procedure} cons a d
+@end deffn
+
+@deffn {bigloo procedure} pair-or-null? obj
+Returns @code{#t} if @var{obj} is either a pair or the empty list. Otherwise
+it returns @code{#f}.
+@end deffn
+
+@deffn {procedure} car pair
+@deffnx {procedure} cdr pair
+@deffnx {procedure} set-car! pair obj
+@deffnx {procedure} set-cdr! pair obj
+@end deffn
+
+@deffn {library procedure} caar pair
+@deffnx {library procedure} cadr pair
+@dots{}
+
+@deffnx {library procedure} cdddar pair
+@deffnx {library procedure} cddddr pair
+@end deffn
+
+@deffn {library procedure} null? obj
+@deffnx {library procedure} list? obj
+@deffnx {library procedure} list obj @dots{}
+@deffnx {library procedure} length list
+@deffnx {library procedure} append list @dots{}
+@deffnx {bigloo procedure} append! list @dots{}
+
+A destructive append.
+@end deffn
+
+@deffn {library procedure} reverse list
+@deffnx {bigloo procedure} reverse! list
+
+A destructive reverse.
+@end deffn
+
+@deffn {library procedure} list-ref list k
+@deffnx {library procedure} take list k
+@deffnx {library procedure} drop list k
+@deffnx {library procedure} list-tail list k
+@code{list-ref} returns the @var{k} element of the list.
+
+@code{take} returns a new list made of the first @var{k} element of the list.
+
+@code{Drop} and @code{list-tail} returns the sublist of @var{list}
+obtained by omitting the first @var{k} elements.
+@end deffn
+
+@deffn {bigloo procedure} last-pair list
+Returns the last pair in the nonempty, possibly improper, @var{list}.
+@end deffn
+
+@deffn {library procedure} memq obj list
+@deffnx {library procedure} memv obj list
+@deffnx {library procedure} member obj list
+@deffnx {library procedure} assq obj alist
+@deffnx {library procedure} assv obj alist
+@deffnx {library procedure} assoc obj alist
+@deffnx {bigloo procedure} remq obj list
+
+Returns a new list which is a copy of @var{list} with all items
+@code{eq?} to @var{obj} removed from it.
+@end deffn
+
+@deffn {bigloo procedure} remq! obj list
+Same as @code{remq} but in a destructive way.
+@end deffn
+
+@deffn {bigloo procedure} delete obj list [eq equal?]
+@cindex SRFI-1
+Returns a new list which is a copy of @var{list} with all items
+@code{equal?} to @var{obj} deleted from it.
+@end deffn
+
+@deffn {bigloo procedure} delete! obj list [eq equal?]
+@cindex SRFI-1
+Same as @code{delete} but in a destructive way.
+@end deffn
+
+@deffn {bigloo procedure} cons* obj @dots{}
+Returns an object formed by consing all arguments together from right to left.
+If only one @var{obj} is supplied, that @var{obj} is returned.
+@end deffn
+
+@deffn {bigloo procedure} every? fun clist1 clist2 ...
+Applies the predicate across the lists, returning true if the
+predicate returns non-false on every application.
+
+@smalllisp
+(every < '(1 2 3) '(2 3 4))            @result{} #t
+(every < '(1 2 3) '(2 3 0))            @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} any? fun clist1 clist2 ...
+Applies the predicate across the lists, returning true if the
+predicate returns non-false for at least one application.
+
+@smalllisp
+(any < '(1 2 3) '(2 3 4))            @result{} #t
+(any < '(1 2 3) '(2 3 0))            @result{} #t
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} every fun clist1 clist2 ...
+@cindex SRFI-1
+Applies the function @var{fun} across the lists, returning the last 
+non-false if the function returns non-false on every application. If 
+non-false, the result of @code{every} is the last value returned by the
+last application of @var{fun}.
+
+@smalllisp
+(every < '(1 2 3) '(2 3 4))            @result{} #t
+(every < '(1 2 3) '(2 3 0))            @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} any fun clist1 clist2 ...
+@cindex SRFI-1
+Applies the function @var{fun} across the lists, returning non-false if the
+function returns non-false for at least one application. If non-false,
+the result of @code{any} is the first non-false value returned by @var{fun}.
+
+@smalllisp
+(any < '(1 2 3) '(2 3 4))            @result{} #t
+(any < '(1 2 3) '(2 3 0))            @result{} #t
+@end smalllisp
+@end deffn
+
+
+@deffn {bigloo procedure} find pred clist
+@cindex SRFI-1
+
+Return the first element of @var{clist} that satisfies predicate
+@var{pred}; false if no element does.
+
+@smalllisp
+(find even? '(3 1 4 1 5 9))          @result{} 4
+@end smalllisp
+
+Note that @code{find} has an ambiguity in its lookup semantics -- if
+find returns @code{#f}, you cannot tell (in general) if it found a
+@code{#f} element that satisfied @var{pred}, or if it did not find any
+element at all. In many situations, this ambiguity cannot arise --
+either the list being searched is known not to contain any @code{#f}
+elements, or the list is guaranteed to have an element satisfying
+pred. However, in cases where this ambiguity can arise, you should use
+find-tail instead of find -- find-tail has no such ambiguity:
+
+@smalllisp
+    (cond ((find-tail pred lis) => (lambda (pair) ...)) ; Handle (CAR PAIR)
+          (else ...)) ; Search failed.
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} find-tail pred clist
+@cindex SRFI-1
+
+Return the first pair of @var{clist} whose car satisfies
+@var{pred}. If no pair does, return false.
+
+@code{find-tail} can be viewed as a general-predicate variant of the
+member function.
+
+Examples:
+
+@smalllisp
+    (find-tail even? '(3 1 37 -8 -5 0 0)) @result{} (-8 -5 0 0)
+    (find-tail even? '(3 1 37 -5)) @result{} #f
+
+    ;; MEMBER X LIS:
+    (find-tail (lambda (elt) (equal? x elt)) lis)
+
+    In the circular-list case, this procedure "rotates" the list.
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} make-list n [fill]
+@cindex SRFI-1
+Returns an @var{n}-element list, whose elements are all the value @var{fill}. 
+If the @var{fill} argument is not given, the elements of the list may be
+arbitrary values.
+
+@smalllisp
+(make-list 4 'c)                     @result{} (c c c c)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} list-tabulate n init-proc
+@cindex SRFI-1
+Returns an @var{n}-element list. Element i of the list, where 0 <= i <
+@var{n}, is produced by @code{(init-proc i)}. No guarantee is made about the
+dynamic order in which @var{init-proc} is applied to these indices.
+
+@smalllisp
+(list-tabulate 4 values)             @result{} (0 1 2 3)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} list-split list n [filler]
+@deffnx {bigloo procedure} list-split list n [filler]
+Split a @var{list} into a list of lists of length @var{n}. Last smaller
+list is filled with @var{filler}.
+
+@smalllisp
+(list-split '(1 2 3 4 5 6 7 8) 3 0) @result{} ((1 2 3) (4 5 6) (7 8 0))
+(list-split (iota 10) 3)            @result{} ((0 1 2) (3 4 5) (6 7 8) (9))
+(list-split (iota 10 3) '-1)      @result{} ((0 1 2) (3 4 5) (6 7 8) (9 -1 -1))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} iota count [start step]
+@cindex SRFI-1
+
+Returns a list containing the elements
+
+@smalllisp
+(start start+step ... start+(count-1)*step)
+@end smalllisp
+
+The @var{start} and @var{step} parameters default to @code{0} and @code{1}, 
+respectively. This procedure takes its name from the APL primitive.
+
+@smalllisp
+(iota 5) @result{} (0 1 2 3 4)
+(iota 5 0 -0.1) @result{} (0 -0.1 -0.2 -0.3 -0.4)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} list-copy l
+@deffnx {bigloo procedure} tree-copy l
+@cindex SRFI-1
+The function @code{list-copy} copies the spine of the of the list.
+The function @code{tree-copy} recursively copies its arguments, descending
+only into the list cells.
+@end deffn
+
+@deffn {bigloo procedure} delete-duplicates list [eq equal?]
+@deffnx {bigloo procedure} delete-duplicates! list [eq equal?]
+@cindex SRFI-1
+
+@code{delete-duplicates} removes duplicate elements from the @var{list}
+argument. If there are multiple equal elements in the argument list,
+the result list only contains the first or leftmost of these elements
+in the result. The order of these surviving elements is the same as in
+the original list -- @code{delete-duplicates} does not disorder the list
+(hence it is useful for "cleaning up" association lists).
+
+The @var{equal} parameter is used to compare the elements of the list;
+it defaults to @code{equal?}. If x comes before y in list, then the
+comparison is performed (= x y). The comparison procedure will be used
+to compare each pair of elements in list no more than once; the order
+in which it is applied to the various pairs is not specified.
+
+@code{delete-duplicates} is allowed to share common tails
+between argument and result lists -- for example, if the list argument
+contains only unique elements, it may simply return exactly this
+list. 
+@end deffn
+
+@xref{Pairs and lists,,r5rs.info,R5RS}, for more details.
+
+@c -- Symbols -------------------------------------------------------- @c
+@node  Symbols, Keywords, Pairs And Lists, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Symbols
+@cindex symbols
+
+Symbols are case sensitive and the reader is case sensitive too. So:
+@smalllisp
+(eq? 'foo 'FOO) @result{} #f
+(eq? (string->symbol "foo") (string->symbol "FOO")) @result{} #f
+@end smalllisp
+
+Symbols may contain special characters (such as #\Newline or #\Space).
+Such symbols that have to be read must be written: @code{|[^]+|}. The
+function @code{write} uses that notation when it encounters symbols
+containing special characters.
+
+@smalllisp
+(write 'foo) @result{} foo
+(write 'Foo) @result{}Foo
+(write '|foo bar|) @result{} |foo bar|
+@end smalllisp
+
+@deffn {procedure} symbol? obj
+@deffnx {procedure} symbol->string symbol
+Returns the name of the symbol as a string. Modifying the string result
+of @code{symbol->string} could yield incoherent programs. It is better
+to copy the string before any physical update. For instance, don't write:
+@smalllisp
+(string-downcase! (symbol->string 'foo))
+@end smalllisp
+
+@xref{Symbols,,r5rs.info, R5RS}, for more details.
+
+but prefer:
+@smalllisp
+(string-downcase (symbol->string 'foo))
+@end smalllisp
+@end deffn
+
+@deffn {procedure} string->symbol string
+@deffnx {bigloo procedure} string->symbol-ci string
+@deffnx {bigloo procedure} symbol-append symbol @dots{}
+@code{String->symbol} returns a symbol whose name is @var{string}.
+@code{String->symbol} respects the case of @var{string}. 
+@code{String->symbol-ci} returns a symbol whose name is
+@code{(string-upcase @var{string})}. @code{Symbol-append} returns a 
+symbol whose name is the concatenation of all the @var{symbol}'s names.
+@end deffn
+
+@deffn {bigloo procedure} gensym [obj]
+
+Returns a new fresh symbol. If @var{obj} is provided and is a string or
+a symbol, it is used as prefix for the new symbol.
+@end deffn
+
+@deffn {bigloo procedure} symbol-plist symbol-or-keyword
+Returns the property-list associated with @var{symbol-or-keyword}. 
+@end deffn
+
+@deffn {bigloo procedure} getprop symbol-or-keyword key
+
+Returns the value that has the key @code{eq?} to @var{key} from the
+@var{symbol-or-keyword}'s property list. If there is no value associated 
+with @var{key} then @code{#f} is returned.
+@end deffn
+
+@deffn {bigloo procedure} putprop! symbol-or-keyword key val
+Stores @var{val} using @var{key} on @var{symbol-or-keyword}'s property list.
+@end deffn
+
+@deffn {bigloo procedure} remprop! symbol-or-keyword key
+Removes the value associated with @var{key} in the @var{symbol-or-keyword}'s
+property list. The result is unspecified.
+@end deffn
+
+Here is an example of properties handling:
+
+@smalllisp
+(getprop 'a-sym 'a-key)       @result{} #f
+(putprop! 'a-sym 'a-key 24)  
+(getprop 'a-sym 'a-key)       @result{} 24
+(putprop! 'a-sym 'a-key2 25)  
+(getprop 'a-sym 'a-key)       @result{} 24
+(getprop 'a-sym 'a-key2)      @result{} 25
+(symbol-plist 'a-sym)         @result{} (a-key2 25 a-key 24)
+(remprop! 'a-sym 'a-key)
+(symbol-plist 'a-sym)         @result{} (a-key2 25)
+(putprop! 'a-sym 'a-key2 16)  
+(symbol-plist 'a-sym)         @result{} (a-key2 16)
+@end smalllisp
+
+@c -- Keywords ------------------------------------------------------- @c
+@node  Keywords, Numbers, Symbols, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Keywords
+@cindex keywords
+
+Keywords constitute an extension to Scheme required by Dsssl [Dsssl96].
+Keywords syntax is either @code{<@r{ident}>:} or @code{:<@r{ident}>}.
+
+Keywords are autoquote and case sensitive. So
+@smalllisp
+(eq? toto: TOTO:) @result{} #f
+@end smalllisp
+
+The colon character (@code{:}) does not belong to they keyword. Hence
+@smalllisp
+(eq? toto: :toto) @result{} #t
+@end smalllisp
+
+@deffn {bigloo procedure} keyword? obj
+@deffnx {bigloo procedure} keyword->string keyword
+@deffnx {bigloo procedure} string->keyword string
+@deffnx {bigloo procedure} keyword->symbol keyword
+@deffnx {bigloo procedure} symbol->keyword symbol
+@end deffn
+
+@c -- Numbers -------------------------------------------------------- @c
+@node  Numbers, Characters, Keywords, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Numbers
+@cindex Numbers
+@cindex fixnum
+@cindex fixnum (long)
+@cindex long fixnum
+@cindex exact fixnum
+@cindex hardware fixnum
+@cindex flonum
+@cindex bignum
+@cindex #b
+@cindex #o
+@cindex #d
+@cindex #x
+@cindex #ex
+@cindex #l
+@cindex #lx
+@cindex #z
+
+Bigloo has only three kinds of numbers: fixnum, long fixnum and
+flonum.  Operations on complexes and rationals are not implemented but
+for compatibility purposes, the functions @code{complex?} and
+@code{rational?} exist.  (In fact, @code{complex?} is the same as
+@code{number?} and @code{rational?}  is the same as @code{real?} in
+Bigloo.) The accepted prefixes are @code{#b}, @code{#o}, @code{#d},
+@code{#x}, @code{#e}, @code{#ex}, @code{#l}, @code{#lx}, and
+@code{#z}.  For each generic arithmetic procedure, Bigloo provides two
+specialized procedures, one for fixnums and one for flonums. The names
+of these two specialized procedures is the name of the original one
+suffixed by @code{fx} (fixnum), @code{fl} (flonum), @code{elong}
+(exact C long), @code{llong} (exact C long long), and @code{bx} (big
+integer).  A fixnum has the size of a C @code{long} minus 2 bits. A
+flonum has the size of a C @code{double}. An elong has the size
+of a C long. An llong has the size of a C long long. A big integer has
+an unbounded size.
+
+@deffn {procedure} number? obj
+@deffnx {procedure} real? obj
+@deffnx {procedure} integer? obj
+@deffnx {bigloo procedure} complex? x
+@deffnx {bigloo procedure} rational? x
+@c These last two procedures always return @code{#t}.
+@end deffn
+
+@deffn {bigloo procedure} fixnum? obj
+@deffnx {bigloo procedure} flonum? obj
+These two procedures are type checkers on 
+types @code{integer} and @code{real}.
+@end deffn
+
+@deffn {bigloo procedure} elong? obj
+@deffnx {bigloo procedure} llong? obj
+The @code{elong?} procedures is a type checker for "hardware" integers, that is
+integers that have the very same size has the host platform permits (e.g., 
+32 bits or 64 bits integers). The @code{llong?} procedure is a type checker
+for "hardware" long long integers. Exact integers literal are introduced
+with the special @code{#e} and @code{#ex} prefixes. Exact long integers 
+literal are introduced with the special @code{#l} and @code{#lx} prefixes.
+@end deffn
+
+@deffn {bigloo procedure} bignum? obj
+This type checker tests if its argument is a big integer.
+@end deffn
+
+@deffn {bigloo procedure} make-elong int
+@deffnx {bigloo procedure} make-llong int
+Create an exact fixnum integer from the fixnum value @var{int}.
+@end deffn
+
+@deffn {bigloo procedure} minvalfx
+@deffnx {bigloo procedure} maxvalfx
+@deffnx {bigloo procedure} minvalelong
+@deffnx {bigloo procedure} maxvalelong
+@deffnx {bigloo procedure} minvalllong
+@deffnx {bigloo procedure} maxvalllong
+Returns the minimal value (respectively the maximal value) for fix 
+integers.
+@end deffn
+
+@deffn {procedure} exact? z
+@deffnx {procedure} inexact? z
+@end deffn
+
+@deffn {library procedure} zero? z
+@deffnx {library procedure} positive? z
+@deffnx {library procedure} negative? z
+@deffnx {library procedure} odd? n
+@deffnx {library procedure} even? n
+@deffnx {library procedure} zerofx? z
+@deffnx {library procedure} positivefx? z
+@deffnx {library procedure} negativefx? z
+@deffnx {library procedure} oddfx? n
+@deffnx {library procedure} evenfx? n
+@deffnx {library procedure} zerofl? z
+@deffnx {library procedure} positivefl? z
+@deffnx {library procedure} negativefl? z
+@deffnx {library procedure} oddfl? n
+@deffnx {library procedure} evenfl? n
+@deffnx {library procedure} zeroelong? z
+@deffnx {library procedure} positiveelong? z
+@deffnx {library procedure} negativeelong? z
+@deffnx {library procedure} oddelong? n
+@deffnx {library procedure} evenelong? n
+@deffnx {library procedure} zerollong? z
+@deffnx {library procedure} positivellong? z
+@deffnx {library procedure} negativellong? z
+@deffnx {library procedure} oddllong? n
+@deffnx {library procedure} evenllong? n
+@deffnx {library procedure} zerobx? z
+@deffnx {library procedure} positivebx? z
+@deffnx {library procedure} negativebx? z
+@deffnx {library procedure} oddbx? n
+@deffnx {library procedure} evenbx? n
+@end deffn
+
+@deffn {library procedure} min x1 x2 @dots{}
+@deffnx {library procedure} max x1 x2 @dots{}
+@deffnx {bigloo procedure} minfx x1 x2 @dots{}
+@deffnx {bigloo procedure} maxfx x1 x2 @dots{}
+@deffnx {bigloo procedure} minfl x1 x2 @dots{}
+@deffnx {bigloo procedure} maxfl x1 x2 @dots{}
+@deffnx {bigloo procedure} minbx x1 x2 @dots{}
+@deffnx {bigloo procedure} maxbx x1 x2 @dots{}
+@end deffn
+
+@deffn {procedure} = z1 z2 z3 @dots{}
+@deffnx {bigloo procedure} =fx i1 i2
+@deffnx {bigloo procedure} =fl r1 r2
+@deffnx {bigloo procedure} =elong r1 r2
+@deffnx {bigloo procedure} =llong r1 r2
+@deffnx {bigloo procedure} =bx r1 r2
+@deffnx {procedure} < z1 z2 z3 @dots{}
+@deffnx {bigloo procedure} <fx i1 i2
+@deffnx {bigloo procedure} <fl r1 r2
+@deffnx {bigloo procedure} <elong r1 r2
+@deffnx {bigloo procedure} <lllong r1 r2
+@deffnx {bigloo procedure} <bx r1 r2
+@deffnx {procedure} > z1 z2 z3 @dots{}
+@deffnx {bigloo procedure} >fx i1 i2
+@deffnx {bigloo procedure} >fl r1 r2
+@deffnx {bigloo procedure} >elong r1 r2
+@deffnx {bigloo procedure} >lllong r1 r2
+@deffnx {bigloo procedure} >bx r1 r2
+@deffnx {procedure} <= z1 z2 z3 @dots{}
+@deffnx {bigloo procedure} <=fx i1 i2
+@deffnx {bigloo procedure} <=fl r1 r2
+@deffnx {bigloo procedure} <=elong r1 r2
+@deffnx {bigloo procedure} <=llong r1 r2
+@deffnx {bigloo procedure} <=bx r1 r2
+@deffnx {procedure} >= z1 z2 z3 @dots{}
+@deffnx {bigloo procedure} >=fx i1 i2
+@deffnx {bigloo procedure} >=fl r1 r2
+@deffnx {bigloo procedure} >=elong r1 r2
+@deffnx {bigloo procedure} >=llong r1 r2
+@deffnx {bigloo procedure} >=bx r1 r2
+@end deffn
+
+@deffn {procedure} + z @dots{}
+@deffnx {bigloo procedure} +fx i1 i2
+@deffnx {bigloo procedure} +fl r1 r2
+@deffnx {bigloo procedure} +elong r1 r2
+@deffnx {bigloo procedure} +llong r1 r2
+@deffnx {bigloo procedure} +bx r1 r2
+@deffnx {procedure} * z @dots{}
+@deffnx {bigloo procedure} *fx i1 i2
+@deffnx {bigloo procedure} *fl r1 r2
+@deffnx {bigloo procedure} *elong r1 r2
+@deffnx {bigloo procedure} *llong r1 r2
+@deffnx {bigloo procedure} *bx r1 r2
+@deffnx {procedure} - z
+@deffnx {procedure} - z1 z2 @dots{}
+@deffnx {bigloo procedure} -fx i1 i2
+@deffnx {bigloo procedure} -fl r1 r2
+@deffnx {bigloo procedure} -elong r1 r2
+@deffnx {bigloo procedure} -llong r1 r2
+@deffnx {bigloo procedure} -bx r1 r2
+@deffnx {bigloo procedure} negfx i
+@deffnx {bigloo procedure} negfl r
+@deffnx {bigloo procedure} negelong r
+@deffnx {bigloo procedure} negllong r
+@deffnx {bigloo procedure} negbx r
+These two functions implement the unary function @code{-}.
+@end deffn
+
+@deffn {procedure} / z1 z2
+@deffnx {procedure} / z1 z2 @dots{}
+@deffnx {bigloo procedure} /fx i1 i2
+@deffnx {bigloo procedure} /fl r1 r2
+@deffnx {bigloo procedure} /elong r1 r2
+@deffnx {bigloo procedure} /llong r1 r2
+@deffnx {bigloo procedure} /bx r1 r2
+@end deffn
+
+@deffn {library procedure} abs z
+@deffnx {bigloo procedure} absfl z
+@deffnx {procedure} quotient z1 z2
+@deffnx {procedure} quotientelong z1 z2
+@deffnx {procedure} quotientllong z1 z2
+@deffnx {procedure} remainder z1 z2
+@deffnx {procedure} remainderelong z1 z2
+@deffnx {procedure} remainderllong z1 z2
+@deffnx {procedure} remainderfl z1 z2
+@deffnx {procedure} modulo z1 z2
+@deffnx {procedure} gcd z @dots{}
+@deffnx {procedure} lcm z @dots{}
+@deffnx {procedure} floor z
+@deffnx {procedure} floorfl z
+@deffnx {procedure} ceiling z
+@deffnx {procedure} ceilingfl z
+@deffnx {procedure} truncate z
+@deffnx {procedure} truncatefl z
+@deffnx {procedure} round z
+@deffnx {procedure} roundfl z
+@end deffn
+
+@deffn {bigloo procedure} random z
+@deffnx {bigloo procedure} randombx z
+@deffnx {bigloo procedure} seed-random! z
+the @code{random} function returns a pseudo-random integer between 0
+and @var{z}.
+
+If no seed value is provided,  the @code{random} function  is  automatically
+seeded with a value of 1.
+@end deffn
+
+@deffn {procedure} exp z
+@deffnx {procedure} expfl z
+@deffnx {procedure} log z
+@deffnx {procedure} logfl z
+@deffnx {procedure} sin z
+@deffnx {procedure} sinfl z
+@deffnx {procedure} cos z
+@deffnx {procedure} cosfl z
+@deffnx {procedure} tan z
+@deffnx {procedure} tanfl z
+@deffnx {procedure} asin z
+@deffnx {procedure} asinfl z
+@deffnx {procedure} acos z
+@deffnx {procedure} acosfl z
+@deffnx {procedure} atan z1 z2
+@deffnx {procedure} atanfl z1 z2
+@deffnx {procedure} sqrt z
+@deffnx {procedure} sqrtfl z
+@deffnx {procedure} expt z1 x2
+@deffnx {procedure} exptfl z1 x2
+@end deffn
+
+@deffn {procedure} exact->inexact z
+@deffnx {procedure} inexact->exact z
+@deffnx {procedure} number->string z
+@deffnx {bigloo procedure} integer->string i [radix 10]
+@deffnx {bigloo procedure} integer->string/padding i padding [radix 10]
+@deffnx {bigloo procedure} elong->string i [radix 10]
+@deffnx {bigloo procedure} llong->string i [radix 10]
+@deffnx {bigloo procedure} real->string z
+@deffnx {bigloo procedure} unsigned->string i [radix 16]
+
+The function @code{integer->string/padding} converts its arguments into
+a string with a left padding filled of characters @code{0}.
+
+@example
+(integer->string/padding 3 5)       @result{} "00003"
+@end example
+
+The function @code{unsigned->string} only accepts the following radixes:
+@code{2}, @code{8}, and @code{16}. It converts its argument into an
+@emph{unsigned} representation.
+
+@example
+(unsigned->string 123 16)           @result{} "7b"
+(unsigned->string -123 16)          @result{} "ffffff85"
+@end example
+
+@end deffn
+
+@deffn {procedure} string->number string [radix 10]
+@deffnx {bigloo procedure} string->real string
+@deffnx {bigloo procedure} string->elong string radix
+@deffnx {bigloo procedure} string->llong string radix
+@deffnx {bigloo procedure} string->bignum string radix
+Bigloo implements a restricted version of @code{string->number}. If
+@var{string} denotes a floating point number then, the only radix
+@code{10} may be send to @code{string->number}. That is:
+
+@smalllisp
+(string->number "1243" 16)          @result{} 4675
+(string->number "1243.0" 16)        @print{}
+# *** ERROR:bigloo:string->number
+# Only radix `10' is legal for floating point number -- 16
+(string->elong "234456353")         @result{} #e234456353
+@end smalllisp
+
+In addition, @code{string->number} does not support radix encoded inside 
+@var{string}. That is:
+
+@smalllisp
+(string->number "#x1243")          @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} fixnum->flonum i
+@deffnx {bigloo procedure} flonum->fixnum r
+@deffnx {bigloo procedure} elong->fixnum i
+@deffnx {bigloo procedure} fixnum->elong r
+@deffnx {bigloo procedure} llong->fixnum i
+@deffnx {bigloo procedure} fixnum->llong r
+@deffnx {bigloo procedure} elong->flonum i
+@deffnx {bigloo procedure} flonum->elong r
+@deffnx {bigloo procedure} llong->flonum i
+@deffnx {bigloo procedure} flonum->llong r
+For efficiency, @code{string->real} and @code{string->integer} do not
+test whether the string can be read as a number.  Therefore the result
+might be wrong if the string cannot be read as a number.
+
+These last procedures implement the natural translation
+from and to fixnum, flonum, elong, and llong.
+
+@end deffn
+
+@xref{Numerical operations,,r5rs.info,R5RS}, for more details.
+
+@c -- Characters ----------------------------------------------------- @c
+@node  Characters, UCS-2 Characters, Numbers, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Characters
+@cindex characters
+@cindex #a<ddd>
+
+Bigloo knows one more named characters @code{#\tab}, @code{#\return}, and
+@code{#\null} in addition to the @code{#\space} and @code{#\newline} of R5RS.
+
+A new alternate syntax exists for characters:
+@code{#a<ascii-code>}
+where @code{<ascii-code>} is the three digit decimal ascii number
+of the character to be read. Thus, for instance, the character @code{#\space}
+can be written @code{#a032}.
+
+@deffn {procedure} char? obj
+@end deffn
+
+@deffn {procedure} char=? char1 char2
+@deffnx {procedure} char<? char1 char2
+@deffnx {procedure} char>? char1 char2
+@deffnx {procedure} char<=? char1 char2
+@deffnx {procedure} char>=? char1 char2
+@deffnx {library procedure} char-ci=? char1 char2
+@deffnx {library procedure} char-ci<? char1 char2
+@deffnx {library procedure} char-ci>? char1 char2
+@deffnx {library procedure} char-ci<=? char1 char2
+@deffnx {library procedure} char-ci>=? char1 char2
+@end deffn
+
+@deffn {library procedure} char-alphabetic? char
+@deffnx {library procedure} char-numeric? char
+@deffnx {library procedure} char-whitespace? char
+@deffnx {library procedure} char-upper-case? char
+@deffnx {library procedure} char-lower-case? char
+@end deffn
+
+@deffn {procedure} char->integer char
+@deffnx {procedure} integer->char i
+@end deffn
+
+@deffn {library procedure} char-upcase char
+@deffnx {library procedure} char-downcase char
+@end deffn
+
+@c -- UCS-2 characters ----------------------------------------------- @c
+@node  UCS-2 Characters, Strings, Characters, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection UCS-2 Characters
+@cindex UCS-2 characters
+
+UCS-2 Characters are two byte encoded characters. They can be read with
+the syntax:
+@code{#u<unicode>}
+where @code{<unicode>} is the four digit hexadecimal unicode value
+of the character to be read. Thus, for instance, the character @code{#\space}
+can be written @code{#u0020}.
+
+@deffn {bigloo procedure} ucs2? obj
+@end deffn
+
+@deffn {bigloo procedure} ucs2=? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2<? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2>? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2<=? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2>=? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2-ci=? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2-ci<? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2-ci>? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2-ci<=? ucs2a ucs2b
+@deffnx {bigloo procedure} ucs2-ci>=? ucs2a ucs2b
+@end deffn
+
+@deffn {bigloo procedure} ucs2-alphabetic? ucs2
+@deffnx {bigloo procedure} ucs2-numeric? ucs2
+@deffnx {bigloo procedure} ucs2-whitespace? ucs2
+@deffnx {bigloo procedure} ucs2-upper-case? ucs2
+@deffnx {bigloo procedure} ucs2-lower-case? ucs2
+@end deffn
+
+@deffn {bigloo procedure} ucs2->integer ucs2
+@deffnx {bigloo procedure} integer->ucs2 i
+@end deffn
+
+@deffn {bigloo procedure} ucs2->char ucs2
+@deffnx {bigloo procedure} char->ucs2 char
+@end deffn
+
+@deffn {bigloo procedure} ucs2-upcase ucs2
+@deffnx {bigloo procedure} ucs2-downcase ucs2
+@end deffn
+
+@c -- Strings -------------------------------------------------------- @c
+@node  Strings, Unicode (UCS-2) Strings, UCS-2 Characters, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Strings
+@cindex Strings
+
+There are three different syntaxes for strings in Bigloo: traditional,
+foreign or Unicode. The traditional syntax for strings may conform to
+the Revised Report, see @ref{Lexical structure,,r5rs.info,R5RS}. 
+With the foreign syntax, C escape
+sequences are interpreted as specified by ISO-C. In addition, Bigloo's
+reader evaluate @code{\x??} sequence as an hexadecimal escape
+character. For Unicode syntax, see @ref{Unicode (UCS-2) Strings}. Only
+the reader distinguishes between these three appearances of strings;
+i.e., there is only one type of string at evaluation-time. The regular
+expression describing the syntax for foreign string is:
+@code{#"([^"]|\")*"}. Escape characters are controlled by
+the parameter @code{bigloo-strict-r5rs-strings} (see @ref{Parameters}).
+
+The library functions for string processing are:
+@deffn {procedure} string? obj
+@end deffn
+
+@deffn {SRFI-13 procedure} string-null? s
+Is @var{s} an empty string?
+@end deffn
+
+@deffn {procedure} make-string k
+@deffnx {procedure} make-string k char
+@deffnx {library procedure} string char @dots{}
+@end deffn
+
+@deffn {procedure} string-length string
+@deffnx {procedure} string-ref string k
+@deffnx {procedure} string-set! string k char
+@end deffn
+
+@deffn {library procedure} string=? string1 string2
+This function returns @code{#t} if the @var{string1} and @var{string2}
+are made of the same characters. It returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} substring=? string1 string2 len
+This function returns @code{#t} if @var{string1} and @var{string2} have a
+common prefix of size @var{len}. 
+
+@smalllisp
+(substring=? "abcdef" "ab9989898" 2)
+   @result{} #t
+(substring=? "abcdef" "ab9989898" 3)
+   @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} substring-at? string1 string2 offset [len]
+@deffnx {bigloo procedure} substring-ci-at? string1 string2 offset [len]
+This function returns @code{#t} if @var{string2} is at position @var{offset}
+in the string @code{string1}. It returns @code{#f} otherwise.
+@smalllisp
+(substring-at? "abcdefghij" "def" 3)
+   @result{} #t
+(substring-at? "abcdefghij" "def" 2)
+   @result{} #f
+(substring-at? "abcdefghij" "defz" 3)
+   @result{} #f
+(substring-at? "abcdefghij" "defz" 3 3)
+   @result{} #t
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} string-ci=? string1 string2
+@deffnx {bigloo procedure} substring-ci=? string1 string2 len
+@deffnx {library procedure} string<? string1 string2
+@deffnx {library procedure} string>? string1 string2
+@deffnx {library procedure} string<=? string1 string2
+@deffnx {library procedure} string>=? string1 string2
+@deffnx {library procedure} string-ci<? string1 string2
+@deffnx {library procedure} string-ci>? string1 string2
+@deffnx {library procedure} string-ci<=? string1 string2
+@deffnx {library procedure} string-ci>=? string1 string2
+@end deffn
+
+@deffn {bigloo procedure} string-index string charset [start 0]
+@deffnx {bigloo procedure} string-index-right string charset [start len-1]
+@cindex SRFI-13
+
+Returns the first occurrence of a character of @var{char-or-set} in
+@var{string}. The argument @var{charset} is either a character or a string.
+If no character is found, @code{string-index} returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} string-contains string1 string2 [start 0]
+@deffnx {bigloo procedure} string-contains-ci string1 string2 [start 0]
+@cindex SRFI-13
+
+Does string s1 contain string s2?
+
+Return the index in @var{string1} where @var{string2} occurs first as a 
+substring, or false.
+
+@code{string-contains-ci} is the case-insensitive
+variant. Case-insensitive comparison is done by case-folding
+characters with the operation:
+
+@smalllisp
+(char-downcase (char-upcase c))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} string-compare3 string1 string2
+@deffnx {bigloo procedure} string-compare3-ci string1 string2
+This function compares @var{string1} and @var{string2}. It returns
+a negative integer if @var{string1} < @var{string2}. It returns
+zero if the @var{string1} equal @var{string2}. It returns
+a positive integer if @var{string1} > @var{string2}.
+@end deffn
+
+@deffn {bigloo procedure} string-natural-compare3 string1 string2
+@deffnx {bigloo procedure} string-natural-compare3-ci string1 string2
+This function compares @var{string1} and @var{string2} according to
+a @emph{natural string order}. It returns
+a negative integer if @var{string1} < @var{string2}. It returns
+zero if the @var{string1} equal @var{string2}. It returns
+a positive integer if @var{string1} > @var{string2}.
+
+@smalllisp
+(string-natural-compare "foo" "foo")
+   @result{} 0
+(string-natural-compare "foo0" "foo1")
+   @result{} -1
+(string-natural-compare "foo1" "foo0")
+   @result{} 1
+(string-natural-compare "rfc822.txt" "rfc1.txt")
+   @result{} -1
+(string-natural-compare "rfc1.txt" "rfc2086.txt")
+   @result{} -1
+(string-natural-compare "rfc2086.txt" "rfc1.txt")
+   @result{} 1
+(string-natural-compare "rfc822.txt" "rfc2086.txt")
+   @result{} -1
+(string-natural-compare "a0" "a1")
+   @result{} -1
+(string-natural-compare "a1" "a1a")
+   @result{} -1
+(string-natural-compare "a1a" "a1b")
+   @result{} -1
+(string-natural-compare "a1b" "a2")
+   @result{} -1
+(string-natural-compare "a2" "a10")
+   @result{} -1
+(string-natural-compare "a10" "a20")
+   @result{} -1
+(string-natural-compare "a2" "a20")
+   @result{} -1
+(string-natural-compare "x2-g8" "x2-y7")
+   @result{} -1
+(string-natural-compare "1.001" "1.002")
+   @result{} -1
+(string-natural-compare "1.002" "1.010")
+   @result{} -1
+(string-natural-compare "1.010"  "1.02")
+   @result{} 1
+(string-natural-compare "1.02" "1.1")
+   @result{} -1
+(string-natural-compare "1.1" "1.02")
+   @result{} 1
+(string-natural-compare "1.02" "1.3")
+   @result{} -1
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} substring string start end
+
+@var{string} must be a string, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (string-length STRING)
+@end smallexample
+
+@code{substring} returns a newly allocated string formed from the
+characters of @var{STRING} beginning with index @var{START} (inclusive) 
+and ending with index @var{END} (exclusive).
+
+@smalllisp
+(substring "abcdef" 0 5)
+   @result{} "abcde"
+(substring "abcdef" 1 5)
+   @result{} "bcde"
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} string-shrink! string end
+
+@var{string} must be a string, and @var{end} must be
+an exact integers satisfying:
+
+@smallexample
+  0 <= END <= (string-length STRING)
+@end smallexample
+
+@code{string-shrink!} returns a newly allocated string formed from the
+characters of @var{STRING} beginning with index 0 (inclusive) 
+and ending with index @var{END} (exclusive). As much as possible 
+@code{string-shrink!} changes the argument @var{string}. That is, as much
+as possible, and for the back-ends that enable it, @var{string-shrink!}
+operate a side effect on its argument.
+
+@smalllisp
+(let ((s (string #\a #\b #\c #\d #\e)))
+   (set! s (string-shrink! s 3))
+   s)
+   @result{} "abc"
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} string-append string @dots{}
+@deffnx {library procedure} string->list string
+@deffnx {library procedure} list->string list
+@deffnx {library procedure} string-copy string
+@end deffn
+
+@deffn {bigloo procedure} string-fill! string char
+Stores @var{char} in every element of the given @var{string}
+and returns an unspecified value.
+@end deffn
+
+@deffn {bigloo procedure} string-downcase string
+Returns a newly allocated version of string where each upper case
+letter is replaced by its lower case equivalent.
+@end deffn
+
+@deffn {bigloo procedure} string-upcase string
+Returns a newly allocated version of string where each lower case
+letter is replaced by its upper case equivalent.
+@end deffn
+
+@deffn {bigloo procedure} string-capitalize string
+Builds a newly allocated capitalized string.
+@end deffn
+
+@deffn {bigloo procedure} string-downcase! string
+Physically downcases the @var{string} argument.
+@end deffn
+
+@deffn {bigloo procedure} string-upcase! string
+Physically upcases the @var{string} argument.
+@end deffn
+
+@deffn {bigloo procedure} string-capitalize! string
+Physically capitalized the @var{string} argument.
+@end deffn
+
+@deffn {bigloo procedure} string-for-read string
+Returns a copy of @var{string} with each special character
+replaced by an escape sequence.
+@end deffn
+
+@deffn {bigloo procedure} blit-string! string1 o1 string2 o2 len
+Fill string @var{string2} starting at position @var{o2} with
+@var{len} characters taken out of string @var{string1} from
+position @var{o1}.
+
+@smalllisp
+(let ((s (make-string 20 #\-)))
+	(blit-string! "toto" 0 s 16 4)
+	s)
+   @result{} "----------------toto"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} string-replace string char1 char2
+@deffnx {bigloo procedure} string-replace! string char1 char2
+Replace all the occurrence of @var{char1} by @var{char2} in @var{string}.
+The function @code{string-replace} returns a newly allocated string.
+The function @code{string-replace!} modifies its first argument.
+@end deffn
+
+@deffn {bigloo procedure} string-split string
+@deffnx {bigloo procedure} string-split string delimiters
+
+Parses @var{string} and returns a list of tokens ended by a character of the 
+@var{delimiters} string. If @var{delimiters} is omitted, it defaults to a 
+string containing a space, a tabulation and a newline characters.
+
+@smalllisp
+(string-split "/usr/local/bin" "/") @result{} ("usr" "local" "bin")
+(string-split "once   upon a time") @result{} ("once" "upon" "a" "time")
+@end smalllisp
+@end deffn
+
+@deffn {SRFI-13 procedure} string-prefix-length s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-suffix-length s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-prefix-length-ci s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-suffix-length-ci s1 s2 [start1 end1 start2 end2] 
+Return the length of the longest common prefix/suffix of the two
+strings. For prefixes, this is equivalent to the "mismatch index" for
+the strings (modulo the starti index offsets).
+
+The optional start/end indices restrict the comparison to the
+indicated substrings of s1 and s2.
+@end deffn
+
+@deffn {SRFI-13 procedure} string-prefix? s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-suffix? s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-prefix-ci? s1 s2 [start1 end1 start2 end2] 
+@deffnx {SRFI-13 procedure} string-suffix-ci? s1 s2 [start1 end1 start2 end2] 
+
+Is s1 a prefix/suffix of s2?
+
+The optional start/end indices restrict the comparison to the
+indicated substrings of s1 and s2.
+
+@end deffn
+
+@deffn {bigloo procedure} string-hex-intern string
+@deffnx {bigloo procedure} string-hex-intern! string
+Converts an hexadecimal @var{string} of @code{n} characters into an actual 
+string of @code{n/2} characters. 
+
+@smalllisp
+(string-hex-intern "4a4b4c") @result{} "JKL"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} string-hex-extern string
+Converts a @var{string} into a hexadecimal representation.
+
+@smalllisp
+(string-hex-extern "JKL") @result{} "4a4b4c"
+@end smalllisp
+
+@end deffn
+
+
+@c -- Unicode (UCS-2) strings ---------------------------------------- @c
+@node  Unicode (UCS-2) Strings, Vectors, Strings, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Unicode (UCS-2) Strings
+@cindex UCS-2 strings
+
+UCS-2 strings cannot be read by the standard reader but UTF-8 strings
+can. The special syntax for UTF-8 is described by the
+regular expression:
+@code{#u"([^]|\")*"}.
+
+The library functions for Unicode string processing are:
+@deffn {bigloo procedure} ucs2-string? obj
+@end deffn
+
+@deffn {bigloo procedure} make-ucs2-string k
+@deffnx {bigloo procedure} make-ucs2-string k char
+@deffnx {bigloo procedure} ucs2-string k @dots{}
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-length s-ucs2
+@deffnx {bigloo procedure} ucs2-string-ref s-ucs2 k
+@deffnx {bigloo procedure} ucs2-string-set! s-ucs2 k char
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string=? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string-ci=? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string<? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string>? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string<=? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string>=? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string-ci<? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string-ci>? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string-ci<=? s-ucs2a s-ucs2b
+@deffnx {bigloo procedure} ucs2-string-ci>=? s-ucs2a s-ucs2b
+@end deffn
+
+@deffn {bigloo procedure} subucs2-string s-ucs2 start end
+@deffnx {bigloo procedure} ucs2-string-append s-ucs2 @dots{}
+@deffnx {bigloo procedure} ucs2-string->list s-ucs2
+@deffnx {bigloo procedure} list->ucs2-string chars
+@deffnx {bigloo procedure} ucs2-string-copy s-ucs2
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-fill! s-ucs2 char
+Stores @var{char} in every element of the given s-ucs2
+and returns an unspecified value.
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-downcase s-ucs2
+Builds a newly allocated ucs2-string with lower case letters.
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-upcase s-ucs2
+Builds a new allocated ucs2-string with upper case letters.
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-downcase! s-ucs2
+Physically downcases the @var{s-ucs2} argument.
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string-upcase! s-ucs2
+Physically upcases the @var{s-ucs2} argument.
+@end deffn
+
+@deffn {bigloo procedure} ucs2-string->utf8-string s-ucs2
+@deffnx {bigloo procedure} utf8-string->ucs2-string @var{string}
+Convert UCS-2 strings to (or from) UTF-8 encoded ascii strings.
+@end deffn
+
+@deffn {bigloo procedure} utf8-string? string
+Returns @code{#t} if and only if the argument @var{string} is a well formed
+UTF8 string. Otherwise returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} iso-latin->utf8 string
+@deffnx {bigloo procedure} iso-latin->utf8! string
+@deffnx {bigloo procedure} utf8->iso-latin @var{string}
+@deffnx {bigloo procedure} utf8->iso-latin! @var{string}
+Encode and decode iso-latin strings into utf8. The functions 
+@code{iso-latin->utf8-string!} and @code{utf8->iso-latin!} may return,
+as result, the string they receive as argument.
+@end deffn
+
+@deffn {bigloo procedure} cp1252->utf8 string
+@deffnx {bigloo procedure} cp1252->utf8! string
+@deffnx {bigloo procedure} utf8->cp1252 @var{string}
+@deffnx {bigloo procedure} utf8->cp1252! @var{string}
+Encode and decode cp1252 strings into utf8. The functions 
+@code{cp1252->utf8-string!} and @code{utf8->cp1252!} may return,
+as result, the string they receive as argument.
+@end deffn
+
+@deffn {bigloo procedure} 8bits->utf8 string table
+@deffnx {bigloo procedure} 8bits->utf8! string table
+@deffnx {bigloo procedure} utf8->8bits string invtable
+@deffnx {bigloo procedure} utf8->8bits! string inv-table
+These are the general conversion routines used internally by
+@code{iso-latin->utf8} and @code{cp1252->utf8}. They convert any 8
+bits @var{string} into its equivalent UTF-8 representation and vice versa. 
+
+The argument @var{table} should be either @code{#f}, which means that
+the basic (i.e., iso-latin-1) 8bits -> UTF8 converion is
+used, or it must be a vector of at maximun 127 entries
+containing strings of characters.  This table contains the encodings for
+the 8 bits characters whose code range from 128 to 255. 
+
+The table is not required to be complete. That is, it is not required
+to give the whole character encoding set. Only the characters that
+need a non-iso-latin canonical representation must be given. For instance, the
+CP1252 table can be defined as:
+
+@smalllisp
+(define cp1252
+   '#("\xe2\x82\xac" ;; 0x80
+      ""             ;; 0x81
+      "\xe2\x80\x9a" ;; 0x82
+      "\xc6\x92"     ;; 0x83
+      "\xe2\x80\x9e" ;; 0x84
+      "\xe2\x80\xa6" ;; 0x85
+      "\xe2\x80\xa0" ;; 0x86
+      "\xe2\x80\xa1" ;; 0x87
+      "\xcb\x86"     ;; 0x88
+      "\xe2\x80\xb0" ;; 0x89
+      "\xc5\xa0"     ;; 0x8a
+      "\xe2\x80\xb9" ;; 0x8b
+      "\xc5\x92"     ;; 0x8c
+      ""             ;; 0x8d
+      "\xc5\xbd"     ;; 0x8e
+      ""             ;; 0x8f
+      ""             ;; 0x90
+      "\xe2\x80\x98" ;; 0x91
+      "\xe2\x80\x99" ;; 0x92
+      "\xe2\x80\x9c" ;; 0x93
+      "\xe2\x80\x9d" ;; 0x94
+      "\xe2\x80\xa2" ;; 0x95
+      "\xe2\x80\x93" ;; 0x96
+      "\xe2\x80\x94" ;; 0x97
+      "\xcb\x9c"     ;; 0x98
+      "\xe2\x84\xa2" ;; 0x99
+      "\xc5\xa1"     ;; 0x9a
+      "\xe2\x80\xba" ;; 0x9b
+      "\xc5\x93"     ;; 0x9c
+      ""             ;; 0x9d
+      "\xc5\xbe"     ;; 0x9e
+      "\xc5\xb8"))   ;; 0x9f
+@end smalllisp
+
+The argument @var{inv-table} is a inverse table that can be build from
+a table and using the function @code{inverse-utf8-table}.
+@end deffn
+
+@deffn {procedure} inverse-utf8-table vector
+Inverse an UTF8 table into an object suitable for @code{utf8->8bits}
+and @code{utf8->8bits!}.
+@end deffn
+
+
+@c -- Vectors -------------------------------------------------------- @c
+@node  Vectors, Homogeneous Vectors (SRFI-4), Unicode (UCS-2) Strings, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Vectors
+@cindex vectors
+
+Vectors are not autoquoted objects.
+
+@deffn {procedure} vector? obj
+@end deffn
+
+@deffn {procedure} make-vector k
+@deffnx {procedure} make-vector k obj
+@deffnx {library procedure} vector obj @dots{}
+@end deffn
+
+@deffn {procedure} vector-length vector
+@deffnx {procedure} vector-ref vector k
+@deffnx {procedure} vector-set! vector k obj
+@end deffn
+
+@deffn {library procedure} vector->list vector
+@deffnx {library procedure} list->vector list
+@end deffn
+
+@deffn {library procedure} vector-fill! vector obj
+Stores  @var{obj} in every element of @var{vector}. For instance:
+
+@smalllisp
+(let ((v (make-vector 5 #f)))
+   (vector-fill! v #t)
+   v)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} copy-vector vector len
+Allocate a new vector of size @var{len} and fills it with the first @var{len}
+element of @var{vector}. The new length @var{len} may be bigger than
+the old vector length.
+@end deffn
+
+@deffn {bigloo procedure} vector-copy vector start end
+@var{vector} must be a vector, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (vector-length VECTOR)
+@end smallexample
+
+@code{vector-copy} returns a newly allocated vector formed from the
+elements of @var{VECTOR} beginning with index @var{START} (inclusive) 
+and ending with index @var{END} (exclusive).
+
+@smalllisp
+(vector-copy '#(1 2 3 4) 0 4)
+   @result{} '#(1 2 3 4)
+(vector-copy '#(1 2 3 4) 1 3)
+   @result{} '#(2 3)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} vector-copy! target tstart source [sstart [send]]
+@cindex SRFI-43
+
+Copies a block of elements from @var{source} to @var{target}, both of
+which must be vectors, starting in target at @var{tstart} and starting in
+source at @var{sstart}, ending when @var{send - sstart} elements have been
+copied. It is an error for @var{target} to have a length less than 
+@code{tstart + (send - sstart)}. @var{Sstart} defaults to @code{0} and 
+@var{send} defaults to the length of @var{source}.
+@end deffn
+
+@xref{Vectors,,r5rs.info}, for more details.
+
+
+@deffn {bigloo procedure} vector-append vector @dots{}
+
+Returns a newly allocated vector that contains all elements in order
+from the subsequent locations in vector @dots{}.
+
+Examples:
+
+@smalllisp
+(vector-append '#(x) '#(y)) @result{} #(x y)
+(vector-append '#(a) '#(b c d)) @result{} #(a b c d)
+(vector-append '#(a #(b)) '#(#(c))) @result{} #(a #(b) #(c))
+@end smalllisp
+
+@end deffn
+
+@c -- Homogenous Vectors --------------------------------------------- @c
+@node Homogeneous Vectors (SRFI-4), Control Features, Vectors, Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Homogeneous Vectors (SRFI-4)
+@cindex homogeneous vectors
+@cindex SRFI-4
+
+Bigloo fully supports SRFI-4 specification of homogeneous vectors 
+(see @url{http://srfi.schemers.org/srfi-4/srfi-4.html}).
+
+Each homogeneous vector is represented by a Bigloo type. That is:
+
+@itemize @bullet
+
+@item @code{::s8vector} signed exact integer in the range -(2^7) to (2^7)-1
+@item @code{::u8vector} unsigned exact integer in the range 0 to (2^8)-1
+@item @code{::s16vector} signed exact integer in the range -(2^15) to (2^15)-1
+@item @code{::u16vector} unsigned exact integer in the range 0 to (2^16)-1
+@item @code{::s32vector} signed exact integer in the range -(2^31) to (2^31)-1
+@item @code{::u32vector} unsigned exact integer in the range 0 to (2^32)-1
+@item @code{::s64vector} signed exact integer in the range -(2^63) to (2^63)-1
+@item @code{::u64vector} unsigned exact integer in the range 0 to (2^64)-1
+@item @code{f32vector} inexact small real
+@item @code{f64vector} inexact largest real
+
+@end itemize
+
+Each homogeneous vector datatype has an external representation which
+is supported by the read and write procedures and by the program
+parser. Each datatype also has a set of associated predefined
+procedures analogous to those available for Scheme's heterogeneous
+vectors.
+
+As noted by Marc Feeley's specification, for each value of TAG in 
+@{ s8, u8, s16, u16, s32, u32, s64, u64, f32,f64 @}, 
+if the datatype TAGvector is supported, then
+
+@itemize @bullet
+
+@item the external representation of instances of the datatype TAGvector 
+is  #TAG( ...elements... ).
+
+For example, @code{#u8(0 #e1e2 #xff)} is an u8vector of length 3 containing 
+0, 100 and 255; @code{#f64(-1.5)} is an f64vector of length 1 containing -1.5.
+
+Note that the syntax for float vectors conflicts with Standard Scheme
+which parses @code{#f32()} as 3 objects: @code{#f}, @code{32} and
+@code{()}.  For this reason, conformance to this SRFI implies this
+minor nonconformance to Standard Scheme.
+
+This external representation is also available in program source
+code. For example, @code{(set! x '#u8(1 2 3))} will set x to the object 
+@code{#u8(1 2 3)}. Literal homogeneous vectors must be quoted just like
+heterogeneous vectors must be. Homogeneous vectors can appear in
+quasiquotations but must not contain unquote or unquote-splicing forms
+(i.e. @code{`(,x #u8(1 2))} is legal but @code{`#u8(1 ,x 2)} is not). This
+restriction is to accomodate the many Scheme systems that use the read
+procedure to parse programs.
+
+@item the following predefined procedures are available:
+
+@deffn {SRFI-4 procedure} TAGvector? obj
+@deffnx {SRFI-4 procedure} make-TAGvector n [ TAGvalue ]
+@deffnx {SRFI-4 procedure} TAGvector TAGvalue ...
+@deffnx {SRFI-4 procedure} TAGvector-length TAGvect
+@deffnx {SRFI-4 procedure} TAGvector-ref TAGvect i
+@deffnx {SRFI-4 procedure} TAGvector-set! TAGvect i TAGvalue
+@deffnx {SRFI-4 procedure} TAGvector->list TAGvect
+@deffnx {SRFI-4 procedure} list->TAGvector TAGlist
+ 
+where obj is any Scheme object, n is a nonnegative exact
+integer, i is a nonnegative exact integer less than the length of the
+vector, TAGvect is an instance of the TAGvector datatype, TAGvalue is
+a number of the type acceptable for elements of the TAGvector
+datatype, and TAGlist is a proper list of numbers of the type
+acceptable for elements of the TAGvector datatype.
+
+It is an error if TAGvalue is not the same type as the elements of the
+TAGvector datatype (for example if an exact integer is passed to
+f64vector). If the fill value is not specified, the content of the
+vector is unspecified but individual elements of the vector are
+guaranteed to be in the range of values permitted for that type of
+vector.
+@end deffn
+
+@end itemize
+
+@c -- Control features ----------------------------------------------- @c
+@node Control Features, , Homogeneous Vectors (SRFI-4), Scheme Library
+@comment  node-name,  next,  previous,  up
+@subsection Control features
+@cindex control features
+
+@deffn {procedure} procedure? obj
+@end deffn
+ 
+@deffn {procedure} apply proc arg1 @dots{} args
+@end deffn
+
+@deffn {library procedure} map proc list1 list2 @dots{}
+@deffnx {bigloo procedure} map! proc list1 list2 @dots{}
+@deffnx {library procedure} for-each proc list1 list2 @dots{}
+@end deffn
+
+@deffn {library procedure} filter pred list @dots{}
+@deffnx {library procedure} filter! pred list @dots{}
+Strip out all elements of @var{list} for which the predicate @var{pred}
+is not true. The second version @code{filter!} is destructive:
+
+@smalllisp
+(filter number? '(1 2 #\a "foo" foo 3)) @result{} (1 2 3)
+(let ((l (list 1 2 #\a "foo" 'foo 3)))
+   (set! l (filter! number? l))
+   l)                                   @result{} (1 2 3)
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} append-map proc list1 list2 @dots{}
+@deffnx {library procedure} append-map! proc list1 list2 @dots{}
+The expression
+@smalllisp
+  (append-map f clist1 clist2 ...)
+@end smalllisp
+
+is equivalent to:
+
+@smalllisp
+  (apply append (map f clist1 clist2 ...))
+@end smalllisp
+
+The expression
+@smalllisp
+  (append-map! f clist1 clist2 ...)
+@end smalllisp
+
+is equivalent to:
+
+@smalllisp
+  (apply append! (map f clist1 clist2 ...))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} filter-map pred list @dots{}
+@cindex SRFI-1
+As @code{map} but only none @code{#f} values are accumulated in the resulting
+list. The Bigloo implementation complies with the SRFI-1 description.
+
+@smalllisp
+(filter-map (lambda (x) (if (number? x) '- #f)) '(1 2 #\a "foo" foo 3)) @result{} (- - -)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} sort proc obj
+@deffnx {bigloo procedure} sort obj proc
+Sorts @var{obj} according to @var{proc} test. The argument @var{obj} can
+either be a vector or a list. In either case, a copy of the argument
+is returned. For instance:
+
+@smalllisp
+(let ((l '(("foo" 5) ("bar" 6) ("hux" 1) ("gee" 4))))
+   (sort (lambda (x y) (string<? (car x) (car y))) l))
+   @result{} ((bar 6) (foo 5) (gee 4) (hux 1))
+@end smalllisp
+
+The second form (which uses @var{obj} before @var{proc} ensures backward
+compatibility with old Lisp systems, and older Bigloo versions. It is
+deprecated.
+@end deffn
+
+@deffn {library procedure} force promise
+@end deffn
+
+@deffn {bigloo procedure} call/cc proc
+This function is the same as the @code{call-with-current-continuation}
+function of the R5RS, see @ref{call-with-current-continuation,,r5rs.info,R5RS},
+but it is necessary to compile the module with the @code{-call/cc} 
+option to use it, see Section
+@xref{Compiler Description, , The Bigloo command line}.
+
+Note: Since @code{call/cc} is difficult to compile efficiently, 
+one might consider using @code{bind-exit} instead. 
+For this reason, we decided to enable @code{call/cc} only with a 
+compiler option.
+@end deffn
+
+@deffn {bigloo syntax} bind-exit escape body
+This form provides an escape operator facility. @code{bind-exit}
+evaluates the @var{body}, which may refer to the variable 
+@var{escape} which will denote an ``escape function'' of one
+argument: when called, this escape function will return from
+the @code{bind-exit} form with the given argument as the value of
+the @code{bind-exit} form. The @var{escape} can only be used
+while in the dynamic extent of the form. Bindings introduced by
+@code{bind-exit} are immutable.
+
+@smalllisp
+(bind-exit (exit)
+ (for-each (lambda (x)
+             (if (negative? x)
+                 (exit x)))
+           '(54 0 37 -3 245 19))
+ #t)                                  @result{} -3
+
+(define list-length
+  (lambda (obj)
+    (bind-exit (return)
+     (letrec ((r (lambda (obj)
+                    (cond ((null? obj) 0)
+                          ((pair? obj)
+                           (+ (r (cdr obj)) 1))
+                          (else (return #f))))))
+          (r obj)))))
+
+(list-length '(1 2 3 4))               @result{} 4
+(list-length '(a b . c))               @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo syntax} unwind-protect expr protect
+This form provides protections. Expression @var{expr} is
+evaluated. If this evaluation requires the invocation of an
+escape procedure (a procedure bounded by the @code{bind-exit}
+special form), @var{protect} is evaluated before the control
+jump to the exit procedure. If @var{expr} does not raise any
+exit procedure, @code{unwind-protect} has the same behaviour as
+the @code{begin} special form except that the value of the form is 
+always the value of @var{expr}.
+
+@smalllisp
+(define (my-open f)
+   (if (file-exists? f)
+       (let ((port (open-input-file f)))
+          (if (input-port? port)
+              (unwind-protect
+                 (bar port)
+                 (close-input-port port))))))
+@end smalllisp
+@end deffn
+
+@deffn {procedure} dynamic-wind  before thunk after
+
+Calls @var{thunk} without arguments, returning the result(s) of this call.
+@var{Before} and @var{after} are called, also without arguments, as required
+by the following rules (note that in the absence of calls to continuations
+captured using @code{call/cc} the three arguments are
+@vindex @w{call/cc}
+called once each, in order).  @var{Before} is called whenever execution
+enters the dynamic extent of the call to @var{thunk} and @var{after} is called
+whenever it exits that dynamic extent.  The dynamic extent of a procedure
+call is the period between when the call is initiated and when it
+returns.  In Scheme, because of @code{call/cc}, the
+dynamic extent of a call may not be a single, connected time period.
+It is defined as follows:
+
+@itemize @bullet
+
+@item
+The dynamic extent is entered when execution of the body of the
+called procedure begins.
+
+@item
+The dynamic extent is also entered when execution is not within
+the dynamic extent and a continuation is invoked that was captured
+(using @code{call/cc}) during the dynamic extent.
+
+@item
+It is exited when the called procedure returns.
+
+@item
+It is also exited when execution is within the dynamic extent and
+a continuation is invoked that was captured while not within the
+dynamic extent.
+
+@end itemize
+
+If a second call to @code{dynamic-wind} occurs within the dynamic extent of the
+call to @var{thunk} and then a continuation is invoked in such a way that the
+@var{after}s from these two invocations of @code{dynamic-wind} are both to be
+called, then the @var{after} associated with the second (inner) call to
+@code{dynamic-wind} is called first.
+
+If a second call to @code{dynamic-wind} occurs within the dynamic extent of the
+call to @var{thunk} and then a continuation is invoked in such a way that the
+@var{before}s from these two invocations of @code{dynamic-wind} are both to be
+called, then the @var{before} associated with the first (outer) call to
+@code{dynamic-wind} is called first.
+
+If invoking a continuation requires calling the @var{before} from one call
+to @code{dynamic-wind} and the @var{after} from another, then the @var{after}
+is called first.
+
+The effect of using a captured continuation to enter or exit the dynamic
+extent of a call to @var{before} or @var{after} is undefined.
+
+
+@smalllisp
+(let ((path '())
+      (c #f))
+  (let ((add (lambda (s)
+               (set! path (cons s path)))))
+    (dynamic-wind
+      (lambda () (add 'connect))
+      (lambda ()
+        (add (call/cc
+               (lambda (c0)
+                 (set! c c0)
+                 'talk1))))
+      (lambda () (add 'disconnect)))
+    (if (< (length path) 4)
+        (c 'talk2)
+        (reverse path))))
+    
+   @result{} (connect talk1 disconnect connect talk2 disconnect)
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} unspecified
+Returns the @emph{unspecified} (noted as @code{#unspecified}) object with 
+no specific property.
+@end deffn
+
+@deffn {bigloo syntax} try exp handler
+This form is documented in Section @ref{Errors Assertions and Traces}.
+@end deffn
+
+@deffn {procedure} values  obj @dots{}
+
+Delivers all of its arguments to its continuation.
+Except for continuations created by the @code{call-with-values}
+@vindex @w{call-with-values}
+procedure, all continuations take exactly one value.
+@t{Values} might be defined as follows:
+
+@smalllisp
+(define (values . things)
+  (call/cc
+    (lambda (cont) (apply cont things))))
+@end smalllisp
+
+@end deffn
+
+@deffn {procedure} call-with-values  producer consumer
+Calls its @var{producer} argument with no values and
+a continuation that, when passed some values, calls the
+@var{consumer} procedure with those values as arguments.
+The continuation for the call to @var{consumer} is the
+continuation of the call to @t{call-with-values}.
+
+@smalllisp
+(call-with-values (lambda () (values 4 5))
+                  (lambda (a b) b))
+    @result{} 5
+(call-with-values * -)
+    @result{} -1
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo syntax} multiple-value-bind (var @dots{}) producer exp @dots{}
+@deffnx {bigloo syntax} receive (var @dots{}) producer exp @dots{}
+@cindex SRFI-8
+Evaluates @var{exp} @dots{} in a environment where @var{var} @dots{} are bound 
+from the evaluation of @var{producer}. The result of @var{producer} must 
+be a call to @code{values} where the number of argument is the number of 
+bound variables.
+@smalllisp
+(define (bar a)
+   (values (modulo a 5) (quotient a 5)))
+
+(define (foo a)
+   (multiple-value-bind (x y)
+      (bar a)
+      (print x " " y)))
+
+(foo 354)
+   @print{} 4 70
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    io                                                               @c
+@c ------------------------------------------------------------------- @c
+@include io.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Serialization                                                    @c
+@c ------------------------------------------------------------------- @c
+@include serialization.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Bit                                                              @c
+@c ------------------------------------------------------------------- @c
+@include bit.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Weak Pointers                                                    @c
+@c ------------------------------------------------------------------- @c
+@include weakptr.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Hash tables                                                      @c
+@c ------------------------------------------------------------------- @c
+@include hash.texi
+
+@c ------------------------------------------------------------------- @c
+@c    System                                                           @c
+@c ------------------------------------------------------------------- @c
+@include system.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Date                                                             @c
+@c ------------------------------------------------------------------- @c
+@include date.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Digest                                                           @c
+@c ------------------------------------------------------------------- @c
+@include digest.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Internet                                                         @c
+@c ------------------------------------------------------------------- @c
+@include internet.texi

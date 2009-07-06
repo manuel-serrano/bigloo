@@ -1,0 +1,967 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/io.texi                      @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Feb 25 11:07:08 2002                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2002 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Input and output                                                 @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Input and Output                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Input and Output, Serialization, Scheme Library, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Input and output
+@cindex input and output
+
+This section describes Scheme operation for reading and writing data.
+The section @ref{Files} describes functions for handling files.
+
+@menu
+* Library functions::
+* Memory mapped area::
+* Gzip::
+* Tar::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Library functions                                                @c
+@c ------------------------------------------------------------------- @c
+@node Library functions, Memory mapped area, , Input and Output
+@comment  node-name,  next,  previous,  up
+@subsection Library functions
+
+@deffn {library procedure} call-with-input-file string proc
+@deffnx {bigloo procedure} call-with-input-string string proc
+@deffnx {library procedure} call-with-output-file string proc
+These two procedures call @var{proc} with one argument, a port obtained
+by opening @var{string}.
+See @ref{Ports,,r5rs.info,R5RS}, for more details.
+
+@smalllisp
+(call-with-input-file "/etc/passwd"
+   (lambda (port)
+      (let loop ((line (read-line port)))
+         (if (not (eof-object? line))
+             (begin
+                (print line)
+                (loop (read-line port)))))))
+@end smalllisp
+@end deffn
+
+@deffn {procedure} input-port? obj 
+@deffnx {procedure} input-string-port? obj 
+@deffnx {procedure} output-port? obj
+@deffnx {procedure} output-string-port? obj
+@deffnx {procedure} port? obj
+@end deffn
+
+@deffn {bigloo procedure} input-port-name obj
+@deffnx {bigloo procedure} output-port-name obj
+Returns the file name for which @var{obj} has been opened.
+@end deffn
+
+@deffn {bigloo (>=2.8b) procedure} input-port-timeout-set! port time
+@deffnx {bigloo (>=2.8b) procedure} output-port-timeout-set! port time
+These two functions limit the time an read or write operation may last.
+If the @var{time} limit (expressed in microseconds) exceeded, an exception
+of time @code{&io-timeout-error} is raised.
+
+Setting a timeout equal to 0, restore the socket in blocking mode. Setting
+a timeout with a value lesser than 0 is ignored.
+
+Note: ports created from sockets share their internal file descriptor. Hence
+it is erroneous to set a timeout for only one of the two ports. Both
+must be set.
+@end deffn
+
+@deffn {bigloo procedure} output-port-flush-hook port
+@deffnx {bigloo procedure} output-port-flush-hook-set! port hook
+Returns (resp. sets) the @emph{flush hook} of the output
+@var{port}. The flush hook is a procedure of two arguments, the output
+port and the number of characters that are to be actually written out
+during the flush. It is unspecified when the hook is invoked, however,
+one may expect the C back-end to invoke the hook only when output
+buffers are full. The other back-ends (JVM and DOTNET) are likely to
+invoke the hook as soon as a character is to be written.
+
+A flush hook can return two types of values:
+
+@itemize @bullet
+@item A string, which is then directly displayed to the system stream
+associated with the output port.
+
+@item An integer, which denotes the number of characters of the output port
+flush buffer (see @code{output-port-flush-buffer}) that have to be
+displayed on the system stream.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} output-port-flush-buffer port
+@deffnx {bigloo procedure} output-port-flush-buffer-set! port buffer
+These functions gets and sets a buffer that can be used by program by the
+flush hooks. The runtime system makes no provision for automatically allocated
+these buffers that hence must be manually allocated by programs. The motivation
+for flush buffer is to allow programs to write flush hooks that don't have
+to allocate a new string each time invoked.
+@end deffn
+
+@deffn {bigloo procedure} output-port-close-hook port
+@deffnx {bigloo procedure} output-port-close-hook-set! port proc
+Returns (resp. sets) the @emph{close hook} of the output @var{port}. The
+close hook is a procedure of one argument, the closed port. The hook 
+is invoked @emph{after} the @var{port} is closed.
+@end deffn
+
+@deffn {bigloo procedure} input-port-close-hook port
+@deffnx {bigloo procedure} input-port-close-hook-set! port proc
+Returns (resp. sets) the @emph{close hook} of the input @var{port}. The
+close hook is a procedure of one argument, the closed port.
+
+Example:
+@smalllisp
+(let ((p (open-input-string "/etc/passwd")))
+  (input-port-close-hook-set! p (lambda () (display 'done)))
+  ...
+  (close-input-port p))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} input-port-reopen! obj
+Re-open the input port @var{obj}. That is, re-start reading from the first
+character of the input port.
+@end deffn
+
+@deffn {procedure} current-input-port
+@deffnx {procedure} current-output-port
+@deffnx {bigloo procedure} current-error-port
+@end deffn
+
+@deffn {optional procedure} with-input-from-file string thunk
+@deffnx {optional procedure} with-input-from-string string thunk
+@deffnx {optional procedure} with-input-from-procedure procedure thunk
+@deffnx {optional procedure} with-output-to-file string thunk
+@deffnx {bigloo procedure} with-error-to-file string thunk
+@deffnx {bigloo procedure} with-output-to-string thunk
+@deffnx {bigloo procedure} with-output-to-procedure procedure thunk
+@deffnx {bigloo procedure} with-error-to-string thunk
+@deffnx {bigloo procedure} with-error-to-procedure procedure thunk
+A port is opened from file @var{string}. This port is made the
+current input port (resp. the current output port or the current error port) 
+and @var{thunk} is called. 
+See @ref{Ports,,r5rs.info,R5RS}, for more details.
+
+@smalllisp
+(with-input-from-file "/etc/passwd"
+   (lambda ()
+      (let loop ((line (read-line (current-input-port))))
+         (if (not (eof-object? line))
+             (begin
+                (print line)
+                (loop (read-line (current-input-port))))))))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} with-input-from-port port thunk
+@deffnx {bigloo procedure} with-output-to-port port thunk
+@deffnx {bigloo procedure} with-error-to-port port thunk
+
+@code{with-input-from-port}, @code{with-output-to-port} and
+@code{with-error-to-port} all suppose @var{port} to be a legal port. They 
+call @var{thunk} making @var{port} the current input (resp. output or
+error) port. None of these functions close @var{port} on the continuation 
+of @var{thunk}.
+
+@smalllisp
+(with-output-to-port (current-error-port) 
+   (lambda () (display "hello")))
+@end smalllisp
+@end deffn
+
+@deffn {procedure} open-input-file file-name [buffer #f]
+
+
+If @var{file-name} is a regular file name, @code{open-input-file} behaves as
+the function defined in the Scheme report. If @var{file-name} starts with
+special prefixes it behaves differently. Here are the recognized prefixes:
+
+@itemize @bullet
+@item @code{| } (a string made of the characters @code{#\|} and @code{#\space})
+Instead of opening a regular file, Bigloo opens an input pipe. 
+The same syntax is used for output file. 
+
+@smalllisp
+(define pin (open-input-file "| cat /etc/passwd"))
+(define pout (open-output-file "| wc -l"))
+
+(display (read pin) pout)
+(close-input-port pin)
+(newline pout)
+(close-output-port pout)
+@end smalllisp
+
+@item @code{pipe:}
+Same as @code{| }.
+
+@item @code{file:}
+Opens a regular file.
+
+@item @code{gzip:}
+Opens a port on a gzipped filed. This is equivalent to 
+@code{open-input-gzip-file}. 
+Example:
+
+@smalllisp
+(with-input-from-file "gzip:bigloo.tar.gz"
+   (lambda ()
+      (send-chars (current-input-port) (current-output-port))))
+@end smalllisp
+
+@item @code{string:}
+Opens a port on a string. This is equivalent to @code{open-input-string}. 
+Example:
+
+@smalllisp
+(with-input-from-file "string:foo bar Gee"
+   (lambda ()
+      (print (read))
+      (print (read))
+      (print (read))))
+   @print{} foo
+   @print{} bar
+   @print{} Gee
+@end smalllisp
+
+@item @code{http:server/path}
+
+Opens an @emph{http} connection on @code{server} and open an input file
+on file @code{path}.
+
+@item @code{http:server:port-number/path}
+
+Opens an @emph{http} connection on @code{server}, on port number
+@code{port} and open an input file on file @code{path}.
+
+@item @code{http:user:password@@server:port-number/path}
+
+Opens an @emph{http} connection on @code{server}, on port number
+@code{port} with an authentication and open an input file on file @code{path}.
+
+@item @code{ftp:server/path}
+
+Opens an @emph{http} connection on @code{server} and open an input file
+on file @code{path}.
+
+@item @code{ressource:}
+
+Opens a JVM @emph{ressource} file. Opening a @code{ressource:} file in 
+non JVM backend always return @code{#f}. On the JVM backend it returns
+a input port if the ressource exists. Otherwise, it returns @code{#f}.
+
+@end itemize
+
+The optional argument @var{buffer} can either be:
+
+@itemize @bullet
+@item A positive fixnum, this gives the size of the buffer.
+@item The boolean @code{#t}, a buffer is allocated.
+@item The boolean @code{#f}, the socket is unbufferized.
+@item A string, it is used as buffer.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} open-input-gzip-file file-name [buffer #t]
+@deffnx {bigloo procedure} open-input-gzip-port input-port [buffer #t]
+@cindex zip
+@cindex gzip
+
+Open respectively a gzipped file for input and a port on a gzipped stream.
+Note that closing a gzip port opened from a port @var{pi} does not close
+the @var{pi} port.
+
+@smalllisp
+(let ((p (open-input-gzip-file "bigloo.tar.gz")))
+   (unwind-protect
+      (read-line p1)
+      (close-input-port p)))
+@end smalllisp
+
+@smalllisp
+(let* ((p1 (open-input-file "bigloo.tar.gz"))
+       (p2 (open-input-gzip-port p1)))
+   (unwind-protect
+      (read-line p2)
+      (close-input-port p2)
+      (close-input-port p1)))
+@end smalllisp
+@end deffn
+ 
+@deffn {bigloo procedure} open-input-string string [start 0]
+@cindex SRFI-6
+Returns an @code{input-port} able to deliver characters from
+@var{string}.
+@end deffn
+
+@deffn {bigloo procedure} open-input-c-string string
+Returns an @code{input-port} able to deliver characters from
+C @var{string}. The buffer used by the input port is the exact
+same string as the argument. That is, no buffer is allocated.
+@end deffn
+
+@deffn {bigloo procedure} open-input-procedure procedure [buffer #t]
+Returns an @code{input-port} able to deliver characters from
+@var{procedure}. Each time a character has to be read, the @var{procedure}
+is called. This procedure may returns a string of characters, or
+the boolean @code{#f}. This last value stands for the end of file. 
+
+Example:
+
+@smalllisp
+(let ((p (open-input-procedure (let ((s #t))
+				  (lambda ()
+				     (if s
+					 (begin 
+                                            (set! s #f)
+                                            "foobar")
+					 s))))))
+   (read))
+@end smalllisp
+@end deffn
+
+@deffn {procedure} open-output-file file-name
+The same syntax as @code{open-input-file} for file names applies here.
+When a file name starts with @samp{| }, Bigloo opens an output pipe
+instead of a regular file.
+@end deffn
+
+@deffn {bigloo procedure} append-output-file file-name
+If @code{file-name} exists, this function returns an @code{output-port}
+on it, without removing it. New output will be appended to @var{file-name}.
+If @code{file-name} does not exist, it is created.
+@end deffn
+
+@deffn {bigloo procedure} open-output-string
+This function returns an @emph{output string port}. This object has almost
+the same purpose as @code{output-port}. It can be used with all
+the printer functions which accept @code{output-port}. An output
+on a @emph{output string port} memorizes all the characters written. An
+invocation of @code{flush-output-port} or @code{close-output-port} on an 
+@emph{output string port} returns a new string which contains all the 
+characters accumulated in the port.
+@end deffn
+
+@deffn {bigloo procedure} get-output-string output-port
+@cindex SRFI-6
+Given an output port created by @code{open-output-string}, 
+returns a string consisting of the characters that have been 
+output to the port so far. 
+@end deffn
+
+@deffn {bigloo procedure} open-output-procedure proc [flush [close]]
+This function returns an @emph{output procedure port}. This object has almost
+the same purpose as @code{output-port}. It can be used with all
+the printer functions which accept @code{output-port}. An output
+on a @emph{output procedure port} invokes the @var{proc} procedure
+each time it is used for writing. That is, @var{proc} is invoked with a
+string denoting the displayed characters. When the function
+@code{flush-output-port} is called on such a port, the optional
+@var{flush} procedure is invoked. When the function @code{close-output-port}
+is called on such a port, the optional @var{close} procedure is invoked.
+@end deffn
+
+@deffn {procedure} close-input-port input-port
+@deffnx {procedure} close-output-port output-port
+According to R5RS, the value returned is unspecified. However, if
+@emph{output-port} was created using @code{open-output-string}, the value
+returned is the string consisting of all characters sent to the port.
+@end deffn
+
+@deffn {bigloo procedure} input-port-name input-port
+Returns the name of the file used to open the @var{input-port}.
+@end deffn
+
+@deffn {bigloo procedure} input-port-position port
+@deffnx {bigloo procedure} output-port-position port
+Returns the current position (a character number), in the @var{port}.
+@end deffn
+
+@deffn {bigloo procedure} set-input-port-position! port pos
+@deffnx {bigloo procedure} set-output-port-position! port pos
+These functions set the file position indicator for @var{port}. The new 
+position, measured in bytes, is specified by @var{pos}. It is an error 
+to seek a port that cannot be changed (for instance, a string or a 
+console port). The result of these functions is unspecified. An error
+is raised if the position cannot be changed.
+@end deffn
+
+@deffn {bigloo procedure} input-port-reopen! input-port
+This function re-opens the input @code{input-port}. That is, it reset the
+position in the @var{input-port} to the first character.
+@end deffn
+
+@deffn {procedure} read [input-port]
+@deffnx {bigloo procedure} read/case case [input-port]
+@deffnx {bigloo procedure} read-case-sensitive [input-port]
+@deffnx {bigloo procedure} read-case-insensitive [input-port]
+Read a lisp expression. The case sensitivity of @code{read} is unspecified. 
+If have to to enforce a special behavior regarding the case, use 
+@code{read/case}, @code{read-case-sensitive} or @code{read-case-insensitive}. 
+Let us consider the following source code: The value of the @code{read/case}'s
+@var{case} argument may either be @code{upcase}, @code{downcase} or 
+@code{sensitive}. Using any other value is an error.
+
+@smalllisp
+(define (main argv)
+   (let loop ((exp (read-case-sensitive)))
+      (if (not (eof-object? exp))
+          (begin
+             (display "exp: ")
+             (write exp)
+             (display " [")
+             (display exp)
+             (display "]")
+             (print " eq?: " (eq? exp 'FOO) " " (eq? exp 'foo))
+             (loop (read-case-sensitive))))))
+@end smalllisp
+
+Thus:
+@display
+> a.out
+foo
+  @print{} exp: foo [foo] eq?: #f #t
+FOO
+  @print{} exp: FOO [FOO] eq?: #t #f
+@end display
+@end deffn
+
+@deffn {bigloo procedure} read/rp grammar port
+@deffnx {bigloo procedure} read/lalrp lalrg rg port [emptyp]
+These functions are fully explained in @ref{Regular Parsing},
+and @ref{Lalr Parsing}.
+@end deffn
+
+@deffn {procedure} read-char [port]
+@deffnx {procedure} read-byte [port]
+@deffnx {procedure} peek-char [port]
+@deffnx {procedure} peek-byte [port]
+@deffnx {procedure} eof-object? obj
+@end deffn
+
+@deffn {procedure} char-ready? [port]
+@cindex run-process and char-ready?
+@cindex char-ready? and run-process
+@cindex run-process and input/output
+As specified in the R5Rs, @ref{Ports,,r5rs.info,R5RS}, @code{char-ready?}
+returns @t{#t} if a character is ready on the input @var{port} and
+returns @t{#f} otherwise.  If @samp{char-ready} returns @t{#t} then
+the next @samp{read-char} operation on the given @var{port} is guaranteed
+not to hang.  If the @var{port} is at end of file then @samp{char-ready?}
+returns @t{#t}.  @var{Port} may be omitted, in which case it defaults to
+the value returned by @samp{current-input-port}.
+
+When using @code{char-ready?} consider the latency that may exists
+before characters are available. For instance, executing the
+following source code:
+
+@smalllisp
+(let* ((proc (run-process "/bin/ls" "-l" "/bin" output: pipe:))
+       (port (process-output-port proc)))
+   (let loop ((line (read-line port)))
+      (print "char ready " (char-ready? port))
+      (if (eof-object? line)
+          (close-input-port port)
+          (begin
+             (print line)
+             (loop (read-line port))))))
+@end smalllisp
+
+@noindent Produces outputs such as:
+
+@display
+char ready #f
+total 7168
+char ready #f
+-rwxr-xr-x    1 root     root         2896 Sep  6  2001 arch
+char ready #f
+-rwxr-xr-x    1 root     root        66428 Aug 25  2001 ash
+char ready #t
+...
+@end display
+
+For a discussion of Bigloo processes, see @ref{Process}.
+
+@emph{Note:} Thanks to Todd Dukes for the example and the suggestion
+of including it this documentation.
+@end deffn
+
+@deffn {bigloo procedure} read-line [input-port]
+Reads characters from @var{input-port} until a @code{#\Newline}, 
+a @code{#\Return} or an @code{end of file} condition is encountered. 
+@code{read-line} returns a newly allocated string composed of the characters 
+read.
+@end deffn
+
+@deffn {bigloo procedure} read-lines [input-port]
+Accumulates all the line of an @var{input-port} into a list.
+@end deffn
+
+@deffn {bigloo procedure} read-of-strings [input-port]
+Reads a sequence of non-space characters on @var{input-port}, makes a
+string of them and returns the string.
+@end deffn
+
+@deffn {bigloo procedure} read-string [input-port]
+Reads all the characters of @var{input-port} into a string.
+@end deffn
+
+@deffn {bigloo procedure} read-chars size [input-port]
+@deffnx {bigloo procedure} read-chars! buf size [input-port]
+
+The function @code{read-chars} returns a newly allocated strings made
+of @var{size} characters read from @var{input-port} (or from
+@code{(current-input-port)} if @var{input-port} is not provided). If
+less than @var{size} characters are available on the input port, the
+returned string is smaller than @var{size}. Its size is the number of
+available characters.
+
+The function @code{read-char!} fills the buffer @var{buf} with at most
+@var{size} characters.
+@end deffn
+
+@deffn {bigloo procedure} port->string-list input-port
+Returns a list of strings composed of the elements of @var{input-port}.
+@end deffn
+
+@deffn {bigloo procedure} port->list input-port reader
+@deffnx {bigloo procedure} port->sexp-list input-port
+@code{Port->list} applies reader to port repeatedly until it returns EOF, 
+then returns a list of results. 
+@code{Port->list-sexp} is equivalent to @code{(port->list read port)}.
+@end deffn
+
+@deffn {bigloo procedure} file->string path
+This function builds a new string out of all the characters of the file 
+@var{path}. If the file cannot be open or read, an @code{IO_EXCEPTION}
+is raised.
+@end deffn
+
+@deffn {bigloo procedure} send-chars input-port output-port [len] [offset]
+@deffnx {bigloo procedure} send-file filename output-port len offset
+Transfer the characters from @var{input-port} to @var{output-port}. This
+procedure is sometimes mapped to a system call (such as @code{sendfile} under
+Linux) and might thus be more efficient than copying the ports by hand. The
+optional argument @var{offset} specifies an offset from which characters of
+@var{input-port} are sent. The function @code{send-chars} returns the number
+of characters sent.
+
+The function @code{send-file} opens the file @var{filename} in order to
+get its input port. On some backend, @code{send-file} might be more efficient
+than @code{send-chars} because it may avoid creating a full-fledged Bigloo
+@code{input-port}.
+
+Note that for efficiency purpose, @code{send-file} accept a fixed number
+of arguments and the type of @var{len} and @var{offset} arguments is
+@code{elong} (i.e., exact long) such as given by @code{file-size}.
+@end deffn
+
+@deffn {bigloo procedure} read-fill-string! s o len [input-port]
+Fills the string @var{s} starting at offset @var{o} with at
+most @var{len} characters read from the input port @var{input-port}
+(or from @code{(current-input-port)} if @var{input-port} is not provided).
+This function returns the number of read characters (which may be smaller
+than @var{len} if less characters are available).
+
+Example:
+@smalllisp
+(let ((s (make-string 10 #\-)))
+   (with-input-from-string "abcdefghijlkmnops"
+      (lambda ()
+         (read-fill-string! s 3 5)
+         s)))
+   @result{} ---abcde--
+@end smalllisp
+@end deffn
+
+@deffn {library procedure} write obj [output-port]
+@deffnx {library procedure} display obj [output-port]
+@deffnx {bigloo procedure} print obj @dots{}
+This procedure allows several objects to be displayed. When
+all these objects have been printed, @code{print} adds a newline.
+@end deffn
+
+@deffn {bigloo procedure} display* obj @dots{}
+This function is similar to @code{print} but does not add a newline.
+@end deffn
+
+@deffn {bigloo procedure} fprint output-port obj @dots{}
+This function is the same as @code{print} except that a
+port is provided.
+@end deffn
+
+@deffn {procedure} write-char char [output-port]
+@deffnx {procedure} write-byte byte [output-port]
+These procedures write a char (respec. a byte, i.e., in integer in the range
+0..255) to the @var{output-port}.
+@end deffn
+
+@deffn {procedure} newline [output-port]
+@deffnx {bigloo procedure} flush-output-port output-port
+This procedure flushes the output port @var{output-port}. This function
+@emph{does not} reset characters accumulated in string port. For this
+uses, @code{reset-output-port}.
+@end deffn
+
+@deffn {procedure} newline [output-port]
+@deffnx {bigloo procedure} reset-output-port output-port
+This function is equivalent to @code{flush-output-port} but in addition,
+for string ports, it reset the internal buffer that accumulates the
+displayed characters.
+@end deffn
+
+
+@deffn {bigloo procedure} format format-string [objs]
+@cindex SRFI-28
+
+@emph{Note}: Many thanks to Scott G. Miller who is the author of
+SRFI-28. Most of the documentation of this function is copied from the
+SRFI documentation.
+
+Accepts a message template (a Scheme String), and processes it,
+replacing any escape sequences in order with one or more characters,
+the characters themselves dependent on the semantics of the escape
+sequence encountered.
+
+An escape sequence is a two character sequence in the string where the
+first character is a tilde @code{~}. Each escape code's meaning is as
+follows:
+
+@itemize @bullet
+@item @code{~a} The corresponding value is inserted into the string 
+as if printed with display.
+@item @code{~s} The corresponding value is inserted into the string 
+as if printed with write.
+@item @code{~%} or @code{~n} A newline is inserted A newline is inserted.
+@item @code{~~} A tilde @code{~} is inserted.
+@item @code{~r} A return (@code{#\Return}) is inserted.
+@item @code{~v} The corresponding value is inserted into the string 
+as if printed with display followed by a newline. This tag is hence
+equivalent to the sequence @code{~v~n}.
+@item @code{~c} The corresponding value must be a character and is
+inserted into the string as if printed with write-char.
+@item @code{~x}, @code{~o}, @code{~b}  The corresponding value must
+must be a number and is printed with radix 16, 8 or 2.
+@item @code{~l} If the corresponding value is a proper list, its items 
+are inserted into the string without the surrounding parenthesis. If the
+corresponding value is not a list, it behaves as @code{~s}.
+@end itemize
+
+@code{~a} and @code{~s}, when encountered, require a corresponding
+Scheme value to be present after the format string. The values
+provided as operands are used by the escape sequences in order. It is
+an error if fewer values are provided than escape sequences that
+require them.
+
+@code{~%} and @code{~~} require no corresponding value.
+
+@smalllisp
+(format "Hello, ~a" "World!") 
+   @print{} Hello, World!
+(format "Error, list is too short: ~s~%" '(one "two" 3)) 
+   @print{} Error, list is too short: (one "two" 3)
+(format "a ~l: ~l" "list" '(1 2 3))
+   @print{} a list: 1 2 3
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} printf format-string [objs]
+@deffnx {bigloo procedure} fprintf port format-string [objs]
+Formats @var{objs} to the current output port or to the specified @var{port}.
+@end deffn
+
+@deffn {bigloo procedure} pp obj [output-port]
+Pretty print @var{obj} on @var{output-port}.
+@end deffn
+
+@deffn {bigloo variable} *pp-case*
+Sets the variable to @code{respect}, @code{lower} or @code{upper}
+to change the case for pretty-printing.
+@end deffn
+
+@deffn {bigloo variable} *pp-width*
+The width of the pretty-print.
+@end deffn
+
+@deffn {bigloo procedure} write-circle obj [output-port]
+@cindex circular representation
+Display recursive object @var{obj} on @var{output-port}. Each component
+of the object is displayed using the @code{write} library function.
+@end deffn
+
+@deffn {bigloo procedure} display-circle obj [output-port]
+Display recursive object @var{obj} on @var{output-port}. Each component
+of the object is displayed using the @code{display} library function.
+
+For instance:
+@smalllisp
+(define l (list 1 2 3))
+(set-car! (cdr l) l)
+(set-car! (cddr l) l)
+(display-circle l)  @print{} #0=(1 #0# #0#)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} display-string string output-port
+@deffnx {bigloo procedure} display-substring string start end output-port
+
+@var{String} must be a string, and @var{start} and @var{end} must be exact 
+integers satisfying
+  @code{0 <= start <= end <= (string-length string)}.
+
+@code{Display-substring} displays a string formed from the characters
+of string beginning with index @var{start} (inclusive) and ending with index
+@var{end} (exclusive).
+@end deffn
+
+@deffn {bigloo procedure} password [prompt]
+Reads a password from the current input port. The reading stops when the user
+hits the ,(code "Enter") key.
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    MMAP                                                             @c
+@c ------------------------------------------------------------------- @c
+@node Memory mapped area, Gzip, Library functions, Input and Output
+@comment  node-name,  next,  previous,  up
+@subsection mmap
+@cindex mmap
+
+The @code{mmap} function asks to map a file into memory. This memory area
+can be randomly accessed as a string. In general using @code{mmap} improves
+performance in comparison with equivalent code using regular ports.
+
+@deffn {bigloo procedure} mmap? obj 
+Returns @code{#t} if and only if @var{obj} has been produced by
+@code{open-mmap}. Otherwise, it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} open-mmap path [mode]
+Maps a file @var{path} into memory. The optional argument @var{mode} specifies
+how the file is open. The argument can be:
+
+@itemize @bullet
+@item @code{read: #t} The memory can be read
+@item @code{read: #f} The memory cannot be read
+@item @code{write: #t} The memory can be written
+@item @code{write: #f} The memory is read-only.
+@end itemize
+@end deffn
+
+@deffn {bigloo procedure} close-mmap mm
+Closes the memory mapped. Returns @code{#t} on success, @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} mmap-length mm
+Returns the length, an exact integer, of the memory mapped.
+@end deffn
+
+@deffn {bigloo procedure} mmap-read-position mm
+@deffnx {bigloo procedure} mmap-read-position-set! mm offset
+@deffnx {bigloo procedure} mmap-write-position mm
+@deffnx {bigloo procedure} mmap-write-position-set! mm offset
+Returns and sets the read and write position of a memory mapped memory.
+The result and the argument are exact integers.
+@end deffn
+
+@deffn {bigloo procedure} mmap-ref mm offset
+Reads the character in @var{mm} at @var{offset}, an exact long (::elong). This 
+function sets the read position to @code{offset + 1}.
+@end deffn
+
+@deffn {bigloo procedure} mmap-set! mm offset char
+Writes the character @var{char} in @var{mm} at @var{offset}, an exact
+long (::elong). This function sets the write position to @code{offset + 1}.
+@end deffn
+
+@deffn {bigloo procedure} mmap-substring mm start end
+Returns a newly allocated string made of the characters read from @var{mm}
+starting at position @var{start} and ending at position @var{end - 1}.
+If the values @code{start} and @code{end} are not ranged in
+@code{[0...(mmap-length mm)]}, an error is signaled. The function 
+@code{mmap-substring} sets the read position to 
+@code{end}.
+@end deffn
+
+@deffn {bigloo procedure} mmap-substring-set! mm start str
+Writes the string @var{str} to @var{mm} at position @var{start}.
+If the values @code{start} and @code{start + (string-length str)} are 
+not ranged in @code{[0...(mmap-length mm)[}, an error is signaled. The function
+@code{mmap-substring} sets the write position to @code{start + (string-length str)}.
+@end deffn
+
+@deffn {bigloo procedure} mmap-get-char mm
+@deffnx {bigloo procedure} mmap-put-char! mm c
+@deffnx {bigloo procedure} mmap-get-string mm len
+@deffnx {bigloo procedure} mmap-put-string! mm str
+These functions get (resp. put) character and strings into a memory mapped
+area. They increment the read (resp. write) position. An error is signaled
+if the characters read (resp. writen) outbound the length of the memory mapped.
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Gzip                                                             @c
+@c ------------------------------------------------------------------- @c
+@node Gzip, Tar, Memory mapped area, Input and Output
+@comment  node-name,  next,  previous,  up
+@subsection Gzip
+@cindex gzip
+@cindex gunzip
+
+@deffn {bigloo procedure} port->gzip-port input-port [buffer #t]
+@deffnx {bigloo procedure} port->inflate-port input-port [buffer #t]
+These functions take a regular port as input (@var{input-port}). They construct
+a new port that automatically @emph{unzip} the read characters.
+The @code{inflate} version does not parse a gunzip-header before inflating the
+content.
+@end deffn
+
+@deffn {bigloo procedure} open-input-gzip-file path [buffer #t]
+@deffnx {bigloo procedure} open-input-inflate-file path [buffer #t]
+These function open a gzipped file for input. The file is automatically
+unzipped when the characters are read. It is equivalent to:
+
+@smalllisp
+(let ((p (open-input-port path)))
+  (port->gzip-port p))
+@end smalllisp
+
+Gzipped files can also be using the @code{gzip:} prefix. That is:
+
+@smalllisp
+(open-input-gzip-file "a-path.gz")
+@end smalllisp
+
+
+is equivalent to:
+
+@smalllisp
+(open-input-file "gzip:a-path.gz")
+@end smalllisp
+
+The function @code{open-input-inflate-file} is similar to
+@code{open-input-gzip-file} but it does not parse a gunzip-header
+before inflating the content.
+
+@end deffn
+
+@deffn {bigloo procedure} gunzip-sendchars input-port output-port
+@deffnx {bigloo procedure} inflate-sendchars input-port output-port
+Transmit all the characters from the gzipped @var{input-port} to the
+@var{output-port}. 
+
+Note that the function @code{send-chars} can also be used on gzipped
+input-ports.
+@end deffn
+
+@deffn {bigloo procedure} gunzip-parse-header input-port
+Parse the header of @var{input-port}. Returns @code{#f} if and only if
+the port is not gzipped.
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Tar                                                              @c
+@c ------------------------------------------------------------------- @c
+@node Tar, ,Gzip, Input and Output
+@comment  node-name,  next,  previous,  up
+@subsection Tar
+@cindex tar
+
+@deffn {bigloo procedure} tar-read-header [input-port]
+Reads a tar header from @var{input-port}. If the input-port does not
+conform the tar format, an IO exception is raised. On success a 
+@emph{tar-header} descriptor is returned.
+@end deffn
+
+@deffn {bigloo procedure} tar-read-block tar-header [input-port]
+Reads the content of the @var{tar-header} block.
+@end deffn
+
+@deffn {bigloo procedure} tar-round-up-to-record-size int
+Rounds up tar-block sizes.
+@end deffn
+
+@deffn {bigloo procedure} tar-header-name tar-header
+@deffnx {bigloo procedure} tar-header-mode tar-header
+@deffnx {bigloo procedure} tar-header-uid tar-header
+@deffnx {bigloo procedure} tar-header-gid tar-header
+@deffnx {bigloo procedure} tar-header-size tar-header
+@deffnx {bigloo procedure} tar-header-mtim tar-header
+@deffnx {bigloo procedure} tar-header-checksum tar-header
+@deffnx {bigloo procedure} tar-header-type tar-header
+@deffnx {bigloo procedure} tar-header-linkname tar-header
+@deffnx {bigloo procedure} tar-header-uname tar-header
+@deffnx {bigloo procedure} tar-header-gname tar-header
+@deffnx {bigloo procedure} tar-header-devmajor tar-header
+@deffnx {bigloo procedure} tar-header-devminir tar-header
+Return various information about @var{tar-header}.
+@end deffn
+
+The following example simulates the Unix command @code{tar xvfz}:
+
+@smalllisp
+(define (untar path)
+   (let ((pz (open-input-gzip-port path)))
+      (unwind-protect
+	 (let loop ((lst '()))
+	    (let ((h (tar-read-header pz)))
+	       (if (not h)
+		   lst
+		   (case (tar-header-type h)
+		      ((dir)
+		       (let ((path (tar-header-name h)))
+			  (if (make-directory path)
+			      (loop lst)
+			      (error 'untar
+				     "Cannot create directory"
+				     path))))
+		      ((normal)
+		       (let* ((path (tar-header-name h))
+			      (dir (dirname path)))
+			  (when (and (file-exists? dir) (not (directory? dir)))
+			     (delete-file dir))
+			  (unless (file-exists? dir)
+			     (make-directory dir))
+			  (with-output-to-file path
+			     (lambda ()
+				(display (tar-read-block h pz))))
+			  (loop (cons path lst))))
+		      (else
+		       (error 'untar
+			      (format "Illegal file type `~a'"
+				      (tar-header-type h))
+			      (tar-header-name h)))))))
+	 (close-input-port pz))))
+@end smalllisp
+
+@deffn {bigloo procedure} untar input-port [:directory (pwd)] [:file #f]
+Untars the archive whose content is provided by the input port
+@var{input-port}.
+
+@itemize @bullet
+@item If @var{:file} is provided, @code{untar} extract the content of the
+file named @var{:file} and returns a string. The file name must exactly
+matches the files of the archive files names. If the file does not exist,
+@code{untar} returns @code{#f}.
+
+@item If @var{:file} is not provided, it @emph{untars} the whole content,
+in the directory denoted by @var{:directory}, which defaults to @code{(pwd)}.
+The function @code{untar}, returns the whole list of created directories
+and files.
+@end itemize
+
+@end deffn
+

@@ -1,0 +1,96 @@
+.TH BGLDEPEND 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bgldepend \- create Bigloo dependencies in makefiles
+
+.SH SYNOPSIS
+.B bgldepend
+[ options ]
+.I sourcefile ...
+
+.SH DESCRIPTION
+
+.B bgldepend
+program reads each \fIsourcefile\fR in sequence and  parses it to find the
+module \fBinclude\fR and \fBimport\fR module directives. \fBbgldepend\fR
+computes the transitive closure of the import relationship. That is, it
+is sufficient to provide \fBbgldepend\fR with a single Bigloo file that 
+imports all the project file (e.g. the "main" file.)
+
+Every  file  that a \fIsourcefile\fR includes, directly or indirectly, 
+is what \fBbgldepend\fR calls a \fIdependency\fR. These dependencies are then
+written to a \fImakefile\fR in such a way that \fBmake(1)\fR will know 
+which object files must be recompiled when a dependency has changed.
+
+By default, \fBbgldepend\fR writes its output on the standard output device.
+If \fBbgldepend\fR is provided with a \fB-o\fR \fImakefile\fR\fR option, 
+it will update the \fImakefile\fR file. That is, it will search the makefile 
+for the line:
+.sp 0 
+ # bgldepend start (don't edit)
+.sp 0
+and
+.sp 0
+ # bgldepend stop
+.sp 0
+  
+Dependencies will be written in between these two lines.
+
+.SH OPTIONS
+
+.TP 16
+.TP
+file
+Is an file implementing a module. 
+.B Afile
+reads that file to discover the name of the implemented module.
+
+.TP
+-search-path <path>
+Add \fIpath\fR to the directory list read for searching Bigloo source files.
+
+.TP
+-exclude-path <path>
+Exclude \fIpath\fR from the directory list read for searching Bigloo 
+source files.
+
+.TP
+-suffix <suf>
+Adds \fIsuf\fR to the \fBbmake\fR source file suffixes list. Default 
+suffixes are "scm", "sch" and "bgl".
+
+.TP
+-v
+Verbose mode
+
+.TP
+-o <makefile>
+The name of the \fImakefile\fR file to be updated
+
+.SH "EXAMPLE"
+
+Normally,  \fbbgldepend\fR will be used in a makefile target so
+that typing ``make bgldepend'' will bring the dependencies up
+to date for the makefile.  For example,
+
+.sp 0
+   MAIN=foo.scm
+.sp 0
+   SRCS = $(MAIN) bar.scm gee.scm
+.sp 0
+   bgldepend:
+.sp 0
+       bgldepend -o Makefile $(MAIN)
+.sp 0
+
+.SH "SEE ALSO"
+bigloo(1), bglafile(1), bglmake(1), bglpp(1), bglprof(1), bgltags(1), make(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

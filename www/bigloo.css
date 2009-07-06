@@ -1,0 +1,59 @@
+body {
+  font-family: Verdana, Arial, Helvetica; 
+}
+
+p {
+  font-size: small;
+}
+   
+ul {
+  font-size: small;
+}
+
+tr {
+  font-size: small;
+}
+   
+.menuitem {
+  font-weight: plain;
+  font-size: 0.85em;
+}
+
+table.menu table {
+  font-size: 0.75em;
+  font-family: Verdana, Arial, Helvetica;
+}
+
+table.skribetitle td {
+  font-size: larger;
+}
+
+a.highlight:link { color: #00ff00; text-decoration: none; }
+a.highlight:visited { color: #00ff00; text-decoration: none; }
+a.highlight:hover { color: #00ff00; text-decoration: underline; }
+a.highlight:active { color: #00ff00; text-decoration: underline; }
+
+a.menulink:link { color: #a0a0d0; text-decoration: none; }
+a.menulink:visited { color: #a0a0d0; text-decoration: none; }
+a.menulink:hover { color: #00ff00; text-decoration: underline; }
+a.menulink:active { color: #00ff00; text-decoration: underline; }
+
+a.oldlink:link { color: #9090c0; text-decoration: none; }
+a.oldlink:visited { color: #9090c0; text-decoration: none; }
+a.oldlink:hover { color: #00ff00; text-decoration: underline; }
+a.oldlink:active { color: #00ff00; text-decoration: underline; }
+
+a.altlink:link { color: #7a5ada; text-decoration: none; }
+a.altlink:visited { color: #5a3aba; text-decoration: none; }
+a.altlink:hover { color: #7a5ada; text-decoration: underline; }
+a.altlink:active { color: #7a5ada; text-decoration: underline; }
+
+a.hotlink:link { color: #ff0040; text-decoration: none; }
+a.hotlink:visited { color: #dd0020; text-decoration: none; }
+a.hotlink:hover { color: #ff0040; text-decoration: underline; }
+a.hotlink:active { color: #ff0040; text-decoration: underline; }
+
+h3 {
+  padding: 0;
+  margin: 0;
+}

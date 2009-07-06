@@ -1,0 +1,20 @@
+To install the whole Ude, step as followed:
+
+	1. type `make' to compile the all lisp file.
+
+	2. as root, type `make install EMACSDIR=<your site lisp>`
+
+	   when EMACSDIR omited, the installation process will 
+           copy the lisp files into the path detected during the Bigloo
+           configuration stage.
+
+	3. Copy the following lines into your .emacs file:
+
+           (if (locate-library "bmacs")
+               (require 'bmacs))
+
+        4. You can customize which modes Bee control. The default is
+           Scheme. Lisp and C mode can be enables using:
+             ESC-x: customize-group bmacs
+	
+

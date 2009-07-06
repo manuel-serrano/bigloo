@@ -1,0 +1,317 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/runtime/Eval/expddefine.scm          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
+;*    Last change :  Wed Jan 21 18:41:06 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Macro expansions of DEFINE and LAMBDA forms.                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module __expander_define
+   
+   (import  __error
+	    __bigloo
+	    __tvector
+	    __structure
+	    __tvector
+	    __bexit
+	    __bignum
+	    __object
+	    __param
+	    __thread
+	    
+	    __r4_numbers_6_5
+	    __r4_numbers_6_5_fixnum
+	    __r4_numbers_6_5_flonum
+	    __r4_characters_6_6
+	    __r4_equivalence_6_2
+	    __r4_booleans_6_1
+	    __r4_symbols_6_4
+	    __r4_strings_6_7
+	    __r4_pairs_and_lists_6_3
+	    __r4_input_6_10_2
+	    __r4_control_features_6_9
+	    __r4_vectors_6_8
+	    __r4_ports_6_10_1
+	    __r4_output_6_10_3
+	    
+	    __progn
+	    __expand)
+   
+   (use     __type
+	    __evenv)
+
+   (export  (eval-begin-expander ::procedure)
+	    (expand-eval-lambda ::obj ::procedure)
+	    (expand-eval-define ::obj ::procedure)
+	    (expand-eval-define-inline ::obj ::procedure)
+	    (expand-eval-define-generic ::obj ::procedure)
+	    (expand-eval-define-method ::obj ::procedure)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-args ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-args args e)
+   (let loop ((args args))
+      (cond
+	 ((null? args)
+	  '())
+	 ((symbol? args)
+	  args)
+	 ((not (pair? args))
+	  (error "expand" "Illegal argument" args))
+	 ((not (and (pair? (car args))
+		    (pair? (cdr (car args)))
+		    (null? (cddr (car args)))))
+	  (cons (car args) (loop (cdr args))))
+	 (else
+	  (cons (list (car (car args)) (e (cadr (car args)) e))
+		(loop (cdr args)))))))
+       
+;*---------------------------------------------------------------------*/
+;*    eval-begin-expander ...                                          */
+;*---------------------------------------------------------------------*/
+(define (eval-begin-expander olde)
+   (lambda (x e)
+      (let ((res (match-case x
+		    ((begin)
+		     #unspecified)
+		    ((begin . ?rest)
+		     (if (not (list? rest))
+			 (error 'begin "Illegal `begin' form" x)
+			 (lambda-defines (map (lambda (x) (olde x e)) rest))))
+		    (else
+		     (let ((nx (olde x e)))
+			(match-case nx
+			   ((begin)
+			    #unspecified)
+			   ((begin . ?rest)
+			    (if (not (list? rest))
+				(error 'begin "Illegal `begin' form" x)
+				(lambda-defines rest)))
+			   (else
+			    nx)))))))
+	 (evepairify res x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-lambda ...                                           */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-lambda x e)
+   (let ((res (match-case x
+		 ((?- ?args . (and ?body (not ())))
+		  (let* ((eargs (expand-args args e))
+			 (ebody (expand-progn body))
+			 (ne (eval-begin-expander e)))
+		     `(lambda ,eargs
+			 ,(%with-lexical (args->list eargs) ebody ne #f))))
+		 (else
+		  (error "lambda" "Illegal form" x)))))
+      (evepairify res x)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-define ...                                           */
+;*    -------------------------------------------------------------    */
+;*    on divise en deux sous:                                          */
+;*       1- on define une lambda.                                      */
+;*       2- on define une valeur (autre qu'un lambda).                 */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-define x olde)
+   (letrec ((newe (lambda (x e)
+		     (match-case x
+			((define . ?-)
+			 (expand-eval-internal-define x e))
+			(else
+			 (olde x e))))))
+       (expand-eval-external-define x newe)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-external-define ...                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-external-define x e)
+   (let ((e (eval-begin-expander e)))
+      (let* ((err (lambda () (error "define" "Illegal form" x)))
+	     (res (if (and (pair? x) (pair? (cdr x)) (pair? (cddr x)))
+		      (let ((type (cadr x)))
+			 (cond
+			    ((and (pair? type) (symbol? (car type)))
+			     `(define ,(car type)
+				 (lambda ,(expand-args (cdr type) e)
+				    ,(e (expand-progn (cddr x)) e))))
+			    ((symbol? type)
+			     `(define ,type
+				 ,(e (expand-progn (cddr x)) e)))
+			    (else
+			     (err))))
+		      (err))))
+	 (evepairify res x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-internal-define ...                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-internal-define x e)
+   (match-case x
+      ;; 1- a lambda definition
+      ((or (?- (?name . ?args) . (and ?body (not ())))
+	   (?- ?name (lambda ?args . (and ?body (not ())))))
+       (let* ((eargs (expand-args args e))
+	      (res `(define ,(car (parse-formal-ident name))
+		       (lambda ,eargs
+			  ,(%with-lexical
+			    (args->list eargs) (expand-progn body) e #f)))))
+	  (evepairify res x)))
+      ;; 2- a variable definition
+      ((?- ?name . (?value . ()))
+       (let ((res `(define ,(car (parse-formal-ident name)) ,(e value e))))
+	  (evepairify res x)))
+      ;; 3- an illegal define form
+      (else
+       (error "define" "Illegal form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    lambda-defines ...                                               */
+;*---------------------------------------------------------------------*/
+(define (lambda-defines body::pair-nil)
+   (let loop ((oldforms  body)
+	      (newforms '())
+	      (vars     '())
+	      (sets     '()))
+      (if (pair? oldforms)
+	  (let ((form (car oldforms)))
+	     (cond ((or (not (pair? form))
+			(not (eq? (car form) 'define)))
+		    (loop (cdr oldforms)
+			  (cons form newforms)
+			  vars sets))
+		   (else
+		    (loop (cdr oldforms) newforms
+			  (cons (cadr form) vars)
+			  (cons `(set! ,(car (parse-formal-ident (cadr form)))
+				       ,(caddr form))
+				sets)))))
+	  (if (not (null? vars))
+	      `(let ,(map (lambda (v) (list v #unspecified)) vars)
+		  ,(expand-progn (append (reverse sets) (reverse newforms))))
+	      (expand-progn body)))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-define-inline ...                                    */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-define-inline x e)
+   (match-case x
+      ((?- (?fun . ?formals) . (and ?body (not ())))
+       (let* ((res `(define ,(car (parse-formal-ident fun))
+		      ,(e `(lambda ,(expand-args formals e)
+			      ,(expand-progn body)) e))))
+	  (evepairify res x)))
+      (else
+       (error "define-inline" "Illegal form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    map+ ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (map+ f lst)
+   (cond
+      ((null? lst)
+       '())
+      ((not (pair? lst))
+       (f lst))
+      (else
+       (cons (f (car lst)) (map+ f (cdr lst))))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-define-generic ...                                   */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-define-generic x e)
+   (match-case x
+      ((?- (?fun ?f0 . ?formals) . ?body)
+       (let* ((pf (parse-formal-ident fun))
+	      (id (car pf))
+	      (pa (map+ parse-formal-ident (cons f0 formals)))
+	      (def (gensym))
+	      (epa (expand-args pa e))
+	      (va (and (not (null? formals))
+		       (or (not (pair? formals))
+			   (not (null? (cdr (last-pair formals)))))))
+	      (def-body `((generic-default ,id)
+			  ,@(map+ (lambda (a)
+				     (if (pair? a) (car a) a))
+				  epa)))
+	      (met-body `(met ,@(map+ (lambda (a)
+					 (if (pair? a) (car a) a))
+				      epa))))
+	  (e `(begin
+		 (define ,fun
+		    (procedure->generic
+		     (lambda ,(cons f0 formals)
+			(let ((,def (lambda ()
+				       ,(if va
+					    (cons 'apply def-body)
+					    def-body))))
+			   (let ((met (and (object? ,(caar pa))
+					   (find-method ,(caar pa) ,id))))
+			      (if (procedure? met)
+				  ,(if va (cons 'apply met-body) met-body)
+				  (,def)))))))
+		 (add-generic! ,id
+			       (lambda ,(cons f0 formals)
+				  ,(if (pair? body)
+				       `(begin ,@body)
+				       `(error ',(car pf)
+					       "No method for this object"
+					       ',(car (car pa)))))))
+	     e)))
+      (else
+       (error 'define-generic "Illegal form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-eval-define-method ...                                    */
+;*---------------------------------------------------------------------*/
+(define (expand-eval-define-method x e)
+   (define (get-arg a)
+      (let ((r (parse-formal-ident a)))
+	 (if (pair? r)
+	     (car r)
+	     r)))
+   (define (get-args args)
+      (cond
+	 ((null? args)
+	  '())
+	 ((pair? args)
+	  (cons (get-arg (car args)) (get-args (cdr args))))
+	 (else
+	  (list (get-arg args)))))
+   (match-case x
+      ((?- (?fun ?f0 . ?formals) . (and ?body (not ())))
+       (let ((p0 (parse-formal-ident f0))
+	     (rest (get-args formals))
+	     (va (and (not (null? formals))
+		      (or (not (pair? formals))
+			  (not (null? (cdr (last-pair formals))))))))
+	  (if (and (pair? p0) (symbol? (cdr p0)))
+	      (let* ((res `(add-method!
+			    ,fun
+			    ,(cdr p0)
+			    ,(e `(lambda ,(expand-args (cons f0 formals) e)
+				    (define (call-next-method)
+				       (let ((next (find-super-class-method
+						    ,(car p0)
+						    ,fun
+						    ,(cdr p0))))
+					  (if (procedure? next)
+					      (if (procedure? next)
+						  ,(if va
+						       `(apply next ,(car p0) ,@rest)
+						       `(next ,(car p0) ,@rest))
+						  ,(if va
+						       `(apply ,fun ,(car p0) ,@rest)
+						       `(,fun ,(car p0) ,@rest))))))
+				    ,@body) e))))
+		 (evepairify res x))
+	      (error 'define-method "Illegal form" x))))
+      (else
+       (error 'define-method "Illegal form" x))))

@@ -1,0 +1,95 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/installinfo                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 15:12:37 1999                          */
+#*    Last change :  Mon Oct 17 14:18:32 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if info is an old version                                  */
+#*=====================================================================*/
+
+installinfo=install-info
+cc=gcc
+path=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --installinfo=*|-installinfo=*)
+      installinfo="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --exe=*)
+      exe="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if [ -f $file.c ]; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+   printf( "%s", argv[ 1 ] );
+   return 0;
+}
+EOF
+
+$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null
+
+if [ "$installinfo " != " " ]; then
+  $installinfo --help > /dev/null 2> /dev/null
+  if [ "$?" = "0" ]; then
+     $aout$exe $installinfo
+  else
+    if [ -f /sbin/install-info ]; then
+      $aout /sbin/install-info
+    else
+      if [ -f /usr/sbin/install-info ]; then
+        $aout /usr/sbin/install-info
+      fi
+    fi
+  fi
+else
+  if [ -f /sbin/install-info ]; then
+    $aout /sbin/install-info
+  else
+    if [ -f /usr/sbin/install-info ]; then
+      $aout /usr/sbin/install-info
+    fi
+  fi
+fi
+
+/bin/rm -rf $file.c $file.o $aout$exe $aout

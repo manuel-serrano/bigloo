@@ -1,0 +1,179 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ldshare                     */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 14:04:49 1995                          */
+#*    Last change :  Thu Apr 10 14:53:46 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking for shared libraries                                    */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+ld=ld
+ldopt=
+ldlibs=
+tmp=/tmp
+user=bigloo
+sharedsuffix=so
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ld=*|-ld=*)
+      ld="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ldopt=*|-ldopt=*)
+      ldopt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ldlibs=*|-ldlibs=*)
+      ldlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --sharedsuffix=*|-sharedsuffix=*)
+      sharedsuffix="`echo $1 | sed 's/^[-a-z]*=//'`";;	  
+
+    -*)
+      echo "ldshare: Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+#*---------------------------------------------------------------------*/
+#*    We know that on some platform, the GC does not support shared    */
+#*    libraries (e.g. BSD, Mac PPC).                                   */
+#*---------------------------------------------------------------------*/
+file=$tmp/acldshare$user
+aout=$tmp/acldshare$user
+obj=`basename $file`
+
+#*---------------------------------------------------------------------*/
+#*    Guessed option                                                   */
+#*---------------------------------------------------------------------*/
+if [ "$ldopt " = " " ]; then
+  case `uname -s` in
+    HP-UX*)
+      ldopt="-b";;
+    AIX*)
+      ldopt="-bnoentry -bexpall -bM:SRE";;
+    Darwin*|darwin*)
+      # Darwin < 9 require the -r option, Darwin 9 does not support the -r
+      # option. 
+      if [ "`uname -r | sed 's/[.]//g'`" -ge "900" ]; then
+        echo "";
+      else
+        echo "-r";
+      fi
+      exit 0;;
+  esac
+fi
+
+if [ "$ldopt " = " " ]; then
+  cat > $file-guess.c <<EOF
+int main () 
+{
+#if( defined( sparc ) && !defined( linux ) )
+#  if( defined( __svr4__) || defined( __SVR4 ) )
+      puts( "-G" );
+#  else
+      puts( "-Bstatic" );
+#  endif
+#else
+   puts( "-shared" );
+#endif
+}
+EOF
+
+  if $cc $cflags -o $aout $file-guess.c >/dev/null 2>&1
+  then
+    true
+  else
+    /bin/rm -f $file*
+    echo "no-share"
+    exit 1
+  fi
+
+  ldopt=`$aout`
+  /bin/rm -f $file-guess*
+fi
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file-lib.c <<EOF
+int fun () { int x =0; x++; return x++; }
+EOF
+
+cat > $file.c <<EOF
+int main () { fun(); }
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -c $file-lib.c -o $obj-lib.o >/dev/null 2>&1
+then
+  true
+else
+  /bin/rm -f $file* $obj*
+  echo "no-share"
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We build a library                                               */
+#*---------------------------------------------------------------------*/
+$ld $ldopt -o $file.$sharedsuffix $obj-lib.o $ldlibs > /dev/null 2> /dev/null
+if [ ! -f $file.$sharedsuffix ]; then
+  /bin/rm -f $file* $obj*
+  /bin/rm -f $obj-lib.o
+  echo "no-share"
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    linking test                                                     */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -o $aout $file.c $file.$sharedsuffix >/dev/null 2>&1
+then
+   true
+else
+  res=$?
+  /bin/rm -f $file* $obj*
+  echo "no-share"
+  exit $res
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We try to run ranlib                                             */
+#*---------------------------------------------------------------------*/
+/bin/rm -f $file* $obj*
+echo $ldopt
+

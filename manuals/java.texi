@@ -1,0 +1,438 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/java.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 14:02:43 1998                          @c
+@c    Last change :  Tue Nov 13 06:12:57 2001 (serrano)                @c
+@c    Copyright   :  2000-01 Manuel Serrano                            @c
+@c    ------------------------------------------------------------     @c
+@c    The foreign interface                                            @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    The foreign interface                                            @c
+@c ------------------------------------------------------------------- @c
+@node Java Interface, Bigloo Libraries, C Interface, Top
+@comment  node-name,  next,  previous,  up
+@chapter The Java interface
+@cindex Java interface
+
+When the Bigloo is configured for a JVM back-end support, the compiler is
+able to produce Java class file instead of C files. In order to produce 
+JVM class files, use the @code{-jvm} compiler option. Example:
+
+@display
+$ cat > foo.scm
+(module foo (main main))
+(define (main argv)
+   (print "Hello world: " argv))
+$ bigloo -jvm foo.scm
+$ a.out
+  @print{} Hello world: (a.out)
+
+@end display
+
+@menu
+* Compiling with the JVM back-end::  
+* JVM back-end and SRFI-0::
+* Limitation of the JVM back-end::
+* Connecting Scheme and Java code::
+* Performance of the JVM back-end::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Compiling using the JVM back-end                                 @c
+@c ------------------------------------------------------------------- @c
+@node Compiling with the JVM back-end, JVM back-end and SRFI-0, , Java Interface
+
+@comment  node-name,  next,  previous,  up
+@section Compiling with the JVM back-end
+@cindex Compiling with the JVM back-end
+
+@subsection Compiler JVM options
+@cindex compiler JVM options
+
+All the compiler options that control the compilation (optimization options,
+debugging options, etc.), can be used in conjunction with the @code{-jvm} option.
+However, the @code{-jvm} option @emph{MUST} be the first compiler option
+on the command line.
+
+In order to prevent the compiler to produce a script shell file to run
+the program, it is required to use simultaneously the @code{-jvm} and 
+@code{-c} options.
+
+@subsection Compiling multi-modules applications
+@cindex jfile
+@cindex .jfile
+
+In order to compile and link multi-modules applications, it is required
+to specify the association between Scheme source modules and Java
+qualified type names. This task is generally complex because of the
+annoying mapping that exists from Java class names and the operating
+file system names. In order to get rid of this problem, the Bigloo
+standard distribution contains a tool, @code{jfile}, that automatically
+produces Bigloo Module/Java classes association files. The default name
+for such a table is @code{.jfile}. When compiling a module, Bigloo checks
+if a @code{.jfile} exists in the current directory, if it exists, the
+file is read. The compilation option @code{-jfile} may be used to
+specify an alternative jfile name. Example:
+
+@display
+$ cat > foo.scm
+(module foo (export (foo))) (define (foo) 'foo)
+$ cat > bar.scm
+(module bar (export (bar))) (define (bar) 'bar)
+$ cat > hux.scm
+(module hux (export (hux))) (define (hux) 'hux)
+$ cat > main.scm
+(module main (main main) (import foo bar hux)
+(define (main argv)
+   (print (foo))
+   (print (bar))
+   (print (fhux)))
+$ afile *.scm > .afile
+$ jfile *.scm > .jfile
+$ bigloo -jvm -c foo.scm
+$ bigloo -jvm -c bar.scm
+$ bigloo -jvm -c hux.scm
+$ bigloo -jvm main.scm foo.class bar.class hux.class
+@end display
+
+For an explanation about the @code{.afile}, @pxref{Modules}.
+
+@c ------------------------------------------------------------------- @c
+@c    JVM back-end and SRFI-0                                          @c
+@c ------------------------------------------------------------------- @c
+@node JVM back-end and SRFI-0, Limitation of the JVM back-end, Compiling with the JVM back-end, Java Interface
+@section JVM back-end and SRFI-0
+@cindex SRFI-0:bigloo-jvm
+@cindex SRFI-0:bigloo-c
+
+The currently running back-end may be tested by the means of the SRFI-0
+@code{cond-expand} form (@pxref{SRFIs}). That is, when the JVM is ran,
+the @code{bigloo-jvm} clause is true. Otherwise, the @code{bigloo-c}
+is true. Example:
+
+@display
+$ cat > foo.scm
+(module foo (main main))
+(define (main argv)
+   (cond-expand
+      (bigloo-jvm (print "JVM back-end"))
+      (bigloo-c (print "C back-end"))
+      (else (error "main" "unsupported back-end" #unspecified))))
+$ bigloo -jvm foo.scm
+$ a.out
+  @print{} JVM back-end
+$ bigloo foo.scm
+$ a.out
+  @print{} C back-end
+@end display
+
+@c ------------------------------------------------------------------- @c
+@c    Limitation imposed by the JVM back-end                           @c
+@c ------------------------------------------------------------------- @c
+@node Limitation of the JVM back-end, Connecting Scheme and Java code, JVM back-end and SRFI-0, Java Interface
+@comment  node-name,  next,  previous,  up
+@section Limitation of the JVM back-end
+@cindex Limitation of the JVM back-end
+
+The JVM back-end supports the entire Bigloo source language but the
+@code{call/cc} function. More precisely, using the JVM back-end, the
+continuation reified in a @code{call/cc} form can only be invoked in the
+dynamic extent of that form. 
+
+The other restrictions of the C back-end apply to the JVM
+back-end. Mainly, 
+
+@itemize @bullet
+
+@item Bigloo is not able to compile all the tail recursive call
+without stack consumption (however, most of the tail recursive calls are
+optimized by Bigloo and don't use stack activation frames).
+
+@item Bigloo compiled applications do not check for arithmetic overflow.
+
+@item When compiling to Jvm, the @code{extern} module clauses are not used.
+
+@item Jvm runtime system does support the following function @code{chdir}.
+
+@item Jvm runtime system support for @code{chmod} is restricted.
+
+@item In order to read a shell variable from a Bigloo compiled Jvm program,
+      you have to use the Bigloo link option @code{-jvm-env} @emph{when}
+      linking that program. However, some shell variables are 
+      automatically defined (@code{HOME}, @code{USER}, @code{CLASSPATH} and
+      @code{TMPDIR}.
+
+@item JVM code generation does not support @code{pragma} forms. 
+
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Connecting Scheme and Java code                                  @c
+@c ------------------------------------------------------------------- @c
+@node Connecting Scheme and Java code, Performance of the JVM back-end, Limitation of the JVM back-end, Java Interface
+@comment  node-name,  next,  previous,  up
+@section Connecting Scheme and Java code
+@cindex Connecting Scheme and Java code
+
+When compiling and linking with the JVM back-end, Bigloo source code may
+use the Java API. That is, Bigloo Scheme source code may use (refer or set)
+Java static variables, Bigloo source code may call static or virtual
+Java methods. In addition, Bigloo variables and functions may be exported
+to Java, that is use, set or called in Java source code. Java module clauses
+are enabled (read and parsed) only when compiling to JVM byte code.
+
+Java definitions are declared in Bigloo modules by the mean of a Bigloo
+module clause: the @emph{java} module clause. The syntax of a @emph{Java}
+clause is defined by:
+
+@example
+<java> @expansion{} <declare-class-clause>
+     | <declare-abstract-class-clause>
+     | <extend-class-clause>
+     | <array-clause>
+     | <export-clause>
+@end example
+
+As for the @emph{extern} clause, @emph{java} clauses are automatically
+``transmitted'' by the importation process.  That is, if module
+@code{module1} imports a module @code{module2}, @code{module} treats the
+@code{java} clauses of @code{module2} as though they were included in
+its own module declaration. Redefinition of a variable or a function
+already defined in an java clause is an error. However, the definition of
+a Java class or an Java abstract class may be enriched from module to
+module.
+
+@c -- Automatic extern clauses generation ---------------------------- @c
+@menu
+* Automatic Java clauses generation::  
+* Declaring Java classes::
+* Declaring abstract Java classes::
+* Extending Java classes::
+* Declaring Java arrays::
+* Exporting Scheme variables::
+* Bigloo runtime customization::
+* Bigloo module initialization::
+@end menu
+
+@node Automatic Java clauses generation, Declaring Java classes, Connecting Scheme and Java code, Connecting Scheme and Java code
+@comment  node-name,  next,  previous,  up
+@subsection Automatic Java clauses generation
+@cindex Automatic Java clauses generation
+@cindex @code{jigloo}
+
+Java clauses can be automatically generated using the Jigloo program
+which is distributed in the same package as Bigloo. Using Jigloo may be
+a good way to understand how Java classes, methods, and variables have to 
+be declared in Bigloo. Jigloo reads Java @emph{class} files and generate the 
+Bigloo java clauses for that classes.
+
+@c -- Declaring a Java class ----------------------------------------- @c
+@node Declaring Java classes, Declaring abstract Java classes, Automatic Java clauses generation, Connecting Scheme and Java code
+@comment  node-name,  next,  previous,  up
+@subsection Declaring Java classes
+@cindex Declaring Java classes
+The <declare-class-clause> clause denotes importation of Java classes.
+
+@example
+<declare-class-clause> @expansion{} @code{(}class <typed-ident> <slot>* <string>@code{)} 
+<slot> @expansion{} <field> | <method> | <constructor>
+<field> @expansion{} @code{(field} <modifier> <typed-ident> <string>@code{)}
+<method> @expansion{} @code{(field} <modifier> <typed-ident> @code{(}<typed-ident>*@code{)} <string>@code{)}
+<constructor> @expansion{} @code{(constructor} <ident> @code{(}<typed-ident>*@code{))}
+<modifier> @expansion{} @code{public} | @code{private} | @code{protected}
+     | @code{static} | @code{final} | @code{synchronized} | @code{abstract}
+@end example
+
+When the compiler encounters a Java class declaration, it automatically
+creates a predicate. If the class identifier is @code{id}, the predicate
+is named @code{id?}. In addition, the compiler generates functions that
+fetch and set the field values. For a field named @code{f}, these functions
+are named @code{id-f} and @code{id-f-set!}. Methods and constructors are
+also always prefixed the name of the class. That is, for a method named 
+@code{m} of a class @code{k}, the Scheme name of the method is @code{k-m}.
+
+Example:
+
+@smalllisp
+(module java-example
+   (java (class point
+            (constructor new-default ())
+            (field x::int "x")
+            (method show::void (::point) "show")
+            (method static statistics::int () "PointStatistics")
+            "Point")
+         (class point-3d::point
+            "Point3D")))
+
+(let ((p (point-new-default)))
+   (print (point? p))   @print{} @code{#t}
+   (point-x-set! p 3)
+   (print (point-x p))) @print{} @code{3}
+@end smalllisp
+
+@c -- Declaring an abstract Java class ------------------------------- @c
+@node Declaring abstract Java classes, Extending Java classes, Declaring Java classes, Connecting Scheme and Java code
+@subsection Declaring abstract Java classes
+@cindex Declaring abstract Java classes
+
+A Bigloo abstract Java class declaration corresponds to a Java interface.
+It cannot be instantiate but regular classes may inherit from it.
+
+@example
+<declare-abstract-class-clause> @expansion{} @code{(}abstract-class <typed-ident> <slot>* <string>@code{)} 
+@end example
+
+@c -- Extending a Java class ----------------------------------------- @c
+@node Extending Java classes, Declaring Java arrays, Declaring abstract Java classes, Connecting Scheme and Java code
+@subsection Extending Java classes
+A class definition may be split into several pieces. One class declaration
+(see <declare-class-clause>) and several extensions. The syntax for a Java
+class extension is:
+
+@example
+<extend-class-clause> @expansion{} @code{(}class <typed-ident> <slot>*@code{)} 
+@end example
+
+Example:
+
+@smalllisp
+(module java-example2
+   (import java-example)
+   (java (class point 
+            (field y::int "y")
+            (field static num::int "point_num")
+            (constructor new (::int ::int)))))
+@end smalllisp
+
+@c -- Declaring Java arrays ------------------------------------------ @c
+@node Declaring Java arrays, Exporting Scheme variables, Extending Java classes, Connecting Scheme and Java code
+@subsection Declaring Java arrays
+@cindex Declaring Java arrays
+
+Java arrays may be allocated and used inside Scheme code. The syntax of
+a Java array module clause is:
+
+@example
+<array-clause> @expansion{} @code{(array} <ident> <typed-ident>@code{)}
+@end example
+
+The <typed-ident> must refer to the name of an existing type (i.e., a
+primitive Bigloo type, a Bigloo class, an already defined Java class or
+an already defined Java array). For an array named @code{ar}, Bigloo
+generates:
+
+@itemize @bullet
+
+@item a creator named @code{make-ar} which is a function of one integer 
+      argument.
+
+@item a predicate named @code{ar?}.
+
+@item a getter named @code{ar-ref} which is a function of one integer argument.
+
+@item a setter named @code{ar-set!} which is a function of two arguments, an
+      integer and a value of the array item types.
+
+@item a length named @code{ar-length}.
+
+@end itemize
+
+Example:
+
+@smalllisp
+(module foo
+   (java (array int* ::int)
+         (class bar
+            (method static hello::int (::int*) "hello")
+            "bar"))
+   (main main))
+
+(define (main argv)
+   (let ((tab (make-int* 2)))
+      (int*-set! tab 0 3)
+      (int*-set! tab 1 6)
+      (print (bar-hello tab))))
+@end smalllisp
+
+@c -- Exporting Scheme variables ------------------------------------- @c
+@node Exporting Scheme variables, Bigloo runtime customization, Declaring Java arrays, Connecting Scheme and Java code
+@subsection Exporting Scheme variables
+@cindex Exporting Scheme variables to Java
+
+As for the C connection, a Scheme variable (or function) can be exported
+to the Java world if and only if it is also exported using an
+@code{export} Java clause. Type information is given in the Scheme
+exportation, thus, the only requirement for a variable to be Java
+exported is to be given a Java name. The Java <export-clause> does
+this:
+
+@example
+<export-clause> @expansion{} @code{(export} <ident> <string>@code{)}
+@end example
+ 
+Here is an example of exportation:
+
+@smalllisp
+(module example
+   (export (fib::long ::long))
+   (java (export fib "scheme_fib")))
+
+(define (fib x) (if (< x 2) 1 ...))
+@end smalllisp
+
+@c -- Bigloo runtime customization ----------------------------------- @c
+@node Bigloo runtime customization, Bigloo module initialization, Exporting Scheme variables, Connecting Scheme and Java code
+@subsection Bigloo runtime customization
+@pindex bigloo.foreign.must_exitp
+
+When the Scheme program completes normally, that is when the last
+expression of the Bigloo main is executed without error, the Bigloo runtime
+system explicitly call the Java function @code{System.exit}. In some
+situation, it may be useful to disable this call. For this, one
+must set the @code{boolean} Java static variable 
+@code{bigloo.foreign.must_exitp} to @code{false}. This can be implemented
+in Java or in Scheme. Here is a Scheme module that sets the variable to
+@code{false}.
+
+@smalllisp
+(module no-exit
+  (java (class bigloo
+           (field static must-exitp::bool "must_exitp")
+           "bigloo.foreign")))
+
+(cond-expand
+  (bigloo-jvm (set! bigloo-must-exitp #f)))
+@end smalllisp
+
+@c -- Bigloo module initialization ----------------------------------- @c
+@node Bigloo module initialization, ,Bigloo runtime customization, Connecting Scheme and Java code
+@subsection Bigloo module initialization
+@cindex -jvm-cinit-module
+
+By default Bigloo modules are initialized when the application starts. It might
+be convenient to initialize the module when the Java classes implementing
+the Bigloo modules are loaded. It is possible to drive the Bigloo compiler
+to introduce code inside the Java class constructors for initializing the
+modules. This is the role of the @code{-jvm-cinit-module} compiler option.
+
+
+@c ------------------------------------------------------------------- @c
+@c    Performance of the JVM back-end                                  @c
+@c ------------------------------------------------------------------- @c
+@node Performance of the JVM back-end, , Connecting Scheme and Java code, Java Interface
+@comment  node-name,  next,  previous,  up
+@section Performance of the JVM back-end
+@cindex Performance of the JVM back-end
+
+We are currently improving and investigating about the performance of
+the JVM back-end. JVM performance is extremely sensitive to the host
+platform (for instance, very unfortunately, Linux seems to be a poor
+platform to run JVM code). Currently, it seems that the JVM back-end
+produces codes that are in between 4 times and 10 times slower than
+codes produced by the C back-end. The ratio between JVM and C is subject
+to changes. The gap between JVM and C code is bound to bridge because
+of the huge amount of efforts applied to efficiently implement Java
+virtual machines.

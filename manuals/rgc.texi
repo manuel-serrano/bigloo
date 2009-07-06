@@ -1,0 +1,594 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/rgc.texi                     @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Jun 13 17:51:10 1998                          @c
+@c    Last change :  Mon Nov 12 15:17:54 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentation for Rgc                                        @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Rgc                                                              @c
+@c ------------------------------------------------------------------- @c
+@node Regular Parsing, Lalr Parsing, Object System, Top
+@comment  node-name,  next,  previous,  up
+@chapter Regular parsing
+@cindex Regular parsing
+@cindex Regular analyser
+
+Programming languages have poor reading libraries since the lexical
+information that can be specified is directly tied to the structure of
+the language. For example, in C it's hard to read a rational number
+because there is no type rational.  Programs have been written to
+circumvent this problem: Lex [Lesk75], for example, is one of them.
+We choose to incorporate in Bigloo a set of new functions to assist in
+such parsing. The syntax for regular grammar (also known as regular
+analyser) of Bigloo 2.0 (the one described in this document) is not
+compatible with former Bigloo versions.
+
+@menu
+* A New Way of Reading::        
+* The Syntax of The Regular Grammar::  
+* The Semantics Actions::       
+* Options and user definitions::
+* Examples of Regular Grammar::  
+@end menu
+
+@c -- A new way of reading ------------------------------------------- @c
+@node  A New Way of Reading, The Syntax of The Regular Grammar, , Regular Parsing
+@comment  node-name,  next,  previous,  up
+@section A new way of reading
+@cindex A new way of reading
+
+There is only one way in Bigloo to read text, @emph{regular reading},
+which is done by the new form:
+
+@deffn {bigloo procedure} read/rp regular-grammar input-port
+
+The first argument is a regular grammar (also known as regular
+analyser) and the second a Scheme port.  This way of reading is almost
+the same as the Lex's one. The reader tries to match the longest
+input, from the stream pointed to by @var{input-port}, with one of
+several regular expressions contained in @var{regular-grammar}. If
+many rules match, the reader takes the first one defined in the
+grammar. When the regular rule has been found the corresponding Scheme
+expression is evaluated.
+
+@emph{remark: } The traditional @code{read} Scheme function is implemented as:
+@smalllisp
+(define-inline (read port)
+   (read/rp scheme-grammar port))
+@end smalllisp
+@end deffn
+
+@c -- The syntax of the regular grammar ------------------------------- @c
+@node  The Syntax of The Regular Grammar, The Semantics Actions, A New Way of Reading, Regular Parsing
+@comment  node-name,  next,  previous,  up
+@section The syntax of the regular grammar
+@cindex The syntax of the regular grammar
+
+A regular grammar is built by the means of the form @code{regular-grammar}:
+
+@deffn {bigloo syntax} regular-grammar (binding @dots{}) rule @dots{}
+
+The @var{binding} and @var{rule} are defined by 
+the following grammar:
+
+@smallexample
+<binding>  @expansion{} (<variable> <re>)
+             | <option>
+<option>   @expansion{} <variable>
+<rule>     @expansion{} <define>
+             | (<cre> <s-expression> <s-expression> @dots{})
+             | (@code{else} <s-expression> <s-expression> @dots{})
+<define>   @expansion{} (define <s-expression>)
+<cre>      @expansion{} <re>
+             | (@code{context} <symbol> <re>)
+             | (@code{when} <s-expr> <re>)
+             | (@code{bol} <re>)
+             | (@code{eol} <re>)
+             | (@code{bof} <re>)
+             | (@code{eof} <re>)
+<re>       @expansion{} <variable>
+             | <char>
+             | <string>
+             | (@code{:} <re> @dots{})
+             | (@code{or} <re> @dots{})
+             | (@code{*} <re>)
+             | (@code{+} <re>)
+             | (@code{?} <re>)
+             | (@code{=} <integer> <re>)
+             | (@code{>=} <integer> <re>)
+             | (@code{**} <integer> <integer> <re>)
+             | (@code{...} <integer> <re>)
+             | (@code{uncase} <re>)
+             | (@code{in} <cset> @dots{})
+             | (@code{out} <cset> @dots{})
+             | (@code{and} <cset> <cset>)
+             | (@code{but} <cset> <cset>)
+             | (@code{posix} <string>)
+@c               | (@code{submatch} <re>)                              @c
+<variable> @expansion{} <symbol>
+<cset>     @expansion{} <string>
+             | <char>
+             | (<string>)
+             | (<char> <char>)
+@end smallexample
+
+Here is a description of each construction.
+
+@table @code
+
+@item (context <symbol> <re>)
+This allows us to @emph{protect} an expression. A @emph{protected}
+expression matches (or accepts) a word only if the grammar has been set to
+the corresponding context. @xref{The Semantics Actions}, for more details.
+
+@item (when <s-expr> <re>)
+This allows us to @emph{protect} an expression. A @emph{protected}
+expression matches (or accepts) a word only if the evaluation of 
+@code{<s-expr>} is @code{#t}. For instance,
+
+@smalllisp
+(define *g*
+   (let ((armed #f))
+      (regular-grammar ()
+	 ((when (not armed) (: "#!" (+ (or #\/ alpha))))
+	  (set! armed #t)
+	  (print "start [" (the-string) "]")
+	  (ignore))
+	 ((+ (in #\Space #\Tab))
+	  (ignore))
+	 (else
+	  (the-failure)))))
+   
+(define (main argv)
+   (let ((port (open-input-string "#!/bin/sh #!/bin/zsh")))
+      (print (read/rp *g* port))))
+@end smalllisp
+
+@item (bol <re>)
+Matches @code{<re>} at the beginning of line.
+
+@item (eol <re>)
+Matches @code{<re>} at the end of line.
+
+@item (bof <re>)
+Matches @code{<re>} at the beginning of file.
+
+@item (eof <re>)
+Matches @code{<re>} at the end of file.
+
+@item <variable>
+This is the name of a variable bound by a <binding> construction. In addition 
+to user defined variables, some already exist. These are:
+
+@smallexample
+all    @equiv{} (out #\Newline)
+lower  @equiv{} (in ("az"))
+upper  @equiv{} (in ("AZ"))
+alpha  @equiv{} (or lower upper)
+digit  @equiv{} (in ("09"))
+xdigit @equiv{} (uncase (in ("af09")))
+alnum  @equiv{} (uncase (in ("az09")))
+punct  @equiv{} (in ".,;!?")
+blank  @equiv{} (in #" \t\n")
+space  @equiv{} #\Space
+@end smallexample
+
+
+It is a error to reference a variable that it is not bound by a <binding>.
+Defining a variable that already exists is acceptable and causes the former
+variable definition to be erased. Here is an example of a grammar that binds
+two variables, one called @samp{ident} and one called @samp{number}. These
+two variables are used within the grammar to match identifiers and numbers.
+
+@smalllisp
+(regular-grammar ((ident  (: alpha (* alnum)))
+                  (number (+ digit)))
+   (ident  (cons 'ident (the-string)))
+   (number (cons 'number (the-string)))
+   (else   (cons 'else (the-failure))))
+@end smalllisp
+
+@item <char>
+The regular language described by one unique character. Here is an example of
+a grammar that accepts either the character @code{#\a} or the character
+@code{#\b}:
+
+@smalllisp
+(regular-grammar ()
+   (#\a (cons 'a (the-string)))
+   (#\b (cons 'b (the-string)))
+   (else (cons 'else (the-failure))))
+@end smalllisp
+
+@item <string>
+This simple form of regular expression denotes the language represented
+by the string. For instance the regular expression @code{"Bigloo"} matches
+only the string composed of @code{#\B #\i #\g #\l #\o #\o}. The regular 
+expression @code{".*["} matches the string @code{#\. #\* #\[}.
+
+@item (: <re> ...)
+This form constructs sequence of regular expression. That is a form
+@code{<re1> <re2> ... <ren>} matches the language construction by
+concatenation of the language described by @code{<re1>}, @code{<re2>}, 
+@code{<ren>}. Thus, @code{(: "x" all "y")} matches all words of three
+letters, started by character the @code{#\x} and ended with the character
+@code{#\y}.
+
+@item (or <re> ...)
+This construction denotes conditions. The language described by
+@code{(or re1 re2)} accepts words accepted by either @code{re1} or @code{re2}.
+ 
+@item (* <re>)
+This is the Kleene operator, the language described by @code{(* <re>)} is
+the language containing, 0 or more occurrences of @code{<re>}. Thus, 
+the language described by @code{(* "abc")} accepts the empty word and
+any word composed by a repetition of the @code{abc} (@code{abc},
+@code{abcabc}, @code{abcabcabc}, ...).
+
+@item (+ <re>)
+This expression described non empty repetitions. The form @code{(+ re)} is
+equivalent to @code{(: re (* re))}. Thus, @code{(+ "abc")} matches the
+words @code{abc}, @code{abcabc}, etc.
+
+@item (? <re>)
+This expression described one or zero occurrence. Thus, 
+@code{(? "abc")} matches the empty word or the words @code{abc}.
+
+@item (= <integer> <re>)
+This expression described a fix number of repetitions. The form
+@code{(= num re)} is equivalent to @code{(: re re ... re)}. Thus,
+the expression @code{(= 3 "abc")} matches the only word @code{abcabcabc}.
+In order to avoid code size explosion when compiling, @code{<integer>} 
+must be smaller than an arbitrary constant. In the current version that 
+value is @code{81}.
+
+@item (>= <integer> <re>)
+The language described by the expression @code{(>= int re)} accepts word
+that are, at least, @code{int} repetitions of @code{re}. For instance,
+@code{(>= 10 #\a)}, accepts words compound of, at least, 10 times the
+character @code{#\a}. In order to avoid code size explosion when compiling, 
+@code{<integer>} must be smaller than an arbitrary constant. In the current 
+version that value is @code{81}.
+ 
+@item (** <integer> <integer> <re>)
+The language described by the expression @code{(** min max re)} accepts
+word that are repetitions of @code{re}; the number of repetition is in
+the range @code{min}, @code{max}. For instance, @code{(** 10 20 #\a)}.
+In order to avoid code size explosion when compiling, 
+@code{<integer>} must be smaller than an arbitrary constant. In the current 
+version that value is @code{81}.
+
+@item (... <integer> <re>)
+The subexpression @code{<re>} has to be a sequence
+of characters. Sequences are build by the operator @code{:} or by string
+literals. The language described by @code{(... int re)}, denotes, the
+first letter of @code{re}, or the two first letters of @code{re}, or the
+three first letters of @code{re} or the @code{int} first letters of
+@code{re}. Thus, @code{(... 3 "begin")} is equivalent to 
+@code{(or "b" "be" "beg")}.
+
+@item (uncase <re>)
+The subexpression @code{<re>} has to be a sequence
+construction. The language described by @code{(uncase re)} is the
+same as @code{re} where letters may be upper case or lower case. For
+instance, @code{(uncase "begin")}, accepts the words @code{"begin"},
+@code{"beGin"}, @code{"BEGIN"}, @code{"BegiN"}, etc.
+
+@item (in <cset> ...)
+Denotes union of characters. Characters may be described individually
+such as in @code{(in #\a #\b #\c #\d)}. They may be described by
+strings. The expression @code{(in "abcd")} is equivalent to @code{(in
+#\a #\b #\c #\d)}.  Characters may also be described using a range
+notation that is a list of two characters. The expression @code{(in (#\a
+#\d))} is equivalent to @code{(in #\a #\b #\c #\d)}. The Ranges may be
+expresses using lists of string. The expression @code{(in ("ad"))}
+is equivalent to @code{(in #\a #\b #\c #\d)}.
+
+@item (out <cset> ...)
+The language described by @code{(out cset ...)} is opposite to
+the one described by @code{(in cset ...)}. For instance, 
+@code{(out ("azAZ") (#\0 #\9))} accepts all words of one character
+that are neither letters nor digits. One should not that if the character
+numbered zero may be used inside regular grammar, the @code{out} 
+construction never matches it. Thus to write a rule that, for instances,
+matches every character but @code{#\Newline} including the character
+zero, one should write: 
+
+@smalllisp
+(or (out #\Newline) #a000)
+@end smalllisp
+
+@item (and <cset> <cset>)
+The language described by @code{(and cset1 cset2)} accepts words 
+made of characters that are in both @code{cset1} and @code{cset2}. 
+
+@item (but <cset> <cset>)
+The language described by @code{(but cset1 cset2)} accepts words 
+made of characters of @code{cset1} that are not member of @code{cset2}. 
+ 
+@item (posix <string>)
+The expression @code{(posix string)} allows one to use Posix string
+notation for regular expressions. So, for example, the following two
+expressions are equivalent:
+
+@smalllisp
+(posix "[az]+|x*|y@{3,5@}")
+
+(or (+ (in ("az"))) (* "x") (** 3 5 "y"))
+@end smalllisp
+
+@c  @item (submatch <re>)                                              @c
+@c  This matches the empty string and prepares submatch for the runtime function  @c
+@c  @code{the-submatch}.                                               @c
+@end table
+@end deffn
+
+@deffn {bigloo syntax} string-case string rule ...
+This form dispatches on strings. it opens an input on @code{string}
+a read into it according to the regular grammar defined by the
+@code{binding} and @code{rule}. Example:
+
+@smalllisp
+(define (suffix string)
+   (string-case string
+      ((: (* all) ".")
+       (ignore))
+      ((+ (out #\.))
+       (the-string))
+      (else
+       "")))
+@end smalllisp
+@end deffn
+   
+@c -- The semantics actions ------------------------------------------ @c
+@node  The Semantics Actions,  Options and user definitions, The Syntax of The Regular Grammar, Regular Parsing
+@comment  node-name,  next,  previous,  up
+@section The semantics actions
+@cindex the semantics actions
+
+The semantics actions are regular Scheme expressions. These expressions
+appear in an environment where some ``extra procedures'' are defined.
+These procedures are:
+
+@deffn {bigloo rgc procedure} the-port
+Returns the input port currently in used.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-length
+Get the length of the biggest matching string.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-string
+Get a copy of the last matching string. The function @code{the-string}
+returns a fresh copy of the matching each time it is called. In consequence,
+
+@smalllisp
+(let ((l1 (the-string)) (l2 (the-string)))
+   (eq? l1 l2))
+   @result{} #f
+@end smalllisp
+@end deffn
+
+@deffn {bigloo rgc procedure} the-substring start length
+Get a copy of a substring of the last matching string. If the @var{length}
+is negative, it is subtracted to the whole match length.
+Here is an example of a rule extracting a part of a match:
+
+@smalllisp
+(regular-grammar ()
+   ((: #\" (* (out #\")) #\")
+    (the-substring 1 (-fx (the-length) 1))))
+@end smalllisp
+
+Which can also be written:
+
+@smalllisp
+(regular-grammar ()
+   ((: #\" (* (out #\")) #\")
+    (the-substring 1 -1)))
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo rgc procedure} the-character
+@deffnx {bigloo rgc procedure} the-byte
+Returns the first character of a match (respectively, the first byte).
+@end deffn
+
+@deffn {bigloo rgc procedure} the-byte-ref n
+Returns the @var{n}-th bytes of the matching string.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-symbol
+@deffnx {bigloo rgc procedure} the-downcase-symbol
+@deffnx {bigloo rgc procedure} the-upcase-symbol
+@deffnx {bigloo rgc procedure} the-subsymbol start length
+Convert the last matching string into a symbol. The function 
+@code{the-subsymbol} obeys the same rules as @code{the-substring}.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-keyword
+@deffnx {bigloo rgc procedure} the-downcase-keyword
+@deffnx {bigloo rgc procedure} the-upcase-keyword
+Convert the last matching string into a keyword.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-fixnum
+The conversion of the last matching string to fixnum.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-flonum
+The conversion of the last matching string to flonum.
+@end deffn
+ 
+@deffn {bigloo rgc procedure} the-failure
+Returns the first char that the grammar can't match or the end of file
+object.
+@end deffn
+
+@deffn {bigloo rgc procedure} ignore
+Ignore the parsing, keep reading. It's better to use @code{(ignore)}
+rather than an expression like @code{(read/rp @var{grammar} @var{port})}
+in semantics actions since the @code{(ignore)} call will be done in a
+tail recursive way. For instance,
+ 
+@smalllisp
+(let ((g (regular-grammar ()
+            (")" 
+             '())
+            ("(" 
+             (let* ((car (ignore))
+                    (cdr (ignore)))
+                (cons car cdr)))
+            ((+ (out "()"))
+             (the-string))))
+      (p (open-input-string "(foo(bar(gee)))")))
+   (read/rp g p))
+   @result{} ("foo" ("bar" ("gee")))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo rgc procedure} rgc-context [context]
+If no @var{context} is provide, this procedure reset the reader context
+state. That is the reader is in no context. With one argument, @code{context}
+set the reader in the context @var{context}. For instance,
+
+@smalllisp
+(let ((g (regular-grammar ()
+            ((context foo "foo") (print 'foo-bis))
+            ("foo" (rgc-context 'foo) (print 'foo) (ignore))
+            (else 'done)))
+      (p (open-input-string "foofoo")))
+   (read/rp g p))
+   @print{} foo
+      foo-bis
+@end smalllisp
+
+Note that RGC context are preserved across different uses of @code{read/rp}.
+@end deffn
+
+@deffn {bigloo rgc procedure} the-context
+Returns the value of the current Rgc context.
+@end deffn
+
+@c  @deffn {bigloo rgc procedure} the-submatch number                  @c
+@c  Get the submatch numbered @var{number}. Submatch are computed by the  @c
+@c  @code{submatch} construction. For instance,                        @c
+@c                                                                     @c
+@c  @smalllisp                                                         @c
+@c  (let ((g (regular-grammar ()                                       @c
+@c              ((: (submatch (* digit)) "." (submatch (* digit)))     @c
+@c               (cons (the-submatch 1) (the-submatch 2)))))           @c
+@c        (p (open-input-string "3.1415")))                            @c
+@c     (print (read/rp g p)))                                          @c
+@c     @print{} ("3" . "1415")                                         @c
+@c  @end smalllisp                                                     @c
+@c                                                                     @c
+@c  @end deffn                                                         @c
+
+
+@c -- Options and user definitions ----------------------------------- @c
+@node Options and user definitions, Examples of Regular Grammar, The Semantics Actions, Regular Parsing
+@comment  node-name,  next,  previous,  up
+@section Options and user definitions
+
+Options act as parameters that are transmitted to the parser on the call
+to @code{read/rp}. Local defines are user functions inserted in the produced
+parser, at the same level as the pre-defined @code{ignore} function.
+
+Here is an example of grammar using both
+
+@smalllisp
+(define gram
+   (regular-grammar (x y)
+      
+      (define (foo s)
+	 (cons* 'foo x s (ignore)))
+      (define (bar s)
+	 (cons* 'bar y s (ignore)))
+
+      ((+ #\a) (foo (the-string)))
+      ((+ #\b) (bar (the-string)))
+      (else '())))
+@end smalllisp
+
+This grammar uses two options @var{x} and @var{y}. Hence when invokes it
+takes two additional values such as:
+
+@smalllisp
+(with-input-from-string "aabb"
+   (lambda ()
+      (read/rp gram (current-input-port) 'option-x 'option-y)))
+   @result{} (foo option-x aa bar option-y bb)
+@end smalllisp
+
+
+@c -- Examples of regular grammar ------------------------------------ @c
+@node Examples of Regular Grammar,  , Options and user definitions, Regular Parsing
+@comment  node-name,  next,  previous,  up
+@section Examples of regular grammar
+@cindex examples of regular grammar
+The reader who wants to find a real example should read the code of
+Bigloo's reader. But here are small examples
+
+@subsection Word count
+The first example presents a grammar that simulates the Unix program @code{wc}.
+@smalllisp
+(let ((*char* 0)
+      (*word* 0)
+      (*line* 0))
+   (regular-grammar ()
+      ((+ #\Newline)
+       (set! *char* (+ *char* (the-length)))
+       (set! *line* (+ *line* (the-length)))
+       (ignore))
+      ((+ (in #\space #\tab))
+       (set! *char* (+ *char* (the-length)))
+       (ignore))
+      ((+ (out #\newline #\space #\tab))
+       (set! *char* (+ *char* (the-length)))
+       (set! *word* (+ 1 *word*))
+       (ignore))))
+@end smalllisp
+
+@subsection Roman numbers
+The second example presents a grammar that reads Arabic and Roman number.
+@smalllisp
+(let ((par-open 0))
+   (regular-grammar ((arabic (in ("09")))
+                     (roman  (uncase (in "ivxlcdm"))))
+      ((+ (in #" \t\n"))
+       (ignore))
+      ((+ arabic)
+       (string->integer (the-string)))
+      ((+ roman)
+       (roman->arabic (the-string)))
+      (#\(
+       (let ((open-key par-open))
+          (set! par-open (+ 1 par-open))
+          (context 'pair)
+          (let loop-pair ((walk (ignore))) 
+             (cond
+                ((= open-key par-open)
+                 '())
+                (else
+                 (cons walk (loop-pair (ignore))))))))
+      (#\)
+       (set! par-open (- par-open 1))
+       (if (< par-open 0)
+           (begin
+              (set! par-open 0)
+              (ignore))
+           #f))
+      ((in "+-*\\")
+       (string->symbol (the-string)))
+      (else
+       (let ((char (the-failure)))
+          (if (eof-object? char)
+              char
+              (error "grammar-roman" "Illegal char" char))))))
+@end smalllisp

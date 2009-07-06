@@ -1,0 +1,185 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/struct.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 10:52:58 1998                          @c
+@c    Last change :  Mon Nov 12 15:24:35 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Structures                                                       @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Structures                                                       @c
+@c ------------------------------------------------------------------- @c
+@node Structures and Records, Object System, Fast search, Top
+@comment  node-name,  next,  previous,  up
+@chapter Structures and Records
+
+Bigloo supports two kinds of enumerated types: the @emph{structures} and
+the @emph{records}. They offer similar facilities. Structures were 
+pre-existing to records and they are maintained mainly for backward
+compatiblity. Recors are compliant with the Scheme request for 
+implementation 9.
+
+@menu 
+* Structures::
+* Records (SRFI-9)::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Structures                                                       @c
+@c ------------------------------------------------------------------- @c
+@node Structures, Records (SRFI-9), , Structures and Records
+@comment  node-name,  next,  previous,  up
+@section Structures
+@cindex structures
+There is, in Bigloo, a new class of objects: 
+structures, which are equivalent to C @code{struct}.
+
+@deffn {bigloo syntax} define-struct name field@dots{}
+
+This form defines a structure with name @var{name}, which is a symbol,
+having fields @var{field}@dots{} which are symbols or lists, each
+list being composed of a symbol and a default value. This form creates
+several functions: creator, predicate, accessor and assigner functions. The
+name of each function is built in the following way:
+@itemize @bullet
+@item Creator: @code{make-@var{name}}
+@item Predicate: @code{@var{name}?}
+@item Accessor: @code{@var{name}-@var{field}}
+@item Assigner: @code{@var{name}-@var{field}-set!}
+@end itemize
+
+Function @code{make-@var{name}} accepts an optional argument. If
+provided, all the slots of the created structures are filled with it. The
+creator named @code{name} accepts as many arguments as the number of
+slots of the structure. This function allocates a structure and fills
+each of its slots with its corresponding argument.
+
+If a structure is created using @code{make-@var{name}} and no initialization
+value is provided, the slot default values (when provided) are used
+to initialize the new structure. For instance, the execution of the program:
+
+@smalllisp
+(define-struct pt1 a b)
+(define-struct pt2 (h 4) (g 6))
+
+(make-pt1)
+   @result{} #@{PT1 () ()@}
+(make-pt1 5)
+   @result{} #@{PT1 5 5@}
+(make-pt2)
+   @result{} #@{PT2 4 6@}
+(make-pt2 5)
+   @result{} #@{PT2 5 5@}
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} struct? obj
+Returns @code{#t} if and only if @var{obj} is a structure.
+@end deffn
+
+ 
+@c ------------------------------------------------------------------- @c
+@c    Records                                                          @c
+@c ------------------------------------------------------------------- @c
+@node Records (SRFI-9), , Structures, Structures and Records
+@comment  node-name,  next,  previous,  up
+@section Records (SRFI-9)
+@cindex records
+@cindex SRFI-9
+
+Bigloo supports records has specified by SRFI-9. This section is a copy
+of the SRFI-9 specification by Richard Kelsey. This SRFI describes
+syntax for creating new data types, called record types.  A predicate,
+constructor, and field accessors and modifiers are defined for each
+record type.  Each new record type is distinct from all existing types,
+including other record types and Scheme's predefined types.
+
+@deffn {syntax} define-record-type expression@dots{}
+
+The syntax of a record-type definition is: 
+
+@smallexample
+<record-type-definition> @expansion{} (@code{define-record-type} <type-name>
+                                         (<constructor-name> <field-tag> ...)
+                                         <predicate-name>
+                                         <field-spec> ...)
+<field-spec>             @expansion{} (<field-tag> <accessor-name>)
+                           | (<field-tag> <accessor-name> <modifier-name>)
+<field-tag>              @expansion{} <identifier>
+<accessor-name>          @expansion{} <identifier>
+<predicate-name>         @expansion{} <identifier>
+<modifier-name>          @expansion{} <identifier>
+<type-name>              @expansion{} <identifier>
+@end smallexample
+
+@code{Define-record-type} is generative: each use creates a new record
+type that is distinct from all existing types, including other record
+types and Scheme's predefined types. Record-type definitions may only
+occur at top-level (there are two possible semantics for `internal'
+record-type definitions, generative and nongenerative, and no consensus
+as to which is better).
+
+an instance of @code{define-record-type} is equivalent to the following
+definitions:
+
+
+@itemize @bullet
+@item @code{<type-name>}
+is bound to a representation of the record type itself. Operations on
+record types, such as defining print methods, reflection, etc. are left
+to other SRFIs.
+
+@item @code{<constructor-name>}
+is bound to a procedure that takes as many arguments as the
+re are @code{<field-tag>}s in the @code{(<constructor-name> ...)} subform 
+and returns a new @code{<type-name>} record. Fields whose tags are listed 
+with @code{<constructor-name>} have the corresponding argument as their 
+initial value. The initial values of all other fields are unspecified. 
+
+@item @code{<predicate-name>}
+is a predicate that returns @code{#t} when given a value returned by
+@code{<constructor-name>} and @code{#f} for everything else.
+
+@item Each @code{<accessor-name>} is a procedure that takes a record of 
+type @code{<type-name>} and returns the current value of the corresponding 
+field. It is an error to pass an accessor a value which is not a record 
+of the appropriate type. 
+
+@item Each @code{<modifier-name>} is a procedure that takes a record of 
+type @code{<type-name>} and a value which becomes the new value of the 
+corresponding field; an unspecified value is returned. It is an error 
+to pass a modifier a first argument which is not a record of the appropriate 
+type. 
+@end itemize
+
+Records are disjoint from the types listed in Section 4.2 of R5RS. 
+
+Seting the value of any of these identifiers has no effect on the
+behavior of any of their original values.
+
+The following 
+
+@smalllisp
+(define-record-type pare
+    (kons x y)
+    pare?
+    (x kar set-kar!)
+    (y kdr))
+@end smalllisp
+
+defines @code{kons} to be a constructor, @code{kar} and @code{kdr} to be 
+accessors, @code{set-kar!} to be a modifier, and @code{pare?} to be a 
+predicate for @code{pare}s. 
+
+@smalllisp
+  (pare? (kons 1 2))        @result{} #t
+  (pare? (cons 1 2))        @result{} #f
+  (kar (kons 1 2))          @result{} 1
+  (kdr (kons 1 2))          @result{} 2
+  (let ((k (kons 1 2)))
+    (set-kar! k 3)
+    (kar k))                @result{} 3
+@end smalllisp
+@end deffn

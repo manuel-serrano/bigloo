@@ -1,0 +1,51 @@
+.TH BGLPROF 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bglprof \- display call graph profile data for Bigloo programs
+
+.SH SYNOPSIS
+.B bglprof
+[ options ]
+[ \fIobjfile\fR [ \fIgmon.out\fR ] ] 
+
+.SH DESCRIPTION
+
+.B bglprof
+is a front-end to the \fBgprof\fR program. Any option that applied to 
+\fBgprof\fR suits for \fBbglprof\fR. \fBbglprof\fR reads an extra monitoring
+file, the \fIbmon.out\fR file. This file is generated when executing a
+program that has been linked by \fBBigloo\fR making use of the \fI-p\fR
+option. See the \fBglprof\fR manual for an detailed documentation.
+
+.SH OPTIONS
+
+.TP 5
+.TP
+\fB-v \fR
+verbose mode.
+
+.SH "EXAMPLE"
+
+Here is the sequence of commands to get a Bigloo profile:
+
+.sp 0
+$ bigloo foo.scm -p -unsafe -O4 -c
+.sp 0
+$ bigloo foo.o -p -unsafe -O4 -c -o a.out
+.sp 0
+$ ./a.out
+.sp 0
+$ bglprof
+.sp 0
+
+.SH "SEE ALSO"
+bigloo(1), prof(1), gprof(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

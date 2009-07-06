@@ -1,0 +1,232 @@
+=head1 NAME
+
+README.aix - Instaling bigloo on an AIX system.
+
+=head1 Some data
+
+ Initial date of writing   : January 14, 2004, by Manuel Serrano
+ Last date of modification : January 14, 2004, by Hans Oesterholt-Dijkema
+
+This readme is in Plain Old Documentation (POD) format.
+It can be processed by Perl's C<pod2html>, or by 
+Hans Oesterholt's C<spod2html> (which at the moment of writing
+has not yet entered the public domain). To convert the document using
+C<spod2html> use 'C<spod2html --comment README.aix>'. It will generate
+C<README.aix.html>.
+
+=head1 Introduction
+
+In this readme I will supply a recipe to compile C<bigloo> on AIX 4.3.3,
+using the native cc compiler. 
+
+=head2 Things of interest
+
+=over 1
+
+=item * 
+You need to use cc_r, as C<bigloo> uses threads
+and on AIX cc_r links to the "thread-safe" libraries.
+
+=item * 
+The GC distributed with C<bigloo> won't configure
+on AIX. You need to compile a separate GC of Hans Boehm and
+supply the library to C<bigloo>. Note you need to edit the
+C<configure> script for this. See the section on the GC.
+
+=item * 
+In this README, C<bigloo> is installed in <$HOME/bigloo>.
+Libraries are installed in <$HOME/local>, some supporting binaries
+are installed in C<$HOME/bin>. You should alter these
+paths if you want C<bigloo> to reside elsewhere.
+
+=item * 
+You need some extra scripts to get C<bigloo> configured
+and especially, to get a shared variant of C<bigloo>. 
+
+=item * 
+I use C<$BIGLOODIR> as the directory where the sources
+of C<bigloo> reside.
+
+=item * 
+This readme applies to a C<bigloo> that was compiled using 
+the VAC AIX cc_r compiler, version 5. It was compiled on an
+IBM P660 with 2GB of memory and 2 PowerPC processors. The OS
+version was AIX 4.3.3, patch level 9.
+
+=back
+
+=head1 Configuring the GC
+
+=head2 Compiling Hans Boehm's GC
+
+I used Hans Boehm's GC version 6.2 on AIX. I did following
+to get it working:
+
+ ./configure --prefix=$HOME/local CC=cc_r \
+       CFLAGS="-qinfo=pro -qinfo=use -bdynamic -brtl" \
+       --cache-file=/dev/null --srcdir=.
+ make
+ make check
+ make install
+ cp -R include/private $HOME/local/include/gc
+ cp .libs/libgc.exp $HOME/local/lib
+
+=head2 Configuring C<bigloo> with the external GC
+
+You need to alter the C<configure> script of C<bigloo> to configure
+the external GC. I did it as follows:
+
+ #*--- gc source directory (left blank for default configuration) ------*/
+ customgc=no
+ # the following two variables are relevant only when using 
+ # standard (i.e. already existing and operational) Boehm's GC
+ # and when customgc=no
+ stdgclib=gc
+ stdgcdir=$HOME/local/include/gc
+
+=head1 Extra scripts to get C<bigloo> configured/compiled
+
+=head2 A wrapper for AIX C<as> 
+
+There are assemblers (like gnu as) that are able to C Pre Process
+a file. Not so with the AIX as (after all, IBM products are never
+easy).  It turns out that a preprocessing assembler can easily be
+faked by the following script:
+
+ #!/bin/sh
+
+ INARGS=$*
+ ASFILE=""
+ ARGS=""
+
+ for i in $INARGS
+ do
+	 AS=`echo $i | grep -i "\.s$"`
+	 if [ "$AS" != "" ]; then
+		 ASFILE="$AS"
+		 ARGS="$ARGS /tmp/tmp.s"
+	 else
+		 ARGS="$ARGS $i"
+	 fi
+ done
+
+ cc -E $ASFILE | grep -v "^#line" >/tmp/tmp.s
+ as $ARGS
+
+I called the script C<basm> (C<bigloo> asm). C<autoconf/ascpp> is
+trying to run C<$PWD/../bin/basm> in the 2.6c-alpha package.
+
+=head2 A wrapper to link shared libraries on AIX
+
+AIX needs special linking for shared objects and libraries. Normally,
+the C<"-bnoentry -bexpall -bM:SRE"> options would do, but bigloo uses
+some functions and variables with leading underscores. These won't be
+exported by using the C<-bexpall> option. As suggested by Hans Oesterholt, 
+an easy way to solve the problem is to use the folowing Perl script for linker:
+
+ #!/usr/bin/perl
+ 
+ my @ARGS=();
+ 
+ while (my $arg=shift @ARGV) {
+	 push @ARGS,$arg;
+	 if ($arg eq "-o") {
+		 $shlib=shift @ARGV;
+		 push @ARGS,$shlib;
+	 }
+ }
+
+ my $lib=$shlib;
+ $lib=~s/\.so$/.a/;
+ my $exp=$shlib;
+ $exp=~s/\.so$/.exp/;
+
+ if (-e $lib) {
+	 open IN,"nm $lib |";
+	 open OUT,">$exp";
+	 while (<IN>) {
+		 my $name=isexp($_);
+		 if ($name ne "") {
+			 print OUT "$name\n";
+		 }
+	 }
+	 close OUT;
+	 close IN;
+	 $linkopt="-bE:$exp";
+ }
+ else {
+	 $linkopt="-bexpall";
+	 print "WARNING(aixld.pl)! No $lib exists, note: -bexpall does not export symbols with leading '_'\n";
+ }
+
+ system("cc_r",@ARGS,$linkopt);
+
+ sub isexp {
+	 my $line=shift;
+	 my ($name,$type,$rest)=split /\s+/,$line;
+
+	 $name="", if ($type eq "u");
+	 $name="", if ($type eq "U");
+	 $name="", if ($type eq "d");	
+	 $name="", if ($type eq "f");
+	 $name="", if ($type eq "t");
+	 $name="", if ($type eq "T");
+	 $name="", if ($type eq "b");
+	 $name="", if ($type eq "a");
+	 $name="", if ($type eq "");
+ return $name;
+ }
+
+Though not efficient, it is sufficient. This script hopes to find a static library
+at the place, the shared libraries is being made. The static library notably has all 
+symbols in it.  This script does an C<nm> on the static library (which should already 
+exist) and then exports all global text/data symbols in it.  I called the script 
+C<aixshld.pl> and put it in C<$HOME/bin>. NB. It will utterly fail when making a
+shared object/library with symbols with leading underscores in it, if no static 
+library (archive) of it exists. So this script does fit in the making process of C<bigloo>
+but cannot be used for general shared linking. 
+
+It could be an idea to enhance the script to examine all object files supplied to
+the linker, instead of an assumed static library.
+
+=head1 configuring C<bigloo>
+
+With the C<basm> script in C<$BIGLOODIR/../bin>, and C<aixshld.pl> in C<$HOME/bin>
+C<bigloo> could be configured as follows:
+
+ ./configure --prefix=$HOME/C<bigloo> --native=yes --jvm=no --dotnet=no --customgc=no \
+        --cc=cc_r --ld="$HOME/bin/aixshld.pl -L$HOME/local/lib -lgc" \
+        --cflags="-qcpluscmt -I$HOME/local/include -L$HOME/local/lib" \
+        --coflags="-qmaxmem=16384 -O -I$HOME/local/include -L$HOME/local/lib" \
+        --sharedbde=yes --as=$PWD/tools/basm
+
+Please note the C<-qcpluscmt> option. Some files use C++ '//' comments. Of course
+the IBM cc compiler won't accept '//' by default. Also note the C<-qmaxmem=16384>
+option. The cc optimizer uses a maximum of 2048KB memory per default. This won't
+be enough for the optimizer.
+
+=head1 Building C<bigloo>
+
+I didn't try any other options. The C<bigloo> debugger will probably not work, as AIX
+works with the C<dbx> debugger, not C<gdb>. I didn't try bee.
+
+=head2 Making it
+
+To make C<bigloo>, after configuring it, just type:
+
+ make
+ make test
+ make install
+
+=head2 Testresults
+
+On my AIX machine, only one test failed: the process(kill) test.  I had to
+comment out the process(kill) test. After that all tests passed. I don't know what
+is the problem with process(kill). Somehow the killed process stays in the process
+table? I never experienced problems with kill on AIX using C or Perl.
+
+=head1 Authors
+
+Manuel Serrano <Manuel.Serrano@sophia.inria.fr>, Hans Oesterholt-Dijkema <hdnews@gawab.com>
+
+

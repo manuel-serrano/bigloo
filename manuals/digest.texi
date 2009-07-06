@@ -1,0 +1,86 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/digest.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Dec 16 07:09:05 2006                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2006 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Digest                                                           @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Digest                                                           @c
+@c ------------------------------------------------------------------- @c
+@node Digest, Internet, Date, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Digest
+@cindex Digest
+@cindex base64
+@cindex md5
+@cindex sha1
+
+@deffn {bigloo procedure} base64-encode string [padding 64]
+@deffnx {bigloo procedure} base64-decode string
+@cindex base64
+Encodes (respec. decodes) a string into a base64 representation.
+@end deffn
+
+@deffn {bigloo procedure} base64-encode-port input-port output-port [padding 64]
+@deffnx {bigloo procedure} base64-decode-port input-port output-port
+@cindex base64
+Encodes (respec. decodes) an input port into a base64 representation.
+@end deffn
+
+@deffn {bigloo procedure} pem-read-file file-name
+@deffnx {bigloo procedure} pem-decode-port input-port output-port
+Reads a PEM (Privacy Enhanced Mail) base64 encoded file.
+@end deffn
+
+@deffn {bigloo procedure} md5sum obj
+@deffnx {bigloo procedure} md5sum-string string
+@deffnx {bigloo procedure} md5sum-mmap mmap
+@deffnx {bigloo procedure} md5sum-file string
+@deffnx {bigloo procedure} md5sum-port input-port
+Computes MD5 message digest.
+
+The function @code{md5sum} dispatches over its argument and invokes the
+ad-hoc function. That is, it invokes @code{md5sum-string} if its 
+argument is a string, @code{md5sum-mmap} if it is a mmap, 
+@code{md5sum-port} if its argument is an input port.
+@end deffn
+
+@deffn {bigloo procedure} hmac-md5sum-string key string
+Computes the Hmac MD5 authentication:
+
+@smalllisp
+(hmac-md5sum-string (make-string 16 #a011) "Hi There") 
+  @result{} "9294727a3638bb1c13f48ef8158bfc9d"
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} cram-md5sum-string user key string
+Challenge-Response Authentication Mechanism as specified in RFC 2195.
+
+The function @code{cram-md5sum-string} assumes that data is base64 encoded.
+The result is also base64 encoded.
+@end deffn
+
+@deffn {bigloo procedure} sha1sum obj
+@deffnx {bigloo procedure} sha1sum-string string
+@deffnx {bigloo procedure} sha1sum-mmap mmap
+@deffnx {bigloo procedure} sha1sum-file string
+@deffnx {bigloo procedure} sha1sum-port input-port
+Computes SHA1 message digest.
+
+The function @code{sha1sum} dispatches over its argument and invokes the
+ad-hoc function. That is, it invokes @code{sha1sum-string} if its 
+argument is a string, @code{sha1sum-mmap} if it is a mmap, 
+@code{sha1sum-port} if its argument is an input port.
+@end deffn
+
+@deffn {bigloo procedure} hmac-sha1sum-string key string
+Computes the Hmac SHA1 authentication:
+@end deffn
+
+

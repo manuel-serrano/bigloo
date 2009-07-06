@@ -1,0 +1,233 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/info                        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 15:12:37 1999                          */
+#*    Last change :  Tue Oct  8 11:18:15 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the info setting.                                          */
+#*=====================================================================*/
+
+makeinfo=makeinfo
+texi2dvi=texi2dvi
+texi2dviopt=-b
+texi2pdf=texi2pdf
+texi2html=texi2html
+texi2htmlopt=
+res=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    Prevent erroneous user customization                             */
+#*---------------------------------------------------------------------*/
+TEXINPUTS=
+export TEXINPUTS
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --makeinfo=*|-makeinfo=*)
+      makeinfo="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --texi2dvi=*|-texi2dvi=*)
+      texi2dvi="`echo $1 | sed 's/^[-a-z0-9]*=//'`";;
+
+    --texi2dviopt=*|-texi2dviopt=*)
+      texi2dviopt="`echo $1 | sed 's/^[-a-z0-9]*=//'`";;
+
+    --texi2pdf=*|-texi2pdf=*)
+      texi2pdf="`echo $1 | sed 's/^[-a-z0-9]*=//'`";;
+
+    --texi2html=*|-texi2html=*)
+      texi2html="`echo $1 | sed 's/^[-a-z0-9]*=//'`";;
+
+    --texi2htmlopt=*|-texi2htmlopt=*)
+      texi2htmlopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=actest$user
+
+cat > $file.texi <<EOF
+\input texinfo
+@settitle Bdb @value{edition}
+
+@footnotestyle separate
+@ifinfo
+@paragraphindent 2
+@end ifinfo
+@finalout
+
+@set edition 0.0
+@set update-month Jun 1998
+@set update-date 0 @value{update-month}
+
+@ifinfo
+toto
+@end ifinfo
+
+@setchapternewpage odd
+
+@shorttitlepage Bdb
+
+@titlepage
+@title Bdb
+@subtitle The Bigloo Debugger
+@subtitle @value{update-month}
+
+@author Manuel@: Serrano
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1998 
+by Manuel Serrano
+                                                                     
+Bug descriptions, use reports, comments or suggestions are     
+welcome. Send them to Manuel Serrano --- @email{Manuel.Serrano@@unice.fr}
+@end titlepage
+
+@ifinfo
+@node Top, Copying, (dir), (dir)
+@menu
+* Copying::                     
+@end menu
+@end ifinfo
+
+@node Copying, , Top, Top
+@unnumbered Bdb Copying Conditions
+
+@email{toto}
+@url{titi}
+
+@bye
+EOF
+
+
+# the info version
+sh -c "$makeinfo $file.texi" > /dev/null 2> /dev/null
+
+if [ $? = "0" ];then
+   res="makeinfover=new"
+else
+   cat > $file.texi <<EOF
+\input texinfo
+@settitle Bdb @value{edition}
+
+@footnotestyle separate
+@ifinfo
+@paragraphindent 2
+@end ifinfo
+@finalout
+
+@set edition 0.0
+@set update-month Jun 1998
+@set update-date 0 @value{update-month}
+
+@ifinfo
+toto
+@end ifinfo
+
+@setchapternewpage odd
+
+@shorttitlepage Bdb
+
+@titlepage
+@title Bdb
+@subtitle The Bigloo Debugger
+@subtitle @value{update-month}
+
+@author Manuel@: Serrano
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1998 
+by Manuel Serrano
+                                                                     
+Bug descriptions, use reports, comments or suggestions are     
+welcome. Send them to Manuel Serrano --- @email{Manuel.Serrano@@unice.fr}
+@end titlepage
+
+@ifinfo
+@node Top, Copying, (dir), (dir)
+@menu
+* Copying::                     
+@end menu
+@end ifinfo
+
+@node Copying, , Top, Top
+@unnumbered Bdb Copying Conditions
+
+@bye
+EOF
+   sh -c "$makeinfo $file.texi" > /dev/null 2> /dev/null
+   if [ $? != "0" ];then
+      echo "makeinfo=";
+      rm -f $file.texi 
+      rm -f $file.dvi
+      rm -f $file.html 
+      rm -f $file.info 
+      rm -f $file.log 
+      exit 1
+   fi
+   rm -f $file.texi 
+   rm -f $file.dvi
+   rm -f $file.html 
+   rm -f $file.info 
+   rm -f $file.log 
+   echo "makeinfover=old texi2dvi= texi2dviopt= texi2pdf= texi2html="
+   exit 0
+fi
+
+# texi2dvi
+sh -c "$texi2dvi $texi2dviopt $file.texi" > /dev/null 2> /dev/null
+
+if [ $? = "0" ];then
+   res="$res texi2dvi=$texi2dvi texi2dviopt=$texi2dviopt"
+else
+   res="$res texi2dvi= texi2dviopt="
+fi
+
+# texi2html
+sh -c "$texi2html $texi2htmlopt $file.texi" > /dev/null 2> /dev/null
+
+if [ $? = "0" ];then
+   res="$res texi2html=$texi2html"
+else
+   res="$res texi2html="
+fi
+
+# texi2pdf
+sh -c "$texi2pdf $file.texi" > /dev/null 2> /dev/null
+
+if [ $? = "0" ];then
+   res="$res texi2pdf=$texi2pdf"
+else
+   res="$res texi2pdf="
+fi
+
+rm -f $file.texi 
+rm -f $file.dvi
+rm -f $file.pdf
+rm -f $file.html 
+rm -f $file.info 
+rm -f $file.log 
+rm -f $file.toc 
+echo $res
+exit 0

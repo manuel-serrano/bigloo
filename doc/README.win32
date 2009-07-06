@@ -1,0 +1,25 @@
+This README describes how to use regular (that is, the C back-end)
+Bigloo on Win32 platform. For documentation about the Jvm pre-compiled
+Bigloo version, see the README.jvm file.
+
+If you plan to configure the Jvm back-end for win32+cygwin, pay attention
+to the `cygwindospath' value. Check out if the location where cygwin is
+installed is correctly handled by the configure script. If configure is
+not able to find out the correct value, use the --cygwin-dos-path option.
+The value must be a *dos* path (not a posix path) such as:
+
+   ./configure --cygwin-dos-path=C:\\cygwin
+
+The option "--cygwin-dos-jvm=[yes|no]" tells the configuration script the
+nature of JVM used. In particular "--cygwin-dos-jvm=yes" (which is the
+default setting) indicates that the installed JVM uses a DOS syntax
+for specifying the class path (e.g.; .;c:\\...;... instead of
+.:/cygdrive/c:...).
+
+WinZip Note: If you used WinZip to extract files from the tarball and
+plan to run the set of test programs in the recette sub-directory,
+please make sure that these files where not extracted with the "TAR
+file smart CR/LF conversion" option enabled (menu Options |
+Configuration, tab Miscellaneous). If so, CR characters marking the
+end of lines in text files have been replaced by CR+LF, which will
+prevent some tests to complete and report an error.

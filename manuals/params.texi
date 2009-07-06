@@ -1,0 +1,115 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/params.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Nov  1 06:17:37 2004                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2004 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Parameters                                                       @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Macro expansion                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Parameters, Explicit Typing, Macro Expansion, Top
+@comment  node-name,  next,  previous,  up
+@chapter Parameters
+@cindex parameters
+
+The Bigloo parameters drive the global behavior programs. A parameter
+is accessed via a pair of functions: a reader and a setter. The type of 
+the value is given, in this documentation, by the name of the parameter of 
+the setter.
+
+@c -- bigloo-strict-r5rs-strings ------------------------------------- @c
+@deffn {bigloo function} bigloo-strict-r5rs-strings
+@deffnx {bigloo function} bigloo-strict-r5rs-strings-set! boolean
+@cindex string escape characters
+
+Traditional syntax conforms to the Revised Report if the parameter
+@code{bigloo-strict-r5rs-strings} is not @code{#f}. Otherwise
+constant strings specified by the @code{"([^"]|\")*"} are considered
+as foreign strings.
+
+
+For example, after reading the expression 
+@code{"1\n23\t4\"5"}, the following string is built, which is equal to
+@code{(string #\1 #\n #\2 #\3 #\t #\4 #\" #\5)} if 
+@code{(bigloo-strict-r5rs-strings)} is not @code{#f}. It is 
+@code{(string #\1 #\n #\2 #\3 #\tab #\4 #\" #\5)} otherwise.
+
+Printing this string will produce: @code{1n23t4"5}.
+
+@c The new foreign syntax allows C escape sequences to be recognized as in:
+@c @code{#"1\n23\t4\"5"} This expression builds a string equal to:
+
+The new foreign syntax allows C escape sequences to be recognized. For
+example, the expression @code{#"1\n23\t4\"5"} builds a string equal to:
+
+@code{(string #\1 #\newline #\2 #\3 #\t #\4 #\" #\5)}
+
+@noindent and printing this string will then produce: 
+@smalllisp
+1
+23    4"5
+@end smalllisp
+@end deffn
+
+@c -- bigloo-compiler-debug ------------------------------------------ @c
+@deffn {bigloo function} bigloo-compiler-debug
+@deffnx {bigloo function} bigloo-compiler-debug-set! integer
+@deffnx {bigloo function} bigloo-debug
+@deffnx {bigloo function} bigloo-debug-set! integer
+@deffnx {bigloo function} bigloo-warning
+@deffnx {bigloo function} bigloo-warning-set! integer
+These parameters control the debugging and warning level. 
+The @code{bigloo-compiler-debug} is automatically controlled by the compiler 
+command line @code{-g} option (see @ref{Command Line Parsing}). 
+
+When a program is compiled in debug mode @var{lvl}, the compiler introduces a 
+call to @code{(bigloo-debug-set! lvl)} before the evaluation of the
+first expression.
+
+The @code{bigloo-debug} parameter is used to control traces 
+(see @ref{Tracing}).
+@end deffn
+
+@c -- bigloo-trace-color --------------------------------------------- @c
+@deffn {bigloo function} bigloo-trace-color
+@deffnx {bigloo function} bigloo-trace-color-set! bool
+Enables/disables traces coloring (see @ref{Tracing}).
+@end deffn
+
+@c -- bigloo-trace-stack-depth --------------------------------------- @c
+@deffn {bigloo function} bigloo-trace-stack-depth
+@deffnx {bigloo function} bigloo-trace-stack-depth-set! integer
+Controls the depth of the stack trace to be displayed on errors. With
+systems that supports shell variables (such as Unix) this parameters
+is dynamically adjusted according to the value of the SHELL variable
+@var{BIGLOOSTACKDEPTH}.
+@end deffn
+
+@c -- bigloo-eval-strict-module -------------------------------------- @c
+@deffn {bigloo function} bigloo-eval-strict-module
+@deffnx {bigloo function} bigloo-eval-strict-module-set! bool
+When set to @code{#t} enables eval optimization that inlines operators
+calls. This optimization reduces the memory footprint of an application
+and it reduces the execution time.
+@end deffn
+
+@c -- bigloo-dns-cache ----------------------------------------------- @c
+@deffn {bigloo function} bigloo-dns-enable-cache
+@deffnx {bigloo function} bigloo-dns-enable-cache-set! bool
+
+Enable/disable DNS name caching.
+@end deffn
+
+@c -- bigloo-dns-cache-validity-timeout ------------------------------ @c
+@deffn {bigloo function} bigloo-dns-cache-validity-timeout
+@deffnx {bigloo function} bigloo-dns-cache-validity-timeout-set! integer
+
+Get/set the validity period for the DNS cache entries. It is expressed
+in seconds.
+@end deffn
+

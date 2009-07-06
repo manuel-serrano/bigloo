@@ -1,0 +1,124 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/indent                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Jan  3 10:01:01 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Give the ptr size on the current architecture                    */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+indent=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --indent=*|-indent=*)
+      indent="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if( test "$indent" = "" ); then
+   echo 0
+   exit
+fi
+   
+file=$tmp/indent$user
+aout=$tmp/Xindenttest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+indent="$indent $file.c > $file-indent.c 2> /dev/null"
+compile="$cc $cflags $file-indent.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+   exit( 0 );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    indent                                                           */
+#*---------------------------------------------------------------------*/
+eval $indent 2> /dev/null
+
+rm $file.c
+
+if( test ! -f $file-indent.c ); then
+  echo 0
+  rm -f $file-indent.c
+  exit 0
+fi
+
+if( test ! -s  $file-indent.c ); then
+  echo 0
+  rm -f $file-indent.c
+  exit 0
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   rm -f $file.*
+   rm -f $file-indent.c
+   if( eval $aout ); then
+      rm -f $aout
+      rm -f $aout*
+      echo 1
+   else
+      rm -f $aout
+      rm -f $aout*
+      echo 0
+   fi
+else
+   rm -f $file.*
+   rm -f $file-indent.c
+   rm -f $aout
+   rm -f $aout*
+   echo 0
+fi
+

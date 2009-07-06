@@ -1,0 +1,90 @@
+/* @CONFIGURE@ */
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/autoconf/configure.cs.in             */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Oct 12 09:29:49 2004                          */
+/*    Last change :  Tue Oct 12 14:07:39 2004 (serrano)                */
+/*    Copyright   :  2004 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    .NET configuration                                               */
+/*=====================================================================*/
+
+namespace bigloo {
+public class configure {
+  public static readonly byte[] BGL_RELEASE_NUMBER = foreign.getbytes( "@BGL_RELEASE_NUMBER@" );
+  public static readonly byte[] BGL_HOMEURL = foreign.getbytes( "@BGL_HOMEURL@" );
+  public static readonly byte[] BGL_SPECIFIC_VERSION = foreign.getbytes( "@BGL_SPECIFIC_VERSION@" );
+  public static readonly byte[] BGL_DEFAULT_BACK_END = foreign.getbytes( "@BGL_DEFAULT_BACK_END@" );
+  public static readonly bool STACK_GROWS_DOWN = (@STACK_GROWS_DOWN@ == 1);
+  public static readonly int PTR_ALIGNMENT = @PTR_ALIGNMENT@;
+  public static readonly byte[] SETJMP = foreign.getbytes( "@SETJMP@" );
+  public static readonly byte[] LONGJMP = foreign.getbytes( "@LONGJMP@" );
+  public static readonly bool HAVE_BCOPY = (@HAVE_BCOPY@ == 1);
+  public static readonly int NB_WINDOW_REGISTER = @NB_WINDOW_REGISTER@;
+  public static readonly bool HAVE_SIGSETMASK = (@HAVE_SIGSETMASK@ == 1);
+  public static readonly bool HAVE_SIGPROCMASK = (@HAVE_SIGPROCMASK@ == 1);
+  public static readonly bool HAVE_ALLOCA = (@HAVE_ALLOCA@ == 1);
+  public static readonly bool HAVE_GETCWD = (@HAVE_GETCWD@ == 1);
+  public static readonly bool HAVE_GETWD = (@HAVE_GETWD@ == 1);
+  public static readonly bool CONSTANT_ALIGNED = (@CONSTANT_ALIGNED@ == 1);
+  public static readonly bool BGL_BIG_ENDIAN = (@BGL_BIG_ENDIAN@ == 1);
+  public static readonly bool HAVE_PIPE = (@HAVE_PIPE@ == 1);
+  public static readonly bool HAVE_SIGCHLD = (@HAVE_SIGCHLD@ == 1);
+  public static readonly bool HAVE_SIGACTION = (@HAVE_SIGACTION@ == 1);
+  public static readonly bool BGL_HAVE_SELECT = (@BGL_HAVE_SELECT@ == 1);
+  public static readonly bool HAVE_TERMIO = (@HAVE_TERMIO@ == 1);
+  public static readonly bool HAVE_DLOPEN = (@HAVE_DLOPEN@ == 1);
+  public static readonly bool HAVE_SHARED_LIBRARY = (@HAVE_SHARED_LIBRARY@ == 1);
+  public static readonly byte[] DLOPEN_LD_OPT = foreign.getbytes( "@DLOPEN_LD_OPT@" );
+  public static readonly bool BGL_AUTO_FINALIZER = true;
+  public static readonly byte[] SHELL = foreign.getbytes( "@SHELL@" );
+  public static readonly byte[] BGL_SHELL_MV = foreign.getbytes( "@SHELL_MV@" );
+  public static readonly byte[] BGL_SHELL_RM = foreign.getbytes( "@SHELL_RM@" );
+  public static readonly byte[] C_COMPILER_STYLE = foreign.getbytes( "@C_COMPILER_STYLE@" );
+  public static readonly byte[] C_COMPILER = foreign.getbytes( "@C_COMPILER@" );
+  public static readonly byte[] C_FLAGS = foreign.getbytes( "@C_FLAGS@" );
+  public static readonly byte[] C_COMPILER_O_OPTION = foreign.getbytes( "@C_COMPILER_O_OPTION@" );
+  public static readonly byte[] C_COMPILER_DEBUG_OPTION = foreign.getbytes( "@C_COMPILER_DEBUG_OPTION@" );
+  public static readonly byte[] C_OBJECT_FILE_EXTENSION = foreign.getbytes( "@C_OBJECT_FILE_EXTENSION@" );
+  public static readonly byte[] C_COMPILER_OPTIM_FLAGS = foreign.getbytes( "@C_COMPILER_OPTIM_FLAGS@" );
+  public static readonly byte[] C_STRIP_FLAGS = foreign.getbytes( "@C_STRIP_FLAGS@" );
+  public static readonly byte[] C_LINKER_STYLE = foreign.getbytes( "@C_LINKER_STYLE@" );
+  public static readonly byte[] C_LINKER_O_OPTION = foreign.getbytes( "@C_LINKER_O_OPTION@" );
+  public static readonly byte[] C_LINKER_DEBUG_OPTION = foreign.getbytes( "@C_LINKER_DEBUG_OPTION@" );
+  public static readonly byte[] C_LINKER_OPTIM_FLAGS = foreign.getbytes( "@C_LINKER_OPTIM_FLAGS@" );
+  public static readonly byte[] C_PROFILE_FLAGS = foreign.getbytes( "@C_PROFILE_FLAGS@" );
+  public static readonly bool C_STRING_SPLIT = (@C_STRING_SPLIT@ == 1);
+  public static readonly byte[] LD_LIBRARY_DIR = foreign.getbytes( "@BGL_LD_LIBRARY_DIR@" );
+  public static readonly byte[] LIBRARY_DIRECTORY = foreign.getbytes( "@LIBRARY_DIRECTORY@" );
+  public static readonly byte[] BGL_NON_CUSTOM_GC_DIR = foreign.getbytes( "@BGL_NON_CUSTOM_GC_DIR@" );
+  public static readonly byte[] BGL_GC_LIBRARY = foreign.getbytes( "@BGL_GC_LIBRARY@" );
+  public static readonly bool BGL_GC_CUSTOM = (@BGL_GC_CUSTOM@ == 1);
+  public static readonly byte[] ZIP_DIRECTORY = foreign.getbytes( "@ZIP_DIRECTORY@" );
+  public static readonly byte[] DLL_DIRECTORY = foreign.getbytes( "@DLL_DIRECTORY@" );
+  public static readonly byte[] USER_LIBRARIES = foreign.getbytes( "@USER_LIBRARIES@" );
+  public static readonly byte[] C_BEAUTIFIER = foreign.getbytes( "@C_BEAUTIFIER@" );
+  public static readonly byte[] DIRNAME_CMD = foreign.getbytes( "@DIRNAME_CMD@" );
+  public static readonly byte[] LIBRARY_BASE_NAME = foreign.getbytes( "@LIBRARY_BASE_NAME@" );
+  public static readonly int DOUBLE_PRECISION = @DOUBLE_PRECISION@;
+  public static readonly byte[] ADDITIONAL_STATIC_LINK_OPTION = foreign.getbytes( "@ADDITIONAL_STATIC_LINK_OPTION@" );
+  public static readonly byte[] ADDITIONAL_SHARED_LINK_OPTION = foreign.getbytes( "@ADDITIONAL_SHARED_LINK_OPTION@" );
+  public static readonly bool BGL_HAVE_BIGLOO_ABORT = (@BGL_HAVE_BIGLOO_ABORT@ == 1);
+  public static readonly byte[] BGL_HEAP_DEBUG_COPT = foreign.getbytes( "@BGL_HEAP_DEBUG_COPT@" );
+  public static readonly bool BGL_HAVE_BDB = (@BGL_HAVE_BDB@ == 1);
+  public static readonly byte[] BGL_JAVA = foreign.getbytes( "@BGL_JAVA@" );
+  public static readonly byte[] BGL_JAVA_OPT = foreign.getbytes( "@BGL_JAVA_OPT@" );
+  public static readonly byte[] BGL_JAVA_VOPT = foreign.getbytes( "@BGL_JAVA_VOPT@" );
+  public static readonly byte[] BGL_JAVA_SHELL = foreign.getbytes( "@BGL_JAVA_SHELL@" );
+  public static readonly byte[] BGL_JAR = foreign.getbytes( "@BGL_JAR@" );
+  public static readonly byte[] BGL_DOTNET_LD = foreign.getbytes( "@BGL_DOTNET_LD@" );
+  public static readonly byte[] BGL_DOTNET_LD_STYLE = foreign.getbytes( "@BGL_DOTNET_LD_STYLE@" );
+  public static readonly byte[] BGL_DOTNET_CLR = foreign.getbytes( "@BGL_DOTNET_CLR@" );
+  public static readonly byte[] BGL_DOTNET_CLR_STYLE = foreign.getbytes( "@BGL_DOTNET_CLR_STYLE@" );
+  public static readonly byte[] BGL_DOTNET_CLR_OPT = foreign.getbytes( "@BGL_DOTNET_CLR_OPT@" );
+  public static readonly byte[] BGL_DOTNET_SHELL = foreign.getbytes( "@BGL_DOTNET_SHELL@" );
+  public static readonly byte[] BGL_DOTNET_ASM = foreign.getbytes( "@BGL_DOTNET_ASM@" );
+  public static readonly bool BGL_DNS_CACHE = false;
+  public static readonly byte[] OS_CHARSET = foreign.getbytes( "@OS_CHARSET@" );
+}
+}

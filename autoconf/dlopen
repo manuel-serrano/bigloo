@@ -1,0 +1,99 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/dlopen                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Feb 10 15:40:58 2006 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if dlopen exists                                           */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+dlopt=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --dlopt=*|-dlopt=*)
+      dlopt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout $dlopt >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+   int handle = dlopen( "/dev/null", 0 );
+   dlsym( handle, "toto" );
+   dlclose( handle );
+   return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   echo "$dlopt"
+else
+   compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+   if eval $compile; then
+      \rm -f $file.*
+      rm -f $aout
+      rm -f $aout*
+      echo ""
+   else
+      \rm -f $file.*
+      echo "0"
+   fi
+fi

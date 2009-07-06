@@ -1,0 +1,147 @@
+This directory contains the source files of Bigloo, a Scheme system
+which includes a compiler generating C code, Java classes, and .NET CIL
+files, and an interpreter. Bigloo is the tool of choice for the construction of
+autonomous applications in Scheme. Bigloo is mostly conformant
+to the Revised5 Report on the Algorithmic Language Scheme with many
+extensions:
+        Rgc, a lex facility.
+        Match, a pattern-matching compiler.
+	Foreign languages interface (connection to C and to Java).
+	Module language.
+	Extension package system.
+	An Lalr facility.
+	An Object sytem.
+        A thread library.
+	DSSSL support.
+	Unicode characters and strings.
+	Process, Pipe and Socket support.
+
+The new version of Bigloo (2.xx) comes now with an Integrated Development 
+Environment (the Bee).
+
+To install Bigloo, see the INSTALL file. An ANSI C compiler is required.
+The original version has been developped with GNU CC version 2.7.2
+(Copyright (C) 1988, 1989, 1992 Free Software Foundation, Inc). The
+Bigloo's boot requires around 25 MegaBytes of disk space. Once it is booted,
+the Bigloo system can be reduced to about 7 MegaBytes.
+
+See the "doc" directory for extra hints and information about the Bigloo
+installation process.
+
+To install Bigloo JVM (Java virtual machine byte code) back-end, the JDK 1.1
+or more recent is required. The JVM machine must support the -noverify option
+in order to execute Bigloo produced code. You also need an operational
+zip utility to be installed. If either the JDK or the zip tool is missing,
+the Bigloo JVM back-end can't be configured. 
+
+In order to compile the Bigloo .NET back-end or to compile Bigloo programs
+for .NET, Portable.NET tools version 0.6.0 or greater are required.  In
+order to run Bigloo .NET programs, any CLR implementation like Portable.NET
+0.6.0 or greater, Mono 0.30 or greater or the MS .NET Framework SDK 1.0 or
+1.1 is sufficient.
+
+*** Recent version of the systems can be downloaded from:
+
+   ftp://ftp-sop.inria.fr/mimosa/fp/Bigloo
+
+The compiler distribution consists of several directories:
+
+	bin 		will contain the compiler executable.
+
+	lib		will contain the Bigloo's libraries.
+
+	comptime	contains the sources of the compiler.
+
+	runtime 	contains the sources of the runtime system.
+
+	examples	contains various Bigloo's examples.
+
+	recette		contains compiler and runtime test programs.
+
+	manuals     	contains the documentation of the Bigloo system.
+
+        doc		various documents related to the Bigloo installation.
+
+	etc		contains a emacs-lisp file, an icon for emacs
+			and the orignal package of the garbage collector.
+
+	tools		contains severals tools files required for the boot
+			of Bigloo.
+
+	cigloo  	contains the sources of Cigloo, the C headers to 
+			Bigloo headers translator.
+
+	jigloo  	contains the sources of Jigloo, the JVM classes to 
+			Bigloo headers translator.
+
+	xlib		contains an example of connecting Bigloo and the 
+                        X library.
+
+	contrib		contains the list of currently available Bigloo
+			contributions.
+
+        bde             contains the source code of the Bee (the Bigloo IDE).
+
+        bdb             contains the source code of the Bigloo Debugger.
+
+        bmacs           contains the emacs-lisp part of the Bee.
+
+        tutorials       contains a tutorial that briefly presents the 
+                        capacities of the Bee.
+
+	fthread		contains the Bigloo Fair thread library.
+
+	pthread		contains the Bigloo Posix-like thread library.
+
+	srfi		contains a Bigloo template Makefile for 
+                        building SRFI libraries.
+
+	bdl		contains the Bigloo development library.
+
+	win32		contains scripts for installing JVM Bigloo based 
+			version on win32.
+
+	api		contains various Bigloo libraries.
+
+
+
+I thank all the people who helped me while writing Bigloo, specialy
+Hans J. Boehm (boehm@parc.xerox.com) who wrote the garbage collector,
+Jean-Marie Geffroy (Jean-Marie.Geffroy@inria.fr) who found many bugs
+and who has written `Match', Christan Queinnec
+(Christian.Queinnec@inria.fr) for all his valuable comments and help,
+Dominique Boucher (boucherd@IRO.UMontreal.CA) who wrote the Lalr
+system and some contribs, Jay 'Eraserhead' Felice
+(jfelice@cronosys.com) who added precedence operators to Lalr
+grammars, Stephen J Bevan (bevan@computer-science.manchester.ac.uk),
+Joris Heirbaut (pheirba@tinf3.vub.ac.be) who ported Bigloo under
+Solaris, Drew Whitehouse (Drew.Whitehouse@anu.edu.au) who ported
+Bigloo under Iris Indigo, Luc Moreau (moreau@montefiore.ulg.ac.be),
+Pascal Petit (petit@litp.ibp.fr), Joel Masset (jmasset@dmi.ens.fr) and
+Thierry Saura (Thierry.Saura@inria.fr), Laurent Bloch
+(bloch@pasteur.fr), Christopher Oliver (oliver@fritz.co.traverse.com)
+who pointed me bugs out, Thomas Neumann (tom@smart.bo.open.de) who
+ported Bigloo under NeXT, Olaf Burkart
+(burkart@zeus.informatik.rwth-aachen.de) for his comments on Bigloo,
+John Gerard Malecki (john@vlibs.com) who point me out bugs and
+suggested many improvements, David Gurr (gurr@snap.med.ge.com) who
+points me out bugs, Rodrigo Vanegas (rv@cs.brown.edu) who suggested
+some extensions, Kenneth Dwayne Ray (xray@owlnet.rice.edu) for all its
+suggestions, Michael Sperber (sperber@informatik.uni-tuebingen.de) and
+Vincent Kieffer (kieffer@montefiore.ulg.ac.be) for the AIX port, Dave
+Love (d.love@dl.ac.uk) which fix many bugs, Jacques Garrigue
+(is.s.u-tokyo.ac.jp) which helped me, Marcel Turcotte
+(turcotte@IRO.UMontreal.CA), Alexandre Frey
+(frey@lix.polytechnique.fr), Raj Manandhar
+(Raj.Manandhar@msfc.nasa.gov) which points me bugs or documentation
+problems, Alain Mellan that provide me with the `Format'
+implementation, Dorai Sitaram for his portable implementation of Posix
+regular expressions. I specially thank Barrie Stott who widely
+contributes to the documentation improvements, Erick Gallesio for our
+discussions and for all the code from STk that I have integrated
+inside Bigloo, Frédéric Boussinot for his help collaboration to the
+Bigloo thread library, Bernard Serpette who is the author of the JVM
+back-end and the .NET code generator and Yannis Bres who has
+developped the .NET runtime and who has improved the C and Java
+runtimes. A special attention to Vladimir Tsichevski and Yann Dirson
+for there unestimable help.

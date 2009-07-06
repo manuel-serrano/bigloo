@@ -1,0 +1,120 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/stacksize                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Apr  5 08:43:23 2002                          */
+#*    Last change :  Sat Aug  5 08:24:14 2006 (serrano)                */
+#*    Copyright   :  2002-06 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Check if the stack is large enough for compiling Bigloo.         */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=-O
+tmp=/tmp
+user=bigloo
+stacksize=3
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --stacksize=*|-s=*)
+      stacksize="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+rm -f $aout 2> /dev/null
+rm -f $aout.exe 2> /dev/null
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+int (*fun)();
+int glob;
+
+int foo( int x, int y ) {
+  return x * y;
+}
+
+int bar( int x, int y ) {
+  return x + y;
+}
+
+int ssize( int size ) {
+   glob++;
+
+   if( size == 0 )
+      return 0;
+   else
+      return fun( size, ssize( size - 1 ) );
+}
+
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+   fun = argc > 2 ? &bar : &foo;
+
+   if( ssize( $stacksize * 1024 * 32 ) >= 0 )
+      return 0;
+   else 
+      return argc-1;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+status=1
+if eval $compile; then
+   \rm -f $file.*
+   if eval $aout; then
+     status=0;
+   fi
+fi
+
+rm -f $aout
+rm -f $aout*
+
+exit $status

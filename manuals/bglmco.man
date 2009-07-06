@@ -1,0 +1,50 @@
+.TH BGLMCO 1 "Aug 25 1999" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bglmco \- produces module checksum object files.
+
+.SH SYNOPSIS
+.B bglmco
+[ options ]
+[ sourcefile ]
+
+.SH DESCRIPTION
+
+.B bglmco
+reads \fIsourcefile\fR and produces a module checksum object file.
+This bglmco file is used to ensure modules coherence in Bigloo Makefiles.
+
+.SH OPTIONS
+
+.TP 11
+.TP
+\fB-v\fR
+Verbose mode
+
+.TP
+\fB-v\fR
+Verbose mode.
+
+.TP
+\fB-s\fR
+Silent mode.
+
+.TP
+\fB-o <file>\fR
+The name of the \fIbglmco\fR file to be generated.
+
+.SH "EXAMPLE"
+
+An bglmco is created by ``bglmco foo.scm -o foo.mco''.
+
+.SH "SEE ALSO"
+bigloo(1), bglafile(1), bglmake(1), bgltags(1), makedepend(1), make(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

@@ -1,0 +1,57 @@
+.TH BGLPP 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bglpp \- a Scheme Pretty Printer
+
+.SH SYNOPSIS
+.B bglpp
+[ options ]
+.I sourcefile
+
+.SH DESCRIPTION
+
+.B bglpp
+reads \fIsourcefile\fR one at a time and pretty print them. Normally \fBbglpp\fR
+output its result on the standard output device. 
+
+.SH OPTIONS
+
+.TP 10
+.TP
+\fB-o <file>\fR
+Output files to \fIfile\fR.
+
+.TP
+\fB-comment\fR
+Don't output any Scheme comments.
+
+.TP
+\fB-upper\fR
+Translate identifiers to upper case.
+
+.TP
+\fB-lower\fR
+Translate identifiers to lower case.
+
+.TP
+\fB-w<width>\fR
+Set output device column \fIwidth\fR.
+
+.SH "EXAMPLE"
+
+To pretty print the file ``foo.scm'' translating identifier to lower case,
+for an output device with 50 columns:
+
+``bglpp foo.scm -w50 -lower''.
+
+.SH "SEE ALSO"
+bigloo(1), indent(1), cb(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

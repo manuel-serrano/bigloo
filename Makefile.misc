@@ -1,0 +1,193 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/Makefile.misc                        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Jul  5 10:55:55 2002                          */
+#*    Last change :  Mon Apr 27 15:59:01 2009 (serrano)                */
+#*    Copyright   :  2002-09 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Various misc rules for Bigloo Makefiles.                         */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    dummy                                                            */
+#*---------------------------------------------------------------------*/
+dummy: all
+
+#*---------------------------------------------------------------------*/
+#*    PARAMETER                                                        */
+#*---------------------------------------------------------------------*/
+INSTALL	= cp
+
+#*---------------------------------------------------------------------*/
+#*    Producing shared libraries                                       */
+#*---------------------------------------------------------------------*/
+shared-lib:
+	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
+            if [ "$(LD)" = "true" ]; then \
+              if [ "$(FORCELD)" = "true" ]; then \
+                 echo > $(LIBDEST); \
+              fi; \
+            else \
+	      case $(POSIXOS) in \
+                mingw) \
+                  $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" shared && \
+		  cp $(notdir $(LIBDEST).a) $(LIBDEST).a;; \
+                *) \
+                  $(MAKE) shared || exit 1;; \
+              esac; \
+            fi; \
+          fi
+
+shared:
+	@ $(RM) -f $(LIBDEST)
+	@ (close=""; \
+           if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
+             close="$(CLOSELIBS) $(GCCLOSELIB)"; \
+           fi; \
+           if [ "$(LDINSTALLNAME) " != " " ]; then \
+             if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \
+               ldinstallnamedir=$(LDINSTALLNAMEDIRROOT)/bigloo/$(RELEASE); \
+             else \
+               ldinstallnamedir=$(LDINSTALLNAMEDIR); \
+             fi; \
+	     $(MAKE) shared-install-name \
+                 LDINSTALLNAMEDIR=$$ldinstallnamedir \
+                 LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR) $(LDOPTS)" \
+                 CLOSELIBS="$$close" \
+                 || exit 1; \
+           else \
+             if [ "$(LDSONAME) " = " " ]; then \
+	       $(MAKE) shared-sans-soname \
+                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR) $(LDOPTS)" \
+                   CLOSELIBS="$$close" \
+                   || exit 1; \
+             else \
+	       $(MAKE) shared-soname \
+                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR) $(LDOPTS)" \
+                   CLOSELIBS="$$close" \
+                   || exit 1; \
+             fi \
+           fi)
+
+shared-install-name.tmp:
+	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(LDINSTALLNAME) @loader_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
+                 $(OBJECTS) \
+                 $(GCSTDOBJECTS) \
+                 $(LDFLAGS) \
+                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
+         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
+           mv $(notdir $(LIBDEST)) $(LIBDEST); \
+         fi
+
+shared-install-name:
+	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(LDINSTALLNAME) @executable_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
+                 $(OBJECTS) \
+                 $(GCSTDOBJECTS) \
+                 $(LDFLAGS) \
+                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
+         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
+           mv $(notdir $(LIBDEST)) $(LIBDEST); \
+         fi
+
+shared-sans-soname:
+	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(OBJECTS) \
+                 $(GCSTDOBJECTS) \
+                 $(LDFLAGS) \
+                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
+         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
+           mv $(notdir $(LIBDEST)) $(LIBDEST); \
+         fi
+
+shared-soname:
+	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(LDSONAME)=$(SONAME) \
+                 $(OBJECTS) \
+                 $(GCSTDOBJECTS) \
+                 $(LDOPTS) \
+                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(LDLIBS) $(LDFLAGS) $(LDEXTRA) && \
+         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
+           mv $(notdir $(LIBDEST)) $(LIBDEST); \
+         fi
+
+#*---------------------------------------------------------------------*/
+#*    Installing/uninstalling a Bigloo library                         */
+#*---------------------------------------------------------------------*/
+install-lib: install-static-lib install-shared-lib
+
+install-static-lib:
+	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          $(RANLIB) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
+        fi
+
+install-shared-lib:
+	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
+          if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	    $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
+          fi && \
+          if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
+            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
+	      $(RM) -f $(LIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+              (cd $(LIBDIR) && \
+	       $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
+               $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+                $(LIB).$(SHAREDSUFFIX) \
+               || \
+               $(INSTALL) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+                $(LIB).$(SHAREDSUFFIX)); \
+            fi \
+          fi \
+        fi;
+	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
+	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	    $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
+               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
+	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
+          fi \
+        fi
+
+install-lnlib:
+	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
+           $(RM) -f $(LN).a && \
+           $(LN_S) $(LIB).a $(LN).a && $(RANLIB) $(LN).a) && \
+	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
+           if [ -f $(LIB).$(SHAREDSUFFIX) ]; then \
+             $(RM) -f $(LN).$(SHAREDSUFFIX) && \
+             $(LN_S) $(LIB).$(SHAREDSUFFIX) $(LN).$(SHAREDSUFFIX) && \
+	     if [ -f $(LIB).$(SHAREDSUFFIX).a ]; then \
+	        $(RM) -f $(LN).$(SHAREDSUFFIX).a && \
+	        $(LN_S) $(LIB).$(SHAREDSUFFIX).a $(LN).$(SHAREDSUFFIX).a; \
+	     fi \
+           fi) \
+        fi
+	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
+	  $(RM) -f $(LIBDIR)/$(LN).$(SHAREDSUFFIX) && \
+	  (cd $(LIBDIR) && \
+           if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
+	     $(RM) -f $(LN).$(SHAREDSUFFIX) && \
+             $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+                   $(LN).$(SHAREDSUFFIX) \
+             || \
+             $(INSTALL) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+                $(LN).$(SHAREDSUFFIX); \
+           fi) \
+        fi
+
+uninstall-lib:
+	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
+	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
+	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a
+	$(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX)
+

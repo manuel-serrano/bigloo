@@ -1,0 +1,168 @@
+The H. Boehm's collector supports for finalization. However, the
+default Bigloo configuration disable this feature. If you feel the
+need for such a construction, you can build your own Bigloo version
+with finalization. For this, edit the runtime/Makefile file and remove
+the compilation flag `-DFINALIZE_ON_DEMAND' of the `GCFLAGS'
+variable. Then, you will be able to use the GC_REGISTER_FINALIZER
+macro in your C code (see the gc-boehm/README file for details).
+
+Enabling object finalizations cost about an extra 3% of the execution time.
+This extra cost explains why the default Bigloo configuration disables
+finalizer. 
+
+Here is the patch to be applied to the original distribution
+to have finalizers enabled (many thanks to David Fox):
+
+-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----
+diff -ru bigloo2.1a/runtime/Makefile~ bigloo2.1a/runtime/Makefile
+--- bigloo2.1a/runtime/Makefile~        Fri Oct 15 04:51:34 1999
++++ bigloo2.1a/runtime/Makefile Fri Oct 29 08:37:33 1999
+@@ -86,7 +86,7 @@
+ #*--- GC compilation flags --------------------------------------------*/
+ #  Any change to these flags must be reported on the bdb/blib/Makefile */
+ GCFLAGS                = -O2 -DSILENT -DNO_SIGNALS -DOLD_BLOCK_ALLOC           
+\
+-                  -DFINALIZE_ON_DEMAND -DNO_DEBUGGING
++                  -DNO_DEBUGGING
+ GCOFLAGS       = $(GCFLAGS)
+ GCPFLAGS       = $(GCOFLAGS) -DGATHERSTATS -DPROFILE -p
+ GCDBGFLAGS     = $(GCFLAGS) $(BACKPTRFLAGS)
+diff -ru bigloo2.1a/bdb/blib/Makefile~ bigloo2.1a/bdb/blib/Makefile
+--- bigloo2.1a/bdb/blib/Makefile~       Fri Oct 15 05:06:14 1999
++++ bigloo2.1a/bdb/blib/Makefile        Thu Nov  4 09:58:41 1999
+@@ -79,7 +79,7 @@
+ CFLAGS_G       = -g $(CFLAGS_COMMON)
+ CFLAGS_P        = -p $(CFLAGS_COMMON)
+ CFLAGS_GCDBG   = -O2 -DSILENT -DNO_SIGNALS -DOLD_BLOCK_ALLOC           \
+-                  -DFINALIZE_ON_DEMAND -DNO_DEBUGGING -DKEEP_BACK_PTRS
++                  -DNO_DEBUGGING -DKEEP_BACK_PTRS
+ CFLAGS_D        = $(CFLAGS_COMMON) $(CFLAGS_GCDBG)
+ CFLAGS          = $(CFLAGS_G)
+ # Unix library builders
+-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----
+
+Obviously there is no Scheme interface to finalizers. It means that
+you will have to define your own interface, in C, and possibly use it
+from Scheme. It could be that you will be needing to understand the
+Bigloo function call protocol. The easiest way to study it is to check
+the Bigloo generated C code. Here is an extremelly short tutorial.
+
+There are two ways to call a Scheme function from C.
+
+   1. Export a global Scheme function to C:
+   $ cat foo.scm
+   (module foo
+      (export (foo::int ::int))
+      (extern (export foo "foo")))
+   
+   (define (foo x) (+ 1 x))
+   $ cat bar.c
+   int bar( int x ) {
+      return foo( x );
+   }
+   
+   2. Call a Scheme procedure:
+   $ cat foo.scm
+   (module foo
+      (extern (bar::obj (::procedure) "bar")))
+   
+   (let ((x 1))
+      (bar (lambda (y) (+ x y))))
+   $ cat bar.c
+   obj_t bar( obj_t proc ) {
+      return PROCEDURE_ENTRY( proc )( proc, BINT( 2 ), BEOA );
+   }
+   
+   It is not possible to use the actual value `2' instead of `BINT( 2 )'
+   because a Scheme closures must always receive Scheme values holding
+   type informations. The last argument `BEOA' must always be added to the
+   argument list.
+   
+   For more examples, one may use the Bigloo compilation flag `-cgen' or
+   `-rm' to study the generated C codes which make apparant the protocols
+   in use.
+
+
+To conclude this memo here is a implementation of finalizer in Bigloo
+due to David Fox (many thanks David). This implementation provides two 
+additional functions:
+  - WHEN-UNREFERENCED
+  - FINALIZE-ALL
+
+An exemple shows how to use them:
+
+----------------- finalize.h ---------------------
+
+/* The following code is excerpted (or perhaps derived) from the file
+   gc.h in the gc-boehm package.  If gc.h changes this may need to be
+   changed as well. */
+
+#ifndef FINALIZE_H
+#define FINALIZE_H
+
+typedef void * GC_PTR;
+
+typedef void (*GC_finalization_proc)(GC_PTR obj, GC_PTR client_data);
+
+extern void GC_register_finalizer(void * obj,
+				  GC_finalization_proc fn,
+				  void * cd,
+				  GC_finalization_proc *ofn,
+				  void ** ocd);
+
+static void invoke_finalizer(GC_PTR obj, GC_PTR proc)
+{
+  PROCEDURE_ENTRY(proc)(proc, obj, BEOA);
+}
+
+inline void when_unreferenced(obj_t object, obj_t proc)
+{
+  GC_register_finalizer(object, invoke_finalizer, proc, 0, 0);
+}
+
+#endif
+
+----------------- finalize.scm ---------------------
+
+(module finalize
+  (extern
+   (include "finalize.h")
+   (macro when-unreferenced_::void (::obj ::procedure) "when_unreferenced")
+   (finalize-all_::void () "GC_finalize_all"))
+  (export
+   (when-unreferenced::unspecified obj::obj proc::procedure)
+   (finalize-all::unspecified)))
+
+(define (when-unreferenced::unspecified obj::obj proc::procedure)
+  (when-unreferenced_ obj proc) #unspecified)
+
+(define (finalize-all::unspecified) (finalize-all_) #unspecified)
+
+---------------- test-finalize.scm --------------------
+
+(module test-finalize
+	(import (finalize "finalize.scm")))
+
+(define (run-test)
+  (let* ((exit? #f)
+	 (finalizer (lambda (x)
+		      (print "finalizer for " x " called")
+		      (set! exit? #t)))
+	 (x (make-vector 3 'x)))
+    (print "Calling when-unreferenced for " x)
+    (when-unreferenced x finalizer)
+    ;; Remove the only reference to the current value of x
+    (set! x #f)
+    ;; Look busy...
+    (let loop ()
+      (let loop2 ((index 0) (l '()))
+	(when (< index 10000)
+	      (loop2 (+ index 1) (cons index l))))
+      (if (not exit?) (loop)))
+    (print "calling finalize-all")
+    (finalize-all)
+    (print "exiting")))
+
+(run-test)
+
+-------------------------------------------------------

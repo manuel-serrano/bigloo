@@ -1,0 +1,639 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/error.texi                   @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 10:31:21 1998                          @c
+@c    Last change :  Mon Nov 12 15:20:43 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The error handling                                               @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Error handling ...                                               @c
+@c ------------------------------------------------------------------- @c
+@node Errors Assertions and Traces, Threads, Cryptography, Top
+@comment  node-name,  next,  previous,  up
+@chapter Errors, Assertions, and Traces
+@cindex error handling
+@cindex assertions
+@cindex SRFI-18
+@cindex SRFI-34
+
+@menu
+* Errors and Warnings::         Functions to raise errors and warnings
+* Exceptions::                  Functions and classes dealing with exceptions
+* Try::                         The deprecated try form
+* Assertions::                  Assertions
+* Tracing::                     Simple debug facility
+@end menu
+
+@c -- Errors and warnings -------------------------------------------- @c
+@node Errors and Warnings, Exceptions, , Errors Assertions and Traces
+@comment  node-name,  next,  previous,  up
+@section Errors and Warnings
+
+Bigloo permits to signal an error via the @code{error} function. Errors
+are implemented by the means of exceptions (see @code{with-exception-handler},
+@code{with-handler}, and @code{raise} forms). Assertions allow the checking
+of predicates at certain points in programs.  
+
+
+@deffn {bigloo procedure} error proc msg obj
+This form signals an error by calling the current error handler with
+@var{proc}, @var{msg} and @var{obj} as arguments.
+
+@smalllisp
+(define (foo l)
+   (if (not (pair? l))
+       (error "foo" "argument not a pair" l)
+       (car l)))
+
+(foo 4)
+@error{} *** ERROR:bigloo:foo:
+         argument not a pair -- 4
+@end smalllisp
+
+Switching on the @code{-g} compilation switch enables stack dumping
+when the @code{error} function is invoked. That is, when a program is
+compiled with @code{-g} and when, at runtime, the shell variable
+@code{BIGLOOSTACKDEPTH} is set and contains a number, an execution
+stack of depth @code{BIGLOOSTACKDEPTH} is printed when an error is
+raised.
+@end deffn
+
+@deffn {bigloo procedure} error/location proc msg obj file location
+This form signals an error by calling the current error handler with
+@var{proc}, @var{msg} and @var{obj} as arguments. The error is prompted
+in @var{file}, at character position @var{location}.
+
+@smalllisp
+(define (foo l)
+   (if (not (pair? l))
+       (error/location
+         "foo" "argument not a pair" l "foo.scm" 115)
+       (car l)))
+
+(foo 4)
+@error{} File "foo.scm", line 4, character 115:
+         #       (car l)))
+         #       ^
+         # *** ERROR:bigloo:foo
+         # argument not a pair -- 4
+             0. FOO
+             1. DYNAMIC-WIND
+             2. INTERP
+             3. ENGINE
+             4. MAIN
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} get-trace-stack size
+@deffnx {bigloo procedure} dump-trace-stack output-port size
+Switching on the @code{-g} compilation switch enables stack dumping
+@ref{Compiler Description}. That is, the list of the pending calls
+can be dumped by the runtime-system. The function @code{get-trace-stack}
+builds such a trace. The list built by @code{get-trace-stack} only
+contains the @var{size} top most pending calls. The function
+@code{dump-trace-stack} displays a representation of this stack on the
+@var{output-port}.
+
+@end deffn
+
+@deffn {bigloo procedure} warning/location file location [arg]@dots{}
+This form signals a warning. That is, is @var{arg} are displayed
+on the standard error port. The warning is prompted in @var{file} at
+character position @var{location}.
+
+@smalllisp
+(define (foo l)
+   (if (not (pair? l))
+       (begin
+          (warning/location
+            "foo.scm" 154 "foo:" "argument not a pair -- " l)
+          '())
+       (car l)))
+
+(foo 4)
+@print{} File "foo.scm", line 6, character 154:
+   #       (car l)))
+   #       ^
+   # *** WARNING:bigloo:foo:
+   argument not a pair -- 4
+@result{} '()
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} exception-notify exc
+@deffnx {bigloo procedure} error-notify err
+@deffnx {bigloo procedure} warning-notify err
+Display a message describing the error or warning on the default error port.
+@end deffn
+
+@c -- Exceptions ----------------------------------------------------- @c
+@node Exceptions, Try, Errors and Warnings, Errors Assertions and Traces
+@section Exceptions
+@cindex exceptions
+@cindex srfi-18
+@cindex SRFI-18
+
+@deffn {SRFI-18 function} current-exception-handler
+Returns the current exception handler with is a 0-ary procedure.
+@end deffn
+
+@deffn {SRFI-18 function} with-exception-handler handler thunk
+Returns the result(s) of calling @var{thunk} with no arguments. The
+@var{handler}, which must be a procedure, is installed as the current
+exception handler in the dynamic environment in effect during the call
+to @var{thunk}. When possible, prefer @code{with-handler} to 
+@code{with-exception-handler} because the former is more efficient than
+the latter.
+@end deffn
+
+@deffn {bigloo form} with-handler handler body
+Returns the result(s) of evaluating @var{body}. The
+@var{handler}, which must be a procedure, is installed as the current
+exception handler in the dynamic environment in effect during the evaluation
+of @var{body}. Contrarily to @code{with-exception-handler}, if an exception
+is raised, the @var{handler} is invoked and the value of the 
+@code{with-handler} form is the value produced by invoking the @var{handler}.
+
+JVM note: When executed within a JVM, the form @code{with-handler}
+also catches Java exceptions.
+
+The form @code{with-handler} is intrinsically more efficient than the
+function @code{with-exception-handler}. From a semantics point of 
+view, @code{with-handler} could be re-written in terms of 
+@code{with-exception-handler} such as:
+
+@smalllisp
+(with-handler handler1 body1)
+@equiv{}
+(bind-exit (exit)
+  (with-exception-handler 
+    (lambda (e)
+      (exit (handler1 e)))
+    (lambda ()
+      body)))
+@end smalllisp
+
+It should be noted that the error handler is executed before the execution
+stack is unwound. Hence, error handlers are executed before protected blocks.
+For instance in the following code:
+
+@smalllisp
+(with-handler 
+   (lambda (e) action)
+   (unwind-protect
+      body
+      protect))
+@end smalllisp
+
+The @var{action} is executed @emph{before} @var{protect}.
+
+@end deffn
+
+@deffn {SRFI-18 function} raise obj
+
+Calls the current exception handler with obj as the single
+argument. obj may be any Scheme object. Note that invoking the current
+handler does not escape from the current computation. It is up the to
+handler to perform the escape. It an error, signaled by the runtime
+system, if the current exception handler returns.
+
+@smalllisp
+(define (f n)
+  (if (< n 0) (raise "negative arg") (sqrt n))))
+
+(define (g)
+  (bind-exit (return)
+    (with-exception-handler
+      (lambda (exc)
+        (return
+          (if (string? exc)
+              (string-append "error: " exc)
+              "unknown error")))
+      (lambda ()
+        (write (f 4.))
+        (write (f -1.))
+        (write (f 9.))))))
+
+(g)  @print{} 2. and returns "error: negative arg"
+@end smalllisp
+@end deffn
+
+The standard Bigloo runtime system uses the following classes for
+signaling errors and warnings:
+
+@itemize @bullet
+
+@item @code{&exception} which is defined as:
+@cindex &exception
+@smalllisp
+(class &exception
+   (fname read-only (default #f))
+   (location read-only (default #f)))
+@end smalllisp
+
+@item @code{&error} defined as:
+@cindex &error
+@smalllisp
+(class &error::&exception
+   (proc read-only)
+   (msg read-only)
+   (obj read-only))
+@end smalllisp
+
+@item @code{&type-error} defined as:
+@cindex &type-error
+
+@smalllisp
+(class &type-error::&error
+   (type read-only))
+@end smalllisp
+
+@item @code{&io-error} defined as:
+@cindex &io-error
+
+@smalllisp
+(class &io-error::&error)
+@end smalllisp
+
+@item @code{&io-port-error} defined as:
+@cindex &io-port-error
+
+@smalllisp
+(class &io-port-error::&io-error)
+@end smalllisp
+@item @code{&io-read-error} defined as:
+@cindex &io-read-error
+
+@smalllisp
+(class &io-read-error::&io-port-error)
+@end smalllisp
+@item @code{&io-write-error} defined as:
+@cindex &io-write-error
+
+@smalllisp
+(class &io-write-error::&io-port-error)
+@end smalllisp
+
+@item @code{&io-closed-error} defined as:
+@cindex &io-closed-error
+
+@smalllisp
+(class &io-closed-error::&io-port-error)
+@end smalllisp
+
+@item @code{&io-file-not-found-error} defined as:
+@cindex &io-file-not-found-error
+
+@smalllisp
+(class &io-file-not-found-error::&io-error)
+@end smalllisp
+@item @code{&io-parse-error} defined as:
+
+@cindex &io-parse-error
+
+@smalllisp
+(class &io-parse-error::&io-error)
+@end smalllisp
+
+@item @code{&io-unknown-host-error} defined as:
+@cindex &io-unknown-host-error
+
+@smalllisp
+(class &io-unknown-host-error::&io-error)
+@end smalllisp
+
+@item @code{&io-malformed-url-error} defined as:
+@cindex &io-malformed-url-error
+
+@smalllisp
+(class &io-malformed-url-error::&io-error)
+@end smalllisp
+
+@item @code{&http-error} defined as:
+@cindex &http-error
+
+@smalllisp
+(class &http-error::&error)
+@end smalllisp
+
+@item @code{&http-redirection-error} defined as:
+@cindex &http-redirection-error
+
+@smalllisp
+(class &http-redirection-error::&http-error)
+@end smalllisp
+
+@item @code{&http-status-error} defined as:
+@cindex &http-status-error
+
+@smalllisp
+(class &http-status-error::&http-error)
+@end smalllisp
+
+@item @code{&http-redirection} defined as:
+@cindex &http-redirection
+
+@smalllisp
+(class &http-redirection::&exception
+  (port::input-port read-only)
+  (url::bstring read-only))
+@end smalllisp
+
+@item @code{&process-exception} defined as:
+@cindex &process-exception
+
+@smalllisp
+(class &process-exception::&error)
+@end smalllisp
+
+@item @code{&warning} defined as:
+@cindex &warning
+
+@smalllisp  
+(class &warning::&exception
+   (args read-only))
+@end smalllisp
+
+@item @code{&eval-warning} defined as:
+@cindex &eval-warning
+
+@smalllisp  
+(class &warning::&warning)
+@end smalllisp
+@end itemize
+
+@c -- try ------------------------------------------------------------ @c
+@node Try, Assertions, Exceptions, Errors Assertions and Traces
+@comment  node-name,  next,  previous,  up
+@section Deprecated try form
+
+@deffn {bigloo syntax} try exp handler
+
+This form is deprecated. As much as possible, it should be replaced with
+true exceptions (i.e., @code{with-exception-handler} and @code{raise}). 
+The argument @var{exp} is evaluated. If an error is raised, the
+@var{handler} is called. The argument @var{handler} is a procedure of
+four arguments. Its first argument is the continuation of @var{try}. The
+other arguments are @var{proc}, @var{mes} and @var{obj}. Invoking the
+first argument will resume after the error.
+
+@smalllisp
+(let ((handler (lambda (escape proc mes obj)
+                  (print "***ERROR:" proc ":" mes " -- " obj)
+                  (escape #f))))
+   (try (car 1) handler))
+   @print{} ***ERROR:CAR:not a pair -- 1
+   @result{} #f
+@end smalllisp
+
+The argument @var{handler} is not evaluated in the dynamic scope of its
+@code{try} form. That is:
+
+@smalllisp
+(let ((handler (lambda (escape proc mes obj)
+                  (escape (car obj)))))
+   (try (car 1) handler))
+   @error{} *** ERROR:bigloo:CAR
+            Type `PAIR' expected, `BINT' provided -- 1
+@end smalllisp
+@end deffn
+
+Some library functions exist to help in writing handlers:
+
+@deffn {bigloo procedure} warning [arg]@dots{}
+This form signals a warning. That is, is @var{arg} are displayed
+on the standard error port.
+
+@smalllisp
+(define (foo l)
+   (if (not (pair? l))
+       (begin
+          (warning "foo:" "argument not a pair -- " l)
+          '())
+       (car l)))
+
+(foo 4)
+@print{} *** WARNING:bigloo:foo:
+   argument not a pair -- 4
+@result{} '()
+@end smalllisp
+@end deffn
+
+@c -- Assertions ----------------------------------------------------- @c
+@node Assertions, Tracing, Try, Errors Assertions and Traces
+@comment  node-name,  next,  previous,  up
+@section Assertions
+
+@deffn {bigloo syntax} assert (var@dots{}) s-expression
+
+Assertions can be enabled or disabled using Bigloo's compilation flags
+@code{-g} flag to enable them). If the assertions are disabled they are
+not evaluated. If an assertion is evaluated, if the expression @var{exp}
+does not evaluate to @code{#t}, an error is signaled and the interpreter
+is launched in an environment where @var{var}@dots{} are bound to their
+current values.
+
+Assertion forms are legal expressions which @emph{always} evaluate
+to the @code{unspecified} object.
+
+Here is an example of assertion usage:
+
+@smalllisp
+(module foo
+   (eval (export foo)))
+
+(define (foo x y)
+   [assert (x y) (< x y)]
+   (labels ((gee (t)
+                 [assert (t) (>= t 0)]
+                 (let ((res (+ x t)))
+                    [assert (res t) (> res 10)]
+                    res)))
+      (set! x (gee y))
+      [assert (x) (> x 10)]
+      x))
+
+(repl)
+@end smalllisp
+
+This module is compiled with the @code{-g} flag to enable assertions, then
+the produced executable is run:
+
+@display
+$ a.out
+
+1:=> (foo 1 2)
+
+File "foo.scm", line 9, character 158:
+#                   [assert (res t) (> res 10)]
+#                   ^
+# *** ERROR:bigloo:assert
+# assertion failed -- (BEGIN (> RES 10))
+    0. GEE
+    1. FOO
+-----------------------
+Variables' value are : 
+   RES : 3
+   T : 2
+-----------------------
+*:=> ^D
+File "foo.scm", line 12, character 228:
+#      [assert (x) (> x 10)]
+#      ^
+# *** ERROR:bigloo:assert
+# assertion failed -- (BEGIN (> X 10))
+    0. FOO
+-----------------------
+Variables' value are : 
+   X : 3
+-----------------------
+
+*:=> 3
+1:=> (foo 1 2)
+File "foo.scm", line 9, character 158:
+#                   [assert (res t) (> res 10)]
+#                   ^
+# *** ERROR:bigloo:assert
+# assertion failed -- (BEGIN (> RES 10))
+    0. GEE
+    1. FOO
+-----------------------
+Variables' value are : 
+   RES : 3
+   T : 2
+-----------------------
+
+*:=> 
+@end display
+@end deffn
+
+@c -- Tracing -------------------------------------------------------- @c
+@node Tracing, , Assertions, Errors Assertions and Traces
+@comment  node-name,  next,  previous,  up
+@section Tracing
+@cindex trace
+@cindex debug
+
+Bigloo provides a trace facility whose is intended for simple
+debugging tasks. It is a replacement for user @code{display}s that
+clutters the source code. Here is a typical example using it:
+
+@smalllisp
+(define (foo x)
+   (with-trace 1 'foo
+      (let loop ((n x))
+	 (with-trace 2 'loop
+	    (trace-item "n=" n)
+	    (when (> n 0)
+	       (let liip ((m n))
+		  (with-trace 2 'liip
+		     (trace-item "m=" m))
+		  (when (> m 0)
+		     (liip (- m 1))))
+	       (loop (- n 1)))))))
+
+(foo 3)
+@end smalllisp
+
+which produces the following output:
+
+@example
++ foo
+  |--+ loop
+  |  |- n=3
+  |  |--+ liip
+  |  |  |- m=3
+  |  |--+ liip
+  |  |  |- m=2
+  |  |--+ liip
+  |  |  |- m=1
+  |  |--+ liip
+  |  |  |- m=0
+  |  |--+ loop
+  |  |  |- n=2
+  |  |  |--+ liip
+  |  |  |  |- m=2
+  |  |  |--+ liip
+  |  |  |  |- m=1
+  |  |  |--+ liip
+  |  |  |  |- m=0
+  |  |  |--+ loop
+  |  |  |  |- n=1
+  |  |  |  |--+ liip
+  |  |  |  |  |- m=1
+  |  |  |  |--+ liip
+  |  |  |  |  |- m=0
+  |  |  |  |--+ loop
+  |  |  |  |  |- n=0
+@end example
+
+Traces generation is controlled by a set of functions and parameters
+(see @ref{Parameters}). The functions are described in this chapter.
+
+@deffn {bigloo syntax} with-trace level label . body
+
+The variable @var{level} is the level of a trace. It is a positive
+integer. It enables simple filtering for traces. A trace is displayed
+if and only if the debugging level used to compile or to execute the
+program is greater than the trace level. The variable @var{label} is a
+label, .e.i., an identifier denoting the trace. This identifier will
+be displayed in debug mode.  The variable @var{body} is the body of
+the form, that is, the expression to be evaluated.
+
+Unless a trace is activated @code{(with-trace lv la body)} (when its
+level @var{lv} is greater than the current debug level) is equivalent
+to @code{(begin body)}. When traces are activated, before executing
+@var{body}.
+
+The debugging level is controlled by two parameters:
+@code{bigloo-debug} and @code{bigloo-compiler-debug} (see @ref{Parameters}).
+
+@end deffn
+
+@deffn {bigloo function} trace-item . args
+This function displays all its arguments. It has to be used nested in
+a @var{with-trace} form. 
+@end deffn
+
+@deffn {bigloo function} trace-bold s
+@deffnx {bigloo function} trace-string s
+These two functions are provided for convenience. They returns strings
+made of their parameters.
+@end deffn
+
+@deffn {bigloo function} trace-color color . args
+The @var{color} argument is a positive integer. 
+This function returns a string which is the representation of @var{args}
+and that appears on the terminal in color @var{color}.
+
+Colors can be enable or disabled using the @code{bigloo-trace-color}
+parameter (see @ref{Parameters}).
+@end deffn
+
+@deffn {bigloo function} trace-margin
+@deffnx {bigloo function} trace-margin-set!
+The @var{trace-margin} parameter is used to control the characters
+that are displayed in the margin of a trace. Usual applications should
+not use this. However, it may be convenient to set the margin by hands
+in some context. For instance, it can be used to distinguished threads
+in a multi-threaded application such as:
+
+@smalllisp
+(make-thread (lambda () 
+                (trace-margin-set! (trace-color 1 "="))
+                ...))
+(make-thread (lambda () 
+                (trace-margin-set! (trace-color 2 "="))
+                ...))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo function} trace-port
+@deffnx {bigloo function} trace-port-set!
+These functions return and set the output port used by traces.
+@end deffn
+
+

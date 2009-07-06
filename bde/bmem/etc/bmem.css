@@ -1,0 +1,185 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/bde/bmem/etc/bmem.css                */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Apr 15 10:37:40 2003                          */
+/*    Last change :  Fri Aug 22 11:10:08 2008 (serrano)                */
+/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    Profalloc css                                                    */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    Title, margin and page                                           */
+/*---------------------------------------------------------------------*/
+div.hop-title {
+  background-color: #AA9999;
+  font-size: xx-large;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: center;
+  text-transform: capitalize;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  margin-left: 0px;
+  padding-left: 0px;
+  border-left: 0px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+div.hop-margin {
+  background-color: #9999AA;
+}
+
+body {
+  background-color: #99AA99;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Vertical boxes                                                   */
+/*---------------------------------------------------------------------*/
+ul.verticalbox {
+  list-style: none;
+  padding-left: 0;
+}
+
+ul.verticalbox li:before {
+  marker-offset: 0;
+  display: marker;
+  content: "";
+}
+
+/*---------------------------------------------------------------------*/
+/*    Profiling tables                                                 */
+/*---------------------------------------------------------------------*/
+div.profile table {
+  frame: box;
+  border-collapse: separate;
+  border-spacing: 0px;
+  background: #999999;
+  font-size: 80%;
+  border: 1px black solid;
+}
+
+div.profile div.legend table {
+  background-color: white;
+  border-style: groove;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 70%;
+  border: 1px black solid;
+}
+
+div.profile caption {
+  font-weight: bold;
+  font-family: sans-serif;
+}
+
+div.profile th {
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  font-weight: bold;
+}
+
+div.profile td.olegend {
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 2px;
+  font-style: italic;
+}
+
+div.profile td.osize {
+  padding-left: 2px;
+  padding-bottom: 2px;
+  padding-top: 5px;
+  border-top: 2px solid black;
+  font-weight: bold;
+}
+
+div.profile td.legend {
+  padding-left: 2px;
+  padding-right: 2px;
+  font-family: monospace;
+}
+
+div.profile td.size {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+div.profile td.empty {
+  border: none;
+  background: white;
+}
+
+div.profile td.sample {
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  border: 10px black solid;
+}
+
+div.profile td.color-item {
+  padding-left: 2px;
+  padding-right: 2px;
+  border: none;
+  font-size: 100%;
+}
+
+div.profile table.color-item {
+  padding-left: 2px;
+  padding-right: 2px;
+  border: none;
+  font-size: 100%;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Ident                                                            */
+/*---------------------------------------------------------------------*/
+div.function-ident span.function-index {
+  font-size: 90%;
+  font-style: italic;
+}
+
+/*---------------------------------------------------------------------*/
+/*    References                                                       */
+/*---------------------------------------------------------------------*/
+div.bglmem a {
+  font-family: sans-serif, Verdana, Arial, Geneva;
+  font-size: small;
+  color: black;
+}
+
+*.bglmem a:link {
+  text-decoration: none;
+}
+
+*.bglmem a:visited {
+  text-decoration: none;
+}
+
+*.bglmem a:active {
+  text-decoration: none;
+}
+
+*.bglmem a:hover {
+  text-decoration: underline;
+  color: blue;
+}
+
+div.bglmem div.contents a {
+  font-family: sans-serif;
+  font-weight: bold;
+  color: black;
+}
+
+*.bglmem div.contents a:hover {
+  text-decoration: underline;
+  color: blue;
+}
+
+
+

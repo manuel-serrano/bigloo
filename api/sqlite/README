@@ -1,0 +1,3 @@
+This directory contains a simple binding to the SQLITE dababase.
+It also contains a simple SQL implementation in Bigloo that is used
+when SQLITE is not available.

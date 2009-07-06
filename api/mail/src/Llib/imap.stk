@@ -1,0 +1,1076 @@
+;;;;
+;;;; imap-lib.stk	-- IMAP Library
+;;;; 
+;;;; Copyright © 2005 Erick Gallesio - I3S-CNRS/ESSI <eg@essi.fr>
+;;;; 
+;;;; 
+;;;; This program is free software; you can redistribute it and/or modify
+;;;; it under the terms of the GNU General Public License as published by
+;;;; the Free Software Foundation; either version 2 of the License, or
+;;;; (at your option) any later version.
+;;;; 
+;;;; This program is distributed in the hope that it will be useful,
+;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;; GNU General Public License for more details.
+;;;; 
+;;;; You should have received a copy of the GNU General Public License
+;;;; along with this program; if not, write to the Free Software
+;;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, 
+;;;; USA.
+;;;; 
+;;;;           Author: Erick Gallesio [eg@essi.fr]
+;;;;    Creation date:  8-Mar-2005 21:56 (eg)
+;;;; Last file update:  6-Apr-2005 11:12 (eg)
+;;;;
+;;;; IMAP send and response parsing comes from the "imap-unit.ss" file of
+;;;; the v208 PLT Scheme distribution (LGPL license)
+
+
+;; API
+;;
+;;  Server Operations
+;;	(imap-login s login password)
+;;		=> s 
+;;	(imap-logout s)
+;;		=> #t 
+;;	(imap-capability s)
+;;		=> a list of server capabilities
+;;	(imap-separator s)
+;;		=> a string representing the folder separator
+;;	(imap-folders s)
+;;		=> A sorted list of the folders on the server
+;;
+;;  Folder operations
+;;	(imap-folder-select s name)
+;;		=>  ((count . n) (recent . m))
+;;	(imap-folder-create! s name)
+;;	(imap-folder-delete! s name)
+;;	(imap-folder-rename! s name)
+;;	(imap-folder-exists? s name)
+;;		=> #t if the folder name exists
+;;	(imap-folder-status s name)
+;;		=> a list such as (count recent unseen uidnext uidvalidity)
+;;	(imap-folder-poll s)
+;;		=> a list of changes since last poll 
+;;	(imap-folder-expunge! s)
+;;	(imap-folder-search s request)
+;;		request must be a valid IMAP search request
+;;		=> a list of messages matching the request
+;;	(imap-folder-search-header s header value)
+;;		=> a list of message whose header = value
+;;	(imap-folder-search-keyword s keyword)
+;;		=> a list of message which have the keyword set
+;;	(imap-folder-subscribe! s folder)
+;;	(imap-folder-unsubscribe! s folder)
+;;	(imap-folder-uids s folder)
+;;	        => a list of uid
+;;      Shortcuts
+;;	  (imap-folder-messages s) 	 <=>   (imap-message* s :all))
+;;	  (imap-folder-headers s) 	 <=>   (imap-message-header* s :all)) 
+;;	  (imap-folder-bodies s) 	 <=>   (imap-message-body* s :all))
+;;	  (imap-folder-sizes s) 	 <=>   (imap-message-size* s :all))
+;;	  (imap-folder-internal-dates s) <=>   (imap-message-internal-date* s :all))
+;;	  (imap-folder-flags s) 	 <=>   (imap-message-flags* s :all))
+;;	  (imap-folder-infos s) 	 <=>   (imap-message-info* s :all))
+;;	  (imap-folder-header-fields s f)<=>   (imap-message-header-field* s :all f))
+;;
+;; Messages operations
+;;	(imap-message s num)
+;;		=> a string containing message num of current folder
+;;
+;;	(imap-message-header  s num)
+;;		=> a string containing the header of message num of current folder
+;;	(imap-message-body  s num . count)
+;;		=> a string containing the body of message num of current folder
+;;	(imap-message-info  s num)
+;;		=> a list of informations (order uid flags size internal-date)
+;;	(imap-message-size s num)
+;;		=> message size
+;;	(imap-message-internal-date s num)
+;;		=> message internal date
+;;	(imap-message-structure s num)
+;;		=> a list describing the structure of message num
+;;	(imap-message-envelope s num)
+;;		=> a list describing the envelope of message num
+;;	(imap-message-parts s num)
+;;		=> a list of the form ((<part desc> <part content>) ...)
+;;	(imap-message-part s num p)
+;;		=> a list of the form (<part desc of part p> <part content>)
+;;		   part numbering starts from 0
+;;
+;;	(imap-message-flags-change! s num flags)
+;;		Flags are the new flags associated to message num
+;;	(imap-message-flags-set! s num flags)
+;;		=> Flags are added to the flags associated to message num
+;;	(imap-message-flags-unset! s num flags)
+;;		=> Flags are deleted from the set of flags associated to message num
+;;	(imap-message-delete! s num)
+;;	(imap-message-undelete! s num)
+;;	(imap-message-flagged! s num)
+;;	(imap-message-unflagged! s num)
+;;
+;;	(imap-message-exists? s num)
+;;		=> #t if the message exists; #f otherwise
+;;	(imap-message-uid-exists? s uid)
+;;		=> #t if the message with uid exists; #f otherwise
+;;
+;;	(imap-message-copy! s num folder)
+;;	(imap-message-move! s num folder)
+;;	(imap-message-create! s folder txt)
+;;
+
+(define *imap-debug* #f)
+(define (imap-debug) *imap-debug*)
+
+(define (string-starts-with? str prefix)
+  (and (>= (string-length str) (string-length prefix))
+       (string=? prefix (substring str 0 (string-length prefix)))))
+
+(define (string-skip str n)
+  (substring str n (string-length str)))
+
+;; ----------------------------------------------------------------------
+;;	%make-msg-id ...
+;; ----------------------------------------------------------------------
+(define %make-msg-id
+  (let ((id 0))
+    (lambda ()
+      (set! id (+ id 1))
+      (format "a~a" id))))
+
+
+;; ----------------------------------------------------------------------
+;;	%imap-tag-eq? ...
+;; ----------------------------------------------------------------------
+(define (%imap-tag-eq? a b)
+  (or (eq? a b)  ;for numbers
+      (and (string? a)
+	   (string? b)
+	   (string-ci=? a b))))
+
+;; ----------------------------------------------------------------------
+;;	%imap-is-ok? ...
+;; ----------------------------------------------------------------------
+(define (%imap-is-ok? reply)
+  (and (pair? reply)
+       (%imap-tag-eq? (car reply) "OK")))
+
+
+;; ----------------------------------------------------------------------
+;;	%imap-arg ...
+;; ----------------------------------------------------------------------
+(define (%imap-arg l sep)
+  (cond
+    ((null? l) "")
+    ((pair? l) (format "~a~a"
+		       (car l)
+		       (apply string-append
+			      (map (lambda (x) (format "~a~a" sep x))
+				   (cdr l)))))
+    (else "1:*")))
+
+;; ----------------------------------------------------------------------
+;;	%imap-result ...
+;; ----------------------------------------------------------------------
+(define (%imap-result where server obj reply value)
+   (if (and (pair? reply)
+	    (%imap-tag-eq? (car reply) "OK"))
+       value
+       (let ((message (if (and (pair? reply)
+			       (not (%imap-tag-eq? (car reply) "OK")))
+			  (%imap-arg (cdr reply) " ")
+			  reply))
+	     (host (cond
+		      ((or (eq? server obj) (not obj))
+		       server)
+		      ((not obj)
+		       server)
+		      (else
+		       (format "~a (~a)" obj server)))))
+	  (%imap-command-error where message host))))
+
+;; ----------------------------------------------------------------------
+;;	%imap-read ...
+;; ----------------------------------------------------------------------
+(define (%imap-read str port)
+   (let loop ((s str)
+	      (aux '())
+	      (eol-k (lambda (l) (reverse! l)))
+	      (eop-k (lambda (s l)
+			 (%imap-read-error "unxpected close parenthesis" s))))
+      (cond
+	 ((string=? "" s)
+	  (eol-k aux))
+	 ((char-whitespace? (string-ref s 0))
+	  (loop (string-skip s 1)
+		aux
+		eol-k
+		eop-k))
+	 (else
+	  (case (string-ref s 0)
+	     ((#\") (let ((m (regexp-match "\"([^\"]*)\"(.*)" s)))
+		       (if m
+			   (loop (caddr m) (cons (cadr m) aux) eol-k eop-k)
+			   (%imap-read-error 
+			    "didn't find end of quoted string in: " s))))
+	     ((#\)) (eop-k (string-skip s 1) aux))
+	     ((#\() (letrec ((next-line     (lambda (aux) 
+					       (loop (read-line port)
+						     aux
+						     next-line
+						     finish-parens)))
+			     (finish-parens (lambda (s laux)
+					       (loop s 
+						     (cons (reverse! laux) aux)
+						     eol-k
+						     eop-k))))
+		       (loop (string-skip s 1)
+			     '()
+			     next-line
+			     finish-parens)))
+	     ((#\{) (let ((m (regexp-match "{([0-9]+)}(.*)" s)))
+		       (cond
+			  ((not m)
+			   (%imap-read-error "couldn't read {} number: " s))
+			  ((not (string=? (caddr m) ""))
+			   (%imap-read-error "{} not at end-of-line: " s))
+			  (else
+			   (let ((s (read-n-chars (string->number (cadr m)) port)))
+			      (loop ""
+				    (cons s aux)
+				    eol-k
+				    eop-k))))))
+	     ((#\[) (let ((m (regexp-match "(\\[[^\\[\\]]+\\])?(.*)" s)))
+		       (if m
+			   (loop (caddr m)
+				 (cons (let ((n (string->number (cadr m))))
+					  (or n (cadr m)))
+				       aux)
+				 eol-k
+				 eop-k)
+			   (%imap-read-error "failure reading atom: " s))))
+	     (else
+	      (let ((m (regexp-match "([^ (){}\\[\\]]+(?:\\[[^\\[\\]]+\\])?)(.*)" s)))
+		(if m
+		    (loop (caddr m)
+			  (cons (let ((n (string->number (cadr m))))
+				  (or n (cadr m)))
+				aux)
+			  eol-k
+			  eop-k)
+		    (%imap-read-error "failure reading atom: " s)))))))))
+
+;; ----------------------------------------------------------------------
+;;	%imap-send ...
+;; ----------------------------------------------------------------------
+(define (%imap-send s cmd info-handler continuation-handler)
+  (let* ((id  (%make-msg-id))
+	 (in  (socket-input s))
+	 (out (socket-output s))
+	 (msg (format "~a ~a\r\n" id cmd)))
+    ;; Write command to the server
+    (display msg out)
+    (flush-output-port out)
+    (when (imap-debug)
+      (fprintf (current-error-port) ">> ~A" msg))
+    ;; Read response
+    (let loop ((line (read-line in)))
+      (when (imap-debug)
+	(fprintf (current-error-port) "<< ~A\n" line))
+      (cond
+        ((eof-object? line)
+         (fprintf (current-error-port)
+		  "%imap-send: Warning: unexpected response ~S\n" line))
+	((string-starts-with? line id)
+	   (let ((reply (%imap-read (string-skip line (string-length id)) in)))
+	     (when (imap-debug)
+	       (fprintf (current-error-port) "\t Response: ~s\n" reply))
+	     (values reply)))
+	((string-starts-with? line "* ")
+	   (let ((info (%imap-read (string-skip line 2) in)))
+	     (when (imap-debug)
+	       (fprintf (current-error-port) "\t Info: ~s\n" info))
+	     (info-handler info))
+	   (loop (read-line in)))
+	((string-starts-with? line "+ ")
+	   (continuation-handler (%imap-read (string-skip line 2) in))
+	   (loop (read-line in)))
+	(else
+	   (fprintf (current-error-port)
+		   "%imap-send: Warning: unexpected response ~S" line)
+	   (loop (read-line in)))))))
+
+
+;; ----------------------------------------------------------------------
+;;	%imap-listify ...
+;; ----------------------------------------------------------------------
+(define %imap-listify
+  (let ((table '(("body[text]"   . body)
+		 ("body[header]" . header)
+		 ("rfc822.size"  . size)
+		 ("internaldate" . date))))
+    (define (pretty str)
+      (let ((item (assoc str table)))
+	(if (pair? item)
+	    (cdr item)
+	    (string->symbol str))))
+
+    (lambda (l)
+      (let loop ((l l)
+		 (res '()))
+	(cond
+	  ((null? l)
+	   res)
+	  ((pair? l)
+	   (if (or (not (string? (car l)))
+		   (null? (cdr l)))
+	       (%imap-command-error '%imap-listify "Bad IMAP list component" l)
+	       (loop (cddr l)
+		     (cons (cons (pretty (string-downcase! (car l)))
+				 (cadr l))
+			   res))))
+	  (else (%imap-command-error '%imap-listify "Bad IMAP list" l)))))))
+	
+
+;;;; ======================================================================
+;;;;
+;;;; 			S e r v e r   O p e r a t i o n s	 
+;;;;
+;;;; ======================================================================
+
+
+;; ----------------------------------------------------------------------
+;;	imap-login ...
+;; ----------------------------------------------------------------------
+(define (imap-login s name password)
+  ;; Try to discuss with the server
+  (let ((r (%imap-send s "NOOP" void void)))
+    (unless (%imap-is-ok? r)
+      (%imap-login-error "server error:" r)))
+  ;; Login 
+  (let ((r (%imap-send s (format "LOGIN ~S ~S" name password) void void)))
+    (if (%imap-is-ok? r)
+	s
+	(%imap-login-error "login incorrect:" r))))
+
+;; ----------------------------------------------------------------------
+;;	imap-logout ...
+;; ----------------------------------------------------------------------
+(define (imap-logout s)
+  (%imap-result 'imap-logout
+		s
+		#f
+		(%imap-send s "LOGOUT" void void)
+		#t))
+
+;; ----------------------------------------------------------------------
+;;	imap-capability ...
+;; ----------------------------------------------------------------------
+(define (imap-capability s)
+  (let* ((result '())
+	 (reply  (%imap-send s "CAPABILITY"
+			     (lambda (x)
+			       (when (pair? x)
+				 (set! result (cdr x))))
+			     void)))
+    (%imap-result 'imap-capability s #f reply result)))
+
+;; ----------------------------------------------------------------------
+;;	imap-separator ...
+;; ----------------------------------------------------------------------
+(define (imap-separator s)
+  (let* ((result '()) 
+	 (reply  (%imap-send s
+			     (format "LIST \"\" \"\"")
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 3))
+				 (set! result (caddr x))))
+			     void)))
+    (let ((r (%imap-result 'imap-separator s #f reply result)))
+      (if (string? r)
+          r
+          "."))))
+
+;; ----------------------------------------------------------------------
+;;	imap-folders ...
+;; ----------------------------------------------------------------------
+(define (imap-folders s)
+  (let* ((result '())
+	 (reply  (%imap-send s
+			     (format "LIST \"\" \"*\"")
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 4))
+				 (set! result (cons (cadddr x) result))))
+			     void)))
+    (%imap-result 'imap-folders
+                  s
+		  #f
+		  reply
+		  (sort result string<?))))
+
+
+;;;; ======================================================================
+;;;;
+;;;; 			F o l d e r   O p e r a t i o n s	 
+;;;;
+;;;; ======================================================================
+
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-select ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-select s folder)
+  (let* ((count  0)
+	 (recent 0)
+	 (reply  (%imap-send s
+			     (format "SELECT ~S" folder)
+			     (lambda (x)
+			       (when (and (pair? x) (= 2 (length x)))
+				 (cond
+				   ((%imap-tag-eq? (cadr x) "EXISTS")
+				    (set! count (car x)))
+				   ((%imap-tag-eq? (cadr x) "RECENT")
+				    (set! recent (car x))))))
+			     void)))
+    (%imap-result 'imap-folder-select
+		  s
+		  folder
+		  reply 
+		  (list (cons 'count count)
+			(cons 'recent recent)))))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-create! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-create! s folder)
+  (%imap-result 'imap-folder-create!
+		s
+		folder
+		(%imap-send s
+			    (format "CREATE ~S" folder)
+			    void
+			    void)
+		(void)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-delete! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-delete! s folder)
+  (%imap-result 'imap-folder-delete!
+		s
+		folder
+		(%imap-send s
+			    (format "DELETE ~S" folder)
+			    void
+			    void)
+		(void)))
+		
+;; ----------------------------------------------------------------------
+;;	imap-folder-rename! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-rename! s old new)
+  (%imap-result 'imap-folder-rename!
+		s
+		old
+		(%imap-send s
+			    (format "RENAME ~S ~S" old new)
+			    void
+			    void)
+		(void)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-subscribe! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-subscribe! s folder)
+  (%imap-result 'imap-folder-subscribe
+		s
+		folder
+		(%imap-send s
+			    (format "SUBSCRIBE ~S" folder)
+			    void
+			    void)
+		(void)))
+		
+;; ----------------------------------------------------------------------
+;;	imap-folder-unsubscribe! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-unsubscribe! s folder)
+  (%imap-result 'imap-folder-unsubscribe
+		s
+		folder
+		(%imap-send s
+			    (format "UNSUBSCRIBE ~S" folder)
+			    void
+			    void)
+		(void)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-exists? ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-exists? s name)
+  (let ((result #f))
+    (%imap-send s
+		(format "LIST ~S \"\"" name)
+		(lambda (x)
+		  (when (and (pair? x) (equal? (car x) "LIST"))
+		    (set! result #t)))
+		void)
+    result))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-status ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-status s folder)
+  (let* ((result #f)
+	 (reply (%imap-send s
+			    (format "STATUS ~S ~A"
+				    folder
+				    '(MESSAGES RECENT UIDNEXT UIDVALIDITY UNSEEN))
+			    (lambda (x)
+			      (when (and (pair? x) (>= (length x) 3))
+				(set! result (%imap-listify (caddr x)))))
+			    void)))
+    (%imap-result 'imap-folder-status
+		  s
+		  folder
+		  (if result reply #f)
+		  result)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-poll ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-poll s)
+  (let* ((result '()) 
+	 (reply  (%imap-send s
+			     "NOOP"
+			     (lambda (x) (set! result (cons x result)))
+			     void)))
+    (%imap-result 'imap-folder-poll
+		  s
+		  #f
+		  reply
+		  (reverse! result))))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-expunge! ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-expunge! s)
+  (%imap-result 'imap-folder-expunge!
+		s
+		#f
+		(%imap-send s "EXPUNGE" void void)
+		(void)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-search ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-search s request)
+  (let* ((result '())
+	 (reply  (%imap-send s
+			     (format "UID SEARCH ~A" request)
+			     (lambda (x)
+			       (when (pair? x)
+				 (set! result (cdr x))))
+			     void)))
+    (%imap-result 'imap-folder-search
+		  s
+		  request
+		  reply
+		  result)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-search-header ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-search-header s header value)
+  (imap-folder-search s (format "HEADER ~a ~s" header value)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-search-keyword ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-search-keyword s keyword)
+  (imap-folder-search s (format "KEYWORD ~a" keyword)))
+
+;; ----------------------------------------------------------------------
+;;	imap-folder-uids ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-uids s)
+  (let* ((result '())
+	 (reply  (%imap-send s
+			     (format "FETCH 1:* UID")
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 3))
+				 (let* ((info (%imap-listify (caddr x)))
+					(uid  (assq 'uid info)))
+				   (when (pair? uid)
+				     (set! result
+				       (cons (cdr uid) (or result '())))))))
+			     void)))
+    (cond
+       ((not (pair? reply))
+	(%imap-result 'imap-folder-uid
+		      s
+		      #f
+		      reply
+		      result))
+       ((%imap-tag-eq? (car reply) "OK")
+	result)
+       (else
+	'()))))
+
+;;;; ======================================================================
+;;;;
+;;;; 			M e s s a g e   O p e r a t i o n s	 
+;;;;
+;;;; ======================================================================
+(define (%%imap-get where s num part)
+  (let* ((result #f)
+	 (reply  (%imap-send s
+			     (format "UID FETCH ~A (~A)" num part)
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 3))
+				 (set! result (%imap-listify (caddr x)))))
+			     void)))
+    (%imap-result where
+		  s
+		  num
+		  (if (or result (not (%imap-is-ok? reply)))
+		      reply
+		      "Cannot get message")
+		  result)))
+
+(define (%%imap-get* where s num part)
+  (let* ((result '())
+	 (reply  (%imap-send s
+			     (format "UID FETCH ~A (UID ~A)"(%imap-arg num ",") part)
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 3))
+				 (let* ((info (%imap-listify (caddr x)))
+					(uid  (assq 'uid info)))
+				   (when (pair? uid)
+				     (set! result
+				       (cons (cons (cdr uid) info)
+					     (or result '())))))))
+			     void)))
+    (%imap-result where s num reply result)))
+
+(define (%%imap-get-field  where s num part field default)
+  (let* ((result #f)
+	 (tmp    (%imap-send s
+			     (format "UID FETCH ~A ~A" num part)
+			     (lambda (x)
+			       (when (and (pair? x) (>= (length x) 3))
+				 (set! result (%imap-listify (caddr x)))))
+			     void))
+	 (reply  (%imap-result where
+			       s
+			       num
+			       (if (or result (not (%imap-is-ok? tmp)))
+				   tmp
+				   "Cannot get message")
+			       result))
+	 (value (assq field reply)))
+    (if (pair? value)
+	(cdr value)
+	default)))
+
+    
+
+(define (%%imap-get-field* where s num part field default)
+  (let* ((result '())
+	 (tmp (%imap-send s
+			  (format "UID FETCH ~A (UID ~A)" (%imap-arg num ",") part)
+			  (lambda (x)
+			    (when (and (pair? x) (>= (length x) 3))
+			      (let* ((info (%imap-listify (caddr x)))
+				     (uid  (assq 'uid info)))
+				(when (pair? uid)
+				  (set! result
+				    (cons (cons (cdr uid) info)
+					  (or result '())))))))
+			  void))
+	 (reply (%imap-result where s num tmp result)))
+    (map (lambda (x)
+	   (let ((value (assq field (cdr x))))
+	     (cons (car x)
+		   (if (pair? value)
+		       (cdr value)
+		       default))))
+	 reply)))
+
+;; ----------------------------------------------------------------------
+;;	imap-message(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message s num)
+  (let* ((reply  (%%imap-get 'imap-message
+			     s
+			     num
+			     "BODY.PEEK[HEADER] BODY.PEEK[TEXT]"))
+	 (header (assq 'header reply))
+	 (body   (assq 'body   reply)))
+    (string-append (if (pair? header) (cdr header) "")
+		   (if (pair? body) (cdr body) ""))))
+
+(define (imap-message* s num)
+  (let ((reply  (%%imap-get* 'imap-message*
+			      s
+			      num
+			      "BODY.PEEK[HEADER] BODY.PEEK[TEXT]")))
+    (map (lambda (x)
+	   (let ((header (assq 'header (cdr x)))
+		 (body   (assq 'body (cdr x))))
+	     (list (car x)
+		   (if (pair? header) (cdr header) "")
+		   (if (pair? body) (cdr body) ""))))
+	 reply)))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-body(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message-body s num . count)
+  (let ((msg (if (null? count)
+		 "BODY.PEEK[TEXT]"
+		 (format "BODY.PEEK[TEXT]<0.~a>" (car count)))))
+    (%%imap-get-field 'imap-message-body s num msg 'body "")))
+
+(define (imap-message-body* s num . count)
+  (let ((msg (if (null? count)
+		 "BODY.PEEK[TEXT]"
+		 (format "BODY.PEEK[TEXT]<0.~a>" (car count)))))
+    (%%imap-get-field* 'imap-message-body* s num msg 'body "")))
+
+
+;; ----------------------------------------------------------------------
+;;	imap-message-header(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message-header s num)
+  (%%imap-get-field 'imap-message-header s num "BODY.PEEK[HEADER]" 'header ""))
+
+(define (imap-message-header* s num)
+  (%%imap-get-field* 'imap-message-header* s num "BODY.PEEK[HEADER]" 'header ""))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-size(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message-size s num)
+  (%%imap-get-field 'imap-message-size s num "RFC822.SIZE" 'size 0))
+
+
+(define (imap-message-size* s num)
+  (%%imap-get-field* 'imap-message-size* s num "RFC822.SIZE" 'size 0))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-internal-date(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message-internal-date s num)
+  (%%imap-get-field 'imap-message-internal-date s num "INTERNALDATE" 'date 0))
+
+(define (imap-message-internal-date* s num)
+  (%%imap-get-field* 'imap-message-internal-date* s num "INTERNALDATE" 'date 0))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-flags(*) ...
+;; ----------------------------------------------------------------------
+(define (imap-message-flags s num)
+  (%%imap-get-field 'imap-message-flags s num "FLAGS" 'flags '()))
+
+(define (imap-message-flags* s num)
+  (%%imap-get-field* 'imap-message-flags* s num "FLAGS" 'flags '()))
+
+
+;; ----------------------------------------------------------------------
+;;	imap-message-info(*) ...
+;; ----------------------------------------------------------------------
+(define %imap-info-req*
+  "FLAGS RFC822.SIZE INTERNALDATE BODY.PEEK[HEADER.FIELDS (Message-id)]")
+
+(define (%imap-clean-string str hdr)
+  (let ((hlen  (string-length hdr)))
+    (if (string? str)
+	(let ((slen  (string-length str)))
+	  (let* ((start (let loop ((i (+ hlen 1)))
+			  (cond
+			    ((>= i slen)
+			     (- i 1))
+			    ((char-whitespace? (string-ref str i))
+			     (loop (+ i 1)))
+			    (else
+			     i))))
+		 (end    (let loop ((i (- slen 1)))
+			   (cond 
+			     ((< i start)
+			      i)
+			     ((char-whitespace? (string-ref str i))	
+			      (loop (- i 1)))
+			     (else
+			      (+ i 1))))))
+	    (if (< start end)
+		(substring str start end)
+		"")))
+	str)))
+
+(define (%imap-clean-info l)
+  (map (lambda (x)
+	 (if (memq (car x) '(date flags size uid) )
+	     x
+	     ;; This is the "Messsage-Id" field
+	     (cons 'message-id
+		   (if (string? (cdr x))
+		       (%imap-clean-string (cdr x) "Message-Id")
+		       (cdr x)))))
+       l))
+
+(define (imap-message-info s num)
+  (%imap-clean-info (%%imap-get 'imap-message-info s num %imap-info-req*)))
+
+(define (imap-message-info* s num)
+  (let ((r (%%imap-get* 'imap-message-info* s num %imap-info-req*)))
+    (map (lambda (x)
+	   (cons (car x)
+		 (%imap-clean-info (cdr x))))
+	 r)))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-header-field(*) ...
+;; ----------------------------------------------------------------------
+(define (%imap-clean-header-field l field)
+  (let loop ((l l))
+    (cond
+      ((null? l) "")
+      ((eq? (caar l) 'uid) (loop (cdr l)))
+      ((string? (cdar l)) (%imap-clean-string (cdar l) field))
+      (else ""))))
+
+(define (imap-message-header-field s num field)
+  (%imap-clean-header-field
+       (%%imap-get 'imap-message-header-field
+		   s
+		   num
+		   (format "BODY.PEEK[HEADER.FIELDS (~A)]" field))
+       field))
+
+(define (imap-message-header-field* s num field)
+  (let ((r (%%imap-get* 'imap-message-header-field*
+			s
+			num
+			(format "BODY.PEEK[HEADER.FIELDS (~A)]" field))))
+    (map (lambda (x)
+	   (cons (car x) (%imap-clean-header-field (cdr x) field)))
+	 r)))
+
+;;/// ;; ----------------------------------------------------------------------
+;;/// ;;	imap-message-parts(*) ...
+;;/// ;; ----------------------------------------------------------------------
+;;/// (define (imap-message-parts* s num)
+;;///   (map length (imap-message-structure s (%imap-arg num ","))))
+;;/// 
+;;/// (define (imap-message-parts s num)
+;;///   (length (car (imap-message-structure s num))))
+;;/// 
+;;/// 
+;;/// ;; ----------------------------------------------------------------------
+;;/// ;;	imap-message-structure ...
+;;/// ;; ----------------------------------------------------------------------
+;;/// (define (imap-message-structure s num)
+;;///   (let ((res (%imap-get* 'imap-message-structure
+;;/// 				s
+;;/// 				num
+;;/// 				"(BODYSTRUCTURE)")))
+;;///     (if (not (pair? res))
+;;/// 	res
+;;/// 	(if (pair? (car res))
+;;/// 	    res
+;;/// 	    (list res)))))
+;;/// 
+;;/// 
+;;/// ;; ----------------------------------------------------------------------
+;;/// ;;	imap-message-envelope ...
+;;/// ;; ----------------------------------------------------------------------
+;;/// (define (imap-message-envelope s num)
+;;///   (let ((res (%imap-get* 'imap-message-envelope
+;;/// 				s
+;;/// 				num
+;;/// 				"(ENVELOPE)")))
+;;///     (if (not (pair? res))
+;;/// 	res
+;;/// 	(if (pair? (car res))
+;;/// 	    res
+;;/// 	    (list res)))))
+;;/// 
+;;/// ;; ----------------------------------------------------------------------
+;;/// ;;	imap-message-part ...
+;;/// ;; ----------------------------------------------------------------------
+;;/// (define (imap-message-part s num part)
+;;///   (let ((parts (imap-message-structure s num)))
+;;///     (if (and (list? parts)
+;;/// 	     (< part (length parts)))
+;;/// 	(list (list-ref parts part)
+;;/// 	      (%imap-get* 'imap-message-part
+;;/// 				 s
+;;/// 				 num
+;;/// 				 (format "BODY.PEEK[~a]" (+ part 1))))
+;;/// 	#f)))
+;;/// ;//FIXME:
+;;/// 
+;;/// ;; ----------------------------------------------------------------------
+;;/// ;;	imap-message-parts ...
+;;/// ;; ----------------------------------------------------------------------
+;;/// (define (imap-message-parts s num)
+;;///   (let ((parts (imap-message-structure s num)))
+;;///     (if (pair? parts)
+;;/// 	(let loop ((parts parts)
+;;/// 		   (count 1)
+;;/// 		   (res '()))
+;;/// 	  (if (null? parts)
+;;/// 	      (reverse! res)
+;;/// 	      (loop (cdr parts)
+;;/// 		    (+ count 1)
+;;/// 		    (cons (list (car parts)
+;;/// 				(%imap-get* 'imap-message-parts
+;;/// 						   s
+;;/// 						   num
+;;/// 						   (format "BODY.PEEK[~a]" count)))
+;;/// 			  res)))))))
+;;/// ;//FIXME:
+
+;; ----------------------------------------------------------------------
+;;	imap-message-flags-change(*)! ...
+;; ----------------------------------------------------------------------
+(define (%imap-doflags where s num flags opt)
+  (%imap-result where
+		s
+		flags
+		(%imap-send s
+			    (format "UID STORE ~A ~AFLAGS.SILENT ~A" num opt flags)
+			    void
+			    void)
+		(void)))
+
+(define (imap-message-flags-change! s num flags)
+  (%imap-doflags 'imap-message-flags-change! s num flags ""))
+
+(define (imap-message-flags-change*! s num flags)
+  (imap-message-flags-change! s (%imap-arg num ",") flags))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-flags-set(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-flags-set! s num flags)
+  (%imap-doflags 'imap-message-flags-set! s num flags "+"))
+
+(define (imap-message-flags-set*! s num flags)
+  (imap-message-flags-set! s (%imap-arg num ",") flags))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-flags-unset(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-flags-unset! s num flags)
+  (%imap-doflags 'imap-message-flags-unset! s num flags "-"))
+
+(define (imap-message-flags-unset*! s num flags)
+  (imap-message-flags-unset! s (%imap-arg num ",") flags))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-delete(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-delete! s num)
+  (%imap-doflags 'imap-message-delete! s num "\\Deleted" "+"))
+
+(define (imap-message-delete*! s num)
+  (imap-message-delete! s (%imap-arg num ",")))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-undelete(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-undelete! s num)
+  (%imap-doflags 'imap-message-undelete! s num "\\Deleted" "-"))
+
+(define (imap-message-undelete*! s num)
+  (imap-message-undelete! s (%imap-arg num ",")))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-flagged(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-flagged! s num)
+  (%imap-doflags 'imap-message-flagged! s num "\\Flagged" "+"))
+
+(define (imap-message-flagged*! s num)
+  (imap-message-flagged! s (%imap-arg num ",")))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-unflagged(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-unflagged! s num)
+  (%imap-doflags 'imap-message-unflagged! s num "\\Flagged" "-"))
+
+(define (imap-message-unflagged*! s num)
+  (imap-message-unflagged! s (%imap-arg num ",")))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-exists? ...
+;; ----------------------------------------------------------------------
+(define (imap-message-exists? s uid)
+  (let ((result #f))
+    (%imap-send s
+		(format "UID FETCH ~A UID" uid)
+		(lambda (x)
+		  (when (and (pair? x) (not (equal? (car x) "NO")))
+		    (set! result #t)))
+		void)
+    result))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-copy!(*)! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-copy! s num folder)
+  (%imap-result 'imap-message-copy!
+		s
+		num
+		(%imap-send s
+			    (format "UID COPY ~A ~A" num folder)
+			    void
+			    void)
+		(void)))
+
+(define (imap-message-copy*! s num folder)
+  (imap-message-copy! s (%imap-arg num ",") folder))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-move ...
+;; ----------------------------------------------------------------------
+(define (imap-message-move! s num folder)
+  (imap-message-copy! s num folder)
+  (imap-message-delete! s num))
+
+(define (imap-message-move*! s num folder)
+  (imap-message-move! s (%imap-arg num ",") folder))
+
+;; ----------------------------------------------------------------------
+;;	imap-message-create! ...
+;; ----------------------------------------------------------------------
+(define (imap-message-create! s name txt)
+  (let ((reply (%imap-send s
+			   (format "APPEND ~S {~A}"
+				   name (string-length txt))
+			   void
+			   (lambda (k)
+                             (when (imap-debug)
+                               (fprintf (current-error-port) "<< ~A\n" k))
+			     (let ((out (socket-output s)))
+			       (fprintf out "~A\r\n" txt)
+			       (flush-output-port out))))))
+    (%imap-result 'imap-message-create! s name reply (void))))
+
+;; ----------------------------------------------------------------------
+;;	shortcuts ...
+;; ----------------------------------------------------------------------
+(define (imap-folder-messages s)	(imap-message* s :all))
+(define (imap-folder-headers s)		(imap-message-header* s :all)) 
+(define (imap-folder-bodies s)		(imap-message-body* s :all))
+(define (imap-folder-sizes s)		(imap-message-size* s :all))
+(define (imap-folder-internal-dates s)	(imap-message-internal-date* s :all))
+(define (imap-folder-flags s)		(imap-message-flags* s :all))
+(define (imap-folder-infos s)		(imap-message-info* s :all))
+(define (imap-folder-header-fields s f)	(imap-message-header-field* s :all f))
+
+

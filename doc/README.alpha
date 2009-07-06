@@ -1,0 +1,3 @@
+The Bigloo library cannot be compiled in -O3 and more an Alpha
+architecture. -O2 is the maximun optimization level with both CC and
+GCC under that architecture otherwise call/cc crashes.

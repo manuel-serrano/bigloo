@@ -1,0 +1,47 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/ide.scr                          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Oct  8 04:13:01 2001                          */
+;*    Last change :  Wed Jan  2 12:20:26 2002 (serrano)                */
+;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Programming Environment                                          */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Ide                                                              */
+;*---------------------------------------------------------------------*/
+(chapter :title "Integrated Programming Environment" :number #f :toc #f :file #t
+
+(font :size "+1" [Bigloo contains an integrated development environment:
+the ,(bold "Bee.")])
+
+(itemize (item [The Bee helps at browsing source file, generating makefiles:
+,(linebreak 2)
+,(image :file "screenshots/bee-plain.gif")
+,(linebreak 2)])
+	 (item [The Bee contains an online documentation system. Clicking on a
+program identifier pops up a window displaying the associated documentation
+page:
+,(linebreak 2)
+,(image :file "screenshots/bee-online.gif")
+,(linebreak 2)])
+	 (item [The Bee handles Bigloo module compilation. When an error is
+detected it is displayed inside the source code:
+,(linebreak 2)
+,(image :file "screenshots/bee-error.gif")
+,(linebreak 2)])
+	 (item [When programs have to be debugged, the Bee provides with
+a symbolic debugger:
+,(linebreak 2)
+,(image :file "screenshots/bee-bdb.gif")
+,(linebreak 2)]))
+
+(linebreak 2)
+[The Bee requires 
+,(ref :url "http://www.gnu.org/software/emacs/emacs.html" 
+      :text "gnu-emacs release 21") or
+,(ref :url "http://www.xemacs.org/"
+      :text "Xemacs release 20.4")
+or more recent.])

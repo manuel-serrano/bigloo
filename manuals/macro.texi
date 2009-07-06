@@ -1,0 +1,88 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/macro.texi                   @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 13:35:42 1998                          @c
+@c    Last change :  Tue Oct 23 16:45:39 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Macro expansion.                                                 @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Macro expansion                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Macro Expansion, Parameters, Eval, Top
+@comment  node-name,  next,  previous,  up
+@chapter Macro expansion
+@cindex macro expansion
+
+Bigloo makes use of two macro expansion system. The one based on the
+expansion passing style [Dybvig et al. 86] and the one advocated
+by the R5RS, for which see @value{R5RS}.
+
+@c ------------------------------------------------------------------- @c
+@c    EPS macro expansion                                              @c
+@c ------------------------------------------------------------------- @c
+@section Expansion passing style macros
+@cindex expansion passing style
+@deffn {bigloo syntax} define-expander name proc
+This form defines an expander, @var{name}, where @var{proc}
+is a procedure of two arguments: a form to macro-expand,
+and an expander.
+@end deffn
+
+@deffn {bigloo syntax} define-macro (name [args]@dots{}) body
+This form is itself macro-expanded into a @code{define-expander} form.
+
+Macro expanders cannot be exported or imported since there is no way
+to specify expanders in a module declaration.
+
+Macros defined with @code{define-expander} and @code{define-macro}
+are used by both the compiler and the interpreter.
+@end deffn
+
+Here is an example of an expander:
+@smalllisp
+(define-expander when 
+   (lambda (x e)
+      (match-case x
+         ((?- ?test . ?exps)
+          (e `(if ,test (begin ,@@exps)) e))
+         (else
+           (error "when" "illegal form" x)))))
+
+(when (> a 0) (print a) a)
+   @expansion{} (if (> a 0) (begin (print a) a))
+@end smalllisp
+
+The same example can written with a @code{define-macro} form:
+@smalllisp
+(define-macro (when test . exps)
+   `(if ,test (begin ,@@exps)))
+@end smalllisp
+
+@c ------------------------------------------------------------------- @c
+@c    r5rs macro                                                       @c
+@c ------------------------------------------------------------------- @c
+@section Revised(5) macro expansion
+@cindex revised(5) macro expansion
+Bigloo support the Revised(5) Report on the Scheme programming language.
+For a detailed documentation see @xref{Expressions,,r5rs.info,R5RS}.
+
+@deffn {syntax} let-syntax (binding@dots{}) body
+@deffnx {syntax} letrec-syntax (binding@dots{}) body
+@deffnx {syntax} define-syntax keyword transformer
+@deffnx {syntax} syntax-rules literals rule@dots{}
+These three forms are compatible with the description of the
+Revised(5) Report on the Algorithmic Language Scheme.
+
+Implementation Note: Current Bigloo does not ensure hygiene for
+@code{let-syntax} and @code{letrec-syntax}. Hygienic expansion is
+only guaranteed for @code{define-syntax}.
+@end deffn
+
+
+
+
+
+

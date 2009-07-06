@@ -1,0 +1,67 @@
+.TH BGLJFILE 1 "Mar 8 2001" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+Bgljfile \- a Jvm Access File Generator
+
+.SH SYNOPSIS
+.B bgljfile
+[ options ]
+.I file ...
+
+.SH DESCRIPTION
+.B Bgljfile
+is a Jvm Access File generator. It produces file that suits Bigloo
+option \fI-bgljfile\fR. A Jvm Access File is a scheme list. Each elements
+of that list is a list of at least two elements: a module name, the Java
+class file that implements that module. 
+
+.SH OPTIONS
+
+.TP 14
+.TP
+\fBfile\fR
+Is an file implementing a module. 
+.B Bgljfile
+reads that file to discover the name of the implemented module.
+
+.TP
+\fB-base\fR
+Set the Jvm base package.
+
+.TP
+\fB-o <file>\fR
+Print Module Access File into \fIfile\fR. The default is to print the list
+on the standard output device.
+
+.TP
+\fB-suffix <suf>\fR
+Adds \fIsuf\fR to the \fBbgljfile\fR source file suffixes list. Default 
+suffixes are "scm", "sch" and "bgl".
+
+.SH "EXAMPLE"
+If the three files exists and contain legal Bigloo module clause, then:
+
+   $ bgljfile foo.scm bar.scm gee.scm
+
+could print out a list like:
+
+.sp 0
+(
+.sp 0
+  (foo "./foo")
+.sp 0
+  (bar "./bar")
+.sp 0
+  (gee "./gee")
+.sp 0
+)
+
+.SH "SEE ALSO"
+bigloo(1), bgldepend(1), bglmake(1), bglpp(1), bglprof(1), bgltags(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr

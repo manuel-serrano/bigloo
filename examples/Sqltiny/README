@@ -1,0 +1,2 @@
+This program implements a REPL for Bigloo's SQLtiny. It mimics SQLITE3
+executable.

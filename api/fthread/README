@@ -1,0 +1,21 @@
+Since release 2.4d, Bigloo supports threads. Please refer to the
+Bigloo manual for any question regarding thread API and the thread
+semantics.
+
+The Bigloo threads implementation requires a support for native
+Posix threads from the host operating system, except for JVM and
+.NET back-ends. In consequence the thread implementation is uneasy
+to port. Here is the list of platforms that support threads:
+
+	- the JVM and .NET back-ends on *all* platforms
+
+	- Linux/x86
+
+	- Solaris
+
+	- HP-UX
+
+	- Win32 in the Windows version of Bigloo
+
+Please refer to the fthread/INSTALL file for any information about
+the Bigloo fair threads installation.

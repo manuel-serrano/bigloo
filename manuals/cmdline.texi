@@ -1,0 +1,117 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/scribe/examples/info/cmdline.texi           @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 13:53:41 1998                          @c
+@c    Last change :  Wed Oct 24 16:28:54 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Command Line Parsing                                             @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Command Line Parsing                                             @c
+@c ------------------------------------------------------------------- @c
+@node Command Line Parsing, Cryptography, Posix Regular Expressions, Top
+@comment  node-name,  next,  previous,  up
+@chapter Command Line Parsing
+@cindex command line parsing
+@cindex arguments parsing
+
+Bigloo supports command line argument parsing. That is, when an
+application is spawn from an Unix shell, the @code{main} function
+ is called and its argument is bound to the list of the command line
+arguments, @xref{Modules, ,Module declaration}. The
+@code{args-parse} form may be used to parse these.
+
+@deffn {bigloo syntax} args-parse list rules [null-rule] [else-rule] @dots{}
+
+The argument @var{list} is a list of strings. @var{Rules} is defined by
+the following grammar:
+
+@smallexample
+<rule>      @expansion{} (@code{section} <string>)
+              | ((<option> <help>) <s-expression>)
+              | ((<option>) <s-expression>)
+              | ((<flag> <var> <var> ...) <s-expression>)
+              | ((<flag> <var> <var> ... <help>) <s-expression>)
+<null-rule> @expansion{} (@code{()} <s-expression>)
+<else-rule> @expansion{} (@code{else} <s-expression>)
+<option>    @expansion{} <flag>
+              | <string><var>
+<flag>      @expansion{} <string>
+              | (<string>+)
+<var>       @expansion{} an identifier leaded by the @code{?} character
+<help>      @expansion{} (@code{help} <s-expression>)
+              | (@code{help} <string> <s-expression>)
+@end smallexample
+
+Each elements of @var{list} are match against the @var{rules}. If one
+of these matches, @code{args-parse} proceeds as follows:
+
+@enumerate
+@item The matched argument elements of @var{list} are removed from the list.
+@item The @code{<s-expression>} associated to the matching rule
+      is evaluated in an environment where the rule variables are bound. 
+@item The argument parsing is resumed with the rest of @var{list}.
+@end enumerate
+@end deffn
+
+In addition to parsing the command line arguments, @code{args-parse} enables
+help message printing. 
+
+@deffn {bigloo procedure} args-parse-usage fmt
+This is a procedure of one argument, an boolean. @code{Args-parse-usage}
+constructs an help message from all the option described in a @code{args-parse}
+form. @code{Args-parse-usage} is only defined in the @code{<s-expression>}
+of an @code{args-parse} form.
+@end deffn
+
+At last, if no rule matches an argument and if the @code{args-parse}
+form contains an @code{else} rule, this is evaluated. In the
+@code{<s-expression>} part of that rule, the pseudo-variable
+@code{else} is bound to the first unmatched argument and the pseudo-variable
+@code{rest} is bound to all the unmatched arguments.
+
+Here is an example of argument parsing deploying all the possible rules:
+
+@smalllisp
+(module args-example
+   (main main))
+
+(define (main argv)
+   (args-parse (cdr argv)
+      (section "Help")
+      (("?")
+       (args-parse-usage #f))
+      ((("-h" "--help") (help "?,-h,--help" "This help message"))
+       (args-parse-usage #f))
+      (section "Misc")
+      ((("-v" "--version") (help "Version number"))
+       (print *version*))
+      (("-o" ?file (help "The output file"))
+       (set! *dest* file))
+      (("--input=?file" (help "The input file"))
+       (set! *input* file))
+      (else
+       (print "Illegal argument `" else "'. Usage:")
+       (args-parse-usage #f))))
+@end smalllisp
+
+Invoking the compiled @code{args-example} module could produce:
+
+@display
+> bigloo.new args.scm
+args.scm:
+> a.out toto        
+Illegal argument `toto'. Usage:
+
+Help:
+   ?,-h,--help    --  This help message
+
+Misc:
+   -v,--version   --  Version number
+   -o <file>      --  The output file
+   --input=<file> --  The input file
+@end display
+
+

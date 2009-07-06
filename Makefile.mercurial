@@ -1,0 +1,63 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/Makefile.mercurial                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug 16 06:22:55 2006                          */
+#*    Last change :  Sat Oct 27 10:41:40 2007 (serrano)                */
+#*    Copyright   :  2006-07 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    The Mercurial specific part of the Bigloo Makefile               */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Mercurial commands                                               */
+#*---------------------------------------------------------------------*/
+VM-POPULATE	= hg add
+VM-COMMIT	= hg commit
+VM-PUSH		= hg push
+VM-PULL		= hg pull
+VM-CLONE	= hg clone
+VM-TAG		= hg tag
+
+#*---------------------------------------------------------------------*/
+#*    populate ...                                                     */
+#*---------------------------------------------------------------------*/
+populate:
+	find . -name '*~' -exec /bin/rm {} \;
+	$(VM-POPULATE) `$(MAKE) popfilelist`
+
+populate.hg-populate-bug-workaround:
+	find . -name '*~' -exec /bin/rm {} \;
+	for p in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
+	  $(VM-POPULATE) `$(MAKE) popfilelist | grep -e ^$$p`; \
+	done
+          
+#*---------------------------------------------------------------------*/
+#*    revision ...                                                     */
+#*---------------------------------------------------------------------*/
+revision: populate
+	if [ "$(LOGMSG) " != " " ]; then \
+	   $(VM-COMMIT) $(OPT) -m "$(LOGMSG)"; \
+        else \
+	   $(VM-COMMIT) $(OPT); \
+        fi
+	if [ -f .bigloorelease ]; then \
+          release=`cat .bigloorelease`; \
+          if [ "$(RELEASE) " != "$$release " ]; then \
+            echo $(RELEASE) > .bigloorelease; \
+            $(VM-TAG) $(RELEASE); \
+          fi \
+        else \
+          echo $(RELEASE) > .bigloorelease; \
+          $(VM-TAG) $(RELEASE); \
+        fi
+
+#*---------------------------------------------------------------------*/
+#*    checkout ...                                                     */
+#*---------------------------------------------------------------------*/
+checkout:
+	@ $(VM-CLONE) $(BOOTDIR) \
+           && $(RM) -rf bigloo/.hg \
+           && $(RM) -rf bigloo/.hgignore \
+           && $(RM) -rf bigloo/.hgtags
+

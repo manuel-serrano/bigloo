@@ -1,0 +1,412 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/bigloo.skb                       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
+;*    Last change :  Wed May 27 09:18:29 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Bigloo web page                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Document style                                                   */
+;*---------------------------------------------------------------------*/
+(skribe-load "changelog.skr")
+
+;*---------------------------------------------------------------------*/
+;*    Global configuration                                             */
+;*---------------------------------------------------------------------*/
+(define *manuel-serrano*
+  "http://www.inria.fr/mimosa/Manuel.Serrano")
+
+;*---------------------------------------------------------------------*/
+;*    *biglook-url*                                                    */
+;*---------------------------------------------------------------------*/
+(define *biglook-url*
+   "ftp://ftp-sop.inria.fr/mimosa/fp/Bigloo/apps/biglook-beta-1.0-03Aug07.tgz")
+
+;*---------------------------------------------------------------------*/
+;*    menu ...                                                         */
+;*---------------------------------------------------------------------*/
+(define-markup (menu e #!rest opt #!key title)
+   (table :width 95. :border 2 :frame 'box :cellpadding 1 :cellspacing 0
+	  :class "menu"
+	  (tr :bg (engine-custom e 'title-background) 
+	      (th (color :fg (engine-custom e 'background) (bold title))))
+	  (tr :bg (engine-custom e 'background) 
+	      (td :align 'left (the-body opt)))))
+
+;*---------------------------------------------------------------------*/
+;*    HTML customizations                                              */
+;*---------------------------------------------------------------------*/
+(let* ((he (find-engine 'html))
+       (tro (markup-writer-get 'tr he)))
+   (markup-writer 'tr he
+      :class 'download-header
+      :options '(:width :bg)
+      :action (lambda (n e)
+		 (let ((c (engine-custom e 'title-background)))
+		    (markup-option-add! n :bg c)
+		    (output n e tro))))
+   (markup-writer 'tr he
+      :class 'download-plain
+      :options '(:width :bg)
+      :action (lambda (n e)
+		 (let ((c (engine-custom e 'section-title-background)))
+		    (markup-option-add! n :bg c)
+		    (output n e tro))))
+   (markup-writer 'tr he
+      :class 'header
+      :options '(:width :bg)
+      :action (lambda (n e)
+		 (markup-option-add! n :bg "#cccccc")
+		 (output n e tro)))
+   (let ((armed #f))
+      (markup-writer 'prog he
+	 :class 'example
+	 :predicate (lambda (n e)
+		       (not armed))
+	 :options 'all
+	 :action (lambda (n e)
+		    (set! armed #t)
+		    (skribe-eval
+		     (color :bg "#ffffcc" :width 100. (font :size -1 n))
+		     e)
+		    (set! armed #f))))
+   (engine-custom-set! he 'favicon "icons/lambda.gif")
+   (engine-custom-set! he 'css "bigloo.css")
+   (engine-custom-set! he 'left-margin-size 25.)
+   (engine-custom-set! he 'left-margin
+      (let ((apps (include "applications.skb")))
+	 (lambda (n e)
+	    (list (linebreak)
+		  (center
+		     (menu e :title "Table of contents"
+			   (ref :ident "Bigloo homepage")
+			   (toc (handle (ast-document n)))))
+		  (linebreak)
+		  (center
+		     (menu e :title "Technical information"
+			   (ref :ident "Papers & Reports")
+			   (linebreak 2)
+			   (ref :url *wiki.url* 
+			      :text "Bigloo wiki")
+			   (linebreak 2)
+			   (ref :url *mailing-archive.url1* 
+			      :text "Mailing archive")
+			   (linebreak)
+			   (ref :url *mailing-archive.url2* 
+			      :text "Mailing archive (mirror)")))
+		  (linebreak)
+		  (center
+		     (menu e :title "Programming Environment"
+			   (ref :url *scmpkg.url* :text "Packages")
+			   (linebreak)
+			   (ref :url *bugloo.url* :text "Bugloo")
+			   (linebreak)
+			   (ref :ident "Integrated Programming Environment")
+			   (linebreak)
+			   (ref :url *biglook-url* :text "Biglook")))
+		  (linebreak)
+		  (center
+		     (menu e :title "Contributions"
+			   (ref :url "http://timeburger.com/bigloo-setup"
+			      :text "bigloo-setup")
+			   (linebreak)
+			   (ref :ident "Libraries")
+			   (linebreak)
+			   (ref :ident "Extensions & Tools")
+			   (linebreak 2)
+			   (ref :url "http://bigloo-lib.sourceforge.net/"
+			      :text "Bigloo-lib")
+			   (linebreak)
+			   (ref :url "http://web.mit.edu/farr/www/finalize/finalize.html"		
+				:text "Finalizers Bigloo library")
+			   (linebreak)
+			   (ref :url *bigloo.deb*
+			      :text "Debian package")
+			   (linebreak)
+			   (ref :url *bigloo.fdr*
+			      :text "Fedora package")
+			   (linebreak)
+			   (ref :url *bigloo.win32*
+			      :text "Windows support")
+			   (linebreak)
+			   ))
+		  (linebreak 1)
+		  (center
+		     (menu e :title "Applications" apps))))))
+   (engine-custom-set! he 'javascript #t))
+
+;*---------------------------------------------------------------------*/
+;*    Document                                                         */
+;*---------------------------------------------------------------------*/
+(document :title "Bigloo homepage"
+          :ident "Bigloo homepage"
+	  :author (author :affiliation "Inria Sophia-Antipolis"
+			  :address `("2004 route des Lucioles - BP 93"
+				     "F-06902 Sophia Antipolis, Cedex"
+				     "France"))
+	  
+;*---------------------------------------------------------------------*/
+;*    Presentation                                                     */
+;*---------------------------------------------------------------------*/
+(section :title "Presentation" :number #f :toc #f [
+Bigloo is a Scheme implementation devoted to one goal: enabling
+Scheme based programming style where C(++) is usually
+required. Bigloo attempts to make Scheme practical 
+by offering features usually presented by traditional programming 
+languages but not offered by Scheme and functional programming. Bigloo
+compiles Scheme modules. It delivers small and fast stand alone
+binary executables. Bigloo enables full connections between Scheme
+and C programs, between Scheme and Java programs, and between Scheme and
+C# programs.
+
+,(linebreak 2)
+
+,(center
+  (frame
+   (font :size "+1" (bold [Current version is ,(color :fg "red" *bigloo-version*), released ,(begin *bigloo-date*)]))))
+
+,(linebreak 2) 
+
+The highlights of this release are
+(see the ,(ref :chapter "ChangeLog") for a detailed
+list of novelties of this release):
+,(itemize (item [An experimental .NET bytecode generator.])
+          (item [New library facilities (date, IOs, timer).])
+	  (item [Improved code generation.]))
+
+You may also find simple examples illustrating original Bigloo
+features ,(ref :ident "Features" :text "here").
+
+,(p [The Bigloo C code generator delivers fast binaries executables for the
+Unix operating system. The Bigloo JVM code generator delivers highly
+portable JVM class files (or jar files) that can be run on any JVM
+runtime environment (Sun's JDK, Netscape Applets, etc.). We have
+measured that in general, Scheme modules when compiled to JVM are in
+between 2 and 4 times slower than their C counterpart.])])
+
+;*--- Downloading -----------------------------------------------------*/
+(section :title "Downloading Bigloo" :number #f :toc #f [
+
+You may download the Bigloo distribution in
+,(ref :url (format "ftp://~a~a/~a" *ftp-host* *ftp-dir* *bigloo.tar.gz*)
+      :text "tar.gz") format.
+
+,(paragraph [You may download pre-compiled versions (MacOS X bundle,
+Debian package, Win32 installer, JVM), old distributions or get
+information on systems where Bigloo has been ported to by following
+this ,(ref :ident "Downloading" :text "link").])])
+
+;*--- Packages -----------------------------------------------------*/
+(section :title "Packages" :number #f :toc #f [
+
+Since version 3.0a Bigloo is provided with a packaging system. This
+system provides public source code for Bigloo. The packages can be
+automatically installed using the ,(tt "bglpkg") command. They can
+also be browsed at the ,(ref :url *scmpkg.url* :text "ScmPkg") web site.])
+
+;*--- News ------------------------------------------------------------*/
+(section :title "Related" :number #f [
+,(itemize 
+
+(item [,(bold "27 May 2009:") ,(color :fg "red" "MacOS X bundle") released (see Section ,(ref :ident "Downloading" :text "download")).])
+
+(item [,(bold "27 May 2009:") new ,(color :fg "red" "Win32") port (see Section ,(ref :ident "Downloading" :text "download")) is available.])
+
+(item [,(bold "1 Jun 2007:") ,(color :fg "red" "ScmPkg") is released])
+
+(item [,(bold "17 Mar 2004:") ,(color :fg "red" "Fedora packages") for 
+2.6c kindly provided by Gerard Milmeister.])
+
+(item [,(bold "18 jul 2003:") A sucessful installation of Bigloo2.5c
+on ,(color :fg "red" "Sharp Zaurus (Openzaurus 3.2)") has been reported.])
+
+(item [,(bold "15 jul 2003:") ,(color :fg "red" "Win32") installer available.])
+
+(item [,(bold "28 Mar 2003:") Thanks to Peter Ivanyi, 
+,(ref :url "http://www.sect.mce.hw.ac.uk/~peteri/sx/index.html" :text "SX"), 
+a ,(color :fg "red" "3D modeler") can be accessed from Bigloo programs.])
+
+(item [,(bold "6 feb 2003:") 
+Thanks to Sven Hartrumpf, ,(color :fg "red" "SCOP") Scheme 
+Binding version 0.3 is now available 
+,(ref :url "http://pi7.fernuni-hagen.de/hartrumpf/scop/").])
+
+(item [,(bold "23 Jan 2003:") The ,(color :fg "red" "Bugloo")
+debugger version 0.1d is available at ,(ref :url *bugloo.url*).])
+
+(item [,(bold "8 Dec 2002:")
+,(ref :url "http://pair.com/lisovsky/xml/index.html" :text "SXPath") 
+that is part of the ,(color :fg "red" "SXML") suite is now available.])
+
+(item [,(bold "5 Dec 2002:")
+Read Bigloo in the ,(color :fg "red" "press") in
+,(ref :url "http://www.frozen-north-linuxonline.com/" 
+      :text [Frozen North Linux online]).])
+
+(item [,(bold "9 Sep 2002:")
+A successful installation of Bigloo2.5b on
+,(color :fg "red" "Windows XP") has been reported.])
+
+(item [,(bold "6 Sep 2002:")
+,(color :fg "red" "Hygienic macros") have now a much better support. Shared 
+libraries use a new naming convention.])
+
+(item [,(bold "1 Mar 2002:")
+,(color :fg "red" "Fthread") library is now included in the standard
+Bigloo release.])
+
+(item [,(bold "1 Feb 2002:")
+Bigloo emacs environment now support ,(color :fg "red" "XEmacs") and
+,(color :fg "red" "GNU-Emacs").])
+
+(item [,(bold "3 Dec 2001:")
+Successful compilation on ,(color :fg "red" "Mac OS X 10.1").])
+
+(item [,(bold "3 Dec 2001:")
+Kirill Lisovsky released
+,(ref :url "http://pair.com/lisovsky/scheme/lit/mole/" :text "Mole"),
+a system enabling literate programming in Scheme and
+,(ref :url "http://www196.pair.com/lisovsky/ad/hive/" :text "Hive"), a
+source code manager.])
+
+(item [,(bold "31 oct 2001: ")
+Oleg kiselyov reports successful installation on ,(color :fg "red" "FreeBSD 4.0").])
+
+(item (bold "25 oct 2001: ")
+      (ref :url "http://pair.com/lisovsky/download/curl-bigloo.tgz"
+	   :text "A Bigloo Curl binding"))
+
+(item (bold "24 oct 2001: ")
+      "New ports (many thanks to Matthew Danish).")
+
+(item (bold "24 oct 2001: ")
+      "New HTML file for the Bigloo documentation.")
+
+(item (bold "19 oct 2001: ")
+      (ref :url "http://www.ispras.ru/~grinev/download/BiglooContribution/Bigloo-java-thread.zip"
+	   :text "Another example of Bigloo/Java that uses Java threads."))
+
+(item (bold "15 oct 2001: ")
+      (ref :url "http://www.ispras.ru/~grinev/download/BiglooContribution/bigloo-java-example.zip"
+	   :text "Another example of Bigloo/Java connection.")))])
+
+;*--- Ide -------------------------------------------------------------*/
+(section :title "Bigloo Integrated Environment" :number #f :toc #f (p [
+Since release 2.0, Bigloo contains an integrated development environment: the
+,(ref :ident "Integrated Programming Environment" :text "Bee").
+This environment handles Makefile generation, project management, 
+symbolic debugging, source file browsing, profile for tuning, etc.]))
+
+;*--- documentation ---------------------------------------------------*/
+(section :title "Online Documentation" :number #f :toc #f (p [
+You may find ,(ref :ident "Documentation")
+for Bigloo and the Bee from this site. You can browse it online or
+download it.])
+   
+   (p [In addition, extra information and examples may be found on the
+Bigloo ,(ref :url *wiki.url* :text "wiki").]))
+
+;*--- Registration ----------------------------------------------------*/
+(section :title "Mailing list" :number #f [
+
+The Bigloo mailing list is now hosted by
+,(mailto "sympa@lists-sop.inria.fr?subject=HELP" :text "sophia.inria.fr").
+The new email address is ,(mailto "bigloo@sophia.inria.fr").
+,(linebreak 2)
+
+Information requests, subcription/unsubscription to the mailing list must
+be sent to ,(mailto "sympa@lists-sop.inria.fr.")
+
+,(itemize 
+(item [To ,(bold "subscribe") to the mailing list, simply send a
+message with the  words ,(tt "subscribe bigloo") in the ,(tt "Subject:")
+field to the above address. Alternatively you can click the following link:
+,(mailto "sympa@lists-sop.inria.fr?subject=subscribe%20bigloo"
+	 :text "subscribe now")])
+(item [To ,(bold "unsubscribe") to the mailing list, simply send
+a message with the word ,(tt "unsubscribe bigloo") in the ,(tt "Subject:")
+field to ,(tt "sympa@lists-sop.inria.fr.") Alternatively you can click
+the following link:
+,(mailto "sympa@lists-sop.inria.fr?subject=unsubscribe%20bigloo"
+	 :text "unsubscribe now")])
+(item [To get some ,(bold "help") with the mailing list, simply send
+a message with the word ,(tt "HELP") in the ,(tt "Subject:")
+field to ,(tt "sympa@lists-sop.inria.fr.") Alternatively you can click the following link:
+,(mailto "sympa@lists-sop.inria.fr?subject=HELP" :text "help now")]))
+
+The messages of the mailing list are archived at: 
+,(ref :url *mailing-archive.url1*) and ,(ref :url *mailing-archive.url2*).])
+
+;*--- License ---------------------------------------------------------*/
+(section :title "License" :number #f [
+
+,(itemize 
+(item [The Bigloo run-time system and the libraries
+are distributed under the terms of the
+,(ref :url "http://www.gnu.org/copyleft/lgpl.html"
+      :text "GNU Library General Public License")])
+(item [The compiler and the tools are distributed under
+the terms of the ,(ref :url "ftp://ftp.gnu.ai.mit.edu/pub/gnu/COPYING"
+		       :text "GNU General Public License.")]))])
+
+;*---------------------------------------------------------------------*/
+;*    Features ...                                                     */
+;*---------------------------------------------------------------------*/
+(include "features.skb")
+
+;*---------------------------------------------------------------------*/
+;*    Downloading Bigloo                                               */
+;*---------------------------------------------------------------------*/
+(include "download.skb")
+
+;*---------------------------------------------------------------------*/
+;*    Documentation                                                    */
+;*---------------------------------------------------------------------*/
+(include "documentation.skb")
+
+;*---------------------------------------------------------------------*/
+;*    ChangeLog                                                        */
+;*---------------------------------------------------------------------*/
+(include "log.skb")
+
+;*---------------------------------------------------------------------*/
+;*    Libraries                                                        */
+;*---------------------------------------------------------------------*/
+(include "libraries.skb")
+
+;*---------------------------------------------------------------------*/
+;*    Contribs                                                         */
+;*---------------------------------------------------------------------*/
+(include "contribs.skb")
+
+;*---------------------------------------------------------------------*/
+;*    Ide                                                              */
+;*---------------------------------------------------------------------*/
+(include "ide.skb")
+
+;* {*---------------------------------------------------------------------*} */
+;* {*    Benchmarking                                                     *} */
+;* {*---------------------------------------------------------------------*} */
+;* (include "benchmark.skb")                                           */
+;*                                                                     */
+;*---------------------------------------------------------------------*/
+;*    Technical information                                            */
+;*---------------------------------------------------------------------*/
+(include "technical.skb")
+)
+	 
+
+
+
+
+
+
+
+
+	 
+
+

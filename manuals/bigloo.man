@@ -1,0 +1,87 @@
+.TH BIGLOO 1 "Mar 8 2001" "Version 2.3"
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bigloo v2.3 \- `a practical Scheme compiler'
+
+.SH SYNOPSIS
+.B bigloo
+[ options ]
+.I [ input ]
+
+.SH DESCRIPTION
+.B Bigloo
+is a Scheme compiler. Scheme is defined in an IEEE standard for the
+Scheme Programming Language but Bigloo does not entirely conform to
+it. The compiler produces either C files or \fBJava\fR class
+files. The C files are then compiled by any \fBISO\fR C compiler to
+produce \fI.o\fR or \fIexecutable\fR files. \fBBigloo\fR is a module
+compiler which means that it is allowed to compile several files and
+to link them together to produce an unique executable.
+
+.SH OPTIONS
+
+.TP 16
+options
+Many options are available. Type `bigloo -help' to print them.
+.TP 16
+-jvm
+Produces Java class files instead of C files. This option has to be used
+when compiling and when linking.
+.TP 16
+-no-jvmjar
+Disable jar file production when linking with \fI-jvm\fR.
+.TP 16
+.I input
+If an input file is provided, Bigloo compiles it. Otherwise the interpreter
+is entered. Input must be a \fIrecognized\fR Scheme source file name (i.e.
+a file name with a recognized suffix (see \fI-suffix\fR option)).
+.SH CONFIGURATION FILE
+Each \fBBigloo\fR's user can use a special configuration file. This file
+must be named `~/.bigloorc'. This file makes it possible to modify the 
+behaviour of the compiler. This file is a regular Scheme file which contains
+expressions bound in an environment where compiler parameters are bound. 
+See the documentation for details.
+
+.SH ENVIRONMENT VARIABLES
+
+.TP 16
+.B BIGLOOHEAP
+Set the environment size (in megabytes). The default value is 4.
+.TP 16
+.B TMPDIR
+Set the temporary directory. The default value is `/tmp'.
+.TP 16
+.B BIGLOOLIB
+The path to find the Bigloo's library.
+.TP 16
+.B BIGLOOJAVAOPT
+Java Virtual Machine options when running Bigloo a application.
+
+.SH FILES
+/.../lib/bigloo/2.3a/bigloo.heap -- saved heap image for the compiler.
+.br
+/.../lib/bigloo/2.3a/bigloo.jheap -- saved heap image for the compiler for 
+\fI-jvm\fR compiations.
+.br
+/.../lib/bigloo/2.3a/bigloo.h -- definitions which are #include'd in the C code.
+.br
+/.../lib/bigloo/2.3a/libbigloo.a -- library.
+.br
+/.../lib/bigloo/2.3a/libbigloo_u.a -- library.
+.br
+~/.bigloorc -- user `runtime-command' configuration file.
+.br
+/.../.bigloorc -- idem.
+.br
+
+.SH "SEE ALSO"
+bglafile(1), bgljfile(1), bgldepend(1), bglmake(1), bglpp(1), bglprof(1), bgltags(1), bglmco(1), gcc(1), camloo(1), cigloo(1), jigloo(1).
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

@@ -1,0 +1,360 @@
+#*---------------------------------------------------------------------*/
+#*    Target and Project                                               */
+#*---------------------------------------------------------------------*/
+PROJECT		= $[PROJECT]
+VERSION		= 0
+TARGET_DIR      = lib
+TARGET_NAME     = $[TARGET-NAME]
+INIT_NAME	= $(TARGET_NAME).init
+TARGET_INIT	= $(TARGET_DIR)/$(INIT_NAME)
+TARGET_HEAP	= $(TARGET_DIR)/$(TARGET_NAME).heap
+TARGET_INCLUDE	= $(TARGET_DIR)/$(INCLUDE_SOURCE)
+TARGET_LIB	= $(TARGET_DIR)/lib$(TARGET_NAME)
+
+#*---------------------------------------------------------------------*/
+#*    Compilers, Flags and Tools ...                                   */
+#*---------------------------------------------------------------------*/
+# The Bigloo compiler
+BIGLOO          = bigloo
+BIGLOO_VERSION	:= $(shell $(BIGLOO) -eval "(print *bigloo-version*) (exit 0)" -q)
+BFLAGS_COMMON   = -q -afile $(AFILE) -init-lib
+BFLAGS_G        = $(BFLAGS_COMMON) -gbdb
+BFLAGS_O        = $(BFLAGS_COMMON) -O5 -unsafe -farithmetic
+BFLAGS_P        = $(BFLAGS_COMMON) $(BFLAGS_O) -p
+BFLAGS_E	= $(BFLAGS_COMMON) 
+BFLAGS          = $(BFLAGS_G)
+BHEAPFLAGS	= -heap-library $(TARGET_NAME) -unsafe -mkaddheap -mkaddlib -q -afile $(AFILE)
+AFILE_EXE	= bglafile
+JFILE_EXE	= bgljfile
+TAGS_EXE	= bgltags
+DEPEND_EXE	= bgldepend
+BMAKE_EXE	= bglmake
+# The C compiler
+CC              = gcc
+BGL_INC_DIR	:= $(shell $(BIGLOO) -eval '(begin (print *default-lib-dir*) (exit 0))' -q)
+CFLAGS_COMMON	= -I$(BGL_INC_DIR)
+CFLAGS_O	= -O2 $(CFLAGS_COMMON)
+CFLAGS_G	= -g $(CFLAGS_COMMON)
+CFLAGS_P        = -p $(CFLAGS_COMMON)
+CFLAGS_E	= $(CFLAGS_COMMON)
+CFLAGS          = $(CFLAGS_G)
+# Unix library builders
+AR		= ar
+ARFLAGS		= qcv
+RANLIB		= ranlib
+LDFLAGS		= #useful for Mac OS X, which needs to know where all libs are
+LDLIBS		= #same
+LD		= ld -G
+# Which shell to use
+SHELL           = /bin/sh
+# Revision system
+PRCS            = prcs
+# Tar and compress
+TAR             = tar
+TARCOPT         = cf
+TARXOPT         = xfp
+COMPRESS        = gzip
+# Afile
+AFILE		= .afile
+# Tags
+TAGS		= .etags
+# Profiling
+PROF		= PROF
+PROFILE_ARGS	= 
+
+#*---------------------------------------------------------------------*/
+#*    Suffixes ...						       */
+#*---------------------------------------------------------------------*/
+.SUFFIXES:
+
+#*---------------------------------------------------------------------*/
+#*    Automatic rules ...					       */
+#*    -------------------------------------------------------------    */
+#*    One may add some automatic rules. Before explicit rules, we      */
+#*    were making use of:                                              */
+#*---------------------------------------------------------------------*/
+.Olib_e/%.o: %.scm
+	@ $(BIGLOO) $(BFLAGS) $< -o $@ -c
+
+#* .Olib/%.o: %.scm                                                    */
+#* 	@ $(BIGLOO) $(BFLAGS) $*.scm -o .Olib/$*.o -c                  */
+#* .Olib_u/%.o: %.scm                                                  */
+#* 	@ $(BIGLOO) $(BFLAGS) $*.scm -o .Olib_u/$*.o -c                */
+#* .Olib_p/%.o: %.scm                                                  */
+#* 	@ $(BIGLOO) $(BFLAGS) $*.scm -o .Olib_p/$*.o -c                */
+#* .Olib/%.o: %.c                                                      */
+#* 	@ echo $*.c:                                                   */
+#* 	@ $(CC) $(CFLAGS) $*.c -o .Olib/$*.o -c                        */
+#* .Olib_u/%.o: %.c                                                    */
+#* 	@ echo $*.c:                                                   */
+#* 	@ $(CC) $(CFLAGS) $*.c -o .Olib_u/$*.o -c                      */
+#* .Olib_p/%.o: %.c                                                    */
+#* 	@ echo $*.c:                                                   */
+#* 	@ $(CC) $(CFLAGS) $*.c -o .Olib_p/$*.o -c                      */
+
+#*---------------------------------------------------------------------*/
+#*    Objects and sources ...					       */
+#*---------------------------------------------------------------------*/
+OBJECTS = 
+OBJECTS_E =
+OBJECTS_P = 
+SOURCES =  
+SOURCES_C =  
+POPULATION = $(SOURCES) $[ENTRY] $[MAKEFILE] $(INIT_NAME)
+
+#*---------------------------------------------------------------------*/
+#*    all ...				         		       */
+#*---------------------------------------------------------------------*/
+All: all
+all: init heap include libs
+
+#*---------------------------------------------------------------------*/
+#*    init ...                                                         */
+#*---------------------------------------------------------------------*/
+init: $(TARGET_DIR) $(TARGET_INIT)
+$(TARGET_INIT): $(INIT_NAME)
+	@- cp $(INIT_NAME) $(TARGET_INIT)
+
+#*---------------------------------------------------------------------*/
+#*    heap ...                                                         */
+#*---------------------------------------------------------------------*/
+heap: $(TARGET_DIR) $(TARGET_HEAP)
+$(TARGET_HEAP): $(SOURCES)
+	@- rm -f $(TARGET_HEAP)
+	@ $(BIGLOO) $(BHEAPFLAGS) $[ENTRY] -addheap $(TARGET_HEAP)
+	@ echo "$(TARGET_HEAP) done."
+	@ echo "-------------------------------"
+
+#*---------------------------------------------------------------------*/
+#*    include ...                                                      */
+#*---------------------------------------------------------------------*/
+include: $(TARGET_DIR) $(TARGET_INCLUDE)
+$(TARGET_INCLUDE): 
+	@ cp $(INCLUDE_SOURCE) $(TARGET_INCLUDE)
+
+#*---------------------------------------------------------------------*/
+#*    libs ...                                                         */
+#*---------------------------------------------------------------------*/
+libs: $(TARGET_DIR) lib_e lib_u lib.so lib.a
+lib_u: $(TARGET_DIR) lib_u.so lib_u.a 
+lib_p: $(TARGET_DIR) lib_p.so lib_p.a
+lib_e: $(TARGET_DIR) lib_e.so   # no .a target for loadable library
+
+# safe version
+lib.a: .Olib
+	@ $(MAKE) _lib.a                         \
+             CFLAGS="$(CFLAGS_G)"                \
+             BFLAGS="$(BFLAGS_G)"                \
+             OBJECTS="$(OBJECTS:%=.Olib/%)"      \
+             SUFFIX="_s"
+
+lib.so: .Olib
+	@ $(MAKE) _lib.so                        \
+             CFLAGS="$(CFLAGS_G)"                \
+             BFLAGS="$(BFLAGS_G)"                \
+             OBJECTS="$(OBJECTS:%=.Olib/%)"      \
+             SUFFIX="_s"
+
+# unsafe version
+lib_u.a: .Olib_u
+	@ $(MAKE) _lib.a                         \
+             CFLAGS="$(CFLAGS_O)"                \
+             BFLAGS="$(BFLAGS_O)"                \
+             OBJECTS="$(OBJECTS:%=.Olib_u/%)"    \
+             SUFFIX="_u"
+
+lib_u.so: .Olib_u
+	@ $(MAKE) _lib.so                        \
+             CFLAGS="$(CFLAGS_O)"                \
+             BFLAGS="$(BFLAGS_O)"                \
+             OBJECTS="$(OBJECTS:%=.Olib_u/%)"    \
+             SUFFIX="_u"
+
+# profile version
+lib_p.a: .Olib_p
+	@ $(MAKE) _lib.a                         \
+             CFLAGS="$(CFLAGS_P)"                \
+             BFLAGS="$(BFLAGS_P)"                \
+             OBJECTS="$(OBJECTS:%=.Olib_p/%)"    \
+             SUFFIX="_p"
+
+lib_p.so: .Olib_p
+	@ $(MAKE) _lib.so                        \
+             CFLAGS="$(CFLAGS_P)"                \
+             BFLAGS="$(BFLAGS_P)"                \
+             OBJECTS="$(OBJECTS:%=.Olib_p/%)"    \
+             SUFFIX="_p"
+
+lib_e.so: .Olib_e
+	@ $(MAKE) _lib.so                        \
+             CFLAGS="$(CFLAGS_E)"                \
+             BFLAGS="$(BFLAGS_E)"                \
+             OBJECTS="$(OBJECTS_E:%=.Olib_e/%)"   \
+             SUFFIX="_e"
+
+_lib.a: $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION)
+
+$(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION): $(OBJECTS)
+	@ rm -f $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).a
+	@ $(AR) $(ARFLAGS) $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).a $(OBJECTS)
+	@ $(RANLIB) $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).a
+	@ echo "$(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).a done..."
+	@ echo "-------------------------------"
+
+_lib.so: $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).so
+
+$(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).so: $(OBJECTS)
+	@ $(LD) -o $(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).so $(OBJECTS) -L$(TARGET_DIR) $(LDFLAGS) $(LDLIBS) -lm -lc
+	@ echo "$(TARGET_LIB)$(SUFFIX)-$(BIGLOO_VERSION).so done..."
+	@ echo "-------------------------------"
+
+.Olib_u:
+	mkdir .Olib_u
+.Olib:
+	mkdir .Olib
+.Olib_p:
+	mkdir .Olib_p
+.Olib_e:
+	mkdir .Olib_e
+
+$(TARGET_DIR):
+	@ mkdir -p $(TARGET_DIR)
+
+#*---------------------------------------------------------------------*/
+#*     clean ...                                                       */
+#*---------------------------------------------------------------------*/
+.PHONY: clean cleanall
+
+clean:
+	@ $(MAKE) dir-clean O=.Olib
+	@ $(MAKE) dir-clean O=.Olib_u
+	@ $(MAKE) dir-clean O=.Olib_p
+	@ $(MAKE) dir-clean O=.Olib_e
+	@ -rm -f $(TARGET_HEAP)
+	@ -rm -f $(SOURCES_P)
+	@ find . \( -name '*[~%]'                   \
+                       -o -name '.??*[~%]'          \
+                       -o -name '#*#'               \
+                       -o -name '*.ast'             \
+                       -o -name '*.escm'            \
+                       -o -name '?*#'               \
+                       -o -name \*core \)           \
+                     -type f -exec rm {} \;   
+	@ echo "Cleanup done..."
+	@ echo "-------------------------------"
+
+dir-clean:
+	@- rm -f $(OBJECTS)
+
+cleanall: clean
+	@- rm -f $(TARGET_HEAP)
+	@- if [ ! "$(TARGET_INCLUDE)" = "$(TARGET_DIR)/" ]; then \
+              rm -f $(TARGET_INCLUDE);                           \
+           fi
+	@- rm -f -r $(TARGET_DIR)
+	@- rm -f -r .Olib
+	@- rm -f -r .Olib_u
+	@- rm -f -r .Olib_p
+
+#*---------------------------------------------------------------------*/
+#*    Population and revision control                                  */
+#*---------------------------------------------------------------------*/
+# display the current version
+version:
+	@ echo $(VERSION)
+
+# just display the population
+pop:
+	@ echo $(POPULATION)
+
+# make a prcs revision
+revision: populate checkin
+
+populate: $(PROJECT).prj
+	$(PRCS) populate --force $(PROJECT) $(POPULATION)
+
+checkin: 
+	$(PRCS) checkin --force -r$(VERSION).@ $(PROJECT)
+
+# display how to check out a prcs revision
+checkout:
+	@ echo "$(PRCS) checkout -r$(VERSION).@ $(PROJECT)"
+
+infofile:
+	@ $(PRCS) info --force $(PROJECT) $(FILE)
+
+checkoutfile:
+	@ $(PRCS) checkout --force -r$(FILEVERSION) $(PROJECT) $(FILE)
+
+$(PROJECT).prj:
+	@ $(PRCS) checkout --force $(PROJECT)
+	@ cat $(PROJECT).prj | sed -e s,"(Populate-Ignore ())","(Populate-Ignore (\"\\\\\\\\\\.o\$$\" \"\\\\\\\\\\~$$\" \"\\\\\\\\\\.log\$$\" \"\\\\\\\\\\.ps\$$\" \"\\\\\\\\\\.aux\$$\" \"\\\\\\\\\\.date_of_backup\$$\" \"\\\\\\\\\\.so\$$\" \"\\\\\\\\\\.a\$$\"))", > $(PROJECT).dprj; rm -f $(PROJECT).prj; mv $(PROJECT).dprj $(PROJECT).prj
+
+
+#*---------------------------------------------------------------------*/
+#*    Tar ...							       */
+#*---------------------------------------------------------------------*/
+tar.gz: $(PROJECT).tar.gz
+
+$(PROJECT).tar.gz: ../$(PROJECT).tar
+	@ $(COMPRESS) ../$(PROJECT).tar; mv ../$(PROJECT).tar.gz .
+
+# This entry works only with gnu-make. Change it for other Makefiles.
+../$(PROJECT).tar: 
+	@ cd ..; \
+	  $(TAR) $(TARCOPT) $(PROJECT).tar $(POPULATION:%=$(PROJECT)/%)
+
+#*---------------------------------------------------------------------*/
+#*    Bee ...							       */
+#*---------------------------------------------------------------------*/
+bee ude: 
+	@ $(MAKE) $(AFILE)
+	@ $(MAKE) $(TAGS)
+	@ $(MAKE) bdepend
+
+forceafile:
+	@ if [ ! -f $(AFILE) ]; then \
+             $(MAKE) $(AFILE);       \
+          fi
+
+$(AFILE): $(SOURCES)
+	@ $(AFILE_EXE) -o $(AFILE) $(SOURCES)
+
+forcetags:
+	@ if [ ! -f $(TAGS) ]; then  \
+             $(MAKE) $(TAGS);        \
+          fi
+
+$(TAGS): $(SOURCES)
+	@ $(TAGS_EXE) -o $(TAGS) $(SOURCES)
+
+bdepend: $(SOURCES)
+	@ $(DEPEND_EXE) -o Makefile $(SOURCES) -obj-dir .Olib
+	@ $(DEPEND_EXE) -append -o Makefile $(SOURCES) -obj-dir .Olib_u
+	@ $(DEPEND_EXE) -append -o Makefile $(SOURCES) -obj-dir .Olib_e
+
+updatemakefile:
+	@ $(BMAKE_EXE) -flibrary -o $[MAKEFILE] -heap $[ENTRY]
+
+addentry:
+	@ $(BMAKE_EXE) -flibrary -o $[MAKEFILE] \
+          -source $(SRC_ENTRY) -object $(OBJ_ENTRY)
+
+#*---------------------------------------------------------------------*/
+#*    bmake entries ...                                                */
+#*    -------------------------------------------------------------    */
+#*    These entries are used by bmake to extend the Makefile. Don't    */
+#*    use them.                                                        */
+#*---------------------------------------------------------------------*/
+getobjects:
+	@ echo $(OBJECTS)
+
+getsources:
+	@ echo $(SOURCES)
+
+getpopulation:
+	@ echo $(POPULATION)
+
+getbinary:
+	@ echo $(TARGET_DIR)/$(TARGET_NAME)
+

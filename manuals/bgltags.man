@@ -1,0 +1,59 @@
+.TH BGLTAGS 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bgltags \- generate tag file for Emacs
+
+.SH SYNOPSIS
+.B bgltags
+[ options ]
+[ \fIobjfile\fR [ \fIgmon.out\fR ] ] 
+
+.SH DESCRIPTION
+
+The \fBbgltags\fR program is used to create a tag table file, in a
+format understood by \fBemacs(1)\fR. This programs understand the
+syntax of the Bigloo files. It reads the files specified on the
+command line, and write a tag table (defaults: \fITAGS\fR) in the
+current working directory. Files specified with relative file names
+will be recorded in the tag table with file names relative to the
+directory where the tag table re- sides.  Files specified with
+absolute file names will be recorded with absolute file names. The
+program does not recognize the language used in an input file based on
+its file name and contents.  The \fI--language\fR switch can be used
+to force parsing of the file names following the switch according to
+the given language, overriding guesses based on file-name
+extensions. Source files that are not Scheme are actually processed by
+the \fBetags\fR program.
+
+
+.SH OPTIONS
+
+.TP 5
+.TP
+\fB-a, --append\fR
+Append to existing tag file. 
+
+.TP
+\fB-o tagfile, --output=tagfile\fR
+Explicit name of file for tag table; overrides  default  `TAGS'.
+
+.TP
+\fB-v\fR
+Print the current version of the program.
+
+.TP
+\fB-module\fR
+Generate an entry in the table for each modules. Normally modules identifier
+are not indexed in the tags table.
+
+.SH "SEE ALSO"
+bigloo(1), bglafile(1), bgldepend(1), etags(1), emacs(1), bglmco(1), xemacs(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

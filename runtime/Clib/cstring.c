@@ -1,0 +1,1365 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/runtime/Clib/cstring.c               */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Sep  5 09:55:58 1995                          */
+/*    Last change :  Wed Dec  3 15:01:28 2008 (serrano)                */
+/*    -------------------------------------------------------------    */
+/*    String management                                                */
+/*=====================================================================*/
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <bigloo.h>
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    string_to_bstring_len ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+string_to_bstring_len( char *c_string, int len ) {
+   /* STRING_SIZE already includes 1 byte for one char */
+   obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+   char *dst;
+   
+   if( !c_string ) c_string = "";
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+   string->string_t.length = len;
+
+   dst = (char *)&(string->string_t.char0);
+   for( ; len > 0; len-- )
+      *dst++ = *c_string++;
+  
+   *dst = '\0';
+   
+   return BSTRING( string );
+}
+
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_bstring_to_gc_cstring ...                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+char *
+bgl_bstring_to_gc_cstring( obj_t str ) {
+   char *ostr = BSTRING_TO_STRING( str );
+   char *nstr =  (char *)GC_MALLOC_ATOMIC( STRING_LENGTH( ostr ) + 1);
+
+   strncpy( nstr, ostr, STRING_LENGTH( ostr ) );
+
+   return nstr;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    string_to_bstring ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+string_to_bstring( char *c_string ) {
+   return string_to_bstring_len( c_string, c_string ? (int)strlen( c_string ) : 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    make_string ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+make_string( int len, unsigned char c ) {
+   obj_t string;
+
+   if( len < 0 ) {
+      C_FAILURE( "make-string", "Illegal string size", BINT( len ) );
+   } else {
+      string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+
+#if( !defined( TAG_STRING ) )
+      string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+      string->string_t.length = len;
+
+      memset( &(string->string_t.char0), c, len );
+      (&(string->string_t.char0))[ len ] = '\0';
+		
+      return BSTRING( string );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    make_string_sans_fill ...                                        */
+/*    -------------------------------------------------------------    */
+/*    This is a private function that does not need to check the       */
+/*    correctness of the len argument.                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+make_string_sans_fill( int len ) {
+   obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+   string->string_t.length = len;
+
+   (&(string->string_t.char0))[ len ] = '\0';
+		
+   return BSTRING( string );
+}
+
+/*---------------------------------------------------------------------*/
+/*    c_constant_string_to_string ...                                  */
+/*---------------------------------------------------------------------*/
+obj_t
+c_constant_string_to_string( char *c_string ) {
+   return string_to_bstring( c_string );
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_append ...                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+string_append( obj_t s1, obj_t s2 ) {
+   int l1 = STRING( s1 ).length;
+   int l2 = STRING( s2 ).length;
+   int l12 = l1 + l2;
+   obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + l12 );
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+   string->string_t.length = l12;
+
+   memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
+   memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
+   ((char *)(&(string->string_t.char0)))[ l12 ] = '\0';
+	
+   return BSTRING( string );
+}
+ 
+/*---------------------------------------------------------------------*/
+/*    string_append_3 ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+string_append_3( obj_t s1, obj_t s2, obj_t s3 ) {
+   int l1 = STRING( s1 ).length;
+   int l2 = STRING( s2 ).length;
+   int l3 = STRING( s3 ).length;
+   int  l123 = l1 + l2 + l3;
+   obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + l123 );
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+   string->string_t.length = l123;
+
+   memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
+   memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
+   memcpy( &((char *)(&(string->string_t.char0)))[ l1 + l2 ], &STRING_REF( s3, 0 ), l3 );
+   ((char *)(&(string->string_t.char0)))[ l123 ] = '\0';
+	
+   return BSTRING( string );
+}
+ 
+/*---------------------------------------------------------------------*/
+/*    c_substring ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+c_substring( obj_t src_string, int min, int max ) {
+   int len = max - min;
+   obj_t dst_string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+
+#if( !defined( TAG_STRING ) )
+   dst_string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+   dst_string->string_t.length = len;
+
+   memcpy( &(dst_string->string_t.char0),
+	   &STRING_REF( src_string, min ),
+            len );
+   (&(dst_string->string_t.char0))[ len ] = '\0';
+
+   return BSTRING( dst_string );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    blit_string ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+blit_string( obj_t s1, int offset1, obj_t s2, int offset2, int len ) {
+   /* intrinsic memcpy doest not work when memory areas overlap */
+   unsigned char *src = &STRING_REF( s1, offset1 );
+   unsigned char *dest = &STRING_REF( s2, offset2 );
+
+   if( ( (src + len) <= dest ) || ((dest + len) <= src) )
+      memcpy( dest, src, len );
+   else
+      memmove( dest, src, len );
+
+   return BUNSPEC;
+}
+	
+/*---------------------------------------------------------------------*/
+/*    integer_to_string ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+integer_to_string( long x, long radix ) {
+   obj_t aux;
+   char *s;
+   long ax;
+   int bits = (x <= 0 ? 1 : 0);
+   char letters[] = "0123456789abcdef";
+
+   for( ax = x; ax != 0; ax /= radix )
+      bits++;
+   aux = make_string_sans_fill( bits );
+
+   s = BSTRING_TO_STRING( aux ) + bits;
+   *s = '\0';
+
+   for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
+      *s = letters[ abs(ax % radix) ];
+
+   if( x < 0 ) *(s+1) = '-';
+
+   return aux;
+}
+
+/*---------------------------------------------------------------------*/
+/*    unsigned_to_string ...                                           */
+/*---------------------------------------------------------------------*/
+obj_t
+unsigned_to_string( long x, long radix ) {
+   obj_t aux;
+   char *s;
+   unsigned long ax;
+   int bits = (x == 0 ? 1 : 0);
+   char letters[] = "0123456789abcdef";
+
+   for( ax = x; ax > 0; ax /= radix )
+      bits++;
+   aux = make_string_sans_fill( bits );
+
+   s = BSTRING_TO_STRING( aux ) + bits;
+   *s = '\0';
+
+   for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
+      *s = letters[ ax % radix ];
+
+   return aux;
+}
+
+/*---------------------------------------------------------------------*/
+/*    integer_to_string_padding ...                                    */
+/*---------------------------------------------------------------------*/
+obj_t
+integer_to_string_padding( long x, long padding, long radix ) {
+   obj_t aux;
+   int bits = (x <= 0 ? 1 : 0);
+   long ax = BGL_LABS( x );
+   long axx = ax;
+   char fmt[ 10 ];
+   
+   switch( radix ) {
+      case 2 :
+      {
+	 char *s;
+	 
+	 while( axx > 0 ) bits++, axx /= 2;
+	 
+	 aux = make_string( bits > padding ? bits : padding, '0' );
+
+	 s = BSTRING_TO_STRING( aux ) + (bits > padding ? bits : padding);
+	 *s = '\0';
+
+	 for( s--; bits > 0; bits--, s--, ax = ax >> 1 )
+	    *s =  ((ax & 1) == 0) ? '0' : '1';
+
+	 if( x < 0 ) *BSTRING_TO_STRING( aux ) = '-';
+
+	 return aux;
+      }
+      break;
+
+      case 8 :
+	 if( x < 0 ) {
+	    sprintf( fmt, "-%%0%dlo", padding - 1 );
+	 } else {
+	    sprintf( fmt, "%%0%dlo", padding );
+	 }
+	 break;
+      case 16 :
+	 if( x < 0 ) {
+	    sprintf( fmt, "-%%0%dlx", padding - 1);
+	 } else {
+	    sprintf( fmt, "%%0%dlx", padding );
+	 }
+	 break;
+      default :
+	 if( x < 0 ) {
+	    sprintf( fmt, "-%%0%dld", padding - 1 );
+	 } else {
+	    sprintf( fmt, "%%0%dld", padding );
+	 }
+	 break;
+   }
+
+   while( axx > 0 ) bits++, axx /= radix;
+
+   aux = make_string_sans_fill( bits > padding ? bits : padding );
+   sprintf( BSTRING_TO_STRING( aux ), fmt, ax );
+
+   return aux;
+}
+
+/*---------------------------------------------------------------------*/
+/*    llong_to_string ...                                              */
+/*---------------------------------------------------------------------*/
+obj_t
+llong_to_string( BGL_LONGLONG_T x, long radix ) {
+   obj_t aux;
+   char *s;
+   BGL_LONGLONG_T ax;
+   int bits = (x <= 0 ? 1 : 0);
+   char letters[] = "0123456789abcdef";
+
+   for( ax = x; ax != 0; ax /= radix )
+      bits++;
+   aux = make_string_sans_fill( bits );
+
+   s = BSTRING_TO_STRING( aux ) + bits;
+   *s = '\0';
+
+   for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
+      *s = letters[ abs(ax % radix) ];
+
+   if( x < 0 ) *(s+1) = '-';
+
+   return aux;
+}
+
+/*---------------------------------------------------------------------*/
+/*    ullong_to_string ...                                             */
+/*---------------------------------------------------------------------*/
+obj_t
+ullong_to_string( BGL_LONGLONG_T x, long radix ) {
+   obj_t aux;
+   char *s;
+   unsigned BGL_LONGLONG_T ax;
+   int bits = (x == 0 ? 1 : 0);
+   char letters[] = "0123456789abcdef";
+
+   for( ax = x; ax > 0; ax /= radix )
+      bits++;
+   aux = make_string_sans_fill( bits );
+
+   s = BSTRING_TO_STRING( aux ) + bits;
+   *s = '\0';
+
+   for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
+      *s = letters[ ax % radix ];
+
+   return aux;
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    internal_real_to_string ...                                      */
+/*    -------------------------------------------------------------    */
+/*    This code is has been provided by Alain Mellan                   */
+/*    <alain.mellan@st.com> and I think it is mostly coming from       */
+/*    SCM. It implements a more precise number->string conversion      */
+/*    that C does with the #g format.                                  */
+/*    modified by Florian Loitsch. (+nan.0 -0.0 +inf.0 and -inf.0)     */
+/*---------------------------------------------------------------------*/
+static int
+internal_real_to_string( double f, char *a ) {
+#define IS_INF(x) ((x)==(x)/2)
+   static double fx[] = { 0.0, 5e-1, 5e-2, 5e-3, 5e-4, 5e-5,
+			  5e-6, 5e-7, 5e-8, 5e-9, 5e-10,
+			  5e-11,5e-12,5e-13,5e-14,5e-15,
+			  5e-16,5e-17,5e-18,5e-19,5e-20 };
+   int efmt, dpt, d, i, wp = DOUBLE_PRECISION;
+   int ch = 0;
+   int exp = 0;
+
+   if( BGL_IS_NAN(f) ) {
+      a[ ch++ ] = '+';
+      a[ ch++ ] = 'n';
+      a[ ch++ ] = 'a';
+      a[ ch++ ] = 'n';
+      a[ ch++ ] = '.';
+      a[ ch++ ] = '0';
+      return ch;
+   }
+
+   if ( BGL_IS_INF(f) ) {
+      if (f < 0.0)
+	 a[ ch++ ] = '-';
+      else
+	 a[ ch++ ] = '+';
+      a[ ch++ ] = 'i';
+      a[ ch++ ] = 'n';
+      a[ ch++ ] = 'f';
+      a[ ch++ ] = '.';
+      a[ ch++ ] = '0';
+      return ch;
+   }
+
+   if( BGL_SIGNBIT(f) ) // covers -0.0, too
+      a[ ch++ ] = '-';
+       
+   if( f == 0.0 )
+      goto zero;	
+   
+   if( f < 0.0 ) {
+      f = -f;
+   }
+
+   while( f < 1.0 ) {
+      f *= 10.0;
+      exp--;
+   }
+   while( f > 10.0 ) {
+      f /= 10.0;
+      exp++;
+   }
+
+   if( f + fx[ wp ] >= 10.0 ) {
+      f = 1.0;
+      exp++;
+   }
+   
+zero:
+   efmt = (exp < -3) || (exp > wp+2);
+   if( !efmt )
+      if( exp < 0 ) {
+	 a[ ch++ ] = '0';
+	 a[ ch++ ] = '.';
+	 dpt = exp;
+	 while( ++dpt )
+	    a[ ch++ ] = '0';
+      }
+      else
+	 dpt = exp+1;
+   else
+      dpt = 1;
+
+   do {
+      d = (int)f;
+      f -= d;
+      a[ ch++ ] = d+'0';
+      if( f < fx[ wp ] )
+	 break;
+      if( f+fx[ wp ] >= 1.0 ) {
+	 a[ ch-1 ]++;
+	 break;
+      }
+      f *= 10.0;
+      if( !(--dpt) )
+	 a[ ch++ ] = '.';
+   } while( wp-- );
+
+   if( dpt > 0 ) {
+      if( (dpt > 4) && (exp > 6) ) {
+	 d = (a[ 0 ]=='-'?2:1);
+	 for( i = ch++; i > d; i-- )
+	    a[ i ] = a[ i-1 ];
+	 a[ d ] = '.';
+	 efmt = 1;
+      } else {
+	 while( --dpt )
+	    a[ ch++ ] = '0';
+	 a[ ch++ ] = '.';
+      }
+   }
+   
+   if( a[ ch-1 ]=='.' )
+      /* trailing zero */
+      a[ ch++ ] = '0'; 
+   
+   if( efmt && exp ) {
+      a[ ch++ ] = 'e';
+      if( exp < 0 ) {
+	 exp = -exp;
+	 a[ ch++ ] = '-';
+      }
+      for( i = 10; i <= exp; i *= 10 );
+      for (i /= 10; i; i /= 10 ) {
+	 a[ ch++ ] = exp/i + '0';
+	 exp %= i;
+      }
+   }
+   return ch;
+#undef IS_INF
+}
+   
+/*---------------------------------------------------------------------*/
+/*    real_to_string ...                                               */
+/*    -------------------------------------------------------------    */
+/*    Many thanks to Raj Manandhar and Alain Mellan for providing us   */
+/*    with these codes.                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+real_to_string( double x ) {
+#if( !defined( DOUBLE_PRECISION ) )
+#if( defined( __STDC__ ) )
+#   define FLONUM_PREC 12
+#   define STRINGIZE(x) stringize(x)
+#   define stringize(x) #x
+#   define FLONUM_LEN  (FLONUM_PREC + 8)
+#   define FORMAT      "%#." STRINGIZE( FLONUM_PREC ) "g"
+#else
+#   define FLONUM_LEN  20
+#   define FORMAT      "%#.12g"
+#endif
+   char *new;
+   obj_t res;
+   
+   res = make_string_sans_fill( FLONUM_LEN + 1 );
+   new = BSTRING_TO_STRING( res );
+      
+   memset( new, '\0', FLONUM_LEN );
+   sprintf( new, FORMAT, REAL( o ).real );
+   new[ FLONUM_LEN ] = '\0';
+
+   { 
+      char *newp;
+      int i, simplenum;
+
+      for( newp = new, simplenum = 1; newp; newp++ )
+	 if( !isdigit( *newp ) && (*newp != '.') && (*newp != '-') ) {
+	    /* No exponents, infinity, underflow, etc */
+	    simplenum = 0;
+	    break;
+	 }
+
+      if( simplenum ) {
+	 /* Chop trailing zeros. */
+	 for( i = FLONUM_LEN - 1;
+	      (i > 0) && ((new[ i ] == '0') || (new[ i ] == '\0'));
+	      i-- );
+	 new[ i ] = '\0';
+      }
+   }
+   return res;
+#else
+   static char buf[ 80 ];
+   int size;
+
+   size = internal_real_to_string( x, buf );
+   buf[ size ] = '\0';
+   
+   return string_to_bstring_len( buf, size );
+#endif   
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_double_to_ieee_string ...                                    */
+/*    -------------------------------------------------------------    */
+/*    A converted string is exactly sizeof(double)+1 actual characters */
+/*    long. The +1 is used to encoded the endianess of the machine     */
+/*    that has constructed the string.                                 */
+/*    -------------------------------------------------------------    */
+/*    This function encodes the number into a big endian               */
+/*    representation. This is mandatory in order to conform the        */
+/*    JVM specification                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t 
+bgl_double_to_ieee_string( double o ) {
+   obj_t res = make_string_sans_fill( sizeof( double ) );
+   char *aux = BSTRING_TO_STRING( res );
+   char *tmp = (char *)(&o);
+
+#if( BGL_BIG_ENDIAN == 1 )
+   int i;
+   
+   for( i = 0; i < sizeof( double ); i++ ) {
+      aux[ i ] = tmp[ i ];
+   }
+   aux[ i ] = 0;
+#else
+   int i, j;
+   
+   for( j = 0, i = (sizeof( double ) - 1); i >= 0; i--, j++ ) {
+      aux[ j ] = tmp[ i ];
+   }
+   aux[ j ] = 0;
+#endif
+   
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_ieee_string_to_double ...                                    */
+/*    -------------------------------------------------------------    */
+/*    The number is stored using a big endian encoding                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+double
+bgl_ieee_string_to_double( obj_t s ) {
+   char *aux = BSTRING_TO_STRING( s );
+   double res;
+   char *tmp = (char *)(&res);
+
+#if( BGL_BIG_ENDIAN == 1 )
+   int i;
+   
+   for( i = 0; i < sizeof( double ); i++ ) {
+      tmp[ i ] = aux[ i ];
+   }
+#else
+   int i, j;
+   
+   for( j = 0, i = sizeof( double ) - 1;  i >= 0; i--, j++ ) {
+      tmp[ i ] = aux[ j ];
+   }
+#endif
+
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_float_to_ieee_string ...                                     */
+/*    -------------------------------------------------------------    */
+/*    A converted string is exactly sizeof(float)+1 actual characters  */
+/*    long. The +1 is used to encoded the endianess of the machine     */
+/*    that has constructed the string.                                 */
+/*    -------------------------------------------------------------    */
+/*    This function encodes the number into a big endian               */
+/*    representation. This is mandatory in order to conform the        */
+/*    JVM specification                                                */
+/*---------------------------------------------------------------------*/
+static
+obj_t 
+bgl_float_to_ieee_string__NOT_USED( float o ) {
+   obj_t res = make_string_sans_fill( sizeof( float ) + 1 );
+   char *aux = BSTRING_TO_STRING( res );
+   char *tmp = (char *)(&o);
+
+#if( BGL_BIG_ENDIAN == 1 )
+   int i;
+   
+   for( i = 0; i < sizeof( float ); i++ ) {
+      aux[ i ] = tmp[ i ];
+   }
+   aux[ i ] = 0;
+#else
+   int i, j;
+   for( j = 0, i = (sizeof( float ) - 1); i >= 0; i--, j++ ) {
+      aux[ i ] = tmp[ i ];
+   }
+   aux[ j ] = 0;
+#endif
+   
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    float                                                            */
+/*    bgl_ieee_string_to_float ...                                     */
+/*    -------------------------------------------------------------    */
+/*    The number is stored using a big endian encoding                 */
+/*---------------------------------------------------------------------*/
+static
+float
+bgl_ieee_string_to_float__NOT_USED( obj_t s ) {
+   char *aux = BSTRING_TO_STRING( s );
+   float res;
+   char *tmp = (char *)(&res);
+
+#if( BGL_BIG_ENDIAN == 1 )
+   int i;
+   
+   for( i = 0; i < sizeof( float ); i++ ) {
+      tmp[ i ] = aux[ i ];
+   }
+#else
+   int i, j;
+   
+   for( j = 0, i = sizeof( float ) - 1; i >= 0; i--, j++ ) {
+      tmp[ i ] = aux[ j ];
+   }
+#endif
+
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strcmp ...                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strcmp( obj_t o1, obj_t o2 ) {
+   int l1 = STRING_LENGTH( o1 );
+
+   if( l1 == STRING_LENGTH( o2 ) )
+      return !memcmp( (void *)BSTRING_TO_STRING( o1 ),
+		      (void *)BSTRING_TO_STRING( o2 ), l1 );
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strcmp_at ...                                             */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strcmp_at( obj_t o1, obj_t o2, int d ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+   
+   if( (d >= 0) && ((l2 + d) <= l1) ) 
+      return !memcmp( (void *)(BSTRING_TO_STRING( o1 ) + d),
+		      (void *)BSTRING_TO_STRING( o2 ),
+		      l2 );
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strcmp_ci_at ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strcmp_ci_at( obj_t o1, obj_t o2, int d ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+
+   if( (d >= 0) && ((l2 + d) <= l1) ) {
+      char *st1 = ((char *)BSTRING_TO_STRING( o1 )) + d;
+      char *st2 = (char *)BSTRING_TO_STRING( o2 );
+      int i = 0;
+      
+      for( ;
+	   (i < l2) && (tolower( *st1 ) == tolower( *st2 ));
+	   i++, st1++, st2++ );
+
+      return (i == l2);
+   }
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strncmp_at ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strncmp_at( obj_t o1, obj_t o2, int d, int l3 ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+   int l = l2 < l3 ? l2 : l3;
+
+   if( (d >= 0) && (l3 >= 0) && ((l + d) <= l1) ) 
+      return !memcmp( (void *)(BSTRING_TO_STRING( o1 ) + d),
+		      (void *)BSTRING_TO_STRING( o2 ),
+		      l );
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strncmp_ci_at ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strncmp_ci_at( obj_t o1, obj_t o2, int d, int l3 ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+   int l = l2 < l3 ? l2 : l3;
+
+   if( (d >= 0) && (l3 >= 0) && (l + d) <= l1 ) {
+      char *st1 = ((char *)BSTRING_TO_STRING( o1 )) + d;
+      char *st2 = (char *)BSTRING_TO_STRING( o2 );
+      int i = 0;
+      
+      for( ;
+	   (i < l2) && (tolower( *st1 ) == tolower( *st2 ));
+	   i++, st1++, st2++ );
+
+      return (i == l);
+   }
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strncmp ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strncmp( obj_t o1, obj_t o2, int l ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+
+   if( (l1 >= l) && (l2 >= l) )
+      return !memcmp( (void *)BSTRING_TO_STRING( o1 ),
+		      (void *)BSTRING_TO_STRING( o2 ), l );
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bigloo_strncmp_ci ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+bigloo_strncmp_ci( obj_t o1, obj_t o2, int l ) {
+   int l1 = STRING_LENGTH( o1 );
+   int l2 = STRING_LENGTH( o2 );
+
+   if( (l1 >= l) && (l2 >= l) ) {
+      char *st1 = (char *)BSTRING_TO_STRING( o1 );
+      char *st2 = (char *)BSTRING_TO_STRING( o2 );
+      int i = 0;
+      
+      for( ;
+	   (i < l) && (tolower( *st1 ) == tolower( *st2 ));
+	   i++, st1++, st2++ );
+
+      return (i == l);
+   }
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    strcicmp ...                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t        
+strcicmp( obj_t bst1, obj_t bst2 ) {
+   int l1 = STRING_LENGTH( bst1 );
+
+   if( l1 == STRING_LENGTH( bst2 ) )
+   {
+      char *st1 = (char *)BSTRING_TO_STRING( bst1 );
+      char *st2 = (char *)BSTRING_TO_STRING( bst2 );
+      
+      for( ; l1 > 0; l1--, st1++, st2++ )
+        if (tolower( *st1 ) != tolower( *st2 )) return 0;
+      return 1;
+   }
+   else
+      return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_lt ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t       
+string_lt( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1, l2;
+   int i, min;
+
+   l1 = STRING_LENGTH( bst1 );
+   l2 = STRING_LENGTH( bst2 );
+
+   min = (l1 < l2) ? l1 : l2;
+
+   for( i = 0; (*st1 == *st2) && (i < min); i++, st1++, st2++ );
+
+   if( i < min )
+      return *st1 < *st2;
+   else
+      return l1 < l2;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_le ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t        
+string_le( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_le = (l1 <= l2);
+   int min = l1_le ? l1 : l2;
+
+   for(; min > 0; min--, st1++, st2++ )
+      if (*st1 != *st2)
+         return (*st1 <= *st2); 
+
+   return l1_le;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_gt ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t       
+string_gt( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_gt = (l1 > l2);
+   int min = l1_gt ? l2 : l1;
+
+   for(; min > 0; min--, st1++, st2++ )
+      if (*st1 != *st2)
+         return (*st1 > *st2); 
+
+   return l1_gt;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_ge ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t        
+string_ge( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_ge = (l1 >= l2);
+   int min = l1_ge ? l2 : l1;
+
+   for(; min > 0; min--, st1++, st2++ )
+      if (*st1 != *st2)
+         return (*st1 >= *st2); 
+
+   return l1_ge;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_cilt ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+string_cilt( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_lt = (l1 < l2);
+   int min = l1_lt ? l1 : l2;
+   
+   for(; min > 0; min--, st1++, st2++ ) {
+      unsigned char c1 = tolower( *st1 );
+      unsigned char c2 = tolower( *st2 );
+      if (c1 != c2)
+         return (c1 < c2); 
+   }
+
+   return l1_lt;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_cile ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t        
+string_cile( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_le = (l1 <= l2);
+   int min = l1_le ? l1 : l2;
+   
+   for(; min > 0; min--, st1++, st2++ ) {
+      unsigned char c1 = tolower( *st1 );
+      unsigned char c2 = tolower( *st2 );
+      if (c1 != c2)
+         return (c1 <= c2); 
+   }
+
+   return l1_le;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_cigt ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t       
+string_cigt( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_gt = (l1 > l2);
+   int min = l1_gt ? l2 : l1;
+   
+   for(; min > 0; min--, st1++, st2++ ) {
+      unsigned char c1 = tolower( *st1 );
+      unsigned char c2 = tolower( *st2 );
+      if (c1 != c2)
+         return (c1 > c2); 
+   }
+
+   return l1_gt;
+}
+
+/*---------------------------------------------------------------------*/
+/*    string_cige ...                                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t        
+string_cige( obj_t bst1, obj_t bst2 ) {
+   unsigned char *st1 = (unsigned char *)BSTRING_TO_STRING( bst1 );
+   unsigned char *st2 = (unsigned char *)BSTRING_TO_STRING( bst2 );
+   int l1 = STRING_LENGTH( bst1 );
+   int l2 = STRING_LENGTH( bst2 );
+
+   bool_t l1_ge = (l1 >= l2);
+   int min = l1_ge ? l2 : l1;
+   
+   for(; min > 0; min--, st1++, st2++ ) {
+      unsigned char c1 = tolower( *st1 );
+      unsigned char c2 = tolower( *st2 );
+      if (c1 != c2)
+         return (c1 >= c2); 
+   }
+
+   return l1_ge;
+}
+
+/*---------------------------------------------------------------------*/
+/*    escape_C_string ...                                              */
+/*    -------------------------------------------------------------    */
+/*    Cette fonction construit une chaine ou la representation des     */
+/*    caracteres de controles a ete remplacee par ces caracteres.      */
+/*    ex:     +---+---+---+---+          +---+---+---+                 */
+/*            | \ | n | a | 0 |    ==>   | \n| a | 0 |                 */
+/*            +---+---+---+---+          +---+---+---+                 */
+/*    Cette conversion est utile pour l'interprete car les chaines     */
+/*    lues ne sont pas parsees. On donne donc la possibilite de le     */
+/*    faire avec cette fonction.                                       */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+escape_C_string( unsigned char *src ) {
+   /* on supprime un caractere de cette chaine car elle est rendue par le */
+   /* lecteur comme etant `"tototo'. Ceci est du au fait qu'on utilise    */
+   /* la fonction `the-small-string' qui supprime le premier et le        */
+   /* dernier caractere de la chaine lu. Comme les chaines etrangeres     */
+   /* commencent par 2 caracteres, on en supprime 1 autre maintenant.     */
+
+   int len = (int)strlen( (const char *)(++src) );
+   unsigned char *dst;
+   obj_t string;
+
+   string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+
+   dst = ((unsigned char *)(&string->string_t.char0));
+
+   while( *src ) {
+      if( *src != '\\' )
+         *dst++ = *src++;
+      else {
+	 len--;
+	 
+         switch( *++src ) {
+            case '\0' : *dst++ = '\\';
+	       break;
+
+            case 'n'  : *dst++ = '\n';
+	       break;
+                        
+            case 't'  : *dst++ = '\t';
+	       break;
+                        
+            case 'b'  : *dst++ = '\b';
+	       break;
+                        
+            case 'r'  : *dst++ = '\r';
+	       break;
+                        
+            case 'f'  : *dst++ = '\f';
+	       break;
+                        
+            case 'v'  : *dst++ = '\v';
+	       break;
+                        
+            case '\\' : *dst++ = '\\';
+	       break;
+                        
+            case '\'' : *dst++ = '\'';
+	       break;
+                        
+            case '"'  : *dst++ = '\"';
+	       break;
+
+#if( defined( __STDC___ ) )                          
+            case 'a'  : *dst++ = '\a';
+	       break;
+
+            case '?'  : *dst++ = '\?';
+	       break;
+#endif                        
+
+            default   : {
+	       char s0 = *src;
+	       char s1 = *(src+1);
+	       char s2 = *(src+2);
+	       
+	       if( isdigit( s0 ) && isdigit( s1 ) && isdigit( s2 ) ) {
+		  unsigned char aux;
+	       
+		  aux = (*src     - '0')*64 +
+   		        (*(src+1) - '0')*8 +
+		        (*(src+2) - '0');
+		  *dst++ = aux;
+		  src+=2;
+		  len -= 2;
+	       } else {
+		  if( ((s0 == 'x') || (s0 == 'X')) &&
+		      isxdigit( s1 ) &&
+		      isxdigit( s2 ) ) {
+		     char n1, n2;
+
+		     n1 = isdigit(s1) ? (s1 - '0') :
+			10 + ((s1 >= 'a') ?  (s1 - 'a') : (s1 - 'A'));
+		     n2 = isdigit(s2) ? (s2 - '0') :
+			10 + ((s2 >= 'a') ?  (s2 - 'a') : (s2 - 'A'));
+			
+		     *dst++ = n1*16 + n2;
+		     src+=2;
+		     len -= 2;
+		  }
+		  else
+		     *dst++ = *src;
+	       }
+		 
+	       break;
+	    }
+         }
+         src++;
+      }
+   }
+   *dst = '\0';
+   
+   string->string_t.length = len;
+
+   return BSTRING( string );
+}
+       
+/*---------------------------------------------------------------------*/
+/*    escape_scheme_string ...                                         */
+/*    -------------------------------------------------------------    */
+/*    Cette fonction ressemble a la precedente mais elle filtre moins  */
+/*    de caracteres                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+escape_scheme_string( char *src ) {
+   int  len = (int)strlen( src );
+   char *dst;
+   obj_t string;
+
+   string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
+
+#if( !defined( TAG_STRING ) )
+   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+#endif	
+
+   dst = ((char *)(&(string->string_t.char0)));
+
+   while( *src ) {
+      if( *src != '\\' )
+         *dst++ = *src++;
+      else {
+	 char c = *(src + 1);
+	 len--;
+	 *dst++ = ((c == 'n') ? '\n' : c);
+         src += 2;
+      }
+   }
+   *dst = '\0';
+   
+   string->string_t.length = len;
+
+   return BSTRING( string );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    create_string_for_read ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+create_string_for_read( obj_t bstring, int symbolp ) {
+   unsigned char *dst;
+   unsigned char *src = (unsigned char *)BSTRING_TO_STRING( bstring );
+   int  r, w, len = STRING_LENGTH( bstring );
+   obj_t res;
+   char esc = 0;
+   const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+	
+#define BUFFER_SIZE 200
+   unsigned char buffer[ BUFFER_SIZE ];
+	
+   if( ((len * 4) + 1) > BUFFER_SIZE )
+      dst = alloca( (len * 4) + 1 );
+   else
+      dst = buffer;
+#undef BUFFER_SIZE
+	
+   for( r = 0, w = 0; r < len; r++ )
+      switch( src[ r ] ) {
+         case '\n' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 'n';
+	    esc = 1;
+	    break;
+
+         case '\t' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 't';
+	    esc = 1;
+	    break;
+
+         case '\b' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 'b';
+	    esc = 1;
+	    break;
+              
+         case '\r' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 'r';
+	    esc = 1;
+	    break;
+              
+         case '\f' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 'f';
+	    esc = 1;
+	    break;
+
+         case '\v' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = 'v';
+	    esc = 1;
+	    break;
+
+         case '"'  :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = '"';
+	    esc = 1;
+	    break;
+              
+         case '\\' :
+	    dst[ w++ ] = '\\';
+	    dst[ w++ ] = '\\';
+	    esc = 1;
+	    break;
+
+         case '|' :
+	    if( symbolp ) {
+	       dst[ w++ ] = '\\';
+	       dst[ w++ ] = '|';
+	       esc = 1;
+	    } else {
+	       dst[ w++ ] = '|';
+	    }
+	    break;
+		    
+         default :
+	    if( isprint( src[ r ] ) )
+	       dst[ w++ ] = src[ r ];
+	    else
+	    {
+	       esc = 1;
+	       sprintf( (char *)&dst[ w ],
+			"\\%03o",
+			((unsigned char *)src)[ r ] );
+	       w += 4;
+	    }
+      }
+
+   dst[ w ] = '\0';
+   
+   res = string_to_bstring( (char *)dst );
+
+   BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
+   BGL_ENV_MVALUES_VAL_SET( env, 1, esc ? BTRUE : BFALSE );
+   
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    string_for_read ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+string_for_read( obj_t bstring ) {
+  return create_string_for_read( bstring, 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_string_shrink ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_string_shrink( obj_t s, long nlen ) {
+   if( nlen < STRING_LENGTH( s ) ) {
+      STRING_LENGTH( s ) = nlen;
+      BSTRING_TO_STRING( s )[ nlen ] = '\0';
+   }
+
+   return s;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    strtoll ...                                                      */
+/*---------------------------------------------------------------------*/
+#if !BGL_HAVE_STRTOLL
+BGL_RUNTIME_DEF
+BGL_LONGLONG_T
+bgl_strtoll( const char *ptr, char **endptr, int base ) {
+   if( base != 10 )
+      C_FAILURE( "cstring", "cannot convert from base other than 10", BINT( base ) );
+   return (BGL_LONGLONG_T)strtod( ptr, endptr );
+}
+#endif
+
+#if !BGL_HAVE_STRTOULL
+BGL_RUNTIME_DEF
+BGL_LONGLONG_T
+bgl_strtoull( const char *ptr, char **endptr, int base ) {
+  if( base != 10 )
+    C_FAILURE( "cstring", "cannot convert from base other than 10", BINT( base ) );
+  return (BGL_LONGLONG_T)strtod( ptr, endptr );
+}
+#endif

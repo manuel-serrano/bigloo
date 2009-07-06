@@ -1,0 +1,350 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/srfi.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 15:00:35 1998                          @c
+@c    Last change :  Wed Nov 21 13:44:09 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Bigloo libraries                                                 @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Libraries                                                        @c
+@c ------------------------------------------------------------------- @c
+@node SRFIs, Compiler Description, Extending the Runtime System, Top
+@comment  node-name,  next,  previous,  up
+@chapter SRFIs
+@cindex SRFI
+
+Bigloo supports various SRFIs (Scheme Request For Implementation). Some of
+them are integrated in the Bigloo core libraries. Some others are implemented
+by the means of Bigloo libraries (@pxref{Bigloo Libraries}). Only the
+first ones are described in the manual. 
+@ifhtml
+Check the Bigloo web page
+(@url{@value{bigloo-url}}).
+@end ifhtml
+
+The current Bigloo core library support the following SRFIs:
+
+@itemize @bullet
+@item @code{srfi-0} (Conditional execution).
+@item @code{srfi-2} (AND-LET*: an AND with local bindings, a guarded LET* special form).
+@item @code{srfi-6} (Basic String Ports).
+@item @code{srfi-8} (Binding to multiple values).
+@item @code{srfi-9} (@emph{Records} specification).
+@item @code{srfi-18} (Multithreading support). 
+@item @code{srfi-22} (Script interpreter invocation). 
+@item @code{srfi-28} (Basic Format Strings). 
+@item @code{srfi-30} (Multi-line comments).
+@item @code{srfi-34} (Exception Handling for Programs).
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Srfi 0                                                           @c
+@c ------------------------------------------------------------------- @c
+@section SRFI 0
+@cindex srfi-0
+@cindex srfi-0:bigloo
+
+@deffn {bigloo syntax} cond-expand [clause]
+
+The @code{cond-expand} form tests for the existence of features at
+macro-expansion time. It either expands into the body of one of its
+clauses or signals and error during syntactic
+processing. @code{cond-expand} expands into the body of the first clause
+whose feature requirement is currently satisfied (the @code{else}
+clause, if present, is selected if none of the previous clauses is
+selected).
+
+A feature requirement has an obvious interpretation as a logical
+formula, where the variables have meaning @emph{true} is the feature
+corresponding to the feature identifier, as specified in the @emph{SRFI}
+registry, is in effect at the location of the @code{cond-expand} form,
+and @emph{false} otherwise. A feature requirement is satisfied it its
+formula is true under this interpretation. The formula may make use of
+identifier, @code{and}, @code{or} and @code{not} operators.
+
+Since Bigloo version 3.1b, @code{cond-expand} formula may use the new
+@code{library} operator that checks if a library exists and is available.
+Its syntax is: @code{(library <libname>)}.
+
+Examples: 
+
+@smalllisp
+(write (cond-expand
+          (srfi-0 (* 1 2))
+          ((or (library fthread) (library pthread)) (- 4 1))
+          (else (+ 3 4))))
+   @print{} 2
+
+(cond-expand 
+   (bigloo (define (command-line-arguments) (command-line)))
+   (else (define (command-line-arguments) '())))
+@end smalllisp
+
+The second example assumes that @code{bigloo} is an alias for the SRFI 
+associated with the specification of Bigloo (i.e. the documentation for that
+Scheme system). 
+
+When writing portable code, the case used for the feature identifier
+should match the one in the SRFI registry. This is to ensure that the
+feature identifier will be correctly recognized whether or not the
+Scheme system is case-sensitive. To support case-insensitive Scheme
+systems, the feature identifiers in the SRFI registry are guaranteed to
+be unique even when ignoring the case.
+
+In order to distinguish Bigloo versions, the following symbols are
+recognized in @code{cond-expand} forms.
+
+@itemize @bullet
+@item @code{bigloo}
+@item @code{bigloo<branch-release>}
+@item @code{bigloo<major-release>}
+@item @code{bigloo<major-release><minor-release>}
+@end itemize
+
+When finalizers have been configured, the two following symbols are
+recognized by @code{cond-expand}:
+
+@itemize @bullet
+@item @code{bigloo-finalizer}
+@item @code{bigloo-weakptr}
+@end itemize
+
+Bigloo implements differents SRFI for the compiler and the interpreter.
+Thus, their are two Bigloo SRFI registers. One for the compiler and one
+for the interpreter. Bigloo compiler SRFI register contains at least the 
+following symbols: 
+
+@itemize @bullet
+@item @code{srfi-0}
+@item @code{srfi-1}
+@item @code{srfi-2}
+@item @code{srfi-6}
+@item @code{srfi-8}
+@item @code{srfi-9}
+@item @code{srfi-22}
+@item @code{srfi-28}
+@item @code{srfi-30}
+@end itemize
+
+With respect to the currently used Bigloo back-end, one of these symbols
+is registered:
+
+@itemize @bullet
+@item @code{bigloo-c}
+@item @code{bigloo-jvm}
+@end itemize
+
+Bigloo compiler implements the following SRFI:
+
+@itemize @bullet
+@item @code{bigloo}
+@item @code{bigloo-compile} 
+@item @code{bigloo<major-release>}
+@item @code{bigloo<major-release><minor-release>}
+@end itemize
+
+Then the @code{-g} flag is used, the Bigloo compiler additionally implements
+the SRFI:
+
+@itemize @bullet
+@item @code{bigloo-debug}
+@end itemize
+
+
+Bigloo interpreter implements the following SRFI: 
+
+@itemize @bullet
+@item @code{bigloo}
+@item @code{bigloo-eval} 
+@item @code{bigloo<major-release>}
+@item @code{bigloo<major-release><minor-release>}
+@end itemize
+
+When a library is used, the name of the library is added to the compiler SRFI
+register. That is:
+
+@smalllisp
+(module foo
+   (library srfi1))
+
+(print (cond-expand (srfi1 'with-srfi1) (else 'nothing)))
+   @print{} 'with-srfi1
+(print (eval '(cond-expand (srfi1 'with-srfi1) (else 'nothing))))
+   @print{} 'with-srfi1
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} register-eval-srfi! srfi-name
+This argument @var{srfi-name} is a symbol. It registers @var{srfi-name}
+in the Bigloo interpreter SRFI register. This function must only be
+used when implementing a library. The code of that library must contain
+one unique call to @code{register-eval-srfi!}. Let's suppose, for instance,
+a @code{format} library. The implementation for that library must contain
+an expression like:
+
+@smalllisp
+(register-eval-srfi! 'format)
+@end smalllisp
+
+Calling @code{(register-eval-srfi! name)} makes @code{name} supported
+by interpreted @code{cond-expand} forms. 
+
+@emph{Note:} There is no @code{register-compiler-srfi!} because the
+compiler automatically registers SRFI when the @code{-library}
+flags are used. However, it exists several ways to tell the
+compiler that it actually supports some srfis when compiling some modules.
+
+@itemize @bullet
+@item The first way is to insert calls to @code{register-eval-srfi!} in the
+@code{.bigloorc} file (@pxref{Compiler Description}). 
+
+@item The second, is to use @code{option} (@pxref{Module Declaration}) module 
+clause, such as:
+
+@smalllisp
+(module example
+   ...
+   (option (register-srfi! 'srfi-foobar)))
+
+...
+@end smalllisp
+
+@item The last way is to use the command line option @code{-srfi}
+(@pxref{Compiler Description}).
+@end itemize
+
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    srfi-1 ...                                                       @c
+@c ------------------------------------------------------------------- @c
+@section SRFI 1
+@cindex SRFI-1
+
+The SRFI 1 is implemented as a Bigloo library. Hence, in order to use
+the functions it provides, a module must import it.
+
+@smalllisp
+(module ex
+   (library srfi1))
+
+(print (find-tail even? '(3 1 37 -8 -5 0 0)))
+ @result{} '(-8 -5 0 0))
+@end smalllisp
+
+@c ------------------------------------------------------------------- @c
+@c    Srfi 22                                                          @c
+@c ------------------------------------------------------------------- @c
+@section SRFI 22
+@cindex SRFI-22
+@cindex #! Unix shell interpreter
+
+The SRFI 22 describes basic prerequisites for running Scheme programs as
+Unix scripts in a uniform way. A file (henceforth a @emph{scipt}) conforming
+SRFI 22 has the following syntax:
+
+@example
+<script>         @expansion{} <script prelude>? <program>
+<script prelude> @expansion{} @code{#!} <space> <all but linebreak>* <linebreak>
+@end example
+
+A Scheme script interpreter loads the @code{<script>}. It ignores the
+script prelude and interprets the rest of the file according to the
+language dialect specified by the name of the interpreter.
+
+The Scheme script interpreter may also load a different file after
+making a reasonable check that loading it is semantically equivalent to
+loading @code{<script>}. For example, the script interpreter may assume
+that a file with a related name (say, with an additional extension) is a
+compiled version of @code{<script>}.
+
+@subsection An example of SRFI-22 script
+
+Let us consider the following Bigloo script located in a file
+@file{foo.scm}:
+
+@smalllisp
+#! /usr/bin/env ./execute
+(module foo
+   (main main))
+
+(define (main argv)
+   (print "foo: " argv))
+@end smalllisp
+
+Let us consider the following @file{execute} shell script:
+
+@display
+$ cat > execute
+#!/bin/sh
+bigloo -i $*
+@end display
+
+Provided that @file{foo.scm} as the execute flag switched on, it is
+possible to @emph{execute} it:
+
+@display
+$ chmod u+x foo.scm
+$ ./foo.scm
+  @print{} foo: (./foo.scm)
+@end display
+
+The same Bigloo module can be compiled and executed such as:
+
+@display
+$ bigloo foo.scm
+$ ./a.out
+  @print{} foo: (a.out)
+@end display
+
+@subsection Lazy compilation with SRFI-22
+
+SRFI-22 can be used to implement @emph{lazy} compilation. For instance,
+let us consider the following shell script:
+
+@display
+$ cat > bgl
+#!/bin/sh
+SOURCEFILE=$1
+case $SOURCEFILE in
+    *.scm)
+        OUTFILE=$@{SOURCEFILE%.scm@}
+        if ( bigloo -s -o $OUTFILE $SOURCEFILE ); then
+            /bin/rm $OUTFILE.o
+            shift
+            ./$OUTFILE $@@
+        fi
+        ;;
+    *)
+        echo Error: need a \*.scm file!
+        ;;
+esac
+@end display
+
+And the following Bigloo script:
+
+@smalllisp
+#! /usr/bin/env ./bgl
+(module foo
+   (main main))
+
+(define (main argv)
+   (print "foo: " argv))
+@end smalllisp
+
+When executed in the following way:
+
+@display
+$ chmod u+x foo.scm
+$ ./foo.scm
+  @print{} foo: (./foo.scm)
+@end display
+
+The Bigloo module @code{foo.scm} will first be compiled and then executed.
+Of course, one may consider more complex compiler drivers where it is
+first checked that the module is not already compiled.
+
+

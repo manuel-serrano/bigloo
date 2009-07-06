@@ -1,0 +1,108 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/gstreameraudio              */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Jan 11 08:05:48 2008                          */
+#*    Last change :  Wed Jul 30 06:55:51 2008 (serrano)                */
+#*    Copyright   :  2008 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Check if gstreameraudio is available                             */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+gstversion=0.10
+pkgconfig=pkg-config
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --pkg-config=*|-pkg-config=*)
+      pkgconfig="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gstversion=*|-gstversion=*)
+      gstversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    cflags                                                           */
+#*---------------------------------------------------------------------*/
+cflags=`pkg-config --cflags --libs gstreamer-plugins-base-$gstversion 2> /dev/null` > /dev/null
+
+if [ $? != 0 ]; then
+  echo ""
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout -lgstaudio-$gstversion >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <gst/gst.h>
+#include <gst/interfaces/mixer.h>
+
+int main (int argc, char *argv[]) {
+  GstElement *mix = gst_element_factory_make( "alsamixer", "mixer" );
+  return GST_MIXER( mix );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   echo $gstversion
+else
+   echo ""
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0
+

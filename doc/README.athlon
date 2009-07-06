@@ -1,0 +1,22 @@
+In order to improve the performance of Bigloo, when configuring it you should
+use:
+
+   ./configure --arch=athlon
+or 
+   ./configure --arch=athlon-tbird
+
+
+The drawback of this configuration is that the compiler and Bigloo programs
+linked against the static library won't run on non-3Dnow platforms. That
+is, these applications will *only* run on Athlon and K6-2/K6-III.
+
+You might also consider the following configure option for even better
+performance: 
+
+   --coflags="-O -march=athlon -mcpu=athlon -mpreferred-stack-boundary=2 -fomit-frame-pointer" 
+
+Please adjust "athlon-tbird" (Athlon Thunderbird) above to the AMD chip you
+use and your gcc version supports.
+
+Note that -O is needed for gcc 3.0.3 and 3.0.4. If you use gcc 2.x.y
+you can replace -O by -O3 (or -O2).

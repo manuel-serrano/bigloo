@@ -1,0 +1,23 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/cygwindospath               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Oct 22 11:07:08 1997                          */
+#*    Last change :  Thu Feb  6 14:19:21 2003 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the cygwin installation path                               */
+#*=====================================================================*/
+
+CMD=`which cmd.exe 2> /dev/null`
+
+if [ "$CMD" = "" ] ; then
+  CMD=`which command.com 2> /dev/null`
+fi
+
+if [ "$CMD" = "" ] ; then
+  echo ""
+else
+  echo `cd / ; $CMD /C cd` | sed 's%\\%\\\\%g'
+fi
+

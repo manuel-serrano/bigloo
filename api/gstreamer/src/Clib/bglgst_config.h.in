@@ -1,0 +1,37 @@
+/* @CONFIGURE@ */
+/*=====================================================================*/
+/*    .../project/bigloo/api/gstreamer/src/Clib/bglgst_config.h.in     */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Fri Jan 11 09:46:28 2008                          */
+/*    Last change :  Mon Jul 28 09:14:58 2008 (serrano)                */
+/*    Copyright   :  2008 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    gstreamer configuration (produced by bigloo/configure).          */
+/*=====================================================================*/
+
+#ifndef BIGLOO_GSTREAMER_CONFIG_H
+#define BIGLOO_GSTREAMER_CONFIG_H
+
+#undef BGL_GSTREAMER_VERSION
+#define BGL_GSTREAMER_VERSION "@GSTREAMER_VERSION@"
+
+#undef BGL_GSTREAMER_HAVE_AUDIO
+#define BGL_GSTREAMER_HAVE_AUDIO @GSTREAMER_HAVE_AUDIO@
+
+#undef BGL_GSTREAMER_USE_THREADS
+#define BGL_GSTREAMER_USE_THREADS @GSTREAMER_USE_THREADS@
+
+/*---------------------------------------------------------------------*/
+/*    Compatiblity kit                                                 */
+/*---------------------------------------------------------------------*/
+#if( !defined( GST_VALUE_HOLDS_STRUCTURE ) )
+#  if( defined( G_VALUE_HOLDS ) && defined( GST_TYPE_STRUCTURE ) )
+#    define GST_VALUE_HOLDS_STRUCTURE( x ) \
+        (G_VALUE_HOLDS( x, GST_TYPE_STRUCTURE ))
+#  else 
+#    define GST_VALUE_HOLDS_STRUCTURE( x ) (0)
+#  endif
+#endif
+
+#endif

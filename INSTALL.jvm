@@ -1,0 +1,31 @@
+Here is the procedure for installing JVM pre-compiled BIGLOO.
+
+Requirements
+************
+   
+   An operational JDK 1.3 or higher environment.
+
+Configuring BIGLOO
+******************
+
+   The JVM Bigloo package contains no configuration script. This pre-compiled
+   Bigloo version can't be re-configured.
+
+Installing BIGLOO
+*****************
+
+   type:
+      `install.bat'
+
+   This installs Bigloo into the directory C:\Bgl<VERSION>\bin. Where version
+   is the Bigloo release version (e.g., 24a).
+
+Uninstalling BIGLOO
+*******************
+
+   type:
+      `uninstall.bat'
+
+
+
+

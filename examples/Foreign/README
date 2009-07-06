@@ -1,0 +1,9 @@
+An example of the use of the foreign interface. At link time, this
+program raises the warning:
+
+*** WARNING:bigloo:link
+No Bigloo module found for -- el.o
+/tmp/main-tmp@serranoscm:
+
+This is normal situation. It just means that the file el.o has not been
+produced by a Bigloo compilation.

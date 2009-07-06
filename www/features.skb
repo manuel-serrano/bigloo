@@ -1,0 +1,268 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/features.skb                     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Oct  5 05:11:03 2001                          */
+;*    Last change :  Fri Nov 10 14:27:04 2006 (serrano)                */
+;*    Copyright   :  2001-06 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Bigloo description                                               */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Features                                                         */
+;*---------------------------------------------------------------------*/
+(chapter :title "Features" :number #f :file #t [
+Bigloo implements an extended version of the
+,(ref :url *r5rs.url* :text "Scheme programming language"):
+,(itemize
+
+  ;; Compliance
+  (item [,(bold (color :fg "red" "Compliance")): ,(linebreak)
+Bigloo is mostly R5RS compliant. It supports multiple values by the means 
+of ,(tt "call-with-values"), ,(tt "values") and the extra form 
+,(tt "multiple-value-bind"), hygienic macros ,(tt "let-syntax"),
+,(tt "syntax-rules"), ..., ,(tt "eval") with environment, 
+and dynamic protections (,(tt "dynamic-wind")). ,(linebreak 2)
+
+,(paragraph [Bigloo supports the following ,(emph "Scheme Request for
+Implementation") (,(ref :url *srfi.url* :text "SRFI")):
+
+,(apply itemize (map (lambda (srfi)
+			(item (ref :url 
+				   (make-file-name
+				    *srfi.url*
+				    (string-append (string-downcase (car srfi))
+						   "/"))
+				   :text 
+				   (code (car srfi)))
+			      (string-append ": " (cadr srfi))))
+		     '(("SRFI-0" "Conditional execution")
+		       ("SRFI-1" "list-processing library")
+		       ("SRFI-2" "AND-LET*: an AND with local bindings, a guarded LET* special form")
+		       ("SRFI-4" "Homogenous Vectors")
+		       ("SRFI-6" "Basic String Ports")
+		       ("SRFI-8" "Binding to multiple values")
+		       ("SRFI-9" "Records specification")
+		       ("SRFI-18" "Multithreading support")
+		       ("SRFI-22" "Script interpreter invocation")
+		       ("SRFI-28" "Basic format strings"))))])
+
+,(p [Some SRFIs are not builtin but supported by the means of 
+additional Bigloo ,(ref :section "Available SRFI libraries" :text "libraries"). 
+These are:
+
+,(apply itemize (map (lambda (srfi)
+			(item (ref :url 
+				   (make-file-name
+				    *srfi.url*
+				    (string-append (string-downcase (car srfi))
+						   "/"))
+				   :text
+				   (code (car srfi)))
+			      (string-append ": " (cadr srfi))))
+		     '(("SRFI-14" "Character-Set Library"))))])])
+
+  ;; Module support
+  (item [,(bold "Module support") ,(linebreak)
+Bigloo compiles modules. Bigloo is a batch compiler. Even though the Bigloo
+runtime library offers one, it does not rely on a read-eval-print loop.
+,(linebreak)
+,(ref :ident "Module Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; An extended Java interface
+  (item [,(bold "An extended Java interface") ,(linebreak)
+Java code and Bigloo code can be merged together. Bigloo functions
+can call Java functions and vice-versa, Bigloo code can use and 
+instantiate Java classes. Bigloo functions and variables can hold
+Java values (Java classes values). Bigloo data structures can point to Java
+data structures and vice-versa.
+,(linebreak)
+,(ref :ident "Jvm Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; An extended C interface
+  (item [,(bold "An extended C interface") ,(linebreak)
+C code and Bigloo code can be merged together. Bigloo functions
+can call C functions and vice-versa, Bigloo code can use C global
+variables and vice-versa. Bigloo functions and variables can hold
+C values (C types values). C values can be allocated from Bigloo
+program and vice-versa, Bigloo data structures can point to C
+data structures and vice-versa.
+,(linebreak)
+,(ref :ident "C Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; An object oriented layer
+  (item [,(bold "An object oriented layer") ,(linebreak)
+Bigloo proposes an extension to Scheme by adding simplified 
+Clos-like generic functions. Bigloo uses single inheritance and
+mono-dispatch. Futhermore, the Bigloo's object system includes
+introspection facilities. Classes are able to deliver access and 
+mutation functions to their instance's fields.
+,(linebreak)
+,(ref :ident "Object Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; Threads
+  (item [,(bold "Threads") ,(linebreak)
+Bigloo now supports Fair threads that are cooperative threads run
+by a fair scheduler which gives them equal access to the processor.
+Fair threads can communicate using broadcast events. Their semantics
+does not depends on the executing platform. Fine control over fair
+threads execution is possible allowing the programming of specific
+user-defined scheduling strategies. 
+,(linebreak)
+,(ref :ident "Thread Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; SQL
+  (item [,(bold "SQL") ,(linebreak)
+Bigloo supports SQL databases queries. The C back-end now offers an SQLite
+,(ref :url "http://www.sqlite.org/" :text "SQLite") binding.])
+
+  ;; Simple exception
+  (item [,(bold "Simple exception") ,(linebreak)
+Bigloo discourages the use of call/cc. Instead it proposes dynamic
+exceptions a la Common Lisp (by the means of three constructions:
+,(tt "try") that catches errors, ,(tt "bind-exit") that binds an exception and
+,(tt "unwind-protect") that protects a piece of code from exceptions).
+,(linebreak)
+,(ref :ident "Exception Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; Practical IOs
+  (item [,(bold "Practical IOs") ,(linebreak)
+Bigloo proposes practical IOs by the means of lexing and parsing tools in
+the spirit of the well known ,(tt "lex") and ,(tt "yacc") tools.
+,(linebreak)
+,(ref :ident "IOs Example" :text "Source code.") ,(linebreak 2)])
+
+  ;; Posix support
+  (item [,(bold "Posix support") ,(linebreak)
+Bigloo now supports Posix processes and pipes.
+,(linebreak)
+,(ref :ident "Posix Examples" :text "Source codes.") ,(linebreak 2)])
+
+  ;; Library support
+  (item [,(bold "Library support") ,(linebreak)
+Bigloo now supports libraries. A library is a collection of Bigloo
+pre-compiled modules. ,(linebreak 2)])
+
+  ;; Type system
+  (item [,(bold "An explicit type system and compile time type mismatch detections") ,(linebreak)
+Bigloo programs may contain type annotations. Bigloo programs are
+encouraged to contain type annotations. Type annotations hold
+on variables, function parameters and function results. Type
+annotations help the compiler in the task of the static type
+mismatch detection and help it at producing more
+efficient code. ,(linebreak 2)])
+
+  ;; Dsssl support
+  (item [,(bold "Dsssl support") ,(linebreak)
+Bigloo handles DSSSL keywords, DSSSL named constants and it compiles DSSSL
+keyword functions. ,(linebreak 2)])
+
+  ;; Unicode support
+  (item [,(bold "Unicode support") ,(linebreak)
+Bigloo now supports Unicode characters and strings but it maintains 
+traditional ISO-LATIN1 characters and strings support. ,(linebreak 2)])
+
+)])
+
+;*---------------------------------------------------------------------*/
+;*    Module Example                                                   */
+;*---------------------------------------------------------------------*/
+(chapter :title "Module Example" :number #f :toc #f :file #t [
+First, the module ,(tt "mod1"):
+,(linebreak)
+
+,(center (frame :width 95. (prog :class 'example (source :language bigloo [
+(module mod1
+   (import mod2)
+   (export (mod1 x))
+   (main start))
+
+(define (start argv)
+  (print "command-line: " argv)
+  (print (foo (bar (car argv)))))]))))
+
+,(linebreak)
+Then, the module ,(tt "mod2"):
+,(linebreak)
+
+,(center (frame :width 95. (prog :class 'example (source :language bigloo [
+(module mod2
+   (import mod1)
+   (export (mod2 x)))
+
+(define (mod2 x)
+  (cons 'mod2 x))]))))])
+
+;*---------------------------------------------------------------------*/
+;*    Jvm Example ...                                                  */
+;*---------------------------------------------------------------------*/
+(chapter :title "Jvm Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95. 
+		(prog :class 'example 
+		      (source :language bigloo :file "src/jvm.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    C Example ...                                                    */
+;*---------------------------------------------------------------------*/
+(chapter :title "C Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95. (prog :class 'example
+				 (source :language bigloo :file "src/c.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    Object Example ...                                               */
+;*---------------------------------------------------------------------*/
+(chapter :title "Object Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95. 
+		(prog :class 'example
+		      (source :language bigloo :file "src/object.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    Thread Example ...                                               */
+;*---------------------------------------------------------------------*/
+(chapter :title "Thread Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95.
+		(prog :class 'example
+		      (source :language bigloo :file "src/thread.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    Exception Example ...                                            */
+;*---------------------------------------------------------------------*/
+(chapter :title "Exception Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95. 
+		(prog :class 'example
+		      (source :language bigloo :file "src/exception.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    IOs Example ...                                                  */
+;*---------------------------------------------------------------------*/
+(chapter :title "IOs Example" :number #f :toc #f :file #t [
+
+,(center (frame :width 95. 
+		(prog :class 'example
+		      (source :language bigloo :file "src/io.scm"))))])
+
+;*---------------------------------------------------------------------*/
+;*    Posix Example ...                                                */
+;*---------------------------------------------------------------------*/
+(chapter :title "Posix Examples" :number #f :toc #f :file #t [
+First, an example of socket:
+,(linebreak)
+,(center (frame :width 95.
+		(prog :class 'example
+		      (source :language bigloo :file "src/socket.scm"))))
+
+,(linebreak)
+Then, an example of processes:
+,(linebreak)
+,(center (frame :width 95.
+		(prog :class 'example
+		      (source :language bigloo :file "src/process.scm"))))])
+
+
+

@@ -1,0 +1,43 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/fthread/src/Misc/fthread.init.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 15:57:51 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The fthread init file.                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'fthread
+		  :basename "bigloofth"
+		  :srfi '(fthread srfi-18)
+		  :module-init '__ft_backend
+		  :module-eval '__fthread_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Link option                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; The GC thread safe version.
+    (set! *gc-lib* '@BIGLOOGC_FTH@)
+    (set! *multi-threaded-gc?* #t)
+    ;; required libraries for fthread
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloopth *additional-bigloo-libraries*))
+    ;; pthread setup
+    (set! *bigloo-libraries-c-setup*
+	  (cons "bglpth_setup" *bigloo-libraries-c-setup*))
+    ;; link option
+    (unless (string=? (os-class) "win32")
+       (let ((pthread-option "@PTHREADLIBS@ "))
+	  (set! *ld-post-options* 
+		(string-append pthread-option *ld-post-options*)))))
+   (bigloo-eval
+    #unspecified))
+
+

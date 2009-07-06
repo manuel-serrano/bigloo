@@ -1,0 +1,76 @@
+.TH BGLAFILE 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+Bglafile \- a Module Access File Generator
+
+.SH SYNOPSIS
+.B bglafile
+[ options ]
+.I file ...
+
+.SH DESCRIPTION
+.B Bglafile
+is a Module Access File generator. It produces file that suits Bigloo
+option \fI-afile\fR. A Module Access File is a scheme list. Each elements
+of that list is a list of at least two elements: a module name, the file
+that implements that module. For BEE (the Bigloo Integrated Development 
+Environment) to be able to retrieve files from module names, it is mandatory
+that the first parentheses of the global list is left alone on one line.
+
+.SH OPTIONS
+
+.TP 14
+.TP
+\fBfile\fR
+Is an file implementing a module. 
+.B Bglafile
+reads that file to discover the name of the implemented module.
+
+.TP
+\fB-v\fR
+Verbose mode
+
+.TP
+\fB-o <file>\fR
+Print Module Access File into \fIfile\fR. The default is to print the list
+on the standard output device.
+
+.TP
+\fB-suffix <suf>\fR
+Adds \fIsuf\fR to the \fBbglafile\fR source file suffixes list. Default 
+suffixes are "scm", "sch" and "bgl".
+
+.SH "EXAMPLE"
+If the three files exists and contain legal Bigloo module clause, then:
+
+   $ bglafile foo.scm bar.scm gee.scm
+
+could print out a list like:
+
+;; foo
+.sp 0
+;; Tue Aug  15 12:17:24 1998
+.sp 0
+
+.sp 0
+(
+.sp 0
+  (foo "foo.scm")
+.sp 0
+  (bar "bar.scm")
+.sp 0
+  (gee "gee.scm")
+.sp 0
+)
+
+.SH "SEE ALSO"
+bigloo(1), bgldepend(1), bglmake(1), bglpp(1), bglprof(1), bgltags(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

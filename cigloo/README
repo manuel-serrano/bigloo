@@ -1,0 +1,44 @@
+#*---------------------------------------------------------------------*/
+#*    Copyright (c) 1998 by Manuel Serrano. All rights reserved.       */
+#*                                                                     */
+#*                                     ,--^,                           */
+#*                               _ ___/ /|/                            */
+#*                           ,;'( )__, ) '                             */
+#*                          ;;  //   L__.                              */
+#*                          '   \    /  '                              */
+#*                               ^   ^                                 */
+#*                                                                     */
+#*                                                                     */
+#*    This program is distributed in the hope that it will be useful.  */
+#*    Use and copying of this software and preparation of derivative   */
+#*    works based upon this software are permitted, so long as the     */
+#*    following conditions are met:                                    */
+#*           o credit to the authors is acknowledged following current */
+#*             academic behaviour                                      */
+#*           o no fees or compensation are charged for use, copies, or */
+#*             access to this software                                 */
+#*           o this copyright notice is included intact.               */
+#*      This software is made available AS IS, and no warranty is made */
+#*      about the software or its performance.                         */
+#*                                                                     */
+#*      Bug descriptions, use reports, comments or suggestions are     */
+#*      welcome Send them to                                           */
+#*        Manuel Serrano -- Manuel.Serrano@unice.fr                    */
+#*---------------------------------------------------------------------*/
+
+This directory contains the source files of Cigloo, a translator from
+C to Bigloo. Cigloo scans C files and produces Bigloo foreign clauses.
+
+In order to compile Cigloo, Bigloo (release 1.9 c) must have been
+already installed.  To compile Cigloo just enter `make'.
+
+To install Cigloo just enter `make install'. 
+
+Note: Normally cigloo must be installed before the Bigloo compilation
+files are cleared. If it happens that you try to install cigloo after
+removing Bigloo compilation file, type 
+   `make install BINDIR=<the-bin-directory-you-want>'. 
+Otherwise you will be prompted an error message during the installation 
+process.
+
+	

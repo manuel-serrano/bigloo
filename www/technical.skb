@@ -1,0 +1,247 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/technical.skb                    */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sun Oct  7 14:54:21 2001                          */
+;*    Last change :  Fri Nov 21 12:01:49 2003 (serrano)                */
+;*    Copyright   :  2001-03 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Technical information                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    paper ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (paper title author file published reference abstract)
+  (center (color :bg "#cccccc" :width 95.
+		 (linebreak)
+		 (center (bold (font :size "+1" title))
+			 (linebreak 2)
+			 (bold author)
+			 (linebreak 2)
+			 (ref :url file :text published)
+			 (linebreak 2)
+			 (if (string? reference)
+			     (ref :url reference :text "BibTeX Reference"))
+			 (linebreak 2))
+		 (if abstract abstract)
+		 (linebreak))))
+
+(define (ms-author)
+  (ref :url *manuel-serrano* :text "Manuel Serrano"))
+
+(define (ms-ref page)
+  (string-append *manuel-serrano* "/publi/" page))
+
+;*---------------------------------------------------------------------*/
+;*    Technical information ...                                        */
+;*---------------------------------------------------------------------*/
+(chapter :title "Papers & Reports" :number #f :toc #f :file #t
+
+ ;; Compiler optimizations
+ (section :title "Compiler optimizations" :number #f :toc #f
+
+	  (paper [Inline expansion: ,(emph "when") and ,(emph "how")?]
+		 (ms-author)
+		 (ms-ref "serrano-plilp97.ps.gz")
+		 "Proceedings of PLILP'97"
+		 #f
+		 (paragraph [Inline function expansion is an optimization
+that may improve program performance by removing calling sequences and
+enlarging the scope of other optimizations. Unfortunately it also has the
+drawback of enlarging programs. This might impair executable
+programs performance. In order to get rid of this annoying effect,
+we present, an easy to implement, inlining
+optimization that minimizes code size growth by combining a
+compile-time algorithm deciding ,(emph "when") expansion should
+occur with different expansion frameworks describing ,(emph "how")
+they should be performed. We present the experimental measures
+that have driven the design of inline function expansion. We
+conclude with measurements showing that our optimization
+succeeds in producing faster codes while avoiding code size
+increase.
+,(linebreak 2)
+
+,(emph "Keywords:") Compilation, Optimization, Inlining, Functional
+languages.]))
+	  (linebreak 2)
+
+					;; SUA
+	  (paper "Storage Use Analysis and its applications"
+		 (list (ms-author) " -- "
+		       (ref :url "http://www.iro.umontreal.ca/~feeley/"
+			    :text "Marc Feeley"))
+		 (ms-ref "sf-icfp96.ps.gz")
+		 "Proceedings of ICFP'96"
+		 #f
+		 (paragraph [
+In this paper we present a new program analysis method which we
+call ,(emph "Storage Use Analysis"). This analysis deduces how
+objects are used by the program and allows the optimization of
+their allocation. This analysis can be applied to both
+statically typed languages (e.g. ML) and latently typed
+languages (e.g. Scheme). It handles side-effects, higher order
+functions, separate compilation and does not require
+cps transformation.  We show the application of our analysis
+to two important optimizations: stack allocation and
+unboxing. The first optimization replaces some heap allocations
+by stack allocations for user and system data storage
+(e.g. lists, vectors, procedures). The second optimization
+avoids boxing some objects. This analysis and associated
+optimizations have been implemented in the Bigloo Scheme/ML
+compiler. Experimental results show that for many allocation
+intensive programs we get a significant speedup. In particular,
+numerically intensive programs are almost 20 times faster because
+floating point numbers are unboxed and no longer heap allocated.]))
+(linebreak 2)
+
+;; Bigloo: a portable and optimizing compiler for strict functional languages
+	  (paper "Bigloo: a portable and optimizing compiler for strict functional languages"
+(list (ms-author) " -- "
+      (ref :url "http://pauillac.inria.fr/~weis/"
+	   :text "Pierre Weis"))
+(ms-ref "sw-sas95.ps.gz")
+"Proceedings of SAS'95"
+#f
+(paragraph [We present Bigloo, a highly portable and optimizing
+compiler. Bigloo is the first compiler for strict functional languages
+that can efficiently compile ,(emph "several languages"): Bigloo is
+the first compiler for full Scheme ,(emph " and") full ML, and for
+these two languages, Bigloo is one of the most efficient
+compiler now available (Bigloo is available by anonymous ftp on ,(tt "ftp.inria.fr")).
+
+This high level of performance is achieved by numerous
+high-level optimizations. Some of those are classical
+optimizations adapted to higher-order functional languages
+(e.g. inlining), other optimization schemes are specific to
+Bigloo (e.g. a new refined closure analysis, an original
+	     optimization of imperative variables, and intensive use of
+	     higher-order control flow analysis). All these optimizations
+share the same design guideline: the reduction of heap
+allocation.])))
+
+		 
+;; Language design
+(section :title "Language design" :number #f :toc #f
+
+	 ;; wide classes
+	 (paper "Wide Classes"
+		(ms-author)
+		(ms-ref "serrano-ecoop99.ps.gz")
+		"Proceedings of ECOOP'99"
+		#f
+		(paragraph [This paper introduces the concepts of wide
+classes and widening as extensions to the object model of class-based languages
+such as Java and Smalltalk.  Widening allows an object to be
+temporarily widened, that is transformed into an instance of a
+subclass, a wide class, and, later on, to be shrunk, that
+is reshaped to its original class. Wide classes share the main
+properties of plain classes: they have a name, a superclass, they may
+be instantiated, they have an associated class predicate and an
+associated type that may be used to override function definitions.
+,(linebreak 2)
+
+Widening is also useful to implement transient data storage for
+long-lasting computations. In particular, it helps reducing
+,(emph "software data retention"). This phenomenon arises when the actual data
+structures used in a program fail to reflect time-dependent properties
+of values and can cause excessive memory consumption during the
+execution.
+,(linebreak 2)
+
+Wide classes may be implemented for any dynamically-typed class-based
+programming language with very few modifications to the existing
+runtime system. We describe the simple and efficient implementation
+strategy used in the Bigloo runtime system.
+,(linebreak 2)
+
+,(emph "Keywords:") language implementation, dynamic inheritance, 
+dynamic type checking, instance modification.]))
+(linebreak 2)
+	  
+;; Rgc
+(paper "Rgc: un générateur d'analyseurs lexicaux efficaces en Scheme"
+       (ms-author)
+       (ms-ref "serrano-jfla92.ps.gz")
+       "Proceedings of JFLA'92"
+       #f
+       (paragraph [Cet article présente Rgc, un générateur
+d'analyseurs lexicaux rapides, développé pour Scheme. Nous ne décrivons
+pas ici une maquette mais un produit final efficace. Par ses performances,
+il est en concurrence directe avec le logiciel Flex. Après
+mesures, il apparaît que Rgc est entre 5 et 10 % plus rapide que
+Flex et entre 250 et 260 % plus rapide que Lex. Pour obtenir ce
+niveau de performance, nous avons réalisé un compilateur
+spécialisé restreint Scheme!>C. De plus, puisque Scheme ne
+possède pas de primitives rapides de lecture il s'est avéré
+indispensable de programmer les requêtes systèmes et la gestion
+des tampons en C. Le code est donc composé de 90% de Scheme et
+10% de C.])))
+
+;; Programming Environment
+(section :title "Programming Environment" :number #f :toc #f
+
+	 ;; Understanding Memory allocations of Scheme Programs
+	 (paper "Understanding Memory allocations of Scheme Programs"
+		(list (ms-author)
+		      " -- "
+		      (ref :url "http://www.hpl.hp.com/personal/Hans_Boehm/"
+			   :text "Hans-J. Boehm"))
+		(ms-ref "sb-icfp00.ps.gz")
+		"Proceedings of ICFP'00"
+		#f
+		(paragraph [Memory is the performance bottleneck of modern
+architectures. Keeping memory consumption as low as possible enables fast
+and unobtrusive
+applications. But it is not easy to estimate the memory use of
+programs implemented in functional languages, due to both the complex
+translations of some high level constructs, and the use of automatic
+memory managers.
+
+,(linebreak 2)
+To help understand memory allocation behavior of Scheme programs,
+we have designed two complementary tools. The first one reports on
+frequency of allocation, heap configurations and on memory
+reclamation.  The second tracks down memory leaks. We have applied
+these tools to our Scheme compiler, the largest Scheme program we have
+been developing. This has allowed us to drastically reduce the amount
+of memory consumed during its bootstrap process, without requiring
+much development time.
+
+,(linebreak 2)
+Development tools will be neglected unless they are both conveniently
+accessible and easy to use. In order to avoid this pitfall, we have
+carefully designed the user interface of these two tools. Their
+integration into a real programming environment for Scheme is detailed
+in the paper.]))
+	 (linebreak 2)
+
+	 ;; Bee
+	 (paper "Bee: an Integrated Development Environment for the Scheme Programming Language"
+		(ms-author)
+		(ms-ref "serrano-jfp00.ps.gz")
+		"Journal of Functional Programming '00"
+		#f
+		(paragraph [The Bee is an integrated development environment
+for the Scheme programming language. It provides the user with a connection
+between Scheme and the C programming language, a symbolic debugger, a
+profiler, an interpreter, an optimizing compiler that delivers stand
+alone executables, a source file browser, a project manager, user
+libraries and online documentation. This article details the
+facilities of the Bee, its user interface and presents an overview of
+the implementation of its main components.])))
+
+;; Runtime system
+(section :title "Runtime system" :number #f :toc #f
+
+	 ;; Space Efficient Conservative Garbage Collection
+	 (paper "Space Efficient Conservative Garbage Collection"
+		(ref :url "http://www.hpl.hp.com/personal/Hans_Boehm/"
+		     :text "Hans-J. Boehm")
+		"http://www.hpl.hp.com/personal/Hans_Boehm/gc/papers/pldi93.ps.Z"
+		"Proceedings of PLDI '93"
+		#f
+		#f)))
+
+
+

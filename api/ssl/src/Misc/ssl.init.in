@@ -1,0 +1,35 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/ssl/src/Misc/ssl.init.in         */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Tue Jun 20 10:09:43 2006 (serrano)                */
+;*    Copyright   :  2001-06 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The SSL init file.                                               */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'ssl
+		  :srfi '(ssl)
+		  :basename "bigloossl"
+		  :module-init '__ssl_ssl
+		  :module-eval '__ssl_makelib
+		  :class-init "bigloo.ssl.ssl"
+		  :class-eval "bigloo.ssl.make-lib")
+
+;*---------------------------------------------------------------------*/
+;*    Link option                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    #;(set! *additional-include-foreign* 
+	  (cons "openssl/ssl.h" *additional-include-foreign*))
+    (set! *ld-post-options* 
+	  (string-append "@OPENSSLLIBS@ " *ld-post-options*))
+    (set! *additional-bigloo-zips* (cons "commons-ssl.jar" *additional-bigloo-zips*)))
+   (bigloo-eval
+    #unspecified))
+

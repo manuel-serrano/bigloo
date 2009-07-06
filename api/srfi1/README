@@ -1,0 +1,30 @@
+This directory contains the Bigloo implementation for srfi1.
+This example requires Bigloo2.0b. It build a Bigloo library
+and it tests it with one source file. To compile and install the library
+process the following steps:
+
+*** 1  - Edit the Makefile in order to select the proper compilers and options.
+         Most likely you will have to change the shared library constructor 
+         (the default constructor is `ld -G') and the path where you want
+         the library to be written.
+
+*** 2  -  make lib
+
+*** 3  -  make heap
+
+*** 4  -  make test
+
+You may install the library with
+
+*** 5  -  make install
+
+You may remove the object files that are useless once the library have been
+compiled with:
+
+*** 5b -  make clean
+
+You may un-install the library with
+
+*** 6  -  make uninstall
+
+

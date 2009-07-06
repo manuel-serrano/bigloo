@@ -1,0 +1,19 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/bglpkg/etc/init                      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Jan  2 15:34:25 2007                          */
+;*    Last change :  Tue May 13 10:46:39 2008 (serrano)                */
+;*    Copyright   :  2007-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The library init file.                                           */
+;*=====================================================================*/
+
+(declare-library! '@LIBNAME@
+		  :basename "bigloo@LIBNAME@"
+                  :dlopen-init "@DLOADSYM@"
+		  :version "@VERSION@")
+
+(cond-expand
+   (bigloo-compile
+    @MACROS@))

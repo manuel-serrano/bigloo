@@ -1,0 +1,952 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/foreign.texi                 @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 14:02:43 1998                          @c
+@c    Last change :  Tue Nov  6 11:12:05 2001 (serrano)                @c
+@c    Copyright   :  2000-01 Manuel Serrano                            @c
+@c    ------------------------------------------------------------     @c
+@c    The foreign interface                                            @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    The foreign interface                                            @c
+@c ------------------------------------------------------------------- @c
+@node C Interface, Java Interface, Explicit Typing, Top
+@comment  node-name,  next,  previous,  up
+@chapter The C interface
+@cindex C interface
+
+We call all the pieces of program devoted to the interactions between Scheme
+and another language a @emph{foreign interface}. In Bigloo, the foreign 
+interface allows Scheme's functions and variables to be exported to a 
+foreign language and foreign functions and variables to be imported into 
+the Scheme code. Using the foreign interface requires two kind of operations.
+
+@itemize @bullet
+@item Declarations --- type declarations, 
+import declarations or export declarations.
+@item Foreign reference in the Scheme code.
+@end itemize
+
+Declarations take place in a special module clause, see 
+@ref{Module Declaration}, and reference to foreign variables within 
+Scheme code requires no special construction. The current release 
+of Bigloo includes a C and a Java interface. The Java connection is
+specified by the means of a @code{java} clause (@pxref{Java Interface}).
+The C interface is active (that is the @code{extern} module clauses are
+read) only when compiling to C. So, when compiling to Jvm the binding
+declared in an @code{extern} clause are not bound.
+
+@menu
+* The syntax of the foreign declarations::  
+* The very dangerous pragma Bigloo special forms::  
+* Name mangling::
+* Embedded Bigloo applications::  
+* Using C bindings within the interpreter::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Foreign clauses                                                  @c
+@c ------------------------------------------------------------------- @c
+@node The syntax of the foreign declarations, The very dangerous pragma Bigloo special forms, C Interface, C Interface
+@comment  node-name,  next,  previous,  up
+@section The syntax of the foreign declarations
+@cindex The syntax of the foreign declarations
+The syntax of @emph{foreign} clauses is defined by:
+
+@example
+<extern> @expansion{} <variable-clause>
+     | <function-clause>
+     | <include-clause>
+     | <export-clause>
+     | <type-clause>
+@end example
+
+Foreign clauses are automatically ``transmitted'' by the importation
+process.  That is, if module @code{module1} imports a module
+@code{module2}, @code{module} treats the @code{extern} clauses of
+@code{module2} as though they were included in its own module
+declaration. Redefinition of a variable or a function already defined in
+an foreign clause is an error.
+
+@c -- Automatic extern clauses generation ---------------------------- @c
+@menu
+* Automatic extern clauses generation::  
+* Importing an extern variable::  
+* Importing an extern function::  
+* Including an extern file::    
+* Exporting a Scheme variable::  
+* Defining an extern type::     
+@end menu
+
+@node Automatic extern clauses generation, Importing an extern variable, The syntax of the foreign declarations, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Automatic extern clauses generation
+@cindex automatic extern clauses generation
+@cindex @code{cigloo}
+
+Extern clauses can be automatically generated using the Cigloo program
+which is distributed in the same package as Bigloo. Using Cigloo may be
+a good way to understand how C prototypes (and types) have to be
+declared in Bigloo. Cigloo reads C files and generates the Bigloo
+extern clauses for that files.
+
+@c -- variable importation ------------------------------------------- @c
+@node  Importing an extern variable, Importing an extern function, Automatic extern clauses generation, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Importing an extern variable
+@cindex importing an extern variable
+
+The <variable-clause> denotes importation of variables.
+@example
+<variable-clause> @expansion{} @code{(} <typed-ident> <c-name>@code{)}
+     | @code{(macro} <typed-ident> <string>@code{)}
+     | @code{(macro} <typed-ident> @code{(}<typed-ident>+@code{)} <string>@code{)}
+     | @code{(infix macro} <typed-ident> @code{(}<typed-ident>+@code{)} <string>@code{)}
+@end example
+
+Only extern ``non-@code{macro}'' variables are mutable (that is
+mutable using the @code{set!} construction). Bigloo does not emit
+``extern C prototype'' for variables introduced by a @code{macro}
+clause. <string> is the C name of variable. The Scheme name
+of that variable is extracted from the <typed-ident>.
+
+Here is an example of variable importations:
+@smalllisp
+(module example
+   (extern (c-var::double "c_var")
+           (macro bufsiz::long "BUFSIZ")))
+
+(print "c-var: " c-var)
+(set! c-var (+ 1.0 c-var))
+(print "c-var: " c-var)
+(print "bufsize: " BUFSIZ)
+@end smalllisp
+
+@c -- Importing an extern function ----------------------------------- @c
+@node  Importing an extern function, Including an extern file, Importing an extern variable, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Importing an extern function
+@cindex importing an extern function
+
+Function are imported using the <function-clause>.
+
+@example
+<function-clause> @expansion{} @code{(}<typed-ident> @code{(}<typed-ident>*@code{)} <string>@code{)}
+     | @code{(}<typed-ident> @code{(}<typed-ident>+ . <typed-ident>@code{)} <string>@code{)}
+     | @code{(macro} <typed-ident> @code{(}<typed-ident>*@code{)} <string>@code{)}
+     | @code{(macro} <typed-ident> @code{(}<typed-ident>+ . <typed-ident>@code{)} <string>@code{)}
+@end example
+
+The function result type and Scheme name are extracted from the
+<typed-ident>; the <typed-ident> denotes the type of the function
+arguments and <string> is the C name of the function. Bigloo
+does not produce ``C extern prototype'' for macro functions
+(those introduced by @code{macro} clauses). If the typed identifier
+of the function does not contain any type information. Bigloo will 
+emit a warning message when compiling and it will use a default C type 
+(e.g. the @code{int} C type) as the return type of the function.
+
+@smalllisp
+(module example
+   (extern (macro prn::int (::string . ::long) "printf")))
+
+(let ((n (read)))
+   (prn #"fib(%d): %d\n" n (fib n)))
+@end smalllisp
+
+
+@c -- Including an extern file --------------------------------------- @c
+@node  Including an extern file, Exporting a Scheme variable, Importing an extern function, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Including an extern file
+@cindex including an extern file
+
+C files can be included in the C code produced by using
+<include-clause>.
+
+@example
+<include-clause> @expansion{} @code{(include} <string>@code{)}
+@end example
+
+@c -- Exporting a Scheme variable ------------------------------------ @c
+@node  Exporting a Scheme variable, Defining an extern type, Including an extern file, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Exporting a Scheme variable
+@cindex exporting a Scheme variable
+
+A Scheme variable (or function) can be exported to the
+foreign world if and only if it is also exported using an @code{export} 
+clause. Type information is given in the Scheme
+exportation, thus, the only requirement for a variable
+to be extern exported is to be given a foreign name. The
+foreign <export-clause> does this:
+
+@example
+<export-clause> @expansion{} @code{(export} <ident> <string>@code{)}
+@end example
+ 
+Here is an example of exportation:
+
+@smalllisp
+(module example
+   (export (fib::long ::long))
+   (extern (export fib "scheme_fib")))
+
+(define (fib x) (if (< x 2) 1 ...))
+@end smalllisp
+
+@c -- Defining an extern type ---------------------------------------- @c
+@node  Defining an extern type,  , Exporting a Scheme variable, The syntax of the foreign declarations
+@comment  node-name,  next,  previous,  up
+@subsection Defining an extern type
+@cindex defining an extern type
+
+New Bigloo types can be defined using extern
+<type-clause>. These newly introduced types can be used in any
+declaration (that is in any extern @emph{or} Scheme module clause
+and in any Scheme variable or function definition). The syntax of
+<type-clause> is:
+
+@example
+<type-clause> @expansion{} @code{(type} <ident> <type-def> <string>@code{)}
+<type-def> @expansion{} <atomic-type>
+     | <ident>
+     | <struct-type>
+     | <union-type>
+     | <function-type>
+     | <array-type>
+     | <pointer-type>
+     | <enum-type>
+     | <opaque-type>
+@end example
+
+The symbol <ident> is the Scheme name of the introduced type and
+<string> is the C name of the type. When Bigloo produces the definition
+of a variable v of type s, it produces the following C code: s v@code{;}. 
+This rules applies unless s is a pointer or an array and then, to 
+produce a C definition, the name of the elements of the array or the elements
+pointed by the pointer type are used. Hence, if v is for instance @code{foo}
+and s is @code{(array int)} the produced C code will be: @code{int *foo}.
+
+@menu
+* Atomic types::                
+* C structures and unions::
+* C pointers::                  
+* C null pointers::                  
+* C arrays::                    
+* C functions::                 
+* C enums::                     
+* C opaques::                     
+@end menu
+
+@c atomic types
+@node  Atomic types, C structures and unions, , Defining an extern type 
+@comment  node-name,  next,  previous,  up
+@subsubsection Atomic types
+@cindex C atomic types
+The atomic types are the pre-existing ones, defined in the standard Bigloo's
+library. 
+@example
+<atomic-type> @expansion{} <bigloo-type> 
+     | <c-type>                                   
+<bigloo-type> @expansion{} @code{obj} @code{procedure} 
+     | @code{pair} | @code{nil} | @code{pair-nil} | @code{bint}          
+     | @code{blong} | @code{bbool} | @code{cnst}          
+     | @code{bstring} | @code{bchar} | @code{real}          
+     | @code{vector} | @code{tvector} | @code{struct}        
+     | @code{tstruct} | @code{output-port} | @code{input-port}    
+     | @code{binary-port} | @code{unspecified} | @code{symbol} 
+     | @code{foreign}       
+<c-type> @expansion{} @code{cobj} @code{char} 
+     | @code{uchar} | @code{short}    
+     | @code{ushort} | @code{int} | @code{uint} | @code{long}
+     | @code{ulong} | @code{slong} | @code{bool} | @code{string} 
+     | @code{file} | @code{double} | @code{float} | @code{void} 
+     | @code{function}
+@end example
+
+@cindex @code{obj}
+@cindex @code{cobj}
+@cindex @code{pair-nil}
+
+The type @code{obj} denotes the super type of all Bigloo types (i.e.,
+all Bigloo types, such as @code{procedure}, @code{pair}, ...) is an
+@code{obj}.  The type @code{cobj} denotes the super of all C types
+(i.e., all preexisting C types such as @code{char}, @code{uchar},
+@code{schar}, @code{short}, ...). The type @code{pair-nil} denotes
+values that are either pairs or the @code{()} value.
+
+@c C struct
+@node C structures and unions, C pointers, Atomic types, Defining an extern type 
+@comment  node-name,  next,  previous,  up
+@subsubsection Struct and Union types
+@cindex C structure and union types
+C struct and Union types can be declared in Bigloo using
+<struct-type> clauses:
+
+@example
+<struct-type> @expansion{} @code{(struct} @code{(}<typed-ident> <string>@code{)^+}@code{)}   
+<union-type> @expansion{} @code{(union} @code{(}<typed-ident> <string>@code{)^+}@code{)}
+@end example
+
+This clause declared a C struct but C structure values @emph{cannot} 
+be handled by Bigloo. Instead Bigloo is able to handle
+@emph{pointers to} C structure. Thus, in order to help the
+definition of extern types, when a struct named @var{struct} is
+defined, if it does not exists yet, Bigloo automatically defines
+a type @emph{pointer to the structure}. This type is named 
+@var{struct}@code{*}.
+
+When a pointer to a structure type is defined, Bigloo
+automatically produces functions to manipulate objects of this
+type. Let us suppose the type definition of @var{struct}@code{*}: 
+
+@smalllisp
+(type @var{struct}
+   (struct (@var{id1}::@var{type1} @var{name1})
+           ...
+           (@var{idn}::@var{typen} @var{namen}))
+@end smalllisp
+
+The following functions are created:
+
+@itemize @bullet
+
+@item A creator: 
+@smalllisp
+(@var{struct}*::@var{struct}* ::@var{type_1} ... ::@var{type_n})
+@end smalllisp
+
+This function allocates a fresh @var{struct}@code{*} (in the same heap as
+any Scheme value) and fills the fields of the C structure with the proper
+values provided in the call.
+
+@item A type checker: 
+@smalllisp
+(@var{struct}*?::bool @var{obj}::obj)
+@end smalllisp
+
+This function returns @code{#t} if and only if the argument @var{obj} 
+is of type @var{struct}@code{*}.
+
+@item A null checker: 
+@smalllisp
+(@var{struct}*-null?::bool ::@var{struct}*)
+@end smalllisp
+This function returns @code{#t} if and only if its argument is @code{Null}.
+
+@item A null creator: 
+@smalllisp
+(make-null-@var{struct}::@var{struct}*)
+@end smalllisp
+This function creates a @code{NULL} value of type @var{struct}*.
+
+@item An equality checker: 
+@smalllisp
+(=@var{struct}*?::bool ::@var{struct}* ::@var{struct}*)
+@end smalllisp
+
+This function returns @code{#t} if and only if its arguments are equal.
+
+@item Accessors and mutators: 
+@smalllisp
+(@var{struct}*-@var{id_1}::@var{type_1} ::@var{struct}*)
+(@var{struct}*-@var{id_1}-set!::obj ::@var{struct}* ::@var{type_1})
+...
+@end smalllisp
+These functions read and store field values.
+
+@end itemize
+
+Here is an example of structure usage:
+
+@smalllisp
+(module foo 
+   (extern 
+     (include "named_point_declaration.h")
+     (type named-point 
+           (struct (x::double "x")
+                   (y::double "y")
+                   (name::string "name"))
+           "struct named_point")
+     (c-print-point::int (named-point*) "ppoint")))
+
+(define (scheme-print-point point)
+   (print "point*-name: " point
+          " x: " (named-point*-x point)
+          " y: " (named-point*-y point)))
+
+(let ((orig (named-point* 0.0 0.0 "orig")))
+   (if (named-point*-null? orig)
+       (error "bigloo" "cannot allocate point" orig)
+       (begin
+          (c-print-point orig)
+          (scheme-print-point orig))))
+@end smalllisp
+
+@c C pointer
+@node C pointers, C null pointers, C structures and unions, Defining an extern type
+@comment  node-name,  next,  previous,  up
+@subsubsection C pointers
+@cindex C pointers
+C pointers are defined by the <pointer-type>
+
+@example
+<pointer-type> @expansion{} @code{(pointer} <ident>@code{)}
+@end example
+
+<ident> is the name of a previously defined type. 
+Let us suppose the pointer type declaration:
+@smalllisp
+(type @var{ptr} (pointer @var{ident}) ...)
+@end smalllisp
+
+If @var{ident} is the name of a structure type, Bigloo automatically
+creates structure accessors (@pxref{C structures and unions}). 
+Otherwise, it creates the following functions:
+
+@itemize @bullet
+@item A creator: 
+@smalllisp
+(make-@var{ptr}::@var{ptr} @var{nb}::long)
+@end smalllisp
+
+This function allocates memory for @var{nb} elements of type @var{ident}
+and returns a @var{ptr} to this zone. The memory is filled with
+the C @code{Null} value.
+
+@item A type checker: 
+@smalllisp
+(@var{ptr}?::bool @var{obj}::obj)
+@end smalllisp
+This function returns @code{#t} the argument @var{obj} is of type
+@var{ptr} and @code{#f} otherwise.
+
+@item A null checker: 
+@smalllisp
+(@var{ptr}-null?::bool ::@var{ptr})
+@end smalllisp
+This function returns @code{#t} if its argument is @code{Null} and @code{#f}
+otherwise.
+
+@item A null creator: 
+@smalllisp
+(make-null-@var{ptr}::@var{ptr}*)
+@end smalllisp
+This function creates a @code{NULL} value of type @var{ptr}*.
+
+@item An equality checker: 
+@smalllisp
+(=@var{ptr}*?::bool ::@var{ptr}* ::@var{ptr}*)
+@end smalllisp
+This function returns @code{#t} if its arguments are equal and @code{#f} otherwise.
+
+@item Accessors and mutators: 
+@smalllisp
+(@var{ptr}-ref::@var{ident} ::@var{ptr} ::long)
+(@var{ptr}-set!::obj ::@var{ptr} ::long ::@var{ident})
+@end smalllisp
+These functions read and store field values.
+
+@end itemize
+
+Here is an example of a program using pointer types:
+
+@smalllisp
+(module foo 
+   (extern 
+    (type double* (pointer double) "double *")))
+
+(define (make-vect::double* x y z)
+   (let ((vect (make-double* 3)))
+      (double*-set! vect 0 x)
+      (double*-set! vect 1 y)
+      (double*-set! vect 2 z)
+      vect))
+
+(define (vect-norm vect::double*)
+   (sqrt (+ (expt (double*-ref vect 0) 2)
+	    (expt (double*-ref vect 1) 2)
+	    (expt (double*-ref vect 2) 2))))
+
+(print (vect-norm (make-vect 1.2 4.5 -4.5)))
+@end smalllisp
+
+@c C pointer
+@node C null pointers, C arrays, C pointers, Defining an extern type
+@comment  node-name,  next,  previous,  up
+@subsubsection C null pointers
+@cindex C null pointers
+
+It may be convenient to build C null pointers. Several means can be
+used.  In particular, foreign structures and pointers are provided with
+Null creators. For other foreign types, the easiest one is likely to be
+a @code{pragma} form. For instance, in order to create a null pointer to
+a @code{double*} type, one may use:
+
+@smalllisp
+(pragma::double* "((double *)0L)")
+@end smalllisp
+
+@deffn {bigloo procedure} string-ptr-null? string
+@deffnx {bigloo procedure} void*-null? void*
+These two predicates checks if there argument is the C @code{NULL} value.
+@end deffn
+
+@deffn {bigloo procedure} make-string-ptr-null
+@deffnx {bigloo procedure} make-void*-null
+These two constructors creates @emph{null} foreign values.
+@end deffn
+
+@c C array
+@node C arrays, C functions, C null pointers, Defining an extern type 
+@comment  node-name,  next,  previous,  up
+@subsubsection C arrays
+@cindex C arrays
+C arrays are defined by the <array-type>
+
+@example
+<array-type> @expansion{} @code{(array} <ident>@code{)}
+@end example
+
+<ident> is the name of a previously defined type. Array types are 
+similar to pointer types except that they include their size in their type
+definition string. Let us suppose the array type declaration: 
+@smalllisp
+(type @var{array} (array @var{ident}) ...)
+@end smalllisp
+
+If @var{ident} is the name of a structure type, Bigloo automatically
+creates structures accessors (@pxref{C structures and unions}).
+Otherwise, it creates the following functions:
+
+@itemize @bullet
+@item A creator: 
+@smalllisp
+(make-@var{array}::@var{array})
+@end smalllisp
+This function allocates memory for the array @var{array}.
+The memory is filled with the C @code{Null} value.
+
+@item A type checker: 
+@smalllisp
+(@var{array}?::bool @var{obj}::obj)
+@end smalllisp
+This function returns @code{#t} if the argument @var{obj} is of type 
+@emph{array} and @code{#f} otherwise.
+
+@item A null checker: 
+@smalllisp
+(null-@var{array}?::bool ::@var{array})
+@end smalllisp
+This function returns @code{#t} if the argument @var{obj} is @code{Null}
+and @code{#f} otherwise.
+
+@item An equality checker: 
+@smalllisp
+(=@var{array}*?::bool ::@var{array}* ::@var{array}*)
+@end smalllisp
+This function returns @code{#t} if its arguments are equal and @code{#f} 
+otherwise.
+
+@item Accessors and mutators: 
+@smalllisp
+(@var{array}-ref::@var{ident} ::@var{array} ::long)
+(@var{array}-set!::obj ::@var{array} ::long ::@var{ident})
+@end smalllisp
+These functions read and store field values.
+
+@end itemize
+
+Here is an example of a program using array types:
+
+@smalllisp
+(module foo 
+   (extern 
+    (type double* (array double) "double [ 10 ]")))
+
+(define (make-vect::double* x y z)
+   (let ((vect (make-double*)))
+      (double*-set! vect 0 x)
+      (double*-set! vect 1 y)
+      (double*-set! vect 2 z)
+      vect))
+
+(define (vect-norm vect::double*)
+   (sqrt (+ (expt (double*-ref vect 0) 2)
+	    (expt (double*-ref vect 1) 2)
+	    (expt (double*-ref vect 2) 2))))
+
+
+(print (vect-norm (make-vect 1.2 4.5 -4.5)))
+@end smalllisp
+
+@c C function
+@node C functions, C enums, C arrays, Defining an extern type
+@comment  node-name,  next,  previous,  up
+@subsubsection C functions
+@cindex C functions
+C function types are introduced by the <function-type> clause:
+
+@example
+<function-type> @expansion{} @code{(function} <ident> @code{(}<ident>*@code{))}
+@end example
+
+Let us suppose the array type declaration: 
+@smalllisp
+(type @var{fun} (function @var{res} (@var{arg}*)) ...)
+@end smalllisp
+
+Bigloo creates the following functions:
+
+@itemize @bullet
+@item A type checker: 
+@smalllisp
+(@var{fun}?::bool @var{obj}::obj)
+@end smalllisp
+This function returns @code{#t} if the argument @var{obj} is of type
+@var{fun} and @code{#f} otherwise.
+
+@item An equality checker: 
+@smalllisp
+(=@var{fun}*?::bool ::@var{fun}* ::@var{fun}*)
+@end smalllisp
+This function returns @code{#t} if and only if its arguments are equal.
+
+@item Caller: 
+@smalllisp
+(@var{fun}-call::@var{res} @var{f}::@var{fun} @var{a}::@var{ta} ...)
+@end smalllisp
+This function invokes @var{f} with the arguments @var{a} @dots{}
+@var{an}.
+
+@end itemize
+
+Suppose we have to use in Scheme the following C variable:
+
+@smalllisp
+double (*convert)(char *);
+@end smalllisp
+
+It can be done as in:
+
+@smalllisp
+(module foo 
+   (extern
+    (type *string->double
+          (function double (string)) 
+                    "double (*)(char *)")
+    (macro cv::*string->double "convert")))
+
+(print (*string->double-call cv "3.14"))
+@end smalllisp
+
+@c C enum
+@node C enums, C opaques, C functions, Defining an extern type
+@comment  node-name,  next,  previous,  up
+@subsubsection C enums
+@cindex C enum
+This form defines @code{enum} types.
+
+@example
+<enum-type> @expansion{} @code{(enum (}<ident> <string>@code{)@dots{}} @dots{}@code{)}
+@end example
+
+Let us suppose the type: 
+@smalllisp
+(type @var{enum}
+   (enum (@var{id_1} @var{name_1})
+         ...
+         (@var{id_n} @var{name_n})))
+@end smalllisp
+
+Bigloo creates the following functions:
+
+@itemize @bullet
+
+@item Creators: 
+@smalllisp
+(@var{enum}-@var{id_1}::@var{enum})
+...
+(@var{enum}-@var{id_n}::@var{enum})
+@end smalllisp
+These functions create @var{enum} values.
+
+@item A type checker: 
+@smalllisp
+(@var{enum}?::bool @var{obj}::obj)
+@end smalllisp
+This function returns @code{#t} if the argument @var{obj} is of type 
+@var{enum} and @code{#f} otherwise.
+
+@item An equality checker: 
+@smalllisp
+(=@var{enum}?::bool ::@var{enum} ::@var{enum})
+@end smalllisp
+This function returns @code{#t} if the arguments are equal and @code{#f} otherwise.
+@end itemize
+
+Here is an example of Scheme code using @var{enum} type.
+
+@smalllisp
+(module foo
+   (extern
+    (type gizmo
+          (enum (titi "titi")
+                (tutu "tutu")
+                (tata "tata"))
+          "enum toto")))
+
+(let ((v1 (gizmo-titi))
+      (v2 (gizmo-tutu)))
+   (print (=gizmo? v1 v2)))
+@end smalllisp
+
+@c C enum
+@node C opaques, ,C enums, Defining an extern type
+@comment  node-name,  next,  previous,  up
+@subsubsection C opaques
+@cindex C opaque
+This form defines @code{opaque} types.
+
+@example
+<opaque-type> @expansion{} @code{(opaque)}
+@end example
+
+Let us suppose the type:
+@smalllisp
+(type @var{opa} (opaque) ...)
+@end smalllisp
+
+Bigloo creates the following functions:
+@itemize @bullet
+
+@item A type checker: 
+@smalllisp
+(@var{opa}?::bool @var{obj}::obj)
+@end smalllisp
+This function returns @code{#t} if the argument @var{obj} is of type 
+@var{opa} and @code{#f} otherwise.
+
+@item An equality checker: 
+@smalllisp
+(=@var{opa}?::bool ::@var{opa} ::@var{opa})
+@end smalllisp
+This function returns @code{#t} if the arguments 
+are equal and @code{#f} otherwise.
+@end itemize
+
+Opaque types are relevant when a C value must transit via a Scheme function
+from a C function to another C function. The value can't be used in Scheme
+because no accessors are defined over that type it can only be send back
+to a C function.
+
+Here is an example of Scheme code using @var{opaque} type.
+
+@smalllisp
+(module foo
+   (extern (type filedes (opaque) "FILE *")
+           (macro _fopen::filedes (::string ::string) "fopen")
+           (_fgetc::int (::filedes) "fgetc")
+           (_fclose (::filedes) "fclose"))
+   (export (fopen::filedes ::bstring ::bstring)
+           (fclose ::filedes)
+           (fgetc::char ::filedes)))
+
+(define (fopen fname mode)
+   (_fopen fname mode))
+
+(define (fclose filedes)
+   (_fclose filedes))
+
+(define (fgetc filedes)
+   (integer->char (_fgetc filedes)))
+@end smalllisp
+
+@emph{Note: } To illustrate the default type compilation of extern function,
+we have voluntary introduced an incomplete declaration for the @code{fclose}
+function. This will make Bigloo to produce a warning when compiling that
+module.
+
+@c -- The very dangerous ``pragma'' Bigloo special form -------------- @c
+@node  The very dangerous pragma Bigloo special forms, Name mangling, The syntax of the foreign declarations, C Interface
+@comment  node-name,  next,  previous,  up
+@section The very dangerous ``pragma'' Bigloo special forms
+@cindex The very dangerous ``pragma'' Bigloo special forms
+
+Bigloo has a special form which allows the inclusion of C text
+into the produced code. It is @emph{only} applicable to the C back-end. 
+In particular, the JVM back-end (see Chapter @ref{Java Interface}) does
+not support it.
+
+@deffn {bigloo syntax} pragma::@var{ident} string [args]
+@deffnx {bigloo syntax} free-pragma::@var{ident} string [args]
+This force Bigloo to include @var{string} in the produced C code as a
+regular C fragment of code. This form must not be used without an in depth
+understanding of Bigloo C code production; with unskilled use, the
+produced C file may be unacceptable to the C compiler.
+
+Values can be passed to a @code{pragma} form, being
+referenced in @var{string} by expressions of the form @code{$@var{number}}.
+Such expression are replaced by the corresponding
+values, the number of referenced values in @var{string}
+being exactly the number of values provided. Here is an example
+of @code{pragma} usage:
+
+@smalllisp
+(define (fibo x::long)
+   (pragma "printf( \"fib(%d):%d\\n\", $1, $2 );" 
+           x 
+           (fib x)))
+@end smalllisp
+
+Arguments provided to a pragma form are not converted during compilation.
+Hence, pragma arguments can be of any types, including, foreign types.
+
+A pragma result type can be specified using the notation 
+@code{pragma::@var{name}} where the default type is @code{unspecified}. Then,
+for instance, the expression @code{(pragma::bool "$1 == 0" x)} will
+be considered to be returning a object of type @code{bool} (C boolean) while
+the expression @code{(pragma "$1 == 0" x)} will be considered by
+Bigloo to be returning the @code{unspecified} typed object.
+
+The compiler assumes that a @code{pragma} forms operates a side effects
+and that it writes into its parameters. This assumption no long holds
+with @code{free-pragma}. This is the only difference between the two
+forms.
+@end deffn
+
+@c -- Name manling --------------------------------------------------- @c
+@node  Name mangling, Embedded Bigloo applications, The very dangerous pragma Bigloo special forms, C Interface
+@comment  node-name,  next,  previous,  up
+@section Name mangling
+@cindex Name mangling
+
+In order to avoid name clashes, Bigloo uses name mangling when compiling to
+C or to Jvm. The name mangling for a Scheme identifier may be overridden
+by the means of an extern @code{export} clause 
+(see Section @ref{Exporting a Scheme variable}).
+
+Four public functions may be used to mangle and to demangle
+Scheme identifiers:
+
+@deffn {bigloo procedure} bigloo-mangle string
+Mangle the identifier @var{string}.
+@end deffn
+
+@deffn {bigloo procedure} bigloo-module-mangle string1 string2
+Mangle the identifier @var{string1} that belongs to module @var{string2}.
+@end deffn
+
+@deffn {bigloo procedure} bigloo-mangled? string
+Returns @code{#t} if @var{string} has been computed by the @code{bigloo-mangle}
+or @code{bigloo-module-mangle} function.
+@end deffn
+
+@deffn {bigloo procedure} bigloo-class-mangled? string
+Returns @code{#t} if @var{string} is a mangled name of a Bigloo class.
+@end deffn
+
+@deffn {bigloo procedure} bigloo-need-mangling string
+Returns @code{#t} if @var{string} requires name mangling because it
+is not a C or Jvm valid identifier.
+@end deffn
+
+@deffn {bigloo procedure} bigloo-demangle string
+Demangle previously mangled identifiers:
+
+@smalllisp
+(let ((id "foo!")
+      (module "a-module"))
+   (let ((mangled (bigloo-module-mangle id module)))
+      (multiple-value-bind (new-id new-module)
+         (bigloo-demangle mangled)
+         (and (string=? id new-id) (string=? module new-module)))))
+   @result{} #t
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} bigloo-class-demangle string
+Demangle previously mangled class identifier.
+@end deffn
+
+@c -- Embedded Bigloo applications ----------------------------------- @c
+@node  Embedded Bigloo applications, Using C bindings within the interpreter , Name mangling, C Interface
+@comment  node-name,  next,  previous,  up
+@section Embedded Bigloo applications
+@cindex Embedded Bigloo applications
+
+It is possible to design and realize embedded Bigloo
+applications. This facility is useful for adding a new Scheme part
+to an already existing C program. The C part of the program has only
+to enter the Bigloo initialization, hence, it can call any
+Bigloo function.
+
+Normally, Bigloo creates an initialization function called @code{
+main} when it reads a @code{main} module clause. To use an
+embedded Bigloo program, such an initialization function would have to
+be created but with a different name. Changing the name can be
+be done using the following Bigloo option: 
+@code{-copt "-DBIGLOO_MAIN=<@var{new-name}>"}. To prevent exit from the
+program after <@var{new-name}> is executed, the
+following Bigloo option must be used: 
+@code{-copt "-DBIGLOO_EXIT='BUNSPEC,'"}.
+
+A very important part of designing embedded Bigloo programs is
+being sure that all used Bigloo modules are correctly
+initialized and the normal way to initialize them is to use 
+@code{with} clauses in the module which contains the @code{main}
+clause.
+
+An example of an embedded program can be found in the distribution's
+examples directory.
+
+@c -- Embedded Bigloo applications ----------------------------------- @c
+@node Using C bindings within the interpreter, , Embedded Bigloo applications, C Interface
+@comment  node-name,  next,  previous,  up
+@section Using C bindings within the interpreter
+@cindex Using C bindings within the interpreter
+
+To be able to get access to foreign functions within the Bigloo
+interpreter, some extra measurements have to be taken. The foreign
+functions have to be present in the interpreter binary, which means
+you have to compile a custom interpreter. Fortunately, this is easy.
+What has to be done is to wrap the foreign functions within Scheme and
+make an interpreter module.
+
+Let us consider an example where a C function @code{get_system_time}
+returning and @code{int} is used in an interpreter. (When linking, be 
+sure to add the @code{.o} file containing the @code{get_system_time}.)
+
+The @code{ffi-interpreter.scm} file:
+
+@smalllisp
+(module ExtendendInterpreter
+   (import (wrapper "wrapper.scm"))
+   (main main))
+
+(define (main argv)
+   (repl))
+@end smalllisp
+
+The @code{wrapper.scm} file:
+
+@smalllisp
+(module wrapper
+   (extern (macro %get-system-time::int () "get_system_time"))
+   (export (get-system-time))
+   (eval (export-exports))
+
+(define (get-system-time)
+  (%get-system-time))
+@end smalllisp
+
+Compile and link your application with something like:
+
+@smallexample
+cc gettime.c -c gettime.o
+bigloo wrapper.scm -c
+bigloo ffi-interpreter.scm wrapper.o gettime.o
+@end smallexample

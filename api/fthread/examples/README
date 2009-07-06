@@ -1,0 +1,28 @@
+This directory contains some demonstrations of Bigloo fair threads.
+These are:
+
+	- srfi18: all the examples found in the specification of SRFI18
+	  (http://srfi.schemers.org/srfi-18/srfi-18.html).
+
+	- http: a small web server accepting several concurrent requests.
+
+	- trepl: a small Bigloo interpreter augmented with the Thread api.
+
+	- gas(*), gas2(*): two graphical demonstrations that simulate gas
+	  spreading in a box. They illustrate reactive programming with
+	  Bigloo fair threads.
+
+	- prims(*): a small mathematical animation that graphically build
+	  prims numbers.        
+     
+	- mtracker(*): an application that relies on non-active events
+	  waiting.
+
+	- sticker(*): another graphical demo.
+
+
+(*) The demonstrations annoted with a * require the Biglook (1.0 or greater)
+library. It may be downloaded from the Bigloo home page:
+
+   http://www.inria.fr/mimosa/fp/Bigloo
+

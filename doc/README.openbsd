@@ -1,0 +1,5 @@
+The release 2.1b had been tested on a PC running OpenBsd. Shared
+libraries cannot be used with Bigloo on PC/OpenBsd (at least call/cc
+crashes for applications linked against shared libraries). Thus, you
+will have to use the -static-bigloo option when linking Bigloo
+applications.

@@ -1,0 +1,201 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/sqlite.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Fri Feb 10 07:37:26 2006                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2006 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    SQLite binding                                                   @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    SQLite ...                                                       @c
+@c ------------------------------------------------------------------- @c
+@node SQLite, , , Database library
+@comment  node-name,  next,  previous,  up
+@section SQLite
+@cindex SQLITE
+
+The Bigloo's C back-end supports SQL queries. It relies on the SQLite
+library (@url{http://www.sqlite.org/}). The SQLite binding is accessible
+to Bigloo via the @code{sqlite} library. Here is an example of module
+that uses this library.
+
+@smalllisp
+(module example1
+  (library sqlite))
+
+(let ((db (instantiate::sqlite)))
+  ...)
+@end smalllisp
+
+@deffn {Bigloo Sqlite class} sqlite
+@smalllisp
+(class sqlite
+   (path::bstring read-only (default ":memory:")))
+@end smalllisp
+
+The instances of the class @code{sqlite} hold SQLite databases. A database
+may be permanently stored on a disk or loaded in memory. The class attribute
+@code{path} is the location on the disk where the database is stored. The
+special path @code{:memory:} denotes in-memory databases. When an instance
+is created a SQLite database is @emph{opened}.
+
+Example:
+@smalllisp
+(define db1 (instantiate::sqlite (path "/tmp/foo.db")))
+(define db2 (instantiate::sqlite))
+@end smalllisp
+
+Binds the global variable @var{db1} to a database that is stored on the file
+system at location @code{/tmp/foo.db}. This example also binds the global
+variable @var{db2} to an in-memory SQLite database.
+@end deffn
+
+@deffn {Bigloo Sqlite function} sqlite-close @var{sqlite}
+This function closes a database previously opened by creating an instance
+of the class @code{sqlite}.
+
+Example:
+@smalllisp
+(let ((db (instantiate::sqlite)))
+  (sqlite-exec db "CREATE TABLE table1 (x INTEGER, y INTEGER)")
+  (sqlite-exec db "INSERT INTO table1 VALUES( ~a, ~a )" 1 4)
+  (sqlite-close db))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Sqlite function} sqlite-format @var{string} @var{arg} @dots{}
+Constructs a string of characters representing an SQLite
+commands. This function acts as @code{format} (see @ref{Input and
+Output}). It is augmented with three additional escape sequence:
+@code{~q}, @code{~k}, and @code{~l}. The first one build a string of
+characters where the characters denoting SQL strings (i.e., the
+character @code{'}) is automatically escaped. The escape character
+@code{~k} introduces a list of SQL strings. The escape character
+@code{~l} introduces a SQL list.
+
+Summary of all escape codes:
+@itemize @bullet
+@item @code{~a} The corresponding value is inserted into the string 
+as if printed with display.
+@item @code{~s} The corresponding value is inserted into the string 
+as if printed with write.
+@item @code{~%} A newline is inserted.
+@item @code{~~} A tilde @code{~} is inserted.
+@item @code{~q} An SQL escaped string.
+@item @code{~l} Introduces a list (comma separated).
+@item @code{~k} Introduces a list of SQL strings.
+@end itemize
+
+Examples:
+
+@smalllisp
+(module example
+   (library sqlite))
+
+(sqlite-format "~a" "foo'bar") @result{} "foo'bar"
+(sqlite-format "~q" "foo'bar") @result{} "'foo''bar'"
+(sqlite-format "~a" '("foo'bar" "foo")) @result{} "(foo'bar foo)"
+(sqlite-format "~k" '("foo'bar" "foo")) @result{} "'foo''bar','foo'"
+(sqlite-format "~l" '("foo'bar" "foo")) @result{} "foo'bar,foo"
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Sqlite function} sqlite-exec @var{sqlite} @var{string} @var{arg} @dots{}
+The function @code{sqlite-exec} @emph{executes} an SQLite command. The command
+is the built by implicitly invoking @code{sqlite-format} on @var{string} and
+the optional @var{arg} arguments. This function returns a single element,
+the first one returned by the SQL engine.
+
+Example:
+@smalllisp
+(module example
+   (library sqlite))
+
+(define *db* (instantiate::sqlite))
+
+(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
+(for-each (lambda (x)
+		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
+	     (iota 10))
+(sqlite-exec *db* "SELECT * FROM foo")
+   @result{} 9
+@end smalllisp
+
+@end deffn
+
+@deffn {Bigloo Sqlite function} sqlite-eval @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+The function @code{sqlite-eval} invokes a SQLite command built by
+implicitly invoking @code{sqlite-format} on @var{string} and the optional
+@var{arg} arguments. The result of the function is built by applying 
+@var{procedure} to the first value returned by the SQLite call.
+
+Note: user callback (@var{procedure}) @b{must not} exit. That is they must
+not invoke a function create by @code{bind-exit}. Exiting from a callback will
+leave the database in a inconsistent state that prevent transactions to
+be rolled back.
+@end deffn
+
+@deffn {Bigloo Sqlite function} sqlite-map @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
+The function @code{sqlite-map} invokes a SQLite command built by
+implicitly invoking @code{sqlite-format} on @var{string} and the optional
+@var{arg} arguments. The result is a list whose elements are built by applying 
+@var{procedure} to all the values returned by the SQLite call.
+
+Note: user callback (@var{procedure}) @b{must not} exit. That is they must
+not invoke a function create by @code{bind-exit}. Exiting from a callback will
+leave the database in a inconsistent state that prevent transactions to
+be rolled back.
+Example:
+
+@smalllisp
+(module example
+   (library sqlite))
+
+(define *db* (instantiate::sqlite))
+
+(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
+(for-each (lambda (x)
+		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
+	     (iota 10))
+(sqlite-map *db* 
+  (lambda (s1 s2) (+ (string->integer s1) (string->integer s2))) 
+  "SELECT * FROM foo")
+   @result{} (0 2 6 12 20 30 42 56 72 90)
+@end smalllisp
+@end deffn
+
+Example2:
+@smalllisp
+(module example
+   (library sqlite))
+
+(define *db* (instantiate::sqlite))
+
+(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
+(for-each (lambda (x)
+		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
+	     (iota 10))
+(sqlite-map *db* vector "SELECT * FROM foo")
+   @result{} '(#("0" "0")
+	#("1" "1")
+	#("2" "4")
+	#("3" "9")
+	#("4" "16")
+	#("5" "25")
+	#("6" "36")
+	#("7" "49")
+	#("8" "64")
+	#("9" "81"))
+@end smalllisp
+
+@deffn {Bigloo Sqlite function} sqlite-last-insert-rowid @var{sqlite}
+Returns the SQLite @emph{rowid} of the last inserted row.
+@end deffn
+
+
+
+
+

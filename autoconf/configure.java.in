@@ -1,0 +1,89 @@
+/* @CONFIGURE@ */
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/autoconf/configure.java.in           */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Oct 12 09:29:49 2004                          */
+/*    Last change :  Tue Oct 12 12:38:01 2004 (serrano)                */
+/*    Copyright   :  2004 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    Java configuration                                               */
+/*=====================================================================*/
+
+package bigloo;
+public class configure {
+  public static final byte[] BGL_RELEASE_NUMBER = "@BGL_RELEASE_NUMBER@".getBytes();
+  public static final byte[] BGL_HOMEURL = "@BGL_HOMEURL@".getBytes();
+  public static final byte[] BGL_SPECIFIC_VERSION = "@BGL_SPECIFIC_VERSION@".getBytes();
+  public static final byte[] BGL_DEFAULT_BACK_END = "@BGL_DEFAULT_BACK_END@".getBytes();
+  public static final boolean STACK_GROWS_DOWN = (@STACK_GROWS_DOWN@ == 1);
+  public static final int PTR_ALIGNMENT = @PTR_ALIGNMENT@;
+  public static final byte[] SETJMP = "@SETJMP@".getBytes();
+  public static final byte[] LONGJMP = "@LONGJMP@".getBytes();
+  public static final boolean HAVE_BCOPY = (@HAVE_BCOPY@ == 1);
+  public static final int NB_WINDOW_REGISTER = @NB_WINDOW_REGISTER@;
+  public static final boolean HAVE_SIGSETMASK = (@HAVE_SIGSETMASK@ == 1);
+  public static final boolean HAVE_SIGPROCMASK = (@HAVE_SIGPROCMASK@ == 1);
+  public static final boolean HAVE_ALLOCA = (@HAVE_ALLOCA@ == 1);
+  public static final boolean HAVE_GETCWD = (@HAVE_GETCWD@ == 1);
+  public static final boolean HAVE_GETWD = (@HAVE_GETWD@ == 1);
+  public static final boolean CONSTANT_ALIGNED = (@CONSTANT_ALIGNED@ == 1);
+  public static final boolean BGL_BIG_ENDIAN = (@BGL_BIG_ENDIAN@ == 1);
+  public static final boolean HAVE_PIPE = (@HAVE_PIPE@ == 1);
+  public static final boolean HAVE_SIGCHLD = (@HAVE_SIGCHLD@ == 1);
+  public static final boolean HAVE_SIGACTION = (@HAVE_SIGACTION@ == 1);
+  public static final boolean BGL_HAVE_SELECT = (@BGL_HAVE_SELECT@ == 1);
+  public static final boolean HAVE_TERMIO = (@HAVE_TERMIO@ == 1);
+  public static final boolean HAVE_DLOPEN = (@HAVE_DLOPEN@ == 1);
+  public static final boolean HAVE_SHARED_LIBRARY = (@HAVE_SHARED_LIBRARY@ == 1);
+  public static final byte[] DLOPEN_LD_OPT = "@DLOPEN_LD_OPT@".getBytes();
+  public static final boolean BGL_AUTO_FINALIZER = true;
+  public static final byte[] SHELL = "@SHELL@".getBytes();
+  public static final byte[] BGL_SHELL_MV = "@SHELL_MV@".getBytes();
+  public static final byte[] BGL_SHELL_RM = "@SHELL_RM@".getBytes();
+  public static final byte[] C_COMPILER_STYLE = "@C_COMPILER_STYLE@".getBytes();
+  public static final byte[] C_COMPILER = "@C_COMPILER@".getBytes();
+  public static final byte[] C_FLAGS = "@C_FLAGS@".getBytes();
+  public static final byte[] C_COMPILER_O_OPTION = "@C_COMPILER_O_OPTION@".getBytes();
+  public static final byte[] C_COMPILER_DEBUG_OPTION = "@C_COMPILER_DEBUG_OPTION@".getBytes();
+  public static final byte[] C_OBJECT_FILE_EXTENSION = "@C_OBJECT_FILE_EXTENSION@".getBytes();
+  public static final byte[] C_COMPILER_OPTIM_FLAGS = "@C_COMPILER_OPTIM_FLAGS@".getBytes();
+  public static final byte[] C_STRIP_FLAGS = "@C_STRIP_FLAGS@".getBytes();
+  public static final byte[] C_LINKER_STYLE = "@C_LINKER_STYLE@".getBytes();
+  public static final byte[] C_LINKER_O_OPTION = "@C_LINKER_O_OPTION@".getBytes();
+  public static final byte[] C_LINKER_DEBUG_OPTION = "@C_LINKER_DEBUG_OPTION@".getBytes();
+  public static final byte[] C_LINKER_OPTIM_FLAGS = "@C_LINKER_OPTIM_FLAGS@".getBytes();
+  public static final byte[] C_PROFILE_FLAGS = "@C_PROFILE_FLAGS@".getBytes();
+  public static final boolean C_STRING_SPLIT = (@C_STRING_SPLIT@ == 1);
+  public static final byte[] LD_LIBRARY_DIR = "@BGL_LD_LIBRARY_DIR@".getBytes();
+  public static final byte[] LIBRARY_DIRECTORY = "@LIBRARY_DIRECTORY@".getBytes();
+  public static final byte[] BGL_NON_CUSTOM_GC_DIR = "@BGL_NON_CUSTOM_GC_DIR@".getBytes();
+  public static final byte[] BGL_GC_LIBRARY = "@BGL_GC_LIBRARY@".getBytes();
+  public static final boolean BGL_GC_CUSTOM = (@BGL_GC_CUSTOM@ == 1);
+  public static final byte[] ZIP_DIRECTORY = "@ZIP_DIRECTORY@".getBytes();
+  public static final byte[] DLL_DIRECTORY = "@DLL_DIRECTORY@".getBytes();
+  public static final byte[] USER_LIBRARIES = "@USER_LIBRARIES@".getBytes();
+  public static final byte[] C_BEAUTIFIER = "@C_BEAUTIFIER@".getBytes();
+  public static final byte[] DIRNAME_CMD = "@DIRNAME_CMD@".getBytes();
+  public static final byte[] LIBRARY_BASE_NAME = "@LIBRARY_BASE_NAME@".getBytes();
+  public static final int DOUBLE_PRECISION = @DOUBLE_PRECISION@;
+  public static final byte[] ADDITIONAL_STATIC_LINK_OPTION = "@ADDITIONAL_STATIC_LINK_OPTION@".getBytes();
+  public static final byte[] ADDITIONAL_SHARED_LINK_OPTION = "@ADDITIONAL_SHARED_LINK_OPTION@".getBytes();
+  public static final boolean BGL_HAVE_BIGLOO_ABORT = (@BGL_HAVE_BIGLOO_ABORT@ == 1);
+  public static final byte[] BGL_HEAP_DEBUG_COPT = "@BGL_HEAP_DEBUG_COPT@".getBytes();
+  public static final boolean BGL_HAVE_BDB = (@BGL_HAVE_BDB@ == 1);
+  public static final byte[] BGL_JAVA = "@BGL_JAVA@".getBytes();
+  public static final byte[] BGL_JAVA_OPT = "@BGL_JAVA_OPT@".getBytes();
+  public static final byte[] BGL_JAVA_VOPT = "@BGL_JAVA_VOPT@".getBytes();
+  public static final byte[] BGL_JAVA_SHELL = "@BGL_JAVA_SHELL@".getBytes();
+  public static final byte[] BGL_JAR = "@BGL_JAR@".getBytes();
+  public static final byte[] BGL_DOTNET_LD = "@BGL_DOTNET_LD@".getBytes();
+  public static final byte[] BGL_DOTNET_LD_STYLE = "@BGL_DOTNET_LD_STYLE@".getBytes();
+  public static final byte[] BGL_DOTNET_CLR = "@BGL_DOTNET_CLR@".getBytes();
+  public static final byte[] BGL_DOTNET_CLR_STYLE = "@BGL_DOTNET_CLR_STYLE@".getBytes();
+  public static final byte[] BGL_DOTNET_CLR_OPT = "@BGL_DOTNET_CLR_OPT@".getBytes();
+  public static final byte[] BGL_DOTNET_SHELL = "@BGL_DOTNET_SHELL@".getBytes();
+  public static final byte[] BGL_DOTNET_ASM = "@BGL_DOTNET_ASM@".getBytes();
+  public static final boolean BGL_DNS_CACHE = false;
+  public static final byte[] OS_CHARSET = "@OS_CHARSET@".getBytes();
+}

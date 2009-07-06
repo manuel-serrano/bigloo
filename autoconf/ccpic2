@@ -1,0 +1,233 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ccpic2                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Tue Jun 21 08:05:32 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking if the compiler and linker *require* -f[pic|PIC]        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=""
+tmp=/tmp
+user=bigloo
+ld=ld
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cpicflags=*|-cpicflags=*)
+      cpicflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ldopt=*|-ldopt=*)
+      ldopt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ld=*|-ld=*)
+      ld="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+LD_LIBRARY_PATH=$tmp:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+obj=`basename $file`
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file-lib1.c <<EOF
+int glob1 = 0;
+
+int fun1 () { int x = -1; x++; glob1++; return glob1 + x++; }
+EOF
+
+cat > $file-lib2.c <<EOF
+int glob2 = 0;
+
+int fun2 () { int x = -1; x++; glob2++; return glob2 + x++; }
+EOF
+
+cat > $file.c <<EOF
+extern int glob1, glob2;
+int main ( int argc, char *argv[] ) { 
+   if( fun1() && fun2() && (glob1 > 0) && (glob2 > 0) ) 
+      return 0 + (argc - 1);
+   else 
+      return 1;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Res                                                              */
+#*---------------------------------------------------------------------*/
+res=0
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test 1                                               */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   \rm -f $obj-lib*.o
+   exit 2
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test 2                                               */
+#*---------------------------------------------------------------------*/
+if $cc $cflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   \rm -f $obj-lib*.o
+   exit 3
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We build a library                                               */
+#*---------------------------------------------------------------------*/
+$ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o -lc -lm >/dev/null 2>&1
+if [ ! -f $file.so ]; then
+  \rm -f $obj-lib*.o
+  res=4
+fi
+
+#*---------------------------------------------------------------------*/
+#*    linking test                                                     */
+#*---------------------------------------------------------------------*/
+if [ "$res" = "0" ]; then
+  if $cc $cflags -o $aout $file.c $file.so >/dev/null 2>&1
+  then
+     true
+  else
+     \rm -f $obj-lib*.o
+     res=5
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Execution test                                                   */
+#*---------------------------------------------------------------------*/
+if [ "$res" = "0" ]; then
+  if [ -f $aout ]; then
+    $aout >/dev/null 2>&1
+    res2=$?
+    \rm -f $aout
+  else
+    res2=1;
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We try to run ranlib                                             */
+#*---------------------------------------------------------------------*/
+if [ "$res" = "0" ]; then
+  if [ "$res2" != "0" ]; then
+    echo ""
+    \rm -f $file*
+    \rm -f $obj-lib*.o
+    exit 0
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test 1                                               */
+#*---------------------------------------------------------------------*/
+if $cc $cflags $cpicflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   \rm -f $obj-lib*.o
+   echo ""
+   exit 22
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test 2                                               */
+#*---------------------------------------------------------------------*/
+if $cc $cflags $cpicflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+then
+   true
+else
+   \rm -f $file*
+   \rm -f $obj-lib*.o
+   echo ""
+   exit 32
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We build a library                                               */
+#*---------------------------------------------------------------------*/
+$ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o >/dev/null 2>&1
+if [ ! -f $file.so ]; then
+  \rm -f $file*
+  \rm -f $obj-lib*.o
+  echo ""
+  exit 2
+fi
+
+#*---------------------------------------------------------------------*/
+#*    linking test                                                     */
+#*---------------------------------------------------------------------*/
+if $cc $cflags $cpicflags -o $aout $file.c $file.so >/dev/null 2>&1
+then
+   true
+else
+   echo ""
+   \rm -f $file*
+   \rm -f $obj-lib*.o
+   exit 2
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Execution test                                                   */
+#*---------------------------------------------------------------------*/
+if [ -f $aout ]; then
+  $aout >/dev/null 2>&1
+  res3=$?
+  \rm -f $aout
+else
+  res3=1
+fi
+
+if [ "$res3" = "0" ]; then
+  echo $cpicflags;
+else
+  echo ""
+fi
+
+\rm -f $file*
+\rm -f $obj-lib*.o
+exit 0

@@ -1,0 +1,196 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/gstreamer                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Dec 27 06:26:38 2007                          */
+#*    Last change :  Thu Feb 14 07:01:49 2008 (serrano)                */
+#*    Copyright   :  2007-08 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Check if gstream is available.                                   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+gstversion=0.10
+pkgconfig=pkg-config
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --pkg-config=*|-pkg-config=*)
+      pkgconfig="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --gstversion=*|-gstversion=*)
+      gstversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    cflags                                                           */
+#*---------------------------------------------------------------------*/
+cflags=`pkg-config --cflags --libs gstreamer-$gstversion 2> /dev/null` > /dev/null
+
+if [ $? != 0 ]; then
+  cflags=`pkg-config --cflags --libs gstreamer-0.10 2> /dev/null` > /dev/null
+  if [ $? != 0 ]; then
+    echo ""
+    exit 1
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <gst/gst.h>
+
+GstElement *pipeline, *source, *parser, *decoder, *conv, *sink;
+
+static gboolean
+bus_call (GstBus *bus, GstMessage *msg, gpointer data) {
+  GMainLoop *loop = (GMainLoop *) data;
+
+  switch (GST_MESSAGE_TYPE (msg)) {
+    case GST_MESSAGE_EOS:
+      g_print ("End-of-stream\n");
+      g_main_loop_quit (loop);
+      break;
+    case GST_MESSAGE_ERROR: {
+      gchar *debug;
+      GError *err;
+
+      gst_message_parse_error (msg, &err, &debug);
+      g_free (debug);
+
+      g_print ("Error: %s\n", err->message);
+      g_error_free (err);
+
+      g_main_loop_quit (loop);
+      break;
+    }
+    default:
+      break;
+  }
+
+  return TRUE;
+}
+
+static void
+new_pad (GstElement *element, GstPad *pad, gpointer data) {
+  GstPad *sinkpad;
+  g_print ("Dynamic pad created, linking parser/decoder\n");
+
+  sinkpad = gst_element_get_pad (decoder, "sink");
+  gst_pad_link (pad, sinkpad);
+
+  gst_object_unref (sinkpad);
+}
+
+int main (int argc, char *argv[]) {
+  GMainLoop *loop;
+  GstBus *bus;
+
+  gst_init (&argc, &argv);
+  loop = g_main_loop_new (NULL, FALSE);
+
+  {
+     GstRegistry* gregistry = gst_registry_get_default ();
+     GList *glist = gst_registry_get_feature_list( gregistry, GST_TYPE_ELEMENT_FACTORY );
+     while( glist ) {
+	GstElementFactory *factory;
+	factory = GST_ELEMENT_FACTORY(glist->data);
+	glist = g_list_next( glist );
+     }
+  }
+  
+  pipeline = gst_pipeline_new ("audio-player");
+  source = gst_element_factory_make ("filesrc", "file-source");
+  parser = gst_element_factory_make ("oggdemux", "ogg-parser");
+  decoder = gst_element_factory_make ("vorbisdec", "vorbis-decoder");
+  conv = gst_element_factory_make ("audioconvert", "converter");
+  sink = gst_element_factory_make ("alsasink", "alsa-output");
+
+  g_object_set (G_OBJECT (source), "location", argv[1], NULL);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  gst_bus_add_watch (bus, bus_call, loop);
+  gst_object_unref (bus);
+
+  gst_bin_add_many (GST_BIN (pipeline),
+		    source, parser, decoder, conv, sink, NULL);
+
+  gst_element_link (source, parser);
+  gst_element_link_many (decoder, conv, sink, NULL);
+  g_signal_connect (parser, "pad-added", G_CALLBACK (new_pad), NULL);
+
+  g_print ("Setting to PLAYING\n");
+  gst_element_set_state (pipeline, GST_STATE_PLAYING);
+  g_print ("Running\n");
+  g_main_loop_run (loop);
+
+  g_print ("Returned, stopping playback\n");
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  g_print ("Deleting pipeline\n");
+  gst_object_unref (GST_OBJECT (pipeline));
+
+  return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   echo $gstversion
+else
+   echo ""
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0

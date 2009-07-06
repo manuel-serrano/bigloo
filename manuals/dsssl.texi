@@ -1,0 +1,129 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/dsssl.texi                   @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 15:53:43 1998                          @c
+@c    Last change :  Mon Nov 12 15:14:51 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    DSSSL support                                                    @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    DSSSL support                                                    @c
+@c ------------------------------------------------------------------- @c
+@node DSSSL Support, Standard Library, Core Language, Top
+@comment  node-name,  next,  previous,  up
+@chapter DSSSL support
+@cindex DSSSL support
+
+Bigloo supports extensions for the @sc{Dsssl} expression language
+[Dsssl96]:
+
+@itemize @bullet
+@item Keywords. Bigloo supports full Dsssl keywords.
+@item Named constants. Bigloo implements the three @sc{Dsssl} named constants:
+@code{#!optional}, @code{#!rest} and @code{#!key}.
+@item Dsssl formal argument lists.
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    DSSSL formal argument lists                                      @c
+@c ------------------------------------------------------------------- @c
+@section DSSSL formal argument lists
+@cindex DSSSL formal argument lists
+
+@sc{Dsssl} formal argument lists are defined by the following grammar:
+
+@example
+<formal-argument-list> @expansion{} <required-formal-argument>*
+  [@code{(#!optional} <optional-formal-argument>*@code{)}]
+  [@code{(#!rest} <rest-formal-argument>@code{)}]
+  [@code{(#!key} <key-formal-argument>*@code{)}]
+<required-formal-argument> @expansion{} <ieee-ident>
+<optional-formal-argument> @expansion{} <ieee-ident>
+     | @code{(}<ieee-ident> <initializer>@code{)}
+<rest-formal-argument> @expansion{} <ieee-ident>
+<key-formal-argument> @expansion{} <ieee-ident>
+     | @code{(}<ieee-ident> <initializer>@code{)}
+<initializer> @expansion{} <expr>
+@end example
+
+When a procedure is applied to a list of actual arguments, the formal
+and actual arguments are processed from left to right as follows:
+
+@itemize @bullet
+@item @emph{Variables} in @emph{required-formal-arguments} are bound
+to successive actual arguments starting with the first actual
+argument. It shall be an error if there are fewer actual arguments
+than @emph{required-formal-arguments}.
+
+@item Next, @emph{variables} in @emph{optional-formal-arguments} are bound to
+any remaining actual arguments. If there are fewer remaining actual arguments
+than @emph{optional-formal-arguments}, then variables are bound to the
+result of the evaluation of @emph{initializer}, if one was specified, and 
+otherwise to @code{#f}. The @emph{initializer} is evaluated in an environment 
+in which all previous optional formal arguments have been bound.
+
+@item If there is a @emph{rest-formal-argument}, then it is bound to a
+list of all remaining actual arguments. The remaining actual
+arguments are also eligible to be bound to @emph{keyword-formal-arguments}.
+If there is no @emph{rest-formal-argument} and there are no 
+@emph{keyword-formal-arguments}, the it shall be an error if there are any
+remaining actual arguments.
+
+@item If @code{#!key} was specified in the @emph{formal-argument-list},
+there shall be an even number of remaining actual arguments. These are
+interpreted as a series of pairs, where the first member of each pair
+is a keyword specifying the argument name, and the second is the
+corresponding value. It shall be an error if the first member of a
+pair is not a keyword. It shall be an error if the argument name is not
+the same as a variable in a @emph{keyword-formal-argument}, unless there
+ is a @emph{rest-formal-argument}. If the same argument name occurs
+more than once in the list of actual arguments, then the first value
+is used. If there is no actual argument for a particular 
+@emph{keyword-formal-argument}, then the variable is bound to the result of
+evaluating @emph{initializer} if one was specified, and otherwise
+@code{#f}. The @emph{initializer} is evaluated in an environment in which all
+previous formal key arguments have been bound.
+@end itemize
+
+
+It shall be an error for an <ieee-ident> to appear more than once
+in a @emph{formal-argument-list}.
+
+Example:
+
+@smalllisp
+((lambda (x y) x) 3 4 5 6)   @result{}(3 4 5 6)
+((lambda (x y #!rest z) z)
+ 3 4 5 6)                    @result{} (5 6)
+((lambda (x y #!optional z #!rest r #!key i (j 1)) 
+    (list x y z i: i j: j))
+ 3 4 5 i: 6 i: 7)            @result{} (3 4 5 i: 6 j: 1)
+@end smalllisp
+
+@c ------------------------------------------------------------------- @c
+@c    Modules and DSSSL formal argument lists                          @c
+@c ------------------------------------------------------------------- @c
+@section Modules and DSSSL formal argument lists
+@cindex Modules and DSSSL formal argument lists
+
+Functions using @sc{Dsssl} formal argument lists can be exported or
+imported in the same way as all regular Bigloo functions. When
+exporting such a Dsssl function the exact prototype of the function
+must be duplicated in the export clause. That is, for instance, the
+exportation prototype for the function:
+
+@smalllisp
+(define (foo x y #!optional z #!key i (j 1)) ...)
+@end smalllisp
+
+@noindent
+is:
+
+@smalllisp
+(export (foo x y #!optional z #!key i (j 1)))
+@end smalllisp
+
+
+

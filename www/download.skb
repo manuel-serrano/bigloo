@@ -1,0 +1,99 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/download.skb                     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
+;*    Last change :  Thu Jun  4 11:35:33 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Downloading Bigloo                                               */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Downloading Bigloo                                               */
+;*---------------------------------------------------------------------*/
+(chapter :title "Downloading" :number #f :file #t
+
+;*--- supported architecture ------------------------------------------*/
+(section :title "Supported architectures" :number #f :toc #t [
+The current version has been compiled and tested on:
+
+,(apply itemize (map (lambda (p)
+		       (item (tt (car p)) " (" (cdr p) ")"))
+		     '(("x86/linux" . "Linux 2.6, JDK >= 1.4.1")
+		       ("x86-64/linux" . "Linux 2.6, JDK >= 1.4.1")
+		       ("x86/MacOS" . "10.5")
+		       ("x86-64/MacOS" . "10.5")
+		       ("x86-win32" . "Windows 2000, XP")
+		       ("x86-FreeBSD" . "4.0")
+		       ("x86-NetBSD" . "1.6")
+		       ("x86-MinGW" "")
+		       ("PowerPC G4" . "MacOS X xnu-201.5, 10.2, 10.3, 10.4")
+		       ("PowerPC G3" . "Gentoo Linux")
+		       ("SPARC" . "Solaris 2.6 and 2.8, Sun JDK 1.3, Linux (Debian)")
+		       ("Compaq Alpha" . "Digital Unix 4.0f aka True64, JDK 1.3")
+		       ("Compaq Alpha" . "Linux 2.2 (Debian)")
+		       ("Arm" . "Linux (Debian)")
+		       ("IA64" . "Linux (Debian)")
+		       ("IBM P660" . "AIX RS-6000 4.3.3"))))
+		       
+
+Even if not tested, it should run correctly on:
+,(apply itemize (map (lambda (p)
+		       (item (tt (car p)) " (" (cdr p) ")"))
+		     '(("SGI" . "IP32")
+		       ("Intel" . "NeXTStep")
+ 		       ("IBM RS-6000" . "AIX")
+		       ("SGI" . "IP20 and IP22")
+		       ("MAC PPC" . "2.2.15pre20"))))
+
+Bigloo is known not to compile on:
+,(apply itemize (map (lambda (p)
+			(item (tt (bold (color :fg "red" (car p) " (" (cdr p) ")")))))
+		     '(("Mac" "MacOS 9")
+		       ("m68k" . "Linux (Debian)")
+		       ("s390" . "Linux (Debian)"))))
+
+If you try to install Bigloo on another platform, please report about 
+it to us.])
+
+;*--- download --------------------------------------------------------*/
+(section :title "Download" :number #f :toc #t [
+Bigloo is available on the ftp server
+,(ref :url (string-append "ftp://" *ftp-host* *ftp-dir*)).
+
+,(map (lambda (title.files)
+	 (paragraph 
+	    `(,(car title.files)
+	      ": "
+	      ,(itemize (map (lambda (file)
+				(cond
+				   ((or (substring-at? file "http://" 0)
+					(substring-at? file "ftp://" 0))
+				    (item (ref :url file :text (basename file))))
+				   ((not (file-exists? (make-file-name *repository* file)))
+				    (skribe-warning 1 "download" "Can't file file -- " file)
+				    (item (ref :url file :text (basename file))))
+				   ((directory? (make-file-name *repository* file))
+				    (let ((fftp (string-append "ftp://" *ftp-host* *ftp-dir* "/" file)))
+				       (item (ref :url fftp :text (basename file)))))
+				   (else
+				    (let ((path (make-file-name *repository* file))
+					  (fftp (string-append "ftp://" *ftp-host* *ftp-dir* "/" file)))
+				       (item (ref :url fftp :text (basename file))
+					  (format " (~ak)"
+						  (inexact->exact (/ (file-size path) 1024))))))))
+			     (cdr title.files))))))
+      `((,[The source file distribution that can be used for ,(bold "Unix") systems and ,(bold "Win32/Cygwin") is]
+	 ,*bigloo.tar.gz*)
+	(,[,(bold "MacOS X") bundle]
+	 ,*bigloo.macosx*)
+	(,[,(bold "Win32") installer version (full back-ends support)]
+	 ,*bigloo.win32b* ,*bigloo.win32*)
+	(,[,(bold "Maemo") package]
+	 ,*bigloo.maemo*)
+	(,[,(bold "GNU-Linux Debian") package]
+	 ,*bigloo.deb*)
+	(,[,(bold "Fedora") package]
+	 ,*bigloo.fdr*)
+	))]))

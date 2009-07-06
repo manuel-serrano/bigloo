@@ -1,0 +1,414 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{epsf}
+\usepackage{amssymb}
+
+\pagestyle{plain}
+\date{}
+
+\title{JAS\,: A JVM assembly language\\ Short Manual}
+\author{Bernard Paul Serpette \\
+  INRIA - Sophia Antipolis, 2004 Route des Lucioles, BP 93 \\
+  06902 Sophia Antipolis Cedex    FRANCE \\
+  \tt{Bernard.Serpette@inria.fr} }
+
+\begin{document} \maketitle
+\parindent=0pt
+
+\newcommand{\IMAGE}[1]{
+\vspace*{10pt}\parbox[t]{1cm}{\epsfxsize=10cm\epsfbox{#1}}
+}
+
+\newcommand{\kw}[1]{{\bf #1}}
+\newcommand{\VN}[1]{{\fbox{#1}}\ }
+\newcommand{\vn}[1]{{\underline{#1}}}
+
+\begin{abstract}
+JAS is an assembly langague for the Java Virtual Machine.
+It's is also the translator which takes a file written in JAS language
+and produce a class file.
+
+The aim of this work is, in one hand, to implements a JVM backend to Bigloo
+(a Scheme compiler : hence the parenthized syntax of JAS), and, in other
+hand, to be able to produce wrong or partially wrong
+class files to check the correctness of byte code verifiers or
+byte code transformers as \verb|preverify|.
+\end{abstract}
+
+
+\section{Introduction}
+
+\section{Syntax}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Unit  $&=&(\kw{jas} \vn{Class} \vn{Class} (\vn{Class}$^*$)\\
+	& &\ \ \ (\kw{declare} $Declaration^*$)\\
+	& &\ \ \ (\kw{fields}  \vn{Field}$^*$)\\
+	& &\ \ \ (\kw{method} \vn{Method} (\VN{Local}$^*$)
+                       (\VN{Local}$^*$)\\
+	& &\ \ \ \ \ \ \ $MethodItem^*$) $^*$)\\
+$Declaration$&=&(\VN{Class} (\kw{class} ($Cmodifier^*$) ``QualifiedName''))\\
+	    &$|$&(\VN{Field} (\kw{field}
+		      \vn{Class} ($Fmodifier^*$) $Type$ ``Name''))\\
+	    &$|$&(\VN{Method} (\kw{method}
+		      \vn{Class} ($Mmodifier^*$) $Type$ ``Name'' $Type^*$))\\
+$Type$&=&\kw{void} $|$ \kw{boolean} $|$ \kw{char} $|$ \kw{byte} $|$ \kw{short}
+      $|$ \kw{int} $|$ \kw{long} $|$ \kw{float} $|$ \kw{double}\\
+     &$|$&(\kw{vector} $Type$)\\
+     &$|$&\vn{Class}\\
+$Cmodifier$&=&\kw{public} $|$ \kw{final} $|$ \kw{super} $|$ \kw{interface}
+           $|$ \kw{abstract}\\
+$FMmodifier$&=&\kw{public} $|$ \kw{private} $|$ \kw{protected} $|$ \kw{static}
+           $|$ \kw{final}\\
+$Fmodifier$&=& $FMmodifier$ $|$ \kw{volatile} $|$ \kw{transient}\\
+$Mmodifier$&=& $FMmodifier$ $|$ \kw{synchronized} $|$ \kw{native}
+           $|$ \kw{abstract}\\
+\end{tabular}}
+\caption{The language (Part 1)}\label{AST}\end{center}\end{figure}
+
+The syntax a JAS definition is discribed in figure \ref{AST}.
+Item$^*$ refers to zero or more element of Item.
+[Item] refers to an optional element of Item.
+Italic words, as $Unit$ refers to non terminal definitions.
+Bold words, as \kw{boolean}, refers as keywords of the language.
+Boxed words, as \VN{Class}, refers to variables definition;
+underline words, as \vn{Class}, refers to variables use.
+
+All variables and keywords are case insensitive.
+
+A ``Name'' refer to an external name, an outside visible name. these
+names remains in the class file result and are used by the Java loader
+to resolve links between several class files. The ``QualifiedName''
+in class declaration have the same meaning of qualified class name of
+Java\,: a package name and a class name separared by a ``.''.
+
+The third first items of the JAS $Unit$ definition are the class to
+be defined, its super class and the list of interfaces it implements
+(interfaces are classes with specific modifier).
+
+Class, field and method variables are defined in the $Declaration$ section
+and can be referenced throwout the whole JAS $Unit$ definition. There is
+a unique name space for the three kind of variables\,: all global
+variables must have different names.
+
+As first example, here is the smallest JAS definition\.:
+\begin{verbatim}
+(jas me object ()
+   (declare
+      (me     (class () "fr.inria.empty"))
+      (object (class () "java.lang.Object")) )
+   (fields ))
+\end{verbatim}
+
+% fields
+
+Local variables are declared at the beginning of a method definition
+and can be referenced only in instructions of this method.
+The first list of local variables declaration corresponds to
+formal parameters while the second list corresponds to uninitialized
+local varibles. A local variable is 32 bits length (a word); a 64
+bits area (double word) must be declared with two consecutive local
+variables. There is a direct mapping between local variables and
+the local indexes in the JVM terminology. This specification allows
+some overlapping between local variables
+
+\begin{verbatim}
+(jas me object ()
+   (declare
+      (me     (class () "overlap"))
+      (object (class () "java.lang.Object"))
+      (good1  (method me (public static) void "good1" double))
+      (good2  (method me (public static) void "good2" double int))
+      (bad    (method me (public static) double "bad" double)) )
+   (fields )
+   (method good1 (d1 d2) ()
+      (dload d1)
+      (d2i)
+      (istore d2)
+      (return) )
+  (method good2 (d1 d2 d3) ()
+      (dload d1)
+      (dstore d2)
+      (return) )
+  (method bad (d1 d2) ()
+     (iconst_0)
+     (istore d2)
+     (dload d1)
+     (dreturn) )
+)
+\end{verbatim}
+
+Here, in the three examples, half part of the double word declared with the
+couple \verb|d1.d2| is used to store another value. The first two
+examples are valid since the couple \verb|d1.d2| is no futher used after
+the modification. The last method must no be accepted by a bytecode verifier.
+
+
+A first partition of the instruction set is described in
+figure \ref{catins}. Each category will be explained in a dedicated section.
+
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$MethodItem$&=&\VN{Label}\\
+  &$|$&$Contants$\\
+  &$|$&$Stack$\\
+  &$|$&$LocalAccess$\\
+  &$|$&$Arithmetics$\\
+  &$|$&$BitOperation$\\
+  &$|$&$PointerOperation$\\
+  &$|$&$Conversion$\\
+  &$|$&$Comparison$\\
+  &$|$&$Branch$\\
+  &$|$&$Special$\\
+\end{tabular}}
+\caption{instructions categories}\label{catins}\end{center}\end{figure}
+
+Labels are implicitly declared when an instruction is not a list and
+can be referenced throwout a method definition.
+
+\section{Constants}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Constants$
+  &$=$&(\kw{aconst\_null})\\
+  &$|$&(\kw{iconst\_m1})\\
+  &$|$&(\kw{iconst\_0})\\
+  &$|$&(\kw{iconst\_1})\\
+  &$|$&(\kw{iconst\_2})\\
+  &$|$&(\kw{iconst\_3})\\
+  &$|$&(\kw{iconst\_4})\\
+  &$|$&(\kw{iconst\_5})\\
+  &$|$&(\kw{lconst\_0})\\
+  &$|$&(\kw{lconst\_1})\\
+  &$|$&(\kw{fconst\_0})\\
+  &$|$&(\kw{fconst\_1})\\
+  &$|$&(\kw{fconst\_2})\\
+  &$|$&(\kw{dconst\_0})\\
+  &$|$&(\kw{dconst\_1})\\
+  &$|$&(\kw{bipush} $\mathbb{Z}$)\\
+  &$|$&(\kw{sipush} $\mathbb{Z}$)\\
+  &$|$&(\kw{ldc} $NumOrString$)\\
+  &$|$&(\kw{ldc2} $Num$)\\
+$Num$&=&$\mathbb{Z}$ $|$ $\mathbb{R}$\\
+$NumOrString$&=& $Num$ $|$ ``String''\\
+\end{tabular}}
+\caption{Constants}\label{Constants}\end{center}\end{figure}
+
+\section{Stack manipulation}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Stack$
+  &$=$&(\kw{pop})\\
+  &$|$&(\kw{pop2})\\
+  &$|$&(\kw{dup})\\
+  &$|$&(\kw{dup\_x1})\\
+  &$|$&(\kw{dup\_x2})\\
+  &$|$&(\kw{dup2})\\
+  &$|$&(\kw{dup2\_x1})\\
+  &$|$&(\kw{dup2\_x2})\\
+  &$|$&(\kw{swap})\\
+\end{tabular}}
+\caption{Stack manipulation}\label{Stack}\end{center}\end{figure}
+
+\section{Access to local variables}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$LocalAccess$
+  &$=$&(\kw{iload} \vn{Local})\\
+  &$|$&(\kw{lload} \vn{Local})\\
+  &$|$&(\kw{fload} \vn{Local})\\
+  &$|$&(\kw{dload} \vn{Local})\\
+  &$|$&(\kw{aload} \vn{Local})\\
+  &$|$&(\kw{istore} \vn{Local})\\
+  &$|$&(\kw{lstore} \vn{Local})\\
+  &$|$&(\kw{fstore} \vn{Local})\\
+  &$|$&(\kw{dstore} \vn{Local})\\
+  &$|$&(\kw{astore} \vn{Local})\\
+  &$|$&(\kw{iinc} \vn{Local} $\mathbb{Z}$)\\
+  &$|$&(\kw{ret} \vn{Local})\\
+\end{tabular}}
+\caption{Access to local variables}\label{LocalAccess}\end{center}\end{figure}
+
+\section{Arithmetics operations}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Arithmetics$
+  &$=$&(\kw{iadd})\\
+  &$|$&(\kw{ladd})\\
+  &$|$&(\kw{fadd})\\
+  &$|$&(\kw{dadd})\\
+  &$|$&(\kw{isub})\\
+  &$|$&(\kw{lsub})\\
+  &$|$&(\kw{fsub})\\
+  &$|$&(\kw{dsub})\\
+  &$|$&(\kw{imul})\\
+  &$|$&(\kw{lmul})\\
+  &$|$&(\kw{fmul})\\
+  &$|$&(\kw{dmul})\\
+  &$|$&(\kw{idiv})\\
+  &$|$&(\kw{ldiv})\\
+  &$|$&(\kw{fdiv})\\
+  &$|$&(\kw{ddiv})\\
+  &$|$&(\kw{irem})\\
+  &$|$&(\kw{lrem})\\
+  &$|$&(\kw{frem})\\
+  &$|$&(\kw{drem})\\
+  &$|$&(\kw{ineg})\\
+  &$|$&(\kw{lneg})\\
+  &$|$&(\kw{fneg})\\
+  &$|$&(\kw{dneg})\\
+\end{tabular}}
+\caption{Arithmetics operations}\label{Arithmetics}\end{center}\end{figure}
+
+\section{Bit operations}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$BitOperation$
+  &$=$&(\kw{ishl})\\
+  &$|$&(\kw{lshl})\\
+  &$|$&(\kw{ishr})\\
+  &$|$&(\kw{lshr})\\
+  &$|$&(\kw{iushr})\\
+  &$|$&(\kw{lushr})\\
+  &$|$&(\kw{iand})\\
+  &$|$&(\kw{land})\\
+  &$|$&(\kw{ior})\\
+  &$|$&(\kw{lor})\\ 
+  &$|$&(\kw{ixor})\\
+  &$|$&(\kw{lxor})\\
+\end{tabular}}
+\caption{Bit operations}\label{BitOperation}\end{center}\end{figure}
+
+\section{Pointer operations}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$PointerOperation$
+  &$=$&(\kw{getstatic} \vn{Field})\\
+  &$|$&(\kw{putstatic} \vn{Field})\\
+  &$|$&(\kw{getfield} \vn{Field})\\
+  &$|$&(\kw{putfield} \vn{Field})\\
+  &$|$&(\kw{new} \vn{Class})\\
+  &$|$&(\kw{newarray} $Type$)\\
+  &$|$&(\kw{anewarray} $Type$)\\
+  &$|$&(\kw{arraylength})\\
+  &$|$&(\kw{multianewarray} $Type$ $\mathbb{N}$)\\
+  &$|$&(\kw{iaload})\\
+  &$|$&(\kw{laload})\\
+  &$|$&(\kw{faload})\\
+  &$|$&(\kw{daload})\\
+  &$|$&(\kw{aaload})\\
+  &$|$&(\kw{baload})\\
+  &$|$&(\kw{caload})\\
+  &$|$&(\kw{saload})\\
+  &$|$&(\kw{iastore})\\
+  &$|$&(\kw{lastore})\\
+  &$|$&(\kw{fastore})\\
+  &$|$&(\kw{dastore})\\
+  &$|$&(\kw{aastore})\\
+  &$|$&(\kw{bastore})\\
+  &$|$&(\kw{castore})\\
+  &$|$&(\kw{sastore})\\
+\end{tabular}}
+\caption{Pointer operations}\label{PointerOperation}\end{center}\end{figure}
+
+\section{Conversion}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Conversion$
+  &$=$&(\kw{i2l})\\
+  &$|$&(\kw{i2f})\\
+  &$|$&(\kw{i2d})\\
+  &$|$&(\kw{l2i})\\
+  &$|$&(\kw{l2f})\\
+  &$|$&(\kw{l2d})\\    
+  &$|$&(\kw{f2i})\\    
+  &$|$&(\kw{f2l})\\
+  &$|$&(\kw{f2d})\\
+  &$|$&(\kw{d2i})\\    
+  &$|$&(\kw{d2l})\\
+  &$|$&(\kw{d2f})\\
+  &$|$&(\kw{i2b})\\
+  &$|$&(\kw{i2c})\\
+  &$|$&(\kw{i2s})\\
+\end{tabular}}
+\caption{Conversion}\label{Conversion}\end{center}\end{figure}
+
+\section{Comparison}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Comparison$
+  &$=$&(\kw{lcmp})\\
+  &$|$&(\kw{fcmpl})\\
+  &$|$&(\kw{fcmpg})\\
+  &$|$&(\kw{dcmpl})\\    
+  &$|$&(\kw{dcmpg})\\
+\end{tabular}}
+\caption{Comparison}\label{Comparison}\end{center}\end{figure}
+
+\section{Branch}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Branch$
+  &$=$&(\kw{ifeq} \vn{Label})\\
+  &$|$&(\kw{ifne} \vn{Label})\\
+  &$|$&(\kw{iflt} \vn{Label})\\
+  &$|$&(\kw{ifge} \vn{Label})\\
+  &$|$&(\kw{ifgt} \vn{Label})\\
+  &$|$&(\kw{ifle} \vn{Label})\\
+  &$|$&(\kw{if\_icmpeq} \vn{Label})\\
+  &$|$&(\kw{if\_icmpne} \vn{Label})\\
+  &$|$&(\kw{if\_icmplt} \vn{Label})\\
+  &$|$&(\kw{if\_icmpge} \vn{Label})\\
+  &$|$&(\kw{if\_icmpgt} \vn{Label})\\
+  &$|$&(\kw{if\_icmple} \vn{Label})\\
+  &$|$&(\kw{if\_acmpeq} \vn{Label})\\
+  &$|$&(\kw{if\_acmpne} \vn{Label})\\
+  &$|$&(\kw{goto} \vn{Label})\\
+  &$|$&(\kw{jsr} \vn{Label})\\
+  &$|$&(\kw{tableswitch} \vn{Label} $\mathbb{Z}$ \vn{Label}$^*$)\\
+  &$|$&(\kw{lookupswitch} \vn{Label} ($\mathbb{Z}$ \vn{Label})$^*$)\\
+  &$|$&(\kw{ireturn})\\
+  &$|$&(\kw{lreturn})\\
+  &$|$&(\kw{freturn})\\
+  &$|$&(\kw{dreturn})\\
+  &$|$&(\kw{areturn})\\
+  &$|$&(\kw{return})\\ 
+  &$|$&(\kw{invokevirtual} \vn{Method})\\
+  &$|$&(\kw{invokespecial} \vn{Method})\\
+  &$|$&(\kw{invokestatic} \vn{Method})\\
+  &$|$&(\kw{invokeinterface} \vn{Method})\\
+  &$|$&(\kw{ifnull} \vn{Label})\\
+  &$|$&(\kw{ifnonnull} \vn{Label})\\
+\end{tabular}}
+\caption{Branch}\label{Branch}\end{center}\end{figure}
+
+\section{Special}
+\begin{figure}\begin{center}\fbox{\begin{tabular}{lcll}
+$Special$
+  &$=$&(\kw{nop})\\
+  &$|$&(\kw{athrow})\\
+  &$|$&(\kw{checkcast} $Type$)\\
+  &$|$&(\kw{instanceof} $Type$)\\
+  &$|$&(\kw{monitorenter})\\ ; 190
+  &$|$&(\kw{monitorexit})\\ 
+  &$|$&(\kw{handler} \vn{Label} \vn{Label} \vn{Label} \vn{Class})\\
+\end{tabular}}
+\caption{Special}\label{Special}\end{center}\end{figure}
+
+\begin{verbatim}
+public class hello {
+   public static void main(String[] argv) {
+      System.out.println("Hello");
+   }
+}
+\end{verbatim}
+
+\begin{verbatim}
+(jas me object ()
+   (declare
+      (me          (class (public) "hello"))
+      (object      (class () "java.lang.Object")) )
+      (string      (class () "java.lang.String"))
+      (system      (class () "java.lang.System"))
+      (printstream (class () "java.io.PrintStream"))
+      (out         (field system (STATIC) printstream "out"))
+      (main        (method me (public static) void "main" (vector string)))
+      (println     (method printstream () void "println" string))
+   (fields )
+   (method main (argv) ()
+     (getstatic out)
+     (push object "Hello")
+     (invoke virtual println)
+     (return void) ))
+\end{verbatim}
+
+\end{document}

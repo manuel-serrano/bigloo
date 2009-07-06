@@ -1,0 +1,357 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/eval.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 13:22:45 1998                          @c
+@c    Last change :  Tue Nov 13 09:56:18 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The interperter                                                  @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    The interpreter                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Eval, Macro Expansion, Mail library, Top
+@comment  node-name,  next,  previous,  up
+@chapter Eval and code interpretation
+@cindex the interpreter
+@cindex read eval print loop
+
+This chapter describes the Bigloo evaluator.
+
+@menu 
+* Eval compliance::
+* Eval standard functions::
+* Eval command line options::
+* Eval and the foreign interface::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Eval compliance ...                                              @c
+@c ------------------------------------------------------------------- @c
+@node Eval compliance, Eval standard functions, , Eval
+@section Eval compliance
+@findex bigloo-eval-strict-module
+@cindex Eval operator inlining
+
+Bigloo includes an interpreter. Unfortunately, the language accepted by the
+interpreter is a proper subset of that accepted by the compiler. The main
+differences are:
+
+@itemize @bullet
+@item No foreign objects can be handled by interpreter. 
+@item Classes of the object system cannot be declared within interpreted
+      code.
+@item The interpreter ignores modules, and has a unique global environment.
+@end itemize
+
+Compiled code and interpreted code can be mixed together. That
+is, interpreted code is allowed to call compiled code and vice
+versa. This connection can be use to circumvent the missing
+features of the interpreter (see Section @pxref{Module Declaration}, 
+for a description of how to connect compiled and interpreted code).
+
+By default the evaluator assumes that operators from the standard
+library (e.g., @code{+}, @code{car}) are immutable. Hence, it optimizes
+these operators calls. This optimization can be disables using
+the @code{bigloo-eval-strict-module} parameter described in
+the chapter describing the parameters (see @pxref{Parameters}). 
+
+@c ------------------------------------------------------------------- @c
+@c    Eval standard functions ...                                      @c
+@c ------------------------------------------------------------------- @c
+@node Eval standard functions, Eval command line options, Eval compliance, Eval
+@section Eval standard functions
+@cindex Eval standard functions
+
+@deffn {procedure} eval exp [env]
+This form evaluates @var{exp}. The second argument is optional. It can be
+the evaluation of one of these three function forms: 
+@smalllisp
+(scheme-report-environment 5)
+(null-environment 5)
+(interaction-environment)
+@end smalllisp
+@end deffn
+
+@deffn {procedure} scheme-report-environment version
+@deffnx {procedure} null-environment @var{version}
+@deffnx {procedure} interaction-environment @var{version}
+These three procedures have the definitions given in the R5RS so see
+@ref{Eval, scheme-report-environment, 6.5 Eval,r5rs.info,R5RS}, for more
+details.
+@end deffn
+
+@deffn {bigloo procedure} byte-code-compile exp [env (default-environment)]
+@deffnx {bigloo procedure} byte-code-run byte-code
+The function @code{byte-code-compile} compiles a Scheme expression into
+a sequence of byte codes that is implemented as a string. 
+The function @code{byte-code-run} execute such a sequence.
+@end deffn
+
+@deffn {bigloo procedure} repl
+@cindex Read Eval Print Loop customized
+This invokes the @var{read-eval-print} loop. Several @code{repl}
+can be embedded.
+
+The @code{repl} function can be used to implement custom Bigloo interpreters.
+For instance, one may write:
+
+@smalllisp
+(module repl)
+(repl)
+@end smalllisp
+
+@noindent When compiled, this will deliver an executable containing
+the sole Bigloo interpreter.
+@end deffn
+
+@deffn {bigloo procedure} quit 
+This exits from the currently running @code{repl}. If the current 
+@code{repl} is the first one then this function ends the interpreter.
+@end deffn
+
+@deffn {bigloo procedure} set-prompter! proc
+The argument @var{proc} has to be a procedure of one argument and invoking
+this function sets the @code{repl} prompter. That is, to display its prompt, 
+@code{repl} invokes @var{proc} giving it the nesting level of the 
+current loop as its argument.
+@end deffn
+
+@deffn {bigloo procedure} get-prompter
+Returns the current @code{repl} prompter.
+@end deffn
+
+@deffn {bigloo procedure} set-repl-printer! proc
+The argument @var{proc} has to be a procedure accepting one or two arguments.
+This function sets the @code{repl} display function. That is, to display the
+result of its evaluations, @code{repl} invokes @var{proc} giving it the 
+evaluated expression as first argument and the current output port (or
+a file in case of transcript) as second argument. @code{Set-repl-printer!}
+returns the former @code{repl} display function.
+
+For instance, one may write:
+
+@smalllisp
+1:=> (define x (cons 1 2))         @print{} X
+1:=> (define y (cons x x))         @print{} Y
+1:=> y                             @print{} (#0=(1 . 2) . #0#)
+1:=> (set-repl-printer! display)   @print{} #<procedure:83b8c70.-2>
+1:=> y                             @print{} ((1 . 2) 1 . 2)
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} native-repl-printer
+Returns the native (default) @code{repl} display function.
+@end deffn
+
+@deffn {bigloo procedure} expand exp
+Returns the value of @var{exp} after all macro expansions 
+have been performed.
+@end deffn
+
+@deffn {bigloo procedure} expand-once exp
+Returns the value of @var{exp} after one macro expansion has been performed.
+@end deffn
+
+It is possible to specify files which have to be loaded when the interpreter
+is invoked. For this, see section @pxref{Compiler Description}.
+
+If a Bigloo file starts with the line:
+@smalllisp 
+ #! @r{bigloo-command-name}
+@end smalllisp
+
+and if this file is executable (in the meaning of the system) and if the user
+tries to execute it, Bigloo will evaluate it. Note also that SRFI-22 support
+enables to run any Unix interpreter (@pxref{SRFIs}).
+
+@deffn {bigloo procedure} load filename
+@deffnx {bigloo procedure} loadq filename
+@var{Filename} should be a string naming an existing file which contains
+Bigloo source code. This file is searched in the current directory and
+in all the directories mentioned in the variable @code{*load-path*}.
+The @code{load} procedure reads expressions and
+definitions from the file, evaluating them sequentially. If the file
+loaded is a module (i.e. if it begins with a regular
+module clause), load behaves as module initialization. Otherwise, this
+function returns the result of the last evaluation. The function @code{oadq}
+differs from the function @code{load} in the sense that @code{loadq} does 
+not print any intermediate evaluations.
+
+Both functions return the full path of the loaded file.
+@end deffn
+
+@deffn {bigloo procedure} loada filename
+Loads an ``access file'', which allows the interpreter to find 
+the modules imported by a loaded module. It returns the full path 
+of the loaded file.
+@end deffn
+
+@deffn {bigloo variable} *load-path*
+A list of search paths for the @code{load} functions.
+@end deffn
+
+@deffn {bigloo procedure} dynamic-load filename #!optional (init init-point)
+
+Loads a shared library named @code{filename}. 
+
+@emph{Important note: } The function @code{dynamic-load} can only be
+used from interpreters linked against dynamic libraries. In particular,
+the @code{dynamic-load} function can be issued from the @code{bigloo}
+command if and only if the option @code{--sharedcompiler=yes} has been
+used when configuring Bigloo. If the @code{bigloo} command is not linked
+against dynamic libraries and if @code{dynamic-load} is
+required inside a read-eval-print loop (REPL) it exists a simple workaround.
+It consists in implementing a new REPL and linking it against dynamic 
+libraries. This can be done as:
+
+@display
+$ cat > new-repl.scm <<EOF
+(module new-repl)
+(repl)
+EOF
+$ bigloo new-repl.scm -o new-repl
+$ new-repl
+1:=> (dynamic-load ...)
+@end display
+
+@*
+
+The function @code{dynamic-load} returns the name of the loaded
+library. If @var{init-point} is specified and if it is a string and if
+the library defines a function named @code{init-point}, this function
+is called when the library is loaded. @var{Init-point} is a C
+identifier, not a Scheme identifier. In order to set the C name a
+Scheme function, use the extern @code{export} clause (see Section
+@pxref{C Interface}). If the @var{init-point} is provided and is not a
+string, no initialization function is called after the library is
+loaded. If the @var{init-point} value is not provided, once the
+library is loaded, @code{dynamic-load} uses the Bigloo default entry
+point. Normally you should @emph{not} provide an @var{init-point} to
+@code{dynamic-load} unless you known what you are doing. When
+producing C code, to force the Bigloo compiler to emit such a default
+entry point, use the @code{-dload-sym} compilation option (see Section
+@pxref{Compiler Description}). This option is useless when using the
+JVM code generator. Let's assume a Linux system and two Bigloo
+modules. The first:
+
+@smalllisp
+(module mod1
+   (eval (export foo))
+   (export (foo x)))
+
+(define (foo x)
+   (print "foo: " x))
+
+(foo 4)
+@end smalllisp
+
+The second:
+
+@smalllisp
+(module mod2
+   (import (mod1 "mod1.scm"))
+   (eval (export bar))
+   (export (bar x)))
+
+(define (bar x)
+   (print "bar: " x))
+
+(bar 5)
+@end smalllisp
+
+If these modules are compiled as:
+
+@display
+$ bigloo mod1.scm -c -o mod1.o 
+$ bigloo mod2.scm -c -o mod2.o -dload-sym
+@end display
+
+Then, if a shared library is built using these two modules (note that on
+non Linux systems, a different command line is required):
+
+@display
+$ ld -G -o lib.so mod1.o mod2.o
+@end display
+
+Then, @code{lib.so} cant be dynamically loaded and the variables it defines
+used such as :
+
+@smalllisp
+$ bigloo -i
+(dynamic-load "lib.so")
+     @print{} foo: 4
+       bar: 5
+1:=> (foo 6)
+     @print{} foo: 7
+@end smalllisp
+
+As the example illustrates, when Bigloo modules are dynamically loaded,
+they are initialized. This initialization is ensure @emph{only} if
+@code{dynamic-load} is called with exactly one parameter. If
+@code{dynamic-load} is called with two parameters, it is of the
+responsibility of the program to initialize the dynamically loaded
+module before using any Scheme reference.
+
+@emph{Note: } In order to let the loaded module accesses the variables
+defined by the loader application, special compilation flags must be
+used (e.g., @code{-rdynamic} under the Linux operating
+system). @code{Dynamic-load} is implemented on the top of the
+@code{dlopen} facility. For more information read the @code{dlopen} and
+@code{ld} manuals.
+
+@end deffn
+
+@deffn {bigloo procedure} dynamic-unload filename
+On the operating system that supports this facility, unloads a shared library.
+Returns @code{#t} on success. Returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo variable} *dynamic-load-path*
+A list of search paths for the @code{dynamic-load} functions.
+@end deffn
+
+
+@deffn {procedure} transcript-on filename
+@deffnx {procedure} transcript-off 
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Eval command line options ...                                    @c
+@c ------------------------------------------------------------------- @c
+@node Eval command line options, Eval and the foreign interface, Eval standard functions, Eval
+@section Eval command line options
+@cindex Eval command line options
+
+This section presents the Bigloo compiler options that impact the interaction
+between compiled and interpreted code. The whole list of the Bigloo
+compiler options can be found in 
+@ref{Compiler Description, , The Bigloo command line}.
+
+@itemize @bullet
+@item @code{-i} Don't compile a module, interpret it!
+@item @code{-export-all} Make all the bindings @emph{defined} by 
+      the compiled module available from the interpreter.
+@item @code{-export-export} Make all the bindings @emph{exported} by the 
+      compiled module available from the interpreter.
+@item @code{-export-mutable} Make all the bindings @emph{exported} by the 
+      compiled module mutable from outside the module. This option is
+      @emph{dangerous}! Either all the modules composing the application 
+      must be compiled with or without @code{-export-mutable}. It is impossible
+      to mix @code{-export-mutable} enabled and disabled compilations.
+@end itemize
+
+@c ------------------------------------------------------------------- @c
+@c    Eval command line options ...                                    @c
+@c ------------------------------------------------------------------- @c
+@node Eval and the foreign interface, , Eval command line options, Eval
+@comment  node-name,  next,  previous,  up
+@section Eval and the foreign interface
+@cindex Eval and the foreign interface
+
+To be able to get access to foreign functions within the Bigloo 
+interpreter, some extra measurements have to be taken. The foreign 
+functions have to be present in the interpreter binary, which means you 
+have to compile a custom interpreter. This is described in 
+Section @ref{Using C bindings within the interpreter}.

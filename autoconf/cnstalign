@@ -1,0 +1,141 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/cnstalign                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Aug 20 17:02:19 2004 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Give the constant alignment on the current architecture          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+alignment=2
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --alignment=*)
+      alignment="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+
+static struct { char *c; char tc[5]; } str1;
+static struct { char *c; char tc[6]; } str2;
+static struct { char *c; char tc[7]; } str3;
+static struct { char *c; char tc[8]; } str4;
+
+
+#define DEFINE_STRING( name, aux, str, len )        \
+ static struct { int length;                        \
+                 char  string[len+1]; }             \
+         aux = { len, str };                        \
+         static void *name = ( &aux )
+
+DEFINE_STRING( s1, s1aux, "MUL_FL", 6 );
+DEFINE_STRING( s2, s2aux, "SET_CER", 7 );
+DEFINE_STRING( s3, s3aux, "MINUS_FL", 8 );
+DEFINE_STRING( s4, s4aux, "CER", 3 );
+DEFINE_STRING( s5, s5aux, "PLUS_FL", 7 );
+DEFINE_STRING( s6, s6aux, "MAKE_EXTENDED_PAIR", 18 );
+DEFINE_STRING( s7, s7aux, "EXTENDED_PAIRP", 14 );
+DEFINE_STRING( s8, s8aux, "SET_CDR", 7 );
+
+int
+get_alignment( long p ) {
+   int i = 0;
+
+   while( !(p & (1<<i)) ) i++;
+
+   return i;
+}
+
+void test_alignment( long val ) {
+   if( get_alignment( val  ) < $alignment )  {
+      puts( "0" );
+      exit( 0 );
+   }
+}
+
+int main () 
+{ 
+   test_alignment( (long)&str1 );
+   test_alignment( (long)&str2 );
+   test_alignment( (long)&str3 );
+   test_alignment( (long)&str4 );
+
+   test_alignment( (long)s1 );
+   test_alignment( (long)s2 );
+   test_alignment( (long)s3 );
+   test_alignment( (long)s4 );
+   test_alignment( (long)s5 );
+   test_alignment( (long)s6 );
+   test_alignment( (long)s7 );
+   test_alignment( (long)s8 );
+
+   puts( "1" );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+sh -c "$compile"
+
+if [ $? = "0" ]; then
+   \rm -f $file.*
+   eval $aout
+else
+   \rm -f $file.*
+   exit $?
+fi
+
+rm -f $aout
+rm -f $aout*

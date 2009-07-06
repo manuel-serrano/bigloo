@@ -1,0 +1,221 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/internet.texi                @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Wed Jul 23 15:47:25 2008                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2008 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Internet                                                         @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Internet                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Internet, , Digest, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Internet
+@cindex internet
+@cindex url
+@cindex http
+
+This section presents the Bigloo function aimed at helping internet
+programming. 
+
+@menu
+* URLs::   
+* HTTP:: 
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    URLs                                                             @c
+@c ------------------------------------------------------------------- @c
+@node URLs, HTTP, , Internet
+@comment  node-name,  next,  previous,  up
+@section URLs
+
+@deffn {bigloo procedure} url-parse url
+The argument @var{url} can either be a string or an input-port. The function
+@code{url-parse} parses the url and returns four values:
+
+@itemize @bullet
+
+@item the protocol,
+@item the optional user info,
+@item the host name,
+@item the port number,
+@item the absolute path
+@end itemize
+
+Example
+@smalllisp
+(multiple-value-bind (protocol uinfo host port abspath)
+   (url-parse "http://www.inria.fr/sophia/teams/mimosa/index.html")
+   (list protocol uinfo host port abspath))
+      @result{} ("http" #f "www.inria.fr" 80 "/sophia/teams/mimosa/index.html'')
+(multiple-value-bind (protocol uinfo host port abspath)
+   (url-parse "https://foo:bar@@www.inria.fr/sophia/teams/mimosa/index.html")
+   (list protocol uinfo))
+      @result{} ("https" "foo@@bar")
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} url-sans-protocol-parse url protocol
+
+The argument @var{url} can either be a string or an input-port.
+
+This function behaves as @code{url-parse} except it assumes that the protocol
+part of the url has already been extracted from the URI. It is explicitly
+provided using the @var{protocol} argument.
+@end deffn
+
+@deffn {bigloo procedure} http-url-parse url
+The argument @var{url} can either be a string or an input-port. As 
+@code{url-parse}, it returns four values.
+
+This function parses URL found in HTTP GET responses.
+@end deffn
+
+@deffn {bigloo procedure} url-path-encode path
+Encode a path that can be used in valid URL.
+
+@smalllisp
+(url-path-encode "/tmp/foo") @result{} "/tmp/foo"
+(url-path-encode "/tmp/foo&bar") @result{} "/tmp/foo%26bar"
+(url-path-encode "http:///tmp/foo") @result{} "http%3A//tmp/foo"
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} url-encode url
+Encode a URL by removing any illegal character.
+
+@smalllisp
+(url-encode "http:///tmp/foo") @result{} "http://tmp:80/foo"
+(url-encode "http:///tmp/foo&bar") @result{} "http://tmp:80/foo%26"
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} url-decode url
+@deffnx {bigloo procedure} url-decode! url
+Decode a URL. The function @code{url-decode!} may return its argument
+unmodified if no decoding is for the URL.
+@end deffn
+
+
+@c ------------------------------------------------------------------- @c
+@c    URLs                                                             @c
+@c ------------------------------------------------------------------- @c
+@node HTTP, , URLs, Internet
+@comment  node-name,  next,  previous,  up
+@section HTTP
+
+@deffn {bigloo procedure} http [:in #f] [:out #f] [:socket #f]
+                               [:protocol 'http] [:method 'get]
+                               [:timeout 0] [:proxy #f]
+                               [:host "localhost"] [:port 80]
+                               [:path "/"] 
+                               [:login #f] [:authorization #f]
+                               [:username #f] [:password #f]
+                               [:http-version "HTTP/1.1"]
+                               [:content-type #f]
+                               [:header '((user-agent: "Mozilla/5.0"))]
+                               [:args '()]
+                               [:body #f]
+
+Opens an HTTP connection. Returns a socket.
+
+@smalllisp
+(define (wget urt)
+   
+   (define (parser ip status-code header clen tenc)
+      (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
+	  (case status-code
+	     ((401)
+	      (raise (instantiate::&io-port-error
+			(proc 'open-input-file)
+			(msg "Cannot open URL, authentication required")
+			(obj (string-append "http://" string)))))
+	     ((404)
+	      (raise (instantiate::&io-file-not-found-error
+			(proc 'open-input-file)
+			(msg "Cannot open URL")
+			(obj (string-append "http://" string)))))
+	     (else
+	      (raise (instantiate::&io-port-error
+			(proc 'open-input-file)
+			(msg (format "Cannot open URL (~a)" status-code))
+			(obj (string-append "http://" string))))))
+	  (cond
+	     ((not (input-port? ip))
+	      (open-input-string ""))
+	     (clen
+	      (input-port-fill-barrier-set! ip (elong->fixnum clen))
+	      ip)
+	     (else
+	      ip))))
+   
+   (multiple-value-bind (protocol login host port abspath)
+      (url-parse url)
+      (let* ((sock (http :host host :port port :login login :path abspath))
+	     (ip (socket-input sock))
+	     (op (socket-output sock)))
+	 (with-handler
+	    (lambda (e)
+	       (if (&http-redirection? e)
+		   (wget (&http-redirection-url e))
+		   (raise e)))
+	    (read-string (http-parse-response ip op parser))))))
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} http-read-line input-port
+@deffnx {bigloo procedure} http-read-crlf input-port
+Reads a line or an end-of-line of an HTTP response.
+@end deffn
+
+@deffn {bigloo procedure} http-parse-status-line input-port
+Parses the status-line of an HTTP response. This returns a three values:
+
+@itemize @bullet
+@item The http version
+@item The status code
+@item the explanation phrase
+@end itemize
+
+
+@end deffn
+
+@deffn {bigloo procedure} http-parse-header input-port output-port
+Parses the whole header of an HTTP response. This is an alist.
+@end deffn
+
+@deffn {bigloo procedure} http-parse-response input-port output-port procedure
+Parses the whole response of an HTTP request. The argument @var{procedure}
+is invoked with five arguments:
+
+@itemize @bullet
+@item the input port to read the characters of the response,
+@item the status code,
+@item the header of the response,
+@item the content length,
+@item the type encoding.
+@end itemize
+@end deffn
+
+@deffn {bigloo procedure} http-response-body->port input-port output-port
+Parses an HTTP response and build an output port that delivers the 
+characters of the content.
+@end deffn
+
+@deffn {bigloo procedure} http-chunks->procedure input-port
+@end deffn
+
+@deffn {bigloo procedure} http-chunks->port input-port
+@end deffn
+
+@deffn {bigloo procedure} http-send-chunks input-port output-port
+@end deffn
+                      

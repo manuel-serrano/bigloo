@@ -1,0 +1,75 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/emacslisppath               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Jun 19 08:07:57 1998                          */
+#*    Last change :  Fri Feb  1 10:52:48 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    We search for the xemacs site-lisp path.                         */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+emacs=emacs
+cc=gcc
+path=
+exe_suffix=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --emacs=*|-emacs=*)
+      emacs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --xemacs=*|-xemacs=*)
+      emacs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --path=*|-path=*)
+      path="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --exe=*|-exe=*)
+      exe_suffix="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if [ "$path " != " " ]; then
+   echo $path
+else
+   expr="(let ((lst load-path) (res "")) \
+           (while (consp lst) \
+              (if (string= (file-name-nondirectory (directory-file-name (car lst))) \"site-lisp\")
+                  (progn (setq res (concat (directory-file-name (car lst)) \"/bigloo\")) (setq lst ())) \
+                  (setq lst (cdr lst)))) \
+            (message (format \"\nbgllisppath:%s\" res)))"
+
+   path=`$emacs --no-init-file -no-init-file --no-site-file -batch -eval "$expr" -kill 2>&1 > /dev/null | grep bgllisppath: | sed 's/^[^:]*://'`
+
+   if [ "$?" != "0" ]; then
+     echo "";
+   else
+     echo $path;
+   fi
+fi
+   

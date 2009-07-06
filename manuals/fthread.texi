@@ -1,0 +1,662 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/object.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 15:09:03 1998                          @c
+@c    Last change :  Mon Nov 12 15:11:18 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The Bigloo Fair threads                                          @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Bigloo's threads                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Fair Threads, Posix Threads, Thread Common Functions, Threads
+@comment  node-name,  next,  previous,  up
+@section Threads
+@cindex Fair Threads
+@cindex Threads
+
+Bigloo supports fair threads (see Section @ref{Thread}), a
+specification of cooperative threads. In this framework a thread must
+explicitly or implicitly @emph{yield} the processor to the scheduler
+(see Section @ref{Scheduler}). Explicit cooperation is achieved by
+library functions such as @code{thread-yield!} or
+@code{thread-sleep!}. The scheduler @b{does not preempt a running thread} to 
+allocate the processor to another waiting thread. Fair threads have two
+drawbacks over preemptive threads:
+
+@itemize @bullet
+@item Cooperative threads are not skilled to benefit of multi processors
+      platforms.
+@item Single threads programs must be adapted in order to be ran 
+      concurrently. 
+@end itemize
+
+On the other hand, Fair threads have advantages that make them
+suitable for a high level programming language such as Scheme:
+
+@itemize @bullet
+@item Fair threads have a strong and well defined semantic. Multi threaded
+      programs using Fair threads are @emph{deterministic} thus programs
+      that deploy Fair threads are @emph{predictable}.
+@item Fair threads are easier to program with because they hide most the
+      of the concurrent programming pitfalls. In particular, since Fair
+      threads enforce a strong synchronization, there
+      is no need to deploy techniques such as @emph{mutex}, @emph{semaphore}
+      or @emph{condition variables}.
+@end itemize
+
+@menu
+* Introduction::
+* Fair Threads Api::
+* SRFI-18::
+@end menu
+
+This whole chapter has been written in collaboration with @b{Frédéric
+Boussinot}. It uses materials on Fair threads that can be found at
+@url{http://www-sop.inria.fr/mimosa/rp/FairThreads/html/FairThreads.html}.
+
+@c -- Introduction --------------------------------------------------- @c
+@node Introduction, Fair Threads Api, , Fair Threads
+@comment  node-name,  next,  previous,  up
+@subsection Introduction to Fair Threads
+
+Fair threads are cooperative threads run by a fair scheduler which
+gives them equal access to the processor. Fair threads can communicate
+using broadcast events. Their semantics does not depends on the
+executing platform. Fine control over fair threads execution is
+possible allowing the programming of specific user-defined scheduling
+strategies. 
+
+Contrary to standard sequential programming where the processor
+executes a single program, in concurrent programming the processor is
+a shared resource which is dispatched to several programs. The term
+@emph{concurrent} is appropriate because programs can be seen as
+concurrently competing to gain access to the processor, in order to
+execute.
+
+Threads are a basic mean for concurrent programming, and are widely
+used in operating systems. At language level, threads offer a way to
+structure programs by decomposing systems in several concurrent
+components; in this respect, threads are useful for modularity.
+
+However, threads are generally considered as low-level primitives
+leading to over-complex programming. Moreover, threads generally have
+loose semantics, in particular depending on the underlying executing
+platform; to give them a precise semantics is a difficult task, and
+this is a clearly identified problem to get portable code.
+
+Bigloo proposes a new framework with clear and simple semantics, and
+with an efficient implementation. In it, threads are called
+@emph{fair}; basically a fair thread is a cooperative thread executed
+in a context in which all threads always have equal access to the
+processor. Fair threads have a deterministic semantics, relying on
+previous work belonging to the so-called reactive approach.
+
+@c -- API ------------------------------------------------------------ @c
+@node Fair Threads Api, SRFI-18, Introduction, Fair Threads
+@comment  node-name,  next,  previous,  up
+@subsection Fair Threads Api
+
+@menu
+* Thread::
+* Scheduler::
+* Signal::
+@end menu
+
+Bigloo uses a set of @emph{primitive} functions to create, run and
+handle thread. For the sake of standardization the name and semantic
+of SRFI-18 (Multithreading support) has been used. This section presents
+only the mandatory functions to program with Fair threads in Bigloo. The
+Section @ref{SRFI-18} presents the functions that are not necessary
+to Bigloo but supported for compliance with SRFI-18.
+
+@c -- threads -------------------------------------------------------- @c
+@node Thread, Scheduler, ,Fair Threads Api
+@subsubsection Thread
+
+@deffn {SRFI-18 function} current-thread
+Returns the current thread.
+@end deffn
+
+@deffn {SRFI-18 function} thread? @var{obj}
+Returns @code{#t} if @var{obj} is a thread, otherwise returns @code{#f}.
+@end deffn
+
+@deffn {SRFI-18 function} make-thread @var{thunk} [@var{name}]
+Returns a new thread which is not started yet. The body of the thread
+is the body of the procedure @var{thunk}. The optional argument @var{name}
+can be use to identify the thread. It can be any Bigloo value.
+
+@smalllisp
+(make-thread (lambda () (print 1) (thread-yield!) (print 2)) 'my-thread)
+@end smalllisp
+@end deffn
+
+@deffn {SRFI-18 function} thread-start! @var{thread} [@var{scheduler}]
+Runs a thread created with @code{make-thread}. If @var{scheduler} is
+provided, the @var{thread} is started this particular scheduler. Otherwise,
+it is started in the current scheduler (see Section @ref{Scheduler}).
+Threads are started at the beginning of @emph{reactions} 
+(see Section @ref{Scheduler}).
+@end deffn
+
+@deffn {SRFI-18 function} thread-name @var{thread}
+Returns the name of the @var{thread} that has been passed to 
+@code{make-thread}.
+@end deffn
+
+@deffn {SRFI-18 function} thread-specific @var{thread}
+@deffnx {SRFI-18 function} thread-specific-set! @var{thread} @var{obj}
+Returns and sets value in the specific field of the @var{thread}. If no
+value has been set, @code{thread-specific} returns an unspecified value.
+
+@smalllisp
+(let ((t (make-thread (lambda () 
+                         (print (thread-specific (current-thread)))))))
+   (thread-specific-set! t 'foo)
+   (thread-start! t)) @print{} foo
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-cleanup @var{thread}
+@deffnx {Bigloo function} thread-cleanup-set! @var{thread} @var{fun}
+Associates a cleanup function to a thread. The cleanup function is called
+with the thread itself. The cleanup function is executed
+in a context where @code{current-thread} is the thread owning the
+cleanup function.
+
+@smalllisp
+(let ((t (make-thread (lambda () 'done) 'foo)))
+   (thread-cleanup-set! t (lambda (v) (print (thread-name (current-thread))
+					     ", exit value: " v)))
+   (thread-start! t)) @print{} foo, exit value: done
+@end smalllisp
+@end deffn
+
+@deffn {SRFI-18 function} thread-yield!
+
+The current thread @emph{cooperates}. That is, it is suspend for the
+@emph{reaction} and the scheduler selects a new thread to be resumed. The
+scheduler resumes the next avaliable thread. If there is only one
+thread started in the scheduler, the same thread is resumed. 
+A @emph{reaction} correspond to the invocation of a @code{scheduler-react!}
+call (see Section @ref{Scheduler}).
+
+@end deffn
+
+@deffn {SRFI-18 function} thread-sleep! @var{timeout}
+The current thread @emph{cooperates} during @emph{exactly} @var{timeout}
+@emph{reactions} (see @ref{Scheduler}). It is suspended and the scheduler 
+selects a new thread to be resumed. If there is only one thread started in the
+scheduler, the same thread will be resumed.
+
+@smalllisp
+(let ((t1 (make-thread 
+           (lambda () (thread-sleep! 2) (display 'foo))))
+      (t2 (make-thread 
+           (lambda () (let loop ((n 1))
+                         (display n) 
+                         (thread-yield!)
+                         (if (< n 5)
+                             (loop (+ n 1))))))))
+   (thread-start! t1)
+   (thread-start! t2)
+   (scheduler-start!)) @print{} 12foo34
+@end smalllisp
+@end deffn
+
+@deffn {SRFI-18 function} thread-terminate! @var{thread}
+Terminates @var{thread} at the end of the current reaction.
+@end deffn
+
+@deffn {SRFI-18 function} thread-join! @var{thread} [@var{timeout} [@var{timeout-val}]]
+The current thread waits until the @var{thread} terminates or until
+the @var{timeout} is reached (when supplied). If the @var{timeout} is
+reached, @code{thread-join!} returns @var{timeout-val}. If @var{thread}
+terminates, @code{thread-join!} returns the end-result of the @var{thread}
+or the end-exception if that thread terminates abnormally.
+
+If several threads wait for the termination of the same thread, they are
+all notified of the termination during the current reaction.
+
+@smalllisp
+(let* ((t1 (thread-start!
+	    (make-thread (lambda ()
+			    (thread-sleep! 3)
+			    'foo))))
+       (t2 (thread-start!
+	    (make-thread (lambda ()
+			    (print "t1: " (thread-join! t1 1))))))
+       (t3 (thread-start!
+	    (make-thread (lambda ()
+			    (print "t2: " (thread-join! t1 2 'bar))))))
+       (t3 (thread-start!
+	    (make-thread (lambda ()
+			    (print "t3: " (thread-join! t1))))))
+       (t4 (thread-start!
+	    (make-thread (lambda ()
+			    (print "t4: " (thread-join! t1)))))))
+   (scheduler-start!))
+   @print{} t1: #|%uncaught-exception [reason: (exception . join-timeout)]|
+      t2: bar
+      t3: foo
+      t4: foo
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-suspend! @var{thread}
+@deffnx {Bigloo function} thread-resume! @var{thread}
+Suspends/resumes the @var{thread} at the end of reaction. While suspended
+a thread is not eligible to get the processor by the scheduler. 
+@end deffn
+
+@deffn {Bigloo function} thread-await! @var{signal} [@var{timeout}]
+
+Blocks the thread until @var{signal} has been broadcast or until
+@var{timeout} is elapsed. The function @code{thread-await!} returns
+the value associated with the previous emissions of the signal that
+took place during the reaction.
+
+@smalllisp
+(let ((t1 (thread-start!
+           (make-thread
+            (lambda ()
+             (display (thread-await! 'foo))
+             (display (thread-await! 'bar))))))
+      (t2 (thread-start! 
+           (make-thread
+            (lambda ()
+             (broadcast! 'foo 'val1-foo)
+             (broadcast! 'foo 'val2-foo)))))
+      (t3 (thread-start!
+           (make-thread
+            (lambda ()
+             (thread-sleep! 2)
+             (broadcast! 'bar 'val-bar))))))
+   (let loop ((n 1))
+      (display n)
+      (scheduler-react! (default-scheduler))
+      (loop (+ n 1))))
+  @print{} 1val2-foo23val-bar456...
+@end smalllisp
+
+The function @code{thread-await!} cannot be used to intercept all the signals
+broadcasted during a reaction. This is illustrated by the following example
+were obviously @code{thread-await!} cannot intercept the emission of the
+signal:
+
+@smalllisp
+(thread-start! (make-thread (lambda () 
+                               (tread-await! 'foo)
+                               (broadcast! 'foo 1))))
+(thread-start! (make-thread (lambda () 
+                               (broadcast! 'foo 2))))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-get-values! @var{signal}
+
+Terminates the instant for the thread (as @code{thread-yield!}) and
+returns, hence at the next instant, all the values associated with
+broadcast @var{signal} (see Section @ref{Signal}) during the previous scheduler
+reaction (see Section @ref{Scheduler}).
+
+Example:
+@smalllisp
+(thread-start! (make-thread
+                  (lambda ()
+                     (for-each print (thread-get-values! 'foo)))))
+(thread-start! (make-thread
+                  (lambda ()
+                     (broadcast! 'foo 1)
+                     (broadcast! 'foo 'foo)
+                     (broadcast! 'foo "blabla"))))
+   @print{} 1
+      foo
+      blabla
+@end smalllisp
+
+Example:
+@smalllisp
+(let ((t1 (thread-start!
+           (make-thread
+            (lambda ()
+               (for-each print (thread-get-values! 'foo)))
+            't1)))
+      (t2 (thread-start!
+           (make-thread
+            (lambda ()
+               (broadcast! 'foo (current-thread))
+               (thread-yield!)
+               ;; this second broadcast won't be intercepted 
+               ;; because it occurs during the next reaction
+               (broadcast! 'foo (current-thread)))
+            't2)))
+      (t3 (thread-start!
+           (make-thread
+            (lambda ()
+               (broadcast! 'foo (current-thread))
+               (broadcast! 'foo (current-thread)))
+            't3))))
+   (scheduler-start!))
+   @print{} #<thread:t2>
+      #<thread:t3>
+      #<thread:t3>
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-await-values! @var{signal} [@var{timeout}]
+This blocks the current thread until @var{signal} has been broadcast.
+It then returns, at the next instant, all the values associated with
+all the broadcasts that took place during the instant.
+It can be defined as:
+
+@smalllisp
+(define (thread-await-values! signal . tmt)
+   (apply thread-await! signal tmt)
+   (thread-get-values signal))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-await*! @var{signals} [@var{timeout}]
+@cindex select (à la unix)
+Wait for one of a list of signals. The function @code{thread-await*!}
+can be compared to the Unix @code{select} function. The argument 
+@var{signals} is a list of signal identifier. The function 
+@code{thread-await*!} blocks the current thread until one of the signal in 
+the list @var{signals} is broadcast or until the optional numerical argument 
+@var{timeout} is elapsed. If the thread unblocks because the timeout is 
+elapsed, @code{thread-await*!} returns @code{#f}. Otherwise it returns two
+values that have to be collected with @code{multiple-value-bind} (see
+@ref{Control Features}). The first one is the value of the broadcast
+signal. The second one is the broadcast signal.
+
+Example:
+@smalllisp
+(let ((res #f))
+   (thread-start!
+    (make-thread (lambda ()
+                    (let ((sig* (list 'foo 'bar)))
+                       (multiple-value-bind (val1 sig1)
+                          (thread-await*! sig*)
+                          (multiple-value-bind (val2 sig2)
+                             (thread-await*! sig*)
+                             (thread-yield!)
+                             (multiple-value-bind (val3 sig3)
+                                (thread-await*! sig*)
+                                (set! res (list sig1 sig2 sig3)))))))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 2)
+                    (broadcast! 'foo 1))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 3)
+                    (broadcast! 'bar 2))))
+   (scheduler-start!)
+   res)
+  @result{} '(foo foo bar)
+@end smalllisp
+
+A second example using timeouts:
+@smalllisp
+(let ((res #f))
+   (thread-start!
+    (make-thread (lambda ()
+                    (let ((sig* (list 'foo 'bar)))
+                       (multiple-value-bind (val1 sig1)
+                          (thread-await*! sig* 1)
+                          (thread-yield!)
+                          (multiple-value-bind (val2 sig2)
+                             (thread-await*! sig* 1)
+                             (thread-yield!)
+                             (multiple-value-bind (val3 sig3)
+                                (thread-await*! sig* 2)
+                                (set! res (list sig1 sig2 sig3)))))))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 2)
+                    (broadcast! 'foo 1))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 3)
+                    (broadcast! 'bar 2))))
+   (scheduler-start!)
+   res)
+  @result{} '(#f foo bar)
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-get-values*! @var{signals}
+Terminates the instant for the thread (as @code{thread-yield!}) and
+returns, hence at the next instant, all the values associated with
+all broadcast @var{signals} (see Section @ref{Signal}) during the previous 
+scheduler reaction (see Section @ref{Scheduler}). The function 
+@code{thread-get-values*!} returns an @emph{alist} made of the scanned signal
+and their values. That is the length of the returns list is the length
+of the list @var{signals}. If a signal of the list @var{signals} has not
+been broadcast, its associated entry the list returned by 
+@code{thread-get-values*!} has an empty @code{cdr}.
+
+Example:
+@smalllisp
+(let ((s1 'foo)
+      (s2 'bar)
+      (s3 'gee)
+      (res #f))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 2)
+                    (broadcast! 'foo (current-time))
+                    (broadcast! 'bar 0))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-await*! (list s1 s2 s3))
+                    (set! res (thread-get-values*! (list s1 s2 s3))))))
+   (thread-start!
+    (make-thread (lambda ()
+                    (thread-sleep! 2)
+                    (broadcast! 'bar (current-time)))))
+   (scheduler-start!)
+   res)
+  @result{} ((foo 3) (bar 3 0) (gee))
+@end smalllisp
+
+Used with asynchronous signal, the functions @code{thread-await*!} and
+@code{thread-get-values*!} can be used to read concurrently, in a non 
+blocking way, several files. 
+@end deffn
+
+@deffn {Bigloo function} thread-await-values*! @var{signals} [@var{timeout}]
+This blocks the current thread until at least one of @var{signals} has 
+been broadcast. It then returns, at the next instant, all the values associated
+with all the broadcasts that took place during the instant. It can be 
+defined as:
+
+@smalllisp
+(define (thread-await-values*! signal . tmt)
+   (apply thread-await*! signal tmt)
+   (thread-get-values*! signal))
+@end smalllisp
+@end deffn
+
+
+@c -- Scheduler ------------------------------------------------------ @c
+@node Scheduler, Signal, Thread, Fair Threads Api
+@subsubsection Scheduler
+
+@deffn {Bigloo function} make-scheduler [@var{envs}]
+Creates a new scheduler. The optional arguments @var{envs} are
+@emph{fair thread environments} which will be defined in forthcoming
+Bigloo releases.
+@end deffn
+
+@deffn {Bigloo function} scheduler? @var{obj}
+Returns @code{#t} if @var{obj} is a scheduler. Otherwise returns @code{#f}.
+@end deffn
+
+@deffn {Bigloo function} current-scheduler
+Returns the current scheduler. The current scheduler is the scheduler
+used in the last call to @code{scheduler-react!} or @code{scheduler-start!}.
+It always exists a current scheduler. That is, it is optional for an
+application to create a scheduler.
+@end deffn
+
+@deffn {Bigloo function} scheduler-react! [@var{scheduler}]
+Executes all the treads started (see @code{thread-start!}, 
+Section @ref{Thread}) in the scheduler until all the threads are
+blocked. A thread is blocked if the has explicitly yield the processor 
+(@code{thread-yield!} and @code{thread-sleep!}) or because it is waiting
+a signal (@code{thread-await!}). A thread
+can be selected several times during the same reaction.
+The function @code{scheduler-react!} returns a symbol denoting the
+@emph{state} of the scheduler. The possible states are:
+
+@itemize @bullet
+@item @code{ready} The Scheduler is ready to execute some threads.
+@item @code{done} All the threads started in the scheduler have terminated.
+@item @code{await} All the threads  started in the scheduler are waiting for
+      a signal.
+@end itemize
+
+An invocation of @code{scheduler-react!} is called a @emph{reaction}.
+@end deffn
+
+@deffn {Bigloo function} scheduler-start! [@var{arg} [@var{scheduler}]]
+Executes @code{scheduler-react!} as long as the scheduler is not done.
+If the optional argument @var{scheduler} is not provided, 
+@code{scheduler-start!} uses the current scheduler 
+(see @code{current-scheduler}). The optional @var{arg} can either be:
+@itemize @bullet
+@item An integer standing for the number of times @code{scheduler-react!}
+      must be called.
+@item A procedure @var{f} of one argument. The procedure @var{f}
+      is invoked after each reaction. It is passed a value @var{i} which is 
+      the iteration number of the scheduler. The reactions of the scheduler
+      are stopped when @var{f} returns @code{#f}.
+@end itemize
+
+@smalllisp
+(let* ((s (make-scheduler))
+       (t (make-thread (lambda () 
+                          (let loop ((n 0))
+                             (display n)
+                             (thread-yield!)
+                             (loop (+ 1 n)))))))
+   (scheduler-start! 10 s))
+  @print{} 0123456789
+
+(let* ((s (make-scheduler))
+       (t (make-thread (lambda () 
+                          (let loop ((n 0))
+                             (display n)
+                             (thread-yield!)
+                             (loop (+ 1 n)))))))
+   (scheduler-start! (lambda (i) (read-char)) s))
+  @print{} 0123456789
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} scheduler-terminate! [@var{scheduler}]
+Terminates all the threads in @var{scheduler}.
+@end deffn
+
+@deffn {Bigloo function} scheduler-instant [@var{scheduler}]
+Returns the current reaction number of @var{scheduler}. The reaction
+number is the number of times @code{scheduler-react!} has been invoked
+passing @var{scheduler} as argument.
+@end deffn
+
+@c -- Signal --------------------------------------------------------- @c
+@node Signal, , Scheduler, Fair Threads Api
+@subsubsection Signal
+
+@deffn {Bigloo function} broadcast! @var{signal} [@var{val}]
+Broadcasts @var{signal} to all threads started in @var{scheduler} 
+@emph{immediately}, that is during the reaction. This function can only
+be called from within a running thread. If the optional argument @var{val}
+is omitted, the @var{signal} is broadcast with an unspecified value.
+
+@smalllisp
+(thread-start! (make-thread
+		(lambda ()
+		   (thread-await! 'foo)
+		   (print (scheduler-instant (current-scheduler))))))
+(thread-start! (make-thread
+		(lambda ()
+		   (broadcast! 'foo))))
+(scheduler-start!)
+  @print{} 1
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} scheduler-broadcast! @var{scheduler} @var{signal} [@var{val}]
+At the next react broadcasts @var{signal} to all threads started 
+in @var{scheduler}. This is used to impact running threads from outside 
+any threads. If the optional argument @var{val}
+is omitted, the @var{signal} is broadcast with an unspecified value.
+@end deffn
+
+@deffn {Bigloo function} make-asynchronous-signal @var{proc}
+@cindex asynchronous signal
+@cindex Parallelism
+This function invokes in the background, the procedure @var{proc}.
+This function takes one parameter which is the signal that is broadcast
+when the invocation returns. When the host operating system supports
+parallel executions, the invocation of @var{proc} is executed in
+parallel with the waiting thread. 
+
+Asynchronous signals can be used to implement non blocking system
+operations, such as input/output. Here is an example that illustrates
+how to implement concurrent programs that behaves similarly with
+Fair Threads and Posix Threads.
+
+@smalllisp
+(define-expander read
+   (lambda (x e)
+      (cond-expand
+	 (fthread
+	  (thread-await!
+	   (make-aynchronous-signal
+	    (lambda (s)
+	       (read ,@@(map (lambda (x) (e x e)) (cdr x)))))))
+	 (else
+	  `(read ,@@(map (lambda (x) (e x e)) (cdr x)))))))
+@end smalllisp
+@end deffn
+
+
+@c -- SRFI-18 -------------------------------------------------------- @c
+@node SRFI-18, , Fair Threads Api, Fair Threads
+@comment  node-name,  next,  previous,  up
+@subsection SRFI-18
+@cindex SRFI-18
+
+Bigloo implements SRFI-18 (Multithreading support). This SRFI is
+available at @url{http://srfi.schemers.org/srfi-18/srfi-18.html}. One
+should keep in mind that since the Bigloo scheduler is cooperative
+Bigloo threads must @emph{cooperate} at some point in order not to
+block the execution of other threads. The functions enforcing
+cooperation are @code{thread-yield!}, @code{thread-sleep!},
+@code{thread-join!}  and @code{thread-await!}. In addition the SRFI-18
+@code{mutex-unlock} function enforce cooperation.
+
+Thread locking mechanism is common to Fair Threads and Posix Threads
+(see @ref{Thread Common Functions}).
+
+@deffn {SRFI-18 function} current-time [@var{scheduler}]
+Returns the reaction number of @var{scheduler}.
+@end deffn
+
+@deffn {SRFI-18 function} time? @var{obj}
+@deffnx {SRFI-18 function} time->seconds @var{obj}
+@end deffn
+
+@deffn {SRFI-18 function} join-timeout-exception? @var{obj}
+@deffnx {SRFI-18 function} abandoned-mutex-exception? @var{obj}
+@deffnx {SRFI-18 function} terminated-thread-exception? @var{obj}
+@deffnx {SRFI-18 function} uncaught-exception? @var{obj}
+@deffnx {SRFI-18 function} uncaught-exception-reason @var{exc}
+@end deffn

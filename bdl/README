@@ -1,0 +1,7 @@
+This directory contains the source code for the Bigloo Development Library
+(BDL in short).
+
+The BDL is a library that helps retreiving information about a Bigloo
+module. It handles symbols tables so that one may get information
+about the functions, variables, classes, ... defined in a Bigloo
+program.

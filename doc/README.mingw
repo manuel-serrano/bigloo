@@ -1,0 +1,165 @@
+=head1 Name
+
+README.mingw - Instaling bigloo on Windows MinGW system.
+
+=head1 Version
+
+@VERSION@
+
+=head1 Some data
+
+S<Initial date of writing   :> March 21, 2004 Hans Oesterholt-Dijkema
+
+This readme is in Plain Old Documentation (POD) format.
+It can be processed by Perl's C<pod2html>, or better even by 
+Hans Oesterholt's C<spod2html> (which at the moment of writing
+has not yet entered the public domain). To convert the document using
+C<spod2html> use 'C<spod2html --pod README.mingw>'. It will generate
+C<README.mingw.html>.
+
+=head1 Version History
+
+C<S<Initial date of writing   :> March 21, 2004 Hans Oesterholt-Dijkema>
+C<S<Last revision             :> August 30, 2004 Hans Oesterholt-Dijkema>
+
+=head2 August 30, 2004
+
+I removed a couple of bugs from the mingw bigloo 2.6d version. In C<cprocess.c>,
+I had to include B<malloc.h> to get a working B<alloca> function. This made
+the recette crash on the process tests. 
+
+In C<os.scm>, the B<dirname> function didn't work right. This generated 
+errors in the recette.
+
+In C<recette/string.scm> a B<unix-path-E<gt>list> function working on
+a UNIX Path would yield a wrong result, as the path separator on windows
+is ';', not ':'. I changed the test.
+
+I also added a bigger stack size in the B<ldextraopt> configuration script.
+
+=head1 Introduction
+
+This README handles the MinGW Port of Bigloo. 
+
+=head1 Why a MinGW port?
+
+MinGW and Win32 are different things. Although MinGW compiles for
+Win32 (together with MSYS) it behaves quite Unix Like. 
+
+But why not use the MSVC port of bigloo?  The answer to this is 
+straightforward. A MinGW user wants to be able to use C<gnu make>, C<B<bmake>> 
+that is. He/she wants to use C<./configure> for making his/hers projects. 
+Mostly a MinGW user is a Unix minded person that wants to be able
+to compile hers/his software on a Windows platform, so that she/he
+can support the big group of Windows users.
+
+The short answer: A MinGW user is  a Unix user that can't
+go around Windows. 
+
+=head1 What's the difference from the MSVC port?
+
+Not so much. The MinGW port is closer to Unix, so it does have some
+of both worlds. It e.g. uses Posix Threads where possible. It handles
+bot Unix paths and Windows paths. It uses a similar compiler scheme
+to the unix source, but needs a bit of windows there too. On the 
+other side: it uses a B<lot> of the MSVC port code base. It just 
+sets the right directive to reuse that code.
+
+=head1 Restrictions
+
+=over 1
+
+=item *
+
+The MinGW Port can't do dynamic libraries. gcc won't make the right
+exception code to use in dll's for Boehm's GC as opposed to MSVC. If
+you want dynamic libraries: use the MSVC port.
+
+=item *
+
+The MinGW port is a I<Native Backend only> port. You can't do the
+JVM nor the DOTNET port. Use the MSVC port for those.
+
+=item *
+
+The fair threads code contains some signal handling code that can't
+be used on windows. I don't know the impact of that.
+
+=back
+
+=head1 Configuring bigloo for MinGW
+
+Start an MSYS session. You can only compile bigloo for MinGW from 
+an MSYS session. See to it that you have the redhat posix thread
+port in your MinGW system. See to it that C<c:/MinGW/bin> is in
+your path.
+
+Now you can type e.g.:
+
+ tar xzf bigloo2.6d.tar.gz
+ cd bigloo2.6d
+ ./configure --prefix=c:/progs/bigloo --jvm=no --dotnet=no
+ make
+ make install
+
+To run the recette you can use 
+
+ make test
+
+=head1 SSL and Bigloo 
+
+In order to enable the Bigloo SSL binding, proceed as follows:
+
+=item * 
+
+Download the win32 openssl installer from
+ http://www.slproweb.com/products/Win32OpenSSL.html and
+run it.
+
+=item * 
+
+Copy the openssl directory found in the include
+directory of the openssl installation to your
+mingw/include directory.
+
+=item * 
+
+Copy the libeay32.a and ssleay32.a libraries from
+the lib/mingw directory from the openssl installation
+to your mingw/directory
+
+=item *
+
+Proceed to the Bigloo configuration and installation as usual
+
+=head1 Known Issues
+
+=over 1
+
+=item *
+
+Compiling fthreads, the garbage collector code has a declaration
+problem (in any case, with C<gcc 3.3.3>). The prototype for 
+C<GC_CreateThread> needs to be changed. 
+
+ HANDLE WINAPI GC_CreateThread(...)
+
+becomes
+
+ GC_API HANDLE GC_CreateThread(...)
+
+=item *
+
+The patch alters a C<.scm> file, that need to be recompiled.
+So you need bigloo to apply the patch. Mostly the unix bigloo will
+do this job, but I personally ran into problems with C<runtime/Llib/os.scm>.
+I needed to compile a windows bigloo before altering this file.
+Maybe the MSCV port of bigloo can be of help to bootstrap these C<.scm>
+files.
+
+=back
+
+=head1 Author
+
+Hans Oesterholt-Dijkema <hdnews -at- gawab -dot- com>
+

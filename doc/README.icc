@@ -1,0 +1,47 @@
+Bigloo supports the Intel C compiler (icc). The simpliest way to
+configure Bigloo for that C compiler is to use the --icc configure
+option such as:
+
+ ./configure --icc <the-other-options>
+
+This will set the following parameters:
+
+ cc=icc
+ as=icc
+ ldopt=no-share
+ coflags=-O3 -ip
+ customgc=no
+ extralibs=
+ cstrip=no
+
+The Intel C compiler is not able to compiler Boehm's garbage collector.
+Hence, it is not possible to use a custom Bigloo gc with icc (this explains
+the "customgc=no" setting; but see option 3 below).
+Hence, prior to the Bigloo installation, a Boehm's GC have to be installed
+first. For this, one has three options:
+
+  option 1: If the current os+distribution (for instance, Arch Linux or Debian
+            Linux) offers a pre-packaged Boehm's collector,  installing that
+            package should be the easiest way to install the GC.
+
+  option 2: One may install the Garbage Collector that comes with the Bigloo
+            sources. The GC is located in the biglooXXX/gc/gcYYY.tar.gz.
+            Untar that file and follow the instructions found in that
+            package. It has been reported that the collector may be build with:
+
+            CC=icc CXX=icc CPP=cpp ./configure && make && make install
+
+  option 3: If one wants to use icc and profit from Bigloo's special and
+            efficient configuration of the GC, one can configure bigloo with
+            gcc, then build only the GC using gcc, configure bigloo with icc
+            and continue with normal installation:
+
+            ./configure <your-other-options-but-no-icc-options>
+            make -C gc boot
+            ./configure --icc --customgc=yes <your-other-options>
+            <rest-of-normal-installation>
+
+            Option 3 should give you the best performance of all 3 options.
+
+Please report if you find any improvements for using icc.
+

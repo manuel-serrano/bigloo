@@ -1,0 +1,363 @@
+#*---------------------------------------------------------------------*/
+#*    Target and Project                                               */
+#*---------------------------------------------------------------------*/
+PROJECT		= $[PROJECT]
+VERSION		= 0
+TARGET_DIR      = bin
+TARGET_NAME     = $[TARGET-NAME]
+
+#*---------------------------------------------------------------------*/
+#*    The project mode (either `devel' or `final').                    */
+#*---------------------------------------------------------------------*/
+MODE		= devel
+
+#*---------------------------------------------------------------------*/
+#*    Compilers, Flags and Tools ...                                   */
+#*---------------------------------------------------------------------*/
+# The Bigloo compiler
+BIGLOO          = bigloo
+BFLAGS_COMMON   = -q -afile $(AFILE)
+BFLAGS_G        = $(BFLAGS_COMMON) -gbdb
+BFLAGS_O        = $(BFLAGS_COMMON) -O5 -unsafe
+BFLAGS_P        = $(BFLAGS_COMMON) -O5 -unsafe -static-bigloo -p
+BFLAGS_P2       = $(BFLAGS_COMMON) -O5 -unsafe -static-bigloo -p2
+BFLAGS          = $(BFLAGS_G)
+LNFLAGS_G       = 
+LNFLAGS_O       = -s
+LNFLAGS_P       = 
+LNFLAGS         = $(LNFLAGS_G)
+BJVMFLAGS	= -jvm -jfile $(JFILE) 
+AFILE_EXE	= bglafile
+JFILE_EXE	= bgljfile
+TAGS_EXE	= bgltags
+DEPEND_EXE	= bgldepend
+# The mco builder (this could be Bigloo itself or a speciliazed tools)
+MCO_EXE		= bglmco
+MCOFLAGS	= -s -I . # when using Bigloo, add the -mco flags here
+# The interface builder
+# BUILDER		= buildoo
+BLD2SCM		= bld2scm
+# BLNFLAGS	= -no-event-loop --generate
+# The C compiler
+CC              = gcc
+CFLAGS_O	= -O2
+CFLAGS_G	= -g
+CFLAGS          = $(CFLAGS_G)
+CFLAGS_P        = $(CFLAGS) -p
+# Which shell to use
+SHELL           = /bin/sh
+# Revision system
+PRCS            = prcs
+# Tar and compress
+TAR             = tar
+TARCOPT         = cf
+TARXOPT         = xfp
+COMPRESS        = gzip
+# Afile
+AFILE		= .afile
+# Jfile
+JFILE		= .jfile
+# Tags
+TAGS		= .etags
+# Depend
+BMAKE_EXE	= bglmake
+# Profiling
+PROF		= PROF
+PROFILE_ARGS	= 
+
+#*---------------------------------------------------------------------*/
+#*    Suffixes ...						       */
+#*---------------------------------------------------------------------*/
+.SUFFIXES:
+
+#*---------------------------------------------------------------------*/
+#*    Objects and sources ...					       */
+#*---------------------------------------------------------------------*/
+OBJECTS = 
+OBJECTS_JVM =
+CLASS_OBJECTS_JVM =
+GUI_OBJECTS = 
+OBJECTS_P = 
+SOURCES =  
+SOURCES_C =  
+POPULATION = $(SOURCES) $[MAKEFILE]
+
+#*---------------------------------------------------------------------*/
+#*    all ...                                                          */
+#*---------------------------------------------------------------------*/
+All: all
+all: mode
+mode:
+	$(MAKE) $(MODE)
+
+re:
+	@ /bin/rm $(TARGET_DIR)/$(TARGET_NAME)
+	@ $(MAKE) mode
+
+$[TARGET-NAME]: forceafile forcejfile forcetags $(TARGET_DIR)/$(TARGET_NAME)
+$(TARGET_DIR)/$(TARGET_NAME): $(TARGET_DIR) $(GUI_OBJECTS) $(OBJECTS)
+	@ echo "Linking..."
+	@ $(BIGLOO) $(BFLAGS) $(LNFLAGS) $(OBJECTS) -o $(TARGET_DIR)/$(TARGET_NAME)
+	@ echo "$(TARGET_DIR)/$(TARGET_NAME) done."
+	@ echo "-------------------------------"
+
+debug: $(TARGET_DIR) $(TAGS)
+	@ $(MAKE) -f $[MAKEFILE] $[TARGET-NAME] BFLAGS="$(BFLAGS_G)" LNFLAGS="$(LNFLAGS_G)" CFLAGS="$(CFLAGS_G)"
+	@ echo "WHEN LINKING AGAINST DEBUG LIBRARIES, IT IS HIGHLY RECOMMENDED"
+	@ echo "TO LINK USING THE STATIC VERSION OF THESE LIBRARIES."
+	@ echo "STATIC LINK OPTION IS ARCHITECTURE AND COMPILER DEPENDENT."
+	@ echo "WITH THE GNU-C LINKER, THIS OPTION IS CALLED '-static'."
+
+devel: $(TARGET_DIR)
+	@ $(MAKE) -f $[MAKEFILE] $[TARGET-NAME] BFLAGS="$(BFLAGS_G)" LNFLAGS="$(LNFLAGS_G)" CFLAGS="$(CFLAGS_G)"
+
+final: $(TARGET_DIR)
+	@ $(MAKE) -f $[MAKEFILE] $[TARGET-NAME] BFLAGS="$(BFLAGS_O)" LNFLAGS="$(LNFLAGS_O)" CFLAGS="$(CFLAGS_O)"
+
+profile_comp: $(TARGET_DIR) $[TARGET-NAME]_p
+$[TARGET-NAME]_p: forceafile forcetags $(TARGET_DIR)/$(TARGET_NAME)_p
+$(TARGET_DIR)/$(TARGET_NAME)_p: $(OBJECTS_P)
+	@ echo "Linking..."
+	@ $(BIGLOO) $(BFLAGS_P) $(LNFLAGS_P) $(OBJECTS_P) -o $(TARGET_DIR)/$(TARGET_NAME)_p
+	@ echo "$(TARGET_DIR)/$(TARGET_NAME)_p done."
+	@ echo "-------------------------------"
+
+extra_profile_comp:
+	@ $(MAKE) -f $[MAKEFILE] BFLAGS_P="$(BFLAGS_P2)" profile_comp
+
+gmon.out: $(TARGET_DIR)/$(TARGET_NAME)_p
+	@- $(TARGET_DIR)/$(TARGET_NAME)_p $(PROFILE_ARGS)
+
+profile_run: 
+	@- rm -f gmon.out $(PROF)
+	@ $(MAKE) -f $[MAKEFILE] gmon.out
+	@ $(BPROF_EXE) -b $(TARGET_DIR)/$(TARGET_NAME)_p > $(PROF)
+
+profile_clean: 
+	@- rm -f gmon.out bmon.out gmon.sum $(PROF)
+	@- rm -f $(OBJECTS_P)
+	@- rm -f $(TARGET_DIR)/$(TARGET_NAME)_p
+
+jvm: forceafile forcejfile forcetags $(TARGET_DIR) $(GUI_OBJECTS) $(OBJECTS_JVM)
+	@ echo "Linking..."
+	@ $(BIGLOO) $(BJVMFLAGS) $(BFLAGS) $(OBJECTS_JVM) -o $(TARGET_DIR)/$(TARGET_NAME)
+	@ echo "$(TARGET_DIR)/$(TARGET_NAME) done."
+	@ echo "-------------------------------"
+
+jvm_d: $(TARGET_DIR)
+	@ $(MAKE) -f $[MAKEFILE] jvm BFLAGS="$(BFLAGS_G)" LNFLAGS="$(BJVMFLAGS) $(LNFLAGS_G)" CFLAGS="$(CFLAGS_G)"
+
+jvm_g: $(TARGET_DIR)
+	@ $(MAKE) -f $[MAKEFILE] jvm BFLAGS="$(BFLAGS_G)" LNFLAGS="$(BJVMFLAGS) $(LNFLAGS_G)" CFLAGS="$(CFLAGS_G)"
+
+jvm_f: $(TARGET_DIR)
+	@ $(MAKE) -f $[MAKEFILE] jvm BFLAGS="$(BFLAGS_O)" LNFLAGS="$(BJVMFLAGS) $(LNFLAGS_O)" CFLAGS="$(CFLAGS_O)"
+
+$(TARGET_DIR):
+	@ mkdir -p $(TARGET_DIR)
+
+#*---------------------------------------------------------------------*/
+#*    help                                                             */
+#*---------------------------------------------------------------------*/
+help:
+	@echo "Makefile main user entries:"
+	@echo "all..................... compile default entry"
+	@echo "default................. display the default entry"
+	@echo "re...................... re-compile the default entry"
+	@echo "debug................... compile for debug mode"
+	@echo "devel................... compile for development mode"
+	@echo "final................... compile for optimization mode"
+	@echo "profile_comp............ compile for profiling mode"
+	@echo "profile_run............. execute an instrumented version"
+	@echo "profile_clean........... clean all the profiling information"
+	@echo "jvm..................... compile using the JVM back-end"
+	@echo "jvm_d................... compile using the JVM back-end in debug mode"
+	@echo "clean................... clean the C back-end object files"
+	@echo "clean-jvm............... clean the JVM back-end object files"
+	@echo "cleanall................ clean everything"
+	@echo "pop..................... display the all the files composing that project"
+	@echo "ude..................... produces all the bee administration files (afile, jfile, etags, ...)"
+	@echo "addentry................ add a new source file"
+
+#*---------------------------------------------------------------------*/
+#*    Cleaning ...						       */
+#*---------------------------------------------------------------------*/
+.PHONY: clean-jvm clean cleanall
+
+# The clean entry removes all file that may generated but the binary files
+clean: 
+	-rm -f $(OBJECTS)
+	-rm -f $(GUI_OBJECTS)
+	-rm -f $(OBJECTS_P)
+	-rm -f $(SOURCES_C)
+	@- rm -f $(AFILE)
+	@- rm -f $(JFILE)
+	@- rm -f $(TAGS)
+	@- rm -f $(PROF)
+	@- rm -f gmon.out bmon.out gmon.sum
+	@ find . \( -name '*[~%]'                   \
+                       -o -name '.??*[~%]'          \
+                       -o -name '#*#'               \
+                       -o -name '?*#'               \
+                       -o -name \*core \)           \
+                     -type f -exec rm {} \;   
+	@ echo "cleanup done..."
+	@ echo "-------------------------------"
+
+# The clean entry removes all file that may generated but the binary files
+clean-jvm: 
+	-rm -f $(OBJECTS_JVM)
+	-rm -f $(CLASS_OBJECTS_JVM)
+	-rm -f $(GUI_OBJECTS)
+	@- rm -f $(AFILE)
+	@- rm -f $(JFILE)
+	@- rm -f $(TAGS)
+	@- rm -f $(PROF)
+	@- rm -f gmon.out bmon.out gmon.sum
+	@ find . \( -name '*[~%]'                   \
+                       -o -name '.??*[~%]'          \
+                       -o -name '#*#'               \
+                       -o -name '?*#'               \
+                       -o -name \*core \)           \
+                     -type f -exec rm {} \;   
+	@ echo "cleanup done..."
+	@ echo "-------------------------------"
+
+# clean remove also the binary files
+cleanall: clean clean-jvm
+	-rm -f $(TARGET_DIR)/$(TARGET_NAME)
+	-rm -f $(TARGET_DIR)/$(TARGET_NAME)_p
+
+#*---------------------------------------------------------------------*/
+#*    Population and revision control                                  */
+#*---------------------------------------------------------------------*/
+.PHONY: version pop revision populate checkin checkout infofile checkoutfile
+
+# display the current version
+version:
+	@ echo $(VERSION)
+
+# just display the population
+pop:
+	@ echo $(POPULATION)
+
+# make a prcs revision
+revision: populate checkin
+
+populate: $(PROJECT).prj
+	$(PRCS) populate --force $(PROJECT) $(POPULATION)
+
+checkin: 
+	$(PRCS) checkin --force -r$(VERSION).@ $(PROJECT)
+
+# display how to check out a prcs revision
+checkout:
+	@ echo "$(PRCS) checkout -r$(VERSION).@ $(PROJECT)"
+
+infofile:
+	@ $(PRCS) info --force $(PROJECT) $(FILE)
+
+checkoutfile:
+	@ $(PRCS) checkout --force -r$(FILEVERSION) $(PROJECT) $(FILE)
+
+$(PROJECT).prj:
+	@ $(PRCS) checkout --force $(PROJECT)
+	@ cat $(PROJECT).prj | sed -e s,"(Populate-Ignore ())","(Populate-Ignore (\"\\\\\\\\\\.o\$$\" \"\\\\\\\\\\~$$\" \"\\\\\\\\\\.log\$$\" \"\\\\\\\\\\.ps\$$\" \"\\\\\\\\\\.aux\$$\" \"\\\\\\\\\\.date_of_backup\$$\" \"\\\\\\\\\\.so\$$\" \"\\\\\\\\\\.a\$$\"))", > $(PROJECT).dprj; rm -f $(PROJECT).prj; mv $(PROJECT).dprj $(PROJECT).prj
+
+
+#*---------------------------------------------------------------------*/
+#*    Tar ...							       */
+#*---------------------------------------------------------------------*/
+tar.gz: $(PROJECT).tar.gz
+
+$(PROJECT).tar.gz: ../$(PROJECT).tar
+	@ $(COMPRESS) ../$(PROJECT).tar; mv ../$(PROJECT).tar.gz .
+
+# This entry works only with gnu-make. Change it for other Makefiles.
+../$(PROJECT).tar: 
+	@ cd ..; \
+	  $(TAR) $(TARCOPT) $(PROJECT).tar $(POPULATION:%=$(PROJECT)/%)
+
+#*---------------------------------------------------------------------*/
+#*    Bee ...							       */
+#*---------------------------------------------------------------------*/
+.PHONY: ude forceafile forcejfile forcetags bpdend updatemakefile
+
+ude:
+	@ $(MAKE) -f $[MAKEFILE] $(AFILE)
+	@ $(MAKE) -f $[MAKEFILE] $(JFILE)
+	@ $(MAKE) -f $[MAKEFILE] $(TAGS)
+	@ $(MAKE) -f $[MAKEFILE] bdepend
+
+forceafile:
+	@ if [ ! -f $(AFILE) ]; then            \
+             $(MAKE) -f $[MAKEFILE] $(AFILE);   \
+          fi
+
+$(AFILE): $(SOURCES)
+	@ $(AFILE_EXE) -o $(AFILE) $(SOURCES)
+
+forcejfile:
+	@ if [ ! -f $(JFILE) ]; then            \
+             $(MAKE) -f $[MAKEFILE] $(JFILE);   \
+          fi
+
+$(JFILE): $(SOURCES)
+	@ $(JFILE_EXE) -o $(JFILE) $(SOURCES)
+
+forcetags:
+	@ if [ ! -f $(TAGS) ]; then            \
+             $(MAKE) -f $[MAKEFILE] $(TAGS);   \
+          fi
+
+$(TAGS): $(SOURCES)
+	@ $(TAGS_EXE) -o $(TAGS) $(SOURCES)
+
+bdepend: $(SOURCES)
+	@ $(DEPEND_EXE) -o Makefile $(SOURCES)
+ 
+updatemakefile:
+	@ $(BMAKE_EXE) -o $[MAKEFILE] $[ENTRY]
+	@ $(MAKE) -f $[MAKEFILE] ude
+
+addentry:
+	@ $(BMAKE_EXE) -o $[MAKEFILE] \
+          -source $(SRC_ENTRY) -object $(OBJ_ENTRY)
+
+#*---------------------------------------------------------------------*/
+#*    Bgraph/Begoo entries                                             */
+#*---------------------------------------------------------------------*/
+$(BEGOO):
+	@ $(BGRAPH) -o $(BEGOO) $(SOURCES)
+
+#*---------------------------------------------------------------------*/
+#*    bmake entries ...                                                */
+#*    -------------------------------------------------------------    */
+#*    These entries are used by bmake to extend the Makefile. Don't    */
+#*    use them.                                                        */
+#*---------------------------------------------------------------------*/
+.PHONY: getobjects getsources getpopulation getbinary getbinary_p getmode default
+
+getobjects:
+	@ echo $(OBJECTS)
+
+getsources:
+	@ echo $(SOURCES)
+
+getpopulation:
+	@ echo $(POPULATION)
+
+getbinary:
+	@ echo $(TARGET_DIR)/$(TARGET_NAME)
+
+getbinary_p:
+	@ echo $(TARGET_DIR)/$(TARGET_NAME)_p
+
+getmode:
+	@ echo $(MODE)
+
+default:
+	@ echo $(MODE)
+
+getbegoo:
+	@ echo $(BEGOO)

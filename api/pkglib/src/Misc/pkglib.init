@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/pkglib/src/Misc/pkglib.init      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sat Feb 10 11:38:34 2007 (serrano)                */
+;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Pkglib init file.                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'pkglib
+		  :srfi '(pkglib)
+		  :basename "bigloopkglib"
+		  :module-init '__pkglib_database
+		  :module-eval '__pkglib_makelib
+		  :class-init "bigloo.pkglib.database"
+		  :class-eval "bigloo.pkglib.make-lib")
+

@@ -1,0 +1,108 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/inet_aton                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Sep 12 15:34:36 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for setsockopt function and options.                       */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+solaris_lib="-lsocket -lnsl"
+mingw_lib="-lws2_32"
+tmp=/tmp
+user=bigloo
+tcp_opt=TCP_NODELAY
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      lib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --opt=*)
+      tcp_opt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    mingw is super clear                                             */
+#*---------------------------------------------------------------------*/
+if [ "$posixos" = "mingw32" ]; then
+  echo "-lws2_32" # -lwsock32 -lmswsock"
+  exit 0
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout $lib >/dev/null 2> /dev/null"
+compile_solaris="$cc $cflags $file.c -o $aout $solaris_lib >/dev/null 2> /dev/null"
+compile_mingw="$cc -D_MINGW_VER $cflags $file.c -o $aout $mingw_lib >/dev/null 2>&1"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <sys/types.h>
+#include <sys/socket.h>
+#ifdef _MINGW_VER
+#include <winsock2.h>
+#endif
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+main( int argc, char *argv[] ) {
+   return (inet_aton( "127.0.0.1", (void *)argv ) > 0);
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile 2> /dev/null; then
+   echo "1"
+else
+   echo "0"
+fi
+
+rm -f $aout
+rm -f $aout*
+rm -f $file.*

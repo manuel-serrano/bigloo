@@ -1,0 +1,109 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ascpp                       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Oct 22 11:07:08 1997                          */
+#*    Last change :  Wed Apr  9 19:09:38 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking for as. We search for an as that invokes cpp            */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+as=as
+cc=gcc
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --as=*|-as=*)
+      as="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --name=*|-name=*)
+      name="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+obj=`basename name`
+
+#*---------------------------------------------------------------------*/
+#*    We create the file                                               */
+#*---------------------------------------------------------------------*/
+(cd $tmp;
+
+\rm -f $name.s;
+\rm -f $name.o;
+
+cat > $name.s <<EOF
+#define dummy
+dummy
+EOF
+)
+
+#*---------------------------------------------------------------------*/
+#*    We try to compile it                                             */
+#*---------------------------------------------------------------------*/
+(cd $tmp; 
+ compile="$as $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+ if eval $compile > /dev/null 2> /dev/null; then
+   \rm -f $tmp/$name.s
+   echo $as
+ else
+   compile="$as -P $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+   if eval $compile > /dev/null 2> /dev/null; then
+     \rm -f $tmp/$name.s
+     echo "$as -P"
+   else
+     compile="as $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+     if eval $compile > /dev/null 2> /dev/null; then
+       \rm -f $tmp/$name.s
+       echo as
+     else
+       compile="as -P $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+       if eval $compile > /dev/null 2> /dev/null; then
+         \rm -f $tmp/$name.s
+         echo "as -P"
+       else
+         compile="$cc $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+         if eval $compile > /dev/null 2> /dev/null ; then
+           \rm -f $tmp/$name.s
+           echo $cc
+         else
+           compile="$cc -c -x assembler-with-cpp $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+           if eval $compile > /dev/null 2> /dev/null ; then
+             \rm -f $tmp/$name.s
+             echo "$cc -c -x assembler-with-cpp"
+           else
+             compile="gcc -c -x assembler-with-cpp $name.s -o $obj.o > /dev/null 2> /dev/null && mv $obj.o $name.o";
+             if eval $compile > /dev/null 2> /dev/null ; then
+               \rm -f $tmp/$name.s
+               echo "gcc -c -x assembler-with-cpp"
+             fi
+           fi
+         fi
+       fi
+     fi
+   fi
+ fi)

@@ -1,0 +1,62 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/emacsbrand                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Apr  3 16:03:11 2000                          */
+#*    Last change :  Wed Apr 27 11:47:10 2005 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking emacs                                                   */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+emacs=emacs
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --emacs=*|-emacs=*)
+      emacs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+#*---------------------------------------------------------------------*/
+#*    The autodetection ELisp expression                               */
+#*---------------------------------------------------------------------*/
+expr="(cond \
+        ((string-match \"GNU Emacs 22\" (emacs-version)) (kill-emacs 22)) \
+        ((string-match \"GNU Emacs 21\" (emacs-version)) (kill-emacs 21)) \
+        ((featurep 'xemacs) (kill-emacs 100)) \
+        (t (kill-emacs 0)))"
+
+$emacs --no-init-file -no-init-file --no-site-file -no-site-file -batch -eval "$expr" -kill >/dev/null 2>/dev/null
+version=$?
+
+if [ "$version" = "0" ]; then
+  echo "generic";
+else
+  if [ "$version" = "100" ]; then
+    echo "xemacs"
+  else
+    if [ "$version" = "22" ]; then
+      echo "emacs22"
+    else
+      if [ "$version" = "21" ]; then
+        echo "emacs21"
+      else
+        echo "generic";
+      fi
+    fi
+  fi
+fi

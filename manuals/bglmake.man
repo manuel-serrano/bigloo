@@ -1,0 +1,122 @@
+.TH BGLMAKE 1 "Aug 15 1998" 
+.de BP
+.sp
+.ti -.2i
+..
+.SH NAME
+bglmake \- create or update Bigloo makefiles
+
+.SH SYNOPSIS
+.B bglmake
+[ options ]
+[ sourcefile ]
+
+.SH DESCRIPTION
+
+.B bglmake
+reads \fIsourcefile\fR, computes the transitive closure of the import 
+relationship and generates a \fImakefile\fR file that can be used by
+the \fBglmake(1)\fR program to compile the application or the library.
+If no \fIsourcefile\fR is provided, then bglmake display the template file
+for generating Makefile.
+
+.SH OPTIONS
+
+.TP 16
+.TP
+\fB-v\fR
+Verbose mode
+
+.TP
+\fB-q\fR
+Prevent loading the \fI~/.bglmakerc\fR user configuration file.
+
+.TP
+\fB-suffix <suf>\fR
+Adds \fIsuf\fR to the \fBbglmake\fR source file suffixes list. Default 
+suffixes are "scm", "sch" and "bgl".
+
+.TP
+\fBfile\fR
+is the name of the "main" file for an application of the name of the "heap"
+file for a library.
+
+.TP
+\fB-I<path>\fR
+Add \fIpath\fR to the directory list read for searching Bigloo source files.
+
+.TP
+\fB-X<path>\fR
+Exclude \fIpath\fR from the directory list read for searching Bigloo 
+source files.
+
+.TP
+\fB-o <makefile>\fR
+The name of the \fImakefile\fR file to be updated
+
+.TP
+\fB-p <name>\fR
+The \fIname\fR of the project. This name is used in backup and versionning 
+entries.
+
+.TP
+\fB-t <name>\fR
+The \fIname\fR of the target binary file or the name of the library. 
+
+.TP
+\fB-f<template>\fR
+Set an alternative template file.
+
+.TP
+\fB-object <obj>\fR
+Update the makefile for adding \fIobj\fR to the object list.
+
+.TP
+\fB-source <src>\fR
+Update the makefile for adding \fIsrc\fR to the source file list.
+
+.TP
+\fB-main <file>\fR
+Set the initial main file and tells \fbbglmake\fR that the project is
+an "application" (by opposition to libraries). This \fIFile\fR is the 
+starting point of the transitive closure of the imported modules.
+
+.TP
+\fB-heap <file>\fR
+Set the initial heap file and tells \fbbglmake\fR that the project is
+an "library" (by opposition to applications). This \fIFile\fR is the 
+starting point of the transitive closure of the imported modules.
+
+.SH TEMPLATES
+When \fbbglmake\fR generates a \fImakefile\fR, it uses templates. Theses
+templates may be specified with some option or they be printed out. For that
+it is enough to call \fbbglmake\fR without any parameter. Template files uses
+some extra "macro". They are:
+
+.TP 5
+.IP $[PROJECT]
+this macro is replaced with the project name (option -p). If no \fI-p\fR option
+is used the default project name is the name of the current directory that
+contains the \fIsourcefile\fR.
+
+.IP $[TARGET_NAME]
+this macro is replaced with the target name (option -t). If no \fI-t\fR option
+is used the default target name is the name of the current directory that
+contains the \fIsourcefile\fR.
+
+.IP $[MAKEFILE]
+this macro is replaced with the \fImakefile\fR name (-o option).
+
+.SH "EXAMPLE"
+
+A Makefile is created by ``bglmake foo.scm -o Makefile''. Then it may be
+updated with ``make updatemakefile''.
+
+.SH "SEE ALSO"
+bigloo(1), bglafile(1), bgldepend(1), bgltags(1), make(1), bglmco(1)
+
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+
+

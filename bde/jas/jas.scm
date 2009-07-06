@@ -1,0 +1,20 @@
+(module jas
+   (import jas_as jas_peep)
+   (main jas) )
+
+(define (jas a)
+   (if (and (pair? (cdr a)) (string=? (cadr a) "-help"))
+       (print "usage: jas <filein> [-nopeep] <fileout>")
+       (match-case (cdr a)
+	  ((?filein ?fileout)
+	   (doit filein fileout) )
+	  ((?filein ?- ?fileout)
+	   (set! *jas-peephole* #f)
+	   (doit filein fileout) )
+	  (else (error 'jas "bad command line" a)) )))
+
+(define (doit filein fileout)
+   (let ( (def (call-with-input-file filein read)) )
+      (let ((port (open-output-binary-file fileout)))
+	 (jvm-as def port)
+	 (close-binary-port port))))

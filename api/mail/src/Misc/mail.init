@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/mail/src/Misc/mail.init          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Tue Jun 20 09:48:59 2006 (serrano)                */
+;*    Copyright   :  2001-06 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Mail init file.                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'mail
+		  :srfi '(mail)
+		  :basename "bigloomail"
+		  :module-init '__mail_mailbox
+		  :module-eval '__mail_makelib
+		  :class-init "bigloo.mail.mailbox"
+		  :class-eval "bigloo.mail.make-lib")
+   

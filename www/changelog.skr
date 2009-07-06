@@ -1,0 +1,80 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/changelog.skr                    */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Jan  9 14:08:15 2002                          */
+;*    Last change :  Tue Dec 20 18:31:58 2005 (serrano)                */
+;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    ChangeLog style                                                  */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    changelog-fontifier ...                                          */
+;*---------------------------------------------------------------------*/
+(define changelog-fontifier
+   (let ((g (regular-grammar ()
+	       ((bol (: (in ("AZ")) (+ all) #\:))
+		;; release date
+		(let* ((str (the-string))
+		       (pos (pregexp-match-positions "\\([^)]+\\):" str)))
+		   (match-case pos
+		      (((?start . ?stop))
+		       (cons* (substring str 0 start)
+			      (bold (substring str start (-fx stop 1)))
+			      ":"
+			      (ignore)))
+		      (else
+		       (cons str (ignore))))))
+	       ((bol (: (+ (in " \t")) (>= 4 #\*) (* all)))
+		;; distribution
+		(let ((distrib (the-string)))
+		   (cons (color :fg "#0000ff" (bold distrib)) (ignore))))
+	       ((bol (: (+ (in " \t")) #\* (out #\*)))
+		;; new features
+		(let ((chg (the-string))
+		      (len (the-length)))
+		   (cons (color :fg "#00cc00"
+				(bold (string-append
+				       (substring chg 0 (-fx len 1))
+				       "** ")))
+			 (ignore))))
+	       ((bol (: (+ (in " \t")) (= 3 #\*) (out #\*)))
+		;; bug fix
+		(let ((distrib (the-string)))
+		   (cons (color :fg "#ff0000" (bold distrib)) (ignore))))
+	       ((+ (out #\* #\Newline))
+		;; plain strings
+		(let ((str (the-string)))
+		   (cons str (ignore))))
+	       ((+ (or #\Newline #\*))
+		;; new lines
+		(let ((nl (the-string)))
+		   (cons nl (ignore))))
+	       (else
+		;; default
+		(let ((c (the-failure)))
+		   (if (eof-object? c)
+		       '()
+		       (skribe-error 'changelog "Unexpected character" c)))))))
+      (lambda (s)
+	 (apply append
+		(map (lambda (s)
+			(with-input-from-string s
+			   (lambda ()
+			      (cons "\n" (read/rp g (current-input-port))))))
+		     (with-input-from-string s
+			(lambda ()
+			   (read-lines (current-input-port)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    changelog ...                                                    */
+;*---------------------------------------------------------------------*/
+(define changelog
+   (new language
+      (name "changelog")
+      (fontifier changelog-fontifier)
+      (extractor #f)))
+
+
+

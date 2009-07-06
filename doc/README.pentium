@@ -1,0 +1,12 @@
+In order to improve the performance of Bigloo, when configuring it you should
+use:
+
+   ./configure --arch=pIII
+
+of
+
+   ./configure --arch=pIV
+
+Depending of your hardware setting. The drawback of this configuration
+is that the compiler and Bigloo programs linked against the static
+library won't run on non-PIII/PIV platforms.

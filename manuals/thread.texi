@@ -1,0 +1,178 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/object.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 15:09:03 1998                          @c
+@c    Last change :  Mon Nov 12 15:11:18 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The Bigloo threads                                               @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Bigloo's threads                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Threads, Database library, Errors Assertions and Traces, Top
+@comment  node-name,  next,  previous,  up
+@chapter Threads
+@cindex Threads
+
+Bigloo supports multithreaded programming. Two different libraries
+programming are available. The first one, the @emph{Fair Thread}
+(see Section @ref{Fair Threads}), enables, simple, easy to develop and 
+to maintain code. The second one, the Posix Thread 
+(see Section @ref{Posix Threads}) enables more
+easily to take benefit of the actual parallelism that is now available
+on stock hardware. Because it is easier to program with @code{fthread}
+than with @code{pthread}, we strongly recommend to use the former
+as much as possible and leave the former for specially demanding
+applications. Both libraries are described in this chapter.
+
+@menu
+* Thread Common Functions::
+* Fair Threads::
+* Posix Threads::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Bigloo's threads                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Thread Common Functions, Fair Threads, , Threads
+@comment  node-name,  next,  previous,  up
+@section Thread Common Functions
+@cindex Posix Threads
+@cindex Threads
+
+This section describes the functions that are available independently
+of the multi-threading library.
+
+@deffn {SRFI-18 function} mutex? @var{obj}
+@deffnx {SRFI-18 function} make-mutex [@var{name}]
+@deffnx {SRFI-18 function} mutex-name @var{mutex}
+@deffnx {SRFI-18 function} mutex-specific @var{mutex}
+@deffnx {SRFI-18 function} mutex-specific-set! @var{mutex} @var{obj}
+@deffnx {SRFI-18 function} mutex-state @var{mutex}
+@deffnx {SRFI-18 function} mutex-lock! @var{mutex} [@var{timeout} [@var{thread}]]
+@deffnx {SRFI-18 function} mutex-unlock! @var{mutex}
+
+@smalllisp
+(let ((m (make-mutex)))
+   (thread-start!
+    (make-thread (lambda ()
+                    (let loop ()
+                       (if (mutex-lock! m 0)
+                           (begin
+                              (display "locked")
+                              (mutex-unlock! m))
+                           (begin
+                              (thread-yield!)
+                              (loop))))))))
+  @print{} locked
+
+(let ((res '()))
+   (define (mutex-lock-recursively! mutex)
+      (if (eq? (mutex-state mutex) (current-thread))
+          (let ((n (mutex-specific mutex)))
+             (mutex-specific-set! mutex (+ n 1)))
+          (begin
+             (mutex-lock! mutex)
+             (mutex-specific-set! mutex 0))))
+   (define (mutex-unlock-recursively! mutex)
+      (let ((n (mutex-specific mutex)))
+         (if (= n 0)
+             (mutex-unlock! mutex)
+             (mutex-specific-set! mutex (- n 1)))))
+   (thread-start!
+    (make-thread
+     (lambda ()
+        (let ((m (make-mutex)))
+           (mutex-lock-recursively! m)
+           (mutex-lock-recursively! m)
+           (mutex-lock-recursively! m)
+           (set! res (cons (mutex-specific m) res))
+           (mutex-unlock-recursively! m)
+           (mutex-unlock-recursively! m)
+           (mutex-unlock-recursively! m)
+           (set! res (cons (mutex-specific m) res))))))
+   res)
+  @result{} (0 2)
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} with-lock mutex thunk
+The function @var{with-lock} evaluates the body of the @var{thunk}.
+The mutex @var{mutex} is acquired and released before @var{thunk} gets invoked.
+The function @var{with-lock} might be implemented as:
+
+@smalllisp
+(define (with-lock mutex thunk)
+   (mutex-lock! mutex)
+   (unwind-protect
+      (thunk)
+      (mutex-unlock! mutex)))
+@end smalllisp
+@end deffn
+
+@deffn {SRFI-18 function} condition-variable? @var{obj}
+@deffnx {SRFI-18 function} make-condition-variable [@var{name}]
+@deffnx {SRFI-18 function} condition-variable-name @var{cv}
+@deffnx {SRFI-18 function} condition-variable-specific @var{cv}
+@deffnx {SRFI-18 function} condition-variable-specific-set! @var{cv} @var{obj}
+@deffnx {SRFI-18 function} condition-variable-wait! @var{cv} @var{mutex}
+@deffnx {SRFI-18 function} condition-variable-signal! @var{cv}
+@deffnx {SRFI-18 function} condition-variable-broadcast! @var{cv}
+@smalllisp
+(let ((res 0))
+   (define (make-semaphore n)
+      (vector n (make-mutex) (make-condition-variable)))
+   (define (semaphore-wait! sema)
+      (mutex-lock! (vector-ref sema 1))
+      (let ((n (vector-ref sema 0)))
+         (if (> n 0)
+             (begin
+                (vector-set! sema 0 (- n 1))
+                (mutex-unlock! (vector-ref sema 1)))
+             (begin
+                (condition-variable-wait! (vector-ref sema 2) (vector-ref sema 1))
+                (mutex-unlock! (vector-ref sema 1))
+                (semaphore-wait! sema)))))
+   (define (semaphore-signal-by! sema increment)
+      (mutex-lock! (vector-ref sema 1))
+      (let ((n (+ (vector-ref sema 0) increment)))
+         (vector-set! sema 0 n)
+         (if (> n 0)
+             (condition-variable-broadcast! (vector-ref sema 2)))
+         (mutex-unlock! (vector-ref sema 1))))
+   (let ((sema (make-semaphore 10)))
+      (let ((t1 (thread-start! (make-thread
+                                (lambda ()
+                                   (semaphore-wait! sema)
+                                   (set! res (current-time))))))
+            (t2 (thread-start! (make-thread
+                                (lambda ()
+                                   (let loop ((n 10))
+                                      (if (> n 0)
+                                          (begin
+                                             (semaphore-signal-by! sema 1)
+                                             (thread-yield!)
+                                             (loop (- n 1))))))))))
+         (scheduler-start!)
+         res)))
+  @result{} 2
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function} thread-parameter ident
+Returns the value of the parameter @var{ident} in the current thread. If
+no value is bound to this parameter, @code{#f} is returned.
+
+A thread parameter is implemented by a chunk of memory specific to
+each thread. All threads are created with an empty set of parameters.
+@end deffn
+
+@deffn {Bigloo function} thread-parameter-set! ident value
+Associates a @var{value} to a parameter named @var{ident}.
+@end deffn
+
+@include fthread.texi
+@include pthread.texi
+

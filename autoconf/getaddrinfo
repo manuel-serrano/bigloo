@@ -1,0 +1,135 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/getaddrinfo                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Mon Jan 19 20:54:12 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the getaddrinfo in replacement of gethostbyname.       */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+solaris_lib="-lsocket -lnsl"
+mingw_lib="-lws2_32"
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      lib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    mingw is super clear                                             */
+#*---------------------------------------------------------------------*/
+if [ "$posixos" = "mingw32" ]; then
+  echo "-lws2_32" # -lwsock32 -lmswsock"
+  exit 0
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout $lib >/dev/null 2> /dev/null"
+compile_solaris="$cc $cflags $file.c -o $aout $solaris_lib >/dev/null 2> /dev/null"
+compile_mingw="$cc -D_MINGW_VER $cflags $file.c -o $aout $mingw_lib >/dev/null 2>&1"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <stdio.h>
+
+main( int argc, char *argv[] ) {
+   int status;
+   struct addrinfo hints;
+   struct addrinfo *res, *rp;       
+   char host[ 100 ];
+
+   hints.ai_family = AF_INET;
+   hints.ai_socktype = SOCK_STREAM;
+   hints.ai_protocol = 0;
+   hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
+
+   if( !(status = getaddrinfo( "www.google.com", 0L, &hints, &res )) ) {
+      for( rp = res; rp != NULL; rp = rp->ai_next ) {
+	 if( rp->ai_canonname ) printf( " canonname=%s\n", rp->ai_canonname );
+         printf( " ip=%s\n", inet_ntoa( ((struct sockaddr_in *)(rp->ai_addr))->sin_addr ) );
+      }
+   } else {
+      printf( "fail: %s\n", gai_strerror( status ) );
+   }
+
+   if( !(status = getnameinfo( ((struct sockaddr *)(res->ai_addr)),
+			       res->ai_addrlen,
+			       host, sizeof( host ), 0, 0, 0 )) ) {
+      printf( "host=%s\n", host );
+   }
+
+   freeaddrinfo( res ); 
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile 2> /dev/null; then
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   echo "1"
+   exit 0
+else
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   echo "0"
+   exit 1
+fi
+
+   
+
+
+

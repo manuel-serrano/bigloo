@@ -1,0 +1,3 @@
+This directory contains a simple example of BDL usage. It contains
+the source code of a program that accesses to the Bigloo compiler
+global symbols (functions, classes, variables, ...).

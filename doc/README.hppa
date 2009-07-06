@@ -1,0 +1,4 @@
+Configuring Bigloo on an HP-PA architecture requires the following
+special setting:
+
+  ./configure --ld=cc

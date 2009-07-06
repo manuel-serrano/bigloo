@@ -1,0 +1,3 @@
+The mail library contains an IMAP protocol implementation, a maildir API,
+and some other various tools for dealing with the format and encoding commonly
+used for mail transfert and mail composition.

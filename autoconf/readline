@@ -1,0 +1,188 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/readline                    */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Jan  3 10:02:57 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if readline exits. Return 1 or 0.                          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+readline=-lreadline
+readlineopt=
+termcap=-ltermcap
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --readline=*|-readline=*)
+      readline="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --readlineopt=*|-readlineopt=*)
+      readlineopt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --termcap=*|-termcap=*)
+      termcap="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout $readline >/dev/null 2> /dev/null"
+compilet="$cc $cflags $file.c -o $aout $readlineopt $termcap $readline $termcap >/dev/null 2> /dev/null"
+compilea="$cc $cflags $file.c -o $aout $readlineopt /usr/lib/readline.a >/dev/null 2> /dev/null"
+compileat="$cc $cflags $file.c -o $aout $readlineopt $termcap /usr/lib/readline.a $termcap >/dev/null 2> /dev/null"
+
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/errno.h>
+#include <readline/readline.h>
+
+char *command_generator( char *s, int x ) {
+   static char *tab[] = { "toto", "tutu", "tata" };
+   return tab[ x ];
+}
+
+int read_cmd_line( char *prompt ) {
+   char *line_read;
+   if( !(line_read = readline( prompt )) )
+      return 0;
+   if( line_read && *line_read )
+      add_history( line_read );
+   free( line_read );
+   return 1;
+}
+
+char *stub_command_generator( char *text, int state ) {
+   return command_generator( text, state );
+}
+
+static char **bdb_completion( char *text, int start, int end ) {
+   char **matches;
+   matches = (char **)NULL;
+   matches = completion_matches( rl_line_buffer, stub_command_generator );
+   return matches;
+}
+
+char **
+bdb_nofilename_completion() {
+   return NULL;
+}
+
+void initialize_readline() {
+   rl_completion_entry_function = (Function *)bdb_nofilename_completion;
+   rl_attempted_completion_function  = (CPPFunction *)bdb_completion;
+}
+
+int main( int argc, char *argv[] ) {
+   printf( "%d\n", read_cmd_line( argv[ 0 ] ) );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   if [ "$readlineopt " = " " ]; then
+      echo "$readline"
+   else
+      echo "$readlineopt $readline"
+   fi
+   exit 1
+else
+  if eval $compilet; then
+     \rm -f $file.*
+     rm -f $aout
+     rm -f $aout*
+     if [ "$readlineopt " = " " ]; then
+        echo "$termcap $readline $termcap"
+     else
+        echo "$readlineopt $termcap $readline $termcap"
+     fi
+     exit 1
+  else
+     if eval $compilea; then
+        \rm -f $file.*
+        rm -f $aout
+        rm -f $aout*
+        if [ "$readlineopt " = " " ]; then
+           echo "/usr/lib/readline.a"
+        else
+           echo "$readlineopt /usr/lib/readline.a"
+        fi
+        exit 1
+     else
+        if eval $compileat; then
+           \rm -f $file.*
+           rm -f $aout
+           rm -f $aout*
+           if [ "$readlineopt " = " " ]; then
+              echo "$termcap /usr/lib/readline.a $termcap"
+           else
+              echo "$readlineopt $termcap /usr/lib/readline.a $termcap"
+           fi
+           exit 1
+        else
+           \rm -f $file.*
+           rm -f $aout
+           rm -f $aout*
+           exit 0
+        fi
+     fi
+  fi
+fi
+
+   
+
+
+

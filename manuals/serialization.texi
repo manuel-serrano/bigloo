@@ -1,0 +1,154 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/serialization.texi           @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Feb 25 10:47:36 2002                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2002 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Serialization                                                    @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Serialization                                                    @c
+@c ------------------------------------------------------------------- @c
+@node Serialization, Bit Manipulation, Input and Output, Standard Library
+@comment  node-name,  next,  previous,  up
+@section Serialization
+@cindex object dumping
+@cindex Serialization
+
+@deffn {bigloo procedure} string->obj string
+This function converts a @var{string} which has been produced by
+@code{obj->string} into a Bigloo object.
+@end deffn
+
+@deffn {bigloo procedure} obj->string object
+This function converts into a string @emph{any} Bigloo @var{object} 
+which does not contain a procedure. 
+@end deffn
+
+The implementation of the last two functions ensures that for every
+Bigloo  object @code{obj} (containing no procedure), the expression:
+
+@smalllisp
+(equal? obj (string->obj (obj->string obj)))
+   @result{} #t
+@end smalllisp
+
+@deffn {bigloo procedure} binary-port? obj
+@deffnx {bigloo procedure} open-output-binary-file file-name
+@deffnx {bigloo procedure} append-output-binary-file file-name
+@deffnx {bigloo procedure} open-input-binary-file file-name
+@deffnx {bigloo procedure} close-binary-port binary-port
+@deffnx {bigloo procedure} flush-binary-port binary-port
+@deffnx {bigloo procedure} input-obj binary-port
+@deffnx {bigloo procedure} output-obj binary-port obj
+Bigloo allows Scheme objects to be dumped into, and restored from, files.
+These operations are performed by the previous functions. The dump and
+the restore use the two functions @code{obj->string} and 
+@code{string->obj}.
+
+It is also possible to use a binary file as a flat character file. This can
+be done by the means of @code{output-char}, @code{input-char}, 
+@code{output-string}, and @code{input-string} functions.
+@end deffn
+
+@deffn {bigloo procedure} input-char binary-port
+@deffnx {bigloo procedure} output-char binary-port
+The function @code{input-char} reads a single character from a 
+@var{binary-port}. It returns the read character or the @code{end-of-file} 
+object. The function @code{output-char} writes a character into a 
+@var{binary-port}.
+@end deffn
+
+@deffn {bigloo procedure} input-string binary-port len
+@deffnx {bigloo procedure} output-string binary-port
+The function @code{input-string} reads a string from a @var{binary-port} of
+maximum length @var{len}. It returns a newly allocated string whose length
+is possibly smaller than @var{len}. The function @code{output-string} writes 
+a string into a @var{binary-port}.
+@end deffn
+
+@deffn {bigloo procedure} input-fill-string! binary-port string
+Fills a string with characters read from @var{binary-port} with at most
+the length of @var{string}. The function returns the number of filled 
+characters.
+@end deffn
+
+@deffn {bigloo procedure} register-procedure-serialization! serializer unserializer
+@deffnx {bigloo procedure} register-custom-serialization! ident serializer unserializer
+@deffnx {bigloo procedure} register-process-serialization! serializer unserializer
+@deffnx {bigloo procedure} register-opaque-serialization! serializer unserializer
+There is no existing portable method to dump and restore a procedure. Thus,
+if @code{obj->string} is passed a procedure, it will emit an error message.
+Sometime, using strict restrictions, it may be convenient to use an 
+ad-hoc framework to serialize and unserialize procedures. User may
+specify there own procedure serializer and unserializer. This is the
+role of @code{register-procedure-serialization!}. The argument
+@var{serializer} is a procedure of one argument, converting a procedure
+into a characters strings. The argument @var{unserializer} is a procedure
+of one argument, converting a characters string into a procedure. It belongs
+to the user to provide correct serializer and unserializer.
+
+Here is an example of procedure serializer and unserializer that 
+may be correct under some Unix platform:
+
+@smalllisp
+(module foo
+   (extern (macro %sprintf::int (::string ::string ::procedure) "sprintf")))
+
+(define (string->procedure str)
+   (pragma "(obj_t)(strtoul(BSTRING_TO_STRING($1), 0, 16))" str))
+
+(define (procedure->string proc)
+   (let ((item (make-string 10)))
+      (%sprintf item "#p%lx" proc)
+      item))
+
+(register-procedure-serialization! procedure->string string->procedure)
+
+(let ((x 4))
+   (let ((obj (cons "toto" (lambda (y) (+ x y)))))
+      (let ((nobj (string->obj (obj->string obj))))
+	 (print ((cdr nobj) 5)))))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} register-class-serialization! class serializer unserializer
+Register a serializer/unserializer for a class. Subclasses of @var{class}
+inherit this serializer.
+
+@smalllisp
+(module class-serialization-example
+   (static (class point::object (x (default 10)) (y (default 20)))))
+
+(register-class-serialization! point
+			       (lambda (o)
+				  (with-access::point o (x y)
+				     (cons x y)))
+			       (lambda (l)
+				  (instantiate::point
+				     (x (car l))
+				     (y (cdr l)))))
+
+(let ((o (instantiate::point)))
+   (let ((s (obj->string (list o o))))
+      (print (string-for-read s))
+      (let ((l (string->obj s)))
+	 (print l)
+	 (eq? (car l) (cadr l))))) @result{} #t
+@end smalllisp
+@end deffn
+
+
+@deffn {bigloo procedure} get-procedure-serialization 
+@deffnx {bigloo procedure} get-custom-serialization ident
+@deffnx {bigloo procedure} get-process-serialization 
+@deffnx {bigloo procedure} get-opaque-serialization 
+@deffnx {bigloo procedure} get-class-serialization class
+Returns the a multiple-values whose first element is the current procedure 
+serializer and whose second element is the current procedure unserializer.
+If no serializer/unserializer is defined, these procedures return
+the values @code{#f #f}.
+@end deffn

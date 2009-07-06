@@ -1,0 +1,11 @@
+** To compile that program:
+
+  javac -classpath c:\bgl<VERSION>\lib\bigloo\<VERSION>\bigloo_u.zip Utils.java
+  bigloo.bat -O -unsafe awt.scm -o awt.bat
+
+  Where <VERSION> is your Bigloo version (e.g. 24a).
+
+** To run the program
+
+  awt
+

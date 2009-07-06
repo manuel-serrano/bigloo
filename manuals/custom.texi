@@ -1,0 +1,53 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/custom.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Wed Aug  7 21:01:03 2002                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2002 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Custom types.                                                    @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Libraries                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Extending the Runtime System, SRFIs, Bigloo Libraries, Top
+@comment  node-name,  next,  previous,  up
+@chapter Extending the Runtime System
+@cindex Custom types
+
+@emph{Custom Types} types are not documented yet. This facility enables
+extension to the standard Bigloo runtime system. The current implementation
+of custom types is subject to change. It will be documented in coming
+releases.
+
+@c  @emph{Custom Types} enable extensions to the standard Bigloo runtime  @c
+@c  system.  @emph{Custom Types} are primitive Bigloo types as all the  @c
+@c  native Bigloo types (such as*}ode{pair}, @code{procedure}, ...). For  @c
+@c  the Scheme point of view @emph{Custom Types} are regular native types.  @c
+@c  @emph{Custom Types} can be defined in the user C code or Java code.  @c
+@c                                                                     @c
+@c  {*-- Custom Types ---------------------------------------------------*}  @c
+@c  @section Custom Types                                              @c
+@c                                                                     @c
+@c  @subsection Creating a Custom Type                                 @c
+@c                                                                     @c
+@c  @subsection Configuring a Custom Type                              @c
+@c                                                                     @c
+@c  @subsection Custom Types vs Foreign Types                          @c
+@c                                                                     @c
+@c  The Bigloo runtime system supports @emph{Foreign Types}. These are  @c
+@c  either defined in*}ode{extern} or @code{java} clauses. In some     @c
+@c  situations one may wonder when it is appropriate to create a       @c
+@c  @emph{Custom Type} instead of a @emph{Foreign Type}. The rule of thumb  @c
+@c  is that @emph{Foreign Types} are sufficient when the Scheme code is  @c
+@c  not directly manipulating (reading, printing, storing) the foreign  @c
+@c  values. When a foreign value only transit trough some Scheme       @c
+@c  functions, @emph{Foreign Types} are sufficient. On the other hand,  @c
+@c  when the Scheme treatment of these foreign values become more      @c
+@c  important, it is, in general, the time to consider @emph{Custom    @c
+@c  Types}.                                                            @c
+@c                                                                     @c
+@c  {*-- An example of extension ----------------------------------------*}  @c
+@c  @section An example of runtime system extension                    @c

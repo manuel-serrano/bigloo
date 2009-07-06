@@ -1,0 +1,204 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/process.texi                 @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Mon Jun 15 11:01:07 1998                          @c
+@c    Last change :  Mon Nov 12 15:09:45 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Process support                                                  @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Process support                                                  @c
+@c ------------------------------------------------------------------- @c
+@node Process, Socket, Files, System Programming
+@comment  node-name,  next,  previous,  up
+@subsection Process support
+@cindex Process support
+@cindex process
+
+Bigloo provides access to Unix-like processes as first class
+objects. The implementation and this documentation are to a great
+extent copies of the STk [Gallesio95] process
+support. Basically, a process contains four informations: the standard
+Unix process identification (aka PID) and the three standard files of
+the process.
+
+@deffn {bigloo procedure} run-process command arg@dots{}
+
+@code{run-process} creates a new process and run the executable specified 
+in @var{command}. The @var{arg} correspond to the command line arguments. 
+When is process completes its execution, non pipe associated ports are
+automatically closed. Pipe associated ports have to be explicitly closed
+by the program. The following values of @var{p} have a special meaning:
+ 
+@itemize @bullet
+@item @code{input:} permits to redirect the standard input file of the process.
+Redirection can come from a file or from a pipe. To redirect the standard
+input from a file, the name of this file must be specified after @code{input:}.
+Use the special keyword @code{pipe:} to redirect the standard input 
+from a pipe.
+
+@item @code{output:} permits to redirect the standard output file of the
+process.  Redirection can go to a file or to a pipe. To redirect the
+standard output to a file, the name of this file must be specified
+after @code{output:}. Use the special keyword @code{pipe:} to redirect the
+standard output to a pipe.
+
+@item @code{error:} permits to redirect the standard error file of the
+process.  Redirection can go to a file or to a pipe. To redirect the
+standard error to a file, the name of this file must be specified
+after @code{error:}. Use the special keyword @code{pipe:} to redirect the
+standard error to a pipe.
+
+@item @code{wait:} must be followed by a boolean value. This value
+specifies if the process must be ran asynchronously or not. By
+default, the process is run asynchronously (i.e. @code{wait:} if 
+@code{#f}).
+
+@item @code{host:} must be followed by a string. This string represents the
+name of the machine on which the @var{command} must be executed. This
+option uses the external command @code{rsh}. The shell variable @code{PATH} 
+must be correctly set for accessing it without specifying its absolute
+path.
+
+@item @code{fork:} must be followed by a boolean value. This value
+specifies if the process must substitute the current execution. That is,
+if the value is @code{#t} a new process is spawned otherwise, the current
+execution is stopped and replaced by the execution of @code{command}. It
+defaults to @code{#t}.
+
+@item @code{env:} must be followed by a string of
+the form @code{@var{var}=@var{val}}. This will bound an environment variable
+in the spawned process. A @code{run-process} command may contain several 
+@code{env:} arguments. The current variables of the current process are
+also passed to the new process.
+@end itemize
+
+The following example launches a process which execute the Unix command 
+@code{ls}
+with the arguments @code{-l} and @code{/bin}. The lines printed by this command
+are stored in the file @code{tmp/X}.
+
+@smalllisp
+(run-process "ls" "-l" "/bin" output: "/tmp/X")
+@end smalllisp
+
+The same example with a pipe for output:
+
+@smalllisp
+(let* ((proc (run-process "ls" "-l" "/bin" output: pipe:))
+       (port (process-output-port proc)))
+   (let loop ((line (read-line port)))
+      (if (eof-object? line)
+          (close-input-port port)
+          (begin
+             (print line)
+             (loop (read-line port))))))
+@end smalllisp
+
+One should note that the same program can be written with explicit 
+process handling but making use of the @code{|} notation for 
+@code{open-input-file}.
+
+@smalllisp
+(let ((port (open-input-file "| ls -l /bin")))
+   (let loop ((line (read-line port)))
+      (if (eof-object? line)
+          (close-input-port port)
+          (begin
+             (print line)
+             (loop (read-line port))))))
+@end smalllisp
+
+Both input and output ports can be piped:
+
+@smalllisp
+(let* ((proc (run-process "/usr/bin/dc" output: pipe: input: pipe:)) 
+       (inport (process-input-port proc))
+       (port (process-output-port proc)))
+   (fprint inport "16 o")
+   (fprint inport "16 i")
+   (fprint inport "10")
+   (fprint inport "10")
+   (fprint inport "+ p")
+   (flush-output-port inport)
+   (let loop ((line (read-line port)))
+      (if (eof-object? line)
+	  (close-input-port port)
+	  (begin
+	     (print line)
+	     (loop (read-line port))))))   @print{} 20
+@end smalllisp
+
+@emph{Note:} The call to @code{flush-output-port} is mandatory in order
+to get the @code{dc} process to get its input characters.
+
+@emph{Note:} Thanks to Todd Dukes for the example and the suggestion
+of including it this documentation.
+@end deffn
+
+@deffn {bigloo procedure} process? obj
+Returns @code{#t} if @var{obj} is a process, otherwise returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} process-alive? process
+Returns @code{#t} if @var{process} is currently running, otherwise 
+returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} close-process-ports command arg@dots{}
+Close the three ports associated with a process. In general the ports should
+not be closed before the process is terminated.
+@end deffn
+
+@deffn {bigloo procedure} process-pid process
+Returns an integer value which represents the Unix identification (PID) of
+the @var{process}.
+@end deffn
+ 
+@deffn {bigloo procedure} process-input-port process
+@deffnx {bigloo procedure} process-output-port process
+@deffnx {bigloo procedure} process-error-port process
+Return the file port associated to the standard input, output and
+error of @var{process} otherwise returns @code{#f}. 
+Note that the returned port is opened for reading when calling 
+@code{process-output-port} or @code{process-error-port}.
+It is opened for writing when calling @code{process-input-port}.
+@end deffn
+
+@deffn {bigloo procedure} process-wait process
+This function stops the current process until @var{process} completion.
+This function returns @code{#f} when @var{process} is already terminated. It
+returns @code{#t} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} process-exit-status process
+This function returns the exit status of @var{process} if it is has
+finished its execution. It returns @code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} process-send-signal process s
+Sends the signal whose integer value is @var{s} to @var{process}. Value
+of @var{s} is system dependent. The result of @code{process-send-signal}
+is undefined.
+@end deffn
+
+@deffn {bigloo procedure} process-kill process
+This function brutally kills @var{process}. The result of @code{process-kill}
+is undefined. 
+@end deffn
+
+@deffn {bigloo procedure} process-stop process
+@deffnx {bigloo procedure} process-continue process
+Those procedures are only available on systems that support job control. 
+The function @code{process-stop} stops the execution of @var{process} and 
+@code{process-continue} resumes its execution.
+@end deffn
+
+@deffn {bigloo procedure} process-list
+This function returns the list of processes which are currently running
+(i.e. alive).
+@end deffn
+
+

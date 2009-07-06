@@ -1,0 +1,109 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/limbs                       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Jose Romildo                                      */
+#*    Creation    :  Sat Nov 11 13:27:23 1995                          */
+#*    Last change :  Tue Mar 25 17:17:55 2008 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Detect if current C complier support long long integer.          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+cflags=
+tmp=/tmp
+user=bigloo
+type=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --type=*|-type=*)
+      type="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest.$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    Default setting                                                  */
+#*---------------------------------------------------------------------*/
+if [ "$type " = " " ]; then
+  type="int"
+fi
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+run="$aout 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#include <limits.h>
+#include <gmp.h>
+EOF
+echo "#define BGL_LONGLONG_BITS (sizeof($type)*CHAR_BIT)" >> $file.c
+cat >> $file.c <<EOF
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+   unsigned int needed_limbs;
+   if (BGL_LONGLONG_BITS % GMP_NUMB_BITS)
+      needed_limbs = BGL_LONGLONG_BITS / GMP_NUMB_BITS + 1;
+   else
+      needed_limbs = BGL_LONGLONG_BITS / GMP_NUMB_BITS;
+   printf("%u\n", needed_limbs);
+   return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+   \rm -f $file.*
+   result=`$run`
+   rm -f $aout
+   rm -f $aout*
+   echo "$result"
+else
+   \rm -f $file.*
+   echo ""
+fi

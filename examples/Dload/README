@@ -1,0 +1,12 @@
+An example of dymamic loading.
+
+Try the following:
+
+make all
+make c-test 
+make jvm-test
+
+On a Solaris box it might be necessary to add the following Bigloo option
+to the Makefile:
+
+	-ldopt "-export-dynamic"

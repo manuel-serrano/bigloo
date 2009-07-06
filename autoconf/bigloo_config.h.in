@@ -1,0 +1,492 @@
+/* @CONFIGURE@ */
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/autoconf/bigloo_config.h.in          */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Thu Mar 16 18:48:21 1995                          */
+/*    Last change :  Wed May  6 16:23:35 2009 (serrano)                */
+/*    -------------------------------------------------------------    */
+/*    Bigloo configuration stuff                                       */
+/*=====================================================================*/
+#ifndef BIGLOO_CONFIG_H
+#define BIGLOO_CONFIG_H
+
+#define @BGL_RELEASE@
+
+#undef BGL_RELEASE_NUMBER
+#define BGL_RELEASE_NUMBER "@BGL_RELEASE_NUMBER@"
+
+#undef BGL_RELEASE_BRANCH
+#define BGL_RELEASE_BRANCH @BGL_RELEASE_BRANCH@
+
+#undef BGL_HOMEURL
+#define BGL_HOMEURL "@BGL_HOMEURL@"
+
+#undef BGL_SPECIFIC_VERSION
+#define BGL_SPECIFIC_VERSION "@BGL_SPECIFIC_VERSION@"
+
+#undef BGL_DEFAULT_BACK_END
+#define BGL_DEFAULT_BACK_END "@BGL_DEFAULT_BACK_END@"
+
+#undef BGL_GC_VERSION
+#define BGL_GC_VERSION @GC_VERSION@
+
+#undef BGL_DEFAULT_A_OUT
+#define BGL_DEFAULT_A_OUT "@BGL_DEFAULT_A_OUT@"
+
+#undef BGL_DEFAULT_A_BAT
+#define BGL_DEFAULT_A_BAT "@BGL_DEFAULT_A_BAT@"
+
+#undef BGL_ISOC99
+#define BGL_ISOC99 @BGL_ISOC99@
+
+#undef BGL_CCDIV0
+#define BGL_CCDIV0 @BGL_CCDIV0@
+
+#undef BGL_HAVE_STDINT
+#define BGL_HAVE_STDINT @HAVE_STDINT@
+
+#undef BGL_HAVE_STDLIBINT
+#define BGL_HAVE_STDLIBINT @HAVE_STDLIBINT@
+
+#undef BGL_HAVE_UNISTDINT
+#define BGL_HAVE_UNISTDINT @HAVE_UNISTDINT@
+
+#undef BGL_HAVE_GETUID
+#define BGL_HAVE_GETUID @HAVE_GETUID@
+
+#undef BGL_HAVE_GETPROTOENT
+#define BGL_HAVE_GETPROTOENT @HAVE_GETPROTOENT@
+
+#undef STACK_GROWS_DOWN
+#define STACK_GROWS_DOWN @STACK_GROWS_DOWN@
+
+#undef PTR_ALIGNMENT
+#define PTR_ALIGNMENT @PTR_ALIGNMENT@
+
+#undef HAVE_BCOPY
+#define HAVE_BCOPY @HAVE_BCOPY@
+
+#undef NB_WINDOW_REGISTER
+#define NB_WINDOW_REGISTER @NB_WINDOW_REGISTER@
+
+#undef HAVE_SIGPIPE
+#define HAVE_SIGPIPE @HAVE_SIGPIPE@
+
+#undef HAVE_SIGSETMASK
+#define HAVE_SIGSETMASK @HAVE_SIGSETMASK@
+
+#undef HAVE_SIGPROCMASK
+#define HAVE_SIGPROCMASK @HAVE_SIGPROCMASK@
+
+#undef HAVE_ALLOCA
+#define HAVE_ALLOCA @HAVE_ALLOCA@
+
+#undef HAVE_ALLOCAH
+#define HAVE_ALLOCAH @HAVE_ALLOCAH@
+
+#undef HAVE_MMAP
+#define HAVE_MMAP @HAVE_MMAP@
+
+#undef HAVE_GETCWD
+#define HAVE_GETCWD @HAVE_GETCWD@
+
+#undef HAVE_GETWD
+#define HAVE_GETWD @HAVE_GETWD@
+
+#undef CONSTANT_ALIGNED
+#define CONSTANT_ALIGNED @CONSTANT_ALIGNED@
+
+#undef BGL_BIG_ENDIAN
+#define BGL_BIG_ENDIAN @BGL_BIG_ENDIAN@
+
+#undef HAVE_PIPE
+#define HAVE_PIPE @HAVE_PIPE@
+
+#define BGL_HAVE_LABS @BGL_HAVE_LABS@
+#define BGL_LABS @BGL_LABS@
+
+#undef BGL_LONGLONG_T
+#define BGL_LONGLONG_T @BGL_LONGLONG_T@
+#define BGL_LONG_LIMBS @BGL_LONG_LIMBS@
+#define BGL_LONGLONG_LIMBS @BGL_LONGLONG_LIMBS@
+#define C_LONG_SIGN_BIT @C_LONG_SIGN_BIT@
+#define C_ELONG_SIGN_BIT @C_ELONG_SIGN_BIT@
+#define C_LLONG_SIGN_BIT @C_LLONG_SIGN_BIT@
+#define BGL_HAVE_LLABS @BGL_HAVE_LLABS@
+#define BGL_HAVE_LONGLONG @BGL_HAVE_LONGLONG@
+#define BGL_LLABS @BGL_LLABS@
+#define BGL_HAVE_STRTOLL @BGL_HAVE_STRTOLL@
+#define BGL_STRTOLL(_1,_2,_3) (@BGL_STRTOLL@(_1,_2,_3))
+#define BGL_HAVE_STRTOULL @BGL_HAVE_STRTOULL@
+#define BGL_STRTOULL(_1,_2,_3) (@BGL_STRTOULL@(_1,_2,_3))
+
+#undef BGL_HAVE_GMP
+#define BGL_HAVE_GMP @BGL_HAVE_GMP@
+
+#undef HAVE_SIGCHLD
+#define HAVE_SIGCHLD @HAVE_SIGCHLD@
+
+#undef HAVE_SIGACTION
+#define HAVE_SIGACTION @HAVE_SIGACTION@
+
+#undef BGL_HAVE_SELECT
+#define BGL_HAVE_SELECT @BGL_HAVE_SELECT@
+
+#undef BGL_HAVE_FCNTL
+#define BGL_HAVE_FCNTL @BGL_HAVE_FCNTL@
+
+#undef HAVE_TERMIO
+#define HAVE_TERMIO @HAVE_TERMIO@
+
+#undef HAVE_TERMIOS
+#define HAVE_TERMIOS @HAVE_TERMIOS@
+
+#undef POSIX_FILE_OPS
+#define POSIX_FILE_OPS @POSIX_FILE_OPS@
+
+#define BGL_SENDFILE_NO 1
+#define BGL_SENDFILE_LINUX 2
+#define BGL_SENDFILE_BSD 3
+
+#undef BGL_SENDFILE_BRAND
+#define BGL_SENDFILE_BRAND @BGL_SENDFILE_BRAND@
+
+#undef BGL_HAVE_SENDFILE
+#define BGL_HAVE_SENDFILE (BGL_SENDFILE_BRAND != BGL_SENDFILE_NO)
+
+#undef BGL_SENDFILE_REQUIRE_INPUT_FILE
+#define BGL_SENDFILE_REQUIRE_INPUT_FILE @BGL_SENDFILE_REQUIRE_INPUT_FILE@
+
+#undef BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET
+#define BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET @BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET@
+
+#undef BGL_NANOSLEEP
+#define BGL_NANOSLEEP @BGL_NANOSLEEP@
+
+#undef BGL_SLEEP
+#define BGL_SLEEP @BGL_SLEEP@
+
+#undef BGL_TIMEZONE
+#define BGL_TIMEZONE @BGL_TIMEZONE@
+
+#undef BGL_HAVE_TIMEVAL
+#define BGL_HAVE_TIMEVAL @BGL_HAVE_TIMEVAL@
+
+#undef HAVE_SHARED_LIBRARY
+#define HAVE_SHARED_LIBRARY @HAVE_SHARED_LIBRARY@
+
+#undef HAVE_DLOPEN
+#define HAVE_DLOPEN @HAVE_DLOPEN@
+
+#define DLOPEN_LD_OPT "@DLOPEN_LD_OPT@"
+
+#undef BGL_HAVE_SOCKLEN
+#define BGL_HAVE_SOCKLEN @HAVE_SOCKLEN@
+
+#undef BGL_HAVE_SOCKET_TCP_NODELAY
+#define BGL_HAVE_SOCKET_TCP_NODELAY @BGL_HAVE_SOCKET_TCP_NODELAY@
+
+#undef BGL_HAVE_SOCKET_TCP_CORK
+#define BGL_HAVE_SOCKET_TCP_CORK @BGL_HAVE_SOCKET_TCP_CORK@
+
+#undef BGL_HAVE_SOCKET_TCP_QUICKACK
+#define BGL_HAVE_SOCKET_TCP_QUICKACK @BGL_HAVE_SOCKET_TCP_QUICKACK@
+
+#undef BGL_HAVE_INET_ATON
+#define BGL_HAVE_INET_ATON @BGL_HAVE_INET_ATON@
+
+#undef BGL_HAVE_INET_PTON
+#define BGL_HAVE_INET_PTON @BGL_HAVE_INET_PTON@
+
+#undef BGL_HAVE_UNIX_SOCKET
+#define BGL_HAVE_UNIX_SOCKET @BGL_HAVE_UNIX_SOCKET@
+
+#undef BGL_HAVE_GETADDRINFO
+#define BGL_HAVE_GETADDRINFO @BGL_HAVE_GETADDRINFO@
+
+#undef BGL_AUTO_FINALIZER
+#define BGL_AUTO_FINALIZER @BGL_AUTO_FINALIZER@
+
+#undef SHELL
+#define SHELL "@SHELL@"
+
+#undef BGL_SHELL_MV
+#define BGL_SHELL_MV "@SHELL_MV@"
+
+#undef BGL_SHELL_RM
+#define BGL_SHELL_RM "@SHELL_RM@"
+
+#undef C_COMPILER_STYLE
+#define C_COMPILER_STYLE "@C_COMPILER_STYLE@"
+
+#undef C_COMPILER
+#define C_COMPILER "@C_COMPILER@"
+
+#undef C_FLAGS
+#define C_FLAGS "@C_FLAGS@"
+
+#undef C_COMPILER_O_OPTION
+#define C_COMPILER_O_OPTION "@C_COMPILER_O_OPTION@"
+
+#undef C_COMPILER_DEBUG_OPTION
+#define C_COMPILER_DEBUG_OPTION "@C_COMPILER_DEBUG_OPTION@"
+
+#undef C_OBJECT_FILE_EXTENSION
+#define C_OBJECT_FILE_EXTENSION "@C_OBJECT_FILE_EXTENSION@"
+
+#undef C_COMPILER_OPTIM_FLAGS
+#define C_COMPILER_OPTIM_FLAGS "@C_COMPILER_OPTIM_FLAGS@"
+
+#undef C_STRIP_FLAGS
+#define C_STRIP_FLAGS "@C_STRIP_FLAGS@"
+
+#undef C_LINKER_STYLE
+#define C_LINKER_STYLE "@C_LINKER_STYLE@"
+
+#undef C_LINKER_O_OPTION
+#define C_LINKER_O_OPTION "@C_LINKER_O_OPTION@"
+
+#undef C_LINKER_DEBUG_OPTION
+#define C_LINKER_DEBUG_OPTION "@C_LINKER_DEBUG_OPTION@"
+
+#undef C_LINKER_OPTIM_FLAGS
+#define C_LINKER_OPTIM_FLAGS "@C_LINKER_OPTIM_FLAGS@"
+
+#undef C_PROFILE_FLAGS
+#define C_PROFILE_FLAGS "@C_PROFILE_FLAGS@"
+
+#undef C_STRING_SPLIT
+#define C_STRING_SPLIT @C_STRING_SPLIT@
+
+#undef BGL_LD_LIBRARY_DIR
+#define BGL_LD_LIBRARY_DIR "@BGL_LD_LIBRARY_DIR@"
+
+#undef LIBRARY_DIRECTORY
+#define LIBRARY_DIRECTORY "@LIBRARY_DIRECTORY@"
+
+#undef BGL_NON_CUSTOM_GC_DIR
+#define BGL_NON_CUSTOM_GC_DIR "@BGL_NON_CUSTOM_GC_DIR@"
+
+#undef BGL_GC_LIBRARY
+#define BGL_GC_LIBRARY "@BGL_GC_LIBRARY@"
+
+#undef BGL_GC_CUSTOM
+#define BGL_GC_CUSTOM @BGL_GC_CUSTOM@
+
+#undef ZIP_DIRECTORY
+#define ZIP_DIRECTORY "@ZIP_DIRECTORY@"
+
+#undef DLL_DIRECTORY
+#define DLL_DIRECTORY "@DLL_DIRECTORY@"
+
+#undef USER_LIBRARIES
+#define USER_LIBRARIES "@USER_LIBRARIES@"
+
+#undef C_BEAUTIFIER
+#define C_BEAUTIFIER "@C_BEAUTIFIER@"
+
+#undef DIRNAME_CMD
+#define DIRNAME_CMD "@DIRNAME_CMD@"
+
+#undef LIBRARY_BASE_NAME
+#define LIBRARY_BASE_NAME "@LIBRARY_BASE_NAME@"
+
+#undef DOUBLE_PRECISION
+#define DOUBLE_PRECISION @DOUBLE_PRECISION@
+
+#undef ADDITIONAL_STATIC_LINK_OPTION
+#define ADDITIONAL_STATIC_LINK_OPTION "@ADDITIONAL_STATIC_LINK_OPTION@"
+
+#undef ADDITIONAL_SHARED_LINK_OPTION
+#define ADDITIONAL_SHARED_LINK_OPTION "@ADDITIONAL_SHARED_LINK_OPTION@"
+
+#undef BGL_HAVE_BIGLOO_ABORT
+#define BGL_HAVE_BIGLOO_ABORT @BGL_HAVE_BIGLOO_ABORT@
+
+#undef BGL_HEAP_DEBUG_COPT
+#define BGL_HEAP_DEBUG_COPT "@BGL_HEAP_DEBUG_COPT@"
+
+#undef BGL_HAVE_BDB
+#define BGL_HAVE_BDB @BGL_HAVE_BDB@
+
+#undef BGL_JAVA
+#define BGL_JAVA "@BGL_JAVA@"
+
+#undef BGL_JAVA_OPT
+#define BGL_JAVA_OPT "@BGL_JAVA_OPT@"
+
+#undef BGL_JAVA_VOPT
+#define BGL_JAVA_VOPT "@BGL_JAVA_VOPT@"
+
+#undef BGL_JAVA_SHELL
+#define BGL_JAVA_SHELL "@BGL_JAVA_SHELL@"
+
+#undef BGL_JAR
+#define BGL_JAR "@BGL_JAR@"
+
+#undef BGL_DOTNET_LD
+#define BGL_DOTNET_LD "@BGL_DOTNET_LD@"
+
+#undef BGL_DOTNET_LD_STYLE
+#define BGL_DOTNET_LD_STYLE "@BGL_DOTNET_LD_STYLE@"
+
+#undef BGL_DOTNET_CLR
+#define BGL_DOTNET_CLR "@BGL_DOTNET_CLR@"
+
+#undef BGL_DOTNET_CLR_STYLE
+#define BGL_DOTNET_CLR_STYLE "@BGL_DOTNET_CLR_STYLE@"
+
+#undef BGL_DOTNET_CLR_OPT
+#define BGL_DOTNET_CLR_OPT "@BGL_DOTNET_CLR_OPT@"
+
+#undef BGL_DOTNET_SHELL
+#define BGL_DOTNET_SHELL "@BGL_DOTNET_SHELL@"
+
+#undef BGL_DOTNET_ASM
+#define BGL_DOTNET_ASM "@BGL_DOTNET_ASM@"
+
+#undef BGL_IMPORT
+#define BGL_IMPORT @BGL_IMPORT@
+
+#undef BGL_EXPORTED_DECL
+#define BGL_EXPORTED_DECL @BGL_EXPORTED_DECL@
+
+#undef BGL_EXPORTED_DEF
+#define BGL_EXPORTED_DEF @BGL_EXPORTED_DEF@
+
+#undef BGL_RUNTIME_DECL
+#define BGL_RUNTIME_DECL @BGL_RUNTIME_DECL@
+
+#undef BGL_RUNTIME_DEF
+#define BGL_RUNTIME_DEF @BGL_RUNTIME_DEF@
+
+#define OS_CLASS "@OS_CLASS@"
+#define OS_NAME "@OS_NAME@"
+#define OS_ARCH "@OS_ARCH@"
+#define OS_VERSION "@OS_VERSION@"
+#define OS_TMP "@OS_TMP@"
+#define OS_CHARSET "@OS_CHARSET@"
+#define FILE_SEPARATOR '@FILE_SEPARATOR@'
+#define PATH_SEPARATOR '@PATH_SEPARATOR@'
+#define STATIC_LIB_SUFFIX "@STATIC_LIB_SUFFIX@"
+#define SHARED_LIB_SUFFIX "@SHARED_LIB_SUFFIX@"
+#define UCS2_DISPLAYABLE @UCS2_DISPLAYABLE@
+
+#define BGL_NO_GC 1
+#define BGL_BOEHM_GC 2
+
+#undef BGL_GC
+#define BGL_GC BGL_BOEHM_GC
+
+#define BGL_GC_HAVE_BLOCKING @GC_HAVE_BLOCKING@
+#define BGL_GC_HAVE_DO_BLOCKING @GC_HAVE_DO_BLOCKING@
+
+#define BGL_HAVE_MUTEX_TIMEDLOCK @PTHREAD_HAVE_TIMEDLOCK@
+
+#define BGL_HAS_THREAD_LOCALSTORAGE @BGL_HAS_THREAD_LOCALSTORAGE@
+
+#define BGL_THREAD_DECL @BGL_THREAD_DECL@
+
+/*---------------------------------------------------------------------*/
+/*    DNS caching                                                      */
+/*---------------------------------------------------------------------*/
+#define BGL_DNS_CACHE @DNS_CACHE@
+
+/*---------------------------------------------------------------------*/
+/*    Machine dependent declarations                                   */
+/*---------------------------------------------------------------------*/
+#if( !defined( SIGBUS ) && defined( SIGSEGV ) )
+#  define SIGBUS SIGSEGV
+#endif
+
+#if defined( sony_news )
+#  include <news/machparam.h>
+#endif
+
+#if defined( _MSC_VER ) || defined( _MINGW_VER )
+#  include <direct.h>
+#  include <io.h>
+#  include <string.h>
+#  define chdir _chdir
+/* !!!!! PROBABLY NOT PORTABLE !!!!! */
+#  define chmod _chmod                            
+#  define execl _execl
+#  define getcwd _getcwd
+/* SECOND ARG = UNIX MODE to make directory 0700 --> OWNER RWX GROUP --- OTHERS --- */
+#  define mkdir( a, b ) _mkdir( (a) )
+#  define rmdir _rmdir
+#endif
+
+#if defined( _MSC_VER )
+#  define strtoll strtol
+#  define strtoull strtoul
+#  define alloca _alloca
+#endif
+
+#if defined( _MINGW_VER )
+#  include <malloc.h>
+#  include <process.h>
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    bcopy                                                            */
+/*---------------------------------------------------------------------*/
+#if( !HAVE_BCOPY )
+#  define bcopy( _src_, _dst_, _len_ ) memcpy( _dst_, _src_, _len_ )
+#  define bzero( _dest_, _len_ ) memset( _dest_, 0, _len_ )
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    sigsetmask                                                       */
+/*---------------------------------------------------------------------*/
+#if( HAVE_SIGPROCMASK )
+#  define BGL_SIGSETMASK( _int_ ) bgl_sigprocmask( _int_ )
+#else
+#  if( HAVE_SIGSETMASK )
+#    define BGL_SIGSETMASK( _int_ ) sigsetmask( _int_ )
+#  else
+#    define BGL_SIGSETMASK( _int_ )
+#  endif
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    getcwd                                                           */
+/*---------------------------------------------------------------------*/
+#if( !HAVE_GETCWD )
+#  if( HAVE_GETWD )
+#    define getcwd( _path_, _int_ ) getwd( _path_ )
+#  else
+#    define getcwd( _path_, _int_ ) ((char *)getenv( "PWD" ))
+#  endif
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    The allocations.                                                 */
+/*---------------------------------------------------------------------*/
+#if( !HAVE_ALLOCA )
+#  define alloca( sz ) GC_MALLOC( sz )
+#else
+#  if HAVE_ALLOCAH
+#    include <alloca.h>
+#  endif
+#endif
+
+#if( !defined( __GNUC__ ) || (BGL_GC != BGL_BOEHM_GC) )
+extern union scmobj * an_object;
+#  define AN_OBJECT union scmobj *an_object;
+#else
+#  define AN_OBJECT 
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    SETJMP                                                           */
+/*---------------------------------------------------------------------*/
+#define jmp_buf_t @JMP_BUF@
+
+#undef SETJMP
+#define SETJMP(__jb) @SETJMP@
+#undef LONGJMP
+#define LONGJMP @LONGJMP@
+
+#endif

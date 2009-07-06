@@ -1,0 +1,197 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/setjmp.sparc                */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Jan  3 10:03:50 2002 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Give the setjmp/longjmp on the current architecture              */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cc=gcc
+as=as
+cflags=
+aflags=
+tmp=/tmp
+user=bigloo
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*|-cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --as=*|-as=*)
+      as="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --aflags=*|-aflags=*)
+      aflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*|-tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$tmp/actest$user
+aout=$tmp/Xactest$user
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <setjmp.h>
+
+main( argc, argv )
+int   argc;
+char *argv[];
+{
+#if( defined( sparc ) )
+   puts( "__" );
+#else
+   jmp_buf jb;
+
+   _setjmp( jb );
+   puts( "_" );
+#endif
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    __setjmp for sparc                                               */
+#*---------------------------------------------------------------------*/
+afile=$file-sparc
+cat > $afile.s <<EOF
+        .seg    "text"
+        .globl  flush_regs_in_stack
+flush_regs_in_stack:
+        ta      0x3   ! ST_FLUSH_WINDOWS
+        mov     %sp,%o0
+        retl
+        nop
+
+        .globl  ___setjmp
+___setjmp:
+        st      %sp,[%o0]
+        st      %o7,[%o0+4]
+        retl
+        clr     %o0
+
+        .globl  ___longjmp
+___longjmp:
+        ld      [%o0],%g1
+        ld      [%o0+4],%g2
+        mov     %o1,%g3
+2:      cmp     %fp,%g1
+        bleu,a  2b
+        restore
+        jmp     %g2+8
+        mov     %g3,%o0
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval $compile; then
+
+   \rm -f $file.*
+   res=`$aout`
+
+   if( test $res = "__" ); then
+      asm="$as -o $afile.o $aflags $afile.s >/dev/null 2> /dev/null"
+
+      if eval $asm; then
+        cat > $file.c <<EOF
+#include <setjmp.h>
+#include <signal.h>
+
+jmp_buf env;
+
+dojmp()
+{
+   longjmp( env, 1 );
+}
+
+void iexit( int x )
+{
+   exit( 1 );
+}
+
+main()
+{
+   signal( SIGBUS, (void (*)())&iexit );
+   signal( SIGSEGV, (void (*)())&iexit );
+
+   if( setjmp( env ) )
+   {
+      exit( 0 );
+   }
+   else
+   {
+      dojmp();
+   }
+}
+EOF
+       compile="$cc $cflags $file.c $afile.o -o $aout >/dev/null 2> /dev/null"
+       if eval $compile; then
+  
+          $aout > /dev/null 2> /dev/null || 
+             (\rm -f $file.*; \rm -f $afile.*; echo "_"; exit 1) || exit 1
+          \rm -f $file.* 
+          \rm -f $afile.*
+	  \rm -rf $aout
+          echo "__"
+       else
+          \rm -f $file.* 
+          \rm -f $afile.*
+	  \rm -rf $aout
+          echo "_"
+       fi
+     else
+       \rm -f $afile.*
+       \rm -rf $aout
+       echo "_"
+     fi
+   else
+      echo $res
+      \rm -rf $aout
+      \rm -rf $afile.*
+      rm -f $aout
+   fi
+else
+   \rm -rf $aout
+   \rm -rf $afile.*
+   \rm -f $file.*
+   echo ""
+fi
+

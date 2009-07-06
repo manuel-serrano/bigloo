@@ -1,0 +1,20 @@
+#!/bin/sh
+
+INARGS=$*
+ASFILE=""
+ARGS=""
+
+for i in $INARGS
+do
+	AS=`echo $i | grep -i "\.s$"`
+	if [ "$AS" != "" ]; then
+		ASFILE="$AS"
+		ARGS="$ARGS /tmp/tmp.s"
+	else
+		ARGS="$ARGS $i"
+	fi
+done
+
+cc -E $ASFILE | grep -v "^#line" >/tmp/tmp.s
+as $ARGS
+

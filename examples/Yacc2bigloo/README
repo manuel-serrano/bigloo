@@ -1,0 +1,3 @@
+This program translates a Yacc lalr grammar in a Bigloo lalr grammar.
+This tool is not a _general_ tool, it is just a little hack which helps
+the translation from Yacc to Bigloo.

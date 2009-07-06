@@ -1,0 +1,808 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/modules.texi                 @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Sat Jun 13 09:08:34 1998                          @c
+@c    Last change :  Mon Nov 12 15:22:55 2001 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    The documentation for Bigloo modules                             @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Node declaration                                                 @c
+@c ------------------------------------------------------------------- @c
+@node Modules, Core Language, Overview, Top
+@comment  node-name,  next,  previous,  up
+@chapter Modules
+@cindex modules
+
+A modules is a compiler and interpreter entity. Modules have been
+first designed for the compiler that compiles modules and then, links
+them against libraries in order to produce executables. A module may
+be split into several files but a file cannot contain more than
+@emph{one} module. A module is made of a module clause that is a list
+for which the @code{car} is the symbol @code{module} and followed by
+any Bigloo expression (that is definitions or expressions). The module
+clause names the module and defines the scope of the definitions. At
+last, the module clause is also the place where foreign bindings are
+defined and where classes are defined. Recent versions of Bigloo (since 2.7b)
+fully supports modules from the interpreter.
+
+@menu
+* Program Structure::          
+* Module Declaration::          
+* Module Initialization::       
+* Qualified Notation::          
+* Inline Procedures::           
+* Module Access File::          
+* Reading Path::                
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    Program Structure                                                @c
+@c ------------------------------------------------------------------- @c
+@node Program Structure, Module Declaration, Modules, Modules
+@comment  node-name,  next,  previous,  up
+@section Program Structure
+@cindex Program Structure
+
+A Bigloo program is composed of one or more Bigloo modules where a module is
+defined by the following grammar:
+
+@smallexample
+<module>             @expansion{} <module-declaration> <module-body>
+<module-declaration> @expansion{} @r{the module declaration}
+<module-body>        @expansion{} @r{the module body}
+@end smallexample
+
+A module is not related to a specific file and can be spread over
+several files if that is convenient. In particular, there is no
+relationship between module names and file names. The module declaration
+(see @ref{Module Declaration}) must be the first expression in the first
+of the files containing the module; other expressions form the body of
+the module. The module body (see @ref{Core Language}) contains global 
+variables, function definitions and @emph{top level} expressions
+(see @ref{Expressions}).
+
+@c ------------------------------------------------------------------- @c
+@c    Module declaration                                               @c
+@c ------------------------------------------------------------------- @c
+@node Module Declaration, Module Initialization, Program Structure, Modules
+@comment  node-name,  next,  previous,  up
+@section Module declaration
+@cindex module declaration
+
+The module declaration form is
+
+@c -- (module name clause ...) --------------------------------------- @c
+@deffn {bigloo syntax} module name clause @dots{}
+
+This form defines a module and must be the first in the file.  The
+argument @var{name} is a symbol naming the module. If the same
+module name is used more than once, Bigloo signals an error. The
+runtime library is composed of modules that are read when a user module
+is compiled and hence, if a user module has the same name as one of the
+library modules, an error is signaled.
+
+A simple module can be:
+
+@smalllisp
+(module foo)
+
+(display "this is a module")
+@end smalllisp
+
+The first line here is the complete module definition, the last line is
+the complete module body and together they form a complete Bigloo program. If
+these lines were stored in file @code{zz.scm}, invoking @samp{bigloo zz.scm}
+would create the executable @code{a.out} which, when obeyed, would
+display @samp{this is a module} on the terminal.
+
+@emph{Note:}
+Some special identifiers are reserved and can't be used to name modules.
+If such an identifier is used, the compiler will produce the message:
+
+@smalllisp
+#(module t
+#^
+# *** ERROR:bigloo:TOP-LEVEL:Parse error
+# Illegal module name -- (MODULE eval ...
+@end smalllisp
+
+The list of reserved identifiers may be enlarged for next release. For 
+the current release that list is made of: @code{eval}, @code{foreign} and 
+@code{t}.
+@end deffn
+
+Module @var{clause}s can be:
+
+@c -- (main name) ---------------------------------------------------- @c
+@deffn {bigloo module clause} main name
+
+This clause defines the entry point for a stand alone application to be
+procedure @var{name} of arity one. Bigloo invokes this procedure at the
+beginning of execution providing the list, composed of the shell command
+line arguments, as its single argument.
+
+@smalllisp
+(module foo
+   (main start))
+
+(define (start argv)
+   (display argv)
+   (newline))
+@end smalllisp
+
+Then if this program is compiled into @code{foo} and invoked using the
+command @samp{foo -t bar}, the list which is the argument for the main 
+procedure @code{start} would be @code{("foo" "-t" "bar")}. 
+
+The special form @code{args-parse} helps main function argument parsing 
+(@pxref{Command Line Parsing}).
+@end deffn
+
+@c -- (include file-name ...) ----------------------------------------- @c
+@deffn {bigloo module clause} include file-name @dots{}
+@pindex directives
+
+This is a list of @var{file-name}s to be included in the source file. Include
+files are not modules and may have a special syntax. Thus, besides containing
+Bigloo expressions, they can contain import and include clauses, which must
+be written in a single list whose first element is the keyword 
+@code{directives}. Includes files can be used to include implementation-neutral
+Scheme expressions and definitions in a Bigloo module. Here is an example of 
+an include file.
+
+@smalllisp
+@r{;; @file{foo.sch}}
+(define-struct point x y)
+@end smalllisp
+
+@noindent
+and the module that includes the @file{foo.sch} file:
+
+@smalllisp
+@r{;; @file{foo.scm}}
+(module foo
+   (include "foo.sch"))
+
+(print (point 1 2))
+@end smalllisp
+
+Include files, may contain module information. This is the role of the
+include @code{directives} clause here illustrated with the @file{bar.sch}
+example:
+
+@smalllisp
+@r{;; @file{bar.sch}}
+@r{;; the directives}
+(directives (include "foobar.sch")
+            (import  hux))
+
+@r{;; expressions}
+(define (gee x) (print x))
+@end smalllisp
+@end deffn
+
+@c -- (import import...) --------------------------------------------- @c
+@deffn {bigloo module clause} import import @dots{}
+
+An @var{import} is a list of the form:
+
+@smallexample
+<import>      @expansion{} <iclause> @dots{}
+<iclause>     @expansion{} (<bind-name> @dots{} <bind-name> <module-name> <file-name> @dots{})
+                | (<bind-name> @dots{} <bind-name> <module-name>)
+                | <module-name>
+                | (<module-name> <file-name> @dots{})
+<bind-name>   @expansion{} <r5rs-ident>
+<module-name> @expansion{} <r5rs-ident>
+<file-name>   @expansion{} <string>
+@end smallexample
+
+The first alternative in @var{iclause} imports the variable named 
+@var{bind-name} which is defined in the module @var{module-name}, 
+located in the files @var{file-name} @dots{}. The second does the same 
+but without specifying the name of the file where the module is located.  
+The third and the fourth form import all the exported variables of the module
+@var{module-name}.
+
+Note: The need for specifying in which files modules are located comes
+from the fact that there is no automatic mapping between module names
+and files names. Such a mapping can be defined in a ``module access file''
+(@pxref{Module Access File}) or in the import clause itself, as
+in the first and fourth alternatives in @var{iclause} above.
+
+Here is an example of an import clause:
+
+@smalllisp
+(module foo
+   (import 
+      @r{;; import all @code{bar} exported bindings:}
+      bar
+      @r{;; import the @code{hux} binding exported by}
+      @r{;; the module @code{hux}:}
+      (hux hux)       
+      @r{;; import the @code{fun1}, @code{fun2} and @code{fun3} bindings exported by}
+      @r{;; the module @code{mod}:}
+      (fun1 fun2 fun3 mod)       
+      @r{;; import all @code{gee} bindings. the @code{gee} module}
+      @r{;; is located in a file called @file{gee.scm}:}
+      (gee "gee.scm")))
+@end smalllisp
+
+@end deffn
+
+@c -- (use use...) --------------------------------------------------- @c
+@deffn {bigloo module clause} use use @dots{}
+
+@code{use} has the same meaning as @code{import} except that modules
+which are @emph{used} are not initialized (@pxref{Module Initialization}).
+Used modules are read before imported modules.
+@end deffn
+
+@c -- (with with...) ------------------------------------------------- @c
+@deffn {bigloo module clause} with with @dots{}
+
+This clause specifies a list of modules which have to be
+initialized at runtime and is used to force the initialization
+of modules which are never imported but which are required by an 
+application (@pxref{Embedded Bigloo applications}).
+@end deffn
+
+@c -- (export export...) --------------------------------------------- @c
+@deffn {bigloo module clause} export export @dots{}
+
+In order to make a module's global bindings available to other modules, they
+have to be @emph{exported}. Export clauses are in charge of this task and an
+@var{export} is a list of the form:
+
+@smallexample
+<export>  @expansion{} <eclause> @dots{}
+<eclause> @expansion{} <ident>
+            | (inline <ident> <ident> @dots{})
+            | (generic <ident> <ident> <ident> @dots{})
+            | (macro <ident> <ident> @dots{})
+            | (syntax <ident> <ident> @dots{})
+            | (<ident> <ident> @dots{})
+            | <class>
+@end smallexample
+
+The first form of @var{eclause} allows the variable @var{ident} be exported,
+the second allows the function @var{ident}, always regarded as immutable
+when exported this way, to be exported and the third exports an
+inline-procedure (@pxref{Inline Procedures}) whose name is extracted from
+the first @var{ident} after the word @var{inline}. The last two are both
+connected with Bigloo's object system.  The @var{generic} clause exports
+generic functions (@pxref{Generic functions}) and @var{class} clause exports
+classes (@pxref{Class declaration}).
+
+Note: Only bindings defined in module @code{m} can be @emph{exported} 
+by @code{m} (i.e. bindings @emph{imported} by @code{m} cannot be 
+@emph{exported} by @code{m}).
+
+Type information, specified in any @var{ident} in an export clause, is used
+by Bigloo. Where no type information is given, a default generic type named
+@code{obj} is used.
+
+Note: The last formal argument of a multiple arity function can
+not be typed because this argument is bound to be a @code{pair}
+or @code{null}. This union cannot be denoted by any type.
+
+Here is an example of the module @code{foo} that exports bindings:
+
+@smalllisp
+(module foo
+   (export 
+      @r{;; export the @code{bar} mutable variable}
+      bar
+      @r{;; export the @code{hux} function. this}
+      @r{;; function takes exactly two arguments}
+      (hux x y)       
+      @r{;; export the inline function @code{gee}}
+      @r{;; that takes at least one argument.}
+      (inline gee x . z)))
+@end smalllisp
+
+@end deffn
+
+@c -- (static static...) --------------------------------------------- @c
+@deffn {bigloo module clause} static static @dots{}
+
+A @code{static} clause has exactly the same syntax as an export
+clause. However, bindings declared static are local to the module. Since
+the default scope of all bindings is static, @code{static} module clauses
+are useful only for program documentation.
+
+@end deffn
+
+@c -- (from from...) ------------------------------------------------- @c
+@deffn {bigloo module clause} from from @dots{}
+
+@code{from} clauses have the syntax of @code{import} 
+clauses. The allow the re-exportation of imported bindings. That is, any 
+module can export any bindings imported via a @var{from} clause.
+
+As an example, suppose we have module @code{bar}:
+
+@smalllisp
+(module bar
+   (export (fun)))
+
+(define (fun) "bar")
+@end smalllisp
+
+Now, suppose we have a module @code{foo} that imports @code{bar}, by the
+means of a @code{from} clause. Module @code{foo} is able to re-export the
+@code{bar} binding of module @code{bar}:
+
+@smalllisp
+(module foo
+   (from (fun bar "bar.scm")))
+@end smalllisp
+
+A third module, let's name it @code{gee}, importing module @code{foo}, can see
+the binding for function @code{bar}:
+
+@smalllisp
+(module gee
+   (import (foo "foo.scm")))
+
+(print (fun))
+@end smalllisp
+
+This feature is very useful when compiling modules exporting functions
+with type annotations. In particular, one may write:
+
+@smalllisp
+(module foo
+  (export (class c1 x)))
+@end smalllisp
+
+Then,
+@smalllisp
+(module bar
+  (import foo)
+  (from foo)
+  (export (fun::c1)))
+
+(define (fun)
+   (instantiate::c1 (x 10)))
+@end smalllisp
+
+And,
+
+@smalllisp
+(module gee
+   (import bar)
+   (main main))
+
+(define (main x)
+   (let ((o (fun)))
+      (print o)
+      (print (c1? o))))
+@end smalllisp
+
+@end deffn
+
+@c -- (load load...) ------------------------------------------------- @c
+@deffn {bigloo module clause} load load @dots{}
+
+A @var{load} is a list of the form:
+
+@smallexample
+<load>    @expansion{} <lclause> @dots{}
+<lclause> @expansion{} (<module-name> <file-name>)
+            | <module-name>
+@end smallexample
+
+This clause forces Bigloo to load the module specified in the @var{lclause}
+in the environment used by the macro expansion mechanism. This means that
+the user's macros can use all the bindings of all the @code{load}ed modules
+but the @code{load}ed bindings remains unknown to the compiler.
+
+If the module @code{foo} is defined by:
+
+@smalllisp
+(module foo
+   (export (foo x)))
+
+(define (foo x)
+   `(cons ,x ,x))
+@end smalllisp
+
+then,
+
+@smalllisp
+(module gee
+   (load (foo "foo.scm")))
+
+(define-macro (gee x)
+   `(cons ,(-fx x 1) ,(foo x)))
+
+(gee 5)   @expansion{} (cons 4 (cons 5 5))
+          @result{} (4 5 . 5)
+@end smalllisp
+@end deffn
+
+@c -- (eval eval...) ------------------------------------------------- @c
+@deffn {bigloo module clause} eval eval@dots{}
+
+This form allows interactions between compiled code and interpreted
+code. (See the Section @ref{Eval, , Eval command line options} for a
+presentation of compilation flags that enable compilation tuning for
+@code{eval}.)  Each @var{eval} has the following syntax:
+
+@smallexample
+<eval> @expansion{} (export-all)
+         | (export-module)
+         | (export-exports)
+         | (export <bind-name>)
+         | (export (@@ <bind-name> <module-name>))
+         | (import <bind-name>)
+         | (class <bind-name>)
+@end smallexample
+@pindex module export-all
+@pindex module export-module
+@pindex module export-exports
+@pindex module class
+
+The first clause, @code{(export-all)}, exports all the variables bound
+in the module (i.e., the variables defined in the module and the
+imported variables).  The second clause, @code{(export-module)}, exports
+all the module's variables (those declared static and exported) to the
+interpreter; the third exports all the exports (i.e. the ones present
+inside an @code{export} clause) variables to the interpreter; the fourth
+and fifth clause each export one variable to the interpreter. The last
+clause imports a variable from the interpreter and all such imported
+variables are immutable (i.e.@ they cannot be the first argument of a
+@code{set!}  expression with the compiled code). Variables that are
+exported to the evaluators @emph{must} be exported.  If a variable is
+exported to the evaluators but not exported within an @code{export}
+clause, the compiler will produce an error message.
+
+@smalllisp
+(module foo
+   (export (fib x))
+   (eval (export fib)
+         (import bar)))
+
+(define (fib x) ...)
+(print bar)
+@end smalllisp
+
+The clause @code{(class <bind-name>)} exports a class definition to
+the interpreter. This makes the class constructor, the class predicate
+and the slots access functions available from the interpreter. The
+form 
+   @code{(instantiate::@var{class} ...)} 
+and 
+   @code{(with-access::@var{class} ...)} 
+are also available from the interpreter.
+@end deffn
+
+@c -- (extern extern...) --------------------------------------------- @c
+@deffn {bigloo module clause} extern extern @dots{}
+
+Extern (aka foreign) clauses will be explained in the foreign interface
+(@pxref{C Interface}).
+@end deffn
+
+@c -- (java extern...) ----------------------------------------------- @c
+@deffn {bigloo module clause} java java @dots{}
+
+Java clauses will be explained in the Java interface
+(@pxref{Java Interface}).
+@end deffn
+
+@c -- (option option...) --------------------------------------------- @c
+@deffn {bigloo module clause} option option @dots{}
+
+This clause enables variables which affect compilation to be set from inside
+a module and since the expressions, @var{option} @dots{}, are evaluated
+@emph{when compiling}, no code is compiled for them.  They are allowed to
+make side effects and to change the values of the global variables which
+describe how the compiler must compile. Usually they allow the control
+variables, which are described when Bigloo is invoked with the @code{-help2}
+option, to be set as in the following example:
+
+@smalllisp
+(module examplar
+   (option (set! *debug* 3)
+           (set! *verbose* 2)))
+
+(print 'dummy)
+@end smalllisp
+
+Whatever arguments are passed on the command line, Bigloo will compile this
+module in both verbose mode and debug mode.
+@end deffn
+
+@c -- (library library...) ------------------------------------------- @c
+@deffn {bigloo module clause} library library @dots{}
+
+This clause enables libraries (@pxref{Bigloo Libraries}) when compiling and
+linking Bigloo modules. The expressions @var{library} @dots{} are symbols
+naming the libraries to be used.
+
+Here is an example of a module declaration which makes use of a library
+named @code{format}:
+
+@smalllisp
+(module test
+   (library format)
+   (main    test-format)
+   (import  (test2 "test2.scm")))
+@end smalllisp
+
+@end deffn
+
+@c -- (library library...) ------------------------------------------- @c
+@deffn {bigloo module clause} type type @dots{}
+This forms is used to define builtin Bigloo types. It is not recommended
+to use it in user programs. So, it is left undocumented.
+@end deffn
+
+
+@c ------------------------------------------------------------------- @c
+@c    Module initialization                                            @c
+@c ------------------------------------------------------------------- @c
+@node  Module Initialization, Qualified Notation, Module Declaration, Modules
+@comment  node-name,  next,  previous,  up
+@section Module initialization
+
+@emph{Initializing} a module means evaluating, at runtime, its
+top level forms (global bindings are top level forms).
+
+When a module, @var{module1}, imports a module, @var{module2},
+@var{module2} is initialized before @var{module1}. Modules are
+initialized only once, nothing being done if a module already met during 
+initialization is met again. Library modules are initialized before user
+modules and imported modules are initialized in the same order as they
+appear in import clauses.
+
+Here is a first example with two modules. First the module @code{foo}:
+
+@smalllisp
+@r{;; module foo}
+(module foo
+   (main main)
+   (import (bar "bar.scm")))
+
+(define (main argv)
+   (print "argv: " argv))
+(print "foo")
+@end smalllisp
+
+Then the module @code{bar}
+@smalllisp
+@r{;; module bar}
+(module bar)
+
+(print "bar")
+@end smalllisp
+
+These can be compiled into the executable @var{a.out} with:
+@smalllisp
+$ bigloo -c foo.scm
+$ bigloo -c bar.scm
+$ bigloo foo.o bar.o
+@end smalllisp
+
+Execution of @var{a.out} produces:
+@smalllisp
+$ a.out
+   @print{} bar
+      foo
+      argv: (a.out)
+@end smalllisp
+
+The explanation is:
+@itemize @bullet
+@item module @code{foo} contains the program entry point so this is where
+ initialization begins.
+@item because @code{foo} imports module @code{bar}, @code{bar} must be
+ initialized @emph{before} @code{foo}. This explains why the word @code{bar}
+ is printed before anything else.
+@item module initialization for @code{foo} is completed before @code{main}
+ is called. This explains why word @code{foo} is printed before @code{main}
+ is entered.
+@end itemize
+
+Let's consider another example with 3 modules:
+@smalllisp
+@r{;; @code{module1}}
+(module module1
+   (main main)
+   (import (module2 "module2.scm")))
+
+(define (main argv)
+   (print "argv: " argv))
+
+(print "module1")
+@end smalllisp
+
+The second module:
+@smalllisp
+@r{;; @code{module2}}
+(module module2
+   (import (module3 "module3.scm")))
+
+(print "module2")
+@end smalllisp
+
+The third module:
+@smalllisp 
+@r{;; @code{module3}}
+(module module3
+   (import (module1 "module1.scm")))
+ 
+(print "module3")
+@end smalllisp
+
+Compile with:
+@smalllisp
+$ bigloo module1.scm -c
+$ bigloo module2.scm -c
+$ bigloo module3.scm -c
+$ bigloo module1.o module2.o module3.o
+@end smalllisp
+
+Execution produces:
+
+@smalllisp
+$ a.out
+   @print{} module3
+      module2
+      module1
+      argv: (a.out)
+@end smalllisp
+
+The order of module initialization can be explicitly specified using @code{with}
+and @code{use} clauses.
+   
+@c ------------------------------------------------------------------- @c
+@c    Qualified notation                                               @c
+@c ------------------------------------------------------------------- @c
+@node  Qualified Notation, Inline Procedures, Module Initialization, Modules
+@comment  node-name,  next,  previous,  up
+@section Qualified notation
+@cindex qualified notation
+@pindex @@
+
+Global variables can be referenced using implicit notation or
+using @emph{qualified} notation. Implicit notation is used when
+variables are referenced just by their name whereas qualified notation
+is used when variables are referenced by their name and 
+the name of the module which defines them. Qualified notation has
+the following syntax:
+
+@example
+(@@ <bind-name> <module-name>)
+@end example
+
+@noindent
+and is useful when several imported modules export a
+variable with the same name. Using qualified notations instead of
+short notation only affects compilation.
+
+When several variables are defined under the same identifier, the
+compiler uses the two following rules in order to decide which
+variable is selected by an implicit reference: 1) the variable defined
+in a module has a higher precedence than all imported variables, 2)
+imported variables have a higher precedence than library variables.
+
+@c ------------------------------------------------------------------- @c
+@c    Inline procedures                                                @c
+@c ------------------------------------------------------------------- @c
+@node  Inline Procedures, Module Access File, Qualified Notation, Modules
+@comment  node-name,  next,  previous,  up
+@section Inline procedures
+@cindex inline procedure
+
+Bigloo allows procedures called @emph{inline} and which differ from
+normal ones only in the type of code planted.  An inline procedure is a
+first class object which can be manipulated in the same way as any other
+procedure but when Bigloo sees a reference to one, rather than
+generating a C function call to the function, the body of the inline
+procedure is open-coded.  The definition of an inline is given in the
+following way:
+
+@deffn {bigloo syntax} define-inline (name args @dots{}) body
+@deffnx {bigloo syntax} define-inline (name args @dots{} . arg) body
+
+Apart from the initial word, this form has the same syntax as that used by
+@code{define} for procedures. Inline procedures are exportable which means
+that the compiler scans imported files to find the bodies of all inline
+procedures. Here is a small example of a module which exports an inline and
+a module which imports it.
+
+@smalllisp
+@r{;; the exporter module}
+(module exporter
+        (export (inline make-list . objs)))
+
+(define-inline (make-list . objs) objs)
+@end smalllisp
+
+@smalllisp
+@r{;; the importer module}
+(module importer
+        (import exporter))
+
+(print (make-list 1 2 3 4 5))
+@end smalllisp
+
+Because of the open-coding of the exporter procedure, the above print
+statement is equivalent to:
+
+@smalllisp
+(print (let ((objs (list 1 2 3 4 5)))
+          objs))
+@end smalllisp
+
+Any procedure can be an inline. Also any exported procedure can be an inline
+provided all global variables and functions it uses are also exported.
+
+Note: Bigloo can decide to inline procedures declared with
+@code{define}
+but this can be achieved only with local procedures whereas procedures
+declared with the @code{define-inline} form are open-coded even through
+module importation.
+
+Note: Procedures declared @emph{inline} are macro expanded with 
+the macro defined in the module where they are invoked. That is, if 
+module @code{module1} declares an inline procedure @code{p} and module 
+@code{module2} imports it, @code{p} may have two different macro-expansions: 
+one for @code{module1} and one for @code{module2}.
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Module access file                                               @c
+@c ------------------------------------------------------------------- @c
+@node Module Access File, Reading Path, Inline Procedures, Modules
+@comment  node-name,  next,  previous,  up
+@section Module access file
+@cindex module access file
+@pindex .afile
+@cindex bglafile 
+@cindex .afile
+
+Bigloo is different from languages such as C where a module is defined by a
+file. For Bigloo, the module name is not necessarily the name of the file
+where the text of the module is written and modules can even be split across
+several files.
+
+Since modules are defined independently of files, it is necessary to make a
+link between a module and its files and there are two ways of doing this.
+Choosing an import clause where the file-names are specified or creating a
+``module access file''. Such a file must contain only one @var{list}, each
+element of the list being of the form:
+
+(module-name "file-name" ... "file-name")
+
+@noindent Use the @samp{-afile <file>} option to specify the ``module access
+file'' when compiling. By default Bigloo checks if a file named @code{.afile}
+exists. If it exists it is loaded as a module access file.
+
+@xref{Compiler Description, , The Bigloo command line}.
+
+Note: The Bigloo distribution contains a tool, @code{bglafile},
+that can automatically build a ``module access file''. See the manpage for
+@code{bglafile} for details.
+
+@c ------------------------------------------------------------------- @c
+@c    Read path                                                        @c
+@c ------------------------------------------------------------------- @c
+@node Reading Path, ,Module Access File, Modules
+@comment  node-name,  next,  previous,  up
+@section Reading path
+@cindex reading path
+
+Imported, included or loaded files are sought first in the current directory
+and then in the directories, sequentially from start to end, of the list in
+the @code{*load-path*}
+@pindex *load-path*
+variable. This variable,
+initially set to the empty list, can be reset by the @samp{-I} option of the
+compiler.

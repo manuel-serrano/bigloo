@@ -1,0 +1,8 @@
+To compile that program:
+
+bigloo.bat -O -unsafe maze.scm -o maze.bat
+
+To run the program
+
+maze
+

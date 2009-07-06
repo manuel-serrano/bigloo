@@ -1,0 +1,36 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/packrat/src/Misc/packrat.init.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Mon Apr 20 08:52:45 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Packrat init file.                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'packrat
+		  :srfi '(packrat)
+		  :basename "bigloopackrat"
+		  :module-init '__packrat_bibtex
+		  :module-eval '__packrat_makelib
+		  :class-init "bigloo.packrat.bibtex"
+		  :class-eval "bigloo.packrat.make-lib")
+
+;*---------------------------------------------------------------------*/
+;*    Link option                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; required libraries for packrat
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloosrfi1 *additional-bigloo-libraries*)))
+   (bigloo-eval
+    #unspecified))
+
+;*---------------------------------------------------------------------*/
+;*    Eval macros                                                      */
+;*---------------------------------------------------------------------*/

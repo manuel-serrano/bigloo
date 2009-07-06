@@ -1,0 +1,56 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/applications.skb                 */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Oct  8 04:40:37 2001                          */
+;*    Last change :  Fri Nov 21 06:53:55 2003 (serrano)                */
+;*    Copyright   :  2001-03 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The short descriptions of Bigloo applications.                   */
+;*=====================================================================*/
+
+(map (lambda (l) 
+	(let ((name (car l))
+	      (file (cadr l))
+	      (description (caddr l)))
+	   (let ((r (ref :url file :text name)))
+	      (if description
+		  (list r (linebreak) (it description) (linebreak))
+		  (list r (linebreak))))))
+     (sort `(("VRLM parser"
+	      "http://www.sect.mce.hw.ac.uk/~peteri/vrml/index.html"
+	      "VRML 1.0 parser in Scheme")
+	     ("Skribe"
+	      ,(skribe-url)
+	      "A programming language to build documents (such as Web pages or program documentations)")
+	     ("SCOP"
+	      "http://pi7.fernuni-hagen.de/hartrumpf/scop/"
+	      "SCOP (a light-weight, simple but powerful,
+                        high-level communication interface) Scheme Binding")
+	     ("SX"
+	      "http://www.sect.mce.hw.ac.uk/~peteri/sx/index.html"
+	      "A 3D modeler.")
+	     ("Bglstone"
+		,(format "ftp://~a~a/~a/~a"
+			 *ftp-host* *ftp-dir* *apps-dir* 
+			 *bglstone.tar.gz*)
+		"The Bigloo benchmark suite contains various tools to produce
+and display bar charts")
+	     ("SXML/SSAX/SXPath"
+	      "http://www196.pair.com/lisovsky/sxml/index.html"
+	      "Suite for handling XML documents in Scheme")
+	     ("mod_pipe"
+	      "http://www196.pair.com/lisovsky/mod_pipe/index.html"
+	      "An Apache module providing a mean for communication between Apache server and the external process using Unix pipes.")
+	     ("Mole"
+	      "http://pair.com/lisovsky/scheme/lit/mole/"
+	      "Literate programming in Scheme.")
+	     ("Hive"
+	      "http://www196.pair.com/lisovsky/scheme/hive/"
+	      "Source code manager.")
+	     ("Phptools"
+	      "http://savannah.gnu.org/projects/phptools"
+	      "A toolkit for PHP4 documents."))
+	   (lambda (a b)
+	      (string<? (cadr a) (cadr b)))))
+	      

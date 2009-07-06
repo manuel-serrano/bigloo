@@ -1,0 +1,121 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/www/contribs.skb                     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Oct  8 05:12:37 2001                          */
+;*    Last change :  Thu Mar 17 09:00:54 2005 (serrano)                */
+;*    Copyright   :  2001-05 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Extensions and Tools                                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    Tools                                                            */
+;*---------------------------------------------------------------------*/
+(define (contrib name file descr author version)
+  (tr (td :align 'left (ref :url file :text name))
+      (td :align 'left descr)
+      (td :align 'left author)
+      (td :align 'center version)))
+
+;*---------------------------------------------------------------------*/
+;*    The chapter                                                      */
+;*---------------------------------------------------------------------*/
+(chapter  :title "Extensions & Tools" :number #f :toc #f :file #t
+
+ (paragraph [
+Some contributions are currently available. They are nicely offered by
+their authors. Let them be thanked for this. These contributions are
+distributed with the hope that they will be of some help but, of
+course, no warranty is made about them. If you have written a Bigloo
+program that you think could be useful to other people, please, fill
+free to propose it as a contribution.])
+
+   (section :title "Available contributions" :number #f :toc #f [
+,(table
+    :width 100.
+    ;; table header
+    (tr :class 'header
+       (th (bold "Contrib"))
+       (th :width "3*" (bold "Description"))
+       (th (bold "Author"))
+       (th (bold "Bigloo version")))
+    ;; apropos.tar.gz
+    (contrib "apropos.tar.gz"
+	     (string-append "ftp://" *ftp-host* *ftp-dir* "/" *contribs-dir* "/"
+			    "apropos.tar.gz")
+	     "An apropos facility running with the interpreter"
+	     "John Gerard Malecki"
+	     "1.8")
+    ;; scmdoc
+    (contrib "scmdoc.tar.gz"
+	     (string-append "ftp://" *ftp-host* *ftp-dir* "/" *contribs-dir* "/"
+			    "scmdoc.tar.gz")
+	     "A Javadoc like tools for Bigloo code"
+	     "Dominique Boucher"
+	     "1.9c")
+    ;; slib
+    (contrib "slib"
+	     "http://www.swiss.ai.mit.edu/~jaffer/SLIB.html"
+	     "SLIB, a portable scheme library"
+	     "A. Jaffer et al."
+	     "--")
+    ;; slibinit
+    (contrib "slib.zip"
+	     "http://swissnet.ai.mit.edu/ftpdir/users/jaffer/slib.zip"
+	     "A compatibility file for the Slib"
+	     "R. Sanders, A. Jaffer, D. Love, Gary T. Leavens"
+	     "< 2.0")
+    ;; stepper-0.1c.tar.gz
+    (contrib "stepper-0.1c.tar.gz"
+	     (string-append "ftp://" *ftp-host* *ftp-dir* "/" *contribs-dir* "/"
+			    "stepper-0.1c.tar.gz")
+	     "A source debugger/stepper for Bigloo interpreted code for Bigloo code"
+	     "Peter Baumgartner"
+	     "1.9c")
+    ;; ldap.tar.gz
+    (contrib "ldap.tar.gz"
+	     "ftp://ftp.jet.msk.su/pub/wowa/ldap-bigloo-0.10.tar.gz"
+	     "A scheme programming language interface for client LDAP library."
+	     "Vladimir V. Tsychevski"
+	     "2.0e")
+    ;; iread.tgz
+    (contrib "iread.tgz"
+	     (string-append "ftp://" *ftp-host* *ftp-dir* "/" *contribs-dir* "/"
+			    "iread.tgz")
+	     "A Bigloo REPL with readline facilities."
+	     "Albert L. Ting"
+	     "2.0e")
+    ;; scmsockets.tar.gz
+    (contrib "scmsockets.tar.gz"
+	     "http://pi7.fernuni-hagen.de/hartrumpf/scmsockets/"
+	     "Another socket interface"
+	     "Sven Hartrumpf"
+	     "2.2b")
+    ;; Example of Java connection
+    (contrib "bigloo-java-example.zip"
+	     "http://www.ispras.ru/~grinev/download/BiglooContribution/bigloo-java-example.zip"
+	     "An Example of Scheme/Java connection"
+	     "Maxim Grinev"
+	     "2.4a")
+    ;; Example of Java connection that uses Java threads.
+    (contrib "bigloo-java-thread.zip"
+	     "http://www.ispras.ru/~grinev/download/BiglooContribution/Bigloo-java-thread.zip"
+	     "Another example of Bigloo/Java that uses Java threads."
+	     "Maxim Grinev"
+	     "2.4a")
+    ;; Curl binding
+    (contrib "curl-bigloo.tgz"
+	     "http://pair.com/lisovsky/download/curl-bigloo.tgz"
+	     "A Bigloo/Curl binding (Curl is a command line tool and libcurl is a library for transferring data specified with URL syntax)"
+	     "Kirill Lisovsky"
+	     "2.4a")
+    ;; SQL binding
+    (contrib "SQLI/SQLD"
+	     "http://www.elemental-programming.org/epwiki/Bigloo%20SQLI"
+	     "SQL interfacing package."
+	     "Hans Oesterholt-Dijkema"
+	     "2.6"))]))
+	     
+
+

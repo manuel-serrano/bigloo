@@ -1,0 +1,366 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/socket.texi                  @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Jun 30 08:09:52 1998                          @c
+@c    Last change :  Mon Jan  7 10:47:50 2002 (serrano)                @c
+@c    ------------------------------------------------------------     @c
+@c    Socket support                                                   @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Socket support                                                   @c
+@c ------------------------------------------------------------------- @c
+@node Socket, SSL, Process, System Programming
+@comment  node-name,  next,  previous,  up
+@subsection Socket support
+@cindex Socket support
+
+Bigloo defines sockets, on systems that support them, as first class objects.
+Sockets permits processes to communicate even if they are on different 
+machines. Sockets are useful for creating client-server applications.
+The implementation and this documentation are, to a great
+extent copies of the STk [Gallesio95] socket support.
+
+@deffn {bigloo procedure} make-client-socket hostname port-number #!key (timeout 0) (inbuf #t) (outbuf #t) (domain 'inet)
+@cindex unbufferized socket port
+
+@code{make-client-socket} returns a new socket object. This socket establishes
+a link between the running application listening on port @var{port-number}
+of @var{hostname}. If keyword arguments @var{inbuf} and @var{outbuf} describe
+the buffer to be used. Each can either be:
+
+@itemize @bullet
+@item A positive fixnum, this gives the size of the buffer.
+@item The boolean @code{#t}, a buffer is allocated by the Bigloo runtime system
+      with a default size.
+@item The boolean @code{#f}, the socket is unbufferized.
+@item A string, it is used as buffer.
+@end itemize
+
+Unbuffered sockets are useful for socket clients connected to servers
+that do not emit #\Newline character after emissions. If the optional
+argument @var{timeout} is missing or is @code{0}, the execution blocks
+until the connection is established. If the @var{timeout} is provided,
+the execution unblocks after @var{timeout} microseconds unless the
+connection is established.
+
+The @var{domain} argument specifies the protocol used by the socket.
+The supported domains are:
+
+@itemize @bullet
+@item @code{inet}: IPv4 Internet protocols.
+@item @code{unix}: Unix sockets for local inter-process communications.
+@item @code{local}: Same as @code{unix}.
+@end itemize
+
+If the connection cannot be established, an @code{&io-error} is raised
+(see @ref{Errors Assertions and Traces}).
+
+When a socket is used in unbufferized mode the characters available on
+the input port @emph{must} be read exclusively with @code{read-char}
+or @code{read-line}. It is forbidden to use @code{read} or any regular
+grammar.  This limitation is imposed by Rgc (see @ref{Regular Parsing}) that
+intrinsicly associates buffers with regular grammars. If the current Rgc
+implementation is improved on the coming version this restriction will
+be eliminated.
+
+Example:
+@smalllisp
+;; open a client socket on port 80:
+(make-client-socket "www.inria.fr" 80) 
+;; open an unbufferized connection
+(make-client-socket "www.inria.fr" 80 :buffer #f)
+@end smalllisp
+
+@end deffn
+
+@deffn {bigloo procedure} socket? obj
+@deffnx {bigloo procedure} socket-server? obj
+@deffnx {bigloo procedure} socket-client? obj
+Returns @code{#t} if @var{obj} is a socket, a socket server a socket client.
+Otherwise returns @code{#f}. Socket servers and socket clients are
+sockets.
+@end deffn
+
+@deffn {bigloo procedure} socket-hostname socket
+Returns a string which contains the name of the distant host attached to  
+@var{socket}. If @var{socket} has been created with @code{make-client-socket}
+this procedure returns the official name of the distant machine used for 
+connection. If @var{socket} has been created with @code{make-server-socket},
+this function returns the official name of the client connected to the socket. 
+If no client has used yet the socket, this function returns @code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} socket-host-address socket
+@cindex @w{IP number}
+Returns a string which contains the IP number of
+the distant host attached to @var{socket}. If @var{socket} has been
+created with @code{make-client-socket} this procedure returns the
+IP number of the distant machine used for connection. If
+@var{socket} has been created with @code{make-server-socket}, this
+function returns the address of the client connected to the
+socket.  If no client has used yet the socket, this function returns
+@code{#f}.
+@end deffn
+
+@deffn {bigloo procedure} socket-local-address socket
+@cindex @w{IP number}
+Returns a string which contains the IP number of
+the local host attached to @var{socket}.
+@end deffn
+
+@deffn {bigloo procedure} socket-port-number socket
+Returns the integer number of the port used for @var{socket}.
+@end deffn
+
+@deffn {bigloo procedure} socket-input socket
+@deffnx {bigloo procedure} socket-output socket
+
+Returns the file port associated for reading or writing with the program 
+connected with @var{socket}. If no connection has already been established,
+these functions return @code{#f}.
+
+The following example shows how to make a client socket. Here we create a
+socket on port 13 of the machine ``@code{kaolin.unice.fr}''@footnote{Port 13
+is generally used for testing: making a connection to it permits to know
+the distant system's idea of the time of day.}:
+@smalllisp
+(let ((s (make-client-socket "kaolin.unice.fr" 13)))
+  (print "Time is: " (read-line (socket-input s)))
+  (socket-shutdown  s))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} make-server-socket #!optional (port 0) #!key (name #f) (backlog 5)
+@code{make-server-socket} returns a new socket object. 
+The socket will be listening on the network interface @var{name}, 
+either on the specified @var{port}, or on a port chosen by the system
+(usually the first port available on the network interface). The @var{name}
+can be an IP number as a string, or a host name, whose first IP address will
+be used (as returned by the name server lookup).
+
+The @var{backlog} argument specifies the size of the wait-queue used for
+accepting connections.
+@end deffn
+
+@deffn {bigloo procedure} socket-accept socket #!key (errp #t) (inbuf #t) (outbuf #t)
+@code{socket-accept} waits for a client connection on the given
+@var{socket}. It returns a @code{client-socket}.  If no client is
+already waiting for a connection, this procedure blocks its caller;
+otherwise, the first connection request on the queue of pending
+connections is connected to @var{socket}. This procedure must be
+called on a server socket created with @code{make-server-socket}. 
+
+The arguments @var{inbuf} and @var{outbuf} are similar to the ones
+used by @code{make-client-socket}. That is, each can either be:
+
+@itemize @bullet
+@item A positive fixnum, this gives the size of the buffer.
+@item The boolean @code{#t}, a buffer is allocated.
+@item The boolean @code{#f}, the socket is unbufferized.
+@item A string, it is used as buffer.
+@end itemize
+
+The keyword argument @var{errp} is a boolean. The value @code{#t}
+means that if an error is raised it is signaled. Otherwise, it is
+omitted.
+
+@emph{Note:} When a socket is used in unbufferized mode the characters
+available on the input port @emph{must} be read exclusively with
+@code{read-char} or @code{read-line}. It is forbidden to use @code{read}
+or any regular grammar.  This limitation is imposed by Rgc (see
+@ref{Regular Parsing}) that intrinsicly associate buffers with regular
+grammars. If the current Rgc implementation is improved on the coming
+version this restriction will be suppressed.
+
+The following exemple is a simple server which waits for a connection
+on the port 1234@footnote{Under Unix, you can simply connect to
+  listening socket with the @code{telnet} command. With the given
+  example, this can be
+  achived by typing the following command in a window shell:
+  @code{$ telnet localhost 1234}}. Once the connection with the
+distant program is established, we read a line on the input port
+associated to the socket and we write the length of this line on its
+output port.
+@smalllisp
+(let* ((s (make-server-socket 1234))
+       (s2 (socket-accept s)))
+  (let ((l (read-line (socket-input s2))))
+    (fprint (socket-output s2) "Length is: " (string-length l))
+    (flush-output-port (socket-output s2)))
+  (socket-close s2)
+  (socket-shutdown s))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} socket-close socket
+The function @code{socket-close} closes the connection established with
+a @code{socket-client}.
+@end deffn
+
+@deffn {bigloo procedure} socket-shutdown socket #!optional (close #t)
+@code{Socket-shutdown} shutdowns the connection associated to @var{socket}.
+@var{Close} is a boolean; it indicates if the socket must be closed or not, 
+when the connection is destroyed. Closing the socket forbids further 
+connections on the same port with the @code{socket-accept} 
+procedure. Omitting a value for @var{close} implies the closing of socket.
+The result of @code{socket-shutdown} is undefined. 
+@end deffn
+
+@deffn {bigloo procedure} socket-down? socket
+Returns @code{#t} if @var{socket} has been previously closed 
+with @code{socket-shutdown}. It returns @code{#f} otherwise.
+@end deffn
+
+Here is another example of making use of sockets:
+
+@smalllisp
+(define s1 (make-server-socket))
+(define s2 #unspecified)
+
+(dynamic-wind 
+   ;; Init: Launch an xterm with telnet running
+   ;; on the s listening port and connect
+   (lambda ()
+      (run-process "/usr/X11R6/bin/xterm" "-display" ":0" "-e" "telnet" "localhost" 
+		   (number->string (socket-port-number s1)))
+      (set! s2 (socket-accept s1))
+      (display #"\nWelcome on the socket REPL.\n\n> " (socket-output s2))
+      (flush-output-port (socket-output s2)))
+
+   ;; Action: A toplevel like loop
+   (lambda ()
+      (let loop ()
+	 (let ((obj (eval (read (socket-input s2)))))
+	    (fprint (socket-output s2) "; Result: " obj)
+	    (display "> " (socket-output s2))
+	    (flush-output-port (socket-output s2))
+	    (loop))))
+
+   ;; Termination: We go here when 
+   ;;     -a: an error occurs 
+   ;;     -b: connection is closed
+   (lambda ()
+      (print #"Shutdown ......\n")
+      (socket-close s2)
+      (socket-shutdown s1)))
+@end smalllisp
+
+Here is a second example that uses sockets. It implements
+a client-server architecture and it uses unbufferized
+(see @code{socket-accept}) input ports.
+@cindex client-server
+
+First, here is the code of the client:
+
+@smalllisp
+(module client)
+
+(let* ((s (make-client-socket "localhost" 8080 #f))
+       (p (socket-output s)))
+   (display "string" p)
+   (newline p)
+   (display "abc" p)
+   (flush-output-port p)
+   (let loop ()
+      (loop)))
+@end smalllisp
+
+Then, here is the code of the server:
+
+@smalllisp
+(module server)
+
+(let* ((s (make-server-socket 8080))
+       (s2 (socket-accept s :inbuf #f)))
+   (let ((pin (socket-input s2)))
+      (let loop ()
+         (display (read-char pin))
+         (flush-output-port (current-output-port))
+         (loop))))
+@end smalllisp
+
+At, to conclude here the source code for a server waiting for multiple
+consecutive connections:
+
+@smalllisp
+(define (main argv)
+   (let ((n (if (pair? (cdr argv))
+                (string->integer (cadr argv))
+                10))
+	 (s (make-server-socket)))
+      (print "s: " s)
+      (let loop ((i 0))
+         (if (<fx i n)
+             (let ((s2 (socket-accept s)))
+		(print "i: " i " " s2)
+		(print (read-line (socket-input s2)))
+		(socket-close s2)
+                (loop (+fx i 1)))
+	     (socket-shutdown s)))))
+@end smalllisp
+
+@deffn {bigloo procedure} host hostname
+@deffnx {bigloo procedure} hostinfo hostname
+@cindex io-unknown-host-error
+
+Returns the IP number of @var{hostname}. When @var{hostname} is not found,
+the @code{io-unknown-host-error} exception is raided 
+(see @ref{Errors Assertions and Traces}).
+
+The function @code{hostinfo} possibly returns more information about the
+host. It returns an association list made out the information about the
+host. This list might contain a @code{name} entry, an @code{addresses} entry,
+and a @code{aliases} entry.
+
+Some back-ends (e.g., the C back-end) implements DNS caching. This may
+dramatically improve the performance of intensive networking applications.
+DNS caching can be control by the means of two parameters:
+@code{bigloo-dns-enable-cache} and @code{bigloo-dns-cache-validity-timeout}
+(see @ref{Parameters}).
+@end deffn
+
+@deffn {bigloo procedure} get-protocols
+Reads all the entries from the protocols database and returns a list
+of protocol entries. Each entries consists in a list of three elements:
+
+@itemize @bullet
+@item a string denoting the protocol name,
+@item an integer denoting the protocol number,
+@item a list of strings denoting the protocol aliases.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} get-protocol number-or-name
+Returns the protocol entry found in the protocols database. The argument
+@var{number-of-name} is either an integer or a string.
+@end deffn
+
+@deffn {bigloo procedure} socket-option socket option-name
+@deffnx {bigloo procedure} socket-option-set! socket option-name val
+These two functions @emph{get} and @emph{set} socket option. The
+argument @var{option-name} must be a keyword. If the @var{option-name}
+is not supported by the Bigloo runtime system, the function
+@code{socket-option} returns the value @code{#unspecified} otherwise,
+it returns the option value.  If the @var{option-name} is not supported,
+the function @code{socket-option-set!} returns @code{false}. Otherwise
+it returns a non false value.
+
+Here is a list of possibly supported option-name values:
+
+@itemize @bullet
+@item @code{:SO_KEEPALIVE}
+@item @code{:SO_OOBINLINE}
+@item @code{:SO_RCVBUF}
+@item @code{:SO_SNDBUF}
+@item @code{:SO_REUSEADDR}
+@item @code{:SO_TIMEOUT}
+@item @code{:TCP_CORK}
+@item @code{:TCP_QUICKACK}
+@item @code{:TCP_NODELAY}
+@end itemize
+
+@end deffn
+

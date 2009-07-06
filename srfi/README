@@ -1,0 +1,6 @@
+SRFI are now implemented as Bigloo library. The directory:
+
+  api/srfi-1
+
+contains an example of such an implementation. New SRFI implementations
+should follow the same framework.
