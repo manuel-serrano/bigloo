@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Apr 24 08:04:20 2009 (serrano)                */
+#*    Last change :  Tue Jul  7 11:33:23 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -101,7 +101,8 @@ EMACS_SOURCES	= $(EMACS_FILE:%=%.el) $(BMACS_FILE)
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
-POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) etc
+POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
+                  etc/bass-snap.au
 
 #*---------------------------------------------------------------------*/
 #*     Suffixes ...                                                    */
