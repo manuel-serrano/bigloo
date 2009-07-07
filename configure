@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  2 15:45:48 2009 (serrano)                */
+#*    Last change :  Tue Jul  7 09:13:56 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -18,6 +18,7 @@
 #*---------------------------------------------------------------------*/
 release=3.2c
 bigloourl=http://www.inria.fr/sophia/teams/mimosa/fp/Bigloo
+bigloosvn=
 
 #*---------------------------------------------------------------------*/
 #*    User variables                                                   */
@@ -288,6 +289,7 @@ while : ; do
       break;;
 
     --bootconfig)
+      bigloosvn=ssh://hop@hop.inria.fr/bigloo;
       bindir=$PWD/bin;
       libdir=$PWD/lib;
       fildir=$release;
@@ -2552,6 +2554,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The Bigloo release number
   echo "RELEASE=$release" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The repository
+  echo "BIGLOOSVN=$bigloosvn" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The tools

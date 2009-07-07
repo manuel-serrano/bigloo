@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 16 06:22:55 2006                          */
-#*    Last change :  Sat Oct 27 10:41:40 2007 (serrano)                */
-#*    Copyright   :  2006-07 Manuel Serrano                            */
+#*    Last change :  Tue Jul  7 09:11:08 2009 (serrano)                */
+#*    Copyright   :  2006-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Mercurial specific part of the Bigloo Makefile               */
 #*=====================================================================*/
@@ -61,3 +61,8 @@ checkout:
            && $(RM) -rf bigloo/.hgignore \
            && $(RM) -rf bigloo/.hgtags
 
+#*---------------------------------------------------------------------*/
+#*    push                                                             */
+#*---------------------------------------------------------------------*/
+push:
+	@ $(VM-PUSH) $(BIGLOOSVN)

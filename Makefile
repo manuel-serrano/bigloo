@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul  7 09:08:29 2009 (serrano)                */
+#*    Last change :  Tue Jul  7 09:14:11 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -815,5 +815,5 @@ checkgmake:
 #*    -------------------------------------------------------------    */
 #*    Generic revision entry point.                                    */
 #*---------------------------------------------------------------------*/
-.PHONY: branch revision checkout populate revision-pop
+.PHONY: branch revision checkout populate revision-pop push
 
