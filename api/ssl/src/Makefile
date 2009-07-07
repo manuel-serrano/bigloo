@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Dec  1 14:45:42 2008 (serrano)                */
+#*    Last change :  Tue Jul  7 09:09:24 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -60,7 +60,7 @@ _BGL_OBJECTS	= ssl
 
 _C_OBJECTS	= bglssl
 _JAVA_CLASSES	= ssl_client_socket ssl_server_socket certificate private_key
-_DOTNET_OBJ	= bglssl
+_DOTNET_OBJ	= # bglssl
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
@@ -77,7 +77,7 @@ BGL_DOTNET_OBJ	= $(_BGL_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
 DOTNET_OBJ	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.obj)
 BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make-lib.obj
 
-DOTNET_OBJ_SRC	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.cs)
+DOTNET_OBJ_SRC	= # $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.cs)
 
 _WIN32_SRC	= 
 
@@ -113,7 +113,7 @@ POPULATION	= $(SOURCES) $(C_SRC_DIR)/bglssl.h.in $(_WIN32_SOURCES) \
                   $(JAVA_SRC_DIR)/ssl_server_socket13.java \
                   $(JAVA_SRC_DIR)/ssl_server_socket15.java \
                   $(JAVA_SRC_DIR)/certificate.java \
-                  $(JAVA_SRC_DIR)/private.java \
+                  $(JAVA_SRC_DIR)/private_key.java \
 		  $(MISC_SRC_DIR)/make-lib.scm \
                   $(MISC_SRC_DIR)/$(TARGETNAME).init.in \
                   Makefile

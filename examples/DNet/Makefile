@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Wed Jan  9 08:12:11 2008 (serrano)                */
-#*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jul  7 09:08:14 2009 (serrano)                */
+#*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build a small C#/Bigloo example                  */
 #*=====================================================================*/
@@ -30,7 +30,7 @@ BDNETFLAGS	= $(BFLAGS) -g -dotnet-managed -init-read -dotnet-mono-workaround -do
 SCM_FILE	= main
 
 SCM_OBJ		= $(SCM_FILE:%=%.obj)
-SCM_SRC		= $(SCM_OBJ:%.class=%.scm)
+SCM_SRC		= $(SCM_OBJ:%.obj=%.scm)
 
 #*--- dnet ------------------------------------------------------------*/
 DNET_FILE	= lib

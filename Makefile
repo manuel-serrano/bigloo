@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Apr 24 07:52:37 2009 (serrano)                */
+#*    Last change :  Tue Jul  7 09:08:29 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -779,8 +779,7 @@ distclean:
 #*    repository for revision.                                         */
 #*---------------------------------------------------------------------*/
 pop:
-	@ echo gc-boehm \
-               LICENSE COPYING ChangeLog \
+	@ echo LICENSE COPYING ChangeLog \
                configure INSTALL INSTALL.jvm README \
                Makefile Makefile.misc \
                Makefile.prcs Makefile.mercurial \

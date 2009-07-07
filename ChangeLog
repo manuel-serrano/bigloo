@@ -1,3 +1,8 @@
+Tue Jul  7 09:03:21 CEST 2009 (Manuel Serrano):
+
+	*** api/mail/src/Llib/rfc2045.scm: improve mime multipart decoding.
+	
+
 Mon Jul  6 11:42:58 CEST 2009 (Manuel Serrano):
 
 	*** runtime/Llib/unicode.scm: fix utf-8 decoding (#xc3...#xde were

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Apr 29 09:41:40 2009 (serrano)                */
+;*    Last change :  Tue Jul  7 09:01:45 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -322,10 +322,10 @@
 			   (let ((c2 (read-char port)))
 			      (string-set! buffer (+fx i 1) c2)
 			      (if (char=? c2 #\Newline)
-				  (values i #t #f)
+				  (values i "\r\n" #f)
 				  (loop (+fx i 2)))))
 			  ((char=? c #\Newline)
-			   (values i #t #f))
+			   (values i "\n" #f))
 			  (else
 			   (loop (+fx i 1)))))))))))
    
@@ -378,7 +378,7 @@
 		(values (or (last-boundary? buffer boundary) eof)
 			(apply string-append (reverse! lines))))
 	     (if crlf
-		 (loop (cons* "\r\n" (substring buffer 0 len) lines) #f)
+		 (loop (cons* crlf (substring buffer 0 len) lines) #f)
 		 (loop (cons (substring buffer 0 len) lines) #f))))))
 
 ;*---------------------------------------------------------------------*/
