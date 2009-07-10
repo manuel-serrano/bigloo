@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 10 08:25:11 2009 (serrano)                */
+/*    Last change :  Thu Jul  9 11:38:44 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1361,11 +1361,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (BGL_DYNAMIC_ENV( env ).top_of_frame)
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
-
-/* #define BGL_GET_TOP_OF_FRAME() \                                    */
-/*    BGL_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() )                */
-/* #define BGL_SET_TOP_OF_FRAME( _top ) \                              */
-/*    BGL_ENV_SET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV(), _top )      */
 
 #define BGL_ENV_PUSH_TRACE( env, name ) \
    struct bgl_dframe bgl_dframe; \

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Mon Jun 29 16:54:45 2009 (serrano)                */
+;*    Last change :  Thu Jul  9 12:24:30 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -676,11 +676,11 @@
 			    env))
 	  (b (evcompile body env2 genv where named? tail loc lkp #f))
 	  (as (map (lambda (a)
-		      (let ((l (find-loc a loc))
+		      (let ((loc (find-loc a loc))
 			    (n (if (eq? where 'nowhere)
 				   (car a)
 				   (symbol-append (car a) '@ where))))
-			 (evcompile (cadr a) env genv where n #t loc lkp #f)))
+			 (evcompile (cadr a) env genv where n #f loc lkp #f)))
 		   bindings)))
       (evcode 65 loc b (reverse! as))))
    
@@ -699,11 +699,11 @@
 		 (bd (evcompile body env2 genv where named? tail loc lkp #f)))
 	     (evcode 66 loc bd (reverse! as)))
 	  (let* ((b (car bdgs))
-		 (l (find-loc b loc))
+		 (loc (find-loc b loc))
 		 (n (if (eq? where 'nowhere)
 			(car b)
 			(symbol-append (car b) '@ where)))
-		 (a (evcompile (cadr b) env3 genv n #t #f l lkp #f)))
+		 (a (evcompile (cadr b) env3 genv n #t #f loc lkp #f)))
 	     (loop (cdr bdgs)
 		   (cons a as)
 		   (extend-env (list (untype-ident (car b))) env3))))))
@@ -716,7 +716,8 @@
 			    env))
 	  (b (evcompile body env2 genv where named? tail loc lkp #f))
 	  (as (map (lambda (a)
-		      (evcompile (cadr a) env2 genv (car a) #t #f loc lkp #f))
+		      (let ((loc (find-loc a loc)))
+			 (evcompile (cadr a) env2 genv (car a) #t #f loc lkp #f)))
 		   bindings))) 
       (evcode 70 loc b as)))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Jun 19 08:06:22 2009 (serrano)                */
+;*    Last change :  Thu Jul  9 12:21:28 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -467,7 +467,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace !denv where)	
 			 (let ((res (evmeaning
 				     !b
 				     (cons x
