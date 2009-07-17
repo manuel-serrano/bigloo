@@ -14,10 +14,11 @@
 ;*---------------------------------------------------------------------*/
 (module __ft_%env
    
+   (library pthread)
+   
    (import __ft_types
 	   __ft_env
-	   __ft_signal
-	   __fthread)
+	   __ft_signal)
    
    (export (class %env::ftenv
 	      (%signals::pair-nil (default '()))

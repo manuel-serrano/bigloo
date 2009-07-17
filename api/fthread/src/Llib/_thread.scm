@@ -13,12 +13,15 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_%thread
+   
+   (library pthread)
 
    (import  __ft_types
             __ft_%types
             __ft_signal
+	    __ft_scheduler
 	    __ft_%scheduler
-	    __fthread)
+	    __ft_%pthread)
    
    (export  (%thread-setup! ::fthread)
 	    (%thread-awake! ::fthread)
@@ -46,6 +49,8 @@
    (set! *thread-counter* (+fx 1 *thread-counter*))
    (with-access::fthread t (%builtin %ident)
       (set! %ident *thread-counter*)
+      (with-access::%pthread %builtin (fthread)
+	 (unless fthread (set! fthread t)))
       thread))
 
 ;*---------------------------------------------------------------------*/
@@ -174,9 +179,9 @@
       (trace-item "thread=" (trace-string t))
       (trace-item "id=" id))
    (with-access::fthread t (scheduler %builtin)
-      ($fthread-id-set! %builtin id)
+      (%pthread-id-set! %builtin id)
       (let ((nt (%scheduler-next-thread t scheduler)))
-	 ($fthread-switch %builtin (fthread-%builtin nt)))
+	 (%pthread-switch %builtin (fthread-%builtin nt)))
       #unspecified))
 
 ;*---------------------------------------------------------------------*/
@@ -188,7 +193,7 @@
       ;; ready to be synchronized (i.e. cooperative)
       (%scheduler-add-async-runnable! scheduler t)
       ;; wait for the cooperative token
-      ($fthread-wait %builtin)
+      (%pthread-wait %builtin)
       (with-trace 3 '%thread-synchronize!
 	 (trace-item "thread=" (trace-string t)))
-      ($fthread-id-set! %builtin name)))
+      (%pthread-id-set! %builtin name)))

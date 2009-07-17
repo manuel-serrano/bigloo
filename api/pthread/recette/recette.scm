@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Wed Jun  3 17:06:05 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 16:53:21 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
@@ -93,7 +93,7 @@
 ;*    make-thread ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-test make-thread
-   (make-thread (lambda () (write 'hello)))
+   (instantiate::pthread (body (lambda () (write 'hello))))
    :result (lambda (v)
 	      (if (eq? v 'result)
 		  "a thread"
@@ -103,14 +103,14 @@
 ;*    thread-name ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-test thread-name
-   (thread-name (make-thread (lambda () #f) 'foo))
+   (thread-name (instantiate::pthread (body (lambda () #f)) (name 'foo)))
    :result 'foo)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-specific ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-test thread-specific
-   (let ((t (make-thread (lambda () #f))))
+   (let ((t (instantiate::pthread (body (lambda () #f)))))
       (thread-specific-set! t "hello")
       (thread-specific t))
    :result "hello")
@@ -122,15 +122,17 @@
    (with-output-to-string
       (lambda ()
 	 (let ((m (make-mutex)))
-	    (letrec ((t0 (make-thread (lambda ()
-					 (mutex-lock! m)
-					 (write 'b)
-					 (mutex-unlock! m)
-					 (thread-join! t1))))
-		     (t1 (make-thread (lambda ()
-					 (mutex-lock! m)
-					 (write 'a)
-					 (mutex-unlock! m)))))
+	    (letrec ((t0 (instantiate::pthread
+			    (body (lambda ()
+				     (mutex-lock! m)
+				     (write 'b)
+				     (mutex-unlock! m)
+				     (thread-join! t1)))))
+		     (t1 (instantiate::pthread
+			    (body (lambda ()
+				     (mutex-lock! m)
+				     (write 'a)
+				     (mutex-unlock! m))))))
 	       (mutex-lock! m)
 	       (thread-start-joinable! t0)
 	       (thread-start-joinable! t1)
@@ -148,10 +150,11 @@
    (let ((res #f))
       (let ((val (thread-join!
 		  (thread-start-joinable!
-		   (make-thread (lambda ()
-				   (set! res
-					 (bind-exit (stop)
-					    (+ 1 (stop #t))))))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (set! res
+				     (bind-exit (stop)
+					(+ 1 (stop #t)))))))))))
 	 res))
    :result #t)
 
@@ -174,22 +177,25 @@
 	 (let ((m (make-mutex)))
 	    (thread-join!
 	     (thread-start-joinable!
-	      (make-thread (lambda ()
-			      (let loop ()
-				 (if (mutex-lock! m)
-				     (begin
-					(display "locked")
-					(mutex-unlock! m))
-				     (begin
-					(thread-yield!)
-					(loop)))))))))))
+	      (instantiate::pthread
+		 (body (lambda ()
+			  (let loop ()
+			     (if (mutex-lock! m)
+				 (begin
+				    (display "locked")
+				    (mutex-unlock! m))
+				 (begin
+				    (thread-yield!)
+				    (loop))))))))))))
    :result "locked")
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-join1 ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-test thread-join1
-   (thread-join! (thread-start-joinable! (make-thread (lambda () 23))))
+   (thread-join!
+    (thread-start-joinable!
+     (instantiate::pthread (body (lambda () 23)))))
    :result 23)
 
 ;*---------------------------------------------------------------------*/
@@ -197,14 +203,16 @@
 ;*---------------------------------------------------------------------*/
 (define-test thread-join2
    (let* ((res 0)
-	  (t (thread-start-joinable! (make-thread
-				      (lambda () (expt 2 10))
-				      'thread-join1.1)))
-	  (t2 (thread-start-joinable! (make-thread
-				       (lambda ()
-					  (do-something-else)
-					  (set! res (thread-join! t)))
-				       'thread-join1.2))))
+	  (t (thread-start-joinable!
+	      (instantiate::pthread
+		 (body (lambda () (expt 2 10)))
+		 (name 'thread-join1.1))))
+	  (t2 (thread-start-joinable!
+	       (instantiate::pthread
+		  (body (lambda ()
+			   (do-something-else)
+			   (set! res (thread-join! t))))
+		  (name 'thread-join1.2)))))
       (thread-join! t2)
       res)
    :result 1024)
@@ -214,25 +222,26 @@
 ;*---------------------------------------------------------------------*/
 (define-test thread-join3
    (let ((t (thread-start-joinable!
-	     (make-thread (lambda ()
-			     (with-error-to-port (open-output-string)
-				(lambda ()
-				   (raise 123))))
-			  'thread-join2.1)))
+	     (instantiate::pthread
+		(body (lambda ()
+			 (with-error-to-port (open-output-string)
+			    (lambda ()
+			       (raise 123)))))
+		(name 'thread-join2.1))))
 	 (res 0))
       (do-something-else)
       (thread-join!
        (thread-start-joinable!
-	(make-thread
-	 (lambda ()
-	    (with-exception-handler
-	       (lambda (exc)
-		  (if (uncaught-exception? exc)
-		      (* 10 (uncaught-exception-reason exc))
-		      99999))
-	       (lambda ()
-		  (set! res (+ 1 (thread-join! t))))))
-	 'thread-join2.2)))
+	(instantiate::pthread
+	   (body (lambda ()
+		    (with-exception-handler
+		       (lambda (exc)
+			  (if (uncaught-exception? exc)
+			      (* 10 (uncaught-exception-reason exc))
+			      99999))
+		       (lambda ()
+			  (set! res (+ 1 (thread-join! t)))))))
+	   (name 'thread-join2.2))))
       res)
    :result 1231)
 
@@ -252,35 +261,37 @@
 		  (thread-join! thread)
 		  #f))))
       (let* ((t1 (thread-start-joinable!
-		  (make-thread (lambda ()
-				  (sleep 5))
-			       'thread-join4.1)))
+		  (instantiate::pthread
+		     (body (lambda () (sleep 5)))
+		     (name 'thread-join4.1))))
 	     (t2 (thread-start-joinable!
-		  (make-thread (lambda ()
-				  (sleep 10))
-			       'thread-join4.2)))
+		  (instantiate::pthread
+		     (body (lambda () (sleep 10)))
+		     (name 'thread-join4.2))))
 	     (t3 (thread-start-joinable!
-		  (make-thread (lambda ()
-				  (sleep 3)
-				  (thread-terminate! t2))
-			       'thread-join4.3)))
+		  (instantiate::pthread
+		     (body (lambda () (sleep 3)
+				   (thread-terminate! t2)))
+		     (name 'thread-join4.3))))
 	     (t4 (thread-start-joinable!
-		  (make-thread (lambda ()
-				  (sleep 3)
-				  (with-error-to-port (open-output-string)
-				     (lambda ()
-					(raise #t))))
-			       'thread-join4.4)))
+		  (instantiate::pthread
+		     (body (lambda ()
+			      (sleep 3)
+			      (with-error-to-port (open-output-string)
+				 (lambda ()
+				    (raise #t)))))
+		     (name 'thread-join4.4))))
 	     (t5 (thread-start-joinable!
-		  (make-thread
-		   (lambda ()
-		      (set! res (cons (wait-for-termination! t1)
-				      res))
-		      (set! res (cons (wait-for-termination! t3)
-				      res))
-		      (set! res (cons (wait-for-termination! t4)
-				      res)))
-		   'thread-join4.5))))
+		  (instantiate::pthread
+		     (body
+		      (lambda ()
+			 (set! res (cons (wait-for-termination! t1)
+					 res))
+			 (set! res (cons (wait-for-termination! t3)
+					 res))
+			 (set! res (cons (wait-for-termination! t4)
+					 res))))
+		     (name 'thread-join4.5)))))
 	 (thread-join! t5)
 	 res))
    :result '(#f #f #f))
@@ -325,17 +336,17 @@
 		    (mutex-unlock! mutex)
 		    (mutex-specific-set! mutex (- n 1)))))
 	  (let ((t (thread-start-joinable!
-		    (make-thread
-		     (lambda ()
-			(let ((m (make-mutex)))
-			   (mutex-lock-recursively! m)
-			   (mutex-lock-recursively! m)
-			   (mutex-lock-recursively! m)
-			   (set! res (cons (mutex-specific m) res))
-			   (mutex-unlock-recursively! m)
-			   (mutex-unlock-recursively! m)
-			   (mutex-unlock-recursively! m)
-			   (set! res (cons (mutex-specific m) res))))))))
+		    (instantiate::pthread
+		       (body (lambda ()
+				(let ((m (make-mutex)))
+				   (mutex-lock-recursively! m)
+				   (mutex-lock-recursively! m)
+				   (mutex-lock-recursively! m)
+				   (set! res (cons (mutex-specific m) res))
+				   (mutex-unlock-recursively! m)
+				   (mutex-unlock-recursively! m)
+				   (mutex-unlock-recursively! m)
+				   (set! res (cons (mutex-specific m) res)))))))))
 	     (thread-join! t)
 	     res))))
    :result '(0 2))
@@ -362,9 +373,9 @@
 		(mutex-unlock! m)
 		#t)))
       (let ((th1 (thread-start-joinable!
-		  (make-thread
-		   (lambda ()
-		      (mutex-toggle m #t mutex-toggle))))))
+		  (instantiate::pthread
+		     (body (lambda ()
+			      (mutex-toggle m #t mutex-toggle)))))))
 	 (thread-join! th1)
 	 (mutex-state m)))
    :result 'abandoned)
@@ -377,9 +388,9 @@
       (define m (make-mutex))
       (let* ((res #unspecified)
 	     (th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (set! res (mutex-lock! m 1000)))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (set! res (mutex-lock! m 1000))))))))
 	 (thread-join! th1)
 	 res))
    :result #t)
@@ -393,9 +404,8 @@
       (mutex-lock! m)
       (let* ((res #unspecified)
 	     (th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (set! res (mutex-lock! m 100)))))))
+		   (instantiate::pthread
+		      (body (lambda () (set! res (mutex-lock! m 100))))))))
 	 (thread-join! th1)
 	 res))
    :result #f)
@@ -409,15 +419,16 @@
 	 (let ((m (make-mutex)))
 	    (thread-join!
 	     (thread-start-joinable!
-	      (make-thread (lambda ()
-			      (let loop ()
-				 (if (mutex-lock! m 0)
-				     (begin
-					(display "locked")
-					(mutex-unlock! m))
-				     (begin
-					(thread-yield!)
-					(loop)))))))))))
+	      (instantiate::pthread
+		 (body (lambda ()
+			  (let loop ()
+			     (if (mutex-lock! m 0)
+				 (begin
+				    (display "locked")
+				    (mutex-unlock! m))
+				 (begin
+				    (thread-yield!)
+				    (loop))))))))))))
    :result "locked")
 
 ;*---------------------------------------------------------------------*/
@@ -440,12 +451,12 @@
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
       (let* ((th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (condition-variable-signal! cv)
-		       (mutex-unlock! lock)
-		       (set! res 23))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (mutex-lock! lock)
+			       (condition-variable-signal! cv)
+			       (mutex-unlock! lock)
+			       (set! res 23)))))))
 	 (thread-join! th1))
       res)
    :result 23)
@@ -457,19 +468,19 @@
    (let ((res #f)
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
-      (let* ((th2 (make-thread
-		   (lambda ()
-		      (mutex-lock! lock)
-		      (condition-variable-signal! cv)
-		      (mutex-unlock! lock))))
+      (let* ((th2 (instantiate::pthread
+		     (body (lambda ()
+			      (mutex-lock! lock)
+			      (condition-variable-signal! cv)
+			      (mutex-unlock! lock)))))
 	     (th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (thread-start! th2)
-		       (condition-variable-wait! cv lock)
-		       (mutex-unlock! lock)
-		       (set! res 23))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (mutex-lock! lock)
+			       (thread-start! th2)
+			       (condition-variable-wait! cv lock)
+			       (mutex-unlock! lock)
+			       (set! res 23)))))))
 	 (thread-join! th1))
       res)
    :result 23)
@@ -482,12 +493,12 @@
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
       (let* ((th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (condition-variable-signal! cv)
-		       (mutex-unlock! lock)
-		       (set! res 23))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (mutex-lock! lock)
+			       (condition-variable-signal! cv)
+			       (mutex-unlock! lock)
+			       (set! res 23)))))))
 	 (thread-join! th1))
       res)
    :result 23)
@@ -500,11 +511,11 @@
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
       (let* ((th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (set! res (condition-variable-wait! cv lock 100))
-		       (mutex-unlock! lock))))))
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (mutex-lock! lock)
+			       (set! res (condition-variable-wait! cv lock 100))
+			       (mutex-unlock! lock)))))))
 	 (thread-join! th1))
       res)
    :result #f)
@@ -554,14 +565,14 @@
 (define-test raise2
    (thread-join!
     (thread-start-joinable!
-     (make-thread
-      (lambda ()
-	 (bind-exit (exit)
-	    (with-exception-handler
-	       (lambda (e)
-		  (exit 45))
-	       (lambda ()
-		  (error 1 2 3))))))))
+     (instantiate::pthread
+	(body (lambda ()
+		 (bind-exit (exit)
+		    (with-exception-handler
+		       (lambda (e)
+			  (exit 45))
+		       (lambda ()
+			  (error 1 2 3)))))))))
    :result 45)
 
 ;*---------------------------------------------------------------------*/

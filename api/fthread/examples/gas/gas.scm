@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Jun 29 09:50:36 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 17:10:31 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple module used to test the fair thread implementation.     */
@@ -242,6 +242,7 @@
 				   (sgn (cons ev-x ev-y)))
 			       (if (eq? color *color*)
 				   (begin
+				      (sleep 10)
 				      (broadcast! sgn atom)
 				      (thread-yield!))
 				   (for-each collision

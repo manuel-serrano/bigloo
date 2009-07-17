@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __fthread_makelib
 
+   (library pthread)
+
    (import __ft_types
 	   __ft_thread
 	   __ft_scheduler
@@ -21,7 +23,6 @@
 	   __ft_env2d
 	   __ft_time
 	   __ft_async
-	   __ft_backend
 
 	   __ft_%types
 	   __ft_%env
@@ -30,9 +31,6 @@
    (eval   (export-all)
 
 	   (class fthread)
-	   (class &thread-error)
-	   (class uncaught-exception)
-	   (class terminated-thread-exception)
 	   (class join-timeout-exception)
 	   (class scheduler)
 	   (class ftenv)))

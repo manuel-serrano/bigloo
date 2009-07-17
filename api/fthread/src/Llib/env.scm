@@ -13,10 +13,11 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_env
+   
+   (library pthread)
 
    (import __ft_types
-	   __ft_signal
-	   __fthread)
+	   __ft_signal)
    
    (export (instant-env! ::ftenv)
 	   (ft-is-signal?::bool ::obj ::obj)

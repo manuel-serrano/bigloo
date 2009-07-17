@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Feb 16 11:12:00 2009 (serrano)                */
+/*    Last change :  Fri Jul 17 17:43:08 2009 (serrano)                */
 /*    Copyright   :  2002-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo fair threads implementation.       */

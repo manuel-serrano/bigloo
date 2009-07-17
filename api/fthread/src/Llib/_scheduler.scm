@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __ft_%scheduler
    
+   (library pthread)
+   
    (import  __ft_types
 	    __ft_%types
 	    __ft_scheduler
@@ -21,7 +23,7 @@
 	    __ft_env
 	    __ft_%env
 	    __ft_signal
-	    __fthread)
+	    __ft_%pthread)
    
    (export  (%get-optional-scheduler::scheduler ::symbol ::pair-nil)
 	    (%schedule-instant ::%scheduler)
@@ -41,9 +43,9 @@
 (define-macro (synchronize scdl . body)
    (let ((res (gensym)))
       `(with-access::%scheduler ,scdl (%builtin)
-	  ($async-synchronize %builtin)
+	  (%async-synchronize %builtin)
 	  (let ((,res (begin ,@body)))
-	     ($async-asynchronize %builtin)
+	     (%async-asynchronize %builtin)
 	     ,res))))
 
 ;*---------------------------------------------------------------------*/
@@ -89,7 +91,7 @@
           ;;; the synchronized body
 	  (with-access::%scheduler scdl (%builtin async-runnable)
 	     (set! async-runnable (cons t async-runnable))
-	     ($async-scheduler-notify %builtin)
+	     (%async-scheduler-notify %builtin)
 	     #unspecified))))
 
 ;*---------------------------------------------------------------------*/
@@ -168,9 +170,9 @@
       (with-trace 3 '%scheduler-switch-to-next-thread
 	 (let ((nt (%scheduler-next-thread t scdl)))
 	    (%scheduler-switch-to-next-thread-debug t scdl nt)
-	    ($fthread-switch %builtin (fthread-%builtin nt))
+	    (%pthread-switch %builtin (fthread-%builtin nt))
 	    (unless (eq? %state 'dead)
-	       ($fthread-wait %builtin)
+	       (%pthread-wait %builtin)
 	       #unspecified)))))
 
 ;*---------------------------------------------------------------------*/
@@ -373,7 +375,7 @@
 		       (%scheduler-add-broadcast! scdl sig (thunk))
 		       #unspecified)))
 	     (set! spawned #t)
-	     ($async-spawn (%scheduler-%builtin scdl) nt id)
+	     (%async-spawn (%scheduler-%builtin scdl) nt id)
 	     #unspecified))))
 	 
 ;*---------------------------------------------------------------------*/
@@ -424,7 +426,7 @@
       (with-access::%scheduler scdl (%builtin tobroadcast)
 	 (let ((sv (cons sig val)))
 	    (set! tobroadcast (cons sv tobroadcast)))
-	 ($async-scheduler-notify %builtin)
+	 (%async-scheduler-notify %builtin)
 	 #unspecified)))
 
 ;*---------------------------------------------------------------------*/

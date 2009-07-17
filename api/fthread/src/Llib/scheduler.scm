@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 06:40:08 2003                          */
-;*    Last change :  Fri Jun 19 16:41:08 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 17:13:49 2009 (serrano)                */
 ;*    Copyright   :  2003-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The FairThreads scheduler                                        */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_scheduler
+   
+   (library pthread)
 
    (import  __ft_types
 	    __ft_%types
@@ -21,8 +23,7 @@
 	    __ft_%thread
 	    __ft_thread
 	    __ft_signal
-	    __ft_backend
-	    __fthread)
+	    __ft_%pthread)
    
    (export  (current-scheduler)
 	    (default-scheduler . scdl)
@@ -88,7 +89,7 @@
    (let ((id (gensym 'scheduler)))
       (letrec ((s (instantiate::%scheduler
 		     (body (lambda () (schedule s)))
-		     (%builtin ($fscheduler-new (lambda () (schedule s)) id))
+		     (%builtin (%fscheduler-new (lambda () (schedule s)) id))
 		     (name id)
 		     (env+ (append envs (list (instantiate::%env)))))))
 	 ;; initialize the back pointer facility
@@ -96,7 +97,7 @@
 	 ;; start the native thread (that will block instantly)
 	 ;; if there is no default scheduler, store that one
 	 (if (not (default-scheduler)) (default-scheduler s))
-	 ($fthread-start (fthread-%builtin s) s)
+	 (%pthread-start (fthread-%builtin s))
 	 ;; return the newly allocates scheduler
 	 s)))
 
@@ -153,10 +154,10 @@
 	    (with-access::%scheduler scdl (next-instant)
 	       (set! next-instant
 		     (lambda (scdl i)
-			($fthread-leave-scheduler (scheduler-%builtin scdl))
+			(%pthread-leave-scheduler (scheduler-%builtin scdl))
 			#t))
 	       ;; acquire the global cpu lock
-	       ($fthread-enter-scheduler (scheduler-%builtin scdl))
+	       (%pthread-enter-scheduler (scheduler-%builtin scdl))
 	       ;; return a description of new state
 	       (scheduler-state scdl))))))
 
@@ -186,7 +187,7 @@
       (define (busy-waiting-next-instant scdl i)
 	 (if (stop i)
 	     (begin
-		($fthread-leave-scheduler (scheduler-%builtin scdl))
+		(%pthread-leave-scheduler (scheduler-%builtin scdl))
 		#unspecified)
 	     (let ((state (scheduler-state scdl)))
 		(with-trace 2 'busy-waiting-next-instant
@@ -198,12 +199,12 @@
 		    ;; busy waiting mode
 		    #t)
 		   (else
-		    ($fthread-leave-scheduler (scheduler-%builtin scdl))
+		    (%pthread-leave-scheduler (scheduler-%builtin scdl))
 		    #t)))))
       (define (no-busy-waiting-next-instant scdl i)
 	 (if (stop i)
 	     (begin
-		($fthread-leave-scheduler (scheduler-%builtin scdl))
+		(%pthread-leave-scheduler (scheduler-%builtin scdl))
 		#unspecified)
 	     (let ((state (scheduler-state scdl)))
 		(with-trace 2 'no-busy-waiting-next-instant
@@ -216,18 +217,18 @@
 		    (with-access::%scheduler scdl (%builtin
 						   tobroadcast
 						   async-runnable)
-		       ($async-synchronize %builtin)
+		       (%async-synchronize %builtin)
 		       ;; it might be possible that an asynchronous
 		       ;; event has been broadcast since we have
 		       ;; computed the scheduler state
 		       (if (and (null? tobroadcast) (null? async-runnable))
 			   (begin
-			      ($async-scheduler-wait %builtin)
+			      (%async-scheduler-wait %builtin)
 			      #unspecified))
-		       ($async-asynchronize %builtin)
+		       (%async-asynchronize %builtin)
 		       #t))
 		   (else
-		    ($fthread-leave-scheduler (scheduler-%builtin scdl))
+		    (%pthread-leave-scheduler (scheduler-%builtin scdl))
 		    #t)))))
       (with-current-scheduler scdl
 	 ;;; the body executed within the current scheduler
@@ -238,7 +239,7 @@
 			 busy-waiting-next-instant
 			 no-busy-waiting-next-instant))
 	       ;; acquires the global cpu lock
-	       ($fthread-enter-scheduler (scheduler-%builtin scdl))
+	       (%pthread-enter-scheduler (scheduler-%builtin scdl))
 	       #unspecified)))))
 
 ;*---------------------------------------------------------------------*/
@@ -314,4 +315,3 @@
 		(error "scheduler-react!" "Illegal scheduler" (car s))))))
       (with-access::%scheduler s (env+)
 	 (ftenv-instant (car env+)))))
-

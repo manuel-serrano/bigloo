@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jul  2 17:31:17 2009 (serrano)                */
+#*    Last change :  Tue May  5 09:07:07 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -55,8 +55,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
 _BGL_OBJECTS	= types _types thread _thread \
                   scheduler _scheduler \
                   signal env _env env2d \
-                  time fthread \
-                  async fbackend
+                  time _pthread async
 
 _POSIX_OBJECTS	= 
 _JAVA_CLASSES	= 
@@ -226,7 +225,7 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
              LIBDEST=$@ \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloopth_s-$(RELEASE) $(PTHREADLIBS)"
+             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) $(PTHREADLIBS)"
 
 $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 	@ $(MAKE) shared-lib \

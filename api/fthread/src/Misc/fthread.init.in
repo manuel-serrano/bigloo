@@ -14,8 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (declare-library! 'fthread
 		  :basename "bigloofth"
-		  :srfi '(fthread srfi-18)
-		  :module-init '__ft_backend
+		  :srfi '(fthread)
 		  :module-eval '__fthread_makelib)
 
 ;*---------------------------------------------------------------------*/

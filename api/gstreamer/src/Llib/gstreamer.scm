@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Sun Jan 25 17:33:01 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 16:22:53 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of GSTREAMER applications.                      */
@@ -102,17 +102,15 @@
 (define (%gst-thread-init!)
    (unless ($bglgst-use-threads?)
       (unless (thread? *gst-thread*)
-	 ;; just check that pthread is linked against that library
-	 (not (eq? make-thread thread-start!))
 	 ;; the thread in charge of executing all callbacks
 	 (set! *gst-thread*
-	       (make-thread
-		(lambda ()
-		   (mutex-lock! *gst-mutex*)
-		   (let loop ()
-		      (condition-variable-wait! *gst-condv* *gst-mutex*)
-		      ($gst-invoke-callbacks)
-		      (loop)))))
+	       (instantiate::pthread
+		  (body (lambda ()
+			   (mutex-lock! *gst-mutex*)
+			   (let loop ()
+			      (condition-variable-wait! *gst-condv* *gst-mutex*)
+			      ($gst-invoke-callbacks)
+			      (loop))))))
 	 (thread-start! *gst-thread*))))
 
 ;*---------------------------------------------------------------------*/

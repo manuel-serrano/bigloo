@@ -14,10 +14,11 @@
 ;*---------------------------------------------------------------------*/
 (module __ft_env2d
    
+   (library pthread)
+   
    (import __ft_types
 	   __ft_env
-	   __ft_signal
-	   __fthread)
+	   __ft_signal)
    
    (static (class %ftenv2d::ftenv
 	      %width::long

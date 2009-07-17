@@ -14,8 +14,9 @@
 ;*---------------------------------------------------------------------*/
 (module __ft_%types
 
-   (import __ft_types
-	   __fthread)
+   (library pthread)
+
+   (import __ft_types)
 
    (export (class %scheduler::scheduler
 	      ;; a predicate telling if the next instant must be executed

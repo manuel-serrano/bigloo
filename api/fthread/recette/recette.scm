@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Fri Jun 19 16:30:24 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 17:47:14 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
@@ -15,6 +15,19 @@
 (module recette
    (library fthread)
    (main    main))
+
+;*---------------------------------------------------------------------*/
+;*    make-thread ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-expander make-thread
+   (lambda (x e)
+      (match-case x
+	 ((make-thread ?body)
+	  (e `(instantiate::fthread (body ,body)) e))
+	 ((make-thread ?body ?name)
+	  (e `(instantiate::fthread (body ,body) (name ,name)) e))
+	 (else
+	  (error 'make-thread "Illegal thread" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    err ...                                                          */
@@ -99,6 +112,13 @@
       (scheduler-react! s)
       (scheduler-react! s)
       #t)
+   :result #t)
+
+;*---------------------------------------------------------------------*/
+;*    fthread?                                                         */
+;*---------------------------------------------------------------------*/
+(define-test fthread?
+   (fthread? (thread-start! (instantiate::fthread (body (lambda () 3)))))
    :result #t)
 
 ;*---------------------------------------------------------------------*/
@@ -1384,7 +1404,6 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main argv)
-   (current-thread-backend-set! (get-fthread-backend))
    (let ((tests '()))
       (args-parse (cdr argv)
 	 ((("-h" "--help") (help "This help message"))

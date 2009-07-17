@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_thread
+
+   (library pthread)
    
    (import  __ft_types
 	    __ft_%types
@@ -22,17 +24,9 @@
 	    __ft_env
 	    __ft_%env
 	    __ft_signal
-	    __fthread
-	    __ft_backend)
+	    __ft_%pthread)
    
-   (export  (class &thread-error::&error)
-	    
-	    (class uncaught-exception::&exception
-	       (reason::obj read-only))
-	    
-	    (class terminated-thread-exception::&exception)
-	    
-	    (class join-timeout-exception::&exception))
+   (export  (class join-timeout-exception::&exception))
    
    (export  (thread-await! ::obj . timeout)
 	    (thread-await*! ::pair . timeout)
@@ -272,11 +266,11 @@
        (let ((scdl (%get-optional-scheduler 'thread-start! o)))
 	  ;; attach the thread to the scheduler
 	  (with-access::fthread t (scheduler %state %builtin)
-	     (set! %builtin ($fthread-new t))
+	     (set! %builtin (%pthread-new t))
 	     (set! scheduler scdl)
 	     (set! %state 'started)
 	     ;; start the builtin thread
-	     ($fthread-start (fthread-%builtin t) t))
+	     (%pthread-start (fthread-%builtin t)))
 	  ;; adding a thread only appends it to the list of thread
 	  ;; to be started at the next scheduler instant
 	  (with-access::%scheduler scdl (tostart %live-thread-number)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Feb  4 09:55:09 2009 (serrano)                */
+;*    Last change :  Thu Jul 16 12:06:39 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -928,9 +928,6 @@
       (lambda ()
 	 (cond
 	    ((not (class? class))
-	     (print "add-method, not a class:"
-		    (if (vector? class) (vector-length class) " ???")
-		    " " (vector-ref class 16) " " *class-key*)
 	     (error 'add-method! "Illegal class" class))
 	    ((not (=fx (procedure-arity generic) (procedure-arity method)))
 	     (error 'add-method! "arity mismatch" (cons generic method)))

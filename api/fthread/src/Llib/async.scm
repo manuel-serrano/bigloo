@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_async
+   
+   (library pthread)
 
    (import __ft_types
 	   __ft_%types
@@ -22,8 +24,7 @@
 	   __ft_env
 	   __ft_%env
 	   __ft_signal
-	   __ft_thread
-	   __fthread)
+	   __ft_thread)
 
    (export (make-asynchronous-signal ::procedure)))
 

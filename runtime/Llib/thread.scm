@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Jul  1 12:01:55 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 17:44:17 2009 (serrano)                */
 ;*    Copyright   :  2004-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -170,8 +170,6 @@
 	    (get-thread-backend ::bstring)
 	    (generic tb-make-thread::thread ::thread-backend ::procedure ::obj)
 	    (generic tb-current-thread::obj ::thread-backend)
-	    (generic tb-thread-yield! ::thread-backend)
-	    (generic tb-thread-sleep! ::thread-backend ::obj)
 	    
 	    ;; thread
 	    (generic thread-initialize! ::thread)
@@ -184,7 +182,10 @@
 	    (generic thread-get-cleanup::obj ::thread)
 	    (generic thread-set-cleanup!::obj ::thread ::obj)
 	    (inline make-thread::thread ::procedure #!optional (name (gensym 'thread)))
-	    (inline current-thread::obj)
+	    (generic %user-current-thread ::thread)
+	    (generic %user-thread-yield! ::thread)
+	    (generic %user-thread-sleep! ::thread obj)
+	    (current-thread::obj)
 	    (inline thread-yield!)
 	    (inline thread-sleep! ::obj)
 	    (thread-parameter ::symbol)
@@ -283,32 +284,6 @@
 (define-generic (tb-current-thread tb::thread-backend))
 
 ;*---------------------------------------------------------------------*/
-;*    tb-thread-yield! ::thread-backend ...                            */
-;*---------------------------------------------------------------------*/
-(define-generic (tb-thread-yield! tb::thread-backend))
-
-;*---------------------------------------------------------------------*/
-;*    tb-thread-sleep! ::thread-backend ...                            */
-;*---------------------------------------------------------------------*/
-(define-generic (tb-thread-sleep! tb::thread-backend d)
-   (cond
-      ((date? d)
-       (let* ((cdt (date->seconds (current-date)))
-	      (dt (date->seconds d))
-	      (a (-elong dt cdt)))
-	  (when (>elong a #e0) (sleep (elong->fixnum a)))))
-      ((fixnum? d)
-       (sleep d))
-      ((elong? d)
-       (sleep (elong->fixnum d)))
-      ((llong? d)
-       (sleep (llong->fixnum d)))
-      ((real? d)
-       (sleep (*fx (flonum->fixnum d) 1000)))
-      (else
-       (bigloo-type-error 'thread-sleep! "date, real, or integer" d))))
-
-;*---------------------------------------------------------------------*/
 ;*    *nothread-current* ...                                           */
 ;*---------------------------------------------------------------------*/
 (define *nothread-current* #f)
@@ -326,12 +301,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (tb-current-thread tb::nothread-backend)
    *nothread-current*)
-
-;*---------------------------------------------------------------------*/
-;*    tb-thread-yield! ::nothread-backend ...                          */
-;*---------------------------------------------------------------------*/
-(define-method (tb-thread-yield! tb::nothread-backend)
-   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::thread ...                                      */
@@ -410,28 +379,65 @@
    (tb-make-thread (default-thread-backend) body name))
 
 ;*---------------------------------------------------------------------*/
+;*    %user-current-thread ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (%user-current-thread o::thread)
+   o)
+
+;*---------------------------------------------------------------------*/
+;*    %current-thread ...                                              */
+;*---------------------------------------------------------------------*/
+(define (%current-thread)
+   (let ((tb (current-thread-backend)))
+      (when (thread-backend? tb)
+ 	 (tb-current-thread tb))))
+
+;*---------------------------------------------------------------------*/
 ;*    current-thread ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-thread)
-   (let ((tb (current-thread-backend)))
-      (when (thread-backend? tb)
-	 (tb-current-thread tb))))
-   
+(define (current-thread)
+   (let ((th (%current-thread)))
+      (when (thread? th)
+	 (%user-current-thread th))))
+
 ;*---------------------------------------------------------------------*/
-;*    thread-yield! ...                                                */
+;*    %user-thread-sleep! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (thread-yield!)
-   (let ((tb (current-thread-backend)))
-      (when (thread-backend? tb)
-	 (tb-thread-yield! tb))))
-   
+(define-generic (%user-thread-sleep! o::thread d)
+   (cond
+      ((date? d)
+       (let* ((cdt (date->seconds (current-date)))
+	      (dt (date->seconds d))
+	      (a (-elong dt cdt)))
+	  (when (>elong a #e0) (sleep (elong->fixnum a)))))
+      ((fixnum? d)
+       (sleep d))
+      ((elong? d)
+       (sleep (elong->fixnum d)))
+      ((llong? d)
+       (sleep (llong->fixnum d)))
+      ((real? d)
+       (sleep (*fx (flonum->fixnum d) 1000)))
+      (else
+       (bigloo-type-error 'thread-sleep! "date, real, or integer" d))))
+
 ;*---------------------------------------------------------------------*/
 ;*    thread-sleep! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (thread-sleep! obj)
-   (let ((tb (current-thread-backend)))
-      (when (thread-backend? tb)
-	 (tb-thread-sleep! tb obj))))
+   (%user-thread-sleep! (current-thread) obj))
+
+;*---------------------------------------------------------------------*/
+;*    %user-thread-yield! ...                                          */
+;*---------------------------------------------------------------------*/
+(define-generic (%user-thread-yield! o::thread)
+   #unspecified)
+  
+;*---------------------------------------------------------------------*/
+;*    thread-yield! ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (thread-yield!)
+   (%user-thread-yield! (current-thread)))
    
 ;*---------------------------------------------------------------------*/
 ;*    thread-parameter ...                                             */

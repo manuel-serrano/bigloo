@@ -13,11 +13,12 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_time
+   
+   (library pthread)
 
    (import __ft_types
 	   __ft_%types
-	   __ft_%scheduler
-	   __fthread)
+	   __ft_%scheduler)
 
    (export (current-time . s)
 	   (time?::bool ::obj)

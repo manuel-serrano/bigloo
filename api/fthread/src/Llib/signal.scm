@@ -14,10 +14,11 @@
 ;*---------------------------------------------------------------------*/
 (module __ft_signal
    
+   (library pthread)
+   
    (import  __ft_types
 	    __ft_env
-	    __ft_%thread
-	    __fthread)
+	    __ft_%thread)
    
    (export  (class %signal
 	       (id::obj read-only)

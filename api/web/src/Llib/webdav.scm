@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Tue Oct 14 13:57:52 2008 (serrano)                */
-;*    Copyright   :  2007-08 Manuel Serrano                            */
+;*    Last change :  Thu Jul 16 12:23:55 2009 (serrano)                */
+;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
 ;*=====================================================================*/
@@ -85,7 +85,7 @@
 			 (raise e)))
 		  (http-parse-response (socket-input socket)
 				       (socket-output socket)
-				       webdav-response-parser))
+				       (make-webdav-response-parser url)))
 	       (socket-close socket))))))
 
 ;*---------------------------------------------------------------------*/
@@ -245,20 +245,22 @@
 	#t))
 
 ;*---------------------------------------------------------------------*/
-;*    webdav-response-parser ...                                       */
+;*    make-webdav-response-parser ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (webdav-response-parser ip status header clen tenc)
-   (let ((x (xml-parse ip
-		       :content-length clen
-		       :encoding 'ISO-8859-1
-		       :procedure vector)))
-      (case status
-	 ((207) (webdav-responses x))
-	 ((200) (webdav-response x '()))
-	 ((401) (raise (instantiate::&access-control-exception
-			  (message "Authentication required")
-			  (permission 401))))
-	 (else '()))))
+(define (make-webdav-response-parser url)
+   (lambda (ip status header clen tenc)
+      (let ((x (xml-parse ip
+			  :content-length clen
+			  :encoding 'ISO-8859-1
+			  :procedure vector)))
+	 (case status
+	    ((207) (webdav-responses x))
+	    ((200) (webdav-response x '()))
+	    ((401) (raise (instantiate::&access-control-exception
+			     (message "Authentication required")
+			     (obj url)
+			     (permission 401))))
+	    (else '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-attribute-namespace ...                                      */

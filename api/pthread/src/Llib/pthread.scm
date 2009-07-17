@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Jul  3 10:28:17 2009 (serrano)                */
+;*    Last change :  Fri Jul 17 16:50:45 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -56,6 +56,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-print o::uncaught-exception port print-slot)
    (object-print (uncaught-exception-reason o) port print-slot))
+
+;*---------------------------------------------------------------------*/
+;*    %user-thread-yield! ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (%user-thread-yield! o::pthread)
+   ($pthread-sched-yield))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-initialize! ::pthread ...                                 */

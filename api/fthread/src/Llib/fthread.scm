@@ -4,6 +4,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __fthread
+   
    (library pthread)
    
    (import  __ft_types
@@ -14,21 +15,20 @@
             __ft_signal
 	    __ft_backend)
    
-   (export
-    ($fscheduler-new ::procedure ::obj)
-    ($fthread-new ::fthread)
-    (inline $fthread-start ::$fthread ::obj)
-    ($fthread-wait ::$fthread)
-    ($fthread-switch ::obj ::$fthread)
-    ($fthread-enter-scheduler ::$fthread)
-    ($fthread-leave-scheduler ::$fthread))
+   (export  ($fscheduler-new ::procedure ::obj)
+	    ($fthread-new ::fthread)
+	    (inline $fthread-start ::$fthread ::fthread)
+	    ($fthread-wait ::$fthread)
+	    ($fthread-switch ::obj ::$fthread)
+	    ($fthread-enter-scheduler ::$fthread)
+	    ($fthread-leave-scheduler ::$fthread)
 
-   (export ;; asynchronous threads
-    ($async-spawn ::$fthread ::procedure ::obj)
-    ($async-synchronize ::$fthread)
-    ($async-asynchronize ::$fthread)
-    ($async-scheduler-wait ::$fthread)
-    ($async-scheduler-notify ::$fthread)))
+	    ;; asynchronous threads
+	    ($async-spawn ::$fthread ::procedure ::obj)
+	    ($async-synchronize ::$fthread)
+	    ($async-asynchronize ::$fthread)
+	    ($async-scheduler-wait ::$fthread)
+	    ($async-scheduler-notify ::$fthread)))
 
 
 ;*---------------------------------------------------------------------*/
@@ -41,7 +41,6 @@
 ;*---------------------------------------------------------------------*/
 (define *$fthread-global-cv* (make-condition-variable))
 
-
 ;*---------------------------------------------------------------------*/
 ;*    *token* ...                                                      */
 ;*---------------------------------------------------------------------*/
@@ -50,23 +49,15 @@
 (define *token* #f)
 
 ;*---------------------------------------------------------------------*/
-;*    current-$fthread ...                                             */
-;*---------------------------------------------------------------------*/
-; Get the $fthread object associated with the current native thread
-(define-inline (current-$fthread)
-   (thread-parameter 'fth))
-
-
-;*---------------------------------------------------------------------*/
 ;*    $fscheduler-new ...                                              */
 ;*---------------------------------------------------------------------*/
 (define ($fscheduler-new body name)
    (with-trace 4 "$fscheduler-new"
       (letrec ((fth (instantiate::$fthread
 		       (thread pth)))
-	       (pth (instantiate::pthread
-		       (body (lambda()
-				(thread-parameter-set! 'fth fth)
+	       (pth (instantiate::%pthread
+		       (uthread fth)
+		       (body (lambda ()
 				($fthread-wait fth)
 				(body)))
 		       (name name))))
@@ -106,9 +97,9 @@
    (with-trace 4 "$fthread-new"
       (letrec ((fth (instantiate::$fthread
 		       (thread pth)))
-	       (pth (instantiate::pthread
+	       (pth (instantiate::%pthread
+		       (uthread fth)
 		       (body (lambda ()
-				(thread-parameter-set! 'fth fth)
 				($fthread-wait fth)
 				(execute-thread fthread)))
 		       (name (fthread-name fthread)))))
@@ -119,7 +110,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    $fthread-start ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline ($fthread-start ft::$fthread o::obj)
+(define-inline ($fthread-start ft::$fthread o::fthread)
+   ($fthread-fth-set! ft o)
    (thread-start! ($fthread-thread ft)))
 
 
@@ -160,7 +152,8 @@
 ;*---------------------------------------------------------------------*/
 (define ($fthread-enter-scheduler scdl::$fthread)
    (with-trace 4 "$fthread-enter-scheduler"
-      (let ((this (current-$fthread)))
+      (let ((this (and (current-fthread)
+		       (fthread-%builtin (current-fthread)))))
 	 
 	 ($fthread-parent-set! scdl this)
 	 
@@ -218,10 +211,9 @@
       (letrec ((fth (instantiate::$fthread
 		       (thread pth)
 		       (id o)))
-	       (pth (instantiate::pthread
-		       (body (lambda()
-				(thread-parameter-set! 'fth fth)
-				(body)))
+	       (pth (instantiate::%pthread
+		       (uthread fth)
+		       (body body)
 		       (name (symbol-append (gensym 'async) o)))))
 	 (thread-start! ($fthread-thread fth))
 	 fth)))
