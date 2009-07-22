@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Jun 22 09:11:45 2009 (serrano)                */
+;*    Last change :  Mon Jul 20 09:59:23 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -513,7 +513,7 @@
 	 ($write/display-llong (symbol-append '$ disp '-llong))
 	 ($write/display-bignum (symbol-append '$ disp '-bignum))
 	 (write/display-ucs2string (symbol-append disp '-ucs2string))
-	 (write/display-2ect (symbol-append 'object- disp))
+	 (write/display-object (symbol-append 'object- disp))
 	 (write/display-date (symbol-append disp '-date))
 	 ($write/display-ucs2 (symbol-append '$ disp '-ucs2)))
       `(cond
@@ -552,7 +552,7 @@
 	  ((struct? ,obj)
 	   (write/display-structure ,obj ,port ,write/display-2))
 	  ((object? ,obj)
-	   (,write/display-2ect ,obj ,port))
+	   (,write/display-object ,obj ,port))
 	  ((date? ,obj)
 	   (,write/display-date ,obj ,port))
 	  ((mutex? ,obj)

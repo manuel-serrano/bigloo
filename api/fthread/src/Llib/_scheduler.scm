@@ -28,10 +28,10 @@
    (export  (%get-optional-scheduler::scheduler ::symbol ::pair-nil)
 	    (%schedule-instant ::%scheduler)
 	    (%broadcast! scdl::%scheduler ::obj ::obj)
-	    (%scheduler-next-thread ::thread ::scheduler)
-	    (%scheduler-switch-to-next-thread ::thread ::scheduler)
+	    (%scheduler-next-thread ::fthread ::scheduler)
+	    (%scheduler-switch-to-next-thread ::fthread ::scheduler)
 	    (%scheduler-time ::scheduler)
-	    (%scheduler-add-async-runnable! ::%scheduler ::thread)
+	    (%scheduler-add-async-runnable! ::%scheduler ::fthread)
 	    (%scheduler-add-async! ::%scheduler ::%sigasync)
 	    (%scheduler-spawn-async ::%scheduler ::%sigasync)
 	    (%scheduler-add-broadcast! ::%scheduler ::obj ::obj)
@@ -84,7 +84,7 @@
 ;*    Aquires the async lock and then adds a thread to the async       */
 ;*    runnable list                                                    */
 ;*---------------------------------------------------------------------*/
-(define (%scheduler-add-async-runnable! scdl::%scheduler t::thread)
+(define (%scheduler-add-async-runnable! scdl::%scheduler t::fthread)
    (with-trace 2 '%scheduler-add-async-runnable
       (trace-item "t=" t)
       (synchronize scdl
@@ -104,7 +104,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    %scheduler-next-thread ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (%scheduler-next-thread t::thread scdl::scheduler)
+(define (%scheduler-next-thread t::fthread scdl::scheduler)
    (with-access::%scheduler scdl (threads-runnable
 				  threads-runnable-last-pair
 				  threads-yield
@@ -165,7 +165,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Switches to the next threads or ends the current instant.        */
 ;*---------------------------------------------------------------------*/
-(define (%scheduler-switch-to-next-thread t::thread scdl::scheduler)
+(define (%scheduler-switch-to-next-thread t::fthread scdl::scheduler)
    (with-access::fthread t (%builtin %state)
       (with-trace 3 '%scheduler-switch-to-next-thread
 	 (let ((nt (%scheduler-next-thread t scdl)))
@@ -179,9 +179,8 @@
 ;*    %scheduler-switch-to-next-thread-debug ...                       */
 ;*---------------------------------------------------------------------*/
 (define (%scheduler-switch-to-next-thread-debug t scdl nt)
-   (trace-item "scdl=" scdl)
-   (trace-item "t=" t)
-   (trace-item "params=" (trace-string (thread-parameter 'fthread)))
+   (trace-item "scdl=" (trace-string scdl))
+   (trace-item "t=" (trace-string t))
    (trace-item "nt=" (trace-bold (trace-string nt))))
 
 ;*---------------------------------------------------------------------*/

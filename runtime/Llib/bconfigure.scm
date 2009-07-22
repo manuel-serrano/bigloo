@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Dec 30 07:08:35 2008 (serrano)                */
-;*    Copyright   :  2000-08 Manuel Serrano                            */
+;*    Last change :  Mon Jul 20 12:20:47 2009 (serrano)                */
+;*    Copyright   :  2000-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -73,9 +73,6 @@
 	   (macro $configure-c-beautifier::string "C_BEAUTIFIER")
 	   (macro $configure-dirname-cmd::string "DIRNAME_CMD")
 	   (macro $configure-library-base-name::string "LIBRARY_BASE_NAME")
-	   (macro $configure-release-number::string "BGL_RELEASE_NUMBER")
-	   (macro $configure-specific-version::string "BGL_SPECIFIC_VERSION")
-	   (macro $configure-homeurl::string "BGL_HOMEURL")
 	   (macro $configure-heap-debug-copt::string "BGL_HEAP_DEBUG_COPT")
  	   (macro $configure-have-shared-library::bool "HAVE_SHARED_LIBRARY")
 	   (macro $configure-shared-link-option::string "ADDITIONAL_SHARED_LINK_OPTION")

@@ -94,7 +94,7 @@
 ;*    thread-await! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (thread-await! sig . arg)
-   (let* ((t (current-fthread)))
+   (let* ((t (current-thread)))
       ;; wait until the signal is present
       (define (await scdl::scheduler sig::obj)
 	 (let ((env (scheduler-env+ scdl)))
@@ -156,7 +156,7 @@
 ;*    thread-await*! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (thread-await*! s* . arg)
-   (let* ((t (current-fthread)))
+   (let* ((t (current-thread)))
       ;; await until one of the signals is present
       (define (await* e* s)
 	 (let ((env (scheduler-env+ s)))
@@ -209,20 +209,20 @@
 ;*    thread-get-values! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (thread-get-values! s)
-   (let ((t (current-fthread)))
+   (let ((t (current-thread)))
       (if (thread? t)
 	  (begin
-	     (thread-yield!)
+	     (%thread-yield! t)
 	     (signal-last-values s (scheduler-env+ (fthread-scheduler t)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-values*! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (thread-get-values*! s*)
-   (let ((t (current-fthread)))
+   (let ((t (current-thread)))
       (if (thread? t)
 	  (begin
-	     (thread-yield!)
+	     (%thread-yield! t)
 	     (map (lambda (s)
 		     (cons s (signal-last-values
 			      s (scheduler-env+ (fthread-scheduler t)))))
@@ -259,27 +259,30 @@
 ;*    thread-start! ::fthread ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-start! t::fthread . o)
-   ;; check that the thread is not already attached to a scheduler
-   ;; (i.e. the thread is not already running in another scheduler)
-   (if (%thread-attached? t)
-       (error "thread-start!" "thread already running" t)
-       (let ((scdl (%get-optional-scheduler 'thread-start! o)))
-	  ;; attach the thread to the scheduler
-	  (with-access::fthread t (scheduler %state %builtin)
-	     (set! %builtin (%pthread-new t))
-	     (set! scheduler scdl)
-	     (set! %state 'started)
-	     ;; start the builtin thread
-	     (%pthread-start (fthread-%builtin t)))
-	  ;; adding a thread only appends it to the list of thread
-	  ;; to be started at the next scheduler instant
-	  (with-access::%scheduler scdl (tostart %live-thread-number)
-	     ;; increment the number of live threads
-	     (set! %live-thread-number (+fx 1 %live-thread-number))
-	     ;; thread are append in the inverse order
-	     (set! tostart (cons t tostart)))
-	  ;; return the started thread
-	  t)))
+   (with-trace 2 "thread-start!"
+      (trace-item "thread=" (trace-bold t))
+      (trace-item "o=" (trace-string o))
+      ;; check that the thread is not already attached to a scheduler
+      ;; (i.e. the thread is not already running in another scheduler)
+      (if (%thread-attached? t)
+	  (error "thread-start!" "thread already running" t)
+	  (let ((scdl (%get-optional-scheduler 'thread-start! o)))
+	     ;; attach the thread to the scheduler
+	     (with-access::fthread t (scheduler %state %builtin)
+		(set! %builtin (%pthread-new t))
+		(set! scheduler scdl)
+		(set! %state 'started)
+		;; start the builtin thread
+		(thread-start! %builtin))
+	     ;; adding a thread only appends it to the list of thread
+	     ;; to be started at the next scheduler instant
+	     (with-access::%scheduler scdl (tostart %live-thread-number)
+		;; increment the number of live threads
+		(set! %live-thread-number (+fx 1 %live-thread-number))
+		;; thread are append in the inverse order
+		(set! tostart (cons t tostart)))
+	     ;; return the started thread
+	     t))))
    
 ;*---------------------------------------------------------------------*/
 ;*    thread-terminate! ::fthread ...                                  */
@@ -368,4 +371,3 @@
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-cleanup! th::fthread v)
    (fthread-%cleanup-set! th v))
-

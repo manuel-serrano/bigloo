@@ -17,10 +17,11 @@
    (library pthread)
 
    (export (class fthread::thread
+	      (%thread-setup!)
 	      ;; the scheduler the threads belongs to
 	      (scheduler (default #f))
 	      ;; the actual native thread
-	      (%builtin::%pthread (default (%pthread-nil)))
+	      (%builtin (default #f))
 	      ;; the timeout for idle threads
 	      (%timeout::int (default 1))
 	      ;; state
@@ -60,23 +61,24 @@
 	   (class %sigjoin
 	      (thread::fthread read-only))
 
-	   ; This class represents the underlaying physical thread
-	   (class %pthread::pthread
-	      ; The fthread object associated with this thread
-	      (fthread (default #f))
-	      ; A mutex
-	      (mutex::mutex (default (make-mutex)))
-	      ; A condition variable
-	      (condvar::condvar (default (make-condition-variable)))
-	      ; An id
-	      (id::symbol (default (gensym '$fth)))
-	      ; The parent thread, used while entering and leaving the scheduler
-	      (parent (default #f)))
-
-	    *thread-strict-order*))
+	    *thread-strict-order*
+	    (%thread-setup! t::fthread)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *thread-strict-order*                                            */
 ;*---------------------------------------------------------------------*/
 (define *thread-strict-order* #f)
 
+;*---------------------------------------------------------------------*/
+;*    *thread-counter* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *thread-counter* 0)
+
+;*---------------------------------------------------------------------*/
+;*    %thread-setup! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (%thread-setup! t::fthread)
+   (set! *thread-counter* (+fx 1 *thread-counter*))
+   (with-access::fthread t (%ident)
+      (set! %ident *thread-counter*)
+      t))

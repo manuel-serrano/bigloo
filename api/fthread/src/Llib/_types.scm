@@ -54,4 +54,17 @@
 	      ;; !!! mem identifier, don't remove
 	      (id::symbol read-only)
 	      ;; the asynchronous body
-	      (thunk::procedure read-only))))
+	      (thunk::procedure read-only))
+
+	   ; This class represents the underlaying physical thread
+	   (class %pthread::pthread
+	      ; The fthread object associated with this thread
+	      (fthread (default #f))
+	      ; A mutex
+	      (mutex::mutex (default (make-mutex)))
+	      ; A condition variable
+	      (condvar::condvar (default (make-condition-variable)))
+	      ; An id
+	      (id::symbol (default (gensym '$fth)))
+	      ; The parent thread, used while entering and leaving the scheduler
+	      (parent (default #f)))))

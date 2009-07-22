@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 15 14:35:26 2002                          */
-;*    Last change :  Fri Jun 19 16:21:00 2009 (serrano)                */
+;*    Last change :  Wed Jul 22 16:05:03 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A demonstration of walkers in a ground                           */
@@ -251,7 +251,6 @@
 			(set! *ground-height* (string->integer (caddr r)))))))))
       (else
        (error "stick" "Illegal parameter" else)))
-   (current-thread-backend-set! (get-fthread-backend))
    ;; allocate the global canvas
    (let* ((win (instantiate::window
 		  (transient *transient*)

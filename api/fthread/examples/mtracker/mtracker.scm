@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Jun 29 09:54:57 2009 (serrano)                */
+;*    Last change :  Wed Jul 22 16:03:10 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple module used to test the fair thread implementation.     */
@@ -124,7 +124,6 @@
        (set! *mode* 'cross))
       (else
        (set! *iteration* (string->number else))))
-   (current-thread-backend-set! (get-fthread-backend))
    ;; allocate the global canvas
    (let* ((win (instantiate::window
 		  (padding 2)))

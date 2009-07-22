@@ -23,8 +23,7 @@
 	    __ft_%scheduler
 	    __ft_%pthread)
    
-   (export  (%thread-setup! ::fthread)
-	    (%thread-awake! ::fthread)
+   (export  (%thread-awake! ::fthread)
 	    (%thread-cooperate ::fthread)
 	    (%thread-yield! ::fthread)
 	    (%thread-timeout! ::fthread ::int)
@@ -36,22 +35,6 @@
 	    (%thread-is-terminated::bool ::fthread . ::obj)
 	    (%thread-asynchronize! t::fthread id::symbol)
 	    (%thread-synchronize! t)))
-
-;*---------------------------------------------------------------------*/
-;*    *thread-counter* ...                                             */
-;*---------------------------------------------------------------------*/
-(define *thread-counter* 0)
-
-;*---------------------------------------------------------------------*/
-;*    %thread-setup! ...                                               */
-;*---------------------------------------------------------------------*/
-(define (%thread-setup! t::fthread)
-   (set! *thread-counter* (+fx 1 *thread-counter*))
-   (with-access::fthread t (%builtin %ident)
-      (set! %ident *thread-counter*)
-      (with-access::%pthread %builtin (fthread)
-	 (unless fthread (set! fthread t)))
-      thread))
 
 ;*---------------------------------------------------------------------*/
 ;*    %thread-awake! ...                                               */

@@ -1,13 +1,4 @@
-;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/fthread/src/Llib/_pthread.scm        */
-;*    -------------------------------------------------------------    */
-;*    Author      :  Cyprien Nicolas                                   */
-;*    Creation    :  Fri Jul 17 16:42:27 2009                          */
-;*    Last change :  Fri Jul 17 17:17:36 2009 (serrano)                */
-;*    Copyright   :  2009 Cyprien Nicolas, Manuel Serrano              */
-;*    -------------------------------------------------------------    */
-;*    pthread backend for fthreads                                     */
-;*=====================================================================*/
+
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
@@ -23,22 +14,20 @@
 	    __ft_%scheduler
             __ft_signal)
    
-   (export  (%fscheduler-new ::procedure ::obj)
+   (export  (%fscheduler-new ::%scheduler)
 	    (%pthread-new ::fthread)
-	    (inline %pthread-start ::%pthread)
 	    (%pthread-wait ::%pthread)
 	    (%pthread-switch ::obj ::%pthread)
 	    (%pthread-enter-scheduler ::%pthread)
 	    (%pthread-leave-scheduler ::%pthread)
-	    
+
 	    ;; asynchronous threads
 	    (%async-spawn ::%pthread ::procedure ::obj)
 	    (%async-synchronize ::%pthread)
 	    (%async-asynchronize ::%pthread)
 	    (%async-scheduler-wait ::%pthread)
-	    (%async-scheduler-notify ::%pthread)
-	    
-	    (inline current-fthread)))
+	    (%async-scheduler-notify ::%pthread)))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    *%pthread-global-lock* ...                                       */
@@ -52,31 +41,32 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    *token* ...                                                      */
-;*    -------------------------------------------------------------    */
-;*    The current %pthread, the value #f means the main() thread       */
-;*    is currently running, as it is not a $thread object.             */
 ;*---------------------------------------------------------------------*/
+; The current %pthread, the value #f means the main() thread
+; is currently running, as it is not a $thread object.
 (define *token* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    $fscheduler-new ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (%fscheduler-new body name)
+(define (%fscheduler-new scdl::%scheduler)
    (with-trace 4 "%fscheduler-new"
-      (letrec ((%pth (instantiate::%pthread
-			(body (lambda ()
-				 (%pthread-wait %pth)
-				 (body)))
-			(name name))))
-	 (trace-item "%pth=" (trace-string %pth))
-	 %pth)))
+      (with-access::%scheduler scdl (body name)
+	 (letrec ((%pth (instantiate::%pthread
+			   (body (lambda ()
+				    (%pthread-wait %pth)
+				    (body)))
+			   (name name)
+			   (fthread scdl))))
+	    (trace-item "%pth=" (trace-string %pth))
+	    %pth))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-new ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (%pthread-new ft::fthread)
    (define (execute-thread t)
-      (with-access::fthread t (%state %result cleanup scheduler body)
+      (with-access::fthread t (%state %result %cleanup scheduler body)
 	 ;; terminate is used to abruptly terminate a thread
 	 (bind-exit (terminate)
 	    (fthread-%terminate-set! t terminate)
@@ -93,10 +83,10 @@
 	 ;; broadcast a signal for the thread termination
 	 (broadcast! (instantiate::%sigjoin (thread t)) %result)
 	 ;; invoke the thread cleanup
-	 (if (procedure? cleanup)
-	     (if (correct-arity? cleanup 1)
-		 (cleanup t)
-		 (error t "Illegal cleanup function" cleanup)))
+	 (if (procedure? %cleanup)
+	     (if (correct-arity? %cleanup 1)
+		 (%cleanup t)
+		 (error t "Illegal cleanup function" %cleanup)))
 	 ;; kill the thread is now dead and switch back to the scheduler
 	 (%thread-kill! t)))
    
@@ -110,13 +100,13 @@
 	 (trace-item "%pth=" (trace-string %pth))
 	 %pth)))
 
+; Starting a %pthread is starting the built-in pthread
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-start ...                                               */
-;*    -------------------------------------------------------------    */
-;*    Starting a %pthread is starting the built-in pthread             */
 ;*---------------------------------------------------------------------*/
 (define-inline (%pthread-start %pth::%pthread)
    (thread-start! %pth))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-wait ...                                                */
@@ -127,7 +117,7 @@
 	 (trace-item "wait on thread " (trace-string ft))
 	 (trace-item "cv=" (trace-string condvar))
 	 (trace-item "mutex=" (trace-string mutex))
-	 
+
 	 (mutex-lock! mutex)
 	 (let loop ()
 	    (unless (eq? *token* ft)
@@ -155,27 +145,26 @@
 ;*---------------------------------------------------------------------*/
 (define (%pthread-enter-scheduler scdl::%pthread)
    (with-trace 4 "%pthread-enter-scheduler"
-      (let ((this (and (current-fthread)
-		       (fthread-%builtin (current-fthread)))))
+      (let* ((th (current-thread))
+	     (this (if (fthread? th)
+		       (fthread-%builtin th))))
 	 
 	 (%pthread-parent-set! scdl this)
-	 
-	 (let ((mutex (if this
-			  (%pthread-mutex this)
-			  *%pthread-global-lock*))
-	       (condvar (if this
-			    (%pthread-condvar this)
-			    *%pthread-global-cv*)))
 	    
-	    (%pthread-switch this scdl)
+	 (%pthread-switch this scdl)
+
+	 (if (%pthread? this)
+	     (%pthread-wait this)
+	     (let ((mutex *%pthread-global-lock*)
+		   (condvar *%pthread-global-cv*))
 	    
-	    (mutex-lock! mutex)
-	    (let loop ()
-	       (unless (eq? *token* this)
-		  (trace-item "wait on " (trace-string condvar))
-		  (condition-variable-wait! condvar mutex)
-		  (loop)))
-	    (mutex-unlock! mutex)))))
+		(mutex-lock! mutex)
+		(let loop ()
+		   (unless (eq? *token* this)
+		      (trace-item "wait on " (trace-string condvar))
+		      (condition-variable-wait! condvar mutex)
+		      (loop)))
+		(mutex-unlock! mutex))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-leave-scheduler ...                                     */
@@ -183,22 +172,22 @@
 (define (%pthread-leave-scheduler scdl::%pthread)
    (with-trace 4 "%pthread-leave-scheduler"
       (let ((this (%pthread-parent scdl)))
-	 
-	 (let ((mutex (if this
-			  (%pthread-mutex this)
-			  *%pthread-global-lock*))
-	       (condvar (if this
-			    (%pthread-condvar this)
-			    *%pthread-global-cv*)))
 	    
-	    (set! *token* #f)
-	    
-	    (mutex-lock! mutex)
-	    (set! *token* this)
-	    (condition-variable-signal! condvar)
-	    (mutex-unlock! mutex))
+	 #;(set! *token* #f)
+
+	 (if (%pthread? this)
+	     (%pthread-switch scdl this)
+	     (let ((mutex *%pthread-global-lock*)
+		   (condvar *%pthread-global-cv*))
+		(mutex-lock! mutex)
+		(set! *token* this)
+		(condition-variable-signal! condvar)
+		(mutex-unlock! mutex)))
 	 
 	 (%pthread-wait scdl))))
+
+
+;;; ASYNCHRONOUS THREADS
 
 ;*---------------------------------------------------------------------*/
 ;*    %async-spawn ...                                                 */
@@ -256,57 +245,66 @@
 			    (car port)
 			    (current-output-port))
       (lambda ()
-	 (with-access::%pthread o (id parent fthread)
+	 (with-access::%pthread o (name parent)
 	    ; Just to avoid the use of display-circle, in case of self reference
-	    (let ((the-parent (if (eq? o parent)
-				  "*self*"
-				  parent)))
-	       (display* "#<%pthread:" id
-			 " fthread:" fthread
-			 " parent:" the-parent)
-	       (call-next-method)
-	       (display ">"))))))
+	    (let ((the-parent (if (eq? o parent) "*self*" parent)))
+	       (display* "#<%pthread:" name " parent:" the-parent ">"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display o::%pthread . port)
-   (object-write o port))
+   (apply object-write o port))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    current-fthread ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-fthread)
-   (when (scheduler? (current-scheduler))
-      (%scheduler-current-thread (current-scheduler))))
+(define-inline (%current-fthread)
+   (let ((cs (current-scheduler)))
+      (if (scheduler? cs)
+	  (%scheduler-current-thread cs)
+	  (let ((ds (default-scheduler)))
+	     (if (scheduler? ds)
+		 (%scheduler-current-thread ds))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-current-thread ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-current-thread o::%pthread)
-   (or (%pthread-fthread o)
-       (current-fthread)))
+   (if (fthread? (%pthread-fthread o))
+       (%pthread-fthread o)
+       (%current-fthread)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-yield! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-thread-yield! o::%pthread)
-   (error '%user-thread-yield "should be here" o))
-
-;*---------------------------------------------------------------------*/
-;*    %user-thread-yield! ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (%user-thread-yield! o::fthread)
-   (%thread-yield! o))
+   (let ((fth (%pthread-fthread o)))
+      (when fth
+	 (%thread-yield! fth))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-sleep! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-thread-sleep! o::%pthread timeout)
    (let ((fth (%pthread-fthread o)))
-      (when (and fth
+      (when (and (fthread? fth)
 		 (>fx timeout 0))
 	 (%thread-timeout! fth timeout))))
+
+
+;*---------------------------------------------------------------------*/
+;*    %user-current-thread ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (%user-current-thread o::fthread)
+   o)
+
+;*---------------------------------------------------------------------*/
+;*    %user-thread-yield! ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (%user-thread-yield! o::fthread)
+   (%thread-yield! o))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-sleep! ...                                          */

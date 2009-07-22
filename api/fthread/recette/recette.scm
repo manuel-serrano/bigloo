@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Fri Jul 17 17:47:14 2009 (serrano)                */
+;*    Last change :  Fri Jun 19 16:30:24 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
@@ -112,13 +112,6 @@
       (scheduler-react! s)
       (scheduler-react! s)
       #t)
-   :result #t)
-
-;*---------------------------------------------------------------------*/
-;*    fthread?                                                         */
-;*---------------------------------------------------------------------*/
-(define-test fthread?
-   (fthread? (thread-start! (instantiate::fthread (body (lambda () 3)))))
    :result #t)
 
 ;*---------------------------------------------------------------------*/

@@ -108,6 +108,8 @@
        (set! *width* (string->integer w)))
       (("--height" ?h (help "Set canvas height"))
        (set! *height* (string->integer h)))
+      (("-g" (help "Set debug mode"))
+       (bigloo-debug-set! (+fx (bigloo-debug) 1)))
       (else
        (error "gas" "Unknown argument" else)))
    ;; allocate the global canvas
@@ -257,7 +259,7 @@
 			 (loop))))
 	     (th (instantiate::fthread
 		    (body prgm)
-		    (scheduler *scheduler*))))
+		    #;(scheduler *scheduler*))))
 	 (thread-cleanup-set! th (lambda (v) (destroy (atom-%ci atom))))
 	 (thread-start! th *scheduler*)))
    (do ((j 0 (+fx j 1)))

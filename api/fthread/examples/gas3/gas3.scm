@@ -271,7 +271,7 @@
 (define (add-atoms num)
    (define (add-atom atom)
       (let ((prgm (make-atom-prgm atom)))
-         (thread-start! (make-thread prgm) *scheduler*)))
+         (thread-start! (instantiate::fthread (body prgm)) *scheduler*)))
    (do ((j 0 (+fx j 1)))
        ((=fx j num) #unspecified)
        (add-atom (instantiate::atom))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 06:40:08 2003                          */
-;*    Last change :  Fri Jul 17 17:13:49 2009 (serrano)                */
+;*    Last change :  Fri Jun 19 16:41:08 2009 (serrano)                */
 ;*    Copyright   :  2003-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The FairThreads scheduler                                        */
@@ -89,16 +89,16 @@
    (let ((id (gensym 'scheduler)))
       (letrec ((s (instantiate::%scheduler
 		     (body (lambda () (schedule s)))
-		     (%builtin (%fscheduler-new (lambda () (schedule s)) id))
 		     (name id)
 		     (env+ (append envs (list (instantiate::%env)))))))
-	 ;; initialize the back pointer facility
-	 (%thread-setup! s)
-	 ;; start the native thread (that will block instantly)
+	 ;; create the native thread
+	 (with-access::%scheduler s (%builtin)
+	    (set! %builtin (%fscheduler-new s)))
 	 ;; if there is no default scheduler, store that one
 	 (if (not (default-scheduler)) (default-scheduler s))
-	 (%pthread-start (fthread-%builtin s))
-	 ;; return the newly allocates scheduler
+	 ;; start the native thread (that will block instantly)
+	 (thread-start! (fthread-%builtin s))
+	 ;; return the newly allocated scheduler
 	 s)))
 
 ;*---------------------------------------------------------------------*/
@@ -246,7 +246,7 @@
 ;*    broadcast! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (broadcast! sig . val)
-   (let ((t (current-fthread))
+   (let ((t (current-thread))
 	 (v (if (pair? val) (car val) #unspecified)))
       (if (thread? t)
 	  (if (%thread-attached? t)
