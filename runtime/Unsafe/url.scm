@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Wed May 13 15:44:57 2009 (serrano)                */
+;*    Last change :  Thu Jul 23 12:08:59 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
@@ -271,7 +271,7 @@
 	     n
 	     (let ((c (string-ref str i)))
 		(case c
-		   ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\])
+		   ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\] #\\)
 		    (loop (+fx i 1) (+fx n 3)))
 		   (else
 		    (cond
@@ -290,7 +290,7 @@
 		    res
 		    (let ((c (string-ref str i)))
 		       (case c
-			  ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\])
+			  ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\] #\\)
 			   (encode-char res j c)
 			   (loop (+fx i 1) (+fx j 3)))
 			  (else
