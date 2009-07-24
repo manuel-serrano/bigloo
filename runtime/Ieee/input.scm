@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Sat Jun 20 05:55:40 2009 (serrano)                */
+;*    Last change :  Fri Jul 24 10:33:46 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -266,12 +266,14 @@
 		 (else (bigloo-type-error
 			'read-chars "integer" (find-runtime-type l))))))
       (cond
-	 ((<fx len 0)
-	  (raise
-	   (instantiate::&io-error
-	      (proc 'read-chars)
-	      (msg "Illegal negative length")
-	      (obj len))))
+	 ((<=fx len 0)
+	  (if (=fx len 0)
+	      ""
+	      (raise
+	       (instantiate::&io-error
+		  (proc 'read-chars)
+		  (msg "Illegal negative length")
+		  (obj len)))))
 	 (else
 	  (let* ((s (c-make-string/wo-fill len))
 		 (n ($rgc-blit-string! ip s 0 len)))
@@ -296,12 +298,14 @@
 		 (else (bigloo-type-error
 			'read-chars! "integer" (find-runtime-type l))))))
       (cond
-	 ((<fx len 0)
-	  (raise
-	   (instantiate::&io-error
-	      (proc 'read-chars)
-	      (msg "Illegal negative length")
-	      (obj len))))
+	 ((<=fx len 0)
+	  (if (=fx len 0)
+	      0
+	      (raise
+	       (instantiate::&io-error
+		  (proc 'read-chars)
+		  (msg "Illegal negative length")
+		  (obj len)))))
 	 (else
 	  ($rgc-blit-string! ip buf 0 (minfx (string-length buf) len))))))
 
@@ -310,12 +314,14 @@
 ;*---------------------------------------------------------------------*/
 (define (read-fill-string! s o len::long #!optional (ip (current-input-port)))
    (cond
-      ((<fx len 0)
-       (raise
-	(instantiate::&io-error
-	   (proc 'read-chars)
-	   (msg "Illegal negative length")
-	   (obj len))))
+      ((<=fx len 0)
+       (if (=fx len 0)
+	   0
+	   (raise
+	    (instantiate::&io-error
+	       (proc 'read-chars)
+	       (msg "Illegal negative length")
+	       (obj len)))))
       (else
        ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o))))))
 

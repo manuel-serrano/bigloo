@@ -3,13 +3,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Feb 13 08:23:29 2002                          */
-#*    Last change :  Wed Aug 16 07:05:43 2006 (serrano)                */
-#*    Copyright   :  2002-06 Manuel Serrano                            */
+#*    Last change :  Fri Jul 24 09:47:48 2009 (serrano)                */
+#*    Copyright   :  2002-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Thread examples                                                  */
 #*=====================================================================*/
 
-EXAMPLES=gas gas2 gas3 srfi18 mtracker prims trepl sticker
+EXAMPLES=gas gas2 gas3 srfi18 mtracker prims trepl sticker http
 
 all:
 	for p in $(EXAMPLES); do \

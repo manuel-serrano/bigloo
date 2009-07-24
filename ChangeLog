@@ -1,3 +1,9 @@
+Fri Jul 24 10:44:10 CEST 2009 (Manuel Serrano):
+
+	*** runtime/Ieee/input.scm: enforce empty strings on eof for 
+	read-chars functions.
+	
+
 Tue Jul  7 09:03:21 CEST 2009 (Manuel Serrano):
 
 	*** api/mail/src/Llib/rfc2045.scm: improve mime multipart decoding.
