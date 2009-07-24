@@ -6117,6 +6117,16 @@ namespace bigloo
 	    return ((int)n);
 	 }
 
+/*       public static byte[] bgl_float_to_ieee_string( float  v )     */
+/* 	 {                                                             */
+/* 	    return foreign.getbytes( v.ToString() );                   */
+/* 	 }                                                             */
+/*                                                                     */
+/*       public static float bgl_ieee_string_to_float( byte[]  s )     */
+/* 	 {                                                             */
+/* 	    return float.Parse( newstring( s ) );                      */
+/* 	 }                                                             */
+
       public static byte[] bgl_double_to_ieee_string( double  v )
 	 {
 	    return foreign.getbytes( v.ToString() );

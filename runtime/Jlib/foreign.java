@@ -5804,6 +5804,30 @@ public final class foreign
 	 return ((int)n);
       }
 
+/*    public static byte[] bgl_float_to_ieee_string(float v) throws IOException */
+/*       {                                                             */
+/* 	 final ByteArrayOutputStream bout = new ByteArrayOutputStream(); */
+/* 	 final DataOutputStream out = new DataOutputStream(bout);      */
+/*                                                                     */
+/* 	 out.writeFloat(v);                                            */
+/*                                                                     */
+/* 	 final byte[] res = bout.toByteArray();                        */
+/*                                                                     */
+/* 	 bout.close();                                                 */
+/* 	 return res;                                                   */
+/*       }                                                             */
+/*                                                                     */
+/*    public static float bgl_ieee_string_to_float(byte[]s) throws IOException */
+/*       {                                                             */
+/* 	 final ByteArrayInputStream bint = new ByteArrayInputStream(s); */
+/* 	 final DataInputStream in = new DataInputStream(bint);         */
+/* 	 final float res = in.readFloat();                             */
+/*                                                                     */
+/* 	 bint.close();                                                 */
+/*                                                                     */
+/* 	 return res;                                                   */
+/*       }                                                             */
+
    public static byte[] bgl_double_to_ieee_string(double v) throws IOException
       {
 	 final ByteArrayOutputStream bout = new ByteArrayOutputStream();
