@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Thu Nov  9 15:13:41 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul 28 17:11:09 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -35,17 +35,14 @@
 ;*---------------------------------------------------------------------*/
 (define (make-bigloo-main)
    (let* ((args        (list (make-local-svar 'argv *obj*)))
-	  (user-main   (if (global? *main*)
-			   *main*
-			   #f))
-	  (main-body   (if (global? user-main)
+	  (main-body   (if (global? *main*)
 			   `(begin
 			       (,(module-initialization-id *module*)
 				0
 				,(symbol->string *module*))
 			       ((@ bigloo-initialized! __param))
-			       (%exit ((@ ,(global-id user-main)
-					  ,(global-module user-main))
+			       (%exit ((@ ,(global-id *main*)
+					  ,(global-module *main*))
 				       argv)))
 			   `(begin
 			       (,(module-initialization-id *module*)

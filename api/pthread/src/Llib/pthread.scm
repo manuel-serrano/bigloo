@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Mon Jul 20 10:10:05 2009 (serrano)                */
+;*    Last change :  Tue Jul 28 16:58:20 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -70,7 +70,7 @@
    (if (not (bigloo-initialized?))
        (error 'make-thread
 	      "Threads cannot be created until modules are initialized (see the documentation)"
-	      o)
+	      (find-runtime-type o))
        (with-access::pthread o ($builtin body end-result end-exception name)
 	  (let ((b (lambda ()
 		      (let ((id (if (symbol? name)

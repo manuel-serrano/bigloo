@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Sun Feb 24 08:38:43 2008 (serrano)                */
-/*    Copyright   :  2004-08 Manuel Serrano                            */
+/*    Last change :  Tue Jul 28 15:22:44 2009 (serrano)                */
+/*    Copyright   :  2004-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -53,14 +53,18 @@ bglpth_setup_gc() {
 BGL_EXPORTED_DEF
 void
 bglpth_setup( int argc, char *argv, char **env ) {
+   static int pth_init = 0;
+
+   if( !pth_init++ ) {
 #ifdef PTW32_VERSION
-   /* Pthreads-win32 initialization */
-   pthread_win32_process_attach_np();
+      /* Pthreads-win32 initialization */
+      pthread_win32_process_attach_np();
 #endif
 
-   bglpth_setup_gc();
-   bglpth_setup_bmem();
-   bglpth_setup_mutex();
-   bglpth_setup_condvar();
-   bglpth_setup_thread();
+      bglpth_setup_gc();
+      bglpth_setup_bmem();
+      bglpth_setup_mutex();
+      bglpth_setup_condvar();
+      bglpth_setup_thread();
+   }
 }
