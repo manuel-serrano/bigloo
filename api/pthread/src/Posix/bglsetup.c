@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Tue Jul 28 15:22:44 2009 (serrano)                */
+/*    Last change :  Wed Jul 29 07:25:32 2009 (serrano)                */
 /*    Copyright   :  2004-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
@@ -55,7 +55,9 @@ void
 bglpth_setup( int argc, char *argv, char **env ) {
    static int pth_init = 0;
 
-   if( !pth_init++ ) {
+   if( !pth_init ) {
+      pth_init = 1;
+      
 #ifdef PTW32_VERSION
       /* Pthreads-win32 initialization */
       pthread_win32_process_attach_np();

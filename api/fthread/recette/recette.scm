@@ -30,6 +30,11 @@
 	  (error 'make-thread "Illegal thread" x)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *thread-strict-order* ...                                        */
+;*---------------------------------------------------------------------*/
+(define *thread-strict-order* #f)
+
+;*---------------------------------------------------------------------*/
 ;*    err ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (err . msg)
@@ -55,7 +60,8 @@
 (define (test name prgm::procedure res)
    (display* name "...")
    (flush-output-port (current-output-port))
-   (default-scheduler (make-scheduler))
+   (default-scheduler (make-scheduler *thread-strict-order*))
+   (flush-output-port (current-error-port))
    (let ((provided (prgm)))
       (if (or (eq? res #unspecified)
 	      (and (procedure? res) (res provided))
@@ -119,13 +125,14 @@
 ;*---------------------------------------------------------------------*/
 (define-test yield
    (let ((res 0))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ((i 22))
-					(if (> i 0)
-					    (begin
-					       (set! res (+ res 1))
-					       (thread-yield!)
-					       (loop (- i 1))))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ((i 22))
+				    (if (> i 0)
+					(begin
+					   (set! res (+ res 1))
+					   (thread-yield!)
+					   (loop (- i 1)))))))))
       (scheduler-start! 7)
       res)
    :result 7)
@@ -135,10 +142,11 @@
 ;*---------------------------------------------------------------------*/
 (define-test yield2
    (begin
-      (thread-start! (make-thread (lambda ()
-				     (thread-yield!)
-				     (thread-yield!)
-				     (thread-yield!))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (thread-yield!)
+				 (thread-yield!)
+				 (thread-yield!)))))
       (scheduler-start!)
       (current-time))
    :result 4)
@@ -148,8 +156,8 @@
 ;*---------------------------------------------------------------------*/
 (define-test sleep
    (begin
-      (thread-start! (make-thread (lambda ()
-				     (thread-sleep! 10))))
+      (thread-start! (instantiate::fthread
+			(body (lambda () (thread-sleep! 10)))))
       (scheduler-start!)
       (current-time))
    :result 11)
@@ -159,68 +167,75 @@
 ;*---------------------------------------------------------------------*/
 (define-test sleep2
    (let ((res -1))
-      (thread-start! (make-thread (lambda ()
-				     (thread-sleep! 10)
-				     (set! res (current-time)))))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(thread-await! 'foo)
-					(broadcast! 'bar)
-					(thread-yield!)
-					(loop)))))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(thread-await! 'bar)
-					(broadcast! 'gee)
-					(thread-yield!)
-					(loop)))))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(broadcast! 'foo)
-					(thread-yield!)
-					(loop)))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (thread-sleep! 10)
+				 (set! res (current-time))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (thread-await! 'foo)
+				    (broadcast! 'bar)
+				    (thread-yield!)
+				    (loop))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (thread-await! 'bar)
+				    (broadcast! 'gee)
+				    (thread-yield!)
+				    (loop))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (broadcast! 'foo)
+				    (thread-yield!)
+				    (loop))))))
       (scheduler-start! 11)
       res)
    :result 11)
-					
+
 ;*---------------------------------------------------------------------*/
 ;*    sleep.3                                                          */
 ;*---------------------------------------------------------------------*/
 (define-test sleep3
    (let ((res -1))
-      (thread-start! (make-thread (lambda ()
-				     (thread-sleep! 10)
-				     (set! res (current-time)))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (thread-sleep! 10)
+				 (set! res (current-time))))))
       
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(thread-await! 'bar)
-					(broadcast! 'gee)
-					(thread-yield!)
-					(loop)))))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(thread-await! 'foo)
-					(broadcast! 'bar)
-					(thread-yield!)
-					(loop)))))
-      (thread-start! (make-thread (lambda ()
-				     (let loop ()
-					(broadcast! 'foo)
-					(thread-yield!)
-					(loop)))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (thread-await! 'bar)
+				    (broadcast! 'gee)
+				    (thread-yield!)
+				    (loop))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (thread-await! 'foo)
+				    (broadcast! 'bar)
+				    (thread-yield!)
+				    (loop))))))
+      (thread-start! (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (broadcast! 'foo)
+				    (thread-yield!)
+				    (loop))))))
       (scheduler-start! 11)
       res)
    :result 11)
-					
+
 ;*---------------------------------------------------------------------*/
 ;*    await ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test await
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-await! 'foo))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda () (thread-await! 'foo)))))))
       (scheduler-start! 2)
       res)
    :result 0)
@@ -230,15 +245,15 @@
 ;*---------------------------------------------------------------------*/
 (define-test await2
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo))))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)))))))
       (scheduler-start! 2)
       res)
    :result 1)
@@ -248,17 +263,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await3
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 1)
-				 (broadcast! 'bar 2)
-				 (broadcast! 'bar 3))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ x res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo))))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 1)
+					 (broadcast! 'bar 2)
+					 (broadcast! 'bar 3)))))))
       (scheduler-start! 2)
       res)
    :result 6)
@@ -268,15 +283,15 @@
 ;*---------------------------------------------------------------------*/
 (define-test await4
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo))))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)))))))
       (scheduler-start! 2)
       res)
    :result 1)
@@ -286,19 +301,19 @@
 ;*---------------------------------------------------------------------*/
 (define-test await5
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo))
-			      't1)))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-yield!)
-				 (broadcast! 'foo 4))
-			      't2))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo)))
+				(name 't1))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)
+					 (thread-yield!)
+					 (broadcast! 'foo 4)))
+				(name 't2)))))
       (scheduler-start!)
       res)
    :result 1)
@@ -308,17 +323,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await6
    (let* ((res 0)
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-yield!)
-				 (broadcast! 'foo 4)))))
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo))))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)
+					 (thread-yield!)
+					 (broadcast! 'foo 4))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -328,19 +343,19 @@
 ;*---------------------------------------------------------------------*/
 (define-test await7
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo))
-			      't1)))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-yield!)
-				 (broadcast! 'foo 4))
-			      't2))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo)))
+				(name 't1))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)
+					 (thread-yield!)
+					 (broadcast! 'foo 4)))
+				(name 't2)))))
       (scheduler-start!)
       res)
    :result 1)
@@ -350,21 +365,21 @@
 ;*---------------------------------------------------------------------*/
 (define-test await8
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo)
-				 (thread-yield!))
-			      't1)))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-yield!)
-				 (broadcast! 'foo 4)
-				 (thread-yield!))
-			      't2))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo)
+					 (thread-yield!)))
+				(name 't1))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 4)
+					 (thread-yield!)
+					 (broadcast! 'foo 4)
+					 (thread-yield!)))
+				(name 't2)))))
       (scheduler-start!)
       res)
    :result 1)
@@ -374,18 +389,18 @@
 ;*---------------------------------------------------------------------*/
 (define-test await9
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-						   (set! res (+ x res)))
-					   (thread-get-values! 'bar)))
-			      't1)))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 1)
-				 (broadcast! 'bar 2)
-				 (broadcast! 'foo 2))
-			      't2))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ x res)))
+						   (thread-get-values! 'bar))))
+				(name 't1))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (broadcast! 'bar 1)
+					 (broadcast! 'bar 2)
+					 (broadcast! 'foo 2)))
+				(name 't2)))))
       (scheduler-start!)
       res)
    :result 3)
@@ -395,15 +410,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await10
    (let* ((res 0)
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (broadcast! 'foo 4)))))
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar)))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 4)
+			   (broadcast! 'foo 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -413,15 +430,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await11
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'foo 4)
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar)))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'foo 4)
+			   (broadcast! 'bar 4)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -431,18 +450,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test await12
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-yield!)
-				 (thread-await! 'foo)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-sleep! 2)
-				 (broadcast! 'foo 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))
+			   (thread-yield!)
+			   (thread-await! 'foo))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 4)
+			   (thread-sleep! 2)
+			   (broadcast! 'foo 4)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -452,20 +473,22 @@
 ;*---------------------------------------------------------------------*/
 (define-test await13
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-yield!)
-				 (thread-await! 'foo)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-yield!)
-				 (broadcast! 'foo 4)
-				 (thread-yield!)
-				 (broadcast! 'bar 4)
-				 (broadcast! 'foo 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))
+			   (thread-yield!)
+			   (thread-await! 'foo))))))
+	      (t2 (thread-start!
+		   (instantiate::fthread
+		      (body (lambda ()
+			       (thread-yield!)
+			       (broadcast! 'foo 4)
+			       (thread-yield!)
+			       (broadcast! 'bar 4)
+			       (broadcast! 'foo 4)))))))
       (scheduler-start!)
       res)
    :result 0)
@@ -475,19 +498,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test await14
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo)
-				 (set! res (+ 10 res))))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 1)
-				 (broadcast! 'bar 2)
-				 (thread-yield!))))))
-
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo)
+			   (set! res (+ 10 res)))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 1)
+			   (broadcast! 'bar 2)
+			   (thread-yield!)))))))
       (scheduler-start! 3)
       res)
    :result 3)
@@ -496,8 +520,9 @@
 ;*    await-ntimes ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes
-   (let ((t1 (thread-start! (make-thread
-			     (lambda () (thread-await! 'foo 6))))))
+   (let ((t1 (thread-start! (instantiate::fthread
+			       (body (lambda ()
+					(thread-await! 'foo 6)))))))
       (scheduler-start!)
       (current-time))
    :result 7)
@@ -506,15 +531,15 @@
 ;*    await-ntimes2 ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes2
-   (let ((t1 (thread-start! (make-thread
-			     (lambda ()
-				(thread-await! 'foo 6))
-			     't1)))
-	 (t2 (thread-start! (make-thread
-			     (lambda ()
-				(thread-yield!)
-				(broadcast! 'foo))
-			     't2))))
+   (let ((t1 (thread-start! (instantiate::fthread
+			       (body (lambda ()
+					(thread-await! 'foo 6)))
+			       (name 't1))))
+	 (t2 (thread-start! (instantiate::fthread
+			       (body (lambda ()
+					(thread-yield!)
+					(broadcast! 'foo)))
+			       (name 't2)))))
       (scheduler-start!)
       (current-time))
    :result 2)
@@ -524,12 +549,13 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes3
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-await! 'foo 6)
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar)))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-await! 'foo 6)
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))))))))
       (scheduler-start! 3)
       res)
    :result 0)
@@ -539,17 +565,18 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes4
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-await! 'foo 6)
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar)))
-			      't1)))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4))
-			      't2))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-await! 'foo 6)
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))))
+		  (name 't1))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda () (broadcast! 'bar 4)))
+		  (name 't2)))))
       (scheduler-start!)
       res)
    :result 0)
@@ -559,15 +586,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes5
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 4)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -577,15 +606,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes6
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ 1 res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 4)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -595,19 +626,21 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes7
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-yield!)
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-yield!)
-				 (broadcast! 'bar 1)
-				 (broadcast! 'bar 2)
-				 (broadcast! 'foo))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-yield!)
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-yield!)
+			   (broadcast! 'bar 1)
+			   (broadcast! 'bar 2)
+			   (broadcast! 'foo)))))))
       (scheduler-start!)
       res)
    :result 3)
@@ -617,17 +650,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes8
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ 1 res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-yield!)
-				 (broadcast! 'foo)
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (for-each (lambda (x)
+						      (set! res (+ 1 res)))
+						   (thread-get-values! 'bar))
+					 (thread-await! 'foo 6))))))
+	  (t2 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (thread-yield!)
+					 (broadcast! 'foo)
+					 (broadcast! 'bar 4)))))))
       (scheduler-start!)
       res)
    :result 0)
@@ -637,18 +670,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes9
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-await! 'foo 6)
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 4)
-				 (thread-yield!)
-				 (broadcast! 'foo)
-				 (broadcast! 'bar 4))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-await! 'foo 6)
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar)))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 4)
+			   (thread-yield!)
+			   (broadcast! 'foo)
+			   (broadcast! 'bar 4)))))))
       (scheduler-start!)
       res)
    :result 4)
@@ -658,18 +693,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes10
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 1)
-				 (thread-yield!)
-				 (broadcast! 'bar 2)
-				 (broadcast! 'foo))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 1)
+			   (thread-yield!)
+			   (broadcast! 'bar 2)
+			   (broadcast! 'foo)))))))
       (scheduler-start!)
       res)
    :result 1)
@@ -679,17 +716,19 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes11
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (broadcast! 'bar 1)
-				 (thread-yield!)
-				 (broadcast! 'bar 2))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (broadcast! 'bar 1)
+			   (thread-yield!)
+			   (broadcast! 'bar 2)))))))
       (scheduler-start!)
       (current-time))
    :result 8)
@@ -699,18 +738,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test await-ntimes12
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (for-each (lambda (x)
-					      (set! res (+ x res)))
-					   (thread-get-values! 'bar))
-				 (thread-await! 'foo 6)))))
-	  (t2 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-sleep! 10)
-				 (broadcast! 'bar 1)
-				 (thread-yield!)
-				 (broadcast! 'bar 2))))))
+	  (t1 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (for-each (lambda (x)
+					(set! res (+ x res)))
+				     (thread-get-values! 'bar))
+			   (thread-await! 'foo 6))))))
+	  (t2 (thread-start!
+	       (instantiate::fthread
+		  (body (lambda ()
+			   (thread-sleep! 10)
+			   (broadcast! 'bar 1)
+			   (thread-yield!)
+			   (broadcast! 'bar 2)))))))
       (scheduler-start!)
       res)
    :result 0)
@@ -722,58 +763,61 @@
    (let* ((res 0)
 	  (mark #f)
 	  (t (thread-start!
-	      (make-thread
-	       (lambda ()
-		  (for-each (lambda (x)
-			       (if (not mark)
-				   (begin
-				      (set! mark #t)
-				      (set! res (+ (current-time) res)))))
-			    (thread-get-values! 'gee))
-		  (set! mark #f)
-		  (for-each (lambda (x)
-			       (if (not mark)
-				   (begin
-				      (set! mark #t)
-				      (set! res (+ (current-time) res)))))
-			    (thread-get-values! 'gee))
-		  (set! mark #f)
-		  (for-each (lambda (x)
-			       (if (not mark)
-				   (begin
-				      (set! mark #t)
-				      (set! res (+ (current-time) res)))))
-			    (thread-get-values! 'gee))))))
+	      (instantiate::fthread
+		 (body
+		  (lambda ()
+		     (for-each (lambda (x)
+				  (if (not mark)
+				      (begin
+					 (set! mark #t)
+					 (set! res (+ (current-time) res)))))
+			       (thread-get-values! 'gee))
+		     (set! mark #f)
+		     (for-each (lambda (x)
+				  (if (not mark)
+				      (begin
+					 (set! mark #t)
+					 (set! res (+ (current-time) res)))))
+			       (thread-get-values! 'gee))
+		     (set! mark #f)
+		     (for-each (lambda (x)
+				  (if (not mark)
+				      (begin
+					 (set! mark #t)
+					 (set! res (+ (current-time) res)))))
+			       (thread-get-values! 'gee)))))))
 	  (t2 (thread-start!
-	       (make-thread
-		(lambda ()
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!)
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!)
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!)))))
+	       (instantiate::fthread
+		  (body
+		   (lambda ()
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!)
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!)
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!))))))
 	  (t3 (thread-start!
-	       (make-thread
-		(lambda ()
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!)
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!)
-		   (broadcast! 'gee 1)
-		   (broadcast! 'gee 2)
-		   (broadcast! 'gee 3)
-		   (thread-yield!))))))
+	       (instantiate::fthread
+		  (body
+		   (lambda ()
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!)
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!)
+		      (broadcast! 'gee 1)
+		      (broadcast! 'gee 2)
+		      (broadcast! 'gee 3)
+		      (thread-yield!)))))))
       (scheduler-start!)
       res)
    :result 9)
@@ -784,10 +828,11 @@
 (define-test bind-exit
    (let ((res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (set! res
-			     (bind-exit (stop)
-				(+ 1 (stop #t)))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (set! res
+			 (bind-exit (stop)
+			    (+ 1 (stop #t))))))))
       (scheduler-start!)
       res)
    :result #t)
@@ -798,12 +843,13 @@
 (define-test exception
    (let ((res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (with-exception-handler
-			  (lambda (e)
-			     (set! res e))
-			  (lambda ()
-			     (raise #t))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (with-exception-handler
+		      (lambda (e)
+			 (set! res e))
+		      (lambda ()
+			 (raise #t)))))))
       (scheduler-start!)
       res)
    :result #t)
@@ -814,14 +860,15 @@
 (define-test exception2
    (let ((res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (bind-exit (exit)
-			  (with-exception-handler
-			     (lambda (e)
-				(set! res #t)
-				(exit #f))
-			     (lambda ()
-				(error 1 2 3)))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (bind-exit (exit)
+		      (with-exception-handler
+			 (lambda (e)
+			    (set! res #t)
+			    (exit #f))
+			 (lambda ()
+			    (error 1 2 3))))))))
       (scheduler-start!)
       res)
    :result #t)
@@ -831,36 +878,40 @@
 ;*---------------------------------------------------------------------*/
 (define-test exception3
    (let ((res #f))
-      (thread-start! (make-thread
-		      (lambda ()
-			 (for-each (lambda (x) (thread-yield!))
-				   (iota 100 1)))))
-      (thread-start! (make-thread
-		      (lambda ()
-			 (print 3)
-			 (with-exception-handler
-			    (lambda (e)
-			       (set! res e))
-			    (lambda ()
-			       (for-each (lambda (x) (thread-yield!))
-					 (iota 150 1))
-			       (raise
-				(scheduler-instant
-				 (current-scheduler))))))))
+      (thread-start! (instantiate::fthread
+			(body
+			 (lambda ()
+			    (for-each (lambda (x) (thread-yield!))
+				      (iota 100 1))))))
+      (thread-start! (instantiate::fthread
+			(body
+			 (lambda ()
+			    (print 3)
+			    (with-exception-handler
+			       (lambda (e)
+				  (set! res e))
+			       (lambda ()
+				  (for-each (lambda (x) (thread-yield!))
+					    (iota 150 1))
+				  (raise
+				   (scheduler-instant
+				    (current-scheduler)))))))))
       (scheduler-start!)
       res)
    :result 151)
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    join ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-test join
    (let* ((th1 (thread-start!
-		(make-thread (lambda ()
-				(thread-sleep! 2)))))
+		(instantiate::fthread
+		   (body (lambda ()
+			    (thread-sleep! 2))))))
 	  (th2 (thread-start!
-		(make-thread (lambda ()
-				(thread-join! th1))))))
+		(instantiate::fthread
+		   (body (lambda ()
+			    (thread-join! th1)))))))
       (scheduler-start!)
       #t)
    :result #t)
@@ -870,19 +921,21 @@
 ;*---------------------------------------------------------------------*/
 (define-test terminate/join
    (letrec ((th1 (thread-start!
-		  (make-thread (lambda ()
-				  (thread-sleep! 2)
-				  (thread-terminate! th1))
-			       'terminate/join1)))
+		  (instantiate::fthread
+		     (body (lambda ()
+			      (thread-sleep! 2)
+			      (thread-terminate! th1)))
+		     (name 'terminate/join1))))
 	    (th2 (thread-start!
-		  (make-thread (lambda ()
-				  (bind-exit (exit)
-				     (with-exception-handler
-					(lambda (e)
-					   (exit e))
-					(lambda ()
-					   (thread-join! th1)))))
-			       'terminate/join2))))
+		  (instantiate::fthread
+		     (body (lambda ()
+			      (bind-exit (exit)
+				 (with-exception-handler
+				    (lambda (e)
+				       (exit e))
+				    (lambda ()
+				       (thread-join! th1))))))
+		     (name 'terminate/join2)))))
       (scheduler-start!)
       #t)
    :result #t)
@@ -894,63 +947,70 @@
    (let ((len 10))
       (for-each (lambda (x)
 		   (thread-start!
-		    (make-thread (lambda ()
-				    (thread-yield!)
-				    (broadcast! 'foo x)))))
+		    (instantiate::fthread
+		       (body (lambda ()
+				(thread-yield!)
+				(broadcast! 'foo x))))))
 		(iota len 1))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-await! 'foo)
-		       (let ((v (thread-get-values! 'foo)))
-			  (set! len (-fx len (length v)))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-await! 'foo)
+		   (let ((v (thread-get-values! 'foo)))
+		      (set! len (-fx len (length v))))))))
       (scheduler-start!)
       len)
    :result 0)
-			    
+
 ;*---------------------------------------------------------------------*/
 ;*    terminate/join2 ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-test terminate/join2
    (let ((tick 0))
       (letrec ((th1 (thread-start!
-		     (make-thread (lambda ()
-				     (thread-sleep! 2)
-				     (thread-terminate! th2))
-				  "th1")))
+		     (instantiate::fthread
+			(body (lambda ()
+				 (thread-sleep! 2)
+				 (thread-terminate! th2)))
+			(name "th1"))))
 	       (th2 (thread-start!
-		     (make-thread (lambda ()
-				     (thread-sleep! 2)
-				     (thread-terminate! th1))
-				  "th2")))
+		     (instantiate::fthread
+			(body (lambda ()
+				 (thread-sleep! 2)
+				 (thread-terminate! th1)))
+			(name "th2"))))
 	       (th3 (thread-start!
-		     (make-thread (lambda ()
-				     (with-exception-handler
-					(lambda (e)
-					   #f)
-					(lambda ()
-					   (thread-join! th1)
-					   (thread-join! th2)))
-				     (broadcast! 'done 'th3))
-				  "th3")))
+		     (instantiate::fthread
+			(body (lambda ()
+				 (with-exception-handler
+				    (lambda (e)
+				       #f)
+				    (lambda ()
+				       (thread-join! th1)
+				       (thread-join! th2)))
+				 (broadcast! 'done 'th3)))
+			(name "th3"))))
 	       (th4 (thread-start!
-		     (make-thread (lambda ()
-				     (with-exception-handler
-					(lambda (e)
-					   #f)
-					(lambda ()
-					   (thread-join! th2)
-					   (thread-join! th1)))
-				     (broadcast! 'done 'th4))
-				  "th4")))
+		     (instantiate::fthread
+			(body (lambda ()
+				 (with-exception-handler
+				    (lambda (e)
+				       #f)
+				    (lambda ()
+				       (thread-join! th2)
+				       (thread-join! th1)))
+				 (broadcast! 'done 'th4)))
+			(name "th4"))))
 	       (th5 (thread-start!
-		     (make-thread (lambda ()
-				     (let loop ()
-					(set! tick (+fx 1 tick))
-					(let ((v (thread-get-values! 'done)))
-					   (if (not (or (equal? v '(th3 th4))
-							(equal? v '(th4 th3))))
-					       (loop)))))
-				  "th5"))))
+		     (instantiate::fthread
+			(body (lambda ()
+				 (let loop ()
+				    (set! tick (+fx 1 tick))
+				    (let ((v (thread-get-values! 'done)))
+				       (if (not (or (equal? v '(th3 th4))
+						    (equal? v '(th4 th3))))
+					   (loop))))))
+			(name "th5")))))
 	 (scheduler-start!)
 	 tick))
    :result 3)
@@ -960,13 +1020,15 @@
 ;*---------------------------------------------------------------------*/
 (define-test cleanup
    (let* ((res 0)
-	  (th1 (make-thread (lambda ()
-			       (thread-sleep! 10))
-			    'thread-cleanup1))
-	  (th2 (make-thread (lambda ()
-			       (thread-yield!)
-			       (thread-terminate! th1))
-			    'thread-cleanup2))
+	  (th1 (instantiate::fthread
+		  (body (lambda ()
+			   (thread-sleep! 10)))
+		  (name 'thread-cleanup1)))
+	  (th2 (instantiate::fthread
+		  (body (lambda ()
+			   (thread-yield!)
+			   (thread-terminate! th1)))
+		  (name 'thread-cleanup2)))
 	  (cleanup (thread-cleanup-set! th1
 					(lambda (t)
 					   (set! res (current-time))))))
@@ -981,17 +1043,20 @@
 ;*---------------------------------------------------------------------*/
 (define-test cleanup2
    (let* ((res 0)
-	  (th1 (make-thread (lambda ()
-			       (thread-sleep! 10))
-			    'thread-cleanup1))
-	  (th2 (make-thread (lambda ()
-			       (thread-yield!)
-			       (thread-terminate! th1))
-			    'thread-cleanup2))
-	  (th3 (make-thread (lambda ()
-			       (thread-sleep! 2)
-			       (thread-terminate! th1))
-			    'thread-cleanup3))
+	  (th1 (instantiate::fthread
+		  (body (lambda ()
+			   (thread-sleep! 10)))
+		  (name 'thread-cleanup1)))
+	  (th2 (instantiate::fthread
+		  (body (lambda ()
+			   (thread-yield!)
+			   (thread-terminate! th1)))
+		  (name 'thread-cleanup2)))
+	  (th3 (instantiate::fthread
+		  (body (lambda ()
+			   (thread-sleep! 2)
+			   (thread-terminate! th1)))
+		  (name 'thread-cleanup3)))
 	  (cleanup (thread-cleanup-set! th1
 					(lambda (r)
 					   (set! res (current-time))))))
@@ -1010,10 +1075,11 @@
       (bigloo-c
        (let ((res #f))
 	  (thread-start!
-	   (make-thread (lambda ()
-			   (set! res
-				 (call/cc (lambda (kont)
-					     (+ 14 (kont #t))))))))
+	   (instantiate::fthread
+	      (body (lambda ()
+		       (set! res
+			     (call/cc (lambda (kont)
+					 (+ 14 (kont #t)))))))))
 	  (scheduler-start!)
 	  res))
       (else
@@ -1028,22 +1094,24 @@
       (bigloo-c
        (let ((res 0))
 	  (let ((t1 (thread-start!
-		     (make-thread
-		      (lambda ()
-			 (set! res
-			       (+ 1 (call/cc (lambda (kont)
-						(broadcast! 'kont kont)
-						0)))))
-		      't1)))
+		     (instantiate::fthread
+			(body
+			 (lambda ()
+			    (set! res
+				  (+ 1 (call/cc (lambda (kont)
+						   (broadcast! 'kont kont)
+						   0))))))
+			(name 't1))))
 		(t2 (thread-start!
-		     (make-thread
-		      (lambda ()
-			 (let ((kont (thread-await! 'kont)))
-			    (try (kont 23)
-				 (lambda (escape obj proc msg)
-				    (set! res 36)
-				    (escape #t)))))
-		      't2))))
+		     (instantiate::fthread
+			(body
+			 (lambda ()
+			    (let ((kont (thread-await! 'kont)))
+			       (try (kont 23)
+				    (lambda (escape obj proc msg)
+				       (set! res 36)
+				       (escape #t))))))
+			(name 't2)))))
 	     (scheduler-start!)
 	     res)))
       (else
@@ -1058,44 +1126,48 @@
       (define (add! v)
 	 (set! g (cons v g)))
       (thread-start!
-       (make-thread (lambda ()
-		       (with-input-from-string "1 2 3"
-			  (lambda ()
-			     (with-output-to-string
-				(lambda ()
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read)))))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (with-input-from-string "1 2 3"
+		      (lambda ()
+			 (with-output-to-string
+			    (lambda ()
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))))))))))
       (thread-start!
-       (make-thread (lambda ()
-		       (with-input-from-string "a b c"
-			  (lambda ()
-			     (with-output-to-string
-				(lambda ()
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read)))))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (with-input-from-string "a b c"
+		      (lambda ()
+			 (with-output-to-string
+			    (lambda ()
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))))))))))
       (thread-start!
-       (make-thread (lambda ()
-		       (with-input-from-string "toto tutu tata"
-			  (lambda ()
-			     (with-output-to-string
-				(lambda ()
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read))
-				   (thread-yield!)
-				   (add! (read)))))))))
-      (set! *thread-strict-order* #t)
+       (instantiate::fthread
+	  (body (lambda ()
+		   (with-input-from-string "toto tutu tata"
+		      (lambda ()
+			 (with-output-to-string
+			    (lambda ()
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))
+			       (thread-yield!)
+			       (add! (read))))))))))
+      
+      (scheduler-strict-order?-set! (default-scheduler) #t)
       (scheduler-start!)
-      (set! *thread-strict-order* #f)
+      (scheduler-strict-order?-set! (default-scheduler) #f)
       g)
    :result '(tata c 3 tutu b 2 toto a 1))
 
@@ -1105,56 +1177,62 @@
 (define-test await*
    (let ((res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (let ((sig* (list 'foo 'bar)))
-			  (multiple-value-bind (val1 sig1)
-			     (thread-await*! sig*)
-			     (multiple-value-bind (val2 sig2)
-				(thread-await*! sig*)
-				(thread-yield!)
-				(multiple-value-bind (val3 sig3)
-				   (thread-await*! sig*)
-				   (set! res (list sig1 sig2 sig3)))))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (let ((sig* (list 'foo 'bar)))
+		      (multiple-value-bind (val1 sig1)
+			 (thread-await*! sig*)
+			 (multiple-value-bind (val2 sig2)
+			    (thread-await*! sig*)
+			    (thread-yield!)
+			    (multiple-value-bind (val3 sig3)
+			       (thread-await*! sig*)
+			       (set! res (list sig1 sig2 sig3))))))))))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 2)
-		       (broadcast! 'foo 1))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 2)
+		   (broadcast! 'foo 1)))))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 3)
-		       (broadcast! 'bar 2))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 3)
+		   (broadcast! 'bar 2)))))
       (scheduler-start!)
       res)
    :result '(foo foo bar))
-      
+
 ;*---------------------------------------------------------------------*/
 ;*    await*                                                           */
 ;*---------------------------------------------------------------------*/
 (define-test await*-ntimes
    (let ((res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (let ((sig* (list 'foo 'bar)))
-			  (multiple-value-bind (val1 sig1)
-			     (thread-await*! sig* 1)
-			     (thread-yield!)
-			     (multiple-value-bind (val2 sig2)
-				(thread-await*! sig* 1)
-				(thread-yield!)
-				(multiple-value-bind (val3 sig3)
-				   (thread-await*! sig* 2)
-				   (set! res (list sig1 sig2 sig3)))))))
-		    't1))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (let ((sig* (list 'foo 'bar)))
+		      (multiple-value-bind (val1 sig1)
+			 (thread-await*! sig* 1)
+			 (thread-yield!)
+			 (multiple-value-bind (val2 sig2)
+			    (thread-await*! sig* 1)
+			    (thread-yield!)
+			    (multiple-value-bind (val3 sig3)
+			       (thread-await*! sig* 2)
+			       (set! res (list sig1 sig2 sig3))))))))
+	  (name 't1)))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 2)
-		       (broadcast! 'foo 1))
-		    't2))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 2)
+		   (broadcast! 'foo 1)))
+	  (name 't2)))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 3)
-		       (broadcast! 'bar 2))
-		    't3))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 3)
+		   (broadcast! 'bar 2)))
+	  (name 't3)))
       (scheduler-start!)
       res)
    :result '(#f foo bar))
@@ -1181,18 +1259,21 @@
 	 (s3 'gee)
 	 (res #f))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 2)
-		       (broadcast! 'foo (current-time))
-		       (broadcast! 'bar 0))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 2)
+		   (broadcast! 'foo (current-time))
+		   (broadcast! 'bar 0)))))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-await*! (list s1 s2 s3))
-		       (set! res (thread-get-values*! (list s1 s2 s3))))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-await*! (list s1 s2 s3))
+		   (set! res (thread-get-values*! (list s1 s2 s3)))))))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-sleep! 2)
-		       (broadcast! 'bar (current-time)))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-sleep! 2)
+		   (broadcast! 'bar (current-time))))))
       (scheduler-start!)
       res)
    :result '((foo 3) (bar 3 0) (gee)))
@@ -1209,9 +1290,10 @@
 (define-test fair-sleep
    (let ((r 0))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-await! (make-sleep-signal 1000))
-		       (set! r 1))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-await! (make-sleep-signal 1000))
+		   (set! r 1)))))
       (scheduler-start!)
       r)
    :result 1)
@@ -1222,9 +1304,10 @@
 (define-test fair-sleep2
    (let ((r 0))
       (thread-start!
-       (make-thread (lambda ()
-		       (thread-await! (make-sleep-signal 1000) 10)
-		       (set! r (current-time)))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (thread-await! (make-sleep-signal 1000) 10)
+		   (set! r (current-time))))))
       (scheduler-start!)
       r)
    :result (lambda (v) (<= v 11)))
@@ -1235,9 +1318,10 @@
 (define-test fair-sleep3
    (let ((r 0))
       (thread-start!
-       (make-thread (lambda ()
-		       (make-sleep-signal 1000)
-		       (set! r (current-time)))))
+       (instantiate::fthread
+	  (body (lambda ()
+		   (make-sleep-signal 1000)
+		   (set! r (current-time))))))
       (scheduler-start!)
       r)
    :result 1)
@@ -1247,10 +1331,10 @@
 ;*---------------------------------------------------------------------*/
 (define-test resume
    (let* ((res 0)
-	  (t1 (thread-start! (make-thread
-			      (lambda ()
-				 (thread-suspend! (current-thread))
-				 (set! res 1))))))
+	  (t1 (thread-start! (instantiate::fthread
+				(body (lambda ()
+					 (thread-suspend! (current-thread))
+					 (set! res 1)))))))
       (scheduler-start! 2)
       (thread-resume! t1)
       (scheduler-start! 2)
@@ -1261,14 +1345,16 @@
 ;*    terminate1 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-test terminate1
-   (letrec ((th1 (make-thread (lambda () (let loop ()
-					    (thread-terminate! th2)
-					    (thread-yield!)
-					    (loop)))))
-	    (th2 (make-thread (lambda () (let loop ()
-					    (thread-terminate! th1)
-					    (thread-yield!)
-					    (loop))))))
+   (letrec ((th1 (instantiate::fthread
+		    (body (lambda () (let loop ()
+					(thread-terminate! th2)
+					(thread-yield!)
+					(loop))))))
+	    (th2 (instantiate::fthread
+		    (body (lambda () (let loop ()
+					(thread-terminate! th1)
+					(thread-yield!)
+					(loop)))))))
       (thread-start! th1)
       (thread-start! th2)
       (scheduler-start!)
@@ -1280,14 +1366,16 @@
 ;*    terminate2 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-test terminate2
-   (letrec ((th1 (make-thread (lambda () (let loop ()
-					    (thread-terminate! th2)
-					    (thread-yield!)
-					    (loop)))))
-	    (th2 (make-thread (lambda () (let loop ()
-					    (thread-terminate! th1)
-					    (thread-yield!)
-					    (loop))))))
+   (letrec ((th1 (instantiate::fthread
+		    (body (lambda () (let loop ()
+					(thread-terminate! th2)
+					(thread-yield!)
+					(loop))))))
+	    (th2 (instantiate::fthread
+		    (body (lambda () (let loop ()
+					(thread-terminate! th1)
+					(thread-yield!)
+					(loop)))))))
       (thread-start! th2)
       (thread-start! th1)
       (scheduler-start!)
@@ -1298,10 +1386,12 @@
 ;*    terminate3 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-test terminate3
-   (letrec ((th1 (make-thread (lambda () 
-				 (thread-yield!)
-				 (thread-terminate! th2))))
-	    (th2 (make-thread (lambda () (thread-await! 'foo)))))
+   (letrec ((th1 (instantiate::fthread
+		    (body (lambda () 
+			     (thread-yield!)
+			     (thread-terminate! th2)))))
+	    (th2 (instantiate::fthread
+		    (body (lambda () (thread-await! 'foo))))))
       (thread-start! th1)
       (thread-start! th2)
       (scheduler-start!)
@@ -1312,10 +1402,12 @@
 ;*    terminate4 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-test terminate4
-   (letrec ((th1 (make-thread (lambda () 
-				 (thread-yield!)
-				 (thread-terminate! th2))))
-	    (th2 (make-thread (lambda () (thread-await! 'foo)))))
+   (letrec ((th1 (instantiate::fthread
+		    (body (lambda () 
+			     (thread-yield!)
+			     (thread-terminate! th2)))))
+	    (th2 (instantiate::fthread
+		    (body (lambda () (thread-await! 'foo))))))
       (thread-start! th2)
       (thread-start! th1)
       (scheduler-start!)
@@ -1327,10 +1419,12 @@
 ;*---------------------------------------------------------------------*/
 (define-test terminate5
    (let ((res #f))
-      (letrec ((th1 (make-thread (lambda ()
-				    (thread-yield!)
-				    (thread-terminate! th2))))
-	       (th2 (make-thread (lambda () (thread-await! 'foo)))))
+      (letrec ((th1 (instantiate::fthread
+		       (body (lambda ()
+				(thread-yield!)
+				(thread-terminate! th2)))))
+	       (th2 (instantiate::fthread
+		       (body (lambda () (thread-await! 'foo))))))
 	 (thread-cleanup-set! th2 (lambda (t) (set! res #t)))
 	 (thread-start! th2)
 	 (thread-start! th1)
@@ -1343,19 +1437,21 @@
 ;*---------------------------------------------------------------------*/
 (define-test terminate6
    (let* ((res -1)
-	  (th1 (make-thread
-		(lambda ()
-		   (let loop ()
-		      (set! res (thread-await! 'foo))
-		      (thread-yield!)
-		      (scheduler-terminate!)
-		      (loop)))))
-	  (th2 (make-thread
-		(lambda ()
-		   (let loop ((n 0))
-		      (broadcast! 'foo n)
-		      (thread-yield!)
-		      (loop (+ 1 n)))))))
+	  (th1 (instantiate::fthread
+		  (body
+		   (lambda ()
+		      (let loop ()
+			 (set! res (thread-await! 'foo))
+			 (thread-yield!)
+			 (scheduler-terminate!)
+			 (loop))))))
+	  (th2 (instantiate::fthread
+		  (body
+		   (lambda ()
+		      (let loop ((n 0))
+			 (broadcast! 'foo n)
+			 (thread-yield!)
+			 (loop (+ 1 n))))))))
       (thread-start! th1)
       (thread-start! th2)
       (scheduler-start!)
@@ -1371,24 +1467,26 @@
 	 (when (> i 0)
 	    (begin
 	       (thread-start!
-		(make-thread
-		 (lambda ()
-		    (let loop ()
-		       (let ((sigs (thread-await-values*! (list i (+ i 1)))))
-			  (when (= i 7)
-			     (set! res (assq 7 sigs)))
-			  (broadcast! (- i 1))
-			  (thread-yield!)
-			  (loop))))))
+		(instantiate::fthread
+		   (body
+		    (lambda ()
+		       (let loop ()
+			  (let ((sigs (thread-await-values*! (list i (+ i 1)))))
+			     (when (= i 7)
+				(set! res (assq 7 sigs)))
+			     (broadcast! (- i 1))
+			     (thread-yield!)
+			     (loop)))))))
 	       (loop (- i 1)))))
       (thread-start!
-       (make-thread
-	(lambda ()
-	   (thread-yield!)
-	   (broadcast! 1 #f)
-	   (broadcast! 2 #f)
-	   (broadcast! 4 #f)
-	   (broadcast! 8 #f))))
+       (instantiate::fthread
+	  (body
+	   (lambda ()
+	      (thread-yield!)
+	      (broadcast! 1 #f)
+	      (broadcast! 2 #f)
+	      (broadcast! 4 #f)
+	      (broadcast! 8 #f)))))
       (scheduler-start! 3)
       res)
    :result '(7))
@@ -1419,5 +1517,5 @@
 	     " tests completed...")))
 
 
-   
+
 

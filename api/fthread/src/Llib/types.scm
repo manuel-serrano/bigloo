@@ -53,7 +53,9 @@
 
 	   (abstract-class scheduler::fthread
 	      ;; the environment
-	      (env+::pair read-only))
+	      (env+::pair read-only)
+	      ;; Strict thread ordering
+	      (strict-order?::bbool (default #f)))
 	   
 	   (abstract-class ftenv
 	      (instant::long (default 0)))
@@ -61,13 +63,7 @@
 	   (class %sigjoin
 	      (thread::fthread read-only))
 
-	    *thread-strict-order*
 	    (%thread-setup! t::fthread)))
-
-;*---------------------------------------------------------------------*/
-;*    *thread-strict-order*                                            */
-;*---------------------------------------------------------------------*/
-(define *thread-strict-order* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *thread-counter* ...                                             */

@@ -1,5 +1,5 @@
 @c =================================================================== @c
-@c    serrano/prgm/project/bigloo/manuals/object.texi                  @c
+@c    serrano/prgm/project/bigloo/manuals/thread.texi                  @c
 @c    ------------------------------------------------------------     @c
 @c    Author      :  Manuel Serrano                                    @c
 @c    Creation    :  Mon Jun 15 15:09:03 1998                          @c
@@ -31,6 +31,7 @@ applications. Both libraries are described in this chapter.
 * Thread Common Functions::
 * Fair Threads::
 * Posix Threads::
+* Mixing Thread APIs::
 @end menu
 
 @c ------------------------------------------------------------------- @c
@@ -42,8 +43,121 @@ applications. Both libraries are described in this chapter.
 @cindex Posix Threads
 @cindex Threads
 
+@menu
+* Thread API::
+* Mutexes::
+* Condition Variables::
+@end menu
+
+
+Bigloo implements SRFI-18 (Multithreading support). This SRFI is
+available at @url{http://srfi.schemers.org/srfi-18/srfi-18.html}.
+As Bigloo's threads are objects (see Section @ref{Object System}),
+the SRFI-18's thread specific functions can be used with either the
+@code{pthread} or the @code{fthread} library.
+
 This section describes the functions that are available independently
 of the multi-threading library.
+
+@c -- Bigloo's common thread functions-------------------------------- @c
+@node Thread API, Mutexes, , Thread Common Functions
+@subsection Thread API
+
+Bigloo uses a set of @emph{primitive} functions and methods to create,
+run and handle thread. For the sake of standardization the name and
+semantic  of SRFI-18 has been used. This section presents only the
+mandatory functions to program with threads in Bigloo.
+
+The most important difference with SRFI-18, is the missing of the
+function @code{make-thread}, which is not available for all libraries,
+as it can be hard  to predict the type of thread which will be created
+if several thread libraries are used simultaneously. As threads are
+regular Bigloo objects, they can be created using the
+@code{instantiate} syntax. See the @ref{Fair Threads} and @ref{Posix Threads} 
+specific sections for more details about thread creation and
+examples.
+
+The examples given in this section use a @emph{generic}
+syntax with @code{instantiate::thread}, to run the examples, you will
+have to put them in a function in a module (see Section @ref{Modules},
+and import one of the libraries using @code{library} module
+declaration.
+
+
+@c -- current-thread --
+@deffn {SRFI-18 function} current-thread
+Returns the current thread.
+@end deffn
+
+@c -- thread? --
+@deffn {SRFI-18 function} thread? @var{obj}
+Returns @code{#t} if @var{obj} is a thread, otherwise returns @code{#f}.
+@end deffn
+
+@c -- thread-name --
+@deffn {SRFI-18 function} thread-name @var{thread}
+Returns the name of the @var{thread}.
+@end deffn
+
+@c -- thread-specific* --
+@deffn {SRFI-18 function} thread-specific @var{thread}
+@deffnx {SRFI-18 function} thread-specific-set! @var{thread} @var{obj}
+Returns and sets value in the specific field of the @var{thread}. If no
+value has been set, @code{thread-specific} returns an unspecified value.
+
+@smalllisp
+(let ((t (instantiate::thread
+          (body (lambda ()
+                   (print (thread-specific (current-thread))))))))
+   (thread-specific-set! t 'foo)
+   (thread-start! t)) @print{} foo
+@end smalllisp
+@end deffn
+
+@c -- thread-cleanup* --
+@deffn {Bigloo function} thread-cleanup @var{thread}
+@deffnx {Bigloo function} thread-cleanup-set! @var{thread} @var{fun}
+Associates a cleanup function to a thread. The cleanup function is called
+with the thread itself. The cleanup function is executed
+in a context where @code{current-thread} is the thread owning the
+cleanup function.
+
+@smalllisp
+(let ((t (instantiate::thread (body (lambda () 'done) 'foo))))
+   (thread-cleanup-set! t (lambda (v) (print (thread-name (current-thread))
+					     ", exit value: " v)))
+   (thread-start! t)) @print{} foo, exit value: done
+@end smalllisp
+@end deffn
+
+@c -- thread-parameter* --
+@deffn {Bigloo function} thread-parameter @var{ident}
+@deffnx {Bigloo function} thread-parameter-set! @var{ident} @var{value}
+Returns the value of the parameter @var{ident} in the current thread. If
+no value is bound to this parameter, @code{#f} is returned.
+
+A thread parameter is implemented by a chunk of memory specific to
+each thread. All threads are created with an empty set of parameters.
+@end deffn
+
+The next functions have different behaviors depending in the library
+used, more details will be given in the specific sections below.
+
+@c -- thread generic --
+@deffn {SRFI-18 function} thread-start! @var{thread} [@var{args}]
+@deffnx {Bigloo function} thread-start-joinable! @var{thread}
+@deffnx {SRFI-18 function} thread-join! @var{thread} [@var{timeout}]
+@deffnx {SRFI-18 function} thread-terminate! @var{thread}
+@deffnx {SRFI-18 function} thread-yield!
+@deffnx {SRFI-18 function} thread-sleep! @var{timeout}
+@end deffn
+
+
+@c -- Bigloo's mutexes ----------------------------------------------- @c
+@node Mutexes, Condition Variables, Thread API, Thread Common Functions
+@subsection Mutexes
+
+Thread locking mechanism is common to Fair Threads and Posix Threads.
 
 @deffn {SRFI-18 function} mutex? @var{obj}
 @deffnx {SRFI-18 function} make-mutex [@var{name}]
@@ -57,15 +171,16 @@ of the multi-threading library.
 @smalllisp
 (let ((m (make-mutex)))
    (thread-start!
-    (make-thread (lambda ()
-                    (let loop ()
-                       (if (mutex-lock! m 0)
-                           (begin
-                              (display "locked")
-                              (mutex-unlock! m))
-                           (begin
-                              (thread-yield!)
-                              (loop))))))))
+    (instantiate::thread
+       (body (lambda ()
+                (let loop ()
+                   (if (mutex-lock! m 0)
+                       (begin
+                          (display "locked")
+                          (mutex-unlock! m))
+                       (begin
+                          (thread-yield!)
+                          (loop)))))))))
   @print{} locked
 
 (let ((res '()))
@@ -82,17 +197,17 @@ of the multi-threading library.
              (mutex-unlock! mutex)
              (mutex-specific-set! mutex (- n 1)))))
    (thread-start!
-    (make-thread
-     (lambda ()
-        (let ((m (make-mutex)))
-           (mutex-lock-recursively! m)
-           (mutex-lock-recursively! m)
-           (mutex-lock-recursively! m)
-           (set! res (cons (mutex-specific m) res))
-           (mutex-unlock-recursively! m)
-           (mutex-unlock-recursively! m)
-           (mutex-unlock-recursively! m)
-           (set! res (cons (mutex-specific m) res))))))
+    (instantiate::thread
+       (body (lambda ()
+                (let ((m (make-mutex)))
+                   (mutex-lock-recursively! m)
+                   (mutex-lock-recursively! m)
+                   (mutex-lock-recursively! m)
+                   (set! res (cons (mutex-specific m) res))
+                   (mutex-unlock-recursively! m)
+                   (mutex-unlock-recursively! m)
+                   (mutex-unlock-recursively! m)
+                   (set! res (cons (mutex-specific m) res)))))))
    res)
   @result{} (0 2)
 @end smalllisp
@@ -111,6 +226,11 @@ The function @var{with-lock} might be implemented as:
       (mutex-unlock! mutex)))
 @end smalllisp
 @end deffn
+
+
+@c -- Bigloo's condvar ----------------------------------------------- @c
+@node Condition Variables, , Mutexes, Thread Common Functions
+@subsection Condition Variables
 
 @deffn {SRFI-18 function} condition-variable? @var{obj}
 @deffnx {SRFI-18 function} make-condition-variable [@var{name}]
@@ -143,36 +263,118 @@ The function @var{with-lock} might be implemented as:
              (condition-variable-broadcast! (vector-ref sema 2)))
          (mutex-unlock! (vector-ref sema 1))))
    (let ((sema (make-semaphore 10)))
-      (let ((t1 (thread-start! (make-thread
-                                (lambda ()
-                                   (semaphore-wait! sema)
-                                   (set! res (current-time))))))
-            (t2 (thread-start! (make-thread
-                                (lambda ()
-                                   (let loop ((n 10))
-                                      (if (> n 0)
-                                          (begin
-                                             (semaphore-signal-by! sema 1)
-                                             (thread-yield!)
-                                             (loop (- n 1))))))))))
+      (let ((t1 (thread-start!
+                 (instantiate::thread
+                    (body (lambda ()
+                             (semaphore-wait! sema)
+                             (set! res (current-time)))))))
+            (t2 (thread-start!
+                 (instantiate::thread
+                    (body (lambda ()
+                             (let loop ((n 10))
+                                (if (> n 0)
+                                    (begin
+                                       (semaphore-signal-by! sema 1)
+                                       (thread-yield!)
+                                       (loop (- n 1)))))))))))
          (scheduler-start!)
          res)))
   @result{} 2
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo function} thread-parameter ident
-Returns the value of the parameter @var{ident} in the current thread. If
-no value is bound to this parameter, @code{#f} is returned.
-
-A thread parameter is implemented by a chunk of memory specific to
-each thread. All threads are created with an empty set of parameters.
-@end deffn
-
-@deffn {Bigloo function} thread-parameter-set! ident value
-Associates a @var{value} to a parameter named @var{ident}.
-@end deffn
 
 @include fthread.texi
 @include pthread.texi
 
+
+
+@c ------------------------------------------------------------------- @c
+@c    Mixing threads                                                   @c
+@c ------------------------------------------------------------------- @c
+@node Mixing Thread APIs, , Posix Threads, Threads
+@comment  node-name,  next,  previous,  up
+@section Mixing Thread APIs
+@cindex Fair Threads
+@cindex Posix Threads
+@cindex Threads
+
+The @ref{Fair Threads} library is ``Posix Threads'' safe, which means it
+is possible to use at the same time both libraries. In other words, it
+is possible to embed one fair scheduler into a Posix thread.
+
+Here is a little example with two schedulers started into two
+different Posix threads, each schedulers running two fair threads.
+
+@smalllisp
+(module mix_threads
+   (library fthread pthread)
+   (main main))
+
+(define *f1* 0)
+(define *f2* 0)
+
+(define (main args)
+   (let ((s1 (make-scheduler #t))
+	 (s2 (make-scheduler #t))
+	 
+	 (f1a (instantiate::fthread
+		 (body (lambda ()
+			  (let loop ()
+			     (print "f1a: " *f1* " " (current-thread))
+			     (set! *f1* (+ 1 *f1*))
+			     (thread-yield!)
+			     (loop))))))
+	 
+	 (f1b (instantiate::fthread
+		 (body (lambda ()
+			  (let loop ()
+			     (print "f1b: " *f1* " " (current-thread))
+			     (set! *f1* (+ 1 *f1*))
+			     (thread-yield!)
+			     (loop))))))
+	 
+	 (f2a (instantiate::fthread
+		 (body (lambda ()
+			  (let loop ()
+			     (print "f2a: " *f2* " " (current-thread))
+			     (set! *f2* (+ 1 *f2*))
+			     (thread-yield!)
+			     (loop))))))
+	 
+	 (f2b (instantiate::fthread
+		 (body (lambda ()
+			  (let loop ()
+			     (print "f2b: " *f2* " " (current-thread))
+			     (set! *f2* (+ 1 *f2*))
+			     (thread-yield!)
+			     (loop)))))))
+      
+      (let* ((p1 (instantiate::pthread
+		   (body (lambda ()
+			    ;; Sets the thread's specific scheduler
+			    (default-scheduler s1)
+			    (scheduler-start! 5)))))
+	     
+	    (p2 (instantiate::pthread
+		   (body (lambda ()
+			    ;; Sets the thread's specific scheduler
+			    (default-scheduler s2)
+			    ;; One reaction for s2
+			    (scheduler-react!)
+			    ;; Starts s1
+			    (thread-start-joinable! p1)
+			    ;; Do three reactions
+			    (scheduler-start! 3)
+			    ;; Waits for p1/s1 termination
+			    (thread-join! p1)
+			    ;; The final reaction
+			    (scheduler-react!))))))
+	 
+	 (thread-start! f1a s1)
+	 (thread-start! f1b s1)
+	 (thread-start! f2a s2)
+	 (thread-start! f2b s2)
+	 
+	 (thread-join! (thread-start-joinable! p2)))))
+@end smalllisp

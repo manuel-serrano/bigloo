@@ -46,7 +46,10 @@
 	      ;; the list of signals to be generated at the next instant
 	      (tobroadcast::pair-nil (default '()))
 	      ;; the list of asynchronous signal to start
-	      (tospawn::pair-nil (default '())))
+	      (tospawn::pair-nil (default '()))
+	      ;; the scheduler current running thread
+	      (current-token (default #f)))
+	   
 	   
 	   (class %sigasync
 	      ;; is this asynchronous signal already running?

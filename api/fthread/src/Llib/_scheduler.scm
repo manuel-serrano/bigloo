@@ -238,7 +238,8 @@
 				  threads-yield
 				  threads-timeout
 				  %threads-ready
-				  %live-thread-number)
+				  %live-thread-number
+				  strict-order?)
       (let ((runnable threads-runnable)
 	    (yield threads-yield)
 	    (timeout threads-timeout)
@@ -276,7 +277,7 @@
 				  (set! %threads-ready #t)
 				  #t)))) 
 			threads-timeout))
-	 (if *thread-strict-order*
+	 (if strict-order?
 	     (set! threads-runnable (%sort-threads runnable))
 	     (set! threads-runnable runnable))
 	 (if (pair? threads-runnable)

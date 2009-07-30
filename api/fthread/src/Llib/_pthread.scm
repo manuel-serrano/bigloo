@@ -28,23 +28,22 @@
 	    (%async-scheduler-wait ::%pthread)
 	    (%async-scheduler-notify ::%pthread)))
 
+;*---------------------------------------------------------------------*/
+;*    *scheduler-current-token & %get-scheduler-token ...              */
+;*---------------------------------------------------------------------*/
+(define *scheduler-current-token* #f)
 
-;*---------------------------------------------------------------------*/
-;*    *%pthread-global-lock* ...                                       */
-;*---------------------------------------------------------------------*/
-(define *%pthread-global-lock* (make-mutex))
+(define (%get-scheduler-token)
+   (let ((scdl (current-scheduler)))
+      (if (%scheduler? scdl)
+	  (%scheduler-current-token scdl)
+	  *scheduler-current-token*)))
 
-;*---------------------------------------------------------------------*/
-;*    *%pthread-global-cv* ...                                         */
-;*---------------------------------------------------------------------*/
-(define *%pthread-global-cv* (make-condition-variable))
-
-;*---------------------------------------------------------------------*/
-;*    *token* ...                                                      */
-;*---------------------------------------------------------------------*/
-; The current %pthread, the value #f means the main() thread
-; is currently running, as it is not a $thread object.
-(define *token* #f)
+(define (%set-scheduler-token! token)
+   (let ((scdl (current-scheduler)))
+      (if (%scheduler? scdl)
+	  (%scheduler-current-token-set! scdl token)
+	  (set! *scheduler-current-token* token))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $fscheduler-new ...                                              */
@@ -53,9 +52,7 @@
    (with-trace 4 "%fscheduler-new"
       (with-access::%scheduler scdl (body name)
 	 (letrec ((%pth (instantiate::%pthread
-			   (body (lambda ()
-				    (%pthread-wait %pth)
-				    (body)))
+			   (body (lambda () #unspecified))
 			   (name name)
 			   (fthread scdl))))
 	    (trace-item "%pth=" (trace-string %pth))
@@ -94,19 +91,12 @@
       (letrec ((%pth (instantiate::%pthread
 			(fthread ft)
 			(body (lambda ()
+				 (default-scheduler (fthread-scheduler ft))
 				 (%pthread-wait %pth)
 				 (execute-thread ft)))
 			(name (fthread-name ft)))))
 	 (trace-item "%pth=" (trace-string %pth))
 	 %pth)))
-
-; Starting a %pthread is starting the built-in pthread
-;*---------------------------------------------------------------------*/
-;*    %pthread-start ...                                               */
-;*---------------------------------------------------------------------*/
-(define-inline (%pthread-start %pth::%pthread)
-   (thread-start! %pth))
-
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-wait ...                                                */
@@ -115,12 +105,12 @@
    (with-trace 4 "%pthread-wait"
       (with-access::%pthread ft (mutex condvar)
 	 (trace-item "wait on thread " (trace-string ft))
-	 (trace-item "cv=" (trace-string condvar))
 	 (trace-item "mutex=" (trace-string mutex))
+	 (trace-item "cv=" (trace-string condvar))
 
 	 (mutex-lock! mutex)
 	 (let loop ()
-	    (unless (eq? *token* ft)
+	    (unless (eq? (%get-scheduler-token) ft)
 	       (condition-variable-wait! condvar mutex)
 	       (loop)))
 	 (mutex-unlock! mutex))))
@@ -135,7 +125,7 @@
       
       (with-access::%pthread nt (mutex condvar)
 	 (mutex-lock! mutex)
-	 (set! *token* nt)
+	 (%set-scheduler-token! nt)
 	 (trace-item "signal! on " (trace-string condvar))
 	 (condition-variable-signal! condvar)
 	 (mutex-unlock! mutex))))
@@ -145,46 +135,56 @@
 ;*---------------------------------------------------------------------*/
 (define (%pthread-enter-scheduler scdl::%pthread)
    (with-trace 4 "%pthread-enter-scheduler"
-      (let* ((th (current-thread))
-	     (this (if (fthread? th)
-		       (fthread-%builtin th))))
+      (trace-item "scdl=" (trace-string scdl))
+      
+      (with-access::%pthread scdl (parent fthread)
 	 
-	 (%pthread-parent-set! scdl this)
-	    
-	 (%pthread-switch this scdl)
+	 ; Find the parent thread in the creation hierarchy, is not set
+	 (when (not parent)
+	    (let ((th (current-thread)))
+	       (cond
+		  ; Only to catch %pthread objects, as they are also pthread
+		  ((%pthread? th)
+		   (error '%pthread-enter-scheduler
+			  "Bogus (current-thread) procedure"
+			  th))
+		  ; A scheduler scheduling another one, ignore
+		  ((scheduler? th)
+		   #unspecified)
+		  ; A fair thread calling the scheduler, ignore
+		  ((fthread? th)
+		   #unspecified)
+		  ; A native posix thread
+		  ((pthread? th)
+		   (set! parent th))
+		  ; #f, means main() entry point
+		  ((and (boolean? th) (not th))
+		   (set! parent #f))
+		  ; don't know what to do here
+		  (else
+		   (error '%pthread-enter-scheduler
+			  "Undefined current-thread"
+			  (find-runtime-type th)))))
+	    (trace-item "setting parent to: " (trace-string parent)))
 
-	 (if (%pthread? this)
-	     (%pthread-wait this)
-	     (let ((mutex *%pthread-global-lock*)
-		   (condvar *%pthread-global-cv*))
-	    
-		(mutex-lock! mutex)
-		(let loop ()
-		   (unless (eq? *token* this)
-		      (trace-item "wait on " (trace-string condvar))
-		      (condition-variable-wait! condvar mutex)
-		      (loop)))
-		(mutex-unlock! mutex))))))
+	 ; As the scheduleding is done by the calling thread, set the parameter
+	 (when (not (scheduler? (current-scheduler)))
+	    (current-scheduler-set! fthread))
+
+	 ; Runs the scheduler's body
+	 ((scheduler-body fthread)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-leave-scheduler ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (%pthread-leave-scheduler scdl::%pthread)
    (with-trace 4 "%pthread-leave-scheduler"
-      (let ((this (%pthread-parent scdl)))
-	    
-	 #;(set! *token* #f)
+      (trace-item "scdl=" (trace-string scdl))
 
-	 (if (%pthread? this)
-	     (%pthread-switch scdl this)
-	     (let ((mutex *%pthread-global-lock*)
-		   (condvar *%pthread-global-cv*))
-		(mutex-lock! mutex)
-		(set! *token* this)
-		(condition-variable-signal! condvar)
-		(mutex-unlock! mutex)))
-	 
-	 (%pthread-wait scdl))))
+      (when (not (fthread? (current-thread)))
+	 (current-scheduler-set! #f)
+	 (%pthread-parent-set! scdl #f))
+      #f))
 
 
 ;;; ASYNCHRONOUS THREADS

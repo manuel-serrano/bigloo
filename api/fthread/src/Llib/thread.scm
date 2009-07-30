@@ -269,8 +269,8 @@
 	  (let ((scdl (%get-optional-scheduler 'thread-start! o)))
 	     ;; attach the thread to the scheduler
 	     (with-access::fthread t (scheduler %state %builtin)
-		(set! %builtin (%pthread-new t))
 		(set! scheduler scdl)
+		(set! %builtin (%pthread-new t))
 		(set! %state 'started)
 		;; start the builtin thread
 		(thread-start! %builtin))

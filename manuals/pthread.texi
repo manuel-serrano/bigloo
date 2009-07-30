@@ -1,17 +1,17 @@
 @c =================================================================== @c
-@c    serrano/prgm/project/bigloo/manuals/object.texi                  @c
+@c    serrano/prgm/project/bigloo/manuals/pthread.texi                 @c
 @c    ------------------------------------------------------------     @c
 @c    Author      :  Manuel Serrano                                    @c
 @c    Creation    :  Mon Jun 15 15:09:03 1998                          @c
 @c    Last change :  Mon Nov 12 15:11:18 2001 (serrano)                @c
 @c    ------------------------------------------------------------     @c
-@c    The Bigloo Fair threads                                          @c
+@c    The Bigloo Posix threads                                          @c
 @c =================================================================== @c
 
 @c ------------------------------------------------------------------- @c
 @c    Bigloo's threads                                                 @c
 @c ------------------------------------------------------------------- @c
-@node Posix Threads, , Fair Threads, Threads
+@node Posix Threads, Mixing Thread APIs, Fair Threads, Threads
 @comment  node-name,  next,  previous,  up
 @section Posix Threads
 @cindex Posix Threads
@@ -45,19 +45,16 @@ the pthread library is initialized.
 @node Threads API, Mutexes API, Using Posix Threads ,Posix Threads
 @subsection Threads
 
-@deffn {SRFI-18 function} thread? @var{obj}
-Returns @code{#t} if @var{obj} is a thread, otherwise returns @code{#f}.
-@end deffn
-
-@deffn {SRFI-18 function} current-thread
-Returns the thread currently running.
-@end deffn
-
-
-@deffn {SRFI-18 function} make-thread @var{thunk} [@var{name}]
+@deffn {Bigloo syntax} instantiate::pthread (body @var{thunk}) [(name @var{name})]
+@deffnx {SRFI-18 function} make-thread @var{thunk} [@var{name}]
 Returns a new thread which is not started yet. The body of the thread
 is the body of the procedure @var{thunk}. The optional argument @var{name}
 can be use to identify the thread. It can be any Bigloo value.
+
+@b{Warning:} the @code{make-thread} function is @b{deprecated}, but
+still provided for a backward compatibility with previous release of
+Bigloo. The use of this function is @emph{highly} discouraged, in
+favor of the @code{instantiate::pthread} form.
 
 @smalllisp
 (module example
@@ -76,40 +73,8 @@ can be use to identify the thread. It can be any Bigloo value.
 
 @deffn {SRFI-18 function} thread-start! @var{thread}
 @deffnx {SRFI-18 function} thread-start-joinable! @var{thread}
-Runs a thread created with @code{make-thread}.
-@end deffn
-
-@deffn {SRFI-18 function} thread-name @var{thread}
-Returns the name of the @var{thread} that has been passed to 
-@code{make-thread}.
-@end deffn
-
-@deffn {SRFI-18 function} thread-specific @var{thread}
-@deffnx {SRFI-18 function} thread-specific-set! @var{thread} @var{obj}
-Returns and sets value in the specific field of the @var{thread}. If no
-value has been set, @code{thread-specific} returns an unspecified value.
-
-@smalllisp
-(let ((t (make-thread (lambda () 
-                         (print (thread-specific (current-thread)))))))
-   (thread-specific-set! t 'foo)
-   (thread-start! t)) @print{} foo
-@end smalllisp
-@end deffn
-
-@deffn {Bigloo function} thread-cleanup @var{thread}
-@deffnx {Bigloo function} thread-cleanup-set! @var{thread} @var{fun}
-Associates a cleanup function to a thread. The cleanup function is called
-with the thread itself. The cleanup function is executed
-in a context where @code{current-thread} is the thread owning the
-cleanup function.
-
-@smalllisp
-(let ((t (make-thread (lambda () 'done) 'foo)))
-   (thread-cleanup-set! t (lambda (v) (print (thread-name (current-thread))
-					     ", exit value: " v)))
-   (thread-start! t)) @print{} foo, exit value: done
-@end smalllisp
+Runs a thread created with @code{instantiate::pthread}. By default,
+threads are detached, and thus, they cannot be joined.
 @end deffn
 
 @deffn {SRFI-18 function} thread-yield!
@@ -146,7 +111,7 @@ or the end-exception if that thread terminates abnormally.
 
 It is possible to wait for the termination of the a thread if and only if
 it has been started with @code{thread-start-joinable!}. In particular,
-threads started with @code{thread-start} cannot be joined.
+threads started with @code{thread-start!} cannot be joined.
 @end deffn
 
 @deffn {SRFI-18 function} terminated-thread-exception? @var{obj}
@@ -157,9 +122,6 @@ threads started with @code{thread-start} cannot be joined.
 @c -- Mutexes -------------------------------------------------------- @c
 @node Mutexes API, Condition Variables API, Threads API, Posix Threads
 @subsection Mutexes
-
-Bigloo implements SRFI-18 (Multithreading support). This SRFI is
-available at @url{http://srfi.schemers.org/srfi-18/srfi-18.html}. 
 Thread locking mechanism is common to Fair Threads and Posix Threads
 (see @ref{Thread Common Functions}).
 
@@ -180,18 +142,18 @@ Posix thread condition variables follows the common thread API
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
       (let* ((th1 (thread-start-joinable!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (condition-variable-wait! lock cv)
-		       (mutex-unlock! lock)
-		       (set! res 23)))))
+		   (instantiate::pthread
+                      (body (lambda ()
+                               (mutex-lock! lock)
+		               (condition-variable-wait! lock cv)
+		               (mutex-unlock! lock)
+		               (set! res 23))))))
 	     (th2 (thread-start!
-		   (make-thread
-		    (lambda ()
-		       (mutex-lock! lock)
-		       (condition-variable-signal! cv)
-		       (mutex-unlock! lock))))))
+		   (instantiate::pthread
+                      (body (lambda ()
+                      	       (mutex-lock! lock)
+		               (condition-variable-signal! cv)
+		               (mutex-unlock! lock)))))))
 	 (thread-join! th1))
       res))
 @end smalllisp
