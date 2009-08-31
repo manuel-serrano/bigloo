@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Apr 10 14:31:01 2009 (serrano)                */
+;*    Last change :  Mon Aug 31 15:51:49 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 			      (clean-user-node! node)))
 			(let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
 			       (lexp `(let ((,new-fun ,(if fun-err?
-							   '(lambda l l)
+							   '(@ list __r4_pairs_and_lists_6_3)
 							   fun)))
 					 ,(make-the-app new-fun)))
 			       (node (sexp->node lexp stack loc site)))

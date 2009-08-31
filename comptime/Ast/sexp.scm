@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Jun 29 17:45:18 2009 (serrano)                */
+;*    Last change :  Mon Aug 31 16:25:13 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -330,7 +330,7 @@
 			     exp
 			     (find-location/loc exp loc)))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
-      ((((or let letrec labels) ?- ?body) . ?args)
+      ((((or let letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
 	  (sexp->node nexp stack loc site)))
@@ -338,7 +338,7 @@
       (((or let letrec) . ?-)
        (let->node exp stack loc 'value))
 ;*--- labels ----------------------------------------------------------*/
-      ((labels . ?-)
+      (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))
 ;*--- the direct lambda applications (see match-case ...) -------------*/
       (((lambda ?vars . ?body) . ?args)
@@ -399,7 +399,7 @@
           ((?- ?args . ?body) 
            (let ((loc  (find-location/loc exp loc))
 		 (fun  (make-anonymous-name loc)))
-              (sexp->node `(labels ((,fun ,args ,(normalize-progn body))) ,fun)
+              (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
 			  stack
 			  loc
 			  site)))
@@ -555,7 +555,7 @@
 			    (fun  (mark-symbol-non-user! (gensym 'lambda)))
 			    (tfun (make-typed-ident fun (type-id type))))
 			(sexp->node
-			 `(labels ((,tfun ,args ,(normalize-progn body)))
+			 `(,(labels-sym) ((,tfun ,args ,(normalize-progn body)))
 			     ,fun)
 			 stack
 			 loc

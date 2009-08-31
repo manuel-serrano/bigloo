@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Thu Nov  9 16:51:03 2006 (serrano)                */
-;*    Copyright   :  1992-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug 31 16:49:55 2009 (serrano)                */
+;*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
 ;*=====================================================================*/
@@ -13,17 +13,19 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module expand_let
-   (import  tools_progn
-	    tools_args
-	    tools_misc
-	    expand_lambda
-	    expand_eps
-	    (find-location tools_location)
-	    (dsssl-named-constant? tools_dsssl))
-   (export  (expand-let*   ::obj ::procedure)
-	    (expand-let    ::obj ::procedure)
-	    (expand-letrec ::obj ::procedure)
-	    (expand-labels ::obj ::procedure)))
+   (include "Ast/node.sch"
+	    "Tools/location.sch")
+   (import   tools_progn
+	     tools_args
+	     tools_misc
+	     expand_lambda
+	     expand_eps
+	     (find-location tools_location)
+	     (dsssl-named-constant? tools_dsssl))
+   (export   (expand-let*   ::obj ::procedure)
+	     (expand-let    ::obj ::procedure)
+	     (expand-letrec ::obj ::procedure)
+	     (expand-labels ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-let* ...                                                  */
@@ -63,7 +65,7 @@
 	     (aux (filter-map (lambda (x y)
 				 (and (car x) (cons (cdr x) (cdr y))))
 			      vars bindings))
-	     (rec `(labels ((,loop ,(map car bindings) ,(expand-progn body)))
+	     (rec `(letrec ((,loop (lambda ,(map car bindings) ,(expand-progn body))))
 		      (,loop ,@(map cdr vars))))
 	     (exp (if (pair? aux) `(let ,aux ,rec) rec)))
 	 (e exp e)))

@@ -1,3 +1,9 @@
+Mon Aug 31 15:56:10 CEST 2009 (Manuel Serrano):
+
+	*** comptime/Ast/sexp.scm: "lambda" form no longer use the "public"
+	keyword labels.
+
+	
 Fri Jul 24 10:44:10 CEST 2009 (Manuel Serrano):
 
 	*** runtime/Ieee/input.scm: enforce empty strings on eof for 

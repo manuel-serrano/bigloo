@@ -252,17 +252,24 @@ library.
 <atomic-type> @expansion{} <bigloo-type> 
      | <c-type>                                   
 <bigloo-type> @expansion{} @code{obj} @code{procedure} 
-     | @code{pair} | @code{nil} | @code{pair-nil} | @code{bint}          
-     | @code{blong} | @code{bbool} | @code{cnst}          
-     | @code{bstring} | @code{bchar} | @code{real}          
+     | @code{pair} | @code{nil} | @code{pair-nil} 
+     | @code{bint} | @code{blong} | @code{belong} | @code{bllong}
+     | @code{bignum}  |@code{real} | @code{bbool} | @code{cnst}          
+     | @code{bstring} | @code{ucs2string} | @code{bchar} | @code{bucs2}
      | @code{vector} | @code{tvector} | @code{struct}        
      | @code{tstruct} | @code{output-port} | @code{input-port}    
-     | @code{binary-port} | @code{unspecified} | @code{symbol} 
-     | @code{foreign}       
+     | @code{binary-port} | @code{unspecified} | @code{symbol} | @code{keyword}
+     | @code{cell} | @code{date} | @code{process} | @code{exit} 
+     | @code{mutex} | @code{condvar} | @code{mmap}
+     | @code{s8vector} | @code{u8vector} | @code{s16vector} | @code{u16vector}
+     | @code{s32vector} | @code{u32vector} | @code{s64vector} | @code{u64vector}
+     | @code{f32vector} | @code{f64vector}
+     | @code{dynamic-env} | @code{opaque} | @code{foreign}       
 <c-type> @expansion{} @code{cobj} @code{char} 
      | @code{uchar} | @code{short}    
      | @code{ushort} | @code{int} | @code{uint} | @code{long}
-     | @code{ulong} | @code{slong} | @code{bool} | @code{string} 
+     | @code{ulong} | @code{slong} | @code{elong} | @code{llong}
+     | @code{bool} | @code{string} 
      | @code{file} | @code{double} | @code{float} | @code{void} 
      | @code{function}
 @end example

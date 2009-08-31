@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Aug 19 14:04:04 2009 (serrano)                */
+;*    Last change :  Mon Aug 31 15:17:58 2009 (serrano)                */
 ;*    Copyright   :  2006-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -135,11 +135,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-evmodule ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (make-evmodule id path extension)
+(define (make-evmodule id path)
    (mutex-lock! *modules-mutex*)
    (let* ((env (make-hashtable 100 #unspecified eq?))
 	  (mactable (make-hashtable 64))
-	  (mod (%evmodule make-%evmodule id path env '() mactable extension)))
+	  (mod (%evmodule make-%evmodule id path env '() mactable '())))
       (if (not (hashtable? *modules-table*))
 	  (begin
 	     (set! *modules-table* (make-hashtable 100))
@@ -589,17 +589,19 @@
 ;*---------------------------------------------------------------------*/
 (define (evmodule exp loc)
    (let* ((loc (find-loc exp loc))
-	  (hdl (bigloo-module-extension-handler))
-	  (ext (when (procedure? hdl) (hdl exp))))
+	  (hdl (bigloo-module-extension-handler)))
       (match-case exp
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (when loc (evmeaning-set-error-location! loc))
 	  (if (not (list? clauses))
 	      (evcompile-error loc 'eval "Illegal module clauses" clauses)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
-		     (mod (make-evmodule name path ext)))
+		     (mod (make-evmodule name path)))
 		 (unwind-protect
-		    (evmodule-module mod clauses loc)
+		    (begin
+		       (evmodule-module mod clauses loc)
+		       (when (procedure? hdl)
+			  (%evmodule-extension-set! mod (hdl exp))))
 		    ($eval-module-set! mod)))))
 	 (else
 	  (evcompile-error loc 'eval "Illegal module expression" exp)))))

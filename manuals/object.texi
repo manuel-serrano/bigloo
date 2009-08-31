@@ -74,12 +74,13 @@ declaration is:
 @pindex wide-class
 @pindex abstract-class
 
-A class is a Bigloo type and the class identifier is extracted from the
-<ident> of the class definition. If <ident> is also a
-<typed-ident>, the type part of this identifier denote the super-class
-of the class. If <ident> is a <@sc{Ieee}-ident>, the super-class of
-the class is the root of the inheritance tree, the @code{object} class. This
-@code{object} class is the only pre-existing class.
+A class is a Bigloo type (see Section@ref{Atomic types}) and the class
+identifier is extracted from the <ident> of the class definition. If
+<ident> is also a <typed-ident>, the type part of this identifier
+denote the super-class of the class. If <ident> is a
+<@sc{Ieee}-ident>, the super-class of the class is the root of the
+inheritance tree, the @code{object} class. This @code{object} class is
+the only pre-existing class.
 
 @emph{Final classes} can only be sub-classed by @emph{wide classes}.
 @emph{Wide classes} (only for compiled modules) can only inherit from @emph{final classes}. 

@@ -26,7 +26,11 @@ types for local variable. Due to our module language design (in particular
 module initialization), Scheme global variables @emph{cannot} support type
 information.
 
-@emph{Warning: } All type annotations are ignore by the interpreter.
+Types are either atomic types (see @ref{Atomic types}), foreign types
+(see @ref{Defining an extern type}), or a classes
+(see @ref{Class declaration}).
+
+@emph{Warning: } All type annotations are ignored by the interpreter.
 
 Module body type annotations are introduced by the following
 special forms.

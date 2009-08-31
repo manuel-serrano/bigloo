@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Apr 10 08:57:28 2009 (serrano)                */
+;*    Last change :  Mon Aug 31 14:58:45 2009 (serrano)                */
 ;*    Copyright   :  2009 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */

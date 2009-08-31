@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Sun Apr 10 14:45:51 2005 (serrano)                */
-;*    Copyright   :  2000-05 Manuel Serrano                            */
+;*    Last change :  Mon Aug 31 16:14:59 2009 (serrano)                */
+;*    Copyright   :  2000-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -188,4 +188,3 @@
    [assert (kind) (memq kind '(getfield setfield new cast cast-null isa
 		 			vlength vref vset! valloc))]
    (cons* *private-stamp* kind type-id objs))
-

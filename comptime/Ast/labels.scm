@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jan 10 18:16:02 2007 (serrano)                */
+;*    Last change :  Mon Aug 31 16:18:20 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `labels->node' translator                                    */
 ;*=====================================================================*/
@@ -24,7 +24,26 @@
 	    ast_sexp
 	    ast_ident
 	    ast_local)
-   (export (labels->node::let-fun <sexp> <stack> ::obj ::symbol)))
+   (export  (labels-sym? ::obj)
+	    (labels-sym::symbol)
+	    (labels->node::let-fun <sexp> <stack> ::obj ::symbol)))
+
+;*---------------------------------------------------------------------*/
+;*    *labels* ...                                                     */
+;*---------------------------------------------------------------------*/
+(define *labels* (gensym))
+
+;*---------------------------------------------------------------------*/
+;*    labels-sym ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (labels-sym)
+   *labels*)
+
+;*---------------------------------------------------------------------*/
+;*    labels-sym? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (labels-sym? sym)
+   (eq? sym *labels*))
 
 ;*---------------------------------------------------------------------*/
 ;*    labels->node ...                                                 */
@@ -137,25 +156,3 @@
 	  (leave-function)))
       (else
        (error-sexp->node "Illegal `labels' form" binding loc))))
-
-;* (define (labels-binding.not-used local binding stack loc)           */
-;*    (match-case binding                                              */
-;*       ((?- ?args . ?body)                                           */
-;*        (enter-function (local-id local))                            */
-;*        (let* ((loc (find-location/loc binding loc))                 */
-;* 	      (body2 (if (dsssl-optional-only-prototype? args)         */
-;* 			 (normalize-progn body)                        */
-;* 			 (make-dsssl-function-prelude (local-id local) */
-;* 						      args             */
-;* 						      (normalize-progn body) */
-;* 						      user-error)))    */
-;* 	      (body (sexp->node body2                                  */
-;* 				(append (sfun-args (local-value local)) stack) */
-;* 				loc                                    */
-;* 				'value)))                              */
-;* 	  (sfun-loc-set! (local-value local) loc)                      */
-;* 	  (sfun-body-set! (local-value local) body)                    */
-;* 	  (leave-function)))                                           */
-;*       (else                                                         */
-;*        (error-sexp->node "Illegal `labels' form" binding loc))))    */
-
