@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Wed Jan 21 18:41:06 2009 (serrano)                */
+;*    Last change :  Thu Aug 20 10:20:53 2009 (serrano)                */
 ;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -224,6 +224,17 @@
        (cons (f (car lst)) (map+ f (cdr lst))))))
 
 ;*---------------------------------------------------------------------*/
+;*    all? ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (all? pred p)
+   (let loop ((p p))
+      (cond
+	 ((null? p) #t)
+	 ((pair? p) (when (pred (car p)) (loop (cdr p))))
+	 ((pred p) #t)
+	 (else #f))))
+				
+;*---------------------------------------------------------------------*/
 ;*    expand-eval-define-generic ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-define-generic x e)
@@ -244,27 +255,29 @@
 	      (met-body `(met ,@(map+ (lambda (a)
 					 (if (pair? a) (car a) a))
 				      epa))))
-	  (e `(begin
-		 (define ,fun
-		    (procedure->generic
-		     (lambda ,(cons f0 formals)
-			(let ((,def (lambda ()
-				       ,(if va
-					    (cons 'apply def-body)
-					    def-body))))
-			   (let ((met (and (object? ,(caar pa))
-					   (find-method ,(caar pa) ,id))))
-			      (if (procedure? met)
-				  ,(if va (cons 'apply met-body) met-body)
-				  (,def)))))))
-		 (add-generic! ,id
-			       (lambda ,(cons f0 formals)
-				  ,(if (pair? body)
-				       `(begin ,@body)
-				       `(error ',(car pf)
-					       "No method for this object"
-					       ',(car (car pa)))))))
-	     e)))
+	  (if (all? symbol? (cdr (cadr x)))
+	      (e `(begin
+		     (define ,fun
+			(procedure->generic
+			 (lambda ,(cons f0 formals)
+			    (let ((,def (lambda ()
+					   ,(if va
+						(cons 'apply def-body)
+						def-body))))
+			       (let ((met (and (object? ,(caar pa))
+					       (find-method ,(caar pa) ,id))))
+				  (if (procedure? met)
+				      ,(if va (cons 'apply met-body) met-body)
+				      (,def)))))))
+		     (add-generic! ,id
+				   (lambda ,(cons f0 formals)
+				      ,(if (pair? body)
+					   `(begin ,@body)
+					   `(error ',(car pf)
+						   "No method for this object"
+						   ',(car (car pa)))))))
+		 e)
+	      (error fun "Illegal formal arguments for generic function" x))))
       (else
        (error 'define-generic "Illegal form" x))))
 

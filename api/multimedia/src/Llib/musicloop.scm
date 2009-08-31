@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Sat Jan  3 10:13:58 2009 (serrano)                */
+;*    Last change :  Sun Aug 30 10:08:04 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -90,7 +90,7 @@
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume
 		  (onvol (musicstatus-volume stat2)))
-	       
+
 	       (when (and onerror (musicstatus-err stat2))
 		  ;; onerror
 		  (onerror (musicstatus-err stat2)))

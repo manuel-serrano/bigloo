@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sat Jan 24 12:26:16 2009 (serrano)                */
+;*    Last change :  Wed Aug 19 14:42:20 2009 (serrano)                */
 ;*    Copyright   :  2006-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -316,8 +316,8 @@
 			',id
 			,(class-name super)
 			,abstract
-			,(class-make id)
-			,(class-allocate id)
+			,(unless abstract (class-make id))
+			,(if abstract list (class-allocate id))
 			,(class-nil id)
 			,(class-predicate id)
 			,hash
@@ -796,7 +796,9 @@
 	  (evcompile-error (find-loc clauses loc)
 			   'eval "Illegal class declaration" clauses))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
-	  (values (caar clauses)
+	  ;; the constructor must be protected under a lambda because
+	  ;; may be still unitialized
+	  (values `(lambda (o) (,(caar clauses) o))
 		  (append-map (lambda (f)
 				 (eval-parse-class-slot loc f))
 			      (cdr clauses))))
@@ -832,8 +834,9 @@
 	 (cond
 	    ((not (class? super))
 	     (evcompile-error loc 'eval "Cannot find super class" sid))
-	    ((class-abstract? super)
-	     (evcompile-error loc 'eval "Eval class cannot inherit from abstract native classes" sid))
+;* 	    (((class-abstract? super)                                  */
+;* 	     (evcompile-error loc 'eval                                */
+;* 			      (format "Eval class \"~a\" cannot inherit from abstract native classes" cid) sid)) */
 	    (else
 	     (multiple-value-bind (constructor slots)
 		(eval-parse-class loc clauses)
@@ -927,7 +930,7 @@
 			 (let ((int (make-eval-struct+object->object cid all-slots))
 			       (ext (make-eval-object->struct cid all-slots)))
 			    (set! exprs (append exprs (list ext int)))))
-		      (values exprs idents)))))))))
+ 		      (values exprs idents)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-class-hash ...                                          */

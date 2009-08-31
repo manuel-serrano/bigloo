@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sat Jan  3 07:39:55 2009 (serrano)                */
+;*    Last change :  Sun Aug 30 10:07:49 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -68,7 +68,6 @@
 ;*    music-reset-error! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (music-reset-error! mpc::mpc)
-   (tprint "MPC MUSIC-RESET-ERROR!: closed=" (mpc-%closed mpc))
    (with-access::mpc mpc (%closed %socket)
       (unless %closed
 	 ;; closing the socket is the easiest way to reset the error
@@ -80,15 +79,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    set-error! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (set-error! mpc err)
-   (with-access::mpc mpc (%status %socket)
-      (with-access::musicstatus %status (err state)
+(define (set-error! mpc status e)
+   (with-access::mpc mpc (%socket)
+      (with-access::musicstatus status (err state)
 	 (set! state 'error)
-	 (if (&exception? err)
-	     (let ((msg (with-error-to-string (lambda () (error-notify err)))))
-		(display msg (current-error-port))
-		(set! err msg))
-	     (set! err err))
+	 (cond
+	    ((&error? e)
+	     (set! err (&error-msg e)))
+	    ((&exception? e)
+	     (set! err (with-error-to-string (lambda () (exception-notify e)))))
+	    (else
+	     (set! err e)))
 	 (when (socket? %socket)
 	    (socket-close %socket)
 	    (set! %socket #f)))))
@@ -132,15 +133,17 @@
 	    (let ((l (read-line pi)))
 	       (if (and (string? l) (substring-at? l "OK MPD" 0))
 		   (set! %mpd (substring l 6 (string-length l)))
-		   (set-error! mpc (format "Illegal MPC acknowledge: ~a" l)))))))
+		   (set-error! mpc
+			       %status
+			       (format "Illegal MPC acknowledge: ~a" l)))))))
    
    (define (init-socket! mpc)
       (with-access::mpc mpc (host port timeout %socket)
 	 (set! %socket (make-client-socket host port :timeout timeout))
 	 (input-port-timeout-set! (socket-input %socket) timeout)
 	 (ack-parser mpc)))
-   
-   (with-access::mpc mpc (%socket host port)
+
+   (with-access::mpc mpc (%socket %status host port)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
       ;; the player is already closed
       (unless (music-closed? mpc)
@@ -155,7 +158,7 @@
 		  (if (&exception? v)
 		      (if (>fx count 0)
 			  (begin
-			     (set-error! mpc v)
+			     (set-error! mpc %status v)
 			     (retry (-fx count 1)))
 			  (raise v))
 		      (parser mpc))))))))
@@ -307,7 +310,7 @@
       (lambda ()
 	 (with-handler
 	    (lambda (e)
-	       (set-error! mpc e)
+	       (set-error! mpc (mpc-%status mpc) e)
 	       '())
 	    (mpc-cmd mpc "playlist" playlist-parser)))))
 
@@ -559,7 +562,7 @@
 
    (with-handler
       (lambda (e)
-	 (set-error! mpc e))
+	 (set-error! mpc status e))
       (mpc-cmd mpc "status" status-parser)))
 
 ;*---------------------------------------------------------------------*/
@@ -626,7 +629,7 @@
       (lambda ()
 	 (with-handler
 	    (lambda (e)
-	       (set-error! mpc e)
+	       (set-error! mpc (mpc-%status mpc) e)
 	       0)
 	    (mpc-cmd mpc "currentsong" music-song-parser)))))
 
@@ -685,7 +688,7 @@
       (lambda ()
 	 (with-handler
 	    (lambda (e)
-	       (set-error! mpc e)
+	       (set-error! mpc (mpc-%status mpc) e)
 	       0)
 	    (mpc-cmd mpc "status" music-time-parser)))))
 
@@ -811,7 +814,7 @@
       (lambda ()
 	 (with-handler
 	    (lambda (e)
-	       (set-error! mpc e)
+	       (set-error! mpc (mpc-%status mpc) e)
 	       0)
 	    (mpc-cmd mpc "status" get-volume-parser)))))
 
