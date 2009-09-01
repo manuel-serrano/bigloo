@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Apr  3 16:03:11 2000                          */
-#*    Last change :  Tue Sep  1 16:01:33 2009 (serrano)                */
+#*    Last change :  Tue Sep  1 16:22:13 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking emacs                                                   */
 #*=====================================================================*/
@@ -50,11 +50,11 @@ else
   if [ "$version" = "100" ]; then
     echo "xemacs"
   else
-    if [ "$version" = "22" ]; then
-      echo "emacs22"
+    if [ "$version" = "21" ]; then
+      echo "emacs21"
     else
-      if [ "$version" = "21" ]; then
-        echo "emacs21"
+      if [ "$version" = "22" ]; then
+        echo "emacs22"
       else
         if [ "$version" = "23" ]; then
           echo "emacs23"

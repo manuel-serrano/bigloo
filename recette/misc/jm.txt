@@ -1,0 +1,17 @@
+(define (test-rgc-jm)
+   (let* ((level 0)
+          (my-grammar
+           (regular-grammar ( (lpar (in #\( #\[ #\{))
+                              (rpar (in #\) #\] #\})) )
+              ((lpar)
+               (set! level (+ level 1)))
+              ((rpar)
+               (set! level (- level 1))
+	       'paren)
+              ((+ (out  #\( #\[ #\{
+                        #\) #\] #\}))
+               (the-string))
+              (else (the-failing-char)))))
+      (with-input-from-file "misc/jm.txt"
+         (lambda ()
+            (labels ((loop ()

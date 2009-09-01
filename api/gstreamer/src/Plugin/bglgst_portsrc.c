@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Tue Sep  1 07:57:55 2009 (serrano)                */
+/*    Last change :  Tue Sep  1 16:42:19 2009 (serrano)                */
 /*    Copyright   :  2008-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
@@ -112,7 +112,7 @@ static guint bgl_gst_port_src_signals[ LAST_SIGNAL ] = { 0 };
 /*---------------------------------------------------------------------*/
 static void
 bgl_gst_port_src_set_port( BglPortSrc *src, gpointer new_port, char *new_uri ) {
-   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d) new_port=%p src->port=%p\n", __FILE__, __LINE__, new_port, src->port );
+   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p\n  src->port=%p\n", __FILE__, __LINE__, new_port, src->port );
    if( !INPUT_PORTP( new_port ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR,
 			"bglportsrc",
@@ -138,7 +138,7 @@ static void
 bgl_gst_port_src_set_uri( BglPortSrc *src, char *new_uri ) {
    obj_t new_port = bglgst_open_input_file( new_uri );
 
-   fprintf( stderr, "bgl_gst_port_src_uri(%s:%d) new_uri=%s\n", __FILE__, __LINE__, new_uri );
+   fprintf( stderr, "bgl_gst_port_src_uri(%s:%d)\n  new_uri=%s\n", __FILE__, __LINE__, new_uri );
    
    if( !INPUT_PORTP( new_port ) ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -164,7 +164,7 @@ bgl_gst_port_src_get_size( GstBaseSrc *basesrc, guint64 *size ) {
    switch( (long)PORT( port ).kindof ) {
       case (long) KINDOF_FILE:
 	 *size = bgl_file_size( BSTRING_TO_STRING( PORT( port ).name ) );
-	 fprintf( stderr, "bgl_gst_src_get_size(%s:%d) size=%d\n", __FILE__, __LINE__, *size );
+	 fprintf( stderr, "bgl_gst_src_get_size(%s:%d)\n  file=%s\n  size=%d\n", __FILE__, __LINE__, BSTRING_TO_STRING( PORT( port ).name ), *size );
 	 return TRUE;
       case (long) KINDOF_STRING:
 	 *size = BGL_INPUT_PORT_BUFSIZ( port ) - 1;
@@ -480,12 +480,12 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
    }
 
    if( !(readlen = bgl_rgc_blit_string( src->port, readstr, 0, length )) ) {
-      fprintf( stderr, "bgl_gst_port_src_create(%s:%d) readlen=%d\n", __FILE__, __LINE__, readlen );
+      fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n", __FILE__, __LINE__, readlen );
       /* end of file */
       gst_buffer_unref( buf );
       return GST_FLOW_UNEXPECTED;
    }
-   fprintf( stderr, "bgl_gst_port_src_create(%s:%d) readlen=%d\n", __FILE__, __LINE__, readlen );
+   fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n", __FILE__, __LINE__, readlen );
 
    GST_BUFFER_SIZE( buf ) = readlen;
    GST_BUFFER_OFFSET( buf ) = offset;

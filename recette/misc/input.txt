@@ -1,0 +1,144 @@
+Toto n'est pas content.
+Je vais faire un essai de read-char et peek-char.
+
+
+;; on va voir ce qui se passe si on fait des trucs comme ca
+
+"\\"
+
+"foo"
+
+#\newline
+
+toto
+
+456
+
+"toto n'est pas content"
+
+(1 2 3 toto)
+
+#(toto n est pas content)
+
+(5 6 . 7)
+
+;;;; foo
+
+toto_n_est_pas_content
+#( (1 2 3) "toto" (4 . 5) )(1 2)
+
+;*---------------------------------------------------------------------*/
+;*    serrano/prgm/project/bigloo/Test/read/read.scm ...               */
+;*                                                                     */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri May 22 16:17:03 1992                          */
+;*    Last change :  Fri May 22 21:22:53 1992  (serrano)               */
+;*                                                                     */
+;*    Un essai de reader                                               */
+;*---------------------------------------------------------------------*/
+
+;*---------------------------------------------------------------------*/
+;*    Le module                                                        */
+;*---------------------------------------------------------------------*/
+(module read
+   (export (main (lambda (a)))))
+
+;*---------------------------------------------------------------------*/
+;*    main ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (main argv)
+   (if (null? (cdr argv))
+       (begin
+          (print "usage: read [name]")
+          -1)
+       (let ((stream (open-stream (cadr argv))))
+          (let ((npair   0)
+                (nint    0)
+                (nstring 0)
+                (nvector 0)
+                (nchar   0)
+                (nsymbol 0))
+             (if (not (stream? stream))
+                 (begin
+                    (print "can't open file " (cadr argv))
+                    -2)
+                 (let loop ((sexp   (read stream))
+                            (n      0))
+                    (if (eof? sexp)
+                        (begin
+                           (print "nsymbol: " nsymbol)
+                           (print "nchar  : " nchar)
+                           (print "nvector: " nvector)
+                           (print "nstring: " nstring)
+                           (print "nint   : " nint)
+                           (print "npair  : " npair)
+                           (print "n      : " n)
+                           0)
+                        (begin
+                           (cond
+                              ((pair? sexp)
+                               (set! npair (+ 1 npair)))
+                              ((integer? sexp)
+                               (set! nint (+ 1 nint)))
+                              ((string? sexp)
+                               (set! nstring (+ 1 nstring)))
+                              ((vector? sexp)
+                               (set! nvector (+ 1 nvector)))
+                              ((char? sexp)
+                               (set! nchar (+ 1 nchar)))
+                              (else
+                               (set! nsymbol (+ 1 nsymbol))))
+                           (loop (read stream)
+                                 (+ 1 n))))))))))
+
+;; on va voir ce qui se passe si on fait des trucs comme ca
+
+
+"foo"
+
+#\newline
+
+toto
+
+456
+
+"toto n'est pas content"
+
+(1 2 3 toto)
+
+
+;; a huge token (a huge string)
+
+(define (bigloo-license)
+ " ---------------------------------------------------------------------
+    A practical implementation for the Scheme programming language   
+                                                                     
+                                    ,--^,                            
+                              _ ___/ /|/                             
+                          ,;'( )__, ) '                              
+                         ;;  //   L__.                               
+                         '   \\   /  '                               
+                              ^   ^                                  
+                                                                     
+               Copyright (c) 1992-2001 Manuel Serrano                
+                                                                     
+     Bug descriptions, use reports, comments or suggestions are      
+     welcome. Send them to                                           
+       bigloo@kaolin.unice.fr                                        
+       http://kaolin.unice.fr/bigloo                                 
+                                                                     
+   This program is free software; you can redistribute it            
+   and/or modify it under the terms of the GNU General Public        
+   License as published by the Free Software Foundation; either      
+   version 2 of the License, or (at your option) any later version.  
+                                                                     
+   This program is distributed in the hope that it will be useful,   
+   but WITHOUT ANY WARRANTY; without even the implied warranty of    
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the     
+   GNU General Public License for more details.                      
+                                                                     
+   You should have received a copy of the GNU General Public         
+   License along with this program; if not, write to the Free        
+   Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,   
+   MA 02111-1307, USA.                                               
+--------------------------------------------------------------------- ")

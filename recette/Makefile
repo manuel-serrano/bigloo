@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon May  4 08:34:02 2009 (serrano)                */
+#*    Last change :  Tue Sep  1 16:48:00 2009 (serrano)                */
 #*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -107,7 +107,12 @@ POPULATION	= $(SOURCE_FILES) \
                   c-file.h \
 		  include.sch \
 		  include2.sch \
-		  misc
+		  misc/dump.c \
+		  misc/dump.dotnet \
+		  misc/dump.jvm \
+		  misc/input.txt \
+		  misc/jm.txt \
+		  misc/trap.txt
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
