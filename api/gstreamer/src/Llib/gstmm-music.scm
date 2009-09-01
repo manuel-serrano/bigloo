@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Aug 31 07:01:40 2009 (serrano)                */
+;*    Last change :  Tue Sep  1 07:50:20 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -173,8 +173,8 @@
 		     ((gst-message-eos? msg)
 		      (tprint "INNER: eos")
 		      ;; end of stream
-		      (gst-element-state-set! (gstmusic-%pipeline o) 'null)
 		      (mutex-lock! %mutex)
+		      (gst-element-state-set! (gstmusic-%pipeline o) 'null)
 		      (musicstatus-state-set! %status 'stop)
 		      (musicstatus-songpos-set! %status 0)
 		      (gstmusic-%meta-set! o '())
@@ -182,10 +182,14 @@
 		      (when onstate (onstate %status))
 		      (with-access::musicstatus %status (song playlistlength volume)
 			 (when (<fx song (-fx playlistlength 1))
+			    (mutex-lock! %mutex)
 			    (set! song (+fx 1 song))
+			    (mutex-unlock! %mutex)
 			    (music-play o)
 			    (when (>=fx volume 0)
-			       (music-volume-set! o volume)))))
+			       (mutex-lock! %mutex)
+			       (music-volume-set! o volume)
+			       (mutex-unlock! %mutex)))))
 		     ((gst-message-state-changed? msg)
 		      ;; state changed
 		      (let ((nstate (case (gst-message-new-state msg)
@@ -213,7 +217,6 @@
 				      (let* ((plist (music-playlist-get o))
 					     (file (list-ref plist song)))
 					 (onmeta file plist))))))))
-		     (#t 'dummy)
 		     ((gst-message-tag? msg)
 		      (tprint "INNER tag...")
 		      ;; tag found
@@ -409,7 +412,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::gstmusic . song)
    (with-access::gstmusic o (%mutex %pipeline %audiosrc %status)
-      (tprint "MUSIC-PLAY song=" song " " %status)
+      (tprint "---------- MUSIC-PLAY song=" song " " %status)
       (with-lock %mutex
 	 (lambda ()
 	    (unless (gst-element? %pipeline)
@@ -427,9 +430,6 @@
 		  (let ((uri (gstmm-charset-convert url)))
 		     (tprint "MUSIC-PLAY set null..."
 		     (gst-element-state-set! %pipeline 'null)
-		     )
-		     (tprint "MUSIC-PLAY set ready..."
-		     (gst-element-state-set! %pipeline 'ready)
 		     )
 		     (tprint "MUSIC-PLAY set ready..."
 		     (gst-element-state-set! %pipeline 'ready)

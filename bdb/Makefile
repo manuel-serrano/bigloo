@@ -85,14 +85,14 @@ install:
            mkdir -p $(DESTDIR)$(BINDIR) && \
 	   cp $(BOOTBINDIR)/bdb $(DESTDIR)$(BINDIR) && \
 	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/bdb && \
-           mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
-	   cp $(BOOTLIBDIR)/bdb.heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(BMASK) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+           mkdir -p $(LIBDIR)/$(FILDIR) && \
+	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
+           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
 	if [ $(FILDIR) != $(BOOTLIBDIR) ]; then \
-           mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
-	   cp $(BOOTLIBDIR)/bdb.heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(BMASK) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+           mkdir -p $(LIBDIR)/$(FILDIR) && \
+	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
+           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
 	$(MAKE) install-lib LIB=libbigloobdb_s-$(RELEASE)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Aug 31 15:17:58 2009 (serrano)                */
+;*    Last change :  Tue Sep  1 10:49:51 2009 (serrano)                */
 ;*    Copyright   :  2006-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -406,17 +406,19 @@
       (evcompile-error loc 'eval "Illegal `import' clause" arg))
    (define (import-clause s)
       (let ((loc (find-loc s loc))
-	    (abase (if (string? (module-abase)) (module-abase) '*)))
-	 (cond
-	    ((symbol? s)
-	     (let ((path ((bigloo-module-resolver) s abase)))
-		(evmodule-import! mod s path '() abase loc)))
-	    ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
-	     (import-error s))
-	    (else
-	     (module-add-access! (car s) (cdr s) abase)
-	     (let ((path ((bigloo-module-resolver) (car s) abase)))
-		(evmodule-import! mod (car s) path '() abase loc))))))
+	    (abase (module-abase)))
+	 (unwind-protect
+	    (cond
+	       ((symbol? s)
+		(let ((path ((bigloo-module-resolver) s abase)))
+		   (evmodule-import! mod s path '() (module-abase) loc)))
+	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
+		(import-error s))
+	       (else
+		(module-add-access! (car s) (cdr s) abase)
+		(let ((path ((bigloo-module-resolver) (car s) abase)))
+		   (evmodule-import! mod (car s) path '() (module-abase) loc))))
+	    (module-abase-set! abase))))
    (if (not (list? clause))
        (import-error clause)
        (for-each import-clause (cdr clause))))
@@ -460,17 +462,20 @@
    (define (from-error arg)
       (evcompile-error loc 'eval "Illegal `from' clause" arg))
    (define (from-clause s)
-      (let ((loc (find-loc s loc)))
-	 (cond
-	    ((symbol? s)
-	     (let ((path ((bigloo-module-resolver) s (module-abase))))
-		(evmodule-from! mod s path '() loc)))
-	    ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
-	     (from-error s))
-	    (else
-	     (module-add-access! (car s) (cdr s) (module-abase))
-	     (let ((path ((bigloo-module-resolver) (car s) (module-abase))))
-		(evmodule-from! mod (car s) path '() loc))))))
+      (let ((loc (find-loc s loc))
+	    (abase (module-abase)))
+	 (unwind-protect
+	    (cond
+	       ((symbol? s)
+		(let ((path ((bigloo-module-resolver) s abase)))
+		   (evmodule-from! mod s path '() loc)))
+	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
+		(from-error s))
+	       (else
+		(module-add-access! (car s) (cdr s) abase)
+		(let ((path ((bigloo-module-resolver) (car s) abase)))
+		   (evmodule-from! mod (car s) path '() loc))))
+	    (module-abase-set! abase))))
    (if (not (list? clause))
        (from-error clause)
        (for-each from-clause (cdr clause))))

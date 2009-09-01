@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Apr  3 16:03:11 2000                          */
-#*    Last change :  Wed Apr 27 11:47:10 2005 (serrano)                */
+#*    Last change :  Tue Sep  1 16:01:33 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking emacs                                                   */
 #*=====================================================================*/
@@ -35,6 +35,7 @@ done
 #*    The autodetection ELisp expression                               */
 #*---------------------------------------------------------------------*/
 expr="(cond \
+        ((string-match \"GNU Emacs 23\" (emacs-version)) (kill-emacs 23)) \
         ((string-match \"GNU Emacs 22\" (emacs-version)) (kill-emacs 22)) \
         ((string-match \"GNU Emacs 21\" (emacs-version)) (kill-emacs 21)) \
         ((featurep 'xemacs) (kill-emacs 100)) \
@@ -55,7 +56,11 @@ else
       if [ "$version" = "21" ]; then
         echo "emacs21"
       else
-        echo "generic";
+        if [ "$version" = "23" ]; then
+          echo "emacs23"
+        else
+          echo "generic";
+        fi
       fi
     fi
   fi

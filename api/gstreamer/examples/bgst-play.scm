@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 28 10:03:41 2008                          */
-;*    Last change :  Fri Dec 26 10:42:45 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Sep  1 08:06:38 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    An example of Bigloo/Gstreamer program for playing any kind      */
 ;*    of music files.                                                  */
@@ -131,9 +131,9 @@
 					  (gst-message-error-string msg)))
 				(when (=fx (gst-message-type msg)
 					   $gst-message-duration)
-				   (tprint "duration: "
-					   (gst-element-query-duration
-					    pipeline)))
+				   (verb 3 "duration: "
+					 (gst-element-query-duration
+					  pipeline)))
 				(when (=fx (gst-message-type msg)
 					   $gst-message-tag)
 				   (for-each (lambda (t)
