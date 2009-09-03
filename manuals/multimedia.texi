@@ -166,33 +166,56 @@ output port.
 @end deffn
 
 @c -- mp3-id3 -------------------------------------------------------- @c
-@deffn {Bigloo Multimedia procedure} mp3-id3 file-name
-Extracts the ID3 tag of MP3 file named @var{file-name}. If the file contains
-an ID3 section, this function returns an instance of the Bigloo class
-@code{id3}. Otherwise, it returns @code{#f}. This function is able to deal
-with all the versions of ID3 encoding.
+@deffn {Bigloo Multimedia procedure} file-musictag file-name
+@deffnx {Bigloo Multimedia procedure} mp3-musictag file-name
+@deffnx {Bigloo Multimedia procedure} ogg-musictag file-name
+@deffnx {Bigloo Multimedia procedure} flac-musictag file-name
+These functions extract the metadata of a music file named @var{file-name}.
+
+The function @code{mp3-musictag} returns the ID3 tag section if it
+exists. Otherwise, it returns @code{#f}. The function @code{ogg-musictag}
+and @code{flac-musictag} returns the vorbis comment if it exists.
 @end deffn
 
-@c -- id3 ------------------------------------------------------------ @c
-@deffn {Bigloo Multimedia class} id3
+@c -- musictag ------------------------------------------------------- @c
+@deffn {Bigloo Multimedia class} musictag
 @smalllisp
-(class id3
-   version::bstring
+(abstract-class musictag
    (title::bstring read-only)
    (artist::bstring read-only)
    (orchestra::obj read-only (default #f))
-   (conductor::obj read-only (default #f))
    (interpret::obj read-only (default #f))
    (album::bstring read-only)
    (year::int read-only)
-   (recording read-only (default #f))
    (comment::bstring read-only)
    (genre::bstring read-only)
-   (track::int (default -1))
+   (track::int (default -1)))
+@end smalllisp
+
+This class is used as the base class of music tag formats.
+@end deffn
+
+@c -- id3 ------------------------------------------------------------ @c
+@deffn {Bigloo Multimedia class} id3::musictag
+@smalllisp
+(class id3::musictag
+   version::bstring
+   (orchestra::obj read-only (default #f))
+   (conductor::obj read-only (default #f))
+   (recording read-only (default #f))
    (cd::obj (default #f)))
 @end smalllisp
 
 This class is used to reify the ID3 metadata used in the MP3 format.
+@end deffn
+
+@c -- vorbis --------------------------------------------------------- @c
+@deffn {Bigloo Multimedia class} vorbis::musictag
+@smalllisp
+(class vorbis::musictag)
+@end smalllisp
+
+This class is used to reify the Vorbis comments of OGG and Flac files.
 @end deffn
 
 @c ------------------------------------------------------------------- @c

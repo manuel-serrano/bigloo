@@ -1,12 +1,12 @@
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/multimedia/src/Llib/id3.scm      */
 ;*    -------------------------------------------------------------    */
-;*    Author      :  Manuel Serrano                                    */
+;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Jan  3 07:39:11 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Wed Sep  2 18:01:30 2009 (serrano)                */
+;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
-;*    MP3 ID3 tags                                                     */
+;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -14,22 +14,30 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-id3
 
-   (export (class id3
-	      version::bstring
+   (export (abstract-class musictag
 	      (title::bstring read-only)
 	      (artist::bstring read-only)
-	      (orchestra::obj read-only (default #f))
-	      (conductor::obj read-only (default #f))
 	      (interpret::obj read-only (default #f))
 	      (album::bstring read-only)
-	      (year::int read-only)
-	      (recording read-only (default #f))
-	      (comment::bstring read-only)
-	      (genre::bstring read-only)
 	      (track::int (default 0))
+	      (year::int read-only)
+	      (genre::bstring read-only)
+	      (comment::bstring read-only))
+
+	   (class vorbis::musictag)
+	   
+	   (class id3::musictag
+	      version::bstring
+	      (orchestra::obj read-only (default #f))
+	      (conductor::obj read-only (default #f))
+	      (recording read-only (default #f))
 	      (cd::obj (default #f)))
 
-	   (mp3-id3 ::bstring)))
+	   (mp3-id3 ::bstring)
+	   (mp3-musictag ::bstring)
+	   (ogg-musictag ::bstring)
+	   (flac-musictag ::bstring)
+	   (file-musictag ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *id3v2-genres* ...                                               */
@@ -438,21 +446,229 @@
 ;*    mp3-id3 ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (mp3-id3 path)
+   (mp3-musictag path))
+
+;*---------------------------------------------------------------------*/
+;*    mp3-musictag ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (mp3-musictag path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'mp3-id3 "Can't find file" path)
+		    'mp3-musictag "Can't find file" path)
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (cond
-		((id3v2.3? mm)
-		 (mp3-id3v2.3 mm))
-		((id3v2.2? mm)
-		 (mp3-id3v2.2 mm))
-		((id3v1.1? mm)
-		 (mp3-id3v1.1 mm))
-		((id3v1? mm)
-		 (mp3-id3v1 mm))
-		(else
-		 #f))
+		((id3v2.3? mm) (mp3-id3v2.3 mm))
+		((id3v2.2? mm) (mp3-id3v2.2 mm))
+		((id3v1.1? mm) (mp3-id3v1.1 mm))
+		((id3v1? mm) (mp3-id3v1 mm))
+		(else #f))
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
+;*    neq-input-string ...                                             */
+;*---------------------------------------------------------------------*/
+(define (neq-input-string mm s)
+   ;; consume matching input.  stop immediately upon mismatch.
+   (let loop ((i 0))
+      (if (=fx i (string-length s)) #f
+	  (if (char=? (mmap-get-char mm) (string-ref s i)) (loop (+fx 1 i))
+	      #t))))
+
+;*---------------------------------------------------------------------*/
+;*    ubigendian3 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ubigendian3 mm)
+   ;; read an unsigned 3 byte big-endian integer
+   (let* ((n0 (char->integer (mmap-get-char mm)))
+	  (n1 (char->integer (mmap-get-char mm)))
+	  (n2 (char->integer (mmap-get-char mm))))
+      (fixnum->elong
+       (+fx (bit-lsh n0 (*fx 2 8))
+	    (+fx (bit-lsh n1 8)
+		 n2)))))
+
+;*---------------------------------------------------------------------*/
+;*    utillendian4 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (ulittlendian4 mm)
+   ;; read an unsigned 4 byte little-endian integer
+   (let* ((n0 (char->integer (mmap-get-char mm)))
+	  (n1 (char->integer (mmap-get-char mm)))
+	  (n2 (char->integer (mmap-get-char mm)))
+	  (n3 (char->integer (mmap-get-char mm))))
+      (fixnum->elong
+       (+fx (bit-lsh n3 (*fx 3 8))
+	    (+fx (bit-lsh n2 (*fx 2 8))
+		 (+fx (bit-lsh n1 8)
+		      n0))))))
+
+;*---------------------------------------------------------------------*/
+;*    split-comment ...                                                */
+;*---------------------------------------------------------------------*/
+(define (split-comment c)
+   ;; vorbis comments always look like "foo=bar"
+   ;; split at the = and return the pair (foo . bar)
+   ;; foo is symbolized.
+   ;; bar ought to be symbolized to reduce space but that optimization was lost in the translation
+   (let ((i (string-index c "=")))
+      (cons (string->symbol (string-downcase! (substring c 0 i)))
+	    (substring c (+fx 1 i) (string-length c)))))
+
+;*---------------------------------------------------------------------*/
+;*    ogg-comments->musictag ...                                       */
+;*---------------------------------------------------------------------*/
+(define (ogg-comments->musictag lst)
+   
+   (define (get key lst def)
+      (let ((c (assq key lst)))
+	 (if (pair? c)
+	     (cdr c)
+	     def)))
+   
+   (when (pair? lst)
+      (instantiate::vorbis
+	 (title (get 'title lst "unknown"))
+	 (artist (get 'artist lst "unknown"))
+	 (interpret (get 'performer lst "unknown"))
+	 (album (get 'album lst "unknown"))
+	 (year (string->integer (get 'date lst "0")))
+	 (genre (get 'genre lst "Other"))
+	 (track (string->integer (get 'tracknumber lst "0")))
+	 (comment (get 'description lst "")))))
+
+;*---------------------------------------------------------------------*/
+;*    parse-metadata-block-vorbis-comment-body ...                     */
+;*---------------------------------------------------------------------*/
+(define (parse-metadata-block-vorbis-comment-body mm i comments)
+   (if (zeroelong? i)
+       (reverse! comments)
+       (let* ((comment-length (ulittlendian4 mm))
+	      ;; we really should check that comment-length is not too big.
+	      ;; does bigloo have a maximum string length?
+	      (comment-string (mmap-substring mm (mmap-read-position mm) (+fx comment-length (mmap-read-position mm))))
+	      (comment (split-comment comment-string)))
+	  (parse-metadata-block-vorbis-comment-body mm (-elong i 1) (cons comment comments)))))
+
+;*---------------------------------------------------------------------*/
+;*    parse-metadata-block-vorbis-comment ...                          */
+;*---------------------------------------------------------------------*/
+(define (parse-metadata-block-vorbis-comment mm)
+   (let* ((vendor-length (ulittlendian4 mm))
+	  ;; we really should check that this length is not too big.
+	  (vendor-string (mmap-substring mm (mmap-read-position mm) (+fx vendor-length (mmap-read-position mm))))
+	  (user-comment-list-length (ulittlendian4 mm))
+	  (- (assert (user-comment-list-length) (<=fx user-comment-list-length 100)))) ;; 100 is an arbitrary limit
+      (parse-metadata-block-vorbis-comment-body mm user-comment-list-length `((vendor-string . ,vendor-string)))))
+
+;*---------------------------------------------------------------------*/
+;*    read-ogg-comments ...                                            */
+;*    -------------------------------------------------------------    */
+;*    The Vorbis web page is                                           */
+;*      http://www.xiph.org/vorbis/                                    */
+;*    The specification this program uses is                           */
+;*      http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html              */
+;*---------------------------------------------------------------------*/
+(define (read-ogg-comments path mm)
+   
+   (define (err msg)
+      (raise (instantiate::&io-parse-error
+		(proc 'read-ogg-comment)
+		(msg msg)
+		(obj path))))
+   
+   (mmap-read-position-set! mm #e0)
+   
+   (unless (neq-input-string mm "OggS")
+      (unless (char=? #a000 (mmap-get-char mm))
+	 (err "invalid OggS page0"))
+      (mmap-read-position-set! mm (+fx 21 (mmap-read-position mm)))
+      (let ((ps (char->integer (mmap-get-char mm))))
+	 ;; ps should be 0 .. 511 and not negative.  is the correct?
+	 (mmap-read-position-set! mm (+fx ps (mmap-read-position mm)))
+	 (let ((packet-type (mmap-get-char mm)))
+	    (when (neq-input-string mm "vorbis")
+	       (err "invalid ogg vorbis identification"))
+	    (case packet-type
+	       ((#a001)
+		(mmap-read-position-set! mm (+fx 23 (mmap-read-position mm)))
+		(read-ogg-comments path mm))
+	       ((#a003)
+		(parse-metadata-block-vorbis-comment mm))
+	       (else
+		(err "invalid ogg vorbis common header")))))))
+   
+;*---------------------------------------------------------------------*/
+;*    read-flac-comments ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Information on flac can be found at                              */
+;*       http://flac.sourceforge.net/format.html                       */
+;*    Note that all flac numbers are big-endian.                       */
+;*    All vorbis numbers are little-endian.                            */
+;*    (As a reminder, little-endian means digit N is worth R**N.)      */
+;*---------------------------------------------------------------------*/
+(define (read-flac-comments mm)
+   (define block4s '())
+   
+   (define (parse-metadata-block-data block-type block-length)
+      (if (=fx (bit-and block-type #x7F) 4)
+	  (let ((comments (parse-metadata-block-vorbis-comment mm)))
+	     (set! block4s (append! comments block4s)))
+	  (mmap-read-position-set! mm (+fx block-length (mmap-read-position mm))))
+      (let ((block-is-last (not (zerofx? (bit-and block-type #x80)))))
+	 (if block-is-last block4s
+	     (parse-metadata-block-headers))))
+   
+   (define (parse-metadata-block-headers)
+      (let* ((block-type (char->integer (mmap-get-char mm)))
+	     (block-length (ubigendian3 mm)))
+	 (parse-metadata-block-data block-type block-length)))
+
+   (mmap-read-position-set! mm #e0)
+   
+   (unless (neq-input-string mm "fLaC")
+      (parse-metadata-block-headers)))
+
+;*---------------------------------------------------------------------*/
+;*    flac-musictag ...                                                */
+;*---------------------------------------------------------------------*/
+(define (flac-musictag path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+		    'flac-musictag "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (ogg-comments->musictag (read-flac-comments mm))
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
+;*    ogg-musictag ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (ogg-musictag path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+		    'ogg-vorbis "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (ogg-comments->musictag (read-ogg-comments path mm))
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
+;*    file-musictag ...                                                */
+;*---------------------------------------------------------------------*/
+(define (file-musictag path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+		    'file-musictag "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (cond
+		((id3v2.3? mm) (mp3-id3v2.3 mm))
+		((id3v2.2? mm) (mp3-id3v2.2 mm))
+		((id3v1.1? mm) (mp3-id3v1.1 mm))
+		((id3v1? mm) (mp3-id3v1 mm))
+		((read-flac-comments mm) => ogg-comments->musictag)
+		((read-ogg-comments path mm) => ogg-comments->musictag)
+		(else #f))
 	     (close-mmap mm)))))
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Mon Jan 26 10:28:26 2009 (serrano)                */
+/*    Last change :  Wed Sep  2 08:34:11 2009 (serrano)                */
 /*    Copyright   :  2007-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -31,10 +31,16 @@ extern bglgst_thread_init();
 /*    simplifies the callbacks machinery. Without threads, callbacks   */
 /*    are not allowed to allocate Bigloo objects (the GC requires      */
 /*    to create all allocating threads), this requires complex         */
-/*    woraround that are no longer needed when threads are enabled.    */
+/*    workaround that are no longer needed when threads are enabled.   */
+/*    -------------------------------------------------------------    */
+/*    The current implementation that uses no thread is broken.        */
+/*    For a reason I (MS) cannot understand, the call back machinery   */
+/*    require threads. I think some objects are collected (why,        */
+/*    please, tell me why, the gstreamer guys have found smart to      */
+/*    use reference counting, it is known for decades that ref-        */
+/*    counting is a bad-idea).                                         */
 /*---------------------------------------------------------------------*/
-//static int bglgst_use_threads = BGL_GSTREAMER_USE_THREADS;
-static int bglgst_use_threads = 0;
+static int bglgst_use_threads = BGL_GSTREAMER_USE_THREADS;
 static obj_t bgl_gst_denv;
 
 /*---------------------------------------------------------------------*/
@@ -151,7 +157,7 @@ bgl_gst_init( obj_t args ) {
       }
 
       /* start the Bigloo thread in charge of dealing with callbacks */
-      if( !bglgst_use_threads ) {
+      if( !bglgst_use_threadsp() ) {
 	 /* Use the GC for allocating glib objects */
 /* 	 bgl_gobject_alloc_init();                                     */
 
@@ -367,7 +373,6 @@ bgl_g_value_to_obj( const GValue *gval, int doref, int doobj ) {
 
 	 if( G_VALUE_HOLDS_OBJECT( gval ) ) {
 	    GstObject *obj = (GstObject *)g_value_get_object( gval );
-
 	    if( doref ) gst_object_ref( obj );
 	    return doobj ? bgl_gst_object_to_obj( obj, 0 ) : BUNSPEC;
 	 } else {
@@ -405,6 +410,8 @@ bgl_g_value_markandcopy( const GValue *gval ) {
 
    g_value_init( gnew, G_VALUE_TYPE( gval ) );
    g_value_copy( gval, gnew );
+
+   /* mark the object */
    bgl_g_value_to_obj( gnew, 1, 0 );
 
    return gnew;
@@ -419,7 +426,6 @@ enlarge_callback_array() {
    callback_t *ncallbacks;
    int osize = callback_length * sizeof( callback_t );
 
-   fprintf( stderr, "enlarge_callback_array\n" );
    callback_length *= 2;
    ncallbacks = g_malloc( osize * 2 );
    memcpy( ncallbacks, callbacks, osize );
@@ -436,7 +442,7 @@ static void
 bgl_gst_register_async_callback( callback_t cb ) {
    /* signal the callback */
    bgl_gst_lock();
-   
+
    if( callback_index == callback_length ) enlarge_callback_array();
 
    callbacks[ callback_index++ ] = cb;
@@ -841,12 +847,19 @@ closure_marshal( GClosure *closure,
 
    switch( n_param_values ) {
       case 0: {
-	 bgl_gst_register_async_callback( cb );
+	 if( bglgst_use_threadsp() ) {
+	    single_thread_denv = bgl_gst_denv;
+	    PROCEDURE_ENTRY( proc )
+	       ( proc,
+		 BEOA );
+	 } else {
+	    bgl_gst_register_async_callback( cb );
+	 }
 	 return;
       }
 
       case 1: {
-	 if( bglgst_use_threads ) {
+	 if( bglgst_use_threadsp() ) {
 	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
@@ -860,7 +873,7 @@ closure_marshal( GClosure *closure,
       }
 
       case 2: {
-	 if( bglgst_use_threads ) {
+	 if( bglgst_use_threadsp() ) {
 	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
@@ -876,7 +889,7 @@ closure_marshal( GClosure *closure,
       }
 
       case 3: {
-	 if( bglgst_use_threads ) {
+	 if( bglgst_use_threadsp() ) {
 	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
@@ -894,7 +907,7 @@ closure_marshal( GClosure *closure,
       }
 
       case 4: {
-	 if( bglgst_use_threads ) {
+	 if( bglgst_use_threadsp() ) {
 	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
@@ -1078,10 +1091,18 @@ bgl_gst_message_error_parser( GstMessage *msg, void (*parser)() ) {
    char *str;
    
    parser( msg, &err, &debug );
-   
+
+   if( *debug ) {
+      str = (char *)GC_MALLOC_ATOMIC( strlen( err->message ) +
+				      strlen( debug ) +
+				      2 );
+      sprintf( str, "%s\n%s", err->message, debug );
+   } else {
+      str = (char *)GC_MALLOC_ATOMIC( strlen( err->message ) + 1 );
+      strcpy( str, err->message );
+   }
+      
    g_free( debug );
-   str = (char *)GC_MALLOC_ATOMIC( strlen( err->message ) + 1 );
-   strcpy( str, err->message );
    g_error_free( err );
 
    return str;

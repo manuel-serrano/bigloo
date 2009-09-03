@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri May 29 07:36:54 2009 (serrano)                */
+;*    Last change :  Wed Sep  2 19:39:11 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -744,7 +744,7 @@
     (macro $output-port->file::file (::output-port) "OUTPUT_PORT_TO_FILE")
     (macro $file->output-port::output-port (::file) "FILE_TO_OUTPUT_PORT")
 
-    ($file->input-port::input-port (::file) "file_to_input_port")
+    ($file->input-port::input-port (::file) "bgl_file_to_input_port")
 
     (macro $binary-port->file::file (::binary-port) "BINARY_PORT_TO_FILE")
 

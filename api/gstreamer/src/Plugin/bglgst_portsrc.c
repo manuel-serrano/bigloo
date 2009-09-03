@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Tue Sep  1 16:42:19 2009 (serrano)                */
+/*    Last change :  Wed Sep  2 07:09:55 2009 (serrano)                */
 /*    Copyright   :  2008-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
@@ -23,6 +23,9 @@
 
 #include "bglgst_port.h"
 #include "bglgst_config.h"
+
+#define BGL_DEBUG 1
+#undef BGL_DEBUG
 
 /*---------------------------------------------------------------------*/
 /*    Bigloo imports                                                   */
@@ -112,7 +115,10 @@ static guint bgl_gst_port_src_signals[ LAST_SIGNAL ] = { 0 };
 /*---------------------------------------------------------------------*/
 static void
 bgl_gst_port_src_set_port( BglPortSrc *src, gpointer new_port, char *new_uri ) {
+#if( defined( BGL_DEBUG ) )   
    fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p\n  src->port=%p\n", __FILE__, __LINE__, new_port, src->port );
+#endif
+   
    if( !INPUT_PORTP( new_port ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR,
 			"bglportsrc",
@@ -138,8 +144,6 @@ static void
 bgl_gst_port_src_set_uri( BglPortSrc *src, char *new_uri ) {
    obj_t new_port = bglgst_open_input_file( new_uri );
 
-   fprintf( stderr, "bgl_gst_port_src_uri(%s:%d)\n  new_uri=%s\n", __FILE__, __LINE__, new_uri );
-   
    if( !INPUT_PORTP( new_port ) ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"bglportsrc",
@@ -164,7 +168,9 @@ bgl_gst_port_src_get_size( GstBaseSrc *basesrc, guint64 *size ) {
    switch( (long)PORT( port ).kindof ) {
       case (long) KINDOF_FILE:
 	 *size = bgl_file_size( BSTRING_TO_STRING( PORT( port ).name ) );
+#if( defined( BGL_DEBUG ) )
 	 fprintf( stderr, "bgl_gst_src_get_size(%s:%d)\n  file=%s\n  size=%d\n", __FILE__, __LINE__, BSTRING_TO_STRING( PORT( port ).name ), *size );
+#endif	 
 	 return TRUE;
       case (long) KINDOF_STRING:
 	 *size = BGL_INPUT_PORT_BUFSIZ( port ) - 1;
@@ -441,6 +447,11 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 /*    if( (src->parentsize == length) && src->parent ) {               */
 /*       buf = src->parent;                                            */
 /*    }                                                                */
+
+   /* Seek to the correct position */
+   if( INPUT_PORT( src->port ).filepos != offset ) {
+      bgl_input_port_seek( src->port, offset );
+   }
    
    /* WARNING!!! get a new buffer for getting the read characters.    */
    /* The function rgc_blit_string adds and extra 0 after             */
@@ -480,12 +491,24 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
    }
 
    if( !(readlen = bgl_rgc_blit_string( src->port, readstr, 0, length )) ) {
-      fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n", __FILE__, __LINE__, readlen );
       /* end of file */
       gst_buffer_unref( buf );
       return GST_FLOW_UNEXPECTED;
    }
-   fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n", __FILE__, __LINE__, readlen );
+#if( defined( BGL_DEBUG ) )      
+   fprintf( stderr, "bgl_gst_port_src_create(%s:%d)\n  readlen=%d\n  length=%d\n  offset=%d\n",
+	    __FILE__, __LINE__, readlen, length, offset );
+   
+   if( BGL_DEBUG > 0 ) {
+      int i;
+      fprintf( stderr, "  readstr=" );
+      for( i = 0; i < readlen; i +=2 ) {
+	 if( (i % 16) == 0 ) fprintf( stderr, "\n    %08x ", i  );
+	 fprintf( stderr, "%02x%02x ", readstr[ i + 1 ], readstr[ i ] );
+      }
+      fprintf( stderr, "\n" );
+   }
+#endif
 
    GST_BUFFER_SIZE( buf ) = readlen;
    GST_BUFFER_OFFSET( buf ) = offset;

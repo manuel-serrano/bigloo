@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 28 10:03:41 2008                          */
-;*    Last change :  Tue Sep  1 08:06:38 2009 (serrano)                */
+;*    Last change :  Wed Sep  2 07:47:51 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    An example of Bigloo/Gstreamer program for playing any kind      */
@@ -36,6 +36,16 @@
       (apply print args)))
 
 ;*---------------------------------------------------------------------*/
+;*    sample ...                                                       */
+;*---------------------------------------------------------------------*/
+(define sample -1)
+
+;*---------------------------------------------------------------------*/
+;*    repeat ...                                                       */
+;*---------------------------------------------------------------------*/
+(define repeat 1)
+
+;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
@@ -58,6 +68,10 @@
 	  (set! volume (string->integer vol)))
 	 (("-s" ?source (help "Select source (bigloo, gst)"))
 	  (set! src (string->symbol source)))
+	 (("--sample" ?seconds (help "Play only the first seconds"))
+	  (set! sample (string->integer seconds)))
+	 (("--repeat" ?n (help "Repeat n-times each song"))
+	  (set! repeat (string->integer n)))
 	 (else
 	  (set! streams (cons else streams))))
 
@@ -95,6 +109,7 @@
       (gst-object-connect! decoder
 			   "pad-added"
 			   (lambda (el pad)
+			      (verb 2 "pad-added: el=" el " pad=" pad)
 			      (let ((p (gst-element-pad conv "sink")))
 				 (gst-pad-link! pad p))))
       
@@ -105,46 +120,54 @@
 				    (lambda (p1 p2)
 				       (< (string-natural-compare3 p1 p2) 0)))
 			      (cdr streams)))
-		(begin
-		   (verb 1 "Playing: " (car streams))
-		   (if (eq? src 'bigloo)
-		       (gst-object-property-set! source :uri (car streams))
-		       (gst-object-property-set! source :location (car streams)))
-		   (gst-element-state-set! pipeline 'playing)
-		   
-		   (let liip ()
-		      (let ((msg (gst-bus-poll bus :timeout #l1000000000)))
-			 (if msg
-			     (begin
-				(verb 3 "message: " msg
-				      (if (gst-message-state-changed? msg)
-					  (case (gst-message-new-state msg)
-					     ((playing) " => playing")
-					     ((paused) " => paused")
-					     ((ready) " => ready")
-					     ((null) " => null"))
-					  ""))
-				(when (=fx (gst-message-type msg)
-					   $gst-message-error)
-				   (error 'gstreamer
-					  "Message error"
-					  (gst-message-error-string msg)))
-				(when (=fx (gst-message-type msg)
-					   $gst-message-duration)
-				   (verb 3 "duration: "
-					 (gst-element-query-duration
-					  pipeline)))
-				(when (=fx (gst-message-type msg)
-					   $gst-message-tag)
-				   (for-each (lambda (t)
-						(verb 2 "  "
-						      (car t) ": " (cdr t)))
-					     (gst-message-tag-list msg)))
-				(if (=fx (gst-message-type msg)
-					 $gst-message-eos)
-				    (begin
-				       (gst-element-state-set! pipeline 'null)
-				       (gst-element-state-set! pipeline 'ready)
-				       (loop (cdr streams)))
-				    (liip)))
-			     (liip))))))))))
+		(let laap ((r repeat))
+		   (if (=fx r 0)
+		       (loop (cdr streams))
+		       (begin
+			  (verb 1 "Playing: " (car streams))
+			  (if (eq? src 'bigloo)
+			      (gst-object-property-set! source :uri (car streams))
+			      (gst-object-property-set! source :location (car streams)))
+			  (gst-element-state-set! pipeline 'playing)
+			  
+			  (let liip ((s sample))
+			     (let ((msg (gst-bus-poll bus :timeout #l1000000000)))
+				(cond
+				   (msg
+				    (verb 4 "message: " msg
+					  (if (gst-message-state-changed? msg)
+					      (case (gst-message-new-state msg)
+						 ((playing) " => playing")
+						 ((paused) " => paused")
+						 ((ready) " => ready")
+						 ((null) " => null"))
+					      ""))
+				    (when (=fx (gst-message-type msg)
+					       $gst-message-error)
+				       (error 'gstreamer
+					      "Message error"
+					      (gst-message-error-string msg)))
+				    (when (=fx (gst-message-type msg)
+					       $gst-message-duration)
+				       (verb 3 "duration: "
+					     (gst-element-query-duration
+					      pipeline)))
+				    (when (=fx (gst-message-type msg)
+					       $gst-message-tag)
+				       (for-each (lambda (t)
+						    (verb 3 "  "
+							  (car t) ": " (cdr t)))
+						 (gst-message-tag-list msg)))
+				    (if (=fx (gst-message-type msg)
+					     $gst-message-eos)
+					(begin
+					   (gst-element-state-set! pipeline 'null)
+					   (gst-element-state-set! pipeline 'ready)
+					   (laap (-fx r 1)))
+					(liip s)))
+				   ((=fx s 0)
+				    (gst-element-state-set! pipeline 'null)
+				    (gst-element-state-set! pipeline 'ready)
+				    (laap (-fx r 1)))
+				   (else
+				    (liip (-fx s 1))))))))))))))

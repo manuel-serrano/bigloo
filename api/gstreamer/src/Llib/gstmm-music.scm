@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Tue Sep  1 07:50:20 2009 (serrano)                */
+;*    Last change :  Wed Sep  2 08:37:16 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -171,7 +171,6 @@
 		      ;; we are done
 		      #f)
 		     ((gst-message-eos? msg)
-		      (tprint "INNER: eos")
 		      ;; end of stream
 		      (mutex-lock! %mutex)
 		      (gst-element-state-set! (gstmusic-%pipeline o) 'null)
@@ -198,7 +197,6 @@
 				       ((ready) 'stop)
 				       ((null) 'stop))))
 			 (mutex-lock! %mutex)
-			 (tprint "INNER state-change: " nstate)
 			 (if (eq? nstate (musicstatus-state %status))
 			     (mutex-unlock! %mutex)
 			     (with-access::musicstatus %status (state
@@ -218,7 +216,6 @@
 					     (file (list-ref plist song)))
 					 (onmeta file plist))))))))
 		     ((gst-message-tag? msg)
-		      (tprint "INNER tag...")
 		      ;; tag found
 		      (mutex-lock! %mutex)
 		      (for-each (lambda (tag)
@@ -244,18 +241,15 @@
 		      ;; warning
 		      (mutex-lock! %mutex)
 		      (musicstatus-err-set! %status (gst-message-warning-string msg))
-		      (tprint "INNER warning: " (gst-message-warning-string msg))
 		      (mutex-unlock! %mutex)
 		      (when onerror (onerror (musicstatus-err %status))))
 		     ((gst-message-error? msg)
 		      ;; error
 		      (mutex-lock! %mutex)
-		      (tprint "INNER error: " (gst-message-error-string msg))
 		      (musicstatus-err-set! %status (gst-message-error-string msg))
 		      (mutex-unlock! %mutex)
 		      (when onerror (onerror (musicstatus-err %status))))
 		     ((gst-message-state-dirty? msg)
-		      (tprint "INNER state dirty: " msg)
 		      ;; refresh
 		      (when onstate
 			 (onstate %status)
@@ -265,9 +259,7 @@
 				   (file (list-ref plist i)))
 			       (onmeta file plist)))
 			 (when onmeta
-			    (onmeta (gstmusic-%meta o) (music-playlist-get o)))))
-		     (else
-		      (tprint "INNER MSG=" msg))))
+			    (onmeta (gstmusic-%meta o) (music-playlist-get o)))))))
 	       (unless %abort-loop (loop)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -412,7 +404,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::gstmusic . song)
    (with-access::gstmusic o (%mutex %pipeline %audiosrc %status)
-      (tprint "---------- MUSIC-PLAY song=" song " " %status)
       (with-lock %mutex
 	 (lambda ()
 	    (unless (gst-element? %pipeline)
@@ -428,17 +419,10 @@
 			   (set-song! o (musicstatus-song %status)))))
 	       (when (string? url)
 		  (let ((uri (gstmm-charset-convert url)))
-		     (tprint "MUSIC-PLAY set null..."
 		     (gst-element-state-set! %pipeline 'null)
-		     )
-		     (tprint "MUSIC-PLAY set ready..."
 		     (gst-element-state-set! %pipeline 'ready)
-		     )
-		     (tprint "MUSIC-PLAY set uri: " uri)
 		     (gst-object-property-set! %audiosrc :uri uri)
-		     (tprint "MUSIC-PLAY set playing..."
 		     (gst-element-state-set! %pipeline 'playing))))))))
-   )
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::gstmusic ...                                        */
