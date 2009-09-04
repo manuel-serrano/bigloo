@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Tue Sep  1 16:48:00 2009 (serrano)                */
+#*    Last change :  Thu Sep  3 12:28:34 2009 (serrano)                */
 #*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -59,14 +59,14 @@ BDNETFLAGS	= $(BFLAGS) -afile .afile-dotnet -jfile .jfile-dotnet -g -dotnet-mana
 #*---------------------------------------------------------------------*/
 ICOMMON		= vital bps bool list vector srfi4 struct print \
                   string kwote case bexit vararity apply \
-                  globalis filtre rgc-trap rgc-jm port \
+                  globalis filtre rgc-trap rgc-jm rgc-insert port \
                   read tail sqic eval inline match letrec macro \
                   flonum number bignum bchar define error cse \
                   kapture include 0cfa alias alias-aux main \
                   rgc-eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
-                  mmap weakptr crypto
+                  mmap weakptr crypto crc
 
 OCOMMON		= object object1 object2 object3 object4 object5
 

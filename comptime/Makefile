@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Jan 29 15:47:39 2009 (serrano)                */
+#*    Last change :  Fri Sep  4 08:38:08 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -73,10 +73,10 @@ CADDFLAGS	= -I$(BOOTLIBDIR)
 #*---------------------------------------------------------------------*/
 #*    Afile, Jfile and Bdepend tools                                   */
 #*---------------------------------------------------------------------*/
-AFILE_BIN	= $(BOOTBINDIR)/$(AFILE_EXE)
-JFILE_BIN	= $(BOOTBINDIR)/$(JFILE_EXE)
-BTAGS_BIN	= $(BOOTBINDIR)/$(BTAGS_EXE)
-DEPEND_BIN	= $(BOOTBINDIR)/$(BDEPEND_EXE)
+AFILE_BIN	= $(BUILDBINDIR)/$(AFILE_EXE)
+JFILE_BIN	= $(BUILDBINDIR)/$(JFILE_EXE)
+BTAGS_BIN	= $(BUILDBINDIR)/$(BTAGS_EXE)
+DEPEND_BIN	= $(BUILDBINDIR)/$(BDEPEND_EXE)
 
 #*---------------------------------------------------------------------*/
 #*    License                                                          */
@@ -87,7 +87,7 @@ LICENSE		= ../LICENSE
 #*    The compiler source files ...                                    */
 #*---------------------------------------------------------------------*/
 #*--- init ------------------------------------------------------------*/
-INIT_FILE_NOMAIN= parse-args setrc extend
+INIT_FILE_NOMAIN= parse-args setrc extend cross
 INIT_FILE	= $(INIT_FILE_NOMAIN) main
 
 INIT_OBJ_NOMAIN	= $(INIT_FILE_NOMAIN:%=Init/%.o)

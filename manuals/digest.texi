@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Digest                                                           @c
 @c ------------------------------------------------------------------- @c
-@node Digest, Internet, Date, Standard Library
+@node Digest, CRC, Date, Standard Library
 @comment  node-name,  next,  previous,  up
 @section Digest
 @cindex Digest

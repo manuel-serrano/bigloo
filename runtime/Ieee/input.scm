@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Fri Jul 24 10:33:46 2009 (serrano)                */
+;*    Last change :  Thu Sep  3 12:01:04 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -72,6 +72,9 @@
 	    (read-chars::obj ::obj #!optional (ip (current-input-port)))
 	    (read-chars!::obj ::bstring ::obj #!optional (ip (current-input-port)))
 	    (read-fill-string!::int ::bstring ::long ::long #!optional (ip (current-input-port)))
+	    (unread-char! ::char #!optional (ip (current-input-port)))
+	    (unread-string! ::bstring #!optional (ip (current-input-port)))
+	    (unread-substring! ::bstring ::long ::long #!optional (ip (current-input-port)))
 	    (port->string-list::pair-nil ::input-port)
 	    (file->string::bstring ::bstring)
 	    (send-chars::long ::input-port ::output-port
@@ -324,6 +327,46 @@
 	       (obj len)))))
       (else
        ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o))))))
+
+;*---------------------------------------------------------------------*/
+;*    unread-char! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (unread-char! c::char #!optional (ip (current-input-port)))
+   (when (not (rgc-buffer-insert-char! ip (char->integer c)))
+      (raise
+       (instantiate::&io-error
+	  (proc 'unread-char!)
+	  (msg "Unread char failed")
+	  (obj c)))))
+
+;*---------------------------------------------------------------------*/
+;*    unread-string! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (unread-string! str::bstring #!optional (ip (current-input-port)))
+   (when (not (rgc-buffer-insert-substring! ip str 0 (string-length str)))
+      (raise
+       (instantiate::&io-error
+	  (proc 'unread-string!)
+	  (msg "Unread string failed")
+	  (obj str)))))
+
+;*---------------------------------------------------------------------*/
+;*    unread-substring! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (unread-substring! str::bstring from to
+			   #!optional (ip (current-input-port)))
+   (when (or (not (>=fx to from))
+	     (<fx from 0)
+	     (>fx to (string-length str)))
+      (raise (instantiate::&io-error
+		(proc 'unread-substring!)
+		(msg "Invalid positional parameters")
+		(obj (list from to (string-length str))))))
+   (when (not (rgc-buffer-insert-substring! ip str from to))
+      (raise (instantiate::&io-error
+		(proc 'unread-sustring!)
+		(msg "Unread string failed")
+		(obj str)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    port->string-list ...                                            */

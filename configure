@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jul  7 09:13:56 2009 (serrano)                */
+#*    Last change :  Fri Sep  4 09:05:26 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -44,6 +44,10 @@ if [ "$tmp " = " " ]; then
   tmp=/tmp
 fi
 
+# cross compilation path
+runbuild=
+runhost=
+
 #*--- C back-end user configure ---------------------------------------*/
 nativebackend=yes # set to "no" not to install the native (C) back-end
 ccstyle=gcc
@@ -63,20 +67,23 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - any legal C compiler option that enable PIC code.
              #  - blank (uninitalized) for automatic configuration of the
              #    position independent code compiler option
-as=as
-ar=ar
+as=
+ar=
+ranlib=
 arflags=qc
 ldstyle=gcc
 ldflags=
-ld=$cc
+ld=
 ldlibs=-lc
 ldcomplibs=-lc
-strip=strip
+strip=
 longlong=    # The C type to represent long long integers
 havelonglong=
 stringsplit="0"
 
-gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
+force_gcconfigureopt=
+default_gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
+gcconfigureopt=
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -257,6 +264,7 @@ makefile_cfg=Makefile.config
 autoconfdir=`dirname $0 2> /dev/null`/autoconf
 pwd=`pwd`
 bootdir=$pwd
+buildbindir=
 cgcflags=
 cgcfinalflags="-DFINALIZE_ON_DEMAND"
 bigloo_h=
@@ -327,6 +335,9 @@ while : ; do
 
     --bootdir=*)
       bootdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --build-bindir=*)
+      buildbindir="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --bigloo_config.h)
       action="bigloo_config";;
@@ -2598,6 +2609,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "BOOTLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
   echo >> $makefile_cfg
 
+  # The Buildbin directory
+  if [ "$buildbindir " = " " ]; then
+      echo "BUILDBINDIR=$bootdir/bin" >> $makefile_cfg
+  else
+      echo "BUILDBINDIR=$buildbindir" >> $makefile_cfg
+  fi
+  echo >> $makefile_cfg
+
   # Directories
   echo "DESTDIR=" >> $makefile_cfg
   echo "BINDIR=$bindir" >> $makefile_cfg
@@ -2622,7 +2641,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The C compiler
   if [ "$bigloo " = " " ]; then
-    echo "BOOTBIGLOO=$""(BOOTBINDIR)/bigloo" >> $makefile_cfg
+    echo "BOOTBIGLOO=$""(BUILDBINDIR)/bigloo" >> $makefile_cfg
   else
     echo "BOOTBIGLOO=$bigloo" >> $makefile_cfg
   fi

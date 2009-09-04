@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Wed Jul 23 13:05:56 2008 (serrano)                */
+;*    Last change :  Thu Sep  3 11:53:07 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -67,6 +67,10 @@
 		   "RGC_BUFFER_BYTE_REF")
 	    (_rgc-buffer-unget-char::int (::input-port ::int)
 					 "rgc_buffer_unget_char")
+	    (_rgc-buffer-insert-substring::bool (::input-port ::bstring ::long ::long)
+						"rgc_buffer_insert_substring")
+	    (_rgc-buffer-insert-char::bool (::input-port ::int)
+					     "rgc_buffer_insert_char")
 	    (_rgc-buffer-substring::bstring (::input-port ::long ::long)
 					    "rgc_buffer_substring")
 	    (_rgc-buffer-fixnum::long (::input-port)
@@ -119,6 +123,10 @@
 		       "RGC_BUFFER_POSITION")
 	       (method static _rgc-buffer-unget-char::int (::input-port ::int)
 		       "rgc_buffer_unget_char")
+	       (method static _rgc-buffer-insert-substring::bool (::input-port ::bstring ::long ::long)
+		       "rgc_buffer_insert_substring")
+	       (method static _rgc-buffer-insert-char::bool (::input-port ::int)
+		       "rgc_buffer_insert_char")
 	       (method static _rgc-buffer-character::char (::input-port)
 		       "RGC_BUFFER_CHARACTER")
 	       (method static _rgc-buffer-byte::int (::input-port)
@@ -162,6 +170,8 @@
  
    (export  *unsafe-rgc*
 	    (inline rgc-buffer-get-char::int ::input-port)
+	    (inline rgc-buffer-insert-substring!::bool ::input-port str::bstring from::long to::long)
+	    (inline rgc-buffer-insert-char!::bool ::input-port ::long)
 	    (inline rgc-buffer-unget-char::int ::input-port ::int)
 	    (inline rgc-buffer-character::char ::input-port)
 	    (inline rgc-buffer-byte::int ::input-port)
@@ -218,6 +228,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-unget-char input-port char)
    (_rgc-buffer-unget-char input-port char))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-insert-substring ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-insert-substring! input-port str from to)
+   (_rgc-buffer-insert-substring input-port str from to))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-insert-char ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-insert-char! input-port char)
+   (_rgc-buffer-insert-char input-port char))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-character ...                                         */

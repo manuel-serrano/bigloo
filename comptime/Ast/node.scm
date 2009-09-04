@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Mon Mar  8 18:06:41 2004 (serrano)                */
+;*    Last change :  Fri Sep  4 08:29:50 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -234,7 +234,179 @@
 	   ;; the box-set!
 	   (final-class box-set!::node
 	      var::var
-	      value::node)))
+	      value::node)
+	   
+	   (generic node-walk ::node ::procedure)))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (node-walk node::node proc::procedure))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::atom ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::atom proc::procedure)
+   (proc node))
+ 
+;*---------------------------------------------------------------------*/
+;*    node-walk ::var ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::var proc::procedure)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::kwote ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::kwote proc::procedure)
+   (proc node))
+       
+;*---------------------------------------------------------------------*/
+;*    node-walk ::sequence ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::sequence proc::procedure)
+   (node-walk* (sequence-nodes node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::app ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::app proc::procedure)
+   (node-walk (app-fun node) proc)
+   (node-walk* (app-args node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::app-ly ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::app-ly proc::procedure)
+   (node-walk (app-ly-fun node) proc)
+   (node-walk (app-ly-arg node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::funcall ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::funcall proc::procedure)
+   (node-walk (funcall-fun node) proc)
+   (node-walk* (funcall-args node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::extern ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::extern proc::procedure)
+   (node-walk* (extern-expr* node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::cast ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::cast proc::procedure)
+   (node-walk (cast-arg node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::setq ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::setq proc::procedure)
+   (node-walk (setq-value node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::conditional ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::conditional proc::procedure)
+   (node-walk (conditional-test node) proc)
+   (node-walk (conditional-true node) proc)
+   (node-walk (conditional-false node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::fail ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::fail proc::procedure)
+   (node-walk (fail-proc node) proc)
+   (node-walk (fail-msg node) proc)
+   (node-walk (fail-obj node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::select ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::select proc::procedure)
+   (node-walk (select-test node) proc)
+   (for-each (lambda (clause)
+		(node-walk (cdr clause) proc))
+	     (select-clauses node))
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::make-box ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::make-box proc::procedure)
+   (node-walk (make-box-value node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::box-ref ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::box-ref proc::procedure)
+   (node-walk (box-ref-var node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::box-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::box-set! proc::procedure)
+   (node-walk (box-set!-var node) proc)
+   (node-walk (box-set!-value node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::let-fun ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::let-fun proc::procedure)
+   (with-access::let-fun node (locals body)
+      (node-walk body proc)
+      (for-each (lambda (local)
+		   (let ((sfun (local-value local)))
+		      (node-walk (sfun-body sfun) proc)))
+		locals)
+      (proc node)))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::let-var ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::let-var proc::procedure)
+   (with-access::let-var node (bindings body)
+      (node-walk body proc)
+      (for-each (lambda (binding)
+		   (node-walk (cdr binding) proc))
+		bindings)
+      (proc node)))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::set-ex-it ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::set-ex-it proc::procedure)
+   (node-walk (set-ex-it-body node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk ::jump-ex-it ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (node-walk node::jump-ex-it proc::procedure)
+   (node-walk (jump-ex-it-exit node) proc)
+   (node-walk (jump-ex-it-value node) proc)
+   (proc node))
+
+;*---------------------------------------------------------------------*/
+;*    node-walk* ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (node-walk* node* proc::procedure)
+   (for-each (lambda (node) (node-walk node proc)) node*))
+
 	      
 
 	   

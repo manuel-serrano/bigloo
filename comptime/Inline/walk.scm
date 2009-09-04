@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Tue Jan  8 11:29:27 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Sep  4 08:16:53 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
 ;*=====================================================================*/
@@ -48,8 +48,8 @@
 				   1
 				   *kfactor*)))
 		   ;; I think that it is useless to inline the body of
-		   ;; inline definitions. It only looses a little when this
-		   ;; inline is used as values but I think this is rare.
+		   ;; inline definitions. It only looses a little bit when
+		   ;; this inline is used as value but I think this is rare.
 		   (enter-function (global-id g))
 		   (inline-sfun! g kfactor '())
 		   (leave-function)))
@@ -97,6 +97,7 @@
        (set! *inline-mode* 'all)
        (set! *kfactor* (max 1 (*inlining-kfactor* *optim*))))
       ((reducer)
+       (set! *inline-mode* 'reducer)
        (set! *kfactor* 1))
       ((predicate)
        (set! *inline-mode* 'predicate)

@@ -362,5 +362,10 @@ Here is a list of possibly supported option-name values:
 @item @code{:TCP_NODELAY}
 @end itemize
 
+The @code{:SO_KEEPALIVE} option can be use to implement automatic notification
+of client disconnection. It requires system tuning for enabling TCP keeplive
+support. On Linux additional information may be found on the 
+``TCP Keepalive HOWTO'' (see @url{http://tldp.org/HOWTO/html_single/TCP-Keepalive-HOWTO/}).
+
 @end deffn
 

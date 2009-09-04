@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Jun 22 10:04:30 2009 (serrano)                */
+;*    Last change :  Fri Sep  4 08:36:50 2009 (serrano)                */
 ;*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -21,6 +21,7 @@
 	    init_main
 	    init_extend
 	    init_setrc
+	    init_cross
 	    module_module
 	    module_alibrary
 	    module_eval
@@ -274,6 +275,9 @@
       (("-revision" (help "The current release (short format)"))
        (revision)
        (compiler-exit 0))
+      ;; cross-compilation
+      (("-cross" ?lib-directory (help "Cross compile for given Bigloo runtime"))
+       (process-cross-parameter lib-directory))
       ;; query
       (("-query" (help "Dump the current configuration"))
        (query))
@@ -305,6 +309,9 @@
        (library-translation-table-add! 'bigloo "bigloo" version))
       (("-libgc-version" ?version (help "Set the Bigloo GC library version"))
        (library-translation-table-add! 'bigloogc "bigloogc" version))
+      (("-libgc" ?gc (help "Use the given GC library"))
+       (set! *gc-lib* (string->symbol gc))
+       (set! *gc-custom?* #f))
       
 ;*--- back-end --------------------------------------------------------*/
       (section "Back-end")

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Wed Dec 24 09:25:38 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Sep  4 08:32:57 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -38,6 +38,7 @@
 	  (args   (app-args node))
 	  (loc    (node-loc node)))
       (trace (inline 3) "inline-app: " (shape node) #\Newline)
+      (trace (inline+ 3) "inline-app: " (shape node) #\Newline)
       (if (not (sfun? sfun))
 	  node
 	  (if (inline-app? var
@@ -51,7 +52,15 @@
 		     (inline-app-recursive node kfactor stack)
 		     (inline-app-simple node kfactor stack "simple")))
 	      node))))
- 	  
+
+;*---------------------------------------------------------------------*/
+;*    contains-kwote? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (contains-kwote? node)
+   (bind-exit (return)
+      (node-walk node (lambda (n) (if (kwote? n) (return #t))))
+      #f))
+   
 ;*---------------------------------------------------------------------*/
 ;*    inline-app? ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -73,7 +82,6 @@
 	       (not *optim-unroll-loop?*)
 	       (memq var stack))
           ;; no we won't because we are already inlining a app to `fun'
-          (trace inline " no (stack)" #\Newline)
           #f)
 	 ((eq? (sfun-class sfun) 'snifun)
 	  (trace inline " no (declared snifun)" #\Newline)
@@ -81,10 +89,12 @@
 	  #f)
 	 ((and (eq? (sfun-class sfun) 'sifun)
 	       (not (memq var stack))
+	       (or (not (eq? *inline-mode* 'reducer))
+		   (not (contains-kwote? (sfun-body sfun))))
 	       (or (not (eq? *inline-mode* 'predicate))
 		   (fun-predicate-of sfun)))
 	  ;; yes, because the function has been declared inline
-	  (trace inline " yes (sifun)" #\Newline)
+	  (trace inline " yes (sifun) mode=" *inline-mode* #\Newline)
 	  #t)
 	 ((and (global? var) (eq? (global-import var) 'import))
           ;; of course not.
@@ -95,7 +105,7 @@
 	  #f)
 	 ((<fx (node-size body) (*fx kfactor call-size))
           ;; yes, because the size does not grew
-          (trace inline " yes, small enough (size: "
+	  (trace inline " yes, small enough (size: "
  		 (node-size body)
 		 " max: " (*fx kfactor call-size)
 		 ")"
@@ -104,7 +114,7 @@
 	 ((and (=fx (node-size body) call-size) (not (memq var stack)))
 	  ;; yes, because the call and the body are of the same size
 	  ;; and we are not inlining an infinite loop
-          (trace inline " yes, same size and not in stack (size: "
+	  (trace inline " yes, same size and not in stack (size: "
  		 (node-size body)
 		 ")"
 		 #\newline)

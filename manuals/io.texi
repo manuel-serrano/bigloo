@@ -333,6 +333,32 @@ Example:
 @end smalllisp
 @end deffn
 
+@deffn {bigloo procedure} unread-char! char [input-port]
+@deffnx {bigloo procedure} unread-string! string [input-port]
+@deffnx {bigloo procedure} unread-substring! string start end [input-port]
+Pushes the given @var{char}, @var{string} or substring into the input-port.
+The next read character(s) will be the pushed ones. The @var{input-port} must
+be buffered and not be closed.
+
+Example:
+
+@smalllisp
+(define p (open-input-string "a ymbol c"))
+(read p)                       @result{} a
+(read-char p)                  @result{} #\space
+(unread-char! #\s p)
+(read p)                       @result{} symbol
+(read-char p)                  @result{} #\space
+(read p)                       @result{} c
+(char-ready? p)                @result{} #f
+(unread-string! "sym1 sym2" p)
+(char-ready? p)                @result{} #t
+(read p)                       @result{} sym1
+(read p)                       @result{} sym2
+@end smalllisp
+@end deffn
+
+
 @deffn {procedure} open-output-file file-name
 The same syntax as @code{open-input-file} for file names applies here.
 When a file name starts with @samp{| }, Bigloo opens an output pipe

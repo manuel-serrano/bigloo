@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Jun 22 14:17:39 2009 (serrano)                */
+;*    Last change :  Thu Sep  3 11:52:34 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -329,6 +329,8 @@
       ;; bignums
       ((: "z" (? (in "-+")) (+ (in ("09"))))
        (string->bignum (the-substring 1 (the-length)) 10))
+      ((: "zx" (+ xdigit))
+       (string->bignum (the-substring 2 (the-length)) 16))
       
       ;; unspecified and eof-object
       ((: (in "ue") (+ (in "nspecified-objt")))

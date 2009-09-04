@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Mon May 25 17:51:02 2009 (serrano)                */
+;*    Last change :  Thu Sep  3 11:16:36 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
@@ -81,9 +81,13 @@
 	  ((utf-8)
 	   str)
 	  ((iso-latin-1)
-	   (utf8->iso-latin! str))
+	   (with-handler
+	      (lambda (e) str)
+	      (utf8->iso-latin! str)))
 	  ((cp1252)
-	   (utf8->cp1252! str))
+	   (with-handler
+	      (lambda (e) str)
+	      (utf8->cp1252! str)))
 	  (else
 	   str)))
       ((cp1252)
@@ -91,7 +95,9 @@
 	  ((utf-8)
 	   (cp1252->utf8! str))
 	  ((iso-latin-1)
-	   (utf8->iso-latin! (cp1252->utf8! str)))
+	   (with-handler
+	      (lambda (e) str)
+	      (utf8->iso-latin! (cp1252->utf8! str))))
 	  (else
 	   str)))
       (else

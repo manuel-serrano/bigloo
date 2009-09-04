@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Internet                                                         @c
 @c ------------------------------------------------------------------- @c
-@node Internet, , Digest, Standard Library
+@node Internet, , CRC, Standard Library
 @comment  node-name,  next,  previous,  up
 @section Internet
 @cindex internet

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Fri Apr 24 08:05:00 2009 (serrano)                */
+#*    Last change :  Thu Sep  3 12:18:39 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
@@ -53,7 +53,7 @@ TRANSLATE_OBJ	= $(TRANSLATE_FILE:%=Translate/%.o)
 
 
 #*--- tools -----------------------------------------------------------*/
-TOOLS_FILE	= date speek error
+TOOLS_FILE	= speek error
 
 TOOLS_OBJ	= $(TOOLS_FILE:%=Tools/%.o)
 
@@ -98,7 +98,7 @@ POPULATION	= $(SOURCE_FILES) \
 #*---------------------------------------------------------------------*/
 #*    L'executable `cigloo'                                            */
 #*---------------------------------------------------------------------*/
-cigloo: Tools/date.scm
+cigloo:
 	@ $(MAKE) $(CIGLOO_DEST)
 
 #*---------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ uninstall:
 #*---------------------------------------------------------------------*/
 #*    afile                                                            */
 #*---------------------------------------------------------------------*/
-afile: Tools/date.scm
+afile: 
 	@ echo "   - " $(AFILE)
 	@ $(AFILE_EXE) -o $(AFILE) $(SOURCE_FILES)
 	@ echo "   - dep"
@@ -219,16 +219,6 @@ link:
 .PHONY: pop
 pop:
 	@ echo $(POPULATION:%=cigloo/%)
-
-#*---------------------------------------------------------------------*/
-#*    date.scm                                                         */
-#*---------------------------------------------------------------------*/
-Tools/date.scm:
-	@- $(RM) -f $@
-	@ echo ";; Automatically generated file (don't edit)" > $@
-	@ echo "(module tools_date (export (cigloo-date)))" >> $@
-	@ echo "" >> $@
-	@ echo "(define (cigloo-date) " \" `date` \"")" >> $@
 
 #*---------------------------------------------------------------------*/
 #*     .scm --> .o                                                     */

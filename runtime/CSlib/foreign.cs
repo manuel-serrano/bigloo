@@ -707,14 +707,14 @@ namespace bigloo
 	   return n;
 	}
 
-      public static long UELONG_TO_ELONG(int n)
+      public static long UELONG_TO_ELONG(ulong n)
 	 {
-	    return n;
+	    return (long)n;
 	 }
 
-      public static long ELONG_TO_UELONG(int n)
+      public static ulong ELONG_TO_UELONG(long n)
 	 {
-	    return n;
+	    return (ulong)n;
 	 }
 
       public static long BELONG_TO_LONG( belong  n )
@@ -737,14 +737,14 @@ namespace bigloo
 	    return new bllong( n );
 	 }
 
-      public static long ULLONG_TO_LLONG(int n)
+      public static long ULLONG_TO_LLONG(ulong n)
 	 {
-	    return n;
+	    return (long)n;
 	 }
 
-      public static long LLONG_TO_ULLONG(int n)
+      public static ulong LLONG_TO_ULLONG(long n)
 	 {
-	    return n;
+	    return (ulong)n;
 	 }
 
       public static bignum LONG_TO_BIGNUM( int  n )
@@ -5297,6 +5297,73 @@ namespace bigloo
 	    return c;
 	 }
 
+      private static void rgc_buffer_reserve_space(input_port p, int amount)
+	 {
+	    int bufsize = p.bufsiz;
+	    int bufpos = p.bufpos;
+	    int matchstop = p.matchstop;
+
+	    if ( matchstop >= amount ) return;
+
+	    if ( (matchstop + (bufsize - (bufpos-1))) >= amount ) {
+	       // shift the buffer to the right
+	       int diff = amount - matchstop;
+
+	       bcopy( p.buffer, matchstop, p.buffer, amount, bufpos-1 - matchstop);
+
+	       p.bufpos += diff;
+	       p.matchstop += diff;
+	    } else {
+	       p.rgc_double_buffer();
+	       rgc_buffer_reserve_space(p, amount);
+	    }
+	 }
+      public static bool rgc_buffer_insert_substring(input_port p, byte[] s, int from, int to)
+	 {
+	    if ( from < 0 ) return false;
+	    if ( to > s.Length ) return false;
+	    if ( p.bufsiz == 2) return false; // unbuffered port
+	    if ( CLOSED_RGC_BUFFER( p )) return false;
+	    if ( from >= to ) return true;
+
+	    int len = to - from;
+
+	    rgc_buffer_reserve_space(p, len);
+
+	    int matchstop = p.matchstop;
+
+	    bcopy(s, from, p.buffer, (matchstop - len), len);
+
+	    if ( p.filepos >= len )
+	       p.filepos -= len;
+	    else
+	       p.filepos = 0;
+
+	    p.matchstop -= len;
+	    p.forward    = p.matchstop;
+	    p.matchstart = p.matchstop;
+	    return true;
+	 }
+
+      public static bool rgc_buffer_insert_char(input_port p, int c)
+      {
+	 rgc_buffer_reserve_space(p, 1);
+
+	 int matchstop = p.matchstop;
+
+	 p.buffer[matchstop - 1] = (byte) c;
+
+	 if ( p.filepos > 0 )
+	    p.filepos--;
+	 else
+	    p.filepos = 0;
+
+	 p.matchstop--;
+	 p.forward    = p.matchstop;
+	 p.matchstart = p.matchstop;
+	 return true;
+      }
+
       public static int RGC_START_MATCH( input_port p )
 	 {
 	    return (p.forward= p.matchstart= p.matchstop);
@@ -6116,16 +6183,6 @@ namespace bigloo
 	 {
 	    return ((int)n);
 	 }
-
-/*       public static byte[] bgl_float_to_ieee_string( float  v )     */
-/* 	 {                                                             */
-/* 	    return foreign.getbytes( v.ToString() );                   */
-/* 	 }                                                             */
-/*                                                                     */
-/*       public static float bgl_ieee_string_to_float( byte[]  s )     */
-/* 	 {                                                             */
-/* 	    return float.Parse( newstring( s ) );                      */
-/* 	 }                                                             */
 
       public static byte[] bgl_double_to_ieee_string( double  v )
 	 {

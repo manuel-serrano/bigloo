@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Dec 19 17:16:13 2008 (serrano)                */
+;*    Last change :  Thu Sep  3 11:50:43 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -362,6 +362,8 @@
 	    (string->llong::llong ::bstring . pair)
 	    (bignum->string::bstring ::bignum #!optional (radix::long 10))
 	    (string->bignum::bignum ::bstring #!optional (radix::long 10))
+	    (bignum->octet-string::bstring ::bignum)
+	    (octet-string->bignum::bignum ::bstring)
 	    (string->integer-obj::obj ::bstring ::long)
  	    (inline random::long ::long)
  	    (inline randombx::bignum ::bignum)
@@ -429,7 +431,9 @@
  	    (integer->string side-effect-free no-cfa-top nesting (effect))
 	    (string->integer side-effect-free no-cfa-top nesting (effect))
 	    (bignum->string side-effect-free no-cfa-top nesting (effect))
+	    (bignum->octet-string side-effect-free no-cfa-top nesting (effect))
 	    (string->bignum side-effect-free no-cfa-top nesting (effect))
+	    (octet-string->bignum side-effect-free no-cfa-top nesting (effect))
  	    (modulo side-effect-free no-cfa-top nesting (effect))
 	    (modulobx side-effect-free no-cfa-top nesting (effect))
 	    (quotientfx side-effect-free no-cfa-top nesting (effect))
@@ -1454,6 +1458,68 @@
 ;*---------------------------------------------------------------------*/
 (define (bignum->string x #!optional (radix::long 10))
   (integer->string-op bignum x radix))
+
+;*---------------------------------------------------------------------*/
+;*    bignum->octet-string ...                                         */
+;*---------------------------------------------------------------------*/
+(define (bignum->octet-string x)
+   (define (/ceilingfx x y)
+      (let ((q (quotientfx x y))
+	    (r (remainderfx x y)))
+	 (cond
+	    ((zerofx? r) q)
+	    ((>fx r 0)   (+fx q 1))
+	    (else        (-fx q 1)))))
+
+   (define (bignum-bit-length::long b::bignum)
+      (let loop ((b b)
+		 (res 0))
+	 (let ((divided (/bx b #z256)))
+	    (cond
+	       ((zerobx? b) res)
+	       ((zerobx? divided) ;; this is the last octet
+		(let ((x (bignum->fixnum b)))
+		   (cond
+		      ((<fx x #x02) (+fx res 1))
+		      ((<fx x #x04) (+fx res 2))
+		      ((<fx x #x08) (+fx res 3))
+		      ((<fx x #x10) (+fx res 4))
+		      ((<fx x #x20) (+fx res 5))
+		      ((<fx x #x40) (+fx res 6))
+		      ((<fx x #x80) (+fx res 7))
+		      (else (+fx res 8)))))
+	       (else
+		(loop divided (+fx res 8)))))))
+
+   (define (last-char-digit::char x::bignum)
+      (integer->char-ur (bignum->fixnum (remainderbx x #z256))))
+
+   (let* ((len (/ceilingfx (bignum-bit-length x) 8))
+	  (buffer (make-string len)))
+      (let loop ((x x)
+		 (i (-fx len 1)))
+	 (cond
+	    ((and (<fx i 0)
+		  (zerobx? x))
+	     buffer)
+	    ((<fx i 0)
+	     (error "bignum->bin-str!" "integer too large" x))
+	    (else
+	     (string-set! buffer i (last-char-digit x))
+	     (loop (/bx x #z256) (-fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    octet-string->bignum ...                                         */
+;*---------------------------------------------------------------------*/
+(define (octet-string->bignum str)
+   (let loop ((i 0)
+	      (res #z0))
+      (if (=fx i (string-length str))
+	  res
+	  (loop (+fx i 1)
+		(+bx (*bx res #z256)
+		     (fixnum->bignum (char->integer (string-ref str i))))))))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    string->integer ...                                              */

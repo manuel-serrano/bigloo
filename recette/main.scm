@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Mon May  4 08:33:52 2009 (serrano)                */
+;*    Last change :  Thu Sep  3 12:29:13 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -39,6 +39,7 @@
 	   rgc-trap
 	   rgc-jm
 	   rgc-eval
+	   rgc-insert
 	   rgc
 	   lalr
 	   input-port
@@ -81,7 +82,8 @@
 	   date
            process
            weakptr
-	   crypto)
+	   crypto
+	   crc)
    
    (export (do-test name thunk good?)
 	   (test-module name file)
@@ -285,6 +287,7 @@
 	  (if-module 'rgc-trap test-rgc-trap)
 	  (if-module 'rgc-jm test-rgc-jm)
 	  (if-module 'rgc-eval test-rgc-eval)
+	  (if-module 'rgc-insert test-rgc-insert)
 	  (if-module 'lalr test-lalr)
 	  (if-module 'input-port test-input-port)
 	  (if-module 'mmap test-mmap)
@@ -320,6 +323,7 @@
 	  (if-module 'system test-system)
 	  (if-module 'date test-date)
 	  (if-module 'weakptr test-weakptr)
+	  (if-module 'crc test-crc)
 	  (cond-expand
 	     (bigloo-.net #t)
 	     (else (if-module 'process test-process)))

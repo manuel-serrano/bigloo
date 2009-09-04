@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jun 30 14:15:10 2009 (serrano)                */
+#*    Last change :  Thu Sep  3 11:52:10 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -279,7 +279,7 @@ C_SCM_READ	= $(READ:%=Read/%.c)
 #*    The unsafe                                                       */
 #*---------------------------------------------------------------------*/
 UNSAFE		= intext hmac md5 crc16 sha1 gunzip tar kmp base64 bignumber \
-                  aes rsa url http
+                  aes rsa url http crc
 
 SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.scm)
 C_SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.c)

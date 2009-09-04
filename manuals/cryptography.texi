@@ -18,25 +18,204 @@
 @cindex cryptography
 
 Bigloo provides several functions for encrypting and decrypting documents.
-These are described in the chapter.
+These are described in the chapter. Unless explicitly mentioned all functions
+presented in this document are accessible via the @code{crypto} library.
 
-@c -- AES ------------------------------------------------------------ @c
-@section Advanced Encryption Standard (AES)
+@emph{None of the cryptographic functions are protected against timing attacks.
+No effort has been spent on protecting used memory.}
 
-Bigloo support the symmetric AES crypto-system (also known as Rijndael) in
-@emph{Counter} mode. 
+Here is an example of a module that uses this library:
+
+@smalllisp
+;; Encrypt a string using AES.
+(module aes-encrypt
+   (library crypto)
+   (main main))
+
+(define (main argv)
+   (when (pair? (cdr argv) (cddr argv))
+      (let ((encrypt? (string=? "-e" (cadr argv)))
+            (passwd (caddr argv))
+            (input (read-string)))
+         (if encrypt?
+             (display (encrypt 'aes input passwd))
+             (display (decrypt 'aes input passwd))))))
+@end smalllisp
+
+@menu
+* Symmetric Block Ciphers::
+* Public Key Cryptography::
+@end menu
+
+
+@node Symmetric Block Ciphers, Public Key Cryptography,,Cryptography
+@comment  node-name,  next,  previous,  up
+@section Symmetric Block Ciphers
+@cindex Symmetric Block Ciphers
+
+Bigloo supports some common block ciphers. Block ciphers work on blocks of fixed
+size. A @emph{mode of operation} defines the way bigger input is handled. For
+instance in ECB (Electronic Codebook mode) the blocks are all encrypted
+separately, whereas CBC (Cipher-Block Chaining) chains all blocks.
+
+All modes that chain the blocks need an IV (Initial Vector) to ``bootstrap''
+the chaining.
+
+Block ciphers by themselves can only work on full blocks. Some modes are
+constructed in a way that even incomplete blocks can be safely processed. For the
+remaining blocks a padding function needs to be given.
+
+Most block ciphers only work with keys of specific length. The following functions
+take passwords (strings of arbitrary length) as input, and preprocess the given
+password by a @emph{:string->key} function. The result must then be of correct
+length.
+ 
+
+@deffn {Bigloo Cryptography procedure} encrypt::bstring cipher plain password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} encrypt-string::bstring cipher plaintext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} encrypt-mmap::bstring cipher plaintext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} encrypt-port::bstring cipher plaintext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} encrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} encrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+
+The procedure @code{encrypt} encrypts its input using the chosen @var{cipher}. The result is returned as string.
+@code{encrypt} dispatches depending on the type of @var{plain}. Strings are processed by @code{encrypt-string} (and
+not @code{encrypt-file}).
+
+The function @code{encrypt-sendchars} reads from an input-port @var{in} and encrypts its output directly
+into an output-port @var{out}.
+
+The symbol @var{cipher} can be one of:
+@itemize @bullet
+@item @code{des}: Data Encryption Standard (DES). DES works on blocks of 64 bits. DES requires keys of length 64 (bits),
+ but only 56 of these bits are actually used. Bigloo's implementation therefore accepts both.
+ @emph{DES is considered to be insecure and its usage is discouraged.}
+@item @code{des3}: Triple DES, Triple Data Encryption Algorithm (DES3, TDEA).
+DES3 works on blocks of 64 bits. DES3 requires keys of
+length 128 or 192 (bits), but only 112/168 of these bits are actually used. Bigloo's
+implementation therefore accepts the smaller keys too.
+@item @code{des-np}: Same as @code{des}, but the initial and final permutations are not performed.
+@item @code{des3-np}: Same as @code{des3}, but the initial and final permutations are not performed.
+@item @code{aes}: Advanced Encryption Standard (AES). AES works on blocks of 128 bits. AES requires
+keys of length 128, 192 or 256 bits.
+@item @code{cast-128}: CAST-128 (CAST5). CAST-128 works on blocks of 64 bits. CAST-128 requires a
+key-length of 40-128 bits.
+@item @code{idea}: International Data Encryption Algorithm (IDEA). IDEA works on blocks of 64 bits.
+It requires keys of length 128 (in bits). @emph{IDEA is patented in many countries (including
+the USA and most European countries) but it is free for non-commercial use.}
+@end itemize
+
+The given password must be a string. An optional parameter @var{:string->key} should transform this
+password so that it has the correct length for the cipher. A small list of possible functions are
+provided in the @ref{String to Key} section.
+
+By default @code{string->key-hash} with SHA-1 will be used. The key-length will depend
+on the chosen cipher:
+@itemize @bullet
+@item @code{des}: 56 bits.
+@item @code{des3}: 112 bits.
+@item @code{des-np}: Same as @code{des}.
+@item @code{des3-np}: Same as @code{des3}.
+@item @code{aes}: 192 bits.
+@item @code{cast-128}: 128 bits.
+@item @code{idea}: 128 bits.
+@end itemize
+
+Bigloo supports the following block cipher modes (@var{:mode}):
+@itemize @bullet
+@item @code{ecb}: Electronic codebook.
+@item @code{cbc}: Cipher-block chaining.
+@item @code{pcbc}: Propagating cipher-block chaining.
+@item @code{cfb}: Cipher feedback.
+@item @code{ofb}: Output feedback.
+@item @code{ctr}: Counter.
+@end itemize
+
+By default @code{cfb} is chosen.
+
+Electronic codebook mode en/decodes each block independently and is hence the
+closest to the block cipher. It is however inherently unsafe as blocks with
+the same content are encrypted to the same output.
+
+With the exception of @code{ecb} all other modes can be initialized with an IV
+(Initialization vector). If @var{:IV} is false, then a random one will be generated.
+During encryption this randomly generated IV will be prefixed to the result. When
+calling the decryption routine without any IV the procedure will use the first block
+of the input as IV.
+
+In @code{ctr} (counter) mode the IV parameter serves as nonce. Two additional
+key-parameters @code{:nonce-init} and @code{:nonce-update} are then used to
+initialize and update the block-sized nonce string. Before encrypting the first block
+@code{nonce-init} will be invoked with an empty block-sized string and the initial
+nonce (IV). It must initialize the string with the nonce. For each block
+@code{nonce-update} will be called with the string, the nonce, and the number of
+already encrypted blocks (hence 0 at the very beginning). By default
+@code{nonce-init} takes the IV-@emph{string} and blits it into the given string.
+@code{nonce-update} simply increments the string (treating the given string as
+one big number).
+
+Note that the initial nonce (passed using IV) may be of any type. As long as
+@code{nonce-init} and @code{nonce-update} correctly initialize and update the
+passed string.
+
+The input's length of modes @code{ecb}, @code{cbc} and @code{pcbc} must be a
+multiple of the block-size. Should this not be the case a padding algorithm
+must be specified (@code{:pad}). Currently are implemented (examples for
+hexadecimal string ``DD'' and cipher block size 4):
+
+@itemize @bullet
+@item @code{none}: No padding. Raises an error should the input not be a multiple.
+@item @code{bit}: Bit padding. Add a '1' bit and then '0' bits.
+Example: ``DD 80 00 00''.
+@item @code{ansi-x.923}: Byte padding. Fill with #x00s followed by the number of added
+bytes (the counter inclusive). Example: ``DD 00 00 03''.
+@item @code{iso-10126}: Fill with random characters followed by the number of added
+bytes (the counter inclusive). Example: ``DD 42 31 03''.
+@item @code{pkcs7}: Fill with the number of added bytes. Example: ``DD 03 03 03''.
+@item @code{zero}: Fill with zeros. This is only reversible if the input is guaranteed
+not to finish with a zero character. Example: ``DD 00 00 00''.
+@end itemize
+
+Alternatively users can supply their own (un)pad functions (instead of a symbol). The
+signature of a padding function is @code{(pad::bool str::bstring valid-chars::long)}. It
+receives the last block of the input. Should the input be of correct length then the an
+empty block will be sent to the padding function. @code{valid-chars} indicates the number
+of read characters. It ranges from 0 to blocksize-1. The
+padding function should fill the block and return @code{#t} if this last block should
+be encoded. By returning @code{#f} the last block will be discarded. This makes
+only sense if @code{valid-chars} was equal to 0.
+
+The unpadding procedure has the signature @code{(unpad::long str::bstring)}. The
+input string will have the length of the block-size. The unpadding function may
+modify the string and must return the number of characters that are valid.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} decrypt::bstring cipher ciphertext password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} decrypt-string::bstring cipher ciphertext::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} decrypt-mmap::bstring cipher ciphertext::mmap password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} decrypt-port::bstring cipher ciphertext::input-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} decrypt-file::bstring cipher filename::bstring password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+@deffnx {Bigloo Cryptography procedure} decrypt-sendchars cipher in::input-port out::output-port password [:string->key] [:mode 'cfb] [:IV #f] [:pad 'none] [:nonce-init!] [:nonce-update!]
+
+Counterpart to the encryption functions. With the same parameters the @code{decrypt} function will
+decrypt the result of an @code{encrypt} call. Without @var{:IV} (Initial Vector) the @code{decrypt} function
+will use the first block as IV.
+
+@end deffn
+
+
+For compatibility the following functions remain in Bigloo. They are in the default
+library and not inside the @code{crypto} library.
 
 @deffn {bigloo procedure} aes-ctr-encrypt text password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-encrypt-mmap mmap password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-encrypt-string string password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-encrypt-port iport password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-encrypt-file filename password [nbits 128]
-The function @code{aes-ctr-encrypt} encrypts its parameter into a string
-that is the result of the function. The argument @var{text} is either a
-string, a memory mapped area, an input-port, or a file name. The argument
-@var{password} is a string containing the password used for encrypting
-the text. The optional argument @var{nbits} must either be @code{128},
-@code{192}, or @code{256}.
+These functions are equivalent to a call to @code{aes-encrypt} with mode set to
+@code{ctr} and a special @code{:string->key} parameter. The optional
+argument @var{nbits} must either be @code{128}, @code{192}, or @code{256} and
+determines the size of the key.
 @end deffn
 
 @deffn {bigloo procedure} aes-ctr-decrypt text password [nbits 128]
@@ -44,40 +223,448 @@ the text. The optional argument @var{nbits} must either be @code{128},
 @deffnx {bigloo procedure} aes-ctr-decrypt-string string password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-decrypt-port iport password [nbits 128]
 @deffnx {bigloo procedure} aes-ctr-decrypt-file filename password [nbits 128]
-The function @code{aes-ctr-decrypt} decrypts a text previously encrypted with
-@code{aes-ctr-encrypt}.
+Counterpart to @code{aes-ctr-encrypt}.
 @end deffn
 
-@c  {*-- RSA ------------------------------------------------------------*}  @c
-@c  @section Rivest, Shamir, and Adleman (RSA)                         @c
-@c                                                                     @c
-@c  Bigloo support the asymmetric RSA crypto-system.                   @c
-@c                                                                     @c
-@c  @deffn {bigloo procedure} make-rsa-key-pair [:size 1024] [:show-trace #f]  @c
-@c  Creates a pair of public/private RSA key.                          @c
-@c  @end deffn                                                         @c
-@c                                                                     @c
-@c  @deffn {bigloo procedure} public-rsa-key                           @c
-@c  @deffnx {bigloo procedure} private-rsa-key                         @c
-@c  Returns the public (respec. private) key of a RSA key pair as produced  @c
-@c  by*}ode{make-rsa-key-pair}.                                        @c
-@c  @end deffn                                                         @c
-@c                                                                     @c
-@c  @deffn {bigloo procedure} rsa-encrypt-string string key            @c
-@c  Encrypts a string of characters with a key.                        @c
-@c                                                                     @c
-@c  @smalllisp                                                         @c
-@c  (define key (make-rsa-key-pair))                                   @c
-@c  (define private-key (private-rsa-key key))                         @c
-@c  (define public-key (public-rsa-key key))                           @c
-@c  (define encrypted (rsa-encrypt-string "foo" public-key))           @c
-@c  @end smalllisp                                                     @c
-@c  @end deffn                                                         @c
-@c                                                                     @c
-@c  @deffn {bigloo procedure} rsa-encrypt-string string key            @c
-@c  Encrypts a string of characters with a key.                        @c
-@c  @smalllisp                                                         @c
-@c  (rsa-decrypt-string encrypted private-key)                         @c
-@c  @end smalllisp                                                     @c
-@c  @end deffn                                                         @c
-@c                                                                     @c
+@node String to Key,,,Symmetric Block Ciphers
+@comment  node-name,  next,  previous,  up
+@subsection String to Key
+@cindex string2key
+The following string->key algorithms take a password string and transform it to
+a key string of a given length. In all the functions the @var{len} is expressed in
+bytes.
+
+@deffn {Bigloo Cryptography procedure} string->key-zero str len
+If the length of the input string @var{str} is greater or equal to @var{len}
+bytes then the first @var{str} characters are returned. Otherwise @var{str} is
+suffixed with '0' (@code{#a000}) characters.
+
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} string->key-hash str len hash-fun
+The input string @var{str} is run through the given hash function @var{hash-fun}.
+The result is then concatenated multiple times (with itself) until a string of the
+@var{len} bytes is obtained.
+
+In the following example we encrypt @var{some-message} using a
+password @code{"my password"}. The password will be transformed to
+256 bits (32 bytes) using the @code{string->key256} function.
+
+@smalllisp
+(define (string->key256 password)
+  (string->key-hash password 32
+                    (lambda (str) (string-hex-intern (sha1sum str)))))
+(encrypt 'aes some-message "my password" :string->key string->key256)
+@end smalllisp
+
+Note that the following example yields an identical result:
+
+@smalllisp
+(define (string->key256 password)
+  (string->key-hash password 32
+                    (lambda (str) (string-hex-intern (sha1sum str)))))
+(encrypt 'aes some-message (string->key256 "my password")
+         :string->key (lambda (x) x))
+@end smalllisp
+
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} string->key-simple str len hash-fun
+
+This function implements the simple s2k algorithm of OpenPGP (RFC 2440). Basically
+@var{str} is run through the hash-fun several times until the concatenation of
+the results is long enough. At each iteration the string is prefixed with
+@var{count} '0'-bytes (where @var{count} is the iteration counter).
+
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} string->key-salted str len hash-fun salt
+This function implements the salted s2k algorithm of OpenPGP (RFC 2440).
+Similar to @code{string->key-simple} but the input string is first prefixed with
+@var{salt}.
+
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} string->key-iterated-salted str len hash-fun salt count
+This function implements the iterated salted s2k algorithm of OpenPGP (RFC 2440).
+The variable @var{count} must be a long. This algorithm is an extension of
+@code{string->key-salted} where the hash function is applied repeatedly.
+
+@end deffn
+
+
+@node Public Key Cryptography,,Symmetric Block Ciphers,Cryptography
+@comment  node-name,  next,  previous,  up
+@section Public Key Cryptography
+@cindex Public Key Cryptography
+
+@menu
+* RSA::
+* DSA::
+* ElGamal::
+* PEM::
+@end menu
+
+@node RSA,DSA,,Public Key Cryptography
+@comment  node-name,  next,  previous,  up
+@subsection Rivest, Shamir, and Adleman (RSA)
+
+Bigloo's implementation of RSA is based on RFC 3447, PKCS #1 v2.1. It does
+not feature multiprime RSA, though.
+
+Bigloo's implementation is @emph{not} secure against timing attacks. Furthermore
+some error codes might reveal information to attackers.
+
+@subsubsection RSA Keys
+There are two kinds of RSA keys inside Bigloo: complete and partial keys.
+A complete key contains the information of both the public and the private
+key (together with other information that could be reconstructed out of
+the private key). A partial key just contains the modulus and the private
+or public exponent.
+
+@deffn {Bigloo Cryptography class} RSA-Key
+@deffnx {Bigloo Cryptography class} Complete-RSA-Key
+@smalllisp
+(class Rsa-Key modulus::bignum exponent::bignum)
+(final-class Complete-Rsa-Key::Rsa-Key
+  ;; for the complete-rsa-key "exponent" takes the role of 'd'
+  e::bignum p::bignum q::bignum
+  exp1::bignum   ;; d mod (p-1)
+  exp2::bignum   ;; d mod (q-1)
+  coeff::bignum) ;; (inverse of q) mod p
+@end smalllisp
+@end deffn
+
+RSA keys can be read and written using @code{read-pem-key} and
+@code{write-pem-key} (@ref{PEM}).
+
+@deffn {Bigloo Cryptography procedure} generate-rsa-key [:key 1024] [:show-trace]
+
+This function generates a new RSA key (with its public and private components).
+
+Do not use this function for critical applications. No special effort has been
+undertaken to guarantee the randomness of the generated prime numbers, nor to
+weed out insecure keys.
+@end deffn
+
+Complete keys can be accessed using the following functions:
+@deffn {Bigloo Cryptography procedure} extract-public-rsa-key complete-key
+Returns the public partial key of the given complete key.
+
+This procedure is implemented as follows:
+@smalllisp
+(define (extract-public-rsa-key::Rsa-Key key::Complete-Rsa-Key)
+   (with-access::Complete-Rsa-Key key (modulus e)
+      (make-Rsa-Key modulus e)))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} extract-private-rsa-key complete-key
+Returns the private partial key of the given complete key.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} rsa-key=? key1 key2
+Returns true if the two keys have the same modulus and public exponent.
+The exponent of a partial key is considered to be public.
+@end deffn
+
+@subsubsection RSA basic operations
+RSA only works on bignums (up to the size of the modulus). The following
+procedures implement basic encryption, decryption, signing and
+signature verification.
+
+@deffn {Bigloo Cryptography procedure} rsa-encrypt key m
+Encrypts the bignum @var{m} using the given key. If the key is a complete
+key then its public exponent is used. For partial keys only one
+exponent is available (which is assumed to be the public 'e' of the
+recipient). The result is again a bignum.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} rsa-decrypt key c
+Decrypts the bignum @var{c} using the given key. If the key is a complete
+key then its private exponent is used. For partial keys only one exponent
+is available (which is assumed to be the private 'd').
+The result is again a bignum.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} rsa-sign k m
+Signs the bignum @var{m} using key @var{k}. Uses the private exponent
+of complete keys. The result is a bignum.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} rsa-verify k m s
+Verifies the signature @var{s}. Returns true if @var{s} is the
+signature of @var{m}. The key @var{k} should be the public
+key of the signer.
+@end deffn
+
+@subsubsection Examples
+
+In this section we will present an example of using RSA.
+
+Let's start by generating an RSA key in openssl:
+@display
+$ openssl genrsa -out my_rsa_key.pem 1024
+@end display
+
+Our key will have 1024 bits (for the public modulus), and therefore
+RSA will only be able to work with bignums up to 1024 bits
+(128 bytes).
+
+Now some Bigloo code that uses this key.
+
+Start by loading the library.
+@smalllisp
+(module rsa-example (library crypto))
+@end smalllisp
+
+Now read the key:
+@smalllisp
+(define *key* (read-pem-key "my_rsa_key.pem"))
+(define *public-key* (extract-public-rsa-key *key*))
+@end smalllisp
+
+The public portion of the key can be distributed:
+@smalllisp
+;; publish the *public-key*:
+(write-pem-key-string *public-key*)
+@end smalllisp
+
+Now let's sign the message ``My Important Message''. This message is
+sufficiently short to be signed directly, but in general it is better
+to get a hash of the message:
+@smalllisp
+(define msg-hash (sha1sum "my message"))
+(define msg-hash-bignum (octet-string->bignum msg-hash))
+@end smalllisp
+
+The result of @code{sha1sum} returns a human readable representation
+of the hash. It would hence be possible to transform it back to
+an internal representation before applying the
+@code{octet-string->bignum} function:
+@smalllisp
+(define msg-hash-bignum (octet-string->bignum (string-hex-intern msg-hash)))
+@end smalllisp
+In our case both variants are small enough to fit into our keys. The latter version
+is however more often used.
+
+Now that we have a message hash in bignum form we can sign it.
+@smalllisp
+(define signature (rsa-sign *key* msg-hash-bignum))
+@end smalllisp
+The signature is again in bignum form. If needed there are several ways to transform
+it into string-form (for instance @code{bignum->string} or @code{bignum->octet-string}).
+
+The signature can now be distributed. Anyone wanting to verify the signature
+simply has to create the same message-hash and call @code{rsa-verify} with our
+public key:
+
+@smalllisp
+(rsa-verify *public-key* msg-hash-bignum signature) @result{} #t
+@end smalllisp
+
+Encryption and decryption work in a similar way.
+
+Suppose someone (let's say ``Alice'') wants to send us the following secret message
+``Cryptography''. The encryption and decryption functions work, similar
+to the signature functions, on bignums. We could, as before, simply
+transform this short string into a bignum and directly encrypt
+the bignum. This approach would however not work for longer strings. In the following we
+will present the generic version that works with strings of any size.
+
+Public key cryptography is relatively slow and Alice thus starts by encrypting our
+message a fast block cipher with a ``random'' password:
+@smalllisp
+(define encrypted (encrypt 'aes "Cryptography" "my random password"))
+@end smalllisp
+
+Alice can already send us the encrypted message. We will just not yet be able
+to decrypt it, as we don't have the random password yet.
+
+Alice now takes her random password string and encrypts it with our public key:
+@smalllisp
+(define encrypted-key (rsa-encrypt *public-key* (octet-string->bignum "my random password")))
+@end smalllisp
+
+Alice simply sends us the @code{encrypted-key}. On our side we can now
+decrypt the key:
+@smalllisp
+(define aes-key (bignum->octet-string (rsa-decrypt *key* encrypted-key)))
+@end smalllisp
+
+We can now decrypt the previously received message:
+@smalllisp
+(decrypt 'aes aes-key encrypted) @result{} "Cryptography"
+@end smalllisp
+
+@subsubsection RSA RFC 3447
+
+The following functions have been defined in RFC 3447. We discourage
+its usage unless you need to implement parts (or all) of it.
+
+@deffn {Bigloo Cryptography procedure} RSAEP k m
+@deffnx {Bigloo Cryptography procedure} RSADP k c
+@deffnx {Bigloo Cryptography procedure} RSASP1 k m
+@deffnx {Bigloo Cryptography procedure} RSAVP1 k s
+These are the RFC 3447 names for encryption, decryption, signature and
+signature verification. Note that the verification does not receive the
+original message as parameter.
+
+In fact @code{rsa-verify} is implemented as follows:
+@display
+(define (rsa-verify k m s)
+  (=bx m (RSAVP1 k s)))
+@end display
+@end deffn
+
+@deffn {Bigloo Cryptography procedure}  RSAES-PKCS1-v1.5-encrypt key m-str
+@deffnx {Bigloo Cryptography procedure} RSAES-PKCS1-v1.5-decrypt key c-str
+@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-sign key msg-str [:hash-algo 'sha-1]
+@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-verify key msg-str S-str
+@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-sign-bignum key msg-str [:hash-algo 'sha-1]
+@deffnx {Bigloo Cryptography procedure} RSASSA-PKCS1-v1.5-verify-bignum key msg-str S
+RSAES-PKCS1-v1.5 functions work on strings. However their length is
+limited by the size of the modulus (to be exact: by key-len - 11).
+The @code{-bignum} functions skip the last step of converting the
+internal bignum to strings.
+
+The optional @code{:hash-algo} must be either @code{sha-1} or @code{md5}
+(RFC 3447 allows other hash algorithms, but they are not yet implemented).
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} RSAES-OAEP-encrypt key m-str [:label ""]
+@deffnx {Bigloo Cryptography procedure} RSAES-OAEP-decrypt key cypher-str [:label ""]
+@deffnx {Bigloo Cryptography procedure} RSASSA-PSS-sign key msg-str
+@deffnx {Bigloo Cryptography procedure} RSASSA-PSS-verify key msg-str sig-str
+These functions pad, mask, etc the input string before they perform their
+operation on them. See RFC 3447 for more information.
+@end deffn
+
+@node DSA, ElGamal, RSA, Public Key Cryptography
+@comment  node-name,  next,  previous,  up
+@subsection Digital Signature Algorithm (DSA)
+
+Bigloo has rudimentary (but usually sufficient) support for DSA.
+While it is not possible to generate new DSA keys inside Bigloo
+one can sign or verify with Bigloo.
+
+DSA keys can be read and written using @code{read-pem} (@ref{PEM}).
+
+For consistency with RSA we have named DSA keys in a similar way as
+the RSA keys. The public part of a DSA key can be found in the class
+@code{DSA-Key} while the private part is added in the
+@code{Complete-DSA-Key} subclass.
+
+@deffn {Bigloo Cryptography class} DSA-Key
+@deffnx {Bigloo Cryptography class} Complete-DSA-Key
+@smalllisp
+(class Dsa-Key
+   p::bignum q::bignum g::bignum y::bignum)
+(final-class Complete-Dsa-Key::Dsa-Key
+   x::bignum)) ;; the private key
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} extract-public-dsa-key complete-key
+Returns a @code{DSA-Key} without the private @var{x}.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} dsa-sign m key
+Signs the bignum @var{m} using the private dsa key @var{key}. The
+result are two values: @var{r} and @var{s}.
+
+A typical call to @code{dsa-sign} is hence of the following form
+@smalllisp
+(receive (r s)
+  (dsa-sign secret-key hashed-msg-bignum)
+  (process-signature r s))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} dsa-verify m key r s
+Verifies a signature (consisting of @var{r} and @var{s}).
+@end deffn
+
+DSA works very similar to RSA. Have a look at RSA's example section.
+
+@node ElGamal, PEM, DSA, Public Key Cryptography
+@comment  node-name,  next,  previous,  up
+@subsection ElGamal
+
+Bigloo supports ElGamal encryption (but not signing). Bigloo's
+implementation is minimal.
+
+For consistency with RSA ElGamal keys are similarly named as their
+RSA counterparts.
+
+@deffn {Bigloo Cryptography class} ElGamal-Key
+@deffnx {Bigloo Cryptography class} Complete-ElGamal-Key
+@smalllisp
+(class ElGamal-Key
+  p::bignum
+  g::bignum
+  y::bignum)
+(final-class Complete-ElGamal-Key::ElGamal-Key
+  x::bignum)) ;; the private key
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} extract-public-elgamal-key complete-key
+Returns a copy of the public part (as @code{ElGamal Key}).
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} elgamal-encrypt key m
+Encrypts the bignum @var{m} using the given public key. The result are two
+values @code{c1} and @code{c2}.
+
+Note that ElGamal encryption needs random bytes for every encryption. This
+means that this function may return different results with the same parameters.
+It furthermore implies that the result is insecure if the operating system
+provides bad random numbers, or if Bigloo's random-number generation is buggy.
+For critical applications be sure to verify both requirements.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} elgamal-decrypt complete-key c1 c2
+Decrypts an ElGamal encrypted message (consisting of the two bignums
+@var{c1} and @var{c2}) with the given private key.
+@end deffn
+
+ElGamal works very similar to RSA. Have a look at RSA's example section.
+
+@node PEM,,ElGamal, Public Key Cryptography
+@comment  node-name,  next,  previous,  up
+@subsection PEM
+Bigloo is able to read and write RSA and DSA keys in PEM format. This is
+the default format used by OpenSSL.
+
+The following example creates a new DSA key pair in OpenSSL and stores it
+in PEM format.
+@display
+$ openssl dsaparam 1024 -out /tmp/dsaparam
+$ openssl gendsa /tmp/dsaparam
+@end display
+
+
+@deffn {Bigloo Cryptography procedure} read-pem-key in
+@deffnx {Bigloo Cryptography procedure} read-pem-key-port input-port
+@deffnx {Bigloo Cryptography procedure} read-pem-key-file filename
+@deffnx {Bigloo Cryptography procedure} read-pem-key-string str
+These functions will read a PEM encoded key. The encoded file may contain
+a private or public RSA key, as well as a private or public DSA key.
+
+The procedure @code{read-pem-key} accepts input-ports and strings. In the case
+of a string it will invoke @code{read-pem-key-file}
+(and not @code{read-pem-key-string}).
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} write-pem-key key out [public-key-only?]
+@deffnx {Bigloo Cryptography procedure} write-pem-key-port key out [public-key-only?]
+@deffnx {Bigloo Cryptography procedure} write-pem-key-file key out [public-key-only?]
+@deffnx {Bigloo Cryptography procedure} write-pem-key-string key [public-key-only?]
+These functions write the given key. The key may be a private/public
+RSA/DSA key.
+
+The procedure @code{write-pem-key} accepts output-ports and strings as
+@var{out} parameter. If @var{out} is a string it will delegate to
+@code{write-pem-key-file}.
+@end deffn

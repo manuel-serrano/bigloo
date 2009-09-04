@@ -4967,6 +4967,72 @@ public final class foreign
 	 return c;
       }
 
+   private static void rgc_buffer_reserve_space(input_port p, int amount)
+      {
+	 int bufsize = p.bufsiz;
+	 int bufpos = p.bufpos;
+	 int matchstop = p.matchstop;
+
+	 if ( matchstop >= amount ) return;
+
+	 if ( (matchstop + (bufsize - (bufpos-1))) >= amount ) {
+	    // shift the buffer to the right
+	    int diff = amount - matchstop;
+
+	    System.arraycopy(p.buffer, matchstop, p.buffer, amount, bufpos-1 - matchstop);
+
+	    p.bufpos += diff;
+	    p.matchstop += diff;
+	 } else {
+	    p.rgc_double_buffer();
+	    rgc_buffer_reserve_space(p, amount);
+	 }
+      }
+   public static boolean rgc_buffer_insert_substring(input_port p, byte[] s, int from, int to)
+      {
+	 if ( from < 0 ) return false;
+	 if ( to > s.length ) return false;
+	 if ( p.bufsiz == 2) return false; // unbuffered port
+	 if ( CLOSED_RGC_BUFFER( p )) return false;
+	 if ( from >= to ) return true;
+
+	 int len = to - from;
+
+	 rgc_buffer_reserve_space(p, len);
+
+	 int matchstop = p.matchstop;
+
+	 System.arraycopy(s, from, p.buffer, (matchstop - len), len);
+
+	 if ( p.filepos >= len )
+	    p.filepos -= len;
+	 else
+	    p.filepos = 0;
+
+	 p.matchstop -= len;
+	 p.forward    = p.matchstop;
+	 p.matchstart = p.matchstop;
+	 return true;
+      }
+   public static boolean rgc_buffer_insert_char(input_port p, int c)
+      {
+	 rgc_buffer_reserve_space(p, 1);
+
+	 int matchstop = p.matchstop;
+
+	 p.buffer[matchstop - 1] = (byte) c;
+
+	 if ( p.filepos > 0 )
+	    p.filepos--;
+	 else
+	    p.filepos = 0;
+
+	 p.matchstop--;
+	 p.forward    = p.matchstop;
+	 p.matchstart = p.matchstop;
+	 return true;
+      }
+
    public static int RGC_START_MATCH(input_port p)
       {
 	 return (p.forward = p.matchstart = p.matchstop);
@@ -5803,30 +5869,6 @@ public final class foreign
       {
 	 return ((int)n);
       }
-
-/*    public static byte[] bgl_float_to_ieee_string(float v) throws IOException */
-/*       {                                                             */
-/* 	 final ByteArrayOutputStream bout = new ByteArrayOutputStream(); */
-/* 	 final DataOutputStream out = new DataOutputStream(bout);      */
-/*                                                                     */
-/* 	 out.writeFloat(v);                                            */
-/*                                                                     */
-/* 	 final byte[] res = bout.toByteArray();                        */
-/*                                                                     */
-/* 	 bout.close();                                                 */
-/* 	 return res;                                                   */
-/*       }                                                             */
-/*                                                                     */
-/*    public static float bgl_ieee_string_to_float(byte[]s) throws IOException */
-/*       {                                                             */
-/* 	 final ByteArrayInputStream bint = new ByteArrayInputStream(s); */
-/* 	 final DataInputStream in = new DataInputStream(bint);         */
-/* 	 final float res = in.readFloat();                             */
-/*                                                                     */
-/* 	 bint.close();                                                 */
-/*                                                                     */
-/* 	 return res;                                                   */
-/*       }                                                             */
 
    public static byte[] bgl_double_to_ieee_string(double v) throws IOException
       {

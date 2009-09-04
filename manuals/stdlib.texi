@@ -36,6 +36,7 @@ reason they are presented in a separate section (@ref{Input and Output}).
 * System Programming::
 * Date::
 * Digest::
+* CRC::
 * Internet::
 @end menu
 
@@ -627,6 +628,7 @@ The colon character (@code{:}) does not belong to they keyword. Hence
 @cindex #l
 @cindex #lx
 @cindex #z
+@cindex #zx
 
 Bigloo has only three kinds of numbers: fixnum, long fixnum and
 flonum.  Operations on complexes and rationals are not implemented but
@@ -634,16 +636,16 @@ for compatibility purposes, the functions @code{complex?} and
 @code{rational?} exist.  (In fact, @code{complex?} is the same as
 @code{number?} and @code{rational?}  is the same as @code{real?} in
 Bigloo.) The accepted prefixes are @code{#b}, @code{#o}, @code{#d},
-@code{#x}, @code{#e}, @code{#ex}, @code{#l}, @code{#lx}, and
-@code{#z}.  For each generic arithmetic procedure, Bigloo provides two
-specialized procedures, one for fixnums and one for flonums. The names
-of these two specialized procedures is the name of the original one
-suffixed by @code{fx} (fixnum), @code{fl} (flonum), @code{elong}
-(exact C long), @code{llong} (exact C long long), and @code{bx} (big
-integer).  A fixnum has the size of a C @code{long} minus 2 bits. A
-flonum has the size of a C @code{double}. An elong has the size
-of a C long. An llong has the size of a C long long. A big integer has
-an unbounded size.
+@code{#x}, @code{#e}, @code{#ex}, @code{#l}, @code{#lx}, @code{#z},
+and @code{#zx}. For each generic arithmetic procedure, Bigloo
+provides two specialized procedures, one for fixnums and one for
+flonums. The names of these two specialized procedures is the name of
+the original one suffixed by @code{fx} (fixnum), @code{fl} (flonum),
+@code{elong} (exact C long), @code{llong} (exact C long long), and
+@code{bx} (big integer).  A fixnum has the size of a C @code{long}
+minus 2 bits. A flonum has the size of a C @code{double}. An elong has
+the size of a C long. An llong has the size of a C long long. A big
+integer has an unbounded size.
 
 @deffn {procedure} number? obj
 @deffnx {procedure} real? obj
@@ -863,6 +865,7 @@ seeded with a value of 1.
 @deffnx {bigloo procedure} integer->string/padding i padding [radix 10]
 @deffnx {bigloo procedure} elong->string i [radix 10]
 @deffnx {bigloo procedure} llong->string i [radix 10]
+@deffnx {bigloo procedure} bignum->string i [radix 10]
 @deffnx {bigloo procedure} real->string z
 @deffnx {bigloo procedure} unsigned->string i [radix 16]
 
@@ -882,6 +885,15 @@ The function @code{unsigned->string} only accepts the following radixes:
 (unsigned->string -123 16)          @result{} "ffffff85"
 @end example
 
+@end deffn
+
+@deffn {bigloo procedure} bignum->octet-string bignum
+
+Returns a binary big-endian representation of the given bignum @var{bignum}.
+
+@smalllisp
+  (string-hex-extern (bignum->octet-string #zx1234567)) @result{} "01234567"
+@end smalllisp
 @end deffn
 
 @deffn {procedure} string->number string [radix 10]
@@ -907,6 +919,18 @@ In addition, @code{string->number} does not support radix encoded inside
 @smalllisp
 (string->number "#x1243")          @result{} #f
 @end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} octet-string->bignum string
+
+Counterpart to @code{bignum->octet-string}. Takes the bignum
+representation in big-endian format @var{string} and returns the corresponding
+bignum.
+
+@smalllisp
+(octet-string->bignum (bignum->octet-string #z1234)) @result{} #z1234
+@end smalllisp
+
 @end deffn
 
 @deffn {bigloo procedure} fixnum->flonum i
@@ -2025,6 +2049,11 @@ bound variables.
 @c    Digest                                                           @c
 @c ------------------------------------------------------------------- @c
 @include digest.texi
+
+@c ------------------------------------------------------------------- @c
+@c    CRC                                                              @c
+@c ------------------------------------------------------------------- @c
+@include crc.texi
 
 @c ------------------------------------------------------------------- @c
 @c    Internet                                                         @c

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  6 14:35:24 2005                          */
-;*    Last change :  Thu Jun  5 08:37:21 2008 (serrano)                */
-;*    Copyright   :  2002-08 Manuel Serrano                            */
+;*    Last change :  Thu Sep  3 11:54:06 2009 (serrano)                */
+;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MD5 encryption                                                   */
 ;*    -------------------------------------------------------------    */
@@ -223,7 +223,7 @@
 ;*    step1-2-string ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    ALEN is the actual length, the one used for the padding.         */
-;*    It is not necessarily the string lenght that might be shorted    */
+;*    It is not necessarily the string length that might be shorted    */
 ;*    (e.g., when invoked from MD5SUM-PORT).                           */
 ;*---------------------------------------------------------------------*/
 (define (step1-2-string str alen::elong)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Sun Aug  9 17:48:58 2009 (serrano)                */
+#*    Last change :  Thu Sep  3 12:15:19 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -81,7 +81,7 @@ EMACS_DIST_FILE	= $(UDE_FILE:%=ude/%) \
 EMACS_FILE	= $(EMACS_DIST_FILE) \
                   $(LEE_FILE:%=lee/%)
 
-BMACS_FILE	= bmacs.el bmacs-config.el \
+BMACS_FILE	= bmacs.el \
                   bmacs-gnu-emacs.el \
                   bmacs-xemacs.el xemacs-etags.el
 

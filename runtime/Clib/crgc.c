@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Thu May  7 05:11:34 2009 (serrano)                */
+/*    Last change :  Thu Sep  3 15:34:03 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -67,7 +67,6 @@ extern int bgl_debug();
 static void
 rgc_double_buffer( obj_t port ) {
    long bufsiz = BGL_INPUT_PORT_BUFSIZ( port );
-   long bufpos = INPUT_PORT( port ).bufpos;
 
    if( bufsiz == 2 ) {
       C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
@@ -106,7 +105,9 @@ shift_buffer( obj_t port ) {
 
    assert( bufpos > 0 );
 
-   /* we shift the buffer left and we fill the buffer */
+   INPUT_PORT( port ).lastchar   = RGC_BUFFER_REF( port, matchstart - 1 );
+
+   /* we shift the buffer left */
    memmove( (char *)&RGC_BUFFER_REF( port, 0 ),
 	    (char *)&RGC_BUFFER_REF( port, matchstart ),
 	    bufpos - matchstart );
@@ -114,7 +115,6 @@ shift_buffer( obj_t port ) {
    INPUT_PORT( port ).bufpos    -= matchstart;
    INPUT_PORT( port ).matchstop -= matchstart;
    INPUT_PORT( port ).forward   -= matchstart;
-   INPUT_PORT( port ).lastchar   = RGC_BUFFER_REF( port, matchstart - 1 );
    INPUT_PORT( port ).matchstart = 0;
 }
  
@@ -663,6 +663,112 @@ rgc_buffer_unget_char( obj_t ip, int c ) {
 
    return c;
 }
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    reserve_space ...                                                */
+/*---------------------------------------------------------------------*/
+static void
+reserve_space( obj_t port, long amount ) {
+   long bufsize = BGL_INPUT_PORT_BUFSIZ( port );
+   long bufpos = INPUT_PORT( port ).bufpos;
+   long matchstop = INPUT_PORT( port ).matchstop;
+   unsigned char *buffer = &RGC_BUFFER_REF( port, 0 );
+
+   if( matchstop >= amount ) return;
+
+   if( (matchstop+(bufsize-(bufpos-1))) >= amount ) {
+      long diff = amount - matchstop;
+
+      /* we shift the buffer to the right */
+      memmove( (char *)&RGC_BUFFER_REF( port, amount ),
+	       (char *)&RGC_BUFFER_REF( port, matchstop ),
+	       bufpos-1 - matchstop );
+
+      RGC_BUFFER_SET( port, bufpos+diff-1, 0 );
+
+      INPUT_PORT( port ).bufpos    += diff;
+      INPUT_PORT( port ).matchstop += diff;
+   } else {
+      rgc_double_buffer( port );
+      reserve_space( port, amount );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    rgc_buffer_insert_substring ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+rgc_buffer_insert_substring( obj_t ip, obj_t str, long from, long to ) {
+   long len = to - from;
+   long matchstop;
+
+   if( BGL_INPUT_PORT_BUFSIZ( ip ) == 2 )
+      /* unbuffered port */
+      return 0;
+   
+   if( (long)PORT( ip ).kindof == (long)KINDOF_CLOSED ) return 0;
+
+   if( from >= to ) return 1;
+
+   reserve_space( ip, len );
+
+   matchstop = INPUT_PORT( ip ).matchstop;
+
+   /* we insert the given buffer */
+   memmove( (char *)&RGC_BUFFER_REF( ip, (matchstop - len) ),
+	    &STRING_REF(str, from),
+	    len );
+   
+   if( INPUT_PORT( ip ).filepos >= len )
+      INPUT_PORT( ip ).filepos -= len;
+   else
+      INPUT_PORT( ip ).filepos = 0;
+
+   matchstop = INPUT_PORT( ip ).matchstop - len;
+   INPUT_PORT( ip ).matchstop  = matchstop;
+   INPUT_PORT( ip ).forward = matchstop;
+   INPUT_PORT( ip ).matchstart = matchstop;
+
+   return 1;
+}   
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    rgc_buffer_insert_char ...                                       */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+bool_t
+rgc_buffer_insert_char( obj_t ip, int c) {
+   long matchstop;
+
+   if( BGL_INPUT_PORT_BUFSIZ( ip ) == 2 )
+      /* unbuffered port */
+      return 0;
+   
+   if( (long)PORT( ip ).kindof == (long)KINDOF_CLOSED ) return 0;
+
+   reserve_space( ip, 1 );
+
+   matchstop = INPUT_PORT( ip ).matchstop;
+
+   /* we insert the given buffer */
+   RGC_BUFFER_SET( ip, matchstop - 1, c);
+
+   if( INPUT_PORT( ip ).filepos >= 1 )
+      INPUT_PORT( ip ).filepos--;
+   else
+      INPUT_PORT( ip ).filepos = 0;
+
+   matchstop = INPUT_PORT( ip ).matchstop - 1;
+   INPUT_PORT( ip ).matchstop  = matchstop;
+   INPUT_PORT( ip ).forward = matchstop;
+   INPUT_PORT( ip ).matchstart = matchstop;
+
+   return 1;
+}   
 
 /*---------------------------------------------------------------------*/
 /*    bool_t                                                           */

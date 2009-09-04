@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Sun Jan 25 15:11:35 2009 (serrano)                */
+;*    Last change :  Fri Sep  4 08:23:58 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
-;*    global variable and remove all globals which are not             */
+;*    global variables and remove all globals which are not            */
 ;*    reachable.                                                       */
 ;*=====================================================================*/
 
@@ -141,7 +141,7 @@
    node)
        
 ;*---------------------------------------------------------------------*/
-;*    node-remove*! ::sequence ...                                     */
+;*    node-remove! ::sequence ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (node-remove! node::sequence)
    (node-remove*! (sequence-nodes node))

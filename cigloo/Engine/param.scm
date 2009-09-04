@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 29 11:45:41 1995                          */
-;*    Last change :  Sun Dec 30 09:04:13 2007 (serrano)                */
+;*    Last change :  Thu Sep  3 12:19:28 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Configuration variables                                          */
 ;*=====================================================================*/
@@ -12,7 +12,6 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module engine_param
-   (import  tools_date)
    (export  *cigloo-version*
 	    *cigloo-name*
 	    *cigloo-level*
@@ -63,7 +62,7 @@
 (define *cigloo-rest-args*  '())
 (define *cigloo-author*     "Manuel Serrano")
 (define *cigloo-email*      "Manuel.Serrano@inria.fr")
-(define *cigloo-date*       (cigloo-date))
+(define *cigloo-date*       " Fri Sep 6 11:11:54 PDT 1996 ")
 (define *cigloo-tmp*        (let ((Venv (getenv "TMPDIR")))
 			      (if (string? Venv)
 				  Venv
