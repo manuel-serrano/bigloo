@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 16 06:22:55 2006                          */
-#*    Last change :  Mon Sep  7 15:12:51 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 15:14:40 2009 (serrano)                */
 #*    Copyright   :  2006-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Mercurial specific part of the Bigloo Makefile               */
@@ -57,11 +57,11 @@ revision: populate
 #*    checkout ...                                                     */
 #*---------------------------------------------------------------------*/
 checkout:
-	@ $(VM-CLONE) $(BOOTDIR) \
+	$(VM-CLONE) $(BOOTDIR) \
+           && (cd bigloo && $(VM-UPDATE)) \
            && $(RM) -rf bigloo/.hg \
            && $(RM) -rf bigloo/.hgignore \
            && $(RM) -rf bigloo/.hgtags
-	@ (cd bigloo && $(VM-UPDATE))
 
 #*---------------------------------------------------------------------*/
 #*    push                                                             */
