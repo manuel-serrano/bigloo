@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Apr 27 15:59:01 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 09:13:47 2009 (serrano)                */
 #*    Copyright   :  2002-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -29,7 +29,7 @@ shared-lib:
                  echo > $(LIBDEST); \
               fi; \
             else \
-	      case $(POSIXOS) in \
+	      case $(HOSTOS) in \
                 mingw) \
                   $(MAKE) LDEXTRA="-Wl,--out-implib,$(notdir $(LIBDEST).a) $(LDEXTRA)" shared && \
 		  cp $(notdir $(LIBDEST).a) $(LIBDEST).a;; \

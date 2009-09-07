@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Wed Jan 15 14:24:24 2003 (serrano)                */
+#*    Last change :  Mon Sep  7 08:48:44 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for strip                                               */
 #*=====================================================================*/
@@ -12,11 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 strip=strip
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,20 +23,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --strip=*)
       strip="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -47,9 +35,9 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
-err=$tmp/Xactest$user.err
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+err=$TMP/Xactest$USER.err
 obj=`basename $file`
 
 #*---------------------------------------------------------------------*/
@@ -71,21 +59,24 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -c $file.c -o $aout >/dev/null 2> $err; then
-   if [ "`cat $err` " = " " ]; then
-      /bin/rm $err
-      true;
-   else
-      /bin/rm $err
-      exit 1
-   fi
-else
-   exit $?
+if ! $CC $cflags -c $file.c -o $aout >/dev/null; then
+  if [ "`cat $err` " = " " ]; then
+    /bin/rm $err
+    echo "true"
+    exit 0
+  else
+    /bin/rm $err
+    echo "true"
+    exit 0
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
 #*    We test strip                                                    */
 #*---------------------------------------------------------------------*/
-eval "strip $aout > /dev/null 2> /dev/null" >/dev/null 2> /dev/null || exit $?
+if ! eval "strip $aout > /dev/null" >/dev/null; then
+  echo "true"
+else 
+  echo "$strip"
+fi
 
-exit 0

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jan  3 10:03:50 2002 (serrano)                */
+#*    Last change :  Mon Sep  7 09:07:28 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the setjmp/longjmp on the current architecture              */
 #*=====================================================================*/
@@ -12,12 +12,9 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 as=as
 cflags=
 aflags=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,12 +23,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --as=*|-as=*)
       as="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -42,22 +33,19 @@ while : ; do
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -128,7 +116,7 @@ if eval $compile; then
    res=`$aout`
 
    if( test $res = "__" ); then
-      asm="$as -o $afile.o $aflags $afile.s >/dev/null 2> /dev/null"
+      asm="$as -o $afile.o $aflags $afile.s >/dev/null"
 
       if eval $asm; then
         cat > $file.c <<EOF
@@ -162,7 +150,7 @@ main()
    }
 }
 EOF
-       compile="$cc $cflags $file.c $afile.o -o $aout >/dev/null 2> /dev/null"
+       compile="$CC $cflags $file.c $afile.o -o $aout >/dev/null"
        if eval $compile; then
   
           $aout > /dev/null 2> /dev/null || 

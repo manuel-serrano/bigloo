@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jun 25 16:59:41 2002                          */
-#*    Last change :  Fri Dec 21 12:44:17 2007 (serrano)                */
-#*    Copyright   :  2002-07 Manuel Serrano                            */
+#*    Last change :  Sat Sep  5 05:55:56 2009 (serrano)                */
+#*    Copyright   :  2002-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This configure script checks that a standard GC installation     */
 #*    is correct.                                                      */
@@ -14,10 +14,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 gcincdir=/usr/include/gc
 gclibdir=/usr/lib
 gclib=gc
@@ -31,17 +28,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gcincdir=*)
       gcincdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -61,14 +49,14 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib >/dev/null 2>> configure.log"
-compile2="$cc $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib $dlopen >/dev/null 2>> configure.log"
+compile="$CC $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib > /dev/null"
+compile2="$CC $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib $dlopen >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -121,20 +109,15 @@ if eval $compile; then
    eval $aout
    \rm -f $aout
    echo "$gclib"
-   exit 0
 else
    if eval $compile2; then
       sh -c "rm -f $file.*" 2> /dev/null
       eval $aout
       \rm -f $aout
       echo "$gclib"
-      exit 0
    else
       sh -c "rm -f $file.*" 2> /dev/null
       \rm -f $aout
-      echo "Cannot compile gc checker. Something broken with your GC settings." >&2
-      echo "Bigloo cannot be configured with the --customgc=no option." >&2
-      echo "" >&2
-      exit 1
+      echo ""
    fi
 fi

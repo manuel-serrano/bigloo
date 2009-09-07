@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jan  3 10:02:57 2002 (serrano)                */
+#*    Last change :  Mon Sep  7 09:04:39 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if readline exits. Return 1 or 0.                          */
 #*=====================================================================*/
@@ -12,13 +12,10 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 readline=-lreadline
 readlineopt=
 termcap=-ltermcap
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,12 +24,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -46,25 +37,22 @@ while : ; do
     --termcap=*|-termcap=*)
       termcap="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout $readline >/dev/null 2> /dev/null"
-compilet="$cc $cflags $file.c -o $aout $readlineopt $termcap $readline $termcap >/dev/null 2> /dev/null"
-compilea="$cc $cflags $file.c -o $aout $readlineopt /usr/lib/readline.a >/dev/null 2> /dev/null"
-compileat="$cc $cflags $file.c -o $aout $readlineopt $termcap /usr/lib/readline.a $termcap >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout $readline >/dev/null"
+compilet="$CC $cflags $file.c -o $aout $readlineopt $termcap $readline $termcap >/dev/null"
+compilea="$CC $cflags $file.c -o $aout $readlineopt /usr/lib/readline.a >/dev/null"
+compileat="$CC $cflags $file.c -o $aout $readlineopt $termcap /usr/lib/readline.a $termcap >/dev/null"
 
 
 #*---------------------------------------------------------------------*/
@@ -138,7 +126,6 @@ if eval $compile; then
    else
       echo "$readlineopt $readline"
    fi
-   exit 1
 else
   if eval $compilet; then
      \rm -f $file.*
@@ -149,7 +136,6 @@ else
      else
         echo "$readlineopt $termcap $readline $termcap"
      fi
-     exit 1
   else
      if eval $compilea; then
         \rm -f $file.*
@@ -160,7 +146,6 @@ else
         else
            echo "$readlineopt /usr/lib/readline.a"
         fi
-        exit 1
      else
         if eval $compileat; then
            \rm -f $file.*
@@ -171,12 +156,10 @@ else
            else
               echo "$readlineopt $termcap /usr/lib/readline.a $termcap"
            fi
-           exit 1
         else
            \rm -f $file.*
            rm -f $aout
            rm -f $aout*
-           exit 0
         fi
      fi
   fi

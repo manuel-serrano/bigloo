@@ -1,0 +1,178 @@
+#!/bin/sh
+# Generated file, don't edit, @DATE@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/runtest.in                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Sep  4 11:48:49 2009                          */
+#*    Last change :  Mon Sep  7 09:39:04 2009 (serrano)                */
+#*    Copyright   :  2009 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    This file is in charge of spawning actual tests.                 */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Default parameter values                                         */
+#*---------------------------------------------------------------------*/
+HOSTSH="@HOSTSH@"
+HOSTOS="@HOSTOS@"
+HOSTOSVERSION="@HOSTOSVERSION@"
+HOSTCPU="@HOSTCPU@"
+BUILDSH="@BUILDSH@"
+AUTOCONFDIR="@AUTOCONFDIR@"
+LOG="@LOG@"
+USER="@USER@"
+TMP="@TMP@"
+CC="@CC@"
+
+verbose=2
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+cmd=$0
+
+while : ; do
+  cmd="$cmd $1";
+
+  case $1 in
+    "")
+      break;;
+
+    --hostsh=*)
+      HOSTSH="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostos=*)
+      HOSTOS="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostosversion=*)
+      HOSTOSVERSION="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostcpu=*)
+      HOSTCPU="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --buildsh=*)
+      BUILDSH="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --autoconfdir=*)
+      AUTOCONFDIR="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --log=*)
+      LOG="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --user=*)
+      USER="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*)
+      TMP="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*)
+      CC="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -v0)
+      verbose=0;;
+
+    -v1)
+      verbose=1;;
+
+    -v2)
+      verbose=2;;
+
+    --help)
+      echo "Usage: runtest [options] -- script arg0 arg1 ..." >&2;
+      echo "" >&2;
+      echo "  --hostsh=<script>" >&2;
+      echo "  --hostos=<os-name>" >&2;
+      echo "  --hostosversion=<os-version>" >&2;
+      echo "  --hostcpu=<cpu-name>" >&2;
+      echo "  --buildsh=<script>" >&2;
+      echo "  --autoconfdir=<dir-name>" >&2;
+      echo "  --log=<file-name>" >&2;
+      echo "  --user=<user-name>" >&2;
+      echo "  --tmp=<dir-name>" >&2;
+      echo "  --cc=<path>>" >&2;
+      echo "  -v[012]" >&2;
+      exit 1;;
+
+    --)
+      break;;
+  esac
+  shift
+done
+
+# get the test to be executed and its options
+shift
+test=$1
+shift
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    *)
+      opts="$opts \"$1\"";;
+  esac
+  shift
+done
+
+# log the call
+if [ ! -f $LOG ]; then touch $LOG; fi
+
+echo "$cmd $test$opts" >> $LOG
+
+if [ $verbose = 2 ]; then
+  echo "HOSTSH=$HOSTSH" 
+  echo "HOSTOS=$HOSTOS"
+  echo "HOSTOSVERSION=$HOSTOSVERSION"
+  echo "HOSTCPU=$HOSTCPU"
+  echo "BUILDSH=$BUILDSH"
+  echo "AUTOCONFDIR=$AUTOCONFDIR"
+  echo "LOG=$LOG"
+  echo "USER=$USER"
+  echo "TMP=$TMP"
+  echo "CC=$CC"
+
+  echo "$AUTOCONFDIR/$test $opts"
+fi
+
+(export HOSTSH; 
+ export HOSTOS;
+ export HOSTOSVERSION;
+ export HOSTCPU;
+ export BUILDSH;
+ export AUTOCONFDIR;
+ export LOG;
+ export USER;
+ export TMP;
+ export CC;
+
+ if [ $verbose = 1 ]; then
+   echo -n "executing $AUTOCONFDIR/$test -> " >&2
+ elif [ $verbose = 2 ]; then
+   echo "executing $AUTOCONFDIR/$test$opts" >&2
+ fi
+
+ if [ $verbose = 2 ]; then
+   res=`eval $AUTOCONFDIR/$test$opts`
+ else
+   res=`eval $AUTOCONFDIR/$test$opts 2>> $LOG`
+ fi
+
+ ret=$?
+
+ if [ $ret = 0 ]; then 
+   echo $res;
+   if [ $verbose = 1 ]; then
+     echo $res | head -n 1 >&2;
+   fi
+   echo "  -> $res" >> $LOG;
+   exit 0;
+ else
+   echo "*** ERROR: test $AUTOCONFDIR/$test failed (see $LOG)!" >&2;
+   echo "*** ERROR, test failed with return code: $ret" >> $LOG;
+   echo $res >> $LOG;
+   exit $ret
+ fi)
+ 
+

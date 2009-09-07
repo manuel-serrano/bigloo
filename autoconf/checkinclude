@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue May 27 06:50:25 2008                          */
-#*    Last change :  Tue May 27 07:31:10 2008 (serrano)                */
-#*    Copyright   :  2008 Manuel Serrano                               */
+#*    Last change :  Sun Sep  6 22:15:39 2009 (serrano)                */
+#*    Copyright   :  2008-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check a C include                                                */
 #*=====================================================================*/
@@ -13,10 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=""
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,20 +23,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -53,8 +38,8 @@ done
 #*---------------------------------------------------------------------*/
 #*    Temp files                                                       */
 #*---------------------------------------------------------------------*/
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    Generate the C files                                             */
@@ -78,7 +63,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 if eval $compile; then
    \rm -f $file.*
@@ -87,7 +72,7 @@ if eval $compile; then
    exit 0
 else
    \rm -f $file.*
-   exit 1
+   exit 0
 fi
 
 

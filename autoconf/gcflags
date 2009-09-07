@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Wed May 28 12:12:16 2008 (serrano)                */
+#*    Last change :  Sun Sep  6 21:46:01 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking GC compilation flags                                    */
 #*=====================================================================*/
@@ -12,11 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=""
-tmp=/tmp
-user=bigloo
-posixos="unix"
 cgcflags68="-DSILENT -DNO_SIGNALS -DNO_DEBUGGING -Iinclude"
 cgcflags="-DNO_DEBUGGING -Iinclude -Ilibatomic_ops-install/include"
 
@@ -28,20 +24,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -54,7 +38,7 @@ done
 #*    cannot be used otherwise call/cc crashes. I will have to figure  */
 #*    out why. In the mean time, I use an ad-hoc configuration scheme. */
 #*---------------------------------------------------------------------*/
-case $posixos in
+case $HOSTOS in
    linux)
      echo $cgcflags;;
 
@@ -62,79 +46,86 @@ case $posixos in
      echo $cgcflags;;
 
    mingw)
-      echo "$cgcflags -DGC_DLL -DGC_BUILD -DGC_DLL -DNO_EXECUTE_PERMISSION -DALLINTERIOR_POINTERS -DATOMIC_UNCOLLECTABLE -D_REENTRANT ";;
+     echo "$cgcflags -DGC_DLL -DGC_BUILD -DGC_DLL -DNO_EXECUTE_PERMISSION -DALLINTERIOR_POINTERS -DATOMIC_UNCOLLECTABLE -D_REENTRANT ";;
 
-   unix)
-     case `uname -s` in
-       Darwin*|darwin*)
-         flags="$cgcflags -DGC_DARWIN_THREADS=1";
-         if [ "`uname -p` " = "i386 " ]; then
-           # x86_32
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                     --cc=$cc --cflags=$cflags \
-                                     x86_thread_state32_t.eax \
-                                     "#include <sys/cdefs.h>" \
-                                     "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_X86_THREAD_STATE32_EAX";
-           fi
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       x86_thread_state32_t.__eax \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_X86_THREAD_STATE32___EAX";
-           fi
-         else
-           # x86_64
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       x86_thread_state64_t.rax \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_X86_THREAD_STATE64_RAX";
-           fi
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       x86_thread_state64_t.__rax \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_X86_THREAD_STATE64___RAX";
-           fi
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       ppc_thread_state_t.r0 \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_PPC_THREAD_STATE_R0";
-           fi
-           # ppc
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       ppc_thread_state_t.__r0 \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_PPC_THREAD_STATE___R0";
-           fi
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       ppc_thread_state64_t.r0 \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_PPC_THREAD_STATE64_R0";
-           fi
-           if `./autoconf/checkmember --user=$user --tmp=$tmp \
-                                       --cc=$cc --cflags=$cflags \
-                                       ppc_thread_state64_t.__r0 \
-                                       "#include <sys/cdefs.h>" \
-                                       "#include <mach/thread_status.h>"`; then
-             flags="$flags -DHAS_PPC_THREAD_STATE64___R0";
-           fi
+   darwin)
+     flags="$cgcflags -DGC_DARWIN_THREADS=1";
+
+     case $HOSTCPU in
+       i386)
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     x86_thread_state32_t.eax \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+           flags="$flags -DHAS_X86_THREAD_STATE32_EAX";
+         fi
+
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     x86_thread_state32_t.__eax \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+           flags="$flags -DHAS_X86_THREAD_STATE32___EAX";
+         fi
+         ;;
+
+       ppc)
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     ppc_thread_state_t.__r0 \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+           flags="$flags -DHAS_PPC_THREAD_STATE___R0";
+         fi
+
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     ppc_thread_state_t.r0 \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+            flags="$flags -DHAS_PPC_THREAD_STATE_R0";
+         fi
+
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     ppc_thread_state64_t.r0 \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+           flags="$flags -DHAS_PPC_THREAD_STATE64_R0";
+         fi
+
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     ppc_thread_state64_t.__r0 \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+            flags="$flags -DHAS_PPC_THREAD_STATE64___R0";
          fi;
-         echo $flags;;
+         ;;
 
        *)
-         echo $cgcflags;;
-     esac;;
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     x86_thread_state64_t.rax \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+          
+         if [ "$member " = "yes " ]; then
+            flags="$flags -DHAS_X86_THREAD_STATE64_RAX";
+         fi
+
+         member=`./autoconf/runtest -v1 -- checkmember --cflags=$cflags \
+                     x86_thread_state64_t.__rax \
+                     "#include <sys/cdefs.h>" \
+                     "#include <mach/thread_status.h>"` || exit 1;
+         if [ "$member " = "yes " ]; then
+            flags="$flags -DHAS_X86_THREAD_STATE64___RAX";
+         fi
+         ;;
+
+     esac
+     echo $cgcflags
+     ;;
 
    *)
      echo $cgcflags;;

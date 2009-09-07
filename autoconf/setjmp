@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed May  2 10:18:23 2007 (serrano)                */
+#*    Last change :  Sun Sep  6 21:03:43 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the setjmp/longjmp on the current architecture              */
 #*=====================================================================*/
@@ -12,12 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
-as=as
 cflags=
-aflags=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,23 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --as=*|-as=*)
-      as="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --aflags=*|-aflags=*)
-      aflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -51,13 +31,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -78,7 +58,6 @@ main( int argc, char *argv[] ) {
    if( sigsetjmp( jb, 1 ) )
       siglongjmp( jb, 1 );
    return 1;
-#endif
 }
 EOF
 

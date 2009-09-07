@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Fri Mar 10 15:02:39 2006 (serrano)                */
+#*    Last change :  Sun Sep  6 20:48:38 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler optimization option                      */
 #*=====================================================================*/
@@ -12,11 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags="-O3"
-posixos="unix"
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,20 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -47,19 +31,18 @@ while : ; do
   shift
 done
 
-file1=$tmp/actest1$user
-file2=$tmp/actest2$user
-aout=$tmp/Xactest$user
+file1=$TMP/actest1$USER
+file2=$TMP/actest2$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    On some archiecture (e.g., alpha, Mac PPC, etc.) cc -O3 option   */
 #*    cannot be used otherwise call/cc crashes. I will have to figure  */
 #*    out why. In the mean time, I use an ad-hoc configuration scheme. */
 #*---------------------------------------------------------------------*/
-case $posixos in
+case $HOSTOS in
   linux)
-    mach=`uname -m`
-    case $mach in
+    case $HOSTCPU in
        sparc64)
           cflags="-O2";;
        ppc)
@@ -68,21 +51,19 @@ case $posixos in
           ;;
     esac;;
 
-  unix)
-    case `uname -s` in
-      OSF*)
-        mach=`uname -m`
-        case $mach in
-           alpha)
-              cflags="-O3";;
+  osf)
+    case $HOSTCPU in
+       alpha)
+          cflags="-O3";;
            *)
               ;;
-        esac;;
-      solaris*)
-        cflags="-O3";;
-      HP-UX*)
-        cflags="-O";;
     esac;;
+
+  solaris)
+    cflags="-O3";;
+
+  hpux)
+    cflags="-O";;
 esac
 
 #*---------------------------------------------------------------------*/
@@ -157,13 +138,13 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file1.c -c && 
+compile="$CC $cflags $file1.c -c && 
          mv `basename $file1.o` $file1.o && \
-         $cc $cflags $file2.c -c && 
+         $CC $cflags $file2.c -c && 
          mv `basename $file2.o` $file2.o && \
-         $cc $cflags $file1.o $file2.o -o $aout"
+         $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile 2> /dev/null ; then
+if eval $compile; then
    $aout; res=$?
 else
    res=1;
@@ -177,13 +158,13 @@ if [ "$res" = "0" ]; then
 fi
 
 cflags=-O3
-compile="$cc $cflags $file1.c -c && \
+compile="$CC $cflags $file1.c -c && \
          mv `basename $file1.o` $file1.o && \
-         $cc $cflags $file2.c -c && \
+         $CC $cflags $file2.c -c && \
          mv `basename $file2.o` $file2.o && \
-         $cc $cflags $file1.o $file2.o -o $aout"
+         $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile 2> /dev/null ; then
+if eval $compile; then
    $aout; res=$?
 else
    res=1;
@@ -197,13 +178,13 @@ if [ "$res" = "0" ]; then
 fi
 
 cflags=-O2
-compile="$cc $cflags $file1.c -c && \
+compile="$CC $cflags $file1.c -c && \
          mv `basename $file1.o` $file1.o && \
-         $cc $cflags $file2.c -c && \
+         $CC $cflags $file2.c -c && \
          mv `basename $file2.o` $file2.o && \
-         $cc $cflags $file1.o $file2.o -o $aout"
+         $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile 2> /dev/null; then
+if eval $compile; then
    $aout; res=$?
 else
    res=1;

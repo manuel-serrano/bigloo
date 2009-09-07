@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Sep  4 08:52:23 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 08:06:05 2009 (serrano)                */
 #*    Copyright   :  1997-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -15,6 +15,8 @@
 POPULATION	= Makefile \
                   bigloo_config.h.in bigloo_gc.h.in \
                   configure.java.in configure.cs.in \
+                  mkruntest runtest.in \
+                  os osversion cpu \
                   checkmember checkinclude \
                   cnstalign longlong labs llabs strtoll strtoull \
                   sigpipe sigsetmask \
@@ -31,7 +33,7 @@ POPULATION	= Makefile \
                   ccprof termio termios installinfo installinfodir dlopen \
                   user xemacsbin gmaketest ccpic ccpic2 \
                   ziptest javatest jartest \
-                  os oscharset strip cygwindospath select fcntl ccstrip \
+                  oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
                   thread pthread pthreadlock pthreadlocalstorage \
                   processor dotnettest sendfile sleep posixfileops \
@@ -40,7 +42,7 @@ POPULATION	= Makefile \
                   stdint stdlibint unistdint maemo.arm \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
                   gstreamer gstreameraudio dbus gmp limbs signbit \
-                  getuid getprotoent
+                  getuid getprotoent machdep
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

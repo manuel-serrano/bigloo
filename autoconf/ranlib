@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Wed Jan 15 14:24:40 2003 (serrano)                */
+#*    Last change :  Fri Sep  4 18:29:26 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for ranlib                                              */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -25,17 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -43,14 +31,14 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 obj=`basename $file`
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags -c $file.c >/dev/null 2> /dev/null"
+compile="$CC $cflags -c $file.c >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -59,7 +47,7 @@ if test -f $file.c; then
    rm -f $file.c || exit $?
 fi
 
-cd $tmp
+cd $TMP
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
@@ -71,26 +59,23 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -c $file.c -o $obj.o >/dev/null 2>&1
-then
-   true
-else
-   exit $?
+if ! $CC $cflags -c $file.c -o $obj.o >/dev/null; then
+  rm -f $file.*
+  exit 1
 fi
 
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-ar qcv $file.a $obj.o > /dev/null 2> /dev/null || exit $?
+ar qcv $file.a $obj.o > /dev/null || exit $?
 
 #*---------------------------------------------------------------------*/
 #*    We try to run ranlib                                             */
 #*---------------------------------------------------------------------*/
-if eval "ranlib $file.a  > /dev/null 2>&1" > /dev/null 2> /dev/null
-then
+if eval "ranlib $file.a  > /dev/null" > /dev/null; then
    rm -f $file.*
-   echo 1
+   echo "yes"
 else
    rm -f $file.*
-   echo 0
+   echo "no"
 fi

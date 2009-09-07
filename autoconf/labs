@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Jul 28 14:18:18 2006 (serrano)                */
+#*    Last change :  Sun Sep  6 21:36:23 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect if current C complier support long abs.                   */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 labs=labs
 
 #*---------------------------------------------------------------------*/
@@ -26,17 +23,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --labs=*|-labs=*)
       labs="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -47,13 +35,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

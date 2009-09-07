@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon Apr 20 19:33:33 2009 (serrano)                */
+#*    Last change :  Fri Sep  4 18:48:14 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking native threads (quite obvious)                          */
 #*=====================================================================*/
@@ -12,11 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=""
-tmp=/tmp
-user=bigloo
-posixos="unix"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,20 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -47,9 +31,9 @@ while : ; do
   shift
 done
 
-case $posixos in
+case $HOSTOS in
    linux)
-     if [ "`uname -m`" = "ppc" ]; then
+     if [ "$HOSTCPU " = "ppc " ]; then
        echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS $cflags";
      else
        echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS -DTHREAD_LOCAL_ALLOC $cflags";
@@ -61,26 +45,19 @@ case $posixos in
    mingw)
      echo "-D_REENTRANT -DGC_WIN32_PTHREADS -DGC_PTHREADS -DGC_WIN32_THREADS $cflags";;
 
-   unix)
-     case `uname -s` in
-       solaris*|SunOS*)
-         echo "-DGC_SOLARIS_PTHREADS -D_REENTRANT -DGC_THREADS $cflags";;
+   solaris|sunos)
+     echo "-DGC_SOLARIS_PTHREADS -D_REENTRANT -DGC_THREADS $cflags";;
 
-       HP-UX*)
-         echo "-DGC_HPUX_THREADS -DGC_THREADS $cflags";;
+   hpux)
+     echo "-DGC_HPUX_THREADS -DGC_THREADS $cflags";;
 
-       FreeBSD*)
-          echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
+   freebsd)
+     echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
  
-       Darwin*)
-          echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
-
-       *)
-          echo "no";;
-     esac;;
+   darwin)
+      echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
 
    *)
      echo "no";;
 esac
 
-exit 0

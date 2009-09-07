@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Wed Oct 24 11:20:42 2007 (serrano)                */
+#*    Last change :  Mon Sep  7 09:26:14 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build queens                                     */
 #*=====================================================================*/
@@ -16,7 +16,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
+BIGLOO		= $(BUILDBIGLOO)
 BGLOPTFLAGS	= -Obench -q +rm
 BFLAGS		= $(BGLOPTFLAGS)
 LNFLAGS		= $(BGLOPTFLAGS) -static-bigloo

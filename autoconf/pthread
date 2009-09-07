@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Aug 18 12:58:48 2008 (serrano)                */
+#*    Last change :  Fri Sep  4 18:56:37 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread library.                              */
 #*=====================================================================*/
@@ -12,12 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-pthreadlibs="-lpthread"
-tmp=/tmp
-user=bigloo
-posixos="unix"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,23 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --lib=*|-lib=*)
-      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -52,26 +32,28 @@ while : ; do
 done
 
 
-if [ "$posixos" = "unix" ]; then
-  case `uname -s` in
-    FreeBSD*)
-      pthreadlibs="-lthr";;
+case $HOSTOS in
+  freebsd)
+    pthreadlibs="-lthr";;
 
-    solaris*|SunOS*)
-      pthreadlibs="-lpthread -lposix4";;
-  esac
-elif [ "$posixos" = "mingw" ]; then
-# THIS IS the RedHat pthread implementation
-  pthreadlibs="-lpthreadGC2"
-fi
+  solaris|sunos)
+    pthreadlibs="-lpthread -lposix4";;
+
+  mingw)
+    # THIS IS the RedHat pthread implementation
+    pthreadlibs="-lpthreadGC2";;
+
+  *)
+    pthreadlibs="-lpthread";;
+esac
  
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout $pthreadlibs >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -86,6 +68,7 @@ fi
 cat > $file.c <<EOF
 #include <pthread.h>
 #include <sched.h>
+#include <stdio.h>
 
 main( argc, argv )
 int   argc;

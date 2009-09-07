@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr  5 08:43:23 2002                          */
-#*    Last change :  Sat Aug  5 08:24:14 2006 (serrano)                */
-#*    Copyright   :  2002-06 Manuel Serrano                            */
+#*    Last change :  Sat Sep  5 06:14:03 2009 (serrano)                */
+#*    Copyright   :  2002-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if the stack is large enough for compiling Bigloo.         */
 #*=====================================================================*/
@@ -13,10 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=-O
-tmp=/tmp
-user=bigloo
 stacksize=3
 
 #*---------------------------------------------------------------------*/
@@ -27,17 +24,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --stacksize=*|-s=*)
       stacksize="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -48,13 +36,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -117,4 +105,4 @@ fi
 rm -f $aout
 rm -f $aout*
 
-exit $status
+echo $status

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Sep  3 11:52:10 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 09:28:15 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -18,7 +18,7 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
+BIGLOO		= $(BUILDBIGLOO)
 # The Bigloo used to bootstrap the library and to produce the heap file
 EFLAGS		=
 # the shell to be used
@@ -46,16 +46,13 @@ SCMCLASSSUFFIX	= %.class
 SCMDOTNETSUFFIX = %.obj
 # The module association file
 AFILE		= .afile
-AFILE_BIN	= $(BOOTBINDIR)/$(AFILE_EXE)
+AFILE_BIN	= $(BUILDBINDIR)/$(AFILE_EXE)
 # The package association file
 JFILE		= .jfile
 PBASE		= bigloo.runtime
-JFILE_BIN	= $(BOOTBINDIR)/$(JFILE_EXE)
+JFILE_BIN	= $(BUILDBINDIR)/$(JFILE_EXE)
 # The qualifier of the build library
 LIBQ		= 
-# IF_XXX tools
-IF_MACH_SRC	= $(BOOTDIR)/tools/if_mach.c
-IF_MACH_EXE	= $(BOOTBINDIR)/if_mach
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -930,18 +927,17 @@ objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */
 #*---------------------------------------------------------------------*/
-objs/$(OBJDIR_SYS)/Mlib/mach_dep.o: Mlib/mach_dep.c \
-                      Mlib/sparc_sunos5_mach_dep.s \
-                      Mlib/sparc_sunos4_mach_dep.s \
-                      $(IF_MACH_EXE)
-	@ echo "Mlib/mach_dep.c:"
-	@ $(RM) -f objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
-	$(IF_MACH_EXE) sparc sunos5 $(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos5_mach_dep.s
-	$(IF_MACH_EXE) sparc sunos4 $(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
-	if [ ! -f objs/$(OBJDIR_SYS)/Mlib/mach_dep.o ]; then \
-	   $(CC) -c $(CSAFEFLAGS) $(GCINCLUDE) Mlib/mach_dep.c && \
-             mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o; \
-          fi
+objs/$(OBJDIR_SYS)/Mlib/mach_dep.o: $(NATIVE_MACHDEP)
+
+sparc_sunos5_mach_dep: Mlib/sparc_sunos5_mach_dep.s
+	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos5_mach_dep.s
+
+sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s 
+	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
+
+generic_mach_dep: Mlib/mach_dep.c
+	$(CC) $(CEFLAGS) -c -o mach_dep.o $< && \
+        mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
 
 #*---------------------------------------------------------------------*/
 #*    realcallback.obj                                                 */
@@ -975,12 +971,6 @@ objs/dotnet_p/$(SCMDOTNETSUFFIX): %.scm
 
 objs/dotnet_s/Eval/evmeaning.obj: Eval/evmeaning.scm
 	$(BIGLOO) -unsafe -dotnet $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c Eval/evmeaning.scm -o $@
-
-#*---------------------------------------------------------------------*/
-#*    Tools compilation                                                */
-#*---------------------------------------------------------------------*/
-$(IF_MACH_EXE): $(IF_MACH_SRC)
-	$(CC) $(CSAFEFLAGS) -o $(IF_MACH_EXE) $(IF_MACH_SRC)
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */

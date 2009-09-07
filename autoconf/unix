@@ -4,12 +4,11 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Wed Mar 24 13:56:28 2004 (serrano)                */
+#*    Last change :  Mon Sep  7 09:13:29 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Setting bigloo.h up for Unix parameters.                         */
 #*=====================================================================*/
 fmt=c
-tmpdir=/tmp
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -18,21 +17,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cflags=*|-cflags=*)
-      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmpdir=*|-tmpdir=*)
-      tmpdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -43,32 +27,22 @@ done
 #*---------------------------------------------------------------------*/
 #*    Uname parameters                                                 */
 #*---------------------------------------------------------------------*/
-if eval uname > /dev/null 2> /dev/null; then
-  osname=`uname -s`
-  osarch=`uname -m`
-  osversion=`uname -r`
-else
-  osname="unknown"
-  osarch="unknown"
-  osversion="unknown"
-fi
-
 if [ $fmt = "c" ]; then
   # the kind of OS (Unix|mingw)
-  if [ "$posixos" = "mingw" ]; then
+  if [ "$HOSTOS " = "mingw " ]; then
       echo "#define OS_CLASS \"mingw\""
   else 
       echo "#define OS_CLASS \"unix\""
   fi
   
   # The name of the OS
-  echo "#define OS_NAME \"$osname\""
+  echo "#define OS_NAME \"$HOSTOS\""
   
   # The architecture
-  echo "#define OS_ARCH \"$osarch\""
+  echo "#define OS_ARCH \"$HOSTCPU\""
   
   # the Os version
-  echo "#define OS_VERSION \"$osversion\""
+  echo "#define OS_VERSION \"$HOSTOSVERSION\""
   
   # the temporary directory
   echo "#define OS_TMP \"$tmpdir\""
@@ -77,7 +51,7 @@ if [ $fmt = "c" ]; then
   echo "#define FILE_SEPARATOR '/'"
   
   # the path separator
-  if [ "$posixos" = "mingw" ]; then
+  if [ "$HOSTOS " = "mingw " ]; then
       echo "#define PATH_SEPARATOR ';'"
   else 
       echo "#define PATH_SEPARATOR ':'"

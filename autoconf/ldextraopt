@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Mon Aug  8 11:28:45 2005 (serrano)                */
+#*    Last change :  Sun Sep  6 22:17:39 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking extra ld option to link large executables               */
 #*=====================================================================*/
@@ -12,10 +12,6 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
-posixos="unix"
-tmp=/tmp
-user=bigloo
 lflags=
 
 #*---------------------------------------------------------------------*/
@@ -26,20 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --lflags=*)
       lflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -47,17 +31,14 @@ while : ; do
   shift
 done
 
-case $posixos in
-  unix)
-    if [ "`uname -s`" = "AIX" ]; then
-      if [ "$cc" = "gcc" ]; then
-        echo "$lflags -Xlinker -bbigtoc"
-      else
-        echo "$lflags -bbigtoc"
-      fi
+case $HOSTOS in
+  aix)
+    if [ "$CC" = "gcc" ]; then
+      echo "$lflags -Xlinker -bbigtoc"
     else
-      echo $lflags
-    fi ;;
+      echo "$lflags -bbigtoc"
+    fi
+    ;;
 
   cygwin)
     echo "$lflags -Xlinker --stack -Xlinker 4194304" ;;

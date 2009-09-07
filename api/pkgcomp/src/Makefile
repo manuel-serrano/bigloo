@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Dec  1 10:53:25 2008 (serrano)                */
+#*    Last change :  Mon Sep  7 09:22:39 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,12 +36,12 @@ CLASS_EDIR	= objs/class_e/bigloo/$(TARGETNAME)
 DOTNET_OBJ_DIR	= objs/dotnet_s
 DOTNET_OBJ_EDIR	= objs/dotnet_e
 # The Bigloo compiler
-BIGLOO		= $(BOOTBIGLOO)
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
+BIGLOO		= $(BUILDBIGLOO)
+AFILE		= $(BUILDBINDIR)/$(AFILE_EXE)
 AFLAGS		= -m package*
-JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
+JFILE		= $(BUILDBINDIR)/$(JFILE_EXE)
+DEPEND		= $(BUILDBINDIR)/$(BDEPEND_EXE)
+BTAGS		= $(BUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
 BLFLAGS		= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 # Flags to build a heap

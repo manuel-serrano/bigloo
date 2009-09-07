@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 15:12:37 1999                          */
-#*    Last change :  Tue Oct  8 11:18:15 2002 (serrano)                */
+#*    Last change :  Mon Sep  7 09:42:34 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the info setting.                                          */
 #*=====================================================================*/
@@ -16,8 +16,6 @@ texi2pdf=texi2pdf
 texi2html=texi2html
 texi2htmlopt=
 res=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    Prevent erroneous user customization                             */
@@ -32,9 +30,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --makeinfo=*|-makeinfo=*)
       makeinfo="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -54,16 +49,13 @@ while : ; do
     --texi2htmlopt=*|-texi2htmlopt=*)
       texi2htmlopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
 
-file=actest$user
+file=actest$USER
 
 cat > $file.texi <<EOF
 \input texinfo
@@ -103,12 +95,10 @@ Bug descriptions, use reports, comments or suggestions are
 welcome. Send them to Manuel Serrano --- @email{Manuel.Serrano@@unice.fr}
 @end titlepage
 
-@ifinfo
 @node Top, Copying, (dir), (dir)
 @menu
 * Copying::                     
 @end menu
-@end ifinfo
 
 @node Copying, , Top, Top
 @unnumbered Bdb Copying Conditions
@@ -121,7 +111,7 @@ EOF
 
 
 # the info version
-sh -c "$makeinfo $file.texi" > /dev/null 2> /dev/null
+sh -c "$makeinfo $file.texi" > /dev/null
 
 if [ $? = "0" ];then
    res="makeinfover=new"
@@ -164,19 +154,17 @@ Bug descriptions, use reports, comments or suggestions are
 welcome. Send them to Manuel Serrano --- @email{Manuel.Serrano@@unice.fr}
 @end titlepage
 
-@ifinfo
 @node Top, Copying, (dir), (dir)
 @menu
 * Copying::                     
 @end menu
-@end ifinfo
 
 @node Copying, , Top, Top
 @unnumbered Bdb Copying Conditions
 
 @bye
 EOF
-   sh -c "$makeinfo $file.texi" > /dev/null 2> /dev/null
+   sh -c "$makeinfo $file.texi" > /dev/null
    if [ $? != "0" ];then
       echo "makeinfo=";
       rm -f $file.texi 
@@ -184,7 +172,8 @@ EOF
       rm -f $file.html 
       rm -f $file.info 
       rm -f $file.log 
-      exit 1
+      echo ""
+      exit 0
    fi
    rm -f $file.texi 
    rm -f $file.dvi
@@ -196,7 +185,7 @@ EOF
 fi
 
 # texi2dvi
-sh -c "$texi2dvi $texi2dviopt $file.texi" > /dev/null 2> /dev/null
+sh -c "$texi2dvi $texi2dviopt $file.texi" > /dev/null
 
 if [ $? = "0" ];then
    res="$res texi2dvi=$texi2dvi texi2dviopt=$texi2dviopt"
@@ -205,7 +194,7 @@ else
 fi
 
 # texi2html
-sh -c "$texi2html $texi2htmlopt $file.texi" > /dev/null 2> /dev/null
+sh -c "$texi2html $texi2htmlopt $file.texi" > /dev/null
 
 if [ $? = "0" ];then
    res="$res texi2html=$texi2html"
@@ -214,7 +203,7 @@ else
 fi
 
 # texi2pdf
-sh -c "$texi2pdf $file.texi" > /dev/null 2> /dev/null
+sh -c "$texi2pdf $file.texi" > /dev/null
 
 if [ $? = "0" ];then
    res="$res texi2pdf=$texi2pdf"

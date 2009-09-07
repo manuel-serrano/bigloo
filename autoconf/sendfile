@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Christian Loitsch                                 */
 #*    Creation    :  Wed Apr 16 12:11:17 2003                          */
-#*    Last change :  Thu May  7 05:06:13 2009 (serrano)                */
+#*    Last change :  Sun Sep  6 21:49:59 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if sendfile exists.                                        */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -25,17 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -43,13 +31,13 @@ while : ; do
   shift
 done
 
-file=$tmp/sftest$user
-aout=$tmp/SFtest$user
+file=$TMP/sftest$USER
+aout=$TMP/SFtest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

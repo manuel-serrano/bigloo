@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Mar 27 13:47:22 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 09:24:44 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # Bigloo
-BIGLOO		= $(BOOTBIGLOO) -no-hello
+BIGLOO		= $(BUILDBIGLOO) -no-hello
 # etags for info
 ETAGS		= etags
 # etags flags for info scanning

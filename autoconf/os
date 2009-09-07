@@ -4,20 +4,34 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Wed Mar 24 13:53:49 2004 (serrano)                */
+#*    Last change :  Sun Sep  6 21:55:48 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
 #*    Linux, Cygwin, etc, oses).                                       */
 #*=====================================================================*/
 
-if eval uname > /dev/null 2> /dev/null; then
-  case `uname -s` in
+if eval $HOSTSH "uname" > /dev/null ; then
+  case `eval $HOSTSH "uname -s"` in
     Linux*)
       echo "linux";;
     CYGWIN*|Cygwin*|cygwin*)
       echo "cygwin";;
     MINGW*|Mingw*|mingw*)
       echo "mingw";;
+    Darwin*|mingw*)
+      echo "darwin";;
+    Solaris*)
+      echo "solaris";;
+    SunOS*)
+      echo "sunos";;
+    HP-UX*)
+      echo "hpux";;
+    FreeBSD*)
+      echo "freebsd";;
+    OSF*)
+      echo "osf";;
+    AIX*)
+      echo "aix";;
     *)
       echo "unix";;
   esac

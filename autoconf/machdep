@@ -1,12 +1,12 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/sigprocmask                 */
+#*    serrano/prgm/project/bigloo/autoconf/machdep                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep  6 21:08:53 2009 (serrano)                */
+#*    Last change :  Sun Sep  6 21:12:05 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
-#*    Check if sigprocmask exits. Return 0, 1.                         */
+#*    Generate runtime/mach_dep target                                 */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -50,30 +50,27 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
-   sigprocmask( 0L, 0L, 0L );
-   return 0;
+#include <stdio.h>
+#include <stdlib.h>
+
+int main( int argc, char **argv ) {
+#if( defined( sparc ) )
+#   include <errno.h>
+#     if( defined( ECHRNG ) )
+        puts( "sparc_sunos5_mach_dep" );
+#     else
+        puts( "sparc_sunos4_mach_dep" );
+#   endif
+#else
+   puts( "generic_mach_dep" );
+#endif
 }
 EOF
 
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
-   \rm -f $file.*
-   rm -f $aout
-   rm -f $aout*
-   echo 1
-else
-   echo 0
-fi
-
-exit 0
-
-   
-
-
+eval $compile
+$aout
+rm -f $aout*
 

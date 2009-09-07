@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat Jan 26 05:35:02 2008 (serrano)                */
+#*    Last change :  Mon Sep  7 09:02:37 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect if we are running under maemo for ARM (QEMU)              */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -25,17 +22,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -50,13 +38,11 @@ done
 #*    ARM but /proc/cpuinfo does not show any trace of an ARM          */
 #*    processor.                                                       */
 #*---------------------------------------------------------------------*/
-mach=`uname -m`
-
-if [ "$mach " = "arm " ]; then
+if [ "$HOSTCPU " = "arm " ]; then
   grep -i arm /proc/cpuinfo;
-  exit $?
+  echo "yes"
 else
-  exit 0
+  echo "no"
 fi
 
 #* file=$tmp/actest$user                                               */
@@ -65,7 +51,7 @@ fi
 #* {*---------------------------------------------------------------------*} */
 #* {*    compile                                                          *} */
 #* {*---------------------------------------------------------------------*} */
-#* compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"      */
+#* compile="$CC $cflags $file.c -o $aout >/dev/null"      */
 #*                                                                     */
 #* {*---------------------------------------------------------------------*} */
 #* {*    The test C file                                                  *} */

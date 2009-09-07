@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Dec 19 08:55:28 2008 (serrano)                */
+#*    Last change :  Sat Sep  5 06:02:21 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 gcdir=gc-boehm
 
 #*---------------------------------------------------------------------*/
@@ -26,17 +23,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gcincdir=*|-gcincdir=*)
       gcdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -47,13 +35,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout -I $gcdir >/dev/null 2> configure.log"
+compile="$CC $cflags $file.c -o $aout -I $gcdir >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

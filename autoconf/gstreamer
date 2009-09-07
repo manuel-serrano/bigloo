@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Thu Feb 14 07:01:49 2008 (serrano)                */
-#*    Copyright   :  2007-08 Manuel Serrano                            */
+#*    Last change :  Sat Sep  5 06:22:47 2009 (serrano)                */
+#*    Copyright   :  2007-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstream is available.                                   */
 #*=====================================================================*/
@@ -13,10 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 gstversion=0.10
 pkgconfig=pkg-config
 
@@ -28,20 +25,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --pkg-config=*|-pkg-config=*)
       pkgconfig="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gstversion=*|-gstversion=*)
       gstversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -53,26 +41,26 @@ while : ; do
 done
 
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    cflags                                                           */
 #*---------------------------------------------------------------------*/
-cflags=`pkg-config --cflags --libs gstreamer-$gstversion 2> /dev/null` > /dev/null
+cflags=`pkg-config --cflags --libs gstreamer-$gstversion` > /dev/null
 
 if [ $? != 0 ]; then
-  cflags=`pkg-config --cflags --libs gstreamer-0.10 2> /dev/null` > /dev/null
+  cflags=`pkg-config --cflags --libs gstreamer-0.10` > /dev/null
   if [ $? != 0 ]; then
     echo ""
-    exit 1
+    exit 0
   fi
 fi
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

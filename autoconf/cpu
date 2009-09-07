@@ -1,0 +1,19 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/cpu                         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Oct 22 11:07:08 1997                          */
+#*    Last change :  Fri Sep  4 18:41:53 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
+#*    Linux, Cygwin, etc, oses).                                       */
+#*=====================================================================*/
+
+cpu=`$HOSTSH uname -m`
+
+if [ $? ]; then
+  echo $cpu
+else
+  echo "unknown"
+fi

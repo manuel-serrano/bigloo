@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Thu Apr  1 16:06:43 2004 (serrano)                */
-#*    Copyright   :  1996-2004 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Sep  4 11:05:23 2009 (serrano)                */
+#*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build args                                       */
 #*=====================================================================*/
@@ -22,7 +22,7 @@ LICENSE		= ../LICENSE
 #*---------------------------------------------------------------------*/
 #*    Objects and sources                                              */
 #*---------------------------------------------------------------------*/
-C_FILE	= copyright if_mach if_not_there libcversion
+C_FILE	= copyright libcversion
 
 C_OBJ		= $(C_FILE:%=%.o)
 C_SRC		= $(C_OBJ:%.o=%.c)

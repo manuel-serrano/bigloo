@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 28 08:48:01 2000                          */
-#*    Last change :  Wed Oct 24 12:56:27 2007 (serrano)                */
-#*    Copyright   :  2000-07 Manuel Serrano                            */
+#*    Last change :  Mon Sep  7 09:25:12 2009 (serrano)                */
+#*    Copyright   :  2000-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile to handle benchmarks.                       */
 #*    -------------------------------------------------------------    */
@@ -21,7 +21,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
+BIGLOO		= $(BUILDBIGLOO)
 BGLOPTFLAGS	= -Obench -q +rm -w
 BFLAGS		= $(BGLOPTFLAGS)
 LNFLAGS		= $(BGLOPTFLAGS) -static-bigloo

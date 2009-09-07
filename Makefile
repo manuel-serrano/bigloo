@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul  7 09:14:11 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 09:19:25 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -66,7 +66,7 @@
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the executable used to bootstrap
-BIGLOO          = $(BOOTBIGLOO)
+BIGLOO          = $(BUILDBIGLOO)
 # the shell to be used
 SHELL           = /bin/sh
 # The directory where to build and install a distribution
@@ -732,6 +732,7 @@ cleanall:
              exit 1; \
           fi
 	$(RM) -f configure.log
+	$(RM) -f autoconf/runtest
 	(cd comptime && $(MAKE) cleanall)
 	(cd runtime && $(MAKE) cleanall)
 	(cd manuals && $(MAKE) cleanall)

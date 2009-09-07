@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon Mar 10 16:26:35 2008 (serrano)                */
+#*    Last change :  Mon Sep  7 07:08:34 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the .NET setting                                        */
 #*=====================================================================*/
@@ -16,8 +16,6 @@ clr=
 clropt=
 clrld=
 cscc=
-tmp=/tmp
-user=bigloo
 cpsep=:
 
 #*---------------------------------------------------------------------*/
@@ -27,9 +25,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --clr=*|-clr=*)
       clr="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -42,9 +37,6 @@ while : ; do
 
     --clrld=*|-clrld=*)
       clrld="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --cpsep=*|-cpsep=*)
       cpsep="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -60,7 +52,7 @@ file=cstest
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cscc -o $file.exe $csccflags $file.cs >/dev/null 2> /dev/null"
+compile="$cscc -o $file.exe $csccflags $file.cs >/dev/null"
 run="$clr $file.exe toto tutu titi >/dev/null 2> /dev/null"
 
 #*---------------------------------------------------------------------*/
@@ -87,14 +79,14 @@ EOF
 if eval $compile 2> /dev/null; then
    if eval $run 2> /dev/null; then
      \rm -f $file*
-     exit 0
+     echo 0
    else
      echo ".NET run command [$run] failed" >> configure.log
      echo "" >> configure.log
      echo "$file.cs:" >> configure.log
      cat $file.cs >> configure.log
      \rm -f $file*
-     exit 1
+     echo 1
    fi
 else
    echo "C# compilation command [$compile] failed" >> configure.log
@@ -102,5 +94,5 @@ else
    echo "$file.cs:" >> configure.log
    cat $file.cs >> configure.log
    \rm -f $file*
-   exit 2
+   echo 2
 fi

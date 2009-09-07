@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 11 08:05:48 2008                          */
-#*    Last change :  Wed Jul 30 06:55:51 2008 (serrano)                */
-#*    Copyright   :  2008 Manuel Serrano                               */
+#*    Last change :  Sat Sep  5 06:36:38 2009 (serrano)                */
+#*    Copyright   :  2008-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstreameraudio is available                             */
 #*=====================================================================*/
@@ -13,10 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 gstversion=0.10
 pkgconfig=pkg-config
 
@@ -28,20 +25,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --pkg-config=*|-pkg-config=*)
       pkgconfig="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gstversion=*|-gstversion=*)
       gstversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -53,23 +41,12 @@ while : ; do
 done
 
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
-
-#*---------------------------------------------------------------------*/
-#*    cflags                                                           */
-#*---------------------------------------------------------------------*/
-cflags=`pkg-config --cflags --libs gstreamer-plugins-base-$gstversion 2> /dev/null` > /dev/null
-
-if [ $? != 0 ]; then
-  echo ""
-  exit 1
-fi
-
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout -lgstaudio-$gstversion >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout -lgstaudio-$gstversion >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -87,7 +64,7 @@ cat > $file.c <<EOF
 
 int main (int argc, char *argv[]) {
   GstElement *mix = gst_element_factory_make( "alsamixer", "mixer" );
-  return GST_MIXER( mix );
+  return (int)GST_MIXER( mix );
 }
 EOF
 

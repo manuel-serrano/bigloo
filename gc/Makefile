@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Sep  3 18:09:35 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 10:46:10 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -21,7 +21,8 @@ POPULATION = Makefile \
              install-gc-7.1alpha2 gc-7.1alpha2.patch \
              install-gc-7.1alpha3-080220 gc-7.1alpha3-080220.patch \
              install-gc-7.1 gc-7.1.patch Makefile-gc-7.1 \
-             install-gc-7.2alpha2 gc-7.2alpha2.patch Makefile-gc-7.2alpha2 \
+             install-gc-7.2alpha2 configure-gc-7.2alpha2 \
+             gc-7.2alpha2.patch Makefile-gc-7.2alpha2 \
              gc-6.5-gentoo.patch gc-6.6-gentoo-ulibc.patch \
              sparc_linux_mach_dep.c \
              $(CUSTOMGC).tar.gz

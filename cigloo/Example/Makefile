@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Dec  5 10:30:51 1995                          */
-#*    Last change :  Wed Oct 24 11:21:18 2007 (serrano)                */
+#*    Last change :  Mon Sep  7 09:26:48 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The `example' Makefile                                           */
 #*=====================================================================*/
@@ -16,8 +16,8 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
-CIGLOO		= $(BOOTBINDIR)/cigloo
+BIGLOO		= $(BUILDBIGLOO)
+CIGLOO		= $(BUILDBINDIR)/cigloo
 CIFLAGS		= -open-includes 
 SHELL           = /bin/sh
 BFLAGS          = -O3 -cg

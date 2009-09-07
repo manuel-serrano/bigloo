@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jun 19 08:07:57 1998                          */
-#*    Last change :  Thu Jan  3 10:08:13 2002 (serrano)                */
+#*    Last change :  Mon Sep  7 09:07:13 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    We search for the xemacs site-lisp path.                         */
 #*=====================================================================*/
@@ -13,11 +13,8 @@
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 xemacs=xemacs
-cc=gcc
 path=
 exe_suffix=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,12 +23,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --xemacs=*|-xemacs=*)
       xemacs="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -42,17 +33,11 @@ while : ; do
     --exe=*|-exe=*)
       exe_suffix="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
-
-file=$tmp/actest$user
-aout=$tmp/Xactest$user$exe_suffix
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -64,41 +49,29 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
-cat > $file.c <<EOF
-main( argc, argv )
-int   argc;
-char *argv[];
-{
-   printf( "%s", argv[ 1 ] );
-   return 0;
-}
-EOF
-
-$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null
-
-
 if [ ! "$path " = " " ]; then
-   $aout $path
+  echo $path
 else
-   path=`sh -c "$xemacs -batch -q -eval \"(princ (car load-path))\" -kill" 2> /dev/null`
+  path=`sh -c "$xemacs -batch -q -eval \"(princ (car load-path))\" -kill"`
 
-   if [ ! "$status" = "0" ]; then
-      if [ "$path" = "nil" ]; then
-         $aout ""
-      else
-         # we always add a trailing / char
-         case $path in
-            */)
-              ;;
-
-            *)
-              path="$path"/;;
-         esac
-            $aout $path
-      fi
+ if [ ! "$status" = "0" ]; then
+   if [ "$path" = "nil" ]; then
+     echo ""
    else
-      $aout ""
-   fi
+     # we always add a trailing / char
+     case $path in
+       */)
+         ;;
+
+       *)
+         path="$path"/;;
+     esac
+
+     echo $path
+    fi
+  else
+    echo ""
+  fi
 fi
 
 /bin/rm -rf $file.c $file.o $aout $aout*

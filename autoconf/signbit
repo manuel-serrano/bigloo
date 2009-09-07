@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Tue Mar 25 17:18:26 2008 (serrano)                */
+#*    Last change :  Sun Sep  6 21:41:54 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect the mask for the sign bit of an integer type.             */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 type=long
 alignment=0
 
@@ -27,17 +24,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --type=*|-type=*)
       type="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -51,8 +39,8 @@ while : ; do
   shift
 done
 
-file=$tmp/actest.$user
-aout=$tmp/Xactest$user
+file=$TMP/actest.$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    Default setting                                                  */
@@ -64,8 +52,8 @@ fi
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout >/dev/null 2> /dev/null"
-run="$aout 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+run="$aout"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

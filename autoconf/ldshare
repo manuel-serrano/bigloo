@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Thu Apr 10 14:53:46 2008 (serrano)                */
+#*    Last change :  Mon Sep  7 09:09:21 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -12,14 +12,11 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
-cflags=
 ld=ld
 ldopt=
 ldlibs=
-tmp=/tmp
-user=bigloo
 sharedsuffix=so
+cflags=
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -28,12 +25,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -46,9 +37,6 @@ while : ; do
 
     --ldlibs=*|-ldlibs=*)
       ldlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --sharedsuffix=*|-sharedsuffix=*)
       sharedsuffix="`echo $1 | sed 's/^[-a-z]*=//'`";;	  
@@ -63,23 +51,23 @@ done
 #*    We know that on some platform, the GC does not support shared    */
 #*    libraries (e.g. BSD, Mac PPC).                                   */
 #*---------------------------------------------------------------------*/
-file=$tmp/acldshare$user
-aout=$tmp/acldshare$user
+file=$TMP/acldshare$USER
+aout=$TMP/acldshare$USER
 obj=`basename $file`
 
 #*---------------------------------------------------------------------*/
 #*    Guessed option                                                   */
 #*---------------------------------------------------------------------*/
 if [ "$ldopt " = " " ]; then
-  case `uname -s` in
-    HP-UX*)
+  case $HOSTOS in
+    hpux)
       ldopt="-b";;
-    AIX*)
+    aix)
       ldopt="-bnoentry -bexpall -bM:SRE";;
-    Darwin*|darwin*)
+    darwin)
       # Darwin < 9 require the -r option, Darwin 9 does not support the -r
       # option. 
-      if [ "`uname -r | sed 's/[.]//g'`" -ge "900" ]; then
+      if [ "`echo $HOSTOSVERSION | sed 's/[.]//g'`" -ge "900" ]; then
         echo "";
       else
         echo "-r";
@@ -104,7 +92,7 @@ int main ()
 }
 EOF
 
-  if $cc $cflags -o $aout $file-guess.c >/dev/null 2>&1
+  if $CC $cflags -o $aout $file-guess.c >/dev/null
   then
     true
   else
@@ -138,7 +126,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -c $file-lib.c -o $obj-lib.o >/dev/null 2>&1
+if $CC $cflags -c $file-lib.c -o $obj-lib.o >/dev/null
 then
   true
 else
@@ -150,7 +138,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-$ld $ldopt -o $file.$sharedsuffix $obj-lib.o $ldlibs > /dev/null 2> /dev/null
+$ld $ldopt -o $file.$sharedsuffix $obj-lib.o $ldlibs > /dev/null
 if [ ! -f $file.$sharedsuffix ]; then
   /bin/rm -f $file* $obj*
   /bin/rm -f $obj-lib.o
@@ -161,7 +149,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -o $aout $file.c $file.$sharedsuffix >/dev/null 2>&1
+if $CC $cflags -o $aout $file.c $file.$sharedsuffix >/dev/null
 then
    true
 else

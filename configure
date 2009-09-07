@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep  4 09:05:26 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 10:01:45 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -18,7 +18,8 @@
 #*---------------------------------------------------------------------*/
 release=3.2c
 bigloourl=http://www.inria.fr/sophia/teams/mimosa/fp/Bigloo
-bigloosvn=
+
+bigloosvn=ssh://hop@hop.inria.fr/bigloo
 
 #*---------------------------------------------------------------------*/
 #*    User variables                                                   */
@@ -35,18 +36,15 @@ infodir=$prefix/info
 docdir=$prefix/doc/bigloo-$release
 tmpdir=/tmp
 lispdir=
-bee=partial
-configurelog=configure.log
 
-tmp=$TMPDIR
+#*--- api -------------------------------------------------------------*/
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat"
 
-if [ "$tmp " = " " ]; then
-  tmp=/tmp
-fi
+#*--- bee configuration -----------------------------------------------*/
+bee=partial # "partial" or "full"
 
-# cross compilation path
-runbuild=
-runhost=
+#*--- build directory -------------------------------------------------*/
+buildtmp=$TMPDIR
 
 #*--- C back-end user configure ---------------------------------------*/
 nativebackend=yes # set to "no" not to install the native (C) back-end
@@ -67,8 +65,8 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - any legal C compiler option that enable PIC code.
              #  - blank (uninitalized) for automatic configuration of the
              #    position independent code compiler option
-as=
-ar=
+as=as
+ar=ar
 ranlib=
 arflags=qc
 ldstyle=gcc
@@ -76,14 +74,12 @@ ldflags=
 ld=
 ldlibs=-lc
 ldcomplibs=-lc
-strip=
+strip=strip
 longlong=    # The C type to represent long long integers
 havelonglong=
 stringsplit="0"
 
-force_gcconfigureopt=
-default_gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
-gcconfigureopt=
+gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -199,10 +195,11 @@ sharedcompiler=no
 sharedbde=no
 
 #*--- forced OS -------------------------------------------------------*/
-posixos=
+hostos=
+hostosversion=
+hostcpu=
 jvmrecettebootpath=
 jvmapibootpath=
-macosx=auto
 oscharset=
 
 #*--- cygwin specific configuration -----------------------------------*/
@@ -211,11 +208,9 @@ cygwindospath=
 cygwindosjvm="yes"
 cygwindosdotnet="yes"
 
-#*--- migw specific configuration -------------------------------------*/
+#*--- mingw specific configuration ------------------------------------*/
 mingw="no"
-
-#*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat"
+macosx=auto
 
 #*---------------------------------------------------------------------*/
 #*    Hacker variables                                                 */
@@ -223,6 +218,9 @@ apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gst
 #*    Dont modifiy these variables unless you know what you are        */
 #*    doing.                                                           */
 #*---------------------------------------------------------------------*/
+#*--- configure debugging ---------------------------------------------*/
+configurelog=configure.log
+
 #*--- The basename of the compiler and tools --------------------------*/
 afile=bglafile
 jfile=bgljfile
@@ -261,7 +259,6 @@ branch="`echo $release | sed 's/[.a-z]*//g'`0";
 mode=standard
 tuning=
 makefile_cfg=Makefile.config
-autoconfdir=`dirname $0 2> /dev/null`/autoconf
 pwd=`pwd`
 bootdir=$pwd
 buildbindir=
@@ -286,9 +283,13 @@ configureinfo="no"
 dnscache=1
 scmpkgversion=0.0.1
 
+autoconfdir=`dirname $0 2> /dev/null`/autoconf
+
 if [ $? != "0" ]; then
    autoconfdir="autoconf"
 fi
+
+autoconf="$autoconfdir/runtest -v1 -- "
 
 # Argument parsing
 while : ; do
@@ -297,7 +298,6 @@ while : ; do
       break;;
 
     --bootconfig)
-      bigloosvn=ssh://hop@hop.inria.fr/bigloo;
       bindir=$PWD/bin;
       libdir=$PWD/lib;
       fildir=$release;
@@ -413,7 +413,7 @@ while : ; do
       tmpdir="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --tmp=*)
-      tmp="`echo $1 | sed 's/^[^=]*=//'`";;
+      buildtmp="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --emacs=*)
       emacs="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -560,11 +560,11 @@ while : ; do
     --no-ldpreload)
       ldpreload="no";;
 
-    --force-posixos=*)
-      posixos="`echo $1 | sed 's/^[^=]*=//'`";;
+    --force-hostos=*)
+      hostos="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --os-win32)
-      os="win32";;
+      hostos="win32";;
 
     --os-macosx)
       tuning="MacOS X";
@@ -858,7 +858,7 @@ while : ; do
       echo "   --a.out=file" >&2;
       echo "   --a.bat=file" >&2;
       echo "   --dirname=file-or-command" >&2;
-      echo "   --force-posixos=operating-system" >&2;
+      echo "   --force-hostos=operating-system" >&2;
       echo "   --os-win32" >&2;
       echo "   --os-macosx (tune for MacOSX)"  >&2;
       echo "   --no-os-macosx (disable MacOSX auto configuration)"  >&2;
@@ -954,12 +954,6 @@ if [ "$bigloo_config_el " = " " ]; then
   bigloo_config_el=bmacs/bmacs-config.el
 fi
 
-# Start configuring
-if [ "$summary" = "yes" ]; then
-  echo "** Configure **"
-  echo 
-fi
-
 # Shell commands
 if [ "$bgl_shell_rm " = " " ]; then
   bgl_shell_rm=$shell_rm;
@@ -971,11 +965,19 @@ fi
 
 # Cleaning
 rm -f $configurelog
+touch $configurelog
 
 # the mandir
 if [ -d "$mandir/man1" ]; then
   mandir=$mandir/man1;
 fi
+
+# buildtmpdir
+if [ "$buildtmp " = " " ]; then
+  buildtmp=/tmp
+fi
+
+echo "Checking local configuration..."
 
 #*---------------------------------------------------------------------*/
 #*    Weeding out bad configurations                                   */
@@ -1010,19 +1012,135 @@ if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    Testing the Posix OS                                             */
+#*    Configure bootstrap                                              */
 #*---------------------------------------------------------------------*/
-if [ "$posixos " = " " ]; then
-  posixos=`$autoconfdir/os`
+# First, generate a first version or runtest that used to grad HOST info
+$autoconfdir/mkruntest $autoconfdir/runtest \
+   --autoconfdir=$autoconfdir \
+   --log=$configurelog \
+   --hostos="dummy" \
+   --user=""
+
+# Grab the hostos info
+if [ "$hostos " = " " ]; then
+  hostos=`$autoconf os` || exit 1
 fi
 
+# Grab the hostcpu info
+if [ "$hostcpu " = " " ]; then
+  hostcpu=`$autoconf cpu` || exit 1
+fi
+
+# Grab the hostosversion info
+if [ "$hostosversion " = " " ]; then
+  hostosversion=`$autoconf osversion` || exit 1
+fi
+
+# Get the user info
+if [ "$user " = " " ]; then
+  user=`$autoconf user` || exit 1
+fi
+
+# Check the C compiler
+if [ "$cc " = " " ]; then
+  for cc in "gcc cc"; do
+     cc=`$autoconf cctest --cc=gcc` || exit 1
+     if [ "$cc " != " " ]; then break; fi
+  done
+
+  if [ "$cc " = " " ]; then 
+    echo "Can't configure C compiler. Aborting (see configure.log)" >&2;
+    exit 1;
+  fi
+else  
+  ncc=`$autoconf cctest --cc="$cc"` || exit 1
+  if [ "$ncc " != "$cc " ]; then
+    echo "C compiler \"$cc\" broken. Aborting (see configure.log)" >&2;
+    exit 1;
+  fi
+fi
+
+# Second, generate the version or runtest that used to grad HOST info
+$autoconfdir/mkruntest $autoconfdir/runtest \
+   --autoconfdir=$autoconfdir \
+   --log=$configurelog \
+   --hostsh="$hostsh" \
+   --hostos="$hostos" \
+   --hostosversion="$hostosversion" \
+   --hostcpu="$hostcpu" \
+   --buildsh="$buildsh" \
+   --tmp="$buildtmp" \
+   --user="$user" \
+   --cc=$cc
+
+#*---------------------------------------------------------------------*/
+#*    C tool chain                                                     */
+#*---------------------------------------------------------------------*/
+# create an unexisting temporary file name
+name=$buildtmp/foo
+while( test -f "$name.s" -o -f "$name.o" ); do
+  name="$name"x;
+done
+
+if [ $action = "all" -o $action = "bigloo_config_el" ]; then
+  # ld
+  if [ "$ld " = " " ]; then ld=$cc; fi
+  
+  # as
+  as=`$autoconf ascpp -as="$as" --name=$name` || exit 1
+
+  if [ "$as " = " " -o ! -f $name.o ]; then
+    echo "Can't find assembly that invokes cpp. Set the as variable" >&2;
+    exit 1;
+  fi
+
+  # ar
+  echo "+ checking $ar $arflags..."  >> $configurelog
+  
+  (cd $buildtmp;
+   bname=`basename $name`;
+
+   compile="$ar $arflags $bname.a $name.o > /dev/null 2>> $configurelog";
+   if eval $compile; then
+     rm -f $name.s $name.o $bname.a
+   else
+      arflags="-q -c";
+
+      compile="$ar $arflags $bname.a $name.o > /dev/null 2>> $configurelog";
+      if eval $compile; then
+        rm -f $name.s $name.o $bname.a
+      else
+        echo "Can't automatically setup ar flags. Set ar and ar flags" >&2;
+        rm -f $name.s $name.o $bname.a;
+        exit 1
+      fi
+   fi) || exit $*
+  
+  echo "  -> $ar $arflags" >> $configurelog
+  
+  # ranlib
+  rl=`$autoconf ranlib` || exit 1
+
+  if [ "$rl" = "yes " ]; then
+    ranlib=true;
+  else
+    ranlib=ranlib;
+  fi
+fi  
+
+#*---------------------------------------------------------------------*/
+#*    charset                                                          */
+#*---------------------------------------------------------------------*/
 if [ "$oscharset " = " " ]; then
-  oscharset=`$autoconfdir/oscharset`  
+  oscharset=`$autoconf oscharset` || exit 1
 fi
 
-# Setting the default a.out production according to the OS
+#*---------------------------------------------------------------------*/
+#*    Executable names                                                 */
+#*---------------------------------------------------------------------*/
+echo "+ checking executable names..." >> $configurelog
 if [ "$aout " = " " ]; then
-  case $posixos in
+  case $hostos in
     cygwin|mingw)
       aout=a.exe;;
     *)
@@ -1031,7 +1149,7 @@ if [ "$aout " = " " ]; then
 fi
 
 if [ "$abat " = " " ]; then
-  case $posixos in
+  case $hostos in
     cygwin|mingw)
       abat=a.bat;;
     *)
@@ -1039,68 +1157,7 @@ if [ "$abat " = " " ]; then
   esac
 fi
 
-if [ $posixos = "cygwin" ]; then
-  exe=".exe";
-  jshell="msdos";
-
-  if [ "$cygwindospath " = " " ]; then
-    cygwindospath=`$autoconfdir/cygwindospath`
-  fi
-
-  if [ "$cygwindospath " = " " ]; then
-    echo "*** ERROR:Can't find out where cygwin is installed."
-    echo "Run configure with the --cygwin-dos-path option."
-    exit 1
-  else
-    cygwindospath=`echo "$cygwindospath" | sed -e 's|/$||g'`
-    if [ ! -d $cygwindospath ]; then
-      echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
-    fi
-    cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
-
-    zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
-    zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
-    zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
-    zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
-    syszipdir=$zipdir
-    syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
-
-    dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
-    dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
-    dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
-    dlldir=`echo $dlldir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
-    sysdlldir=$dlldir
-    sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
-  fi
-elif [ "$posixos" = "mingw" ]; then
-  exe=".exe"
-  os="win32"
-  ld="gcc"
-  ldlibs=""
-  ldcomplibs=""
-  ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"  
-  havedlopen=1
-  dlopen=""
-  threadsupport=no;
-  #cflags="$cflags -mthreads -D_MINGW_VER"
-  cflags="$cflags -D_MINGW_VER"
-  sharedsuffix="dll"
-  sharedlibraryclosed=yes
-  extralibs="$extralibs -Wl,--stack,8000000"
-  extragclibs=""
-else
-  case `uname -s` in
-    Darwin*|darwin*)
-      sharedlibraryclosed=yes;;
-    *)
-      ;;
-  esac;
-
-  syszipdir=$zipdir
-  syszipdirstr=$zipdir
-  sysdlldir=$dlldir
-  sysdlldirstr=$dlldir
-fi
+echo "  -> aout=$aout, abat=$abat" >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    all action                                                       */
@@ -1118,278 +1175,289 @@ if [ $action = "all" ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    Finding a user name                                              */
-#*---------------------------------------------------------------------*/
-user=`$autoconfdir/user --posixos=$posixos`
-
-#*---------------------------------------------------------------------*/
-#*    Testing C compiler                                               */
-#*---------------------------------------------------------------------*/
-if [ "$cc " = " " ]; then
-   $autoconfdir/cctest --cc="gcc" --user=$user --tmp=$tmp
-   if [ $? != "0" ]; then
-     $autoconfdir/cctest --cc="cc" --user=$user --tmp=$tmp
-     if [ $? != "0" ]; then
-       echo "*** ERROR:configure:Can't configure a C compiler. Aborting";
-       exit 1;
-     else
-       cc=cc;
-     fi
-   else
-     cc=gcc
-   fi
-else  
-  $autoconfdir/cctest --cc="$cc" --user=$user --tmp=$tmp
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:the C compiler ($cc) does not seem to work. Aborting";
-    exit 1;
-  fi
-fi
-
-if [ "$ld " = " " ]; then
-  ld=$cc
-fi
-
-#*---------------------------------------------------------------------*/
 #*    Testing C compiler nan and infinity                              */
 #*---------------------------------------------------------------------*/
-$autoconfdir/ccdiv0 --cc="$cc" --user=$user --tmp=$tmp
-if [ $? != "0" ]; then
-  ccdiv0=1
-else
-  ccdiv0=0
-fi
+ccdiv0=`$autoconf ccdiv0` || exit 1
 
 #*---------------------------------------------------------------------*/
 #*    Multi-threading                                                  */
 #*---------------------------------------------------------------------*/
+echo "* threadsupport=$threadsupport" >> $configurelog
+
 if [ "$threadsupport " = "no " ]; then
    pthreadlibs=no;
    gcthread=no;
-fi
-
-# Does the system supports threads
-if [ "$gcthread " = " " -a "$threadsupport " != "no " ]; then
-   gcthread=`$autoconfdir/thread --user=$user --tmp=$tmp --cc="$cc" --cflags="$cgcfinalflags" --posixos="$posixos"`;
-fi
-
-# find out the C library for posix threads
-if [ "$pthreadlibs " = " "  -a "$threadsupport " != "no " ]; then
-   pthreadlibs=`$autoconfdir/pthread --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos"`;
-fi
-
-# pthread_mutex_timedlock
-if [ "$pthreadlibs" != "no"  -a "$threadsupport " != "no " ]; then
-   pthreadtimedlock=`$autoconfdir/pthreadlock --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib="$pthreadlibs"`;
-fi
-
-# pthread_mutex_timedlock
-if [ "$pthreadlibs" != "no"  -a "$threadsupport " != "no " -a "$pthreadlocalstorage " = " " ]; then
-   pthreadlocalstorage=`$autoconfdir/pthreadlocalstorage --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib="$pthreadlibs"`;
-fi
-
-# thread local storage
-if [ "$pthreadlocalstorage" = "yes" -a "$threadsupport " != "no " ]; then
-  pthreaddecl=__thread
-  pthreadhastls=1
-  gcthread="$gcthread -DUSE_COMPILER_TLS"
 else
-  pthreaddecl=
-  pthreadhastls=0
-fi
+  # Does the system supports threads
+  if [ "$gcthread " = " "  ]; then
+     gcthread=`$autoconf thread --cflags="$cgcfinalflags"` || exit 1;
+  fi
 
-if [ $posixos = "mingw" \
-     -a "$pthreadlibs" != "no" \
-     -a "$threadsupport " != "no " ]; then
-   extragclibs="$extragclibs $pthreadlibs"
-   extralibs="$extralibs $pthreadlibs"
+  # find out the C library for posix threads
+  if [ "$pthreadlibs " = " " ]; then
+    pthreadlibs=`$autoconf pthread` || exit 1
+  fi
+
+  # pthread_mutex_timedlock
+  if [ "$pthreadlibs" != "no" ]; then
+    pthreadtimedlock=`$autoconf pthreadlock --lib="$pthreadlibs"` || exit 1;
+  fi
+
+  # pthread_mutex_timedlock
+  if [ "$pthreadlibs" != "no" -a "$pthreadlocalstorage " = " " ]; then
+    pthreadlocalstorage=`$autoconf pthreadlocalstorage --lib="$pthreadlibs"` || exit 1;
+  fi
+
+  # thread local storage
+  if [ "$pthreadlocalstorage" = "yes" -a "$threadsupport " != "no " ]; then
+    pthreaddecl=__thread
+    pthreadhastls=1
+    gcthread="$gcthread -DUSE_COMPILER_TLS"
+  else
+    pthreaddecl=
+    pthreadhastls=0
+  fi
+
+  if [ $hostos = "mingw" \
+       -a "$pthreadlibs" != "no" \
+       -a "$threadsupport " != "no " ]; then
+     extragclibs="$extragclibs $pthreadlibs"
+     extralibs="$extralibs $pthreadlibs"
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
-#*    MacOSX auto-detection                                            */
+#*    hostos specific configuration                                    */
 #*---------------------------------------------------------------------*/
-if [ "$macosx " = "auto " ]; then
-  autoconf/macosx --cc="$cc" --posixos="$posixos"
-  macosx=$?
+echo "+ host specific configuration ($hostos)..." >> $configurelog
 
-  if [ "$macosx" = "0" ]; then
-    echo "MacOS X tuning enabled";
-    if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
-      if [ "$threadsupport " = "yes " ]; then
-        echo "*** WARNING: Bigloo multi-threading support is lame on MacOS X"
-        echo "You have however, enabled multi-threading support."
-        echo "If you experience problems, please re-configure without"
-        echo "multi-threading support and re-install Bigloo."
-        customgclib=bigloogc_fth;
-        extralibs="$extralibs $pthreadlibs";
-        ldcomplibs="-lc \$(GCCLOSELIB) $pthreadlibs -lc";
-      else
-        threadsupport=no;
-        pthreadlibs=no;
-        ldcomplibs="-lc \$(GCCLOSELIB) -lc";
+dirsep="/"
+
+case $hostos in
+  cygwin)
+    exe=".exe";
+    jshell="msdos";
+
+    if [ "$cygwindospath " = " " ]; then
+      cygwindospath=`$autoconfdir/cygwindospath`
+    fi
+
+    if [ "$cygwindospath " = " " ]; then
+      echo "*** ERROR:Can't find out where cygwin is installed."
+      echo "Run configure with the --cygwin-dos-path option."
+      exit 1
+    else
+      cygwindospath=`echo "$cygwindospath" | sed -e 's|/$||g'`
+      if [ ! -d $cygwindospath ]; then
+        echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
+      fi
+      cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
+  
+      zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+      zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+      zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
+      zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+      syszipdir=$zipdir
+      syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
+  
+      dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+      dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+      dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
+      dlldir=`echo $dlldir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+      sysdlldir=$dlldir
+      sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
+    fi
+
+    jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
+    jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
+
+    ldopt="no-share"
+
+    if [ "$cygwindosjvm" = "yes" ]; then
+      jshell="msdos"
+    fi 
+    if [ "$cygwindosdotnet" = "yes" ]; then
+      dotnetshell="msdos"
+    fi
+    ;;
+
+  mingw)
+    exe=".exe"
+    hostos="mingw"
+    ld="gcc"
+    ldlibs=""
+    ldcomplibs=""
+    ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"  
+    ldopt=-shared
+    havedlopen=1
+    dlopen=""
+    threadsupport=no;
+    #cflags="$cflags -mthreads -D_MINGW_VER"
+    cflags="$cflags -D_MINGW_VER"
+    sharedsuffix="dll"
+    sharedlibraryclosed=yes
+    extralibs="$extralibs -Wl,--stack,8000000"
+    extragclibs=""
+    ;;
+
+  darwin)
+    sharedlibraryclosed=yes;
+    if [ "$macosx " = "auto " ]; then
+      macosx=`$autoconf macosx` || exit 1
+
+      if [ "$macosx" = "yes" ]; then
+        echo "* MacOS X tuning enabled"; >&2;
+        if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
+          if [ "$threadsupport " = "yes " ]; then
+            customgclib=bigloogc_fth;
+            extralibs="$extralibs $pthreadlibs";
+            ldcomplibs="-lc \$(GCCLOSELIB) $pthreadlibs -lc";
+          else
+            threadsupport=no;
+            pthreadlibs=no;
+            ldcomplibs="-lc \$(GCCLOSELIB) -lc";
+          fi
+        fi
+        if [ `dirname $bindir` != `dirname $libdir` ]; then
+          echo "*** ERROR: on MacOS X, bindir and libdir must have a";
+          echo "common parent directory. Please re-configure accordingly";
+          exit 1;
+        fi
+    
+        ldinstallname="-install_name";
+        ldinstallnamedirroot="Frameworks";
+        sharedsuffix="dylib";
+        ldlibs="$ldlibs -lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
+        sharedcompiler=yes;
+        sharedbde=yes;
+        ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+        tuning="MacOS X"
       fi
     fi
-    if [ `dirname $bindir` != `dirname $libdir` ]; then
-        echo "*** ERROR: on MacOS X, bindir and libdir must have a";
-        echo "common parent directory. Please re-configure accordingly";
-        exit 1;
+
+    if [ "$tuning " = "MacOS X " ]; then
+      if [ ! -d lib/bigloo ]; then
+        (cd lib && ln -s . bigloo) || exit 3
+        ln -s lib Frameworks || exit 3
+      fi
     fi
-    
-    ldinstallname="-install_name";
-    ldinstallnamedirroot="Frameworks";
-    sharedsuffix="dylib";
-    ldlibs="$ldlibs -lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
-    sharedcompiler=yes;
-    sharedbde=yes;
-    ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
-    tuning="MacOS X"
-  fi
-fi
+    ;;
 
-if [ "$tuning " = "MacOS X " ]; then
-  if [ ! -d lib/bigloo ]; then
-    (cd lib && ln -s . bigloo) || exit 3
-    ln -s lib Frameworks || exit 3
-  fi
-fi
+  win32)
+    dirsep="\\"
+    bindir=`echo $bindir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    libdir=`echo $libdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    fildir=`echo $fildir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    mandir=`echo $mandir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    infodir=`echo $infodir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    docdir=`echo $docdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    ;;
 
-#*---------------------------------------------------------------------*/
-#*    cgcflags                                                         */
-#*---------------------------------------------------------------------*/
-cgcflags=`$autoconfdir/gcflags --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --posixos="$posixos"`;
-
-#*---------------------------------------------------------------------*/
-#*    If the operating system is win32 we have to turn the / into \ in */
-#*    path names                                                       */
-#*---------------------------------------------------------------------*/
-dirsep="/"
-if [ $os = "win32" ]; then
-  if [ "$posixos" != "mingw" ]; then
-      dirsep="\\"
-      bindir=`echo $bindir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      libdir=`echo $libdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      fildir=`echo $fildir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      mandir=`echo $mandir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      infodir=`echo $infodir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      docdir=`echo $docdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-      lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-  fi
-fi
+  *)
+    syszipdir=$zipdir
+    syszipdirstr=$zipdir
+    sysdlldir=$dlldir
+    sysdlldirstr=$dlldir
+    ;;
+esac
 
 #*---------------------------------------------------------------------*/
-#*    We don't support shared libraries on cygwin yet.                 */
+#*    Native configuration                                             */
 #*---------------------------------------------------------------------*/
-if [ $posixos = "cygwin" ]; then
-  jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
-  jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
-
-  ldopt="no-share"
-
-  if [ "$cygwindosjvm" = "yes" ]; then
-    jshell="msdos"
-  fi 
-  if [ "$cygwindosdotnet" = "yes" ]; then
-    dotnetshell="msdos"
-  fi
-elif [ $posixos = "mingw" ]; then
-    ldopt=-shared
-else
-  jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
-  jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
-
-  case $dotnetldstyle in
-    pnet|mono) 
-      ;;      
-    *)
-      echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
-      exit 3;;
-  esac
-fi
+echo "+ Native specific configuration ($hostos)..." >> $configurelog
+strip=`$autoconf strip --strip=$strip` || exit 1
 
 #*---------------------------------------------------------------------*/
-#*    gc custom                                                        */
+#*    Java configuration                                               */
 #*---------------------------------------------------------------------*/
+echo "+ Java specific configuration ($hostos)..." >> $configurelog
+jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
+jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
+
+#*---------------------------------------------------------------------*/
+#*    Dotnet configuration                                             */
+#*---------------------------------------------------------------------*/
+echo "+ .NET specific configuration ($dotnetldstyle)..." >> $configurelog
+case $dotnetldstyle in
+  pnet|mono) 
+    ;;      
+  *)
+    echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
+    exit 3;;
+esac
+
+#*---------------------------------------------------------------------*/
+#*    GC configuration                                                 */
+#*---------------------------------------------------------------------*/
+echo "+ GC configuration ($customgc)..." >> $configurelog
+cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
+
 # We check the standard GC if we have to use one
-if [ "$customgc" = "no" ]; then
-   if [ "$gclibdir " = " " ]; then
-     gclibdir=/usr/lib;
-   fi
-   if [ "$gcincdir " = " " ]; then
-     gcincdir=/usr/include/gc
-   fi
-   gclib=`$autoconfdir/gcstd --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen`
-   if [ $? != "0" ]; then
-      echo "*** ERROR:configure:Standard GC. Aborting";
-      echo "You are trying to configure Bigloo so that it uses an existing"
-      echo "GC library. The configuration script is enable to make this"
-      echo "library working properly."
-      echo "Try to configure Bigloo with \"--customgc=yes\"."
-      exit 1;
-   fi
+if [ "$customgc " = "no " ]; then
+  isgccustom=0
+  if [ "$gclibdir " = " " ]; then
+    gclibdir=/usr/lib;
+  fi
+  if [ "$gcincdir " = " " ]; then
+    gcincdir=/usr/include/gc
+  fi
+  gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
+  if [ "$gclib " != " " ]; then
+     echo "*** ERROR:configure:Standard GC. Aborting";
+     echo "You are trying to configure Bigloo so that it uses an existing"
+     echo "GC library. The configuration script is enable to make this"
+     echo "library working properly."
+     echo "Try to configure Bigloo with \"--customgc=yes\"."
+     exit 1;
+  fi
 else
-   gclib=$customgclib;
-   gcincdir=$pwd/gc/$gccustom/include
-
+  isgccustom=1
+  gclib=$customgclib;
+  gcincdir=$pwd/gc/$gccustom/include
    # detect if we are using maemo for an ARM emulation
-   $autoconfdir/maemo.arm --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags"
-
-   if [ $? = "1" ]; then
-     # This is required for compiling under QEMU (used to be the -DQEMU flag)
-     cgcflags="$cgcflags -DNO_PROC_STAT"
-   fi
-
+  maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
+   if [ "$maemo " = "yes " ]; then
+    # This is required for compiling under QEMU (used to be the -DQEMU flag)
+    cgcflags="$cgcflags -DNO_PROC_STAT"
+  fi
    # configure directories
-   gcconfiguredir="--prefix=$pwd/gc/preinst"
-
+  gcconfiguredir="--prefix=$pwd/gc/preinst"
    # install the gc source code if needed
-   if [ ! -d gc/$gccustom ]; then
-     echo "Installing custom GC ($gccustom"".tar.gz) source code."
-     (cd gc && GC="$gccustom".tar.gz ./install-$gccustom) || exit 1
-   else
-     echo "Custom GC ($gccustom"".tar.gz) already installed."
-   fi
-   echo
- 
-   # configure the collector for single-threaded applications
-#*    (prefix=$pwd && cd gc/$gccustom && \                             */
-#*     export CC=$cc && \                                              */
-#*     export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \ */
-#*     export LDFLAGS=$lflags && \                                     */
-#*     echo "Configuring custom single-threaded GC..." && \            */
-#*     ./configure $gcconfiguredir $gcconfigureopt --disable-threads >> configure.log || \ */
-#*     (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1 */
+  if [ ! -d gc/$gccustom ]; then
+    echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
 
-   # configure the collector for multi-threaded applications
-#*    if [ "$threadsupport " != "no " ]; then                          */
-#*      (prefix=$pwd && cd "gc/$gccustom"_fth && \                     */
-#*       export CC=$cc && \                                            */
-#*       export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \ */
-#*       export LDFLAGS=$lflags && \                                   */
-#*       echo "Configuring custom multi-threaded GC..." && \           */
-#*       ./configure $gcconfiguredir $gcconfigureopt --enable-thread >> configure.log || \ */
-#*       (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1 */
-#*    fi                                                               */
+    (cd gc && GC="$gccustom".tar.gz ./install-$gccustom) || exit 1
+
+     if [ -f gc/configure-$gccustom ]; then
+      echo "+ Configuring custom GC..." && \
+      (cd gc && . ./configure-$gccustom) || exit 1
+    fi
+  fi
 fi
 
-#*---------------------------------------------------------------------*/
-#*    gc version detection                                             */
-#*---------------------------------------------------------------------*/
+# Check the version of the collector
 if [ "$gcversion " = " " ]; then
-  gcversion=`$autoconfdir/gcversion --cc="$cc" --gcincdir="$gcincdir" --cflags="$lflags" --tmp=$tmp`
+  gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
 
   if [ "$gcversion" -le "000" ]; then
-    if [ "`$autoconfdir/gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$tmp` " = "yes " ]; then
+    doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
+
+    if [ "$doblocking " = "yes " ]; then
       gchavedoblocking=1
       gcversion="700"
-    elif [ "`$autoconfdir/gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$tmp` " = "yes " ]; then
-      gchaveblocking=1
     else
-      gcversion="680"
+      startblocking=`$autoconf gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags"` || exit 1
+      if [ "$startblocking " = "yes " ]; then
+        gchaveblocking=1
+      else
+        gcversion="680"
+      fi
     fi
   else
-    if [ "$os " != "win32" -a $posixos != "cygwin" ]; then
+    if [ "$hostos " != "win32" -a $hostos != "cygwin" ]; then
       if [ "$gcversion" -lt "700" ]; then
         gchaveblocking=1
         gcversion="680"
@@ -1402,9 +1470,9 @@ if [ "$gcversion " = " " ]; then
 fi
 
 # correct gchavedoblocking for win32
-if [ $posixos = "cygwin" ]; then
+if [ $hostos = "cygwin" ]; then
   gchaveblocking=0
-elif [ $posixos = "mingw" ]; then
+elif [ $hostos = "mingw" ]; then
    gchaveblocking=0
    gchavedoblocking=0
 fi
@@ -1413,6 +1481,8 @@ fi
 #*    Benchmark mode                                                   */
 #*---------------------------------------------------------------------*/
 if [ "$mode" = "benchmark" ]; then
+  echo "* setting benchmark mode ($hardtune)..." >> $configurelog
+
   ccprefix="`echo $cc | sed 's/[0-9]*//g'`"  # remove version numbers
   case $hardtune in
     i586|i686)
@@ -1444,54 +1514,25 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Testing stack size                                               */
 #*---------------------------------------------------------------------*/
-if [ $posixos != "cygwin" ]; then
-  if [ "$posixos" != "mingw" ]; then
-    if [ ! "$stacksizerequired" = "0" ]; then
-      $autoconfdir/stacksize --cc="$cc" --user=$user --tmp=$tmp --stacksize=$stacksizerequired 2> /dev/null
-      if [ $? != "0" ]; then
-        echo "*** ERROR:configure:the execution stack is too small.";
-        echo ""
-        echo "Bigloo REQUIRES a larger stack (it needs a stack of about $stacksizerequired MB to compile).";
-        echo "In general, it is possible to adjust the stack size by the means of";
-        echo "a shell command.";
-        echo "On most Unix systems, it is frequently called \"ulimit\" or \"unlimit\".";
-        echo "For instance, with Bash you should try \"ulimit -s 4096\"."
-        echo "With Zsh, try \"unlimit\"."
-        echo ""
-        echo "Another solution, if you know what you are doing,";
-        echo "is to use the configure option \"--stack-check=no\". This will";
-        echo "simply, disable stack size checking.";
-        exit 1;
-      fi
+if [ $hostos != "cygwin" -a "$hostos" != "mingw" ]; then
+  if [ ! "$stacksizerequired" = "0" ]; then
+    s=`$autoconf stacksize --stacksize=$stacksizerequired` || exit 1
+    if [ "$s " != "0 " ]; then
+      echo "*** ERROR:configure:the execution stack is too small.";
+      echo ""
+      echo "Bigloo REQUIRES a larger stack (it needs a stack of about $stacksize required MB to compile).";
+      echo "In general, it is possible to adjust the stack size by the means of";
+      echo "a shell command.";
+      echo "On most Unix systems, it is frequently called \"ulimit\" or \"unlimit\".";
+      echo "For instance, with Bash you should try \"ulimit -s 4096\"."
+      echo "With Zsh, try \"unlimit\"."
+      echo ""
+      echo "Another solution, if you know what you are doing,";
+      echo "is to use the configure option \"--stack-check=no\". This will";
+      echo "simply, disable stack size checking.";
+      exit 1;
     fi
   fi
-fi
-
-#*---------------------------------------------------------------------*/
-#*    Emacs configuration                                              */
-#*---------------------------------------------------------------------*/
-if [ "$emacs " = " " ]; then
-  emacs=emacs
-  emacsversion=`$autoconfdir/emacsbrand --emacs=emacs 2> /dev/null`
-  if [ "$emacsversion" = "false" ]; then
-    emacs=xemacs
-    emacsversion=`$autoconfdir/emacsbrand --emacs=xemacs 2> /dev/null`
-  fi
-else
-  emacsversion=`$autoconfdir/emacsbrand --emacs=$emacs 2> /dev/null`
-fi
-
-if [ "$emacsversion" != "false" ]; then
-  if [ "$lispdir " = " " ]; then
-    emacslisppath=`$autoconfdir/emacslisppath --emacs=$emacs 2> /dev/null`
-  else
-    emacslisppath=`$autoconfdir/emacslisppath --emacs=$emacs --path=$lispdir 2> /dev/null`
-  fi
-  if [ "$emacslisppath" = "" ]; then
-    emacsversion="false";
-  fi
-else
-  emacslisppath=""
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1499,13 +1540,13 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for openssl
 if [ "$openssllibs " = " " ]; then
-   openssllibs=`$autoconfdir/openssl --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos"`;
+   openssllibs=`$autoconf openssl` || exit 1;
 else
-   openssllibs=`$autoconfdir/openssl --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib=$openssllibs`;
+   openssllibs=`$autoconf openssl --lib="$openssllibs"` || exit 1;
 fi
 
 if [ "$openssllibs" != "no" ]; then
-  openssldtls=`$autoconfdir/openssl-dtls --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib="$openssllibs"`;
+  openssldtls=`$autoconf openssl-dtls --lib="$openssllibs"` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1513,7 +1554,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for sqlite
 if [ "$sqlitelibs " = " " ]; then
-   sqlitelibs=`$autoconfdir/sqlite --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --posixos="$posixos"`;
+   sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1521,7 +1562,23 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for sqlite
 if [ "$gstreamer " = " " ]; then
-   gstreamer=`$autoconfdir/gstreamer --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags"`;
+   gstreamer=`$autoconf gstreamer --cflags="$cflags"` || exit 1;
+fi
+
+if [ "$gstreamer " != " " ]; then
+  gstreamercflags=`pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer`
+  if [ "$gstreameraudio " = " " ]; then
+    gstreameraudio=`$autoconf gstreameraudio --cflags="$gstreamercflags $gstreamerlibs"` || exit 1;
+    if [ "$gstreameraudio " != " " ]; then
+      gstaudio="#t"
+      gsthaveaudio="1"
+      gstreamerlibs="`pkg-config --libs gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer` -lgstaudio-$gstreamer"
+    else
+      gstaudio="#f"
+      gsthaveaudio="0"
+      gstreamerlibs=`pkg-config --libs gstreamer-$gstreamer`
+    fi
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1535,102 +1592,58 @@ fi
 if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Tell what we are doing
+  echo ""
   echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_dotnet:"
 
   # The pointer alignment
-  alignment=`$autoconfdir/alignment --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:alignment. Aborting";
-    exit 1;
-  else
-    echo "   log2 ptr alignment: " $alignment
-  fi
+  alignment=`$autoconf alignment` || exit 1
 
   # The -O C compiler options
-  coflags=`$autoconfdir/ccoptim --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags" --posixos="$posixos"`
+  coflags=`$autoconf ccoptim --cflags="$coflags"` || exit 1
 
   # The -s C linker options
   if [ "$cstrip" != "no" ]; then
-    csflags=`$autoconfdir/ccstrip --user=$user --tmp=$tmp --cc="$cc" --cflags="$cstrip"`;
+    csflags=`$autoconf ccstrip --cflags="$cstrip"` || exit 1;
   else
     csflags="";
   fi
 
   # The -p C compiler options
-  cpflags=`$autoconfdir/ccprof --user=$user --tmp=$tmp --cc="$cc"`
+  cpflags=`$autoconf ccprof` || exit 1
 
   # The stack direction
-  stackgrows=`$autoconfdir/stackdown --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:stack. Aborting";
-    exit 1;
-  else
-    if [ "$stackgrows" = "1" ]; then
-      echo "   stack grows: down"
-    else
-      echo "   stack grows: up"
-    fi
-  fi
+  stackgrows=`$autoconf stackdown` || exit 1
 
   # stdint
-  stdint=`$autoconfdir/stdint --user=$user --tmp=$tmp --cc="$cc"`
+  stdint=`$autoconf stdint` || exit 1
   if [ "$stdint" = "1" ]; then
-    echo "   stdint: yes"
-  else
-    echo "   stdint: no"
-    stdlibint=`$autoconfdir/stdlibint --user=$user --tmp=$tmp --cc="$cc"`
-    if [ "$stdlibint" = "1" ]; then
-      echo "   stdlibint: yes"
-    else
-      echo "   stdlibint: no"
-    fi
+    stdlibint=`$autoconf stdlibint` || exit 1
   fi
 
   # unistdint
   if [ "$unistdint " = " " ]; then
-    unistdint=`$autoconfdir/unistdint --user=$user --tmp=$tmp --cc="$cc"`
-    if [ "$unistdint" = "1" ]; then
-      echo "   unistdint: yes"
-    else
-      echo "   unistdint: no"
-    fi
+    unistdint=`$autoconf unistdint` || exit 1
   fi
 
   # getuid
   if [ "$getuid " = " " ]; then
-    getuid=`$autoconfdir/getuid --user=$user --tmp=$tmp --cc="$cc"`
-    if [ "$getuid" = "1" ]; then
-      echo "   getuid: yes"
-    else
-      echo "   getuid: no"
-    fi
+    getuid=`$autoconf getuid` || exit 1
   fi
 
   # getprotoent
   if [ "$getprotoent " = " " ]; then
-    getprotoent=`$autoconfdir/getprotoent --user=$user --tmp=$tmp --cc="$cc"`
-    if [ "$getprotoent" = "1" ]; then
-      echo "   getprotoent: yes"
-    else
-      echo "   getprotoent: no"
-    fi
+    getprotoent=`$autoconf getprotoent` || exit 1
   fi
 
   # setjmp/longjmp
-  if [ "$posixos" = "cygwin" ]; then
+  if [ "$HOSTOS " = "cygwin " ]; then
     prefix="_";
   else
-    prefix=`$autoconfdir/setjmp --user=$user --tmp=$tmp --cc="$cc"`
-    if [ $? != "0" ]; then
-      echo "*** ERROR:configure:setjmp. Aborting";
-      exit 1;
-    fi
+    prefix=`$autoconf setjmp` || exit 1
   fi
 
   setjmp="$prefix"setjmp
   longjmp="$prefix"longjmp
-
-  echo "   setjmp: $setjmp longjmp: $longjmp"
 
   if [ "$prefix" = "sig" ]; then
     setjmp="sigsetjmp(__jb,1)";
@@ -1641,67 +1654,19 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # Does the system have bcopy?
-  bcopy=`$autoconfdir/bcopy --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:bcopy. Aborting";
-    exit 1;
-  else
-    if [ "$bcopy" = "1" ]; then
-      echo "   bcopy: yes"
-      havebcopy=1
-    else
-      echo "   bcopy: no"
-      havebcopy=0
-    fi
-  fi
+  havebcopy=`$autoconf bcopy` || exit 1
 
   # The number of window register
-  window=`$autoconfdir/winreg --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:winreg. Aborting";
-    exit 1;
-  else
-    echo "   nb register windows: " $window
-  fi
+  window=`$autoconf winreg` || exit 1
 
   # Does the system have sigpipe?
-  sigpipe=`$autoconfdir/sigpipe --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:sigpipe. Aborting";
-    exit 1;
-  else
-    if [ "$sigpipe" = "0" ]; then
-      echo "   sigpipe: no"
-    else
-      echo "   sigpipe: yes"
-    fi
-  fi
+  sigpipe=`$autoconf sigpipe` || exit 1
 
   # Does the system have sigsetmask?
-  sigsetmask=`$autoconfdir/sigsetmask --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:sigsetmask. Aborting";
-    exit 1;
-  else
-    if [ "$sigsetmask" = "0" ]; then
-      echo "   sigsetmask: no"
-    else
-      echo "   sigsetmask: yes"
-    fi
-  fi
+  sigsetmask=`$autoconf sigsetmask` || exit 1
 
   # Does the system have sigprocmask?
-  sigprocmask=`$autoconfdir/sigprocmask --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:sigprocmask. Aborting";
-    exit 1;
-  else
-    if [ $sigprocmask = "0" ]; then
-      echo "   sigprocmask: no"
-    else
-      echo "   sigprocmask: yes"
-    fi
-  fi
+  sigprocmask=`$autoconf sigprocmask` || exit 1
 
   # A warning if neither sigsetmask nor sigprocmask is defined
   if( test $sigsetmask = "0" -a $sigprocmask = "0"); then
@@ -1710,66 +1675,29 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # Does the system have alloca?
-  alloca=`$autoconfdir/alloca --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:alloca. Aborting";
-    exit 1;
-  else
-    if [ $alloca = "1" ]; then
-      echo "   alloca: yes"
-      allocah=`$autoconfdir/allocah --user=$user --tmp=$tmp --cc="$cc"`
-    else
-      allocah=0
-      echo "   alloca: no"
-    fi
+  alloca=`$autoconf alloca` || exit 1
+  if [ $alloca = "1" ]; then
+    allocah=`$autoconf allocah` || exit 1
   fi
+
+  # native mach_dep target
+  nativemachdep=`$autoconf machdep` || exit 1
 
   # Does the system have mmap?
-  mmap=`$autoconfdir/mmap --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:mmap. Aborting";
-    exit 1;
-  else
-    if [ $mmap = "1" ]; then
-      echo "   mmap: yes"
-    else
-      echo "   mmap: no"
-    fi
-  fi
+  mmap=`$autoconf mmap` || exit 1
 
   # Does the system have getcwd?
-  getcwd=`$autoconfdir/getcwd --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:getcwd. Aborting";
-     exit 1;
-  else
-    if [ $getcwd = "0" ]; then
-      echo "   getcwd: no"
-    else
-      echo "   getcwd: yes"
-    fi
-  fi
+  getcwd=`$autoconf getcwd` || exit 1
 
   # Does the system have getwd?
-  getwd=`$autoconfdir/getwd --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:getwd. Aborting";
-    exit 1;
-  else
-    if [ $getwd = "0" ]; then
-      echo "   getwd: no"
-    else
-      echo "   getwd: yes"
-    fi
-  fi
+  getwd=`$autoconf getwd` || exit 1
 
   # Is gmp available?
   if [ "$gmpversion " = " " ]; then
-    gmpversion=`$autoconfdir/gmp --user=$user --tmp=$tmp --cc="$cc"`
+    gmpversion=`$autoconf gmp` || exit 1
   fi
   
   if [ $gmpversion = "no" ]; then
-    echo "   gmp: no"
     havegmp=0;
     if [ $gmpforce = "yes" ]; then
 	echo "*** ERROR:configure:--enable-gmp. Cannot find GMP library."
@@ -1777,273 +1705,144 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	exit 1;
     fi
   else
-    echo "   gmp: version $gmpversion"
     havegmp=1;
     featureflags="-srfi enable-gmp $featureflags";
     extralibs="-lgmp $extralibs"
   fi
 
   # Where to find the socket api
-  socket=`$autoconfdir/socket --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:socket. Aborting";
-     exit 1;
-  fi
+  socket=`$autoconf socket --lib="$socketlibs"` || exit 1
+  socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
 
-  socklen=`$autoconfdir/socklen --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
+  tcpnodelay=`$autoconf setsockopt --lib="$socketlibs" --opt=TCP_NODELAY` || exit 1
+  tcpcork=`$autoconf setsockopt --lib="$socketlibs" --opt=TCP_CORK` || exit 1
+  tcpquickack=`$autoconf setsockopt --lib="$socketlibs" --opt=TCP_QUICKACK` || exit 1
 
-  if [ "$socket " = " " ]; then
-    echo "   socket: yes"
-  else
-    echo "   socket: $socket"
-    extralibs="$socket $extralibs"
-  fi
+  inet_aton=`$autoconf inet_aton --lib="$socketlibs"` || exit 1
+  inet_pton=`$autoconf inet_pton --lib="$socketlibs"` || exit 1
 
-  tcpnodelay=`$autoconfdir/setsockopt --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs" --opt=TCP_NODELAY`
-  tcpcork=`$autoconfdir/setsockopt --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs" --opt=TCP_CORK`
-  tcpquickack=`$autoconfdir/setsockopt --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs" --opt=TCP_QUICKACK`
-
-  inet_aton=`$autoconfdir/inet_aton --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
-
-  inet_pton=`$autoconfdir/inet_pton --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
-
-  unix_socket=`$autoconfdir/unixsocket --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
- 
-  getaddrinfo=`$autoconfdir/getaddrinfo --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
+  unix_socket=`$autoconf unixsocket --lib="$socketlibs"` || exit 1
+  getaddrinfo=`$autoconf getaddrinfo --lib="$socketlibs"` || exit 1
 
   # Are the static constants aligned?
-  cnstalign=`$autoconfdir/cnstalign --user=$user --tmp=$tmp --cc="$cc" --alignment=$alignment`
+  cnstalign=`$autoconf cnstalign --alignment=$alignment` || exit 1
   if [ $? != "0" ]; then
      echo "*** ERROR:configure:cnstalign. Aborting";
      exit 1;
   fi
 
-  enforcedcnstalign=`$autoconfdir/enforcedcnstalign --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:enforcedcnstalign. Aborting";
-     exit 1;
-  else
-    if [ "$cnstalign" = "1" ]; then
-      echo "   constant alignment: ok"
-    elif [ "$enforcedcnstalign" = "1" ]; then
-      echo "   constant alignment: enforced"
-    else
-      echo "*** ERROR:configure:illegal alignment."
-      echo "It is then impossible install Bigloo on this architecture, sorry."
-      exit 1
-    fi
+  enforcedcnstalign=`$autoconf enforcedcnstalign` || exit 1
+  if [ "$cnstalign" = "0" -a "$enforcedcnstalign" = "0" ]; then
+    echo "*** ERROR:configure:illegal alignment."
+    echo "It is then impossible install Bigloo on this architecture, sorry."
+    exit 1
   fi
 
   # Endianness
-  endian=`$autoconfdir/bigendian --user=$user --tmp=$tmp --cc="$cc"`
-  if [ "$endian" = "1" ]; then
-    echo "   endianness: big"
-  else
-    echo "   endianness: little"
-  fi
+  endian=`$autoconf bigendian` || exit 1
 
   # Does this system implements pipe?
-  pipe=`$autoconfdir/pipe --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:pipe. Aborting";
-    exit 1;
-  else
-    if [ "$pipe" = "0" ]; then
-      echo "   popen/pclose: no"
-    else
-      echo "   popen/pclose: yes"
-    fi
-  fi
+  pipe=`$autoconf pipe` || exit 1
 
   # Does this compiler implements labs? 
-  # llabs=`$autoconfdir/labs --user=$user --tmp=$tmp --cc="$cc"`
+  # llabs=`$autoconfdir/labs --user=$user --tmp=$buildtmp --cc="$cc"`
   # SE: fix, 27 oct 2006
-  labs=`$autoconfdir/labs --user=$user --tmp=$tmp --cc="$cc"`
+  labs=`$autoconf labs` || exit 1
   if [ "$labs " != " " ]; then
-    echo "   labs: yes [$labs]"
     have_labs=1
   else
-    echo "   labs: no"
     have_labs=0
     labs=abs
   fi
 
   # Does this compiler implements longlong?
-  longlong=`$autoconfdir/longlong --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
+  longlong=`$autoconf longlong --longlong="$longlong"` || exit 1
 
   echo "#undef BGL_LONGLONG_T" >> $bigloo_config_h
   if [ "$longlong " = " " ]; then
     echo "   long long: no"
     havelonglong=0
+
+    have_strtoull=0
     longlong=long
     have_llabs=0
     llabs=abs
     have_strtoll=0
     strtoll=strtol
-    have_strtoull=0
     strtoull=0
   else
-    llabs=`$autoconfdir/llabs --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
-    strtoll=`$autoconfdir/strtoll --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
-    strtoull=`$autoconfdir/strtoull --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
-    echo "   long long: yes [$longlong]"
     havelonglong=1
+
+    llabs=`$autoconf llabs --longlong="$longlong"` || exit 1
+    strtoll=`$autoconf strtoll --longlong="$longlong"` || exit 1
+    strtoull=`$autoconf strtoull --longlong="$longlong"` || exit 1
+
     if [ "$llabs " != " " ]; then
-      echo "   llabs: yes [$llabs]"
       have_llabs=1
     else
-      echo "   llabs: no"
       have_llabs=0
-      llabs=abs
     fi
     if [ "$strtoll " != " " ]; then
-      echo "   strtoll: yes [$strtoll]"
       have_strtoll=1
     else
-      echo "   strtoll: no"
       have_strtoll=0
       strtoll="bgl_strtoll"
     fi
     if [ "$strtoull " != " " ]; then
-      echo "   strtoull: yes [$strtoull]"
       have_strtoull=1
     else
-      echo "   strtoull: no"
       have_strtoull=0
       strtoull="bgl_strtoull"
     fi
   fi
 
-  long_limbs=`$autoconfdir/limbs --user=$user --tmp=$tmp --cc="$cc" --type="long"`
-  echo "   long limbs: $long_limbs"
-  longlong_limbs=`$autoconfdir/limbs --user=$user --tmp=$tmp --cc="$cc" --type="$longlong"`
-  echo "   llong limbs: $longlong_limbs"
+  long_limbs=`$autoconf limbs --type="long"` || exit 1
+  longlong_limbs=`$autoconf limbs --type="$longlong"` || exit 1
 
-  long_sign_bit=`$autoconfdir/signbit --user=$user --tmp=$tmp --cc="$cc" --type=long --alignment="$alignment"`
-  echo "   long sign bit: $long_sign_bit"
-
-  elong_sign_bit=`$autoconfdir/signbit --user=$user --tmp=$tmp --cc="$cc" --type=long --alignment=0`
-  echo "   elong sign bit: $elong_sign_bit"
-
-  llong_sign_bit=`$autoconfdir/signbit --user=$user --tmp=$tmp --cc="$cc" --type="$longlong" --alignment=0`
-  echo "   llong sign bit: $llong_sign_bit"
+  long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
+  elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1
+  llong_sign_bit=`$autoconf signbit --type="$longlong" --alignment=0` || exit 1
 
   # Is sigchld available for us
-  sigchld=`$autoconfdir/sigchld --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:sigchld. Aborting";
-     exit 1;
-  else
-    if [ "$sigchld" = "1" ]; then
-      echo "   sigchld: yes"
-    else
-      sigchld=0
-      echo "   sigchld: no"
-    fi
-  fi
+  sigchld=`$autoconf sigchld` || exit 1
   
   # Is sigaction available
-  sigaction=`$autoconfdir/sigaction --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:sigaction. Aborting";
-    exit 1;
-  else
-    if [ "$sigaction" = "1" ]; then
-      echo "   sigaction: yes"
-    else
-      echo "   sigaction: no"
-    fi
-  fi
+  sigaction=`$autoconf sigaction` || exit 1
   
   # Is select available
-  select=`$autoconfdir/select --user=$user --tmp=$tmp --cc="$cc"`
-  if [ "$select" = "1" ]; then
-    echo "   select: yes"
-  else
-    echo "   select: no"
-  fi
+  select=`$autoconf select` || exit 1
   
   # Is fcntl available
-  fcntl=`$autoconfdir/fcntl --user=$user --tmp=$tmp --cc="$cc"`
-  if [ "$fcntl" = "1" ]; then
-    echo "   fcntl: yes"
-  else
-    echo "   fcntl: no"
-  fi
+  fcntl=`$autoconf fcntl` || exit 1
   
   # Is termio available
-  termio=`$autoconfdir/termio --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:termio. Aborting";
-     exit 1;
-  else
-    if [ "$termio" = "1" ]; then
-      echo "   termio: yes"
-    else
-      echo "   termio: no"
-    fi
-  fi
+  termio=`$autoconf termio` || exit 1
   
   # Is termio available
-  termios=`$autoconfdir/termios --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:termios. Aborting";
-     exit 1;
-  else
-    if [ "$termios" = "1" ]; then
-      echo "   termios: yes"
-    else
-      echo "   termios: no"
-    fi
-  fi
+  termios=`$autoconf termios` || exit 1
   
   # Does the system support posix-file-ops
-  posixfileops=`$autoconfdir/posixfileops --user=$user --tmp=$tmp --cc="$cc"`
-  if [ "$posixfileops" = "1" ]; then
-    echo "   posix file operations: yes"
-  else
-    echo "   posix file operations: no"
-  fi
+  posixfileops=`$autoconf posixfileops` || exit 1
 
   # Does the system support sendfile
-  sendfile=`$autoconfdir/sendfile --user=$user --tmp=$tmp --cc="$cc"`
+  sendfile=`$autoconf sendfile` || exit 1
   if [ "$sendfile" != "BGL_SENDFILE_NO" ]; then
-    echo "   sendfile: yes"
     sendfile_rif=1;
     sendfile_ros=1;
   else
-    echo "   sendfile: no"
     sendfile_rif=0;
     sendfile_ros=0;
   fi
 
   # Does the system support nanosleep
-  nanosleep=`$autoconfdir/sleep --user=$user --tmp=$tmp --cc="$cc" --cflags="-DBGL_NANOSLEEP"`
-  if [ "$nanosleep" = "1" ]; then
-    echo "   nanosleep: yes"
-  else
-    echo "   nanosleep: no"
-  fi
-
+  nanosleep=`$autoconf sleep --cflags="-DBGL_NANOSLEEP"` || exit 1
   # Does the system support normalsleep
-  normalsleep=`$autoconfdir/sleep --user=$user --tmp=$tmp --cc="$cc" --cflags="-DBGL_SLEEP"`
-  if [ "$normalSleep" = "1" ]; then
-    echo "   normal sleep: yes"
-  else
-    echo "   normal sleep: no"
-  fi
+  normalsleep=`$autoconf sleep --cflags="-DBGL_SLEEP"`
 
   # The timezone variable
-  timezone=`$autoconfdir/timezone --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags"`
-  echo "   timezone: $timezone"
-
+  timezone=`$autoconf timezone --cflags="$coflags"` || exit 1
   # The timeval variable
-  timeval=`$autoconfdir/timeval --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags"`
-  if [ "$timeval" = "1" ]; then
-    echo "   timeval: yes"
-  else
-    echo "   timeval: no"
-  fi
+  timeval=`$autoconf timeval --cflags="$coflags"` || exit 1
 
   # The -pic C compiler options
   if [ "$cpicflags" = "no" ]; then
@@ -2051,7 +1850,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   else
     if [ "$ldopt" != "no-share" ]; then
       if [ "$cpicflags" = "demanded" -o "$cpicflags " = " " ]; then
-        cpicflags=`$autoconfdir/ccpic --user=$user --tmp=$tmp --cc="$cc" --cflags="$cpicflags"`
+        cpicflags=`$autoconf ccpic --cflags="$cpicflags"` || exit 1
       fi
     else
       cpicflags=""
@@ -2062,139 +1861,88 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     cpicflags=-DBGL_NO_PIC;
   fi
 
+  # ld option
+  lflags=`$autoconf ldextraopt --lflags="$lflags"` || exit 1
+  rflags=`$autoconf rdynamic --rflags="-rdynamic"` || exit 1
+
+  # shared link additional soname option
+  if [ "$ldsoname" = "blank" ]; then
+    ldsoname=""
+  else  
+    ldsoname=`$autoconf ldsoname $libdir --ld="$ld" --soname="$ldsoname"` || exit 1
+  fi
+
   # The shared libraries
   if [ "$ldopt" = "no-share" ]; then
     echo "   shared library: no"
     haveshlib=0
   else
-    ldopt=`$autoconfdir/ldshare --user=$user --tmp=$tmp --cc="$cc" --ld="$ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
+    ldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
     if [ "$ldopt" = "no-share" ]; then
-      ldopt=`$autoconfdir/ldshare --user=$user --tmp=$tmp --cc="$cc" --ld="ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
+      ldopt=`$autoconf ldshare --ld="ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
     fi
     if [ "$ldopt" = "no-share" ]; then
-      echo "   shared library: no (because I don't know ld option)"
       haveshlib=0
       cpicflags="-DBGL_NO_PIC"
     else
-      echo "   shared library: yes"
       haveshlib=1
-
-      ldpreload=`$autoconfdir/ldpreload --user=$user --tmp=$tmp --cc="$cc" --ld="$ld" --ldlibs="$ldlibs" --ldopt="$ldopt"`
-      echo "   ld preload: $ldpreload"
+      ldpreload=`$autoconf ldpreload --ld="$ld" --ldlibs="$ldlibs" --ldopt="$ldopt"` || exit 1
     fi
   fi
 
   # Does the system have dlopen?
   if [ "$ldopt " != "no-share" ]; then
-    if [ "$posixos" = "mingw" ]; then
-      echo  "   dlopen: yes (mingw)"
+    if [ "$hostos" = "mingw" ]; then
       havedlopen=1
       dlopen=""
     else
-     dlopen=`$autoconfdir/dlopen --user=$user --tmp=$tmp --cc="$cc" --dlopt="$dlopenopt"`
+     dlopen=`$autoconf dlopen --dlopt="$dlopenopt"` || exit 1
      if [ "$dlopen" != "0" ]; then
-       echo "   dlopen: yes [$dlopen]"
        havedlopen=1
        dlopen=$dlopen
        extralibs="$dlopen $extralibs"
      else
-       echo "   dlopen: no"
        havedlopen=0
        dlopen=""
      fi
     fi
   else
-    echo "   dlopen: no"
     havedlopen=0
     dlopen=""
   fi
 
   # for now only the port is Unix
-  echo "   operating system: unix"
-  if [ "$posixos" = "mingw" ]; then
-     echo "     (well actually it's a win32 MinGW System ;-)"
-  fi
-  $autoconfdir/unix --user=$user --tmpdir=$tmpdir --posixos="$posixos" >> $bigloo_config_h
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:os. Aborting";
-    exit 1;
-  fi
+  $autoconf unix >> $bigloo_config_h || exit 1
 
   # which shell to use
-  `$shell -c "ls -l > /dev/null 2> /dev/null"`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:$shell. Aborting";
-     exit 1;
-  fi
-
-  # the C compiler style
-  echo "   c compiler style: $ccstyle"
-  echo "   c compiler: $cc"
-  echo "   c flags: $cflags"
-  echo "   c compiler optimization: $coflags"
-  echo "   c linker strip: $csflags"
-
-  # the library files directory
-  echo "   library directory: $libdir"
-  echo "   files directory: $fildir"
-  echo "   GC library: $gclib"
-  if [ $customgc = "yes" ]; then
-    echo "   custom GC: yes"
-    isgccustom=1
-  else
-    echo "   custom GC: no"
-    isgccustom=0
-  fi
-
-  # the zip directory
-  echo "   zip directory: $syszipdir"
-
-  # the dll directory
-  echo "   dll directory: $sysdlldir"
-
-  # additionals non bigloo library
-  echo "   additional libraries: $extralibs"
+  `$shell -c "ls -l > /dev/null"` || exit 1
 
   # the C beautifier
-  if [ `$autoconfdir/indent --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --indent="$indent"` != "1" ]; then
-    echo "   c beautifier: no"
+  id=`$autoconf indent --cflags="$cflags" --indent="$indent"` || exit 1
+  if [ "$id " != "1 " ]; then
     indent=
-  else
-    echo "   c beautifier: $indent"
   fi
 
   # the dirname command
-  dirname=`$autoconfdir/dirname --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --dirname="$dirname"`
-  echo "   dirname: $dirname"
-
-  # library basename
-  echo "   library basename: $libraryname"
+  dirname=`$autoconf dirname --cflags="$cflags" --dirname="$dirname"` || exit 1
 
   # double precision
-  prec=`$autoconfdir/doubleprec --user=$user --tmp=$tmp --cc="$cc"`
-  if [ $? != "0" ]; then
-    echo "*** ERROR:configure:doubleprec. Aborting";
-    exit 1;
-  else
-    echo "   double precision: $prec"
-  fi
+  prec=`$autoconf doubleprec` || exit 1
 
   # static link additional option
-  ldstaticopt=`$autoconfdir/ldstaticopt --user=$user --tmp=$tmp --posixos="$posixos"`
+  ldstaticopt=`$autoconf ldstaticopt` || exit 1
 
-  if [ $posixos = "mingw" -a "$pthreadlibs" != "no"  ]; then
+  if [ "$hostos " = "mingw " -a "$pthreadlibs" != "no"  ]; then
     ldstaticopt="$ldstaticopt $pthreadlibs"
   fi
 
   # shared link additional option
-  ldsharedopt=`$autoconfdir/ldsharedopt --user=$user --tmp=$tmp $libdir  --cc="$cc" --posixos="$posixos"`
+  ldsharedopt=`$autoconf ldsharedopt` || exit 1
 
   # bdb configuration
   if [ "$bee" = "partial" ]; then
-    echo "   bdb library installation: no"
     havebdb=0
   else
-    echo "   bdb library installation: yes"
     havebdb=1
   fi
 
@@ -2207,41 +1955,29 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
        fi
     fi
 
-    if [ "$jvmbackend" = "yes" ]; then
-      if [ "$posixos" = "cygwin" -a "$cygwindosjvm" = "yes" ]; then
-        cpsep=";";
-      else
-        if [ "$posixos" = "mingw" ]; then
-          cpsep=";";
-        else
-          cpsep=":";
-        fi  
-      fi
-      $autoconfdir/javatest --java=$java \
-                            --jflags=$jflags \
-                            --jvflags=$jvflags \
-                            --javac=$javac \
-                            --jcflags=$jcflags \
-                            --user=$user \
-                            --tmp=$tmp \
-                            --cpsep="$cpsep"
+    if [ "$HOSTOS " = "cygwin " -a "$cygwindosjvm" = "yes" ]; then
+      cpsep=";";
+    elif [ "$HOSTOS " = "mingw " ]; then
+      cpsep=";";
+    else
+      cpsep=":";
+     fi
 
-      if [ $? = 0 ]; then
-        echo "   java: yes"
-      else
-        echo "   java: no"
-        echo "*** ERROR:configure:Can't configure Java."
-        echo "Command:"
-        echo "$autoconfdir/javatest --java=$java --jflags=$jflags --jvflags=$jvflags --javac=$javac --jcflags=$jcflags --user=$user --tmp=$tmp --cpsep=\"$cpsep\""
-        echo "failed unexpectedly (see $configurelog for details)."
-        echo ""
-        echo "To give up with the JVM backend, use:"
-        echo "  ./configure --jvm=no"
-        exit 3
-      fi
+    jtest=`$autoconf javatest --java=$java \
+                              --jflags=$jflags \
+                              --jvflags=$jvflags \
+                              --javac=$javac \
+                              --jcflags=$jcflags \
+                              --cpsep="$cpsep"` || exit 1
+
+    if [ $jtest != 0 ]; then
+      echo "*** ERROR:configure:Can't configure Java (see $configurelog for details)."
+      exit 1
+    else
+      java_configured=yes
     fi
-    java_configured=yes
-    java_version=`$javac -version 2>&1 | head -n 1`
+
+    java_version=`$javac -version 2>&1 | head -n 1` || exit 1
     if echo "$java_version" | grep "1.6" > /dev/null
       then java_version=1.6
     elif echo "$java_version" | grep "1.5" > /dev/null
@@ -2266,7 +2002,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # .NET configuration
   if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
-    echo "   dotnet: yes"
     if [ "$dotnetshell" != "sh" ]; then
        if [ "$dotnetshell" != "msdos" ]; then
           echo "*** ERROR:configure:Illegal .NET shell \"$dotnetshell\" (should be either \"sh\" or \"msdos\")";
@@ -2275,36 +2010,26 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     if [ "$dotnetbackend" = "yes" ]; then
-      if [ "$posixos" = "cygwin" -a "$cygwindosdotnet" = "yes" ]; then
+      if [ "$HOSTOS " = "cygwin " -a "$cygwindosdotnet" = "yes" ]; then
         cpsep=";";
       else
         cpsep=":";
       fi
-      $autoconfdir/dotnettest --clr=$dotnetclr \
-                              --clropt="$dotnetclropt" \
-                              --clrld=$dotnetclrld \
-                              --cscc=$dotnetcscc \
-                              --user=$user \
-                              --tmp=$tmp \
-                              --cpsep="$cpsep"
 
-      if [ $? = 0 ]; then
-        echo "   .NET: yes"
-      else
-        echo "   .NET: no"
-        echo "*** ERROR:configure:Can't configure .NET. Command:"
-        echo "$autoconfdir/dotnettest --clr=$dotnetclr --clropt=$dotnetclropt --clrld=$dotnetclrld --cscc=$dotnetcscc --user=$user --tmp=$tmp --cpsep=\"$cpsep\""
-        echo "failed unexpectedly (see $configurelog for details)."
-        echo ""
-        echo "To give up with the .NET backend, use:"
-        echo "  ./configure --dotnet=no"
-        exit 3
+      dntest=`$autoconf dotnettest --clr=$dotnetclr \
+                                   --clropt="$dotnetclropt" \
+                                   --clrld=$dotnetclrld \
+                                   --cscc=$dotnetcscc \
+                                   --user=$user \
+                                   --cpsep="$cpsep"` || exit 1
+
+      if [ $dntest != 0 ]; then
+        echo "*** ERROR:configure:Can't configure .NET (see $configurelog for details)."
+        exit 1
       fi
     fi
     dotnet_configured=yes
-
   else
-    echo "   dotnet: no"
     dotnetld=""
     dotnetldstyle=""
     dotnetclr=""
@@ -2315,42 +2040,30 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # Posix Os
-  if eval uname > /dev/null 2> /dev/null; then
-    osname=`uname -s`
-    osarch=`uname -m`
-    osversion=`uname -r`
-
-    if [ "$posixos" = "mingw" ]; then
+  case $hostos in
+    mingw)
       osclass="mingw"
-    else 
-      osclass="unix"
-    fi
-    
-    ostmp="$tmpdir"
-    
-    fileseparator="/"
-    
-    if [ "$posixos" = "mingw" ]; then
       pathseparator=";"
-    else 
+      fileseparator="/"
+      ostmp="$buildtmpdir"
+      staticlibsuf="a"    
+      ucs2displayable=0;;
+
+    unknown)
+      ostmp="/tmp"
+      fileseparator="/"
       pathseparator=":"
-    fi
+      staticlibsuf="a"    
+      ucs2displayable=0;;
 
-    staticlibsuf="a"    
-    
-    ucs2displayable=0
-  else
-    osname="unknown"
-    osarch="unknown"
-    osversion="unknown"
-    ostmp="/tmp"
-    fileseparator="/"
-    pathseparator=":"
-    staticlibsuf="a"    
-    ucs2displayable=0
-  fi
-
-  echo 
+    *)
+      osclass="unix"
+      pathseparator=":"
+      fileseparator="/"
+      ostmp="$buildtmpdir"
+      staticlibsuf="a"    
+      ucs2displayable=0;;
+  esac
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet
   for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet; do
@@ -2488,9 +2201,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_RUNTIME_DECL@|extern|" \
               -e "s|@BGL_RUNTIME_DEF@||" \
               -e "s|@OS_CLASS@|$osclass|" \
-              -e "s|@OS_NAME@|$osname|" \
-              -e "s|@OS_ARCH@|$osarch|" \
-              -e "s|@OS_VERSION@|$osversion|" \
+              -e "s|@OS_NAME@|$hostos|" \
+              -e "s|@OS_ARCH@|$hostcpu|" \
+              -e "s|@OS_VERSION@|$hostosversion|" \
               -e "s|@OS_TMP@|$ostmp|" \
               -e "s|@OS_CHARSET@|$oscharset|" \
               -e "s|@FILE_SEPARATOR@|$fileseparator|" \
@@ -2516,7 +2229,6 @@ fi
 #*    bigloo_gc.h                                                      */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_gc" ]; then
-  echo "Configuring $bigloo_gc_h"
   echo "/* Generated file, don't edit */" > $bigloo_gc_h
   cat autoconf/bigloo_gc.h.in \
      | sed -e "s|@GC_VERSION@|$gcversion|" >> $bigloo_gc_h
@@ -2526,19 +2238,101 @@ fi
 #*    bigloo_config.el                                                 */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_config_el" ]; then
-  # Tell what we are doning
+  echo ""
   echo "Configuring $bigloo_config_el:"
 
+  if [ "$emacs " = " " ]; then
+    emacs=emacs
+    emacsversion=`$autoconf emacsbrand --emacs=emacs` || exit 1
+    if [ "$emacsversion" = "false" ]; then
+      emacs=xemacs
+      emacsversion=`$autoconf emacsbrand --emacs=xemacs` || exit 1
+    fi
+  else
+    emacsversion=`$autoconf emacsbrand --emacs=$emacs` || exit 1
+  fi
+  
+  if [ "$emacsversion" != "false" ]; then
+    if [ "$lispdir " = " " ]; then
+      emacslisppath=`$autoconf emacslisppath --emacs=$emacs` || exit 1
+    else
+      emacslisppath=`$autoconf emacslisppath --emacs=$emacs --path=$lispdir` || exit 1
+    fi
+    if [ "$emacslisppath" = "" ]; then
+      emacsversion="false";
+    fi
+  else
+    emacslisppath=""
+  fi
+
   rm -f $bigloo_config_el 2> /dev/null
+
   echo ";; Automatically generated file (don't edit) */" > $bigloo_config_el
   echo ";; `date`" >> $bigloo_config_el
   echo "" >> $bigloo_config_el
   echo "(provide 'bmacs-config)" >> $bigloo_config_el
   echo "(defvar bmacs-docdir \"$docdir\")" >> $bigloo_config_el
   echo "(defvar bmacs-lispdir \"$emacslisppath\")" >> $bigloo_config_el
-  echo ""
 fi
   
+
+#*---------------------------------------------------------------------*/
+#*    texinfo                                                          */
+#*---------------------------------------------------------------------*/
+if [ "$configureinfo" = "yes" ]; then
+  echo ""
+  echo "Configuring texinfo:"
+
+  infoinfo=`$autoconf info --makeinfo="$makeinfo" \
+                           --texi2dvi="$texi2dvi" \
+                           --texi2dviopt="$texi2dviopt" \
+                           --texi2pdf="$texi2pdf" \
+                           --texi2html="$texi2html" \
+                           --texi2htmlopt="$texi2htmlopt"` || exit 1
+
+  if [ "$infoinfo " != " " ]; then
+     for p in $infoinfo; do
+        case $p in
+          "")
+             break;;
+          makeinfover=*)
+             makeinfover="`echo $p | sed 's/^[-a-z_.]*=//'`";;
+          texi2dvi=*)
+             texi2dvi="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+          texi2dviopt=*)
+             texi2dviopt="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+          texi2pdf=*)
+             texi2pdf="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+          texi2html=*)
+             texi2html="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+          texi2htmlopt=*)
+             texi2htmlopt="`echo $p | sed 's/^[^=]*=//'`";;
+        esac
+     done
+
+     if [ "$makeinfover" = "old" ]; then
+         makeinfoopt="-D oldinfo"
+     fi
+  else
+     makeinfo=no
+     makeinfoopt=
+     texi2dvi=
+     texi2dviopt=
+     texi2html=
+     texi2htmlopt=
+     texi2pdf=
+  fi
+
+  if [ "$iinfo " = " " ]; then
+    installinfo=`$autoconf installinfo --exe=$exe` || exit 1
+  else
+    installinfo=`$autoconf installinfo --installinfo=$iinfo --exe=$exe` || exit 1
+  fi
+  if [ "$installinfo " != " " ]; then
+    installinfodir=`$autoconf installinfodir --installinfo=$installinfo --exe=$exe` || exit 1
+  fi
+fi
+
 #*---------------------------------------------------------------------*/
 #*    Makefile.config                                                  */
 #*    -------------------------------------------------------------    */
@@ -2547,12 +2341,8 @@ fi
 #*    informations and location where Bigloo is to be installed.       */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "Makefile.config" ]; then
-
-  # Tell what we are doning
-  echo "Configuring $makefile_cfg":
-
   # We create an unexisting temporary file name
-  name=$tmp/foo
+  name=$buildtmp/foo
   while( test -f "$name.s" -o -f "$name.o" ); do
     name="$name"x;
   done
@@ -2588,7 +2378,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The OS
-  echo "POSIXOS=$posixos" >> $makefile_cfg
+  echo "HOSTOS=$hostos" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The rm command
@@ -2629,11 +2419,13 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
   echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg
-  echo "TMP=$tmp" >> $makefile_cfg
+  echo "TMP=$buildtmp" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # Native backend
   echo "NATIVEBACKEND=$nativebackend" >> $makefile_cfg
+  echo "NATIVE_MACHDEP=$nativemachdep" >> $makefile_cfg
+  echo >> $makefile_cfg
 
   # The basename
   echo "LIBRARYNAME=$libraryname" >> $makefile_cfg
@@ -2641,9 +2433,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The C compiler
   if [ "$bigloo " = " " ]; then
-    echo "BOOTBIGLOO=$""(BUILDBINDIR)/bigloo" >> $makefile_cfg
+    echo "BUILDBIGLOO=$""(BUILDBINDIR)/bigloo" >> $makefile_cfg
   else
-    echo "BOOTBIGLOO=$bigloo" >> $makefile_cfg
+    echo "BUILDBIGLOO=$bigloo" >> $makefile_cfg
   fi
   echo "CC=$cc" >> $makefile_cfg
   echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
@@ -2657,12 +2449,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The GC library
-  echo "   GC dir: $gcincdir"
   echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   echo "GCLIB=$gclib" >> $makefile_cfg
   if [ $customgc = "yes" ]; then
      echo "GCCUSTOM=yes" >> $makefile_cfg
-     echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$gccustom/include" >> $makefile_cfg
+     echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
      echo 'GCCLOSELIB=-l$(GCLIB)-$(RELEASE)' >> $makefile_cfg
      echo "GCSTDOBJ=" >> $makefile_cfg
   else
@@ -2676,9 +2467,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # additional bigloo compiler link flags (some architecture such as AIX
   # require a special to link huge executable)
-  lflags=`$autoconfdir/ldextraopt --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lflags="$lflags"`
-  rflags=`$autoconfdir/rdynamic --user=$user --tmp=$tmp --cc="$cc" --rflags="-rdynamic"`
-
   echo "EXTRA_LD_OPT=$lflags $rflags" >> $makefile_cfg
   if [ $sharedcompiler = "yes" ]; then
      echo "SHRD_COMP=yes" >> $makefile_cfg;
@@ -2696,54 +2484,15 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "EXE_SUFFIX=$exe" >> $makefile_cfg;
 
   # The assembler
-  echo "   checking $as"
-  as=`$autoconfdir/ascpp --user=$user --tmp=$tmp -as="$as" -cc="$cc" --name=$name`
-  if [ $? != "0" ]; then
-     echo "*** ERROR:configure:as. Aborting";
-     exit 1;
-  fi
-
-  if [ "$as " = " " ]; then
-    echo "*** ERROR:configure:$as:can't find as that invokes cpp,";
-    echo "set as variable."
-    rm -f $name.s $name.o
-    exit 1;
-  else
-    echo "AS=$as" >> $makefile_cfg
-  fi
+  echo "AS=$as" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # Ar checking
-  echo "   checking $ar $arflags"
-
-  (cd $tmp;
-   bname=`basename $name`;
-   compile="$ar $arflags $bname.a $name.o > /dev/null 2> /dev/null";
-   if eval $compile; then
-     rm -f $name.s $name.o $bname.a
-   else
-      arflags="-q -c";
-      compile="$ar $arflags $bname.a $name.o > /dev/null 2> /dev/null";
-      if eval $compile; then
-        rm -f $name.s $name.o $bname.a
-      else
-        echo "*** ERROR:configure:ar:Can't automatically setup ar flags";
-        echo "Please, set ar flags up inside ./configure";
-        rm -f $name.s $name.o $bname.a;
-        exit 1
-      fi
-   fi) || exit $*
   echo "AR=$ar" >> $makefile_cfg
   echo "ARFLAGS=$arflags" >> $makefile_cfg
 
   # Does the system require ranlib?
-  if [ `$autoconfdir/ranlib --user=$user --tmp=$tmp --cc="$cc"` = "0" ]; then
-     echo "   ranlib: no"
-     echo "RANLIB=true" >> $makefile_cfg
-  else
-     echo "   ranlib: yes"
-     echo "RANLIB=ranlib" >> $makefile_cfg
-  fi
+  echo "RANLIB=$ranlib" >> $makefile_cfg
 
   # The shared libraries
   if [ "$ldopt" = "no-share" ]; then
@@ -2763,12 +2512,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "LDCOMPLIBS=$ldcomplibs" >> $makefile_cfg
     echo "LDPRELOADSUPPORT=$ldpreload" >> $makefile_cfg
 
-    # shared link additional soname option
-    if [ "$ldsoname" = "blank" ]; then
-      ldsoname=""
-    else  
-      ldsoname=`$autoconfdir/ldsoname --user=$user --tmp=$tmp $libdir --cc="$cc" --ld="$ld" --posixos="$posixos" --soname="$ldsoname"`
-    fi
     echo "LDSONAME=$ldsoname" >> $makefile_cfg
     echo "LDINSTALLNAME=$ldinstallname" >> $makefile_cfg
     echo "LDINSTALLNAMEDIRROOT=$ldinstallnamedirroot" >> $makefile_cfg
@@ -2788,7 +2531,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   echo >> $makefile_cfg
   # Does the system supports threads
-  echo "   gcthread: $gcthread"
   if [ "$gcthread" != "no" ]; then
     echo "GCTHREADSUPPORT=yes" >> $makefile_cfg
     echo "CGCTHREADFLAGS=$gcthread -DBGL_GC_THREADS" >> $makefile_cfg
@@ -2798,17 +2540,16 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # find out the C library for posix threads
-  echo "   pthreadlibs: $pthreadlibs"
   echo "PTHREADLIBS=$pthreadlibs" >> $makefile_cfg
 
   # Patch the code of the thread when using non custom GC
   if [ "$pthreadlibs" != "no" ]; then
     # the default gc on mingw is built with thread support.
     # there is no need to link with a special version of gc library  
-    if [ $customgc != "yes" ]; then
+    if [ $isgccustom = "0" ]; then
       gclibth=$stdgclib
     else
-      if [ "$posixos" = "mingw" ]; then
+      if [ "$hostos " = "mingw " ]; then
         gclibth=bigloogc	
       else
         gclibth=bigloogc_fth
@@ -2823,20 +2564,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         >  lib/$release/pthread.init
-
-    # thread local storage
-    if [ "$pthreadhastls " = "1 " ]; then
-      echo "   thread local storage (experimental): yes";
-    else
-      echo "   thread local storage: no";
-    fi
-
-    # pthread timed lock
-    if [ "$pthreadtimedlock" = "1" ]; then
-      echo "   pthread_mutex_timedlock: yes"
-    else
-      echo "   pthread_mutex_timedlock: no"
-    fi
   else
     napis=;
     for a in $apis; do
@@ -2852,9 +2579,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # SSL
-  echo "   openssllibs: $openssllibs"
-
-  # Patch the code of the SSL
   if [ "$openssllibs" != "no" ]; then
     echo "OPENSSLLIBS=$openssllibs" >> $makefile_cfg
     echo ";; automatically generated. Don't edit" >  lib/$release/ssl.init
@@ -2886,7 +2610,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # SQLITE
-  echo "   sqlitelibs: $sqlitelibs"
   echo "SQLITELIBS=$sqlitelibs" >> $makefile_cfg
   if [ "$sqlitelibs " = " " ]; then
     echo "SQLITESRFI=sqltiny" >> $makefile_cfg
@@ -2897,23 +2620,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # GSTREAMER
   if [ "$gstreamer " != " " ]; then
-    if [ "$gstreameraudio " = " " ]; then
-      gstreameraudio=`$autoconfdir/gstreameraudio --user=$user --tmp=$tmp --cc="$cc" --cflags="$gstreamercflags $gstreamerlibs"`;
-      if [ "$gstreameraudio " != " " ]; then
-        echo "   gstreamer: $gstreamer (+ gstaudio)"
-        gstaudio="#t"
-        gsthaveaudio="1"
-        gstreamercflags=`pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer`
-        gstreamerlibs="`pkg-config --libs gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer` -lgstaudio-$gstreamer"
-      else
-        echo "   gstreamer: $gstreamer"
-        gstaudio="#f"
-        gsthaveaudio="0"
-        gstreamercflags=`pkg-config --cflags gstreamer-$gstreamer `
-        gstreamerlibs=`pkg-config --libs gstreamer-$gstreamer`
-      fi
-    fi
-
     echo "GSTREAMER=$gstreamer" >> $makefile_cfg
     echo "GSTREAMERLIBS=$gstreamerlibs" >> $makefile_cfg
     echo "GSTREAMERCFLAGS=$gstreamercflags" >> $makefile_cfg
@@ -2935,7 +2641,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       >  api/gstreamer/src/Clib/bglgst_config.h
 
   else
-    echo "   gstreamer: no"
     napis=;
     for a in $apis; do
        if [ "gstreamer" != $a ]; then
@@ -2998,19 +2703,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   chmod a-w $configure
 
   # Does the system supports strip
-  if( `$autoconfdir/strip --strip=$strip --user=$user --tmp=$tmp --cc="$cc"` ); then
-     echo "   strip: $strip"
-     echo "STRIP=$strip" >> $makefile_cfg
-     echo "" >> $makefile_cfg
-  else
-     echo "   strip: no"
-     echo "STRIP=true" >> $makefile_cfg
-     echo "" >> $makefile_cfg
-  fi
+  echo "STRIP=$strip" >> $makefile_cfg
+  echo "" >> $makefile_cfg
 
   # Display emacs
-  echo "   emacs: $emacsversion"
-  echo "   emacslisppath: $emacslisppath"
   echo "EMACS=$emacs" >> $makefile_cfg
   echo "EMACSDIR=$emacslisppath" >>  $makefile_cfg
   echo "EMACSBRAND=$emacsversion" >> $makefile_cfg
@@ -3023,38 +2719,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The info version
   if [ "$configureinfo" = "yes" ]; then
-    infoinfo=`$autoconfdir/info --user=$user \
-                                --tmp=$tmp \
-                                --makeinfo="$makeinfo" \
-                                --texi2dvi="$texi2dvi" \
-                                --texi2dviopt="$texi2dviopt" \
-                                --texi2pdf="$texi2pdf" \
-                                --texi2html="$texi2html" \
-                                --texi2htmlopt="$texi2htmlopt"`
-
-    if [ "$?" = "0" ]; then
-       for p in $infoinfo; do
-          case $p in
-            "")
-               break;;
-            makeinfover=*)
-               makeinfover="`echo $p | sed 's/^[-a-z_.]*=//'`";;
-            texi2dvi=*)
-               texi2dvi="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
-            texi2dviopt=*)
-               texi2dviopt="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
-            texi2pdf=*)
-               texi2pdf="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
-            texi2html=*)
-               texi2html="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
-            texi2htmlopt=*)
-               texi2htmlopt="`echo $p | sed 's/^[^=]*=//'`";;
-          esac
-       done
-       if [ "$makeinfover" = "old" ]; then
-           makeinfoopt="-D oldinfo"
-       fi
-
+    if [ "$infoinfo " != " " ]; then
        echo "MAKEINFO=$makeinfo" >> $makefile_cfg
        echo "MAKEINFOOPT=$makeinfoopt" >> $makefile_cfg
        echo "TEXI2DVI=$texi2dvi" >> $makefile_cfg
@@ -3063,34 +2728,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        echo "TEXI2HTMLOPT=$texi2htmlopt" >> $makefile_cfg
        echo "TEXI2PDF=$texi2pdf" >> $makefile_cfg
     else
-       echo "   makeinfo: no"
-       makeinfo=no
-       makeinfoopt=
-       texi2dvi=
-       texi2dviopt=
-       texi2html=
-       texi2htmlopt=
-       texi2pdf=
-
        echo "MAKEINFO=" >> $makefile_cfg
     fi
   fi
 
   # The info installation
-  echo "   checking install-info"
-  if [ "$iinfo " = " " ]; then
-    installinfo=`$autoconfdir/installinfo --user=$user --tmp=$tmp --cc=$cc --exe=$exe`
-  else
-    installinfo=`$autoconfdir/installinfo --user=$user --tmp=$tmp --cc=$cc --installinfo=$iinfo --exe=$exe`
-  fi
-
-  if [ "installinfo " = " " ]; then
-     echo "   install-info: no"
+  if [ "$installinfo " = " " ]; then
      echo "INSTALLINFO=\"\"" >> $makefile_cfg
   else
-     installinfodir=`$autoconfdir/installinfodir --user=$user --tmp=$tmp --cc=$cc --installinfo=$installinfo --exe=$exe`
-     echo "   install-info: $installinfo"
-     echo "   install-info dir opt: $installinfodir"
      echo "INSTALLINFO=$installinfo" >> $makefile_cfg
      echo "INSTALLINFODIROPT=$installinfodir" >> $makefile_cfg
   fi
@@ -3099,7 +2744,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
 
     if [ "$jvmbackend" = "yes" ]; then
-      $autoconfdir/ziptest --zip=$zip --zflags=$zflags --user=$user --tmp=$tmp
+      $autoconfdir/ziptest --zip=$zip --zflags=$zflags --user=$user --tmp=$buildtmp
 
       if [ $? = 0 ]; then
          echo "   zip: yes"
@@ -3109,7 +2754,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
          exit 3
       fi
 
-      $autoconfdir/jartest --jar=$jar --user=$user --tmp=$tmp
+      $autoconfdir/jartest --jar=$jar --user=$user --tmp=$buildtmp
 
       if [ $? = 0 ]; then
          echo "   jar: yes"
@@ -3121,7 +2766,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
       if [ "$java_configured" = "no" ]; then
         $autoconfdir/javatest --java=$java --jflags=$jflags --jvflags=$jvflags \
-                              --javac=$javac --jcflags=$jcflags --user=$user --tmp=$tmp
+                              --javac=$javac --jcflags=$jcflags --user=$user --tmp=$buildtmp
 
         if [ $? = 0 ]; then
            echo "   java: yes"
@@ -3153,7 +2798,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "JVMAPIBOOTPATH=$jvmapibootpath" >> $makefile_cfg
 
     # Cygwin prefix
-    if [ "$posixos" = "cygwin" ]; then
+    if [ "$hostos" = "cygwin" ]; then
       echo "" >> $makefile_cfg
       echo CYGWINPREFIX=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'` >> $makefile_cfg
       bigloozip=$bootdir/lib/$release
@@ -3201,7 +2846,7 @@ echo "BFEATUREFLAGS=$featureflags" >> $makefile_cfg
 
 # script extension
 echo "" >> $makefile_cfg
-case $posixos in
+case $hostos in
   cygwin)
     echo "SCRIPTEXTENSION=.bat" >> $makefile_cfg;;
   *)
@@ -3285,7 +2930,7 @@ fi
 echo "  manual pages.......................... $mandir" >> $configurelog
 echo "  info documentation.................... $infodir" >> $configurelog
 echo "  lisp files............................ $lispdir" >> $configurelog
-echo "  temporary dir......................... $tmp" >> $configurelog
+echo "  temporary dir......................... $buildtmp" >> $configurelog
 echo >> $configurelog
 echo "Compilers and linkers:" >> $configurelog
 echo "  C compiler used....................... $cc" >> $configurelog
@@ -3313,7 +2958,7 @@ echo "  dynamically linked bde tools.......... $sharedbde" >> $configurelog
 echo >> $configurelog
 if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
   echo "JVM:" >> $configurelog
-  if [ "$posixos" = "cygwin" ]; then
+  if [ "$hostos" = "cygwin" ]; then
     echo "  Cygwin dos path....................... $cygwindospath" >> $configurelog
   fi
   echo "  java default shell.................... $jshell" >> $configurelog
@@ -3329,7 +2974,7 @@ fi
 echo >> $configurelog
 if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
   echo ".NET:" >> $configurelog
-  if [ "$posixos" = "cygwin" ]; then
+  if [ "$hostos" = "cygwin" ]; then
     echo "  Cygwin dos path....................... $cygwindospath" >> $configurelog
   fi
   echo "  .NET default shell.................... $dotnetshell" >> $configurelog
@@ -3361,7 +3006,7 @@ echo "  mask for installed files.............. $bmask" >> $configurelog
 echo  >> $configurelog
 echo "System configuration:" >> $configurelog
 echo "  hardware tuning....................... $hardtune" >> $configurelog
-echo "  operating system...................... $posixos" >> $configurelog
+echo "  operating system...................... $hostos" >> $configurelog
 echo "  default executable name............... $aout" >> $configurelog
 echo  >> $configurelog
 
@@ -3381,73 +3026,71 @@ if [ "$summary" = "yes" ]; then
   echo "** Configuration summary **"
   echo 
   echo "Release features:"
-  echo "  release number........................ $release"
-  echo "  supported backends.................... $bcke"
-  echo "  default backend....................... $defaultbackend"
-  echo "  additional APIs....................... $apis"
+  echo "  release number.............. $release"
+  echo "  supported backends.......... $bcke"
+  echo "  default backend............. $defaultbackend"
+  echo "  additional APIs............. $apis"
   if [ "$pthreadlibs" = "no" ]; then
-    echo "  native threads support................ no"
+    echo "  native threads support...... no"
   else
-    echo "  native threads support................ yes"
+    echo "  native threads support...... yes"
   fi
   if [ "$openssllibs" = "no" ]; then
-    echo "  openssl support....................... no"
+    echo "  openssl support............. no"
   else
-    echo "  openssl support....................... yes (dtls $openssldtls)"
+    echo "  openssl support............. yes (dtls $openssldtls)"
   fi
   if [ "$sqlitelibs " = " " ]; then
-    echo "  sqlite support ....................... sqltiny"
+    echo "  sqlite support ............. sqltiny"
   else
-    echo "  sqlite support........................ sqltiny + sqlite"
+    echo "  sqlite support.............. sqltiny + sqlite"
   fi
   if [ "$ldopt" = "no-share" ]; then
-    echo "  dynamic libraries support............. no"
+    echo "  dynamic libraries support... no"
   else
-    echo "  dynamic libraries support............. yes"
+    echo "  dynamic libraries support... yes"
   fi
-  echo "  bee support........................... $bee"
   echo
+  echo "Bee configuration:"
+  echo "  bee support................. $bee"
+  echo "  emacs....................... $emacs"
+  echo "  emacs brand................. $emacsversion"
+  echo 
   echo "Implementation details:"
-  echo "  tuning................................ $mode $tuning"
-  echo "  cc.................................... $cc"
+  echo "  tuning...................... $mode $tuning"
+  echo "  cc.......................... $cc"
   if [ $customgc = "yes" ];then
-     echo "  gc.................................... custom ($gclib-$release, v$gcversion)"
+     echo "  gc.......................... custom ($gclib-$release, v$gcversion)"
   else
-     echo "  gc.................................... standard ($gclib, $gcincdir, v$gcversion)"
+     echo "  gc.......................... standard ($gclib, $gcincdir, v$gcversion)"
   fi
   if [ "$java_configured " = "yes " ]; then
-    echo "  Java version.......................... $java_version"
+    echo "  Java version................ $java_version"
+  fi
+  if [ "$dotnet_configured " = "yes " ]; then
+    echo "  Dotnet CLR.................. $dotnetclr"
   fi
   if [ "$gmpversion" = "no" ]; then
-    echo "  bignum support........................ scheme implementation"
+    echo "  bignum support.............. scheme implementation"
   else
-    echo "  bignum support........................ gmp ($gmpversion)"
+    echo "  bignum support.............. gmp ($gmpversion)"
   fi
   echo
   echo "Directories where Bigloo will be installed:"
-  echo "  binaries.............................. $bindir"
-  echo "  libraries............................. $libdir"
-  echo "  files directory....................... $fildir"
-  echo "  standard zip.......................... $zipdir"
+  echo "  binaries.................... $bindir"
+  echo "  libraries................... $libdir"
+  echo "  files directory............. $fildir"
+  echo "  standard zip................ $zipdir"
   if [ "$syszipdir " != "$zipdir " ]; then
-    echo "  standard zip (os dependent)........... $syszipdir"
+    echo "  standard zip (os dependent). $syszipdir"
   fi
-  echo "  standard dll.......................... $dlldir"
+  echo "  standard dll................ $dlldir"
   if [ "$sysdlldir " != "$dlldir " ]; then
-    echo "  standard dll (os dependent)........... $sysdlldir"
+    echo "  standard dll (os dependent). $sysdlldir"
   fi
-  echo "  manual pages.......................... $mandir"
-  echo "  info documentation.................... $infodir"
-  echo "  lisp files............................ $lispdir"
-  echo "  temporary dir......................... $tmp"
+  echo "  manual pages................ $mandir"
+  echo "  info documentation.......... $infodir"
+  echo "  lisp files.................. $lispdir"
+  echo "  temporary build dir......... $buildtmp"
   echo
-  echo "Emacs configuration:"
-  echo "  emacs................................. $emacs"
-  echo "  emacs brand........................... $emacsversion"
-  if [ $emacsversion = "generic" ]; then
-    echo "  lisp directory........................ no support (update emacs)"
-  else
-    echo "  lisp directory........................ $emacslisppath"
-  fi
-  echo 
 fi

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Tue Oct  7 09:02:56 2008 (serrano)                */
-#*    Copyright   :  2003-08 Manuel Serrano                            */
+#*    Last change :  Mon Sep  7 09:25:02 2009 (serrano)                */
+#*    Copyright   :  2003-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -32,10 +32,10 @@ POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
-BDEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
+BIGLOO		= $(BUILDBIGLOO)
+AFILE		= $(BUILDBINDIR)/$(AFILE_EXE)
+BTAGS		= $(BUILDBINDIR)/$(BTAGS_EXE)
+BDEPEND		= $(BUILDBINDIR)/$(BDEPEND_EXE)
 IFLAGS		= -Ilib -I$(BOOTLIBDIR) -I$(LIBDIR)/$(FILDIR)
 CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS)
 BMEMFLAGS	= $(BFLAGS) -g -I bmem

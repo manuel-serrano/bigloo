@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Dec 19 09:25:20 2008 (serrano)                */
+#*    Last change :  Sat Sep  5 06:08:16 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -12,10 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
-tmp=/tmp
-user=bigloo
 gcdir=gc-boehm
 gcincdir=/usr/include/gc
 gclibdir=/usr/lib
@@ -29,17 +26,8 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gcincdir=*)
       gcincdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -59,13 +47,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib >/dev/null 2> configure.log"
+compile="$CC $cflags $file.c -o $aout -I$gcincdir -I$gcincdir/gc -L$gclibdir -l$gclib >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

@@ -1,0 +1,30 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/gc/configure-gc-7.2alpha2            */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Sep  7 09:49:25 2009                          */
+#*    Last change :  Mon Sep  7 10:02:31 2009 (serrano)                */
+#*    Copyright   :  2009 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Ad-hoc configuration for the GC.                                 */
+#*=====================================================================*/
+
+# configure the collector for single-threaded applications
+(cd gc/$gccustom && \
+ export CC=$cc && \
+ export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
+ export LDFLAGS=$lflags && \
+ ./configure $gcconfiguredir $gcconfigureopt --disable-threads >> configure.log || \
+ (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
+
+# configure the collector for multi-threaded applications
+if [ "$threadsupport " != "no " ]; then
+  (cd "gc/$gccustom"_fth && \
+   export CC=$cc && \
+   export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
+   export LDFLAGS=$lflags && \
+   echo "Configuring custom multi-threaded GC..." && \
+   ./configure $gcconfiguredir $gcconfigureopt --enable-thread >> configure.log || \
+   (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
+fi

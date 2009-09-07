@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Tue Jun 21 08:05:32 2005 (serrano)                */
+#*    Last change :  Sun Sep  6 22:14:34 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking if the compiler and linker *require* -f[pic|PIC]        */
 #*=====================================================================*/
@@ -93,7 +93,7 @@ res=0
 #*---------------------------------------------------------------------*/
 #*    Compilation test 1                                               */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+if $CC $cflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
 then
    true
 else
@@ -105,7 +105,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 2                                               */
 #*---------------------------------------------------------------------*/
-if $cc $cflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+if $CC $cflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
 then
    true
 else
@@ -127,7 +127,7 @@ fi
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
 if [ "$res" = "0" ]; then
-  if $cc $cflags -o $aout $file.c $file.so >/dev/null 2>&1
+  if $CC $cflags -o $aout $file.c $file.so >/dev/null 2>&1
   then
      true
   else
@@ -164,7 +164,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 1                                               */
 #*---------------------------------------------------------------------*/
-if $cc $cflags $cpicflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+if $CC $cflags $cpicflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
 then
    true
 else
@@ -177,7 +177,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 2                                               */
 #*---------------------------------------------------------------------*/
-if $cc $cflags $cpicflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+if $CC $cflags $cpicflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
 then
    true
 else
@@ -201,7 +201,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if $cc $cflags $cpicflags -o $aout $file.c $file.so >/dev/null 2>&1
+if $CC $cflags $cpicflags -o $aout $file.c $file.so >/dev/null 2>&1
 then
    true
 else

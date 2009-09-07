@@ -1,0 +1,95 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/mkruntest                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Sep  4 13:50:03 2009                          */
+#*    Last change :  Sun Sep  6 20:35:54 2009 (serrano)                */
+#*    Copyright   :  2009 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Generate the runtest file                                        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Default setting                                                  */
+#*---------------------------------------------------------------------*/
+hostsh=""
+hostos="unknown"
+hostosversion="unknown"
+hostcpu="unknown"
+
+buildsh=""
+
+autoconfdir="autoconf"
+log="configure.log"
+tmp=/tmp
+user=bigloo
+
+cc=gcc
+
+#*---------------------------------------------------------------------*/
+#*    command line parsing                                             */
+#*---------------------------------------------------------------------*/
+dest=$1
+shift
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --hostsh=*)
+      hostsh="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostos=*)
+      hostos="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostosversion=*)
+      hostosversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --hostcpu=*)
+      hostcpu="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --buildsh=*)
+      buildsh="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --autoconfdir=*)
+      autoconfdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --log=*)
+      log="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --user=*)
+      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --tmp=*)
+      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --cc=*)
+      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    *)
+      echo "*** ERROR: Illegal option \"$1\"";
+      exit 1;;
+
+  esac
+  shift
+done
+
+cat $dest.in \
+   | sed -e "s|@DATE@|`date`|" \
+         -e"s|@HOSTSH@|$hostsh|" \
+         -e"s|@HOSTOS@|$hostos|" \
+         -e"s|@HOSTOSVERSION@|$hostosversion|" \
+         -e"s|@HOSTCPU@|$hostcpu|" \
+         -e"s|@BUILDSH@|$buildsh|" \
+         -e"s|@AUTOCONFDIR@|$autoconfdir|" \
+         -e"s|@LOG@|$log|" \
+         -e"s|@USER@|$user|" \
+         -e"s|@TMP@|$tmp|" \
+         -e"s|@CC@|$cc|" \
+   > $dest
+
+chmod a+rx $dest
+
+exit 0

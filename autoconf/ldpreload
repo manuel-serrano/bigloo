@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Thu May 12 09:54:47 2005 (serrano)                */
+#*    Last change :  Sun Sep  6 21:57:31 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -12,13 +12,10 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 ld=ld
 ldopt=
 ldlibs=
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,12 +24,6 @@ while : ; do
   case $1 in
     "")
       break;;
-
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -46,9 +37,6 @@ while : ; do
     --ldlibs=*|-ldlibs=*)
       ldlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "ldshare: Unknown option \"$1\", ignored" >&2;;
   esac
@@ -58,11 +46,11 @@ done
 #*---------------------------------------------------------------------*/
 #*    Guessed option                                                   */
 #*---------------------------------------------------------------------*/
-case `uname -s` in
-  Darwin*|darwin*)
+case $HOSTOS in
+  darwin)
     echo "no";;
 
-  MINGW*|Mingw*|mingw*)
+  mingw)
     echo "no";;
 
   *)

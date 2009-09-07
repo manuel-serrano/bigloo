@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Sep 12 15:01:52 2008 (serrano)                */
+#*    Last change :  Fri Sep  4 18:59:22 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for if the host supports pthread local storage.            */
 #*=====================================================================*/
@@ -12,12 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 pthreadlibs="-lpthread"
-tmp=/tmp
-user=bigloo
-posixos="unix"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,23 +23,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --lib=*|-lib=*)
       pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -52,13 +36,13 @@ while : ; do
 done
 
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout $pthreadlibs >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -72,6 +56,7 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <pthread.h>
+#include <stdio.h>
 
 static __thread int tls;
 

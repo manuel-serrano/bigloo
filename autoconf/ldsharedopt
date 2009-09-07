@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Aug 10 09:05:45 1998                          */
-#*    Last change :  Wed Jan 14 12:04:47 2004 (serrano)                */
+#*    Last change :  Sun Sep  6 22:13:44 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    This script setup the link option for dynamic linking.           */
 #*    -------------------------------------------------------------    */
@@ -15,11 +15,7 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
-posixos="unix"
 lib=$1
-tmp=/tmp
-user=bigloo
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -29,45 +25,33 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
 
-if [ "$posixos" = "unix" ]; then
-  if [ "`uname -s`" = "OSF" ]; then
-     mach=`uname -m`
-     case $mach in
-        alpha)
-           echo "-rpath $lib -expect_unresolved '*'";;
-        *)
-           echo "";;
+
+case $HOSTOS in
+  osf)
+    case $HOSTCPU in
+      alpha)
+        echo "-rpath $lib -expect_unresolved '*'";;
+      *)
+        echo "";;
      esac
-  else
-     if [ "`uname -s`" = "AIX" ]; then
-        if [ "$cc" = "gcc" ]; then
-           echo "-Xlinker -bbigtoc"
-        else
-           #echo "-bbigtoc"
-           echo "-bdynamic -brtl"
-        fi
-     else
-        echo ""
-     fi
-  fi
-else
-  echo ""
-fi
+     ;;
+
+  aix)
+    if [ "$CC" = "gcc" ]; then
+      echo "-Xlinker -bbigtoc"
+    else
+      #echo "-bbigtoc"
+      echo "-bdynamic -brtl"
+    fi
+    ;;
+
+  *)
+    echo "";;
+
+esac

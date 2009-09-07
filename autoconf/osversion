@@ -1,0 +1,19 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/osversion                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Oct 22 11:07:08 1997                          */
+#*    Last change :  Mon Sep  7 08:05:57 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
+#*    Linux, Cygwin, etc, oses).                                       */
+#*=====================================================================*/
+
+version=`$HOSTSH uname -s`
+
+if [ $? ]; then
+  echo $version
+else
+  echo "-"
+fi

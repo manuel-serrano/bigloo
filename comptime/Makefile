@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Sep  4 08:38:08 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 09:27:11 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBIGLOO)
+BIGLOO		= $(BUILDBIGLOO)
 # the produced executable
 BIGLOO_DEST	= $(BOOTBINDIR)/bigloo
 # the .afile
@@ -449,7 +449,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 	          -copt "$(EXTRA_LD_OPT)" \
 	          -o $(BIGLOO_DEST).aux \
 	          $(O_OBJECTS)
-	@ if [ $(POSIXOS) = "cygwin" ]; then \
+	@ if [ $(HOSTOS) = "cygwin" ]; then \
 	    echo "Waiting a few seconds for the lock on $@ to be released..."; \
 	    sleep 5s; \
 	  fi

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Nov 21 10:39:18 2006 (serrano)                */
+#*    Last change :  Sat Sep  5 06:19:08 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -12,12 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 openssllibs=
-tmp=/tmp
-user=bigloo
-posixos="unix"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -27,23 +23,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --lib=*|-lib=*)
       openssllibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --posixos=*|-posixos=*)
-      posixos="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -52,7 +36,7 @@ while : ; do
 done
 
 if [ "$openssllibs " = " " ]; then
-  case $posixos in
+  case $HOSTOS in
     mingw)
       openssllibs="-leay32 -lssleay32";;
 
@@ -61,13 +45,13 @@ if [ "$openssllibs " = " " ]; then
   esac
 fi
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout $openssllibs >/dev/null 2> /dev/null"
+compile="$CC $cflags $file.c -o $aout $openssllibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

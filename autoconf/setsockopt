@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Sep  8 10:15:56 2008 (serrano)                */
+#*    Last change :  Sun Sep  6 21:22:11 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for setsockopt function and options.                       */
 #*=====================================================================*/
@@ -12,12 +12,9 @@
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
-cc=gcc
 cflags=
 solaris_lib="-lsocket -lnsl"
 mingw_lib="-lws2_32"
-tmp=/tmp
-user=bigloo
 tcp_opt=TCP_NODELAY
 
 #*---------------------------------------------------------------------*/
@@ -28,20 +25,11 @@ while : ; do
     "")
       break;;
 
-    --user=*)
-      user="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --cc=*|-cc=*)
-      cc="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --lib=*|-lib=*)
       lib="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
-    --tmp=*|-tmp=*)
-      tmp="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --opt=*)
       tcp_opt="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -52,13 +40,13 @@ while : ; do
   shift
 done
 
-file=$tmp/actest$user
-aout=$tmp/Xactest$user
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
 #*    mingw is super clear                                             */
 #*---------------------------------------------------------------------*/
-if [ "$posixos" = "mingw32" ]; then
+if [ "$HOSTOS " = "mingw" ]; then
   echo "-lws2_32" # -lwsock32 -lmswsock"
   exit 0
 fi
@@ -66,9 +54,9 @@ fi
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$cc $cflags $file.c -o $aout $lib >/dev/null 2> /dev/null"
-compile_solaris="$cc $cflags $file.c -o $aout $solaris_lib >/dev/null 2> /dev/null"
-compile_mingw="$cc -D_MINGW_VER $cflags $file.c -o $aout $mingw_lib >/dev/null 2>&1"
+compile="$CC $cflags $file.c -o $aout $lib >/dev/null"
+compile_solaris="$CC $cflags $file.c -o $aout $solaris_lib >/dev/null"
+compile_mingw="$CC -D_MINGW_VER $cflags $file.c -o $aout $mingw_lib >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
