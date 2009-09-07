@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Sun Sep  6 21:46:01 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 15:28:53 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking GC compilation flags                                    */
 #*=====================================================================*/
@@ -124,11 +124,11 @@ case $HOSTOS in
          ;;
 
      esac
-     echo $cgcflags
+     echo $flags
      ;;
 
    *)
-     echo $cgcflags;;
+     echo $cgflags;;
 esac
 
 exit 0
