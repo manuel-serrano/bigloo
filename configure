@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Sep  7 10:01:45 2009 (serrano)                */
+#*    Last change :  Mon Sep  7 14:45:28 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1014,6 +1014,9 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Configure bootstrap                                              */
 #*---------------------------------------------------------------------*/
+# COMMAND_MODE is required by bash to support echo -n (used by runtest.in)
+COMMAND_MODE=legacy; export COMMAND_MODE
+
 # First, generate a first version or runtest that used to grad HOST info
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
