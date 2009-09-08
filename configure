@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Sep  7 16:02:15 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 11:08:37 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1417,11 +1417,10 @@ if [ "$customgc " = "no " ]; then
      echo "Try to configure Bigloo with \"--customgc=yes\"."
      exit 1;
   fi
-  closegclib=$gclib
 else
   isgccustom=1
   gclib=$customgclib;
-  closegclib=$customgclib-$release;
+
   gcincdir=$pwd/gc/$gccustom/include
    # detect if we are using maemo for an ARM emulation
   maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
@@ -1883,16 +1882,16 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     echo "   shared library: no"
     haveshlib=0
   else
-    ldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt" --ldlibs="-lc -l$closegclib -lbigloo_s-$release -lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
+    ldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt" --ldlibs="-lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
     if [ "$ldopt" = "no-share" ]; then
-      ldopt=`$autoconf ldshare --ld="ld" --ldopt="$ldopt" --ldlibs="-lc -l$closegclib -lbigloo_s-$release -lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
+      ldopt=`$autoconf ldshare --ld="ld" --ldopt="$ldopt" --ldlibs="-lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
     fi
     if [ "$ldopt" = "no-share" ]; then
       haveshlib=0
       cpicflags="-DBGL_NO_PIC"
     else
       haveshlib=1
-      ldpreload=`$autoconf ldpreload --ld="$ld" --ldlibs="-lc -l$closegclib -lbigloo_s-$release -lc" --ldopt="$ldopt"` || exit 1
+      ldpreload=`$autoconf ldpreload --ld="$ld" --ldlibs="-lc" --ldopt="$ldopt"` || exit 1
     fi
   fi
 
