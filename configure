@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep  8 11:08:37 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 15:24:13 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -161,7 +161,7 @@ gstusethread=1
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=gc-7.2alpha2
+gccustom=gc-7.1
 gcversion=
 # the following  variable is relevant only when using 
 # standard (i.e. already existing and operational) Boehm's GC
@@ -1109,15 +1109,12 @@ if [ "$buildosversion " = " " ]; then
   buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
 fi
 
-echo "os: $buildos; cpu: $buildcpu; version: $buildversion"
-
 if [ "$hostos " != "$buildos " -o \
     "$hostcpu " != "$buildcpu " -o \
     "$hostosversion " != "$buildosversion " ]; then
-  echo "Cross compilation detected"
+  echo "Cross compilation detected..."
 
   # try to detect cross-tools
-
   tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
   if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
       ar="$tmp";
@@ -1138,8 +1135,6 @@ if [ "$hostos " != "$buildos " -o \
       ranlib="$tmp";
       echo "  Using ranlib=$ranlib";
   fi
-else
- echo "same machine???"
 fi
 
 #*---------------------------------------------------------------------*/

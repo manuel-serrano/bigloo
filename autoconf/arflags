@@ -1,0 +1,47 @@
+#!/bin/sh
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+ar=ar
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --ar=*|-ar=*)
+      ar="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --name=*|-name=*)
+      name="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+bname=`basename $name`
+
+arflags=qc
+
+(cd $TMP;
+ compile="$ar $arflags $bname.a $name.o > /dev/null";
+ if eval "$BUILDSH $compile"; then
+    echo $arflags;
+ else
+    arflags="-q -c";
+    compile="$ar $arflags $bname.a $name.o > /dev/null";
+    if eval "$BUILDSH $compile"; then
+      echo $arflags
+    else
+      echo "Can't automatically setup ar flags. Set ar and ar flags" >&2;
+      rm -f $name.s $name.o $bname.a;
+      exit 1
+    fi
+ fi) || exit $*
+

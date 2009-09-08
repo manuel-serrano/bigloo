@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Mon Sep  7 14:44:05 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 15:23:20 2009 (serrano)                */
 #*    Copyright   :  1997-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -42,7 +42,7 @@ POPULATION	= Makefile \
                   stdint stdlibint unistdint maemo.arm \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
                   gstreamer gstreameraudio dbus gmp limbs signbit \
-                  getuid getprotoent machdep
+                  getuid getprotoent machdep arflags
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
