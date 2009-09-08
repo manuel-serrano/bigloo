@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Sep  8 09:42:58 2009 (serrano)                */
+;*    Last change :  Tue Sep  8 09:55:09 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -280,8 +280,6 @@
 				      (cond-expand
 					 (bigloo-c (libinfo-module_e info))
 					 (else (libinfo-class_e info))))))
-		   (tprint "LIB=" lib " PATH=" path)
-		   (tprint "INIT=" init "(" (library-init-file lib) ") init_e=" init_e " init_s=" init_s " module_s=" module_s " module_e=" module_e)
 		   (cond
 		      ((and (not (string? rsc)) (not (string? libs)))
 		       (error 'library-load
