@@ -63,7 +63,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
@@ -72,4 +72,3 @@ else
    \rm -f $file.*
    echo 0
 fi
-

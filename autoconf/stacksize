@@ -95,9 +95,9 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 status=1
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
-   if eval $aout; then
+   if eval "$HOSTSH $aout"; then
      status=0;
    fi
 fi

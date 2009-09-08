@@ -68,11 +68,12 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile 2> /dev/null; then
-   $aout
+if eval "$BUILDSH $compile" 2> /dev/null; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
    rm -f $aout
    rm -f $file.*
-   exit 0;
+   exit $ret_code;
 fi
 
 cat > $file.c <<EOF
@@ -91,11 +92,12 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile 2> /dev/null; then
-   $aout
+if eval "$BUILDSH $compile" 2> /dev/null; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
    rm -f $aout
    rm -f $file.*
-   exit 0;
+   exit $ret_code;
 fi
 
 cat > $file.c <<EOF
@@ -109,11 +111,12 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile 2> /dev/null; then
-   $aout
+if eval "$BUILDSH $compile" 2> /dev/null; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
    rm -f $aout
    rm -f $file.*
-   exit 0;
+   exit $ret_code;
 fi
 
 rm -f $aout

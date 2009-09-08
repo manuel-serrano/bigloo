@@ -90,7 +90,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    echo $cflags
    exit 0
@@ -99,7 +99,7 @@ fi
 cflags=-fPIC
 compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    echo $cflags
    exit 0
@@ -108,7 +108,7 @@ fi
 cflags=-fpic
 compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    echo $cflags
    exit 0

@@ -73,7 +73,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    indent                                                           */
 #*---------------------------------------------------------------------*/
-eval $indent 2> /dev/null
+eval "$BUILDSH $indent" 2> /dev/null
 
 rm $file.c
 
@@ -92,10 +92,10 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    rm -f $file.*
    rm -f $file-indent.c
-   if( eval $aout ); then
+   if( eval "$HOSTSH $aout" ); then
       rm -f $aout
       rm -f $aout*
       echo 1

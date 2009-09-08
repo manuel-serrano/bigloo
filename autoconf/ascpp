@@ -36,8 +36,6 @@ done
 
 obj=`basename $name`
 
-echo "name=$name" > /tmp/FOO
-
 #*---------------------------------------------------------------------*/
 #*    We create the file                                               */
 #*---------------------------------------------------------------------*/
@@ -57,37 +55,37 @@ EOF
 #*---------------------------------------------------------------------*/
 (cd $TMP; 
  compile="$as $name.s -o $obj.o > /dev/null";
- if eval $compile > /dev/null; then
+ if eval "$BUILDSH $compile" > /dev/null; then
    \rm -f $TMP/$name.s
    echo $as
  else
    compile="$as -P $name.s -o $obj.o > /dev/null";
-   if eval $compile > /dev/null; then
+   if eval "$BUILDSH $compile" > /dev/null; then
      \rm -f $TMP/$name.s
      echo "$as -P"
    else
      compile="as $name.s -o $obj.o > /dev/null";
-     if eval $compile > /dev/null; then
+     if eval "$BUILDSH $compile" > /dev/null; then
        \rm -f $TMP/$name.s
        echo as
      else
        compile="as -P $name.s -o $obj.o > /dev/null";
-       if eval $compile > /dev/null; then
+       if eval "$BUILDSH $compile" > /dev/null; then
          \rm -f $TMP/$name.s
          echo "as -P"
        else
          compile="$CC $name.s -o $obj.o > /dev/null";
-         if eval $compile > /dev/null; then
+         if eval "$BUILDSH $compile" > /dev/null; then
            \rm -f $TMP/$name.s
            echo $CC
          else
            compile="$CC -c -x assembler-with-cpp $name.s -o $obj.o > /dev/null";
-           if eval $compile > /dev/null; then
+           if eval "$BUILDSH $compile" > /dev/null; then
              \rm -f $TMP/$name.s
              echo "$CC -c -x assembler-with-cpp"
            else
              compile="gcc -c -x assembler-with-cpp $name.s -o $obj.o > /dev/null";
-             if eval $compile > /dev/null; then
+             if eval "$BUILDSH $compile" > /dev/null; then
                \rm -f $TMP/$name.s
                echo "gcc -c -x assembler-with-cpp"
              fi

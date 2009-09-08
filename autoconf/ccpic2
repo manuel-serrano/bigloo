@@ -93,7 +93,7 @@ res=0
 #*---------------------------------------------------------------------*/
 #*    Compilation test 1                                               */
 #*---------------------------------------------------------------------*/
-if $CC $cflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+if eval "$BUILDSH $CC $cflags -c $file-lib1.c -o $obj-lib1.o" >/dev/null 2>&1
 then
    true
 else
@@ -105,7 +105,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 2                                               */
 #*---------------------------------------------------------------------*/
-if $CC $cflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+if eval "$BUILDSH $CC $cflags -c $file-lib2.c -o $obj-lib2.o" >/dev/null 2>&1
 then
    true
 else
@@ -117,7 +117,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-$ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o -lc -lm >/dev/null 2>&1
+eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o -lc -lm" >/dev/null 2>&1
 if [ ! -f $file.so ]; then
   \rm -f $obj-lib*.o
   res=4
@@ -127,7 +127,7 @@ fi
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
 if [ "$res" = "0" ]; then
-  if $CC $cflags -o $aout $file.c $file.so >/dev/null 2>&1
+  if eval "$BUILDSH $CC $cflags -o $aout $file.c $file.so" >/dev/null 2>&1
   then
      true
   else
@@ -141,7 +141,7 @@ fi
 #*---------------------------------------------------------------------*/
 if [ "$res" = "0" ]; then
   if [ -f $aout ]; then
-    $aout >/dev/null 2>&1
+    eval "$HOSTSH $aout" >/dev/null 2>&1
     res2=$?
     \rm -f $aout
   else
@@ -164,7 +164,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 1                                               */
 #*---------------------------------------------------------------------*/
-if $CC $cflags $cpicflags -c $file-lib1.c -o $obj-lib1.o >/dev/null 2>&1
+if eval "$BUILDSH $CC $cflags $cpicflags -c $file-lib1.c -o $obj-lib1.o" >/dev/null 2>&1
 then
    true
 else
@@ -177,7 +177,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test 2                                               */
 #*---------------------------------------------------------------------*/
-if $CC $cflags $cpicflags -c $file-lib2.c -o $obj-lib2.o >/dev/null 2>&1
+if eval "$BUILDSH $CC $cflags $cpicflags -c $file-lib2.c -o $obj-lib2.o" >/dev/null 2>&1
 then
    true
 else
@@ -190,7 +190,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-$ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o >/dev/null 2>&1
+eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib1.o $obj-lib2.o" >/dev/null 2>&1
 if [ ! -f $file.so ]; then
   \rm -f $file*
   \rm -f $obj-lib*.o
@@ -201,7 +201,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if $CC $cflags $cpicflags -o $aout $file.c $file.so >/dev/null 2>&1
+if eval "$BUILDSH $CC $cflags $cpicflags -o $aout $file.c $file.so" >/dev/null 2>&1
 then
    true
 else
@@ -215,7 +215,7 @@ fi
 #*    Execution test                                                   */
 #*---------------------------------------------------------------------*/
 if [ -f $aout ]; then
-  $aout >/dev/null 2>&1
+  eval "$HOSTSH $aout" >/dev/null 2>&1
   res3=$?
   \rm -f $aout
 else

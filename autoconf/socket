@@ -83,19 +83,19 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile 2> /dev/null; then
+if eval "$BUILDSH $compile" 2> /dev/null; then
   \rm -f $file.*
   \rm -f $aout
   \rm -f $aout*
   echo ""
   exit 0
-elif eval $compile_solaris 2> /dev/null; then
+elif eval "$BUILDSH $compile_solaris" 2> /dev/null; then
   \rm -f $file.*
   \rm -f $aout
   \rm -f $aout*
   echo $solaris_lib
   exit 0
-elif eval $compile_mingw 2>/dev/null; then
+elif eval "$BUILDSH $compile_mingw" 2>/dev/null; then
   \rm -f $file.*
   \rm -f $aout
   \rm -f $aout*
@@ -105,10 +105,3 @@ else
   \rm -f $file.*
   exit 0
 fi
-
-
-
-   
-
-
-

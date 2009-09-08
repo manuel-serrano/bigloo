@@ -61,7 +61,7 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    echo "1"
 else
    echo "0"

@@ -10,7 +10,23 @@
 #*    Linux, Cygwin, etc, oses).                                       */
 #*=====================================================================*/
 
-version=`$HOSTSH uname -r`
+SH="$HOSTSH"
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --sh=*)
+      SH="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+version=`$SH uname -r`
 
 if [ $? ]; then
   echo $version

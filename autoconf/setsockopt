@@ -95,7 +95,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile 2> /dev/null; then
+if eval "$BUILDSH $compile" 2> /dev/null; then
    echo "1"
 else
    echo "0"

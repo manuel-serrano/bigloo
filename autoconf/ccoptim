@@ -144,8 +144,8 @@ compile="$CC $cflags $file1.c -c &&
          mv `basename $file2.o` $file2.o && \
          $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile; then
-   $aout; res=$?
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"; res=$?
 else
    res=1;
 fi
@@ -164,8 +164,8 @@ compile="$CC $cflags $file1.c -c && \
          mv `basename $file2.o` $file2.o && \
          $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile; then
-   $aout; res=$?
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"; res=$?
 else
    res=1;
 fi
@@ -184,8 +184,8 @@ compile="$CC $cflags $file1.c -c && \
          mv `basename $file2.o` $file2.o && \
          $CC $cflags $file1.o $file2.o -o $aout"
 
-if eval $compile; then
-   $aout; res=$?
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"; res=$?
 else
    res=1;
 fi

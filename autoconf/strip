@@ -59,7 +59,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if ! $CC $cflags -c $file.c -o $aout >/dev/null; then
+if ! eval "$BUILDSH $CC $cflags -c $file.c -o $aout" >/dev/null; then
   if [ "`cat $err` " = " " ]; then
     /bin/rm $err
     echo "true"
@@ -74,7 +74,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We test strip                                                    */
 #*---------------------------------------------------------------------*/
-if ! eval "strip $aout > /dev/null" >/dev/null; then
+if ! eval "$BUILDSH $strip $aout > /dev/null" >/dev/null; then
   echo "true"
 else 
   echo "$strip"

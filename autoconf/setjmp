@@ -64,8 +64,8 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
-   res=`$aout`
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout" > /dev/null
 
    if [ "$?" = "1" ]; then
       echo "sig"
@@ -97,8 +97,8 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
-   res=`$aout`
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout" > /dev/null
 
    if [ "$?" = "1" ]; then
       echo "_"

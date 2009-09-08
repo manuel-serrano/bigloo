@@ -80,7 +80,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile 2> /dev/null; then
+if eval "$BUILDSH $compile" 2> /dev/null; then
    rm -f $aout
    rm -f $aout*
    echo "1"
@@ -89,8 +89,3 @@ else
 fi
 
 \rm -f $file.*
-
-   
-
-
-

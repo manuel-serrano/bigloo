@@ -50,11 +50,10 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Build the MacOSX shared library                                  */
 #*---------------------------------------------------------------------*/
-$CC -c $cflags $file1.c -c && mv `basename $file1.o` $file1.o && \
-$CC -dynamiclib -single_module $file1.o -o $file1.dylib -lc 2>&1 \
+eval "$BUILDSH $CC -c $cflags $file1.c -c && mv `basename $file1.o` $file1.o" && \
+eval "$BUILDSH $CC -dynamiclib -single_module $file1.o -o $file1.dylib -lc" 2>&1 \
 | grep "unrecognized" 2> /dev/null > /dev/null && \
 /bin/rm $file1.* && echo "no"
 
 /bin/rm $file1.*
 echo "yes" 
-

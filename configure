@@ -62,19 +62,19 @@ cstrip="-s"
 cpicflags="demanded" # Possible values for cpicflags are:
              #  - "no" not to use position independent code (recommended)
              #  - "demanded" auto configuration but with a preference to "no"
-             #  - any legal C compiler option that enable PIC code.
+             #  - any legal C compiler option that enables PIC code.
              #  - blank (uninitalized) for automatic configuration of the
              #    position independent code compiler option
-as=as
-ar=ar
-ranlib=
-arflags=qc
+as=          # left blank for autoconfiguration
+ar=          # left blank for autoconfiguration
+ranlib=      # left blank for autoconfiguration
+arflags=     # left blank for autoconfiguration
 ldstyle=gcc
 ldflags=
 ld=
 ldlibs=-lc
 ldcomplibs=-lc
-strip=strip
+strip=       # left blank for autoconfiguration
 longlong=    # The C type to represent long long integers
 havelonglong=
 stringsplit="0"
@@ -161,7 +161,7 @@ gstusethread=1
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=gc-7.1
+gccustom=gc-7.2alpha2
 gcversion=
 # the following  variable is relevant only when using 
 # standard (i.e. already existing and operational) Boehm's GC
@@ -202,13 +202,17 @@ jvmrecettebootpath=
 jvmapibootpath=
 oscharset=
 
+buildos=
+buildosversion=
+buildcpu=
+
 #*--- cygwin specific configuration -----------------------------------*/
 # The location where cygwin is installed
 cygwindospath=
 cygwindosjvm="yes"
 cygwindosdotnet="yes"
 
-#*--- mingw specific configuration ------------------------------------*/
+#*--- mingw/macosx specific configuration ------------------------------------*/
 mingw="no"
 macosx=auto
 
@@ -250,6 +254,10 @@ customgclib=bigloogc
 gchaveblocking=0
 gchavedoblocking=0
 gcfinalizer=0
+
+#*--- Cross Compilation -----------------------------------------------*/
+hostsh=
+buildsh=
 
 #*---------------------------------------------------------------------*/
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
@@ -783,6 +791,9 @@ while : ; do
       done
       apis=$napis;;
 
+    --hostsh=*)
+      hostsh="`echo $1 | sed 's/^[^=]*=//'`";;
+
     -*)
       if [ "$1" != "-h" -a "$1" != "-help" -a "$1" != "--help" ]; then
         echo "*** ERROR: Illegal option \"$1\""
@@ -1017,9 +1028,10 @@ fi
 # COMMAND_MODE is required by bash to support echo -n (used by runtest.in)
 COMMAND_MODE=legacy; export COMMAND_MODE
 
-# First, generate a first version or runtest that used to grad HOST info
+# First, generate an incomplete version of runtest that is used to grab HOST info
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
+   --hostsh="$hostsh" \
    --log=$configurelog \
    --hostos="dummy" \
    --user=""
@@ -1045,6 +1057,8 @@ if [ "$user " = " " ]; then
 fi
 
 # Check the C compiler
+# [flo/20090907] in theory we could try to use the hostos, etc to try to find a
+#                cross compiler.
 if [ "$cc " = " " ]; then
   for cc in "gcc cc"; do
      cc=`$autoconf cctest --cc=gcc` || exit 1
@@ -1063,7 +1077,7 @@ else
   fi
 fi
 
-# Second, generate the version or runtest that used to grad HOST info
+# Second, replace runtest by one that contains the host information.
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
    --log=$configurelog \
@@ -1075,6 +1089,58 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --tmp="$buildtmp" \
    --user="$user" \
    --cc=$cc
+
+#*---------------------------------------------------------------------*/
+#*    Cross Compilation                                                */
+#*---------------------------------------------------------------------*/
+#
+# Grab the buildos info
+if [ "$buildos " = " " ]; then
+  buildos=`$autoconfdir/os --sh=""` || exit 1
+fi
+
+# Grab the buildcpu info
+if [ "$buildcpu " = " " ]; then
+  buildcpu=`$autoconfdir/cpu --sh=""` || exit 1
+fi
+
+# Grab the buildosversion info
+if [ "$buildosversion " = " " ]; then
+  buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
+fi
+
+echo "os: $buildos; cpu: $buildcpu; version: $buildversion"
+
+if [ "$hostos " != "$buildos " -o \
+    "$hostcpu " != "$buildcpu " -o \
+    "$hostosversion " != "$buildosversion " ]; then
+  echo "Cross compilation detected"
+
+  # try to detect cross-tools
+
+  tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
+  if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ar="$tmp";
+      echo "  Using ar=$ar";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-as/'`;
+  if [ "$as " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      as="$tmp";
+      echo "  Using as=$as";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-strip/'`;
+  if [ "$strip " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      strip="$tmp";
+      echo "  Using strip=$strip";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-ranlib/'`;
+  if [ "$ranlib " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ranlib="$tmp";
+      echo "  Using ranlib=$ranlib";
+  fi
+else
+ echo "same machine???"
+fi
 
 #*---------------------------------------------------------------------*/
 #*    C tool chain                                                     */
@@ -1090,7 +1156,8 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   if [ "$ld " = " " ]; then ld=$cc; fi
   
   # as
-  as=`$autoconf ascpp -as="$as" --name=$name` || exit 1
+  if [ ! $as ]; then as="as"; fi
+  as=`$autoconf ascpp --as="$as" --name=$name` || exit 1
 
   if [ "$as " = " " -o ! -f $name.o ]; then
     echo "Can't find assembly that invokes cpp. Set the as variable" >&2;
@@ -1098,37 +1165,23 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   fi
 
   # ar
-  echo "+ checking $ar $arflags..."  >> $configurelog
-  
-  (cd $buildtmp;
-   bname=`basename $name`;
+  if [ ! $ar ]; then ar="ar"; fi
+  arflags=`$autoconf arflags --ar=$ar --name=$name` || exit 1
 
-   compile="$ar $arflags $bname.a $name.o > /dev/null 2>> $configurelog";
-   if eval $compile; then
-     rm -f $name.s $name.o $bname.a
-   else
-      arflags="-q -c";
+  echo " ar arflags -> $ar $arflags" >> $configurelog
 
-      compile="$ar $arflags $bname.a $name.o > /dev/null 2>> $configurelog";
-      if eval $compile; then
-        rm -f $name.s $name.o $bname.a
-      else
-        echo "Can't automatically setup ar flags. Set ar and ar flags" >&2;
-        rm -f $name.s $name.o $bname.a;
-        exit 1
-      fi
-   fi) || exit $*
-  
-  echo "  -> $ar $arflags" >> $configurelog
-  
+  rm -f $name.s $name.o $name.a
+
   # ranlib
-  rl=`$autoconf ranlib` || exit 1
+  if [ ! $ranlib ]; then ranlib="ranlib"; fi
+  rl=`$autoconf ranlib --ranlib="$ranlib"` || exit 1
 
   if [ "$rl" = "yes " ]; then
     ranlib=true;
-  else
-    ranlib=ranlib;
   fi
+
+  if [ ! $strip ]; then strip="strip"; fi
+  strip=`$autoconf strip --strip=$strip` || exit 1
 fi  
 
 #*---------------------------------------------------------------------*/
@@ -1191,7 +1244,7 @@ if [ "$threadsupport " = "no " ]; then
    pthreadlibs=no;
    gcthread=no;
 else
-  # Does the system supports threads
+  # Does the system support threads
   if [ "$gcthread " = " "  ]; then
      gcthread=`$autoconf thread --cflags="$cgcfinalflags"` || exit 1;
   fi
@@ -1368,12 +1421,6 @@ case $hostos in
 esac
 
 #*---------------------------------------------------------------------*/
-#*    Native configuration                                             */
-#*---------------------------------------------------------------------*/
-echo "+ Native specific configuration ($hostos)..." >> $configurelog
-strip=`$autoconf strip --strip=$strip` || exit 1
-
-#*---------------------------------------------------------------------*/
 #*    Java configuration                                               */
 #*---------------------------------------------------------------------*/
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
@@ -1437,8 +1484,10 @@ else
     (cd gc && GC="$gccustom".tar.gz ./install-$gccustom) || exit 1
 
      if [ -f gc/configure-$gccustom ]; then
+      autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+      gcconfigureopt="$autoopts $gcconfigureopt"
       echo "+ Configuring custom GC..." && \
-      (cd gc && . ./configure-$gccustom) || exit 1
+      (. ./gc/configure-$gccustom) || exit 1
     fi
   fi
 fi
@@ -1746,10 +1795,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Endianness
   endian=`$autoconf bigendian` || exit 1
 
-  # Does this system implements pipe?
+  # Does this system implement pipe?
   pipe=`$autoconf pipe` || exit 1
 
-  # Does this compiler implements labs? 
+  # Does this compiler implement labs? 
   # llabs=`$autoconfdir/labs --user=$user --tmp=$buildtmp --cc="$cc"`
   # SE: fix, 27 oct 2006
   labs=`$autoconf labs` || exit 1
@@ -1760,7 +1809,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     labs=abs
   fi
 
-  # Does this compiler implements longlong?
+  # Does this compiler implement longlong?
   longlong=`$autoconf longlong --longlong="$longlong"` || exit 1
 
   echo "#undef BGL_LONGLONG_T" >> $bigloo_config_h
@@ -2535,7 +2584,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   echo >> $makefile_cfg
-  # Does the system supports threads
+  # Does the system support threads
   if [ "$gcthread" != "no" ]; then
     echo "GCTHREADSUPPORT=yes" >> $makefile_cfg
     echo "CGCTHREADFLAGS=$gcthread -DBGL_GC_THREADS" >> $makefile_cfg
@@ -2707,7 +2756,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        >>  $configure
   chmod a-w $configure
 
-  # Does the system supports strip
+  # Does the system support strip
   echo "STRIP=$strip" >> $makefile_cfg
   echo "" >> $makefile_cfg
 

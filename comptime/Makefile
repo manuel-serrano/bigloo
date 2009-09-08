@@ -43,7 +43,7 @@ CSRCSUFFIX	=
 #*---------------------------------------------------------------------*/
 #*    Bigloo compilation flags                                         */
 #*---------------------------------------------------------------------*/
-LIBDIRFLAGS	= -lib-dir $(LIBDIR)/$(FILDIR)
+LIBDIRFLAGS	= -lib-dir $(BOOTLIBDIR)
 # Commmon flags
 COMMONFLAGS	= -q \
                   -afile $(AFILE) \
