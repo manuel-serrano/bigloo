@@ -104,15 +104,15 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    sh -c "rm -f $file.*" 2> /dev/null
-   eval $aout
+   eval "$HOSTSH $aout"
    \rm -f $aout
    echo "$gclib"
 else
-   if eval $compile2; then
+   if eval "$BUILDSH $compile2"; then
       sh -c "rm -f $file.*" 2> /dev/null
-      eval $aout
+      eval "$HOSTSH $aout"
       \rm -f $aout
       echo "$gclib"
    else

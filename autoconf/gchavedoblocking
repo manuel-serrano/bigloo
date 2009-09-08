@@ -81,8 +81,8 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile 2> /dev/null; then
-   $aout 2> /dev/null;
+if eval "$BUILDSH $compile" 2> /dev/null; then
+   eval "$HOSTSH $aout" 2> /dev/null;
    rm -f $aout
 else
    echo "no"

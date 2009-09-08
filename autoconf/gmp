@@ -43,7 +43,6 @@ aout=$TMP/Xactest$USER
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
 compile="$CC $cflags $file.c -o $aout $gmplib >/dev/null"
-run="$aout 2> /dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -64,19 +63,22 @@ int main() {
    mpz_init_set_str(n, "123456", 0);
    mpz_clear(n);
    printf("%s\n", gmp_version);
+   return 0;
 }
 EOF
 
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
    \rm -f $file.*
-   result=`$run`
    rm -f $aout
    rm -f $aout*
-   echo "$result"
+   exit $ret_code
 else
    \rm -f $file.*
    echo "no"
 fi
+exit 0

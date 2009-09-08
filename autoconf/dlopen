@@ -68,14 +68,14 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
    echo "$dlopt"
 else
    compile="$CC $cflags $file.c -o $aout >/dev/null 2> /dev/null"
-   if eval $compile; then
+   if eval "$BUILDSH $compile"; then
       \rm -f $file.*
       rm -f $aout
       rm -f $aout*

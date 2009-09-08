@@ -117,7 +117,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
@@ -127,7 +127,7 @@ if eval $compile; then
       echo "$readlineopt $readline"
    fi
 else
-  if eval $compilet; then
+  if eval "$BUILDSH $compilet"; then
      \rm -f $file.*
      rm -f $aout
      rm -f $aout*
@@ -137,7 +137,7 @@ else
         echo "$readlineopt $termcap $readline $termcap"
      fi
   else
-     if eval $compilea; then
+     if eval "$BUILDSH $compilea"; then
         \rm -f $file.*
         rm -f $aout
         rm -f $aout*
@@ -147,7 +147,7 @@ else
            echo "$readlineopt /usr/lib/readline.a"
         fi
      else
-        if eval $compileat; then
+        if eval "$BUILDSH $compileat"; then
            \rm -f $file.*
            rm -f $aout
            rm -f $aout*

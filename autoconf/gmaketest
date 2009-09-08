@@ -32,7 +32,7 @@ while : ; do
 done
 
 # Check the make version number
-$make -v --version | grep -i "gnu make" > /dev/null
+eval "$BUILDSH $make -v --version" | grep -i "gnu make" > /dev/null
 
 # Return the grep result
 exit $?

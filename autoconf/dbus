@@ -76,7 +76,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    echo "$dbuslib@$cflags"
 else
    echo "no"

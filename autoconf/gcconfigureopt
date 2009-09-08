@@ -1,0 +1,27 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/os                          */
+#*    -------------------------------------------------------------    */
+#*    Guess the host and host system using GC's config.guess         */
+#*=====================================================================*/
+
+gcdir=""
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --gc-dir=*|-gc-dir=*)
+      gcdir="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+build=`eval "$BUILDSH $gcdir/config.guess"`
+host=`eval "$HOSTSH $gcdir/config.guess"`
+
+echo "--host=$host --build=$build"

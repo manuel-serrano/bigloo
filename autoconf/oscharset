@@ -10,7 +10,77 @@
 #*    Test the current OS filesystem charset.                          */
 #*=====================================================================*/
 
-if [ "$LOCALE " != " " ]; then
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+host_locale=""
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if test -f $file.c; then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#include <stdlib.h>
+
+int main (int argc, char *argv[], char *envp[])
+{
+   char *locale;
+   locale = getenv("LOCALE");
+   if (locale)
+     printf("%s", locale);
+   return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   \rm -f $file.*
+   host_locale=`eval "$HOSTSH $aout"`
+   rm -f $aout
+   rm -f $aout*
+else
+   ret_code=$?
+   \rm -f $file.*
+   exit $ret_code
+fi
+
+if [ "$host_locale " != " " ]; then
   case $LOCALE in
     *.utf8)
       echo "UTF-8";;

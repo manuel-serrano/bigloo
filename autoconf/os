@@ -10,8 +10,25 @@
 #*    Linux, Cygwin, etc, oses).                                       */
 #*=====================================================================*/
 
-if eval $HOSTSH "uname" > /dev/null ; then
-  case `eval $HOSTSH "uname -s"` in
+SH="$HOSTSH"
+
+echo $SH >> /tmp/ttt
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --sh=*)
+      SH="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if eval "$SH uname" > /dev/null ; then
+  case `eval "$SH uname -s"` in
     Linux*)
       echo "linux";;
     CYGWIN*|Cygwin*|cygwin*)

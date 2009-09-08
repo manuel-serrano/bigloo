@@ -110,15 +110,15 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
 
    \rm -f $file.*
-   res=`$aout`
+   res=`eval "$HOSTSH $aout"`
 
    if( test $res = "__" ); then
       asm="$as -o $afile.o $aflags $afile.s >/dev/null"
 
-      if eval $asm; then
+      if eval "$BUILDSH $asm"; then
         cat > $file.c <<EOF
 #include <setjmp.h>
 #include <signal.h>
@@ -151,9 +151,9 @@ main()
 }
 EOF
        compile="$CC $cflags $file.c $afile.o -o $aout >/dev/null"
-       if eval $compile; then
+       if eval "$BUILDSH $compile"; then
   
-          $aout > /dev/null 2> /dev/null || 
+          eval "$HOSTSH $aout" > /dev/null 2> /dev/null || 
              (\rm -f $file.*; \rm -f $afile.*; echo "_"; exit 1) || exit 1
           \rm -f $file.* 
           \rm -f $afile.*
@@ -182,4 +182,3 @@ else
    \rm -f $file.*
    echo ""
 fi
-

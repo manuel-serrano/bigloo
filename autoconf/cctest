@@ -89,7 +89,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile > /dev/null; then
+if eval "$BUILDSH $compile" > /dev/null; then
    \rm -f $file.*
    \rm -f $aout
    echo $cc

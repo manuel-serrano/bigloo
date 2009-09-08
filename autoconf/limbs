@@ -49,7 +49,6 @@ fi
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
 compile="$CC $cflags $file.c -o $aout >/dev/null"
-run="$aout"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -85,13 +84,15 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
    \rm -f $file.*
-   result=`$run`
    rm -f $aout
    rm -f $aout*
-   echo "$result"
+   exit $ret_code
 else
    \rm -f $file.*
    echo ""
 fi
+exit 0

@@ -66,8 +66,9 @@ if [ "$ldopt " = " " ]; then
       ldopt="-bnoentry -bexpall -bM:SRE";;
     darwin)
       # Darwin < 9 require the -r option, Darwin 9 does not support the -r
-      # option. 
-      if [ "`echo $HOSTOSVERSION | sed 's/[.]//g'`" -ge "900" ]; then
+      # option.
+      # [flo]: iphone has version with characters in it (like 10.0.0b)
+      if [ "`echo $HOSTOSVERSION | set 's/[a-z].*$//*' | sed 's/[.]//g'`" -ge "900" ]; then
         echo "";
       else
         echo "-r";
@@ -92,7 +93,7 @@ int main ()
 }
 EOF
 
-  if $CC $cflags -o $aout $file-guess.c >/dev/null
+  if eval "$BUILDSH $CC $cflags -o $aout $file-guess.c" >/dev/null
   then
     true
   else
@@ -101,7 +102,7 @@ EOF
     exit 1
   fi
 
-  ldopt=`$aout`
+  ldopt=`eval "$HOSTSH $aout"`
   /bin/rm -f $file-guess*
 fi
 
@@ -126,7 +127,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if $CC $cflags -c $file-lib.c -o $obj-lib.o >/dev/null
+if eval "$BUILDSH $CC $cflags -c $file-lib.c -o $obj-lib.o" >/dev/null
 then
   true
 else
@@ -138,7 +139,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    We build a library                                               */
 #*---------------------------------------------------------------------*/
-$ld $ldopt -o $file.$sharedsuffix $obj-lib.o $ldlibs > /dev/null
+eval "$BUILDSH $ld $ldopt -o $file.$sharedsuffix $obj-lib.o $ldlibs" > /dev/null
 if [ ! -f $file.$sharedsuffix ]; then
   /bin/rm -f $file* $obj*
   /bin/rm -f $obj-lib.o
@@ -149,7 +150,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if $CC $cflags -o $aout $file.c $file.$sharedsuffix >/dev/null
+if eval "$BUILDSH $CC $cflags -o $aout $file.c $file.$sharedsuffix" >/dev/null
 then
    true
 else

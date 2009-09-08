@@ -13,6 +13,7 @@
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
+ranlib=
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -24,6 +25,9 @@ while : ; do
 
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --ranlib=*|-ranlib=*)
+      ranlib="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
@@ -72,7 +76,7 @@ ar qcv $file.a $obj.o > /dev/null || exit $?
 #*---------------------------------------------------------------------*/
 #*    We try to run ranlib                                             */
 #*---------------------------------------------------------------------*/
-if eval "ranlib $file.a  > /dev/null" > /dev/null; then
+if eval "$BUILDSH $ranlib $file.a" > /dev/null; then
    rm -f $file.*
    echo "yes"
 else

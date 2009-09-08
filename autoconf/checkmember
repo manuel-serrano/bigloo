@@ -82,7 +82,7 @@ echo "}" >> $file.c
 #*---------------------------------------------------------------------*/
 compile="$CC $cflags $file.c -o $aout >/dev/null"
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*

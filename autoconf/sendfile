@@ -77,8 +77,8 @@ char *argv[];
 }
 EOF
 
-if eval $compile; then
-   if eval $aout; then
+if eval "$BUILDSH $compile"; then
+   if eval "$HOSTSH $aout"; then
      rm -f $file.*
      rm -f $aout*
 
@@ -124,8 +124,8 @@ char *argv[];
 }
 EOF
 
-if eval $compile; then
-   if eval $aout; then
+if eval "$BUILDSH $compile"; then
+   if eval "$HOSTSH $aout"; then
      rm -f $file.*
      rm -f $aout*
 

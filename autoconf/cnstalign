@@ -116,11 +116,11 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-sh -c "$compile"
+eval "$BUILDSH $compile"
 
 if [ $? = "0" ]; then
    \rm -f $file.*
-   eval $aout
+   eval "$HOSTSH $aout"
 else
    \rm -f $file.*
 fi

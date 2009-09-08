@@ -104,21 +104,15 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile 2> /dev/null; then
+if eval "$BUILDSH $compile" 2> /dev/null; then
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
    echo "1"
-   exit 0
 else
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
    echo "0"
-   exit 9
 fi
-
-   
-
-
-
+exit 0

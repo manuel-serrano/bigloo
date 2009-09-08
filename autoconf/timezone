@@ -58,9 +58,9 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
-   if eval $aout > /dev/null; then
+   if eval "$HOSTSH $aout" > /dev/null; then
       rm -f $aout
       echo "_timezone";
       exit 0;
@@ -79,9 +79,9 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
-   if eval $aout > /dev/null; then
+   if eval "$HOSTSH $aout" > /dev/null; then
       rm -f $aout
       echo "timezone";
       exit 0;

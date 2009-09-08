@@ -65,7 +65,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval $compile; then
+if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    rm -f $aout
    echo 1
@@ -78,7 +78,7 @@ fi
 compile="$CC $cflags $file.c -o $aout $ucb >/dev/null"
 
 if test -s $ucb; then
-   if eval $compile; then
+   if eval "$BUILDSH $compile"; then
       \rm -f $file.*
       rm -f $aout
       echo "$ucb"
@@ -90,8 +90,3 @@ fi
 rm -f $aout
 echo 0
 exit 0
-
-   
-
-
-
