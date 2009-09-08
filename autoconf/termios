@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Bengt Kleberg                                     */
 #*    Creation    :  Mon May 10 12:34:48 MEST 1999                     */
-#*    Last change :  Sun Sep  6 21:48:04 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 10:33:21 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if termio.h exist.                                         */
 #*=====================================================================*/
@@ -31,9 +31,4 @@ while : ; do
   shift
 done
 
-if `./autoconf/runtest -v1 -- checkinclude --cflags=$cflags \
-        "#include <termios.h>"`; then
-  echo 1;
-else
-  echo 0;
-fi
+./autoconf/runtest -v1 -- checkinclude --cflags=$cflags "#include <termios.h>"
