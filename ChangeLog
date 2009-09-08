@@ -1,3 +1,9 @@
+Tue Sep  8 08:13:24 CEST 2009 (Manuel Serrano):
+
+	* runtime/Llib/dsssl.scm: accept #!rest after #!key (see the
+	documentation).
+	
+
 Mon Aug 31 15:56:10 CEST 2009 (Manuel Serrano):
 
 	*** comptime/Ast/sexp.scm: "lambda" form no longer use the "public"

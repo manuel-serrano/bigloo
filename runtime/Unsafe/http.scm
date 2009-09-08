@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Fri Apr 17 19:26:26 2009 (serrano)                */
+;*    Last change :  Tue Sep  8 08:28:30 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -265,9 +265,9 @@
       (display-line "Authorization: Basic " uinfo out)))
 		 
 ;*---------------------------------------------------------------------*/
-;*    http-parse-error-message ...                                     */
+;*    http-parse-error-msg ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (http-parse-error-message c port)
+(define (http-parse-error-msg c port)
    (if (char? c)
        (let ((line (http-read-line port)))
 	  (string-for-read
@@ -289,16 +289,22 @@
 	   (begin
 	      (rgc-context #unspecified)
 	      (instantiate::&io-parse-error
-		 (obj (http-parse-error-message (the-failure) (the-port)))
+		 (obj (http-parse-error-msg (the-failure) (the-port)))
 		 (proc 'http-parse-status-line)
 		 (msg "Illegal status line")))
 	   (let ((http (the-substring 0 (-fx (the-length) 1))))
 	      (rgc-context 'code)
 	      (let ((code (ignore)))
-		 (rgc-context 'line)
-		 (let ((phrase (ignore)))
-		    (rgc-context #unspecified)
-		    (values http code phrase))))))
+		 (if (not (fixnum? code))
+		     (instantiate::&io-parse-error
+			(obj (http-parse-error-msg (the-failure) (the-port)))
+			(proc 'http-parse-status-line)
+			(msg "Illegal status code"))
+		     (begin
+			(rgc-context 'line)
+			(let ((phrase (ignore)))
+			   (rgc-context #unspecified)
+			   (values http code phrase))))))))
       ((context code CODE)
        (the-fixnum))
       ((context line line)
@@ -313,7 +319,7 @@
 		  (proc 'http-parse-status-line)
 		  (msg "Illegal status line, premature end of input"))
 	       (instantiate::&io-parse-error
-		  (obj (http-parse-error-message c (the-port)))
+		  (obj (http-parse-error-msg c (the-port)))
 		  (proc 'http-parse-status-line)
 		  (msg "Illegal status line"))))))))
 
@@ -529,7 +535,7 @@
 				      proxy-authorization connection))
 			   (proc 'http-parse-header)
 			   (msg (format "Illegal characters: ~a"
-					(http-parse-error-message
+					(http-parse-error-msg
 					 (the-failure) (the-port)))))))))))
    
    (read/rp header-grammar p
@@ -609,8 +615,7 @@
 	  (raise (instantiate::&io-parse-error
 		    (proc 'http-read-crlf)
 		    (msg "Illegal character")
-		    (obj (http-parse-error-message (the-failure)
-						   (the-port))))))))
+		    (obj (http-parse-error-msg (the-failure) (the-port))))))))
    (read/rp crlf-grammar p))
 
 ;*---------------------------------------------------------------------*/
@@ -633,9 +638,8 @@
 		       (raise (instantiate::&io-parse-error
 				 (proc 'chunks)
 				 (msg "Illegal character")
-				 (obj (http-parse-error-message
-				       (the-failure)
-				       (the-port)))))))
+				 (obj (http-parse-error-msg
+				       (the-failure) (the-port)))))))
 		   (the-port))
 	  sz))
       ((: SZ (* BLANK) CRLF)

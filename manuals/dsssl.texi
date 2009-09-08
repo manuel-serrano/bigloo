@@ -26,6 +26,10 @@ Bigloo supports extensions for the @sc{Dsssl} expression language
 @item Dsssl formal argument lists.
 @end itemize
 
+In addition, Bigloo extends DSSSL formal parameters. It supports @code{#!rest}
+argument following @code{!key} arguments. In that case, the @code{#!rest}
+formal parameter is bound to the list of non-keyword values.
+
 @c ------------------------------------------------------------------- @c
 @c    DSSSL formal argument lists                                      @c
 @c ------------------------------------------------------------------- @c
@@ -38,7 +42,7 @@ Bigloo supports extensions for the @sc{Dsssl} expression language
 <formal-argument-list> @expansion{} <required-formal-argument>*
   [@code{(#!optional} <optional-formal-argument>*@code{)}]
   [@code{(#!rest} <rest-formal-argument>@code{)}]
-  [@code{(#!key} <key-formal-argument>*@code{)}]
+  [@code{(#!key} <key-formal-argument>*@code{)} @code{(#!rest} <rest-formal-argument>?@code{)}]
 <required-formal-argument> @expansion{} <ieee-ident>
 <optional-formal-argument> @expansion{} <ieee-ident>
      | @code{(}<ieee-ident> <initializer>@code{)}
@@ -85,6 +89,10 @@ is used. If there is no actual argument for a particular
 evaluating @emph{initializer} if one was specified, and otherwise
 @code{#f}. The @emph{initializer} is evaluated in an environment in which all
 previous formal key arguments have been bound.
+
+@item If @code{#!rest} was specified in the @emph{formal-argument-list}
+@emph{after} a @code{#!key} formal parameter, it is bound to the list of
+optional @emph{non-keyword} arguments. 
 @end itemize
 
 
@@ -100,6 +108,9 @@ Example:
 ((lambda (x y #!optional z #!rest r #!key i (j 1)) 
     (list x y z i: i j: j))
  3 4 5 i: 6 i: 7)            @result{} (3 4 5 i: 6 j: 1)
+((lambda (x y #!optional z #!key i (j 1) #!rest r) 
+    (list x y z i: i j: j r))
+ 3 4 5 i: 6 i: 7 8 9)        @result{} (3 4 5 i: 6 j: 1 (8 9))
 @end smalllisp
 
 @c ------------------------------------------------------------------- @c

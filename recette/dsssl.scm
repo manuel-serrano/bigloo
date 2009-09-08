@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 31 09:21:59 1998                          */
-;*    Last change :  Fri Apr 10 10:57:21 2009 (serrano)                */
+;*    Last change :  Tue Sep  8 08:21:05 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    DSSSL funcall tests                                              */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    (dsssl7 #!optional (dsssl7 2) (z dsssl7))
 	    (dsssl8 #!key (y 2) (z y))
 	    (dsssl9 ::input-port ::output-port #!optional (s 1) (o -1))
+	    (dsssl11 x y #!optional z #!key i (j 1) #!rest r)
 	    (dsssl-lexical b c #!optional (=::procedure equal?))
 	    (dt->sec a #!key (x #t)))
    (eval    (export dsssl2)
@@ -245,6 +246,12 @@
 ;*---------------------------------------------------------------------*/
 (define (dsssl9 ip::input-port op::output-port #!optional (s 1) (o -1))
    (+fx s o))
+
+;*---------------------------------------------------------------------*/
+;*    dsssl11 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (dsssl11 x y #!optional z #!key i (j 1) #!rest r) 
+    (list x y z i: i j: j r))
 
 ;*---------------------------------------------------------------------*/
 ;*    DSSSL-mac ...                                                    */
@@ -513,4 +520,10 @@
    (let* ((dt (current-date))
 	  (res (date->seconds dt)))
       (test "keyword.7" ((if (> res 0) dt->sec list) 1 x: dt) res))
-   (test "keyword.8" (dsssl-bug :foo #f) #f))
+   (test "keyword.8" (dsssl-bug :foo #f) #f)
+   (test "dssss11.1" (dsssl11 3 4 5 i: 6 i: 7 8 9)
+	 '(3 4 5 i: 6 j: 1 (8 9)))
+   (test "dssss11.2" (apply dsssl11 '(3 4 5 i: 6 i: 7 8 9))
+	 '(3 4 5 i: 6 j: 1 (8 9)))
+   (test "dssss11.3" ((cadr (list dsssl9 dsssl11)) 3 4 5 i: 6 i: 7 8 9)
+		      '(3 4 5 i: 6 j: 1 (8 9))))
