@@ -5,7 +5,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 11:48:49 2009                          */
-#*    Last change :  Mon Sep  7 09:39:04 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 11:42:58 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    This file is in charge of spawning actual tests.                 */
@@ -167,6 +167,7 @@ fi
      echo $res | head -n 1 >&2;
    fi
    echo "  -> $res" >> $LOG;
+   echo "" >> $LOG;
    exit 0;
  else
    echo "*** ERROR: test $AUTOCONFDIR/$test failed (see $LOG)!" >&2;

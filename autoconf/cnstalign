@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep  6 21:32:52 2009 (serrano)                */
+#*    Last change :  Tue Sep  8 11:43:38 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the constant alignment on the current architecture          */
 #*=====================================================================*/
@@ -54,6 +54,7 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
+#include <stdio.h>
 
 static struct { char *c; char tc[5]; } str1;
 static struct { char *c; char tc[6]; } str2;
