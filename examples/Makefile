@@ -32,7 +32,8 @@ DIRECTORIES	= Depend Embedded Fib Foreign \
                   Lower Match Object Pragma Process Roman \
                   Runtime Yacc2bigloo Dsssl Socket ClientServer \
                   Lib Repl Fork Jclass Jarray Demangle Dload Jawt \
-                  Maze Server Grep Sqltiny DNet
+                  Maze Server Grep Sqltiny DNet \
+		  hostsh
 
 #*---------------------------------------------------------------------*/
 #*    compile everything                                               */

@@ -1,0 +1,17 @@
+Build a (gnu) netcat for the host-platform.
+Copy netcat, host.sh, host_exec.sh to the host.
+Run ./host.sh path_to_netcat
+
+From this moment on, the host is waiting for files to execute.
+
+On the build-side simply run
+./configure --hostsh="path_to_build.sh ip-address_of_target" ....
+
+During configuration the build.sh will copy (through netcat) the files to
+ the host and execute the files there.
+
+Note: this is a dirty script that worked quite well on my machine. However,
+it does not follow the same quality-guidelines as the rest of Bigloo.
+Be prepared to adapt/debug the script if it does not work.
+
+With this in mind: good luck.
