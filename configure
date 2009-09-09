@@ -277,6 +277,7 @@ bigloo_gc_h=
 bigloo_config_h=
 bigloo_config_jvm=
 bigloo_config_dotnet=
+bigloo_config_sch=
 bigloo_config_el=
 summary=yes
 java_configured=no
@@ -369,6 +370,10 @@ while : ; do
     --bigloo_config.dotnet=*)
       action="bigloo_config";
       bigloo_config_dotnet="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.sch=*)
+      action="bigloo_config";
+      bigloo_config_sch="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --bigloo_config.el=*)
       action="bigloo_config_el";
@@ -960,6 +965,11 @@ if [ "$bigloo_config_dotnet " = " " ]; then
   bigloo_config_dotnet=runtime/CSlib/configure.cs
 fi
 
+# The bigloo_config.sch file
+if [ "$bigloo_config_sch " = " " ]; then
+  bigloo_config_sch=lib/$release/bigloo_config.sch
+fi
+
 # The bigloo_bmacs.el file
 if [ "$bigloo_config_el " = " " ]; then
   bigloo_config_el=bmacs/bmacs-config.el
@@ -1477,13 +1487,13 @@ else
     echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
 
     (cd gc && GC="$gccustom".tar.gz ./install-$gccustom) || exit 1
+  fi
 
-     if [ -f gc/configure-$gccustom ]; then
-      autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
-      gcconfigureopt="$autoopts $gcconfigureopt"
-      echo "+ Configuring custom GC..." && \
-      (. ./gc/configure-$gccustom) || exit 1
-    fi
+  if [ -f gc/configure-$gccustom ]; then
+    autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+    gcconfigureopt="$autoopts $gcconfigureopt"
+    echo "+ Configuring custom GC..." && \
+    (. ./gc/configure-$gccustom) || exit 1
   fi
 fi
 
@@ -1642,7 +1652,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Tell what we are doing
   echo ""
-  echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_dotnet:"
+  echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_dotnet, $bigloo_config_sch:"
 
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
@@ -2114,8 +2124,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       ucs2displayable=0;;
   esac
 
-  # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet; do
+  # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet bigloo_config_sch
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet $bigloo_config_sch; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -2451,8 +2461,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The Buildbin directory
   if [ "$buildbindir " = " " ]; then
       echo "BUILDBINDIR=$bootdir/bin" >> $makefile_cfg
+      echo "BUILDLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
   else
       echo "BUILDBINDIR=$buildbindir" >> $makefile_cfg
+      echo "BUILDLIBDIR=" >> $makefile_cfg
   fi
   echo >> $makefile_cfg
 

@@ -6,16 +6,16 @@
 ;*    Last change :  Fri Sep  4 08:40:23 2009 (serrano)                */
 ;*    Copyright   :  2009 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Processes the cross-compilation parameter.                       */
+;*    Processes the lib-dir-compilation parameter.                       */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module init_cross
+(module init_lib-dir
    (import engine_param
 	   module_eval)
-   (export (process-cross-parameter param)))
+   (export (process-lib-dir-parameter param)))
 
 ;*---------------------------------------------------------------------*/
 ;*    safe-read ...                                                    */
@@ -26,60 +26,59 @@
       (case type
 	 ((string) (string? obj))
 	 ((pair) (pair? obj))
-	 (else (error 'cross-compilation "Internal Error" type))))
+	 (else (error 'lib-dir "Internal Error" type))))
    
    (let ((tmp (read p)))
       (unless (correct-type? tmp)
-	 (error 'cross-compilation "Bad bigloo_cross.sch file" f))
+	 (error 'lib-dir "Bad bigloo_config.sch file" f))
       tmp))
 
 ;*---------------------------------------------------------------------*/
-;*    process-cross-version ...                                        */
+;*    process-lib-version ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (process-cross-version p f)
-   (let* ((cross-version (safe-read p 'string f))
-	  (cross-specific-version (safe-read p 'string f)))
-      (when (not (and (string=? *bigloo-version* cross-version)
+(define (process-lib-version p f)
+   (let* ((lib-version (safe-read p 'string f))
+	  (lib-specific-version (safe-read p 'string f)))
+      (when (not (and (string=? *bigloo-version* lib-version)
 		      (string=? *bigloo-specific-version*
-				cross-specific-version)))
+				lib-specific-version)))
 	 ;; Replace with error?
-	 (warning "Cross compilation for different Bigloos is risky."
-		  "You have been warned."))))
+	 (warning "Cross compilation for different Bigloos is risky."))))
 
 ;*---------------------------------------------------------------------*/
-;*    process-cross-config ...                                         */
+;*    process-lib-config ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (process-cross-config p f)
+(define (process-lib-config p f)
    ;; read-config is a back-quoted list. -> we need to eval it.
    (let* ((read-config (safe-read p 'pair f))
-	  (cross-config (eval read-config)))
+	  (lib-config (eval read-config)))
       ;; override the existing config entries
       (for-each (lambda (c) (bigloo-configuration-add-entry! (car c) (cdr c)))
-		cross-config)
+		lib-config)
       (reinitialize-bigloo-variables!)))
 
 ;*---------------------------------------------------------------------*/
-;*    read-cross_sch ...                                               */
+;*    read-config_sch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (read-cross_sch f)
+(define (read-config_sch f)
    (let ((port (open-input-file f)))
       (unwind-protect
 	 (begin
-	    (process-cross-version port f)
-	    (process-cross-config port f))
+	    (process-lib-version port f)
+	    (process-lib-config port f))
 	 ;; TODO: we might want to determine the cross-prefix out of 'f' for
 	 ;;   -L (*lib-dir*) and -I
 	 (close-input-port port))))
 
 ;*---------------------------------------------------------------------*/
-;*    process-cross-parameter ...                                      */
+;*    process-lib-dir-parameter ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (process-cross-parameter param)
+(define (process-lib-dir-parameter param)
    (let ((dir (file-name-canonicalize! param)))
       (when (not (directory? dir))
-	 (error 'cross-compilation  "Not a directory" dir))
-      (let ((cross_sch (make-file-path dir "bigloo_cross.sch")))
-	 (when (not (file-exists? cross_sch))
-	    (error 'cross-compilation "File not found" cross_sch))
-	 (read-cross_sch cross_sch)
+	 (error 'lib-dir  "Not a directory" dir))
+      (let ((config_sch (make-file-path dir "bigloo_config.sch")))
+	 (when (file-exists? config_sch)
+	    (read-config_sch config_sch))
+	 ;; TODO: in the future we might want to require a bigloo_config.sch.
 	 (set! *lib-dir* (cons dir *lib-dir*)))))

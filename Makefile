@@ -145,7 +145,7 @@ DIRECTORIES	= cigloo \
 NO_DIST_FILES	= .bigloo.prcs_aux \
 		  bigloo.lsm \
 		  www
-  
+
 #*---------------------------------------------------------------------*/
 #*    boot ...                                                         */
 #*    -------------------------------------------------------------    */
@@ -157,6 +157,12 @@ boot: checkgmake
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
         fi
+	if [ -x $(BUILDBIGLOO) ]; then \
+	  $(MAKE) -C runtime .afile; \
+	  $(MAKE) -C runtime heap; \
+	  $(MAKE) -C comptime .afile; \
+	  $(MAKE) -C comptime; \
+	fi
 	$(MAKE) -C runtime boot
 	$(MAKE) -C comptime boot
 	$(MAKE) -C runtime heap
@@ -168,11 +174,11 @@ boot: checkgmake
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
             $(MAKE) -C runtime boot-dotnet); \
         fi
-	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
+	(LD_LIBRARY_PATH=$(BUILDLIBDIR):$$LD_LIBRARY_PATH; \
          export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
-         PATH=$(BOOTBINDIR):$(BOOTLIBDIR):$$PATH; \
+         PATH=$(BUILDBINDIR):$(BUILDLIBDIR):$$PATH; \
          export PATH; \
          $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
          $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
@@ -633,6 +639,8 @@ install-progs:
         fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.config)
+	(cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
+         chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.sch)
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.misc)
 	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
@@ -696,6 +704,7 @@ unconfigure:
              exit 1; \
           fi
 	$(RM) -f lib/$(RELEASE)/bigloo_config.h
+	$(RM) -f lib/$(RELEASE)/bigloo_config.sch
 	$(RM) -f Makefile.config
 	$(RM) -f configure.log
 
@@ -710,6 +719,7 @@ clean:
              exit 1; \
           fi
 	$(RM) -f configure.log
+	$(MAKE) -c gc clean
 	(cd comptime && $(MAKE) clean)
 	(cd runtime && $(MAKE) clean)
 	(cd manuals && $(MAKE) clean)
@@ -733,6 +743,7 @@ cleanall:
           fi
 	$(RM) -f configure.log
 	$(RM) -f autoconf/runtest
+	$(MAKE) -C gc cleanall
 	(cd comptime && $(MAKE) cleanall)
 	(cd runtime && $(MAKE) cleanall)
 	(cd manuals && $(MAKE) cleanall)

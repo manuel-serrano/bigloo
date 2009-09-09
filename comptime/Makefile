@@ -87,7 +87,7 @@ LICENSE		= ../LICENSE
 #*    The compiler source files ...                                    */
 #*---------------------------------------------------------------------*/
 #*--- init ------------------------------------------------------------*/
-INIT_FILE_NOMAIN= parse-args setrc extend cross
+INIT_FILE_NOMAIN= parse-args setrc extend lib-dir
 INIT_FILE	= $(INIT_FILE_NOMAIN) main
 
 INIT_OBJ_NOMAIN	= $(INIT_FILE_NOMAIN:%=Init/%.o)
@@ -692,8 +692,6 @@ cleanall: clean
 	@- $(RM) -f $(C_OBJECTS)
 	@- $(RM) -f Tools/date.scm Tools/license.scm
 	@- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
-	@- $(RM) -f $(AFILE_BIN) 
-	@- $(RM) -f $(DEPEND_BIN)
 
 distclean: 
 	@- $(RM) -f $(O_OBJECTS)

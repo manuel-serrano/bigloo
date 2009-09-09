@@ -14,14 +14,15 @@
 ;*---------------------------------------------------------------------*/
 (module init_parse-args
    (include "Tools/trace.sch"
-	    "Engine/pass.sch")
+	    "Engine/pass.sch"
+	    "Init/pass-args-parse.sch")
    (export  (parse-args args))
    (import  engine_configure
 	    engine_param
 	    init_main
 	    init_extend
 	    init_setrc
-	    init_cross
+	    init_lib-dir
 	    module_module
 	    module_alibrary
 	    module_eval
@@ -199,11 +200,12 @@
 
    (bigloo-warning-set! 2)
    
-   (args-parse args
+   (pass-args-parse (lib-dir jvm default) default
+		    args
        
 ;*--- misc ------------------------------------------------------------*/
       (section "Misc")
-      ;; priliminary test
+      ;; preliminary test
       (("-" (help "Read source code on current input channel"))
        (set! *src-files* (cons 'stdin *src-files*)))
       ;; help
@@ -275,9 +277,6 @@
       (("-revision" (help "The current release (short format)"))
        (revision)
        (compiler-exit 0))
-      ;; cross-compilation
-      (("-cross" ?lib-directory (help "Cross compile for given Bigloo runtime"))
-       (process-cross-parameter lib-directory))
       ;; query
       (("-query" (help "Dump the current configuration"))
        (query))
@@ -302,7 +301,8 @@
        (set! *user-load-path* (cons dir *user-load-path*)))
       ;; library path
       (("-lib-dir" ?dir (help "Set lib-path to DIR"))
-       (set! *lib-dir* (list dir)))
+       (pass 'lib-dir
+	     (process-lib-dir-parameter dir)))
       (("-L" ?name (help "Set additional library path"))
        (set! *lib-dir* (cons name *lib-dir*)))
       (("-lib-version" ?version (help "Set the Bigloo library version"))
@@ -321,9 +321,10 @@
        (set! *target-language* 'native))
       ;; jvm code generation
       (("-jvm" (help "Compile module to JVM .class files"))
-       (set! *heap-name* *heap-jvm-name*)
-       (set! *obj-suffix* '("class"))
-       (set! *target-language* 'jvm))
+       (pass 'jvm
+	     (set! *heap-name* *heap-jvm-name*)
+	     (set! *obj-suffix* '("class"))
+	     (set! *target-language* 'jvm)))
       (("-dotnet" (help "Compile module to .NET object files"))
        (set! *heap-name* *heap-jvm-name*)
        (set! *obj-suffix* '("obj"))

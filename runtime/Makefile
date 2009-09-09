@@ -688,7 +688,8 @@ one-distlib: $(C_OBJECTS)
 #*    -------------------------------------------------------------    */
 #*    Boot the library on a bare system.                               */
 #*---------------------------------------------------------------------*/
-boot: dirs includes boot-libs
+boot: dirs includes
+	@ $(MAKE) boot-libs
 
 boot-libs:
 	@ $(MAKE) lib-c_u SCMOBJSUFFIX="" COBJSUFFIX=%.o
@@ -896,15 +897,15 @@ objs/obj_s/$(COBJSUFFIX): objs/obj_s/%.c
 #*     .c --> .o                                                       */
 #*---------------------------------------------------------------------*/
 objs/obj_u/Clib/%.o: Clib/%.c
-	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o $(*D)-$(@F) && \
-        mv $(*D)-$(@F) $@
+	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
+        mv Clib-$(@F) $@
 objs/obj_s/Clib/%.o: Clib/%.c
-	$(CC) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o $(*D)-$(@F) && \
-        mv $(*D)-$(@F) $@
+	$(CC) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
+        mv Clib-$(@F) $@
 
 objs/obj_p/Clib/%.o: Clib/%.c
-	$(CC) $(CEFLAGS) $(CUNSAFEPFLAGS) $(GCINCLUDE) -c Clib/$*.c -o $(*D)-$(@F) && \
-        mv $(*D)-$(@F) $@
+	$(CC) $(CEFLAGS) $(CUNSAFEPFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
+        mv Clib-$(@F) $@
 
 #*---------------------------------------------------------------------*/
 #*     .scm --> .c                                                     */

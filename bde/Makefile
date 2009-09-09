@@ -311,8 +311,8 @@ jas/%.scm: ../comptime/Jas/%.scm
 #*---------------------------------------------------------------------*/
 #*    Jas afile                                                        */
 #*---------------------------------------------------------------------*/
-$(JAS_AFILE): $(BOOTBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
-	(cd jas; $(BOOTBINDIR)/$(AFILE_EXE) *.scm -o ../$(JAS_AFILE))
+$(JAS_AFILE): $(BUILDBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
+	(cd jas; $(BUILDBINDIR)/$(AFILE_EXE) *.scm -o ../$(JAS_AFILE))
 
 #*---------------------------------------------------------------------*/
 #*    bmake dependencies                                               */
