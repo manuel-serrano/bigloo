@@ -202,6 +202,7 @@ MA 02111-1307, USA.
 * Bigloo Libraries::               Creating and using your own libraries
 * Extending the Runtime System::   Adding new primitive data types
 * Compiler Description::           Interfacing with the compiler
+* Cross Compilation::              Compiling for different platforms
 * User Extensions::                User compiler extensions
 * Bee::                            The Bigloo development environment
 * Global Index::                   Global Bigloo document index
@@ -537,6 +538,11 @@ and keyword functions.
 @c ------------------------------------------------------------------- @c
 @include compiler.texi
 @include option.texi
+
+@c ------------------------------------------------------------------- @c
+@c    Cross Compilation                                                @c
+@c ------------------------------------------------------------------- @c
+@include cross.texi
 
 @c ------------------------------------------------------------------- @c
 @c    Extension                                                        @c

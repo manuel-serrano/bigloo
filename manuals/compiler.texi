@@ -11,7 +11,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Compiler description                                             @c
 @c ------------------------------------------------------------------- @c
-@node Compiler Description, User Extensions, SRFIs, Top
+@node Compiler Description, Cross Compilation, SRFIs, Top
 @comment  node-name,  next,  previous,  up@chapter Compiler description
 @chapter Compiler description
 @cindex Compiler description

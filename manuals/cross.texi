@@ -1,0 +1,180 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/cross.texi                   @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Florian Loitsch                                   @c
+@c    ------------------------------------------------------------     @c
+@c    Cross Compilation                                                @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Cross Compilation                                                @c
+@c ------------------------------------------------------------------- @c
+@node Cross Compilation, User Extensions, Compiler Description, Top
+@comment  node-name,  next,  previous,  up
+@chapter Cross Compilation
+@cindex cross compilation
+
+Bigloo is very portable and can be cross-compiled for most
+Posix-platforms. As long as there exists a C (cross-)compiler for the
+platform and the garbage collector is supported on the targeted
+platform there is a good chance that Bigloo or Bigloo-compiled
+programs will run on the platform.
+
+This chapter describes how to cross-compile Bigloo with a C
+cross-compiler. Following established conventions we will call the
+platform where the compiled programs should run the @emph{Host}
+platform and we will call the build platform where we actually compile
+the programs the @emph{Build} platform.
+
+@section Introduction
+We assume that the host- and build-system are not the same, and that
+there exists a C cross-compiler @code{CC} running on the build system
+producing executables for the host system.
+
+In order to execute programs on the host, it is however not sufficient
+to simply compile Bigloo-produced programs with this compiler. Indeed,
+these programs depend on the Bigloo-library which thus has to exist
+on the host-platform.
+
+Building a cross-compilation environment is done in two phases:
+@itemize @bullet
+@item Build a Bigloo for the build-platform. Usually this is a given.
+@item Build the Bigloo library for the host-platform. At the same time
+one might want to build the Bigloo-executable (for the host-platform)
+too, but this is not a requirement.
+@end itemize
+
+Programs can then be cross-compiled simply by telling Bigloo to use
+the host-library.
+
+Note: if the cross-compiled executable uses shared libraries, then
+Bigloo's cross-compiled libraries have to be copied to the host
+platform. Static executables are self-contained and can be run without
+modification on the host.
+
+@section Building the Bigloo library for the host-platform
+We assume that we have a C cross-compiler @code{CC} and an empty
+Bigloo source tree. As a first step the configuration script must be
+executed. However, Bigloo's configure script requires some
+runtime-information from the host and thus needs access to the
+host-machine. This is accomplished by passing a hostsh-script to
+configure.
+
+@subsection Hostsh
+A @emph{hostsh} script is passed to Bigloo's configuration script and
+is invoked whenever a command should be executed on the host-side.
+
+There are already three example scripts inside Bigloo's source
+tree.
+@itemize @bullet
+@item one asks (using KDE's kdialog) to execute the command by hand on
+the host-side and to report the result.
+@item another one copies the file by @code{ssh} and executes it then
+on the other side. Note: there exists an Ipod/Iphone version that
+automatically signs on jail-broken devices.
+@item and finally, as last resort, there exists a @code{netcat}
+version if no @code{ssh} is available. This one can be used on devices
+that only have telnet access, and where ssh is not available. Its only
+requirement is a running netcat on the host-side (which should be
+easily achievable since there exists a working cross compiler).
+@end itemize
+
+@subsection Building
+Armed with a working cross-compiler @code{CC} and a script
+@code{HOSTSH} that invokes commands and executables on the host side
+the configure invocation is simple:
+
+@display
+./configure --prefix=[PREFIX_PATH_ON_TARGET] --hostsh=[HOSTSH] --cc=[CC]
+@end display
+
+Other configuration options are of course possible too.
+
+Once the configuration has finished one can build Bigloo (and its
+library) simply by calling @code{make}. This will build the libraries
+as well as the binaries.
+
+If shared libraries are needed on the host platform one still needs to
+install them. The easiest way is probably to install them temporary on
+a build system inside a special directory and then copy them from
+there to the host system.
+
+@display
+make DESTDIR=[temporary-directory] install
+@end display
+
+Only the @code{lib} directory is needed on the host side.
+
+@section Cross Compiling Bigloo Programs
+Once the host-library exists cross compilation is straightforward.
+Using the @code{-lib-dir} compilation flag one simply has to pass the
+library-directory to Bigloo.
+
+@display
+bigloo -lib-dir [path-to-cross-compiled-library] ....
+@end display
+
+Bigloo will automatically use the same C cross-compiler and
+compilation flags that have been used to build the library.
+
+@section Caveats
+In general Bigloo's cross-compilation works fine, but developers
+should be aware of some limitations:
+
+@itemize @bullet
+@item Macros will be executed on the build platform. The
+macro-environment (and in particular its integer types) might not be
+the same. For instance an @code{elong} on the build-system might be of
+different size than an @code{elong} on the host-system.
+@item Bigloo will read numbers on the build system and adapt the
+container size accordingly. Suppose for instance that the build system
+features 64bit longs, but the host system only allows for 32bit
+longs. The number 2^35 fits easily into a long on the build-system but
+will overflow on the host-system. The container will however be
+determined on the build system and thus a long will be used. This is
+only a problem for big integer literals.
+@item A cross-compiled Bigloo uses (by default) the same C compiler
+that has been used to compile the Bigloo. Once the executable has been
+transferred to the host-system the C cross-compiler does very likely
+not exist anymore. Therefore Bigloo will need to be invoked with the
+@code{-cc} flag on the host-system (under the assumption that there
+exists a C compiler).
+
+This drawback can be eliminated by directly
+compiling Bigloo on the host (since there exists a C compiler).
+@end itemize
+
+@section Examples
+In this example we will show how to compile for a host-machine that
+has ssh-access.
+
+We assume
+@itemize
+@item a working Bigloo (should be the same version as the one
+that is going to be compiled for the host) in the PATH.
+@item ssh access to the host. This access should be without password
+(using keys). The system should be accessible by @code{ssh [host]}
+(where @code{[host]} should be replaced with the correct address).
+@item a C cross-compiler @code{CC} running on the build-system and
+compiling for the host.
+@end itemize
+
+With these preconditions satisfied we can first build Bigloo for the host-system:
+@display
+$ ./configure --hostsh="$PWD/examples/hostsh/ssh/ssh-copy.sh [host]" --cc=[CC]
+$ make
+$ make DESTDIR=[TMP] install
+@end display
+
+Now let's compile a simple hello-world for the host.
+
+@display
+$ cat > /tmp/hello.scm <<EOF
+(module hello (main main))
+(define (main args) (print "hello world"))
+EOF
+
+$ bigloo -static-all-bigloo -lib-dir [TMP]/lib/3.2c/ -o /tmp/hello /tmp/hello.scm
+@end display
+
+The generated executable should be able to run on the host.

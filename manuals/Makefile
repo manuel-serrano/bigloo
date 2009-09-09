@@ -44,7 +44,7 @@ SOURCES		= modules.texi stdlib.texi rgc.texi lalr.texi match.texi \
                   thread.texi fthread.texi pthread.texi \
                   database.texi sqlite.texi search.texi digest.texi \
                   internet.texi multimedia.texi mail.texi cryptography.texi \
-                  trace.texi crc.texi date.texi
+                  trace.texi crc.texi date.texi cross.texi
 
 BDB_MASTER	= bdb.texi
 BDB_SOURCES	=
