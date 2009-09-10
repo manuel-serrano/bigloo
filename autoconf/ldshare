@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Mon Sep  7 09:09:21 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:14:48 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ if [ "$ldopt " = " " ]; then
       # Darwin < 9 require the -r option, Darwin 9 does not support the -r
       # option.
       # [flo]: iphone has version with characters in it (like 10.0.0b)
-      if [ "`echo $HOSTOSVERSION | set 's/[a-z].*$//*' | sed 's/[.]//g'`" -ge "900" ]; then
+      if [ "`echo $HOSTOSVERSION | sed 's/[a-z].*$//' | sed 's/[.]//g'`" -ge "900" ]; then
         echo "";
       else
         echo "-r";
