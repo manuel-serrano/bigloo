@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Sep  7 09:21:29 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:27:16 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -225,7 +225,7 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
              LIBDEST=$@ \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) $(PTHREADLIBS)"
+             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloopth_s-$(RELEASE) $(PTHREADLIBS)"
 
 $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 	@ $(MAKE) shared-lib \
@@ -234,7 +234,7 @@ $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
              LIBDEST=$@ \
              SONAME=lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX) \
              LDLIBS="-l$(LIBNAME)_s-$(RELEASE) $(LDLIBS)" \
-             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE)"
+             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloopth_s-$(RELEASE) $(PTHREADLIBS)"
 
 $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
 	@ cd $(LIB) && \
