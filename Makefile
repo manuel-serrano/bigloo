@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Sep  7 09:19:25 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:29:37 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -66,7 +66,7 @@
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the executable used to bootstrap
-BIGLOO          = $(BUILDBIGLOO)
+BIGLOO          = $(BGLBUILDBIGLOO)
 # the shell to be used
 SHELL           = /bin/sh
 # The directory where to build and install a distribution
@@ -157,7 +157,7 @@ boot: checkgmake
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
         fi
-	if [ -x $(BUILDBIGLOO) ]; then \
+	if [ -x $(BGLBUILDBIGLOO) ]; then \
 	  $(MAKE) -C runtime .afile; \
 	  $(MAKE) -C runtime heap; \
 	  $(MAKE) -C comptime .afile; \
@@ -174,11 +174,11 @@ boot: checkgmake
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
             $(MAKE) -C runtime boot-dotnet); \
         fi
-	(LD_LIBRARY_PATH=$(BUILDLIBDIR):$$LD_LIBRARY_PATH; \
+	(LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
          export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
-         PATH=$(BUILDBINDIR):$(BUILDLIBDIR):$$PATH; \
+         PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
          export PATH; \
          $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
          $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \

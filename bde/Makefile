@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Sep  7 09:24:44 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:31:59 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # Bigloo
-BIGLOO		= $(BUILDBIGLOO) -no-hello
+BIGLOO		= $(BGLBUILDBIGLOO) -no-hello
 # etags for info
 ETAGS		= etags
 # etags flags for info scanning
@@ -311,8 +311,8 @@ jas/%.scm: ../comptime/Jas/%.scm
 #*---------------------------------------------------------------------*/
 #*    Jas afile                                                        */
 #*---------------------------------------------------------------------*/
-$(JAS_AFILE): $(BUILDBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
-	(cd jas; $(BUILDBINDIR)/$(AFILE_EXE) *.scm -o ../$(JAS_AFILE))
+$(JAS_AFILE): $(BGLBUILDBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
+	(cd jas; $(BGLBUILDBINDIR)/$(AFILE_EXE) *.scm -o ../$(JAS_AFILE))
 
 #*---------------------------------------------------------------------*/
 #*    bmake dependencies                                               */

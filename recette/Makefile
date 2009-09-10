@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Sep  7 09:27:56 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:33:10 2009 (serrano)                */
 #*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the executable used to bootstrap
-BIGLOO          = $(BUILDBIGLOO)
+BIGLOO          = $(BGLBUILDBIGLOO)
 # which C compiler to be used
 CC              = `$(BIGLOO) -eval '(begin (print *cc*) (exit 0))'`
 # the shell to be used
@@ -28,11 +28,11 @@ LINT		= lint
 # lint options
 LINTFLAGS	= -u -v -I$(BOOTLIBDIR)
 # The package to compute afile
-AFILE		= $(BUILDBINDIR)/$(AFILE_EXE)
+AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
 # The package association tool
-JFILE		= $(BUILDBINDIR)/$(JFILE_EXE)
+JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 # The tags producer
-BTAGS		= $(BUILDBINDIR)/$(BTAGS_EXE)
+BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 #
 JVMCLASSPATH	= -jvm-bigloo-classpath $(BOOTLIBDIR)
 

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep  7 09:28:15 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:33:18 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -18,7 +18,7 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BUILDBIGLOO)
+BIGLOO		= $(BGLBUILDBIGLOO)
 # The Bigloo used to bootstrap the library and to produce the heap file
 EFLAGS		=
 # the shell to be used
@@ -46,11 +46,11 @@ SCMCLASSSUFFIX	= %.class
 SCMDOTNETSUFFIX = %.obj
 # The module association file
 AFILE		= .afile
-AFILE_BIN	= $(BUILDBINDIR)/$(AFILE_EXE)
+AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
 # The package association file
 JFILE		= .jfile
 PBASE		= bigloo.runtime
-JFILE_BIN	= $(BUILDBINDIR)/$(JFILE_EXE)
+JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 # The qualifier of the build library
 LIBQ		= 
 

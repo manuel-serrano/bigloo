@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Sep  7 09:27:11 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:32:44 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BUILDBIGLOO)
+BIGLOO		= $(BGLBUILDBIGLOO)
 # the produced executable
 BIGLOO_DEST	= $(BOOTBINDIR)/bigloo
 # the .afile
@@ -73,10 +73,10 @@ CADDFLAGS	= -I$(BOOTLIBDIR)
 #*---------------------------------------------------------------------*/
 #*    Afile, Jfile and Bdepend tools                                   */
 #*---------------------------------------------------------------------*/
-AFILE_BIN	= $(BUILDBINDIR)/$(AFILE_EXE)
-JFILE_BIN	= $(BUILDBINDIR)/$(JFILE_EXE)
-BTAGS_BIN	= $(BUILDBINDIR)/$(BTAGS_EXE)
-DEPEND_BIN	= $(BUILDBINDIR)/$(BDEPEND_EXE)
+AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
+JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
+BTAGS_BIN	= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+DEPEND_BIN	= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 
 #*---------------------------------------------------------------------*/
 #*    License                                                          */

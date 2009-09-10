@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep  8 15:24:13 2009 (serrano)                */
+#*    Last change :  Thu Sep 10 11:32:57 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2460,11 +2460,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The Buildbin directory
   if [ "$buildbindir " = " " ]; then
-      echo "BUILDBINDIR=$bootdir/bin" >> $makefile_cfg
-      echo "BUILDLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
+      echo "BGLBUILDBINDIR=$bootdir/bin" >> $makefile_cfg
+      echo "BGLBUILDLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
   else
-      echo "BUILDBINDIR=$buildbindir" >> $makefile_cfg
-      echo "BUILDLIBDIR=" >> $makefile_cfg
+      echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
+      echo "BGLBUILDLIBDIR=" >> $makefile_cfg
   fi
   echo >> $makefile_cfg
 
@@ -2494,9 +2494,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The C compiler
   if [ "$bigloo " = " " ]; then
-    echo "BUILDBIGLOO=$""(BUILDBINDIR)/bigloo" >> $makefile_cfg
+    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
   else
-    echo "BUILDBIGLOO=$bigloo" >> $makefile_cfg
+    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
   fi
   echo "CC=$cc" >> $makefile_cfg
   echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
