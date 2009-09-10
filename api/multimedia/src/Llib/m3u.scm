@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 15:30:22 2005                          */
-;*    Last change :  Thu Dec  4 10:05:44 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Wed Sep  9 19:05:08 2009 (serrano)                */
+;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    M3U (music playlist) handling                                    */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
 ;*---------------------------------------------------------------------*/
 (define *m3u-header-grammar*
    (regular-grammar ()
-      ((or "#EXTM3U\n" "#Extended M3U\n")
+      ((: (or "#EXTM3U" "#Extended M3U") (? #\Return) #\Newline)
        #t)
       (else
        (raise
@@ -64,6 +64,12 @@
 	   (obj (the-failure))
 	   (fname (input-port-name (the-port)))
 	   (location (input-port-position (the-port))))))))
+
+;*---------------------------------------------------------------------*/
+;*    error-msg ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (error-msg c port)
+   (string-append "{" (string c) "}" (read-line port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *m3u-song-grammar* ...                                           */
@@ -87,7 +93,7 @@
 	       (instantiate::&io-parse-error
 		  (proc 'read-m3u)
 		  (msg "Illegal song")
-		  (obj c)
+		  (obj (error-msg (the-failure) (the-port)))
 		  (fname (input-port-name (the-port)))
 		  (location (input-port-position (the-port))))))))))
 
@@ -99,20 +105,25 @@
       ((: (+ digit) #\,)
        (string->integer (the-substring 0 -1)))
       (else
-       #f)))
-
+       (let ((c (the-failure)))
+	  (unless (eof-object? c)
+	     (rgc-buffer-unget-char (the-port) (char->integer c)))
+	  #f))))
+ 
 ;*---------------------------------------------------------------------*/
 ;*    *m3u-song-name-grammar* ...                                      */
 ;*---------------------------------------------------------------------*/
 (define *m3u-song-name-grammar*
    (regular-grammar (kind)
-      ((: (+ all) #\Newline)
+      ((: (+ all) "\r\n")
+       (the-substring 0 -2))
+      ((: (+ all) "\n")
        (the-substring 0 -1))
       (else
        (raise
 	(instantiate::&io-parse-error
 	   (proc 'read-m3u)
-	   (msg (format "Illegal song ~a" kind))
-	   (obj (the-failure))
+	   (msg (format "Illegal song name ~a" kind))
+	   (obj (error-msg (the-failure) (the-port)))
 	   (fname (input-port-name (the-port)))
 	   (location (input-port-position (the-port))))))))
