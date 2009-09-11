@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Sep  8 11:43:48 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 09:55:13 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the constant alignment on the current architecture          */
 #*=====================================================================*/
@@ -51,6 +51,7 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <stdio.h>
+#include <stdlib.h>
 
 struct { char *c; char tc[5]; } __attribute__ ((aligned (8))) str1;
 struct { char *c; char tc[6]; } __attribute__ ((aligned (8))) str2;

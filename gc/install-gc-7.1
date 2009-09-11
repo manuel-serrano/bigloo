@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Thu Sep  3 18:05:26 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 10:08:33 2009 (serrano)                */
 #*    Copyright   :  2007-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
@@ -73,4 +73,10 @@ cp ../runtime/Clib/inline-alloc.c "$gc"_fth
 # Copy the sparc_linux_mach_dep.c (resurrected from gc6.8) specific file
 cp sparc_linux_mach_dep.c $gc
 cp sparc_linux_mach_dep.c "$gc"_fth
+
+# Patch for MacOS X 10.6 and higher
+if [ "`echo $hostosversion | sed 's/[a-z].*$//' | sed 's/[.]//g'`" -ge "1000" ]; then
+  sed -ie "s/<ucontext\.h>/<sys\/ucontext\.h>/g" $gc/mach_dep.c
+  sed -ie "s/<ucontext\.h>/<sys\/ucontext\.h>/g" "$gc"_fth/mach_dep.c
+fi
 

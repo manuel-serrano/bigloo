@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Mon Sep  7 09:26:54 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 10:33:10 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
@@ -19,7 +19,7 @@ include ../Makefile.config
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the executable used to bootstrap
-BIGLOO          = $(BUILDBIGLOO)
+BIGLOO          = $(BGLBUILDBIGLOO)
 # the .afile
 AFILE           = .afile
 # the shell to be used

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Thu Nov  6 09:27:55 2008 (serrano)                */
-;*    Copyright   :  1994-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Sep 11 08:17:31 2009 (serrano)                */
+;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -35,7 +35,11 @@
 	    engine_param
 	    expand_expander
 	    type_type
-	    ast_ident)
+	    ast_ident
+	    ast_let
+	    ast_labels
+	    ast_node
+	    ast_var)
    (export  (install-initial-expander)))
 
 ;*---------------------------------------------------------------------*/
@@ -401,12 +405,14 @@
    
    ;; let
    (install-compiler-expander 'let expand-let)
+   (install-compiler-expander (let-sym) expand-let)
    
    ;; letrec
    (install-compiler-expander 'letrec expand-letrec)
    
    ;; labels
    (install-compiler-expander 'labels expand-labels)
+   (install-compiler-expander (labels-sym) expand-labels)
    
    ;; case
    (install-compiler-expander 'case expand-case)

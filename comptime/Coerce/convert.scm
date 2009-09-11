@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Jun 15 15:19:50 2009 (serrano)                */
+;*    Last change :  Fri Sep 11 08:32:47 2009 (serrano)                */
 ;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -202,6 +202,8 @@
 ;*    make-one-type-conversion ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (make-one-type-conversion id-from from to check-op coerce-op node)
+   (trace (coerce 2) "make-one-type-conversion: " (shape node) " ("
+	  (shape from) " -> " (shape to) ")" #\Newline)
    (let* ((aux   (mark-symbol-non-user! (gensym 'aux)))
 	  (loc   (node-loc node))
 	  (lnode (top-level-sexp->node

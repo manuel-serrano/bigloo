@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Jun 29 17:33:05 2009 (serrano)                */
+;*    Last change :  Fri Sep 11 09:42:09 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -27,8 +27,27 @@
 	    ast_occur
 	    ast_remove
 	    backend_backend)
-   (export  (let->node::node <sexp> <stack> ::obj ::symbol)))
- 
+   (export  (let-sym? ::obj)
+	    (let-sym::symbol)
+	    (let->node::node <sexp> <stack> ::obj ::symbol)))
+
+;*---------------------------------------------------------------------*/
+;*    *let* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *let* (gensym 'let))
+
+;*---------------------------------------------------------------------*/
+;*    let-sym ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (let-sym)
+   *let*)
+
+;*---------------------------------------------------------------------*/
+;*    let-sym? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (let-sym? sym)
+   (eq? sym *let*))
+
 ;*---------------------------------------------------------------------*/
 ;*    let->node ...                                                    */
 ;*---------------------------------------------------------------------*/
@@ -120,7 +139,9 @@
 	     "loc-bis: " loc-bis #\Newline
 	     "nloc: " nloc #\Newline)
       (let* ((body     (sexp->node body new-stack nloc 'value))
-	     (bstack   (if (eq? (car exp) 'let) stack new-stack))
+	     (bstack   (if (or (eq? (car exp) 'let) (let-sym? (car exp)))
+			   stack
+			   new-stack))
 	     (bindings (map (lambda (binding var)
 			       (cons var
 				     (sexp->node
@@ -235,7 +256,7 @@
 ;*    to be mutated to their correct values.                           */
 ;*---------------------------------------------------------------------*/
 (define (let-or-letrec let/letrec node-let)
-   (if (eq? let/letrec 'let)
+   (if (or (eq? let/letrec 'let) (let-sym? let/letrec))
        node-let
        (let* ((bindings (let-var-bindings node-let))
 	      (body     (let-var-body node-let))

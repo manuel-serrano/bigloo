@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Oct  5 13:56:23 2004 (serrano)                */
-;*    Copyright   :  1995-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Sep 11 09:42:30 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -37,7 +37,7 @@
    (set! *copy-removed* 0)
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
-		       (node (sfun-body fun))) 
+		       (node (sfun-body fun)))
 		   (sfun-body-set! fun (node-copy! node))
 		   #unspecified))
 	     globals)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Fri Apr 10 14:41:57 2009 (serrano)                */
+;*    Last change :  Fri Sep 11 08:09:35 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -28,6 +28,7 @@
 	    ast_env
 	    ast_local
 	    ast_sexp
+	    ast_let
 	    object_class
 	    object_generic
 	    object_method
@@ -473,7 +474,7 @@
 	       (opts (map (lambda (o)
 			     (fast-id-of-id (car o) loc))
 			  (sfun-optionals (global-value glo)))))
-	    `(let ,(map (lambda (v i)
+	    `(,(let-sym) ,(map (lambda (v i)
 			   `(,v (c-vector-ref opt ,i)))
 			(take (sfun-args-name (global-value glo)) arity)
 			(iota arity))
@@ -556,12 +557,12 @@
 		 (symbol->keyword (fast-id-of-id (car k) loc)))
 	      keys))
       (define (funcall)
-	 `(let ((,l (vector-length ,iopt)))
+	 `(,(let-sym) ((,l (vector-length ,iopt)))
 	     (labels ((,search (k1 i)
 	         (if (=fx i ,l)
 		     -1
 		     ,(if *unsafe-arity*
-			  `(let ((v (c-vector-ref ,iopt i)))
+			  `(,(let-sym) ((v (c-vector-ref ,iopt i)))
 			      (if (eq? v k1)
 				  (+fx i 1)
 				  (,search k1 (+fx i 2))))
@@ -601,7 +602,7 @@
 				(let* ((i (fast-id-of-id (car p) loc))
 				       (k1 (symbol->keyword i))
 				       (ind (gensym 'index)))
-				   `(let ((,ind (,search ,k1 ,arity)))
+				   `(,(let-sym) ((,ind (,search ,k1 ,arity)))
 				       (when (>=fx ,ind 0)
 					   (set! ,i (c-vector-ref ,iopt ,ind))))))
 			     keys)

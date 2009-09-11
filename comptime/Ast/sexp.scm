@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Aug 31 16:25:13 2009 (serrano)                */
+;*    Last change :  Fri Sep 11 09:43:09 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -264,7 +264,7 @@
 						(false sinon)))
 		   (let ((test (mark-symbol-non-user! (gensym 'test))))
 		      (replace! exp
-				`(let ((,(symbol-append test '::bool) ,si))
+				`(,(let-sym) ((,(symbol-append test '::bool) ,si))
 				    ,(epairify-rec `(if ,test ,alors ,sinon)
 						   exp)))
 		      (sexp->node exp stack loc site))))))
@@ -330,69 +330,67 @@
 			     exp
 			     (find-location/loc exp loc)))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
-      ((((or let letrec labels (? labels-sym?)) ?- ?body) . ?args)
+      ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
 	  (sexp->node nexp stack loc site)))
 ;*--- let & letrec ----------------------------------------------------*/
-      (((or let letrec) . ?-)
+      (((or let (? let-sym?) letrec) . ?-)
        (let->node exp stack loc 'value))
 ;*--- labels ----------------------------------------------------------*/
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))
 ;*--- the direct lambda applications (see match-case ...) -------------*/
       (((lambda ?vars . ?body) . ?args)
-       (let ((loc (find-location/loc exp loc)))
-	  (sexp->node `(let ,(let loop ((vars vars)
-					(args args))
-				(cond
-				   ((null? vars)
-				    (if (null? args)
-					'()
+       (let ((loc (find-location/loc exp loc))
+	     (nexp `(,(let-sym) ,(let loop ((vars vars)
+					    (args args))
+				    (cond
+				       ((null? vars)
+					(if (null? args)
+					    '()
+					    (user-error/location
+					     loc
+					     (shape (current-function))
+					     "wrong number of argument"
+					     exp)))
+				       ((not (pair? vars))
+					(list
+					 (list
+					  vars
+					  (let liip ((args args))
+					     (if (null? args)
+						 ''()
+						 `(cons ,(car args)
+							,(liip (cdr args))))))))
+				       ((dsssl-named-constant? (car vars))
+					(let ((arg (dsssl-find-first-formal
+						    (cdr vars))))
+					   (if arg
+					       (loop arg args)
+					       (loop '() args))))
+				       ((not (symbol? (car vars)))
+					(user-error/location
+					 loc
+					 (shape (current-function))
+					 "Illegal formal argument"
+					 exp))
+				       ((null? args)
 					(user-error/location
 					 loc
 					 (shape (current-function))
 					 "wrong number of argument"
-					 exp)))
-				   ((not (pair? vars))
-				    (list
-				     (list
-				      vars
-				      (let liip ((args args))
-					 (if (null? args)
-					     ''()
-					     `(cons ,(car args)
-						    ,(liip (cdr args))))))))
-				   ((dsssl-named-constant? (car vars))
-				    (let ((arg (dsssl-find-first-formal
-						(cdr vars))))
-				       (if arg
-					   (loop arg args)
-					   (loop '() args))))
-				   ((not (symbol? (car vars)))
-				    (user-error/location
-				     loc
-				     (shape (current-function))
-				     "Illegal formal argument"
-				     exp))
-				   ((null? args)
-				    (user-error/location
-				     loc
-				     (shape (current-function))
-				     "wrong number of argument"
-				     exp))
-				   (else
-				    (cons (list (car vars) (car args))
-					  (loop (cdr vars) (cdr args))))))
-			  ,(make-dsssl-function-prelude
-			    (shape (current-function))
-			    vars
-			    (normalize-progn body)
-			    (lambda (obj proc msg)
-			       (user-error/location loc obj proc msg))))
-		      stack
-		      loc
-		      site)))
+					 exp))
+				       (else
+					(cons (list (car vars) (car args))
+					      (loop (cdr vars) (cdr args))))))
+				,(make-dsssl-function-prelude
+				  (shape (current-function))
+				  vars
+				  (normalize-progn body)
+				  (lambda (obj proc msg)
+				     (user-error/location loc obj proc msg))))))
+	  (let->node nexp stack loc site)))
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
        (match-case exp

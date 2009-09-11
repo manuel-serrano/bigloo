@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Mon Aug 31 15:51:49 2009 (serrano)                */
+;*    Last change :  Fri Sep 11 08:10:21 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -20,9 +20,10 @@
 	    type_cache
  	    ast_sexp
 	    ast_ident
+	    ast_local
+	    ast_let
 	    tools_dsssl
-	    expand_eps
-	    ast_local)
+	    expand_eps)
    (export  (application->node::node ::obj ::obj ::obj ::symbol)
 	    (make-app-node::node stack loc site var::var args)
 	    (correct-arity-app?::bool ::variable ::obj)))
@@ -109,7 +110,7 @@
 		 (let ((old-fun      (car exp))
 		       (make-the-app (lambda (fun)
 					(if (pair? bindings)
-					    `(let ,(reverse! bindings)
+					    `(,(let-sym) ,(reverse! bindings)
 						(,fun ,@(reverse! new-args)))
 					    `(,fun ,@(reverse! new-args))))))
 		    (if (var? fun)
@@ -120,7 +121,7 @@
 						   site)))
 			      (clean-user-node! node)))
 			(let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
-			       (lexp `(let ((,new-fun ,(if fun-err?
+			       (lexp `(,(let-sym) ((,new-fun ,(if fun-err?
 							   '(@ list __r4_pairs_and_lists_6_3)
 							   fun)))
 					 ,(make-the-app new-fun)))
@@ -300,7 +301,7 @@
 	     (let* ((reqs (take args-name arity))
 		    (provs (map car (take optionals (-fx len arity))))
 		    (opts (list-tail optionals (-fx len arity)))
-		    (exp `(let ,(map list reqs (take actuals arity))
+		    (exp `(,(let-sym) ,(map list reqs (take actuals arity))
 			     (let* (,@(map list provs (drop actuals arity))
 				      ,@opts)
 				(,var ,@reqs
@@ -338,8 +339,8 @@
 		  ;; introduce a funcall on purpose for using the
 		  ;; var-args entry point without heap allocating
 		  ;; it may be safer to use
-		  ;; `(let ((f #unspecified)) (set! f ,v) (,f @args))
-		  (let ((exp `(let ((,f ,v)) (,f ,@args))))
+		  ;; `(,(let-sym) ((f #unspecified)) (set! f ,v) (,f @args))
+		  (let ((exp `(,(let-sym) ((,f ,v)) (,f ,@args))))
 		     (sexp->node exp stack loc site))))
 	    (define (body keys vals stack)
 	       ;; prepare the optional arguments
@@ -488,7 +489,7 @@
 	      (f-args   '()))
       (if (=fx arity -1)
 	  (let* ((l-arg  (mark-symbol-non-user! (gensym 'list)))
-		 (l-exp  `(let ((,l-arg ,(make-args-list old-args)))
+		 (l-exp  `(,(let-sym) ((,l-arg ,(make-args-list old-args)))
 			     ,l-arg))
 		 (l-node (sexp->node l-exp stack loc 'value))
 		 (l-var  (let-var-body l-node))

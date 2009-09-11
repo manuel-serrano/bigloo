@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 10 11:32:57 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 10:09:44 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1219,6 +1219,7 @@ if [ "$abat " = " " ]; then
 fi
 
 echo "  -> aout=$aout, abat=$abat" >> $configurelog
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    all action                                                       */
@@ -1424,6 +1425,7 @@ case $hostos in
     sysdlldirstr=$dlldir
     ;;
 esac
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    Java configuration                                               */
@@ -1431,6 +1433,7 @@ esac
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
 jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
 jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    Dotnet configuration                                             */
@@ -1443,6 +1446,7 @@ case $dotnetldstyle in
     echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
     exit 3;;
 esac
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    GC configuration                                                 */
@@ -1474,19 +1478,22 @@ else
   gclib=$customgclib;
 
   gcincdir=$pwd/gc/$gccustom/include
-   # detect if we are using maemo for an ARM emulation
+
+  # detect if we are using maemo for an ARM emulation
   maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
-   if [ "$maemo " = "yes " ]; then
+  if [ "$maemo " = "yes " ]; then
     # This is required for compiling under QEMU (used to be the -DQEMU flag)
     cgcflags="$cgcflags -DNO_PROC_STAT"
   fi
-   # configure directories
+
+  # configure directories
   gcconfiguredir="--prefix=$pwd/gc/preinst"
-   # install the gc source code if needed
+  # install the gc source code if needed
+
   if [ ! -d gc/$gccustom ]; then
     echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
 
-    (cd gc && GC="$gccustom".tar.gz ./install-$gccustom) || exit 1
+    (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
   fi
 
   if [ -f gc/configure-$gccustom ]; then
@@ -1535,6 +1542,7 @@ elif [ $hostos = "mingw" ]; then
    gchaveblocking=0
    gchavedoblocking=0
 fi
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    Benchmark mode                                                   */
