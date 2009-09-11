@@ -423,6 +423,8 @@ so: bigloo.$(SHAREDSUFFIX)
 bigloo.plain: Tools/license.scm
 	@- $(RM) -f Tools/date.scm
 	@ $(MAKE) Tools/date.scm
+	@ $(MAKE) $(AFILE)
+	@ $(MAKE) $(JFILE)
 	@ $(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 bigloo.new:

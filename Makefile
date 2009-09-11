@@ -161,7 +161,6 @@ boot: checkgmake
 	  $(MAKE) -C runtime .afile; \
 	  $(MAKE) -C runtime heap; \
 	  $(MAKE) -C runtime boot; \
-	  $(MAKE) -C comptime .afile; \
 	  $(MAKE) -C comptime; \
 	  $(MAKE) -C comptime boot; \
 	else \
