@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Sep 10 11:29:37 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 13:25:58 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -331,7 +331,13 @@ fullbootstrap:
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
 	$(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION))
 	$(MAKE) -C recette clean
-	@ $(MAKE) -s revision LOGMSG="Full Bootstrap at `date '+%d%b%y'`"
+	@ if [ "$(MSG) " = " " ]; then \
+            echo "Warning, No MSG provided using standard revision message"; \
+            echo "use \"make fullbootstrap MSG=a-message\""; \
+	    $(MAKE) -s revision LOGMSG="bootstrap"; \
+          else \
+	    $(MAKE) -s revision LOGMSG="$(MSG) (bootstrap)"; \
+          fi
 	@ echo "Bigloo full bootstrap Done..."
 	@ echo "-------------------------------"
 
