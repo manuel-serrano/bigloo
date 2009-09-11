@@ -11,10 +11,14 @@
 ;;      args
 ;;      (section "Misc")
 ;;      ;; priliminary test
-;;      (("-" (help "Read source code on current input channel"))
-;;       (pass 1 (set! *src-files* (cons 'stdin *src-files*))))
-;;      (("-o" ?file (help "Name the output FILE"))
-;;       (pass 2 (set! *dest* file)))
+;;      (pass 1
+;;       (("-" (help "Read source code on current input channel"))
+;;        (set! *src-files* (cons 'stdin *src-files*)))
+;;       (("-x" (help "some x help"))
+;;        (do something for x)))
+;;      (pass 2
+;;       (("-o" ?file (help "Name the output FILE"))
+;;        (set! *dest* file)))
 ;;      ;; help
 ;;      (("?")
 ;;       (usage args-parse-usage 1 #f)))
@@ -23,34 +27,71 @@
 			       args . clauses)
    (define *pass* (gensym 'pass))
 
-   (define (clause->pass-clause clause)
+   ;; else-clauses will not be contained inside an 'else' anymore
+   (define (clause->transformed-clause clause pass)
       (match-case clause
-	 ;; a clause with explicit pass information.
-	 ;; something like:
-	 ;; (("-help2" (help "The exhaustive help message"))
-	 ;;  (pass 2 (usage args-parse-usage 2 #f)))
-	 ;; or
-	 ;; (else (pass 2 ...))
-	 (((and (or else
-		    (? pair?))
-		?arg/help)
-	   (pass ?pass . ?body-exprs))
-	  `(,arg/help (when (equal? ,pass ,*pass*)
-			 ,@body-exprs)))
-	 ;; a clause without explicit pass information.
-	 ;; something like:
-	 ;; (("-help2" (help "The exhaustive help message"))
-	 ;;  (usage args-parse-usage 2 #f))
-	 ;; or
-	 ;; (else ...)
-	 (((and (or else
-		    (? pair?))
-		?arg/help)
-	  . ?body-exprs)
-	  `(,arg/help (when (equal? ',default-pass ,*pass*)
-			 ,@body-exprs)))
-	 (else ;; just leave it untouched. (maybe a 'section clause?)
+	 ;; the else-clause.
+	 ((else . ?exprs)
+	  `(when (equal? ',pass ,*pass*)
+	      ,@exprs))
+	 ;; an arg-clause
+	 (((and ?arg/help (? pair?)) . ?exprs)
+	  `(,arg/help
+	    (when (equal? ',pass ,*pass*)
+	       ,@exprs)))
+	 ;; probably 'section' or something similar
+	 (else
 	  clause)))
+
+   ;; returned result should be in reverse order.
+   (define (pass-clauses->transformed-clauses clauses pass)
+      (let loop ((clauses clauses)
+		 (res '())
+		 (else-clauses '()))
+	 (if (null? clauses)
+	     (values res else-clauses)
+	     (match-case (car clauses)
+		((else . ?exprs)
+		 (loop (cdr clauses)
+		       res
+		       (cons (clause->transformed-clause (car clauses) pass)
+			     else-clauses)))
+		(else
+		 (loop (cdr clauses)
+		       (cons (clause->transformed-clause (car clauses) pass)
+			     res)
+		       else-clauses))))))
+
+   (define (clauses->transformed-clauses clauses)
+      (let loop ((clauses clauses)
+		 (rev-transformed-clauses '())
+		 (else-clauses '())) ;; without the 'else part
+	 (cond
+	    ((and (null? clauses) (null? else-clauses))
+	     (reverse! rev-transformed-clauses))
+	    ((null? clauses)
+	     (append (reverse! rev-transformed-clauses)
+		     `((else ,@else-clauses))))
+	    (else
+	     (match-case (car clauses)
+		((else . ?exprs)
+		 (loop (cdr clauses)
+		       rev-transformed-clauses
+		       (cons (clause->transformed-clause (car clauses)
+							 default-pass)
+			     else-clauses)))
+		((pass ?pass . ?nested-clauses)
+		 (receive (rev-trs elses)
+		    (pass-clauses->transformed-clauses nested-clauses pass)
+		    (loop (cdr clauses)
+			  (append rev-trs rev-transformed-clauses)
+			  (append elses else-clauses))))
+		(else
+		 (loop (cdr clauses)
+		       (cons (clause->transformed-clause (car clauses)
+							 default-pass)
+			     rev-transformed-clauses)
+		       else-clauses)))))))
 
    (when (not (list? passes))
       (error 'pass-parse-args
@@ -59,5 +100,5 @@
    `(for-each (lambda (,*pass*)
 		 (args-parse
 		  ,args
-		  ,@(map clause->pass-clause clauses)))
+		  ,@(clauses->transformed-clauses clauses)))
 	      ',passes))

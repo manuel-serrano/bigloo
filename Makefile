@@ -160,12 +160,15 @@ boot: checkgmake
 	if [ -x $(BGLBUILDBIGLOO) ]; then \
 	  $(MAKE) -C runtime .afile; \
 	  $(MAKE) -C runtime heap; \
+	  $(MAKE) -C runtime boot; \
 	  $(MAKE) -C comptime .afile; \
 	  $(MAKE) -C comptime; \
+	  $(MAKE) -C comptime boot; \
+	else \
+	  $(MAKE) -C runtime boot; \
+	  $(MAKE) -C comptime boot; \
+	  $(MAKE) -C runtime heap; \
 	fi
-	$(MAKE) -C runtime boot
-	$(MAKE) -C comptime boot
-	$(MAKE) -C runtime heap
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
             $(MAKE) -C runtime boot-jvm); \
