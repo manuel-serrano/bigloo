@@ -300,7 +300,7 @@
       (("-I" ?dir (help "Add DIR to the load path"))
        (set! *user-load-path* (cons dir *user-load-path*)))
       ;; library path
-      (pass 'lib-dir
+      (pass lib-dir
 	    (("-lib-dir" ?dir (help "Set lib-path to DIR"))
 	     (process-lib-dir-parameter dir)))
       (("-L" ?name (help "Set additional library path"))
@@ -320,7 +320,7 @@
        (set! *obj-suffix* (list *c-object-file-extension*))
        (set! *target-language* 'native))
       ;; jvm code generation
-      (pass 'jvm
+      (pass jvm
 	    (("-jvm" (help "Compile module to JVM .class files"))
 	     (set! *heap-name* *heap-jvm-name*)
 	     (set! *obj-suffix* '("class"))

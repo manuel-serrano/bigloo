@@ -762,13 +762,15 @@ Engine/param.o: $(BOOTLIBDIR)/bigloo_config.h ../configure
 #*---------------------------------------------------------------------*/
 #*    Dependencies ...                                                 */
 #*---------------------------------------------------------------------*/
+./Inline/size.o ./Inline/size.class: Ast/node.sch 
+./Prof/prof-emit.o ./Prof/prof-emit.class: Ast/node.sch Ast/unit.sch     \
+      Tools/location.sch 
 ./Expand/exit.o ./Expand/exit.class: Expand/expander.sch Tools/trace.sch \
       Tools/location.sch 
-./Inline/size.o ./Inline/size.class: Ast/node.sch 
 ./SawMill/regalloc.o ./SawMill/regalloc.class: Tools/trace.sch 
 Globalize/node.o Globalize/node.class: Tools/trace.sch 
-./Expand/lambda.o ./Expand/lambda.class: Tools/trace.sch 
 ./Inline/loop.o ./Inline/loop.class: Tools/trace.sch 
+./Expand/lambda.o ./Expand/lambda.class: Tools/trace.sch 
 Ast/glo-def.o Ast/glo-def.class: Tools/trace.sch 
 ./Expand/eps.o ./Expand/eps.class: Expand/expander.sch Tools/trace.sch   \
       Engine/pass.sch Ast/unit.sch 
@@ -803,6 +805,7 @@ Globalize/ginfo.o Globalize/ginfo.class: Ast/node.sch
 SawJvm/code.o SawJvm/code.class: Tools/location.sch 
 Reduce/cse.o Reduce/cse.class: Tools/trace.sch 
 Read/inline.o Read/inline.class: Tools/trace.sch Ast/unit.sch 
+./Expand/let.o ./Expand/let.class: Ast/node.sch Tools/location.sch 
 Tools/location.o Tools/location.class: Tools/location.sch 
 Integrate/walk.o Integrate/walk.class: Engine/pass.sch 
 Globalize/globalize.o Globalize/globalize.class: Tools/trace.sch         \
@@ -819,7 +822,7 @@ Object/java-access.o Object/java-access.class: Tools/trace.sch
 ./Cgen/cgen.o ./Cgen/cgen.class: Tools/trace.sch Tools/location.sch 
 Bdb/spread-obj.o Bdb/spread-obj.class: Engine/pass.sch Ast/node.sch 
 ./Init/parse-args.o ./Init/parse-args.class: Tools/trace.sch             \
-      Engine/pass.sch 
+      Engine/pass.sch Init/pass-args-parse.sch 
 ./SawMsil/compile.o ./SawMsil/compile.class: Tvector/tvector.sch 
 ./Object/java-access.o ./Object/java-access.class: Tools/trace.sch 
 ./Cfa/iterate.o ./Cfa/iterate.class: Tools/trace.sch 
@@ -841,7 +844,6 @@ Expand/initial.o Expand/initial.class: Tools/location.sch
 ./Cnst/alloc.o ./Cnst/alloc.class: Tvector/tvector.sch 
 Ast/unit.o Ast/unit.class: Ast/unit.sch Ast/node.sch Tools/trace.sch 
 ./Coerce/coerce.o ./Coerce/coerce.class: Tools/trace.sch 
-./Bdb/initialize.o ./Bdb/initialize.class: Tools/trace.sch Ast/unit.sch 
 Bdb/walk.o Bdb/walk.class: Engine/pass.sch 
 Foreign/ctype.o Foreign/ctype.class: Tools/trace.sch 
 ./Inline/simple.o ./Inline/simple.class: Tools/trace.sch                 \
@@ -853,11 +855,12 @@ Foreign/ctype.o Foreign/ctype.class: Tools/trace.sch
 ./SawJvm/compile.o ./SawJvm/compile.class: Tvector/tvector.sch           \
       Tools/trace.sch 
 ./Integrate/ctn.o ./Integrate/ctn.class: Tools/trace.sch 
+./Ast/toccur.o ./Ast/toccur.class: Ast/node.sch 
 ./Ast/glo-decl.o ./Ast/glo-decl.class: Tools/trace.sch 
 ./Foreign/jtype.o ./Foreign/jtype.class: Tools/trace.sch 
-./User/user.o ./User/user.class: Engine/pass.sch Ast/unit.sch 
 ./Inline/walk.o ./Inline/walk.class: Engine/pass.sch Tools/trace.sch     \
       Ast/node.sch 
+./User/user.o ./User/user.class: Engine/pass.sch Ast/unit.sch 
 ./Ast/let.o ./Ast/let.class: Ast/node.sch Tools/trace.sch                \
       Tools/location.sch 
 ./Integrate/free.o ./Integrate/free.class: Tools/trace.sch 
@@ -875,7 +878,6 @@ Effect/feffect.o Effect/feffect.class: Tools/trace.sch
 Cfa/collect.o Cfa/collect.class: Tools/trace.sch 
 Module/foreign.o Module/foreign.class: Ast/unit.sch Tools/trace.sch 
 Ast/sexp.o Ast/sexp.class: Tools/trace.sch Tools/location.sch 
-Bdb/emit.o Bdb/emit.class: Ast/node.sch Ast/unit.sch Tools/location.sch 
 Tvector/cnst.o Tvector/cnst.class: Tvector/tvector.sch 
 ./Hgen/walk.o ./Hgen/walk.class: Engine/pass.sch 
 Trace/walk.o Trace/walk.class: Engine/pass.sch Ast/node.sch              \
@@ -910,10 +912,10 @@ Ast/find-gdefs.o Ast/find-gdefs.class: Tools/trace.sch Ast/node.sch
 ./Cfa/struct.o ./Cfa/struct.class: Tools/trace.sch 
 ./Reduce/walk.o ./Reduce/walk.class: Engine/pass.sch 
 ./Prof/unit.o ./Prof/unit.class: Engine/pass.sch Ast/unit.sch 
+Bdb/bdb-emit.o Bdb/bdb-emit.class: Ast/node.sch Ast/unit.sch             \
+      Tools/location.sch 
 Reduce/cond.o Reduce/cond.class: Tools/trace.sch 
 Module/module.o Module/module.class: Ast/unit.sch Engine/pass.sch 
-./Prof/emit.o ./Prof/emit.class: Ast/node.sch Ast/unit.sch               \
-      Tools/location.sch 
 ./Reduce/same.o ./Reduce/same.class: Tools/trace.sch 
 Reduce/ftypec.o Reduce/ftypec.class: Tools/trace.sch 
 ./Reduce/typec.o ./Reduce/typec.class: Tools/trace.sch 
@@ -932,9 +934,9 @@ Integrate/cto.o Integrate/cto.class: Tools/trace.sch
 ./BackEnd/cplib.o ./BackEnd/cplib.class: Tvector/tvector.sch 
 ./Integrate/walk.o ./Integrate/walk.class: Engine/pass.sch 
 ./Type/typeof.o ./Type/typeof.class: Tvector/tvector.sch 
-./Cgen/capp.o ./Cgen/capp.class: Tools/trace.sch 
 ./Inline/recursion.o ./Inline/recursion.class: Tools/trace.sch           \
       Tools/verbose.sch 
+./Cgen/capp.o ./Cgen/capp.class: Tools/trace.sch 
 Reduce/1occ.o Reduce/1occ.class: Tools/trace.sch 
 User/user.o User/user.class: Engine/pass.sch Ast/unit.sch 
 ./Ast/check-sharing.o ./Ast/check-sharing.class: Ast/unit.sch            \
@@ -980,8 +982,6 @@ Expand/eps.o Expand/eps.class: Expand/expander.sch Tools/trace.sch       \
       Engine/pass.sch Ast/unit.sch 
 Prof/unit.o Prof/unit.class: Engine/pass.sch Ast/unit.sch 
 Coerce/apply.o Coerce/apply.class: Tools/trace.sch Tools/location.sch 
-Prof/emit.o Prof/emit.class: Ast/node.sch Ast/unit.sch                   \
-      Tools/location.sch 
 Coerce/funcall.o Coerce/funcall.class: Tools/trace.sch                   \
       Tools/location.sch 
 Inline/walk.o Inline/walk.class: Engine/pass.sch Tools/trace.sch         \
@@ -1006,6 +1006,7 @@ Cgen/capp.o Cgen/capp.class: Tools/trace.sch
 ./Object/getter.o ./Object/getter.class: Tools/trace.sch 
 Cnst/walk.o Cnst/walk.class: Engine/pass.sch 
 Globalize/new-body.o Globalize/new-body.class: Tools/trace.sch 
+Expand/let.o Expand/let.class: Ast/node.sch Tools/location.sch 
 ./Ast/find-gdefs.o ./Ast/find-gdefs.class: Tools/trace.sch Ast/node.sch 
 BackEnd/c-proto.o BackEnd/c-proto.class: Tvector/tvector.sch             \
       Tools/fprint.sch 
@@ -1020,13 +1021,15 @@ Globalize/free.o Globalize/free.class: Tools/trace.sch
 Coerce/coerce.o Coerce/coerce.class: Tools/trace.sch 
 ./Module/alibrary.o ./Module/alibrary.class: Ast/unit.sch 
 Inline/simple.o Inline/simple.class: Tools/trace.sch Tools/verbose.sch 
+./Reduce/cse.o ./Reduce/cse.class: Tools/trace.sch 
 ./Beta/walk.o ./Beta/walk.class: Engine/pass.sch Tools/trace.sch         \
       Ast/node.sch 
-./Reduce/cse.o ./Reduce/cse.class: Tools/trace.sch 
 ./Cfa/box.o ./Cfa/box.class: Tools/trace.sch 
 Integrate/ctn.o Integrate/ctn.class: Tools/trace.sch 
 Integrate/u.o Integrate/u.class: Tools/trace.sch 
 ./Effect/effect.o ./Effect/effect.class: Ast/node.sch 
+Bdb/bdb-initialize.o Bdb/bdb-initialize.class: Tools/trace.sch           \
+      Ast/unit.sch 
 Reduce/sbeta.o Reduce/sbeta.class: Tools/trace.sch 
 Reduce/walk.o Reduce/walk.class: Engine/pass.sch 
 Cfa/funcall.o Cfa/funcall.class: Tools/trace.sch 
@@ -1038,17 +1041,21 @@ Foreign/jtype.o Foreign/jtype.class: Tools/trace.sch
 Globalize/clocto.o Globalize/clocto.class: Tools/trace.sch 
 ./Tools/progn.o ./Tools/progn.class: Tools/location.sch 
 ./Tvector/cnst.o ./Tvector/cnst.class: Tvector/tvector.sch 
+./Bdb/bdb-initialize.o ./Bdb/bdb-initialize.class: Tools/trace.sch       \
+      Ast/unit.sch 
 ./Cnst/node.o ./Cnst/node.class: Tools/trace.sch Tvector/tvector.sch 
 Cfa/box.o Cfa/box.class: Tools/trace.sch 
 Cnst/alloc.o Cnst/alloc.class: Tvector/tvector.sch 
 Tools/shape.o Tools/shape.class: Ast/node.sch Tvector/tvector.sch 
 ./Read/load.o ./Read/load.class: Tools/trace.sch 
-Init/parse-args.o Init/parse-args.class: Tools/trace.sch Engine/pass.sch 
+Init/parse-args.o Init/parse-args.class: Tools/trace.sch Engine/pass.sch \
+      Init/pass-args-parse.sch 
 SawMsil/compile.o SawMsil/compile.class: Tvector/tvector.sch 
 Type/typeof.o Type/typeof.class: Tvector/tvector.sch 
 ./Ast/labels.o ./Ast/labels.class: Ast/node.sch Tools/trace.sch          \
       Tools/location.sch 
 ./Module/library.o ./Module/library.class: Ast/unit.sch 
+Ast/toccur.o Ast/toccur.class: Ast/node.sch 
 Expand/if.o Expand/if.class: Tools/trace.sch 
 Expand/expander.o Expand/expander.class: Expand/expander.sch 
 Module/statexp.o Module/statexp.class: Ast/unit.sch 
@@ -1061,7 +1068,11 @@ Integrate/loc2glo.o Integrate/loc2glo.class: Tools/trace.sch
 Fail/walk.o Fail/walk.class: Engine/pass.sch Tools/location.sch          \
       Ast/node.sch 
 Globalize/loc2glo.o Globalize/loc2glo.class: Tools/trace.sch 
+Prof/prof-emit.o Prof/prof-emit.class: Ast/node.sch Ast/unit.sch         \
+      Tools/location.sch 
 Heap/restore.o Heap/restore.class: Engine/pass.sch 
+./Bdb/bdb-emit.o ./Bdb/bdb-emit.class: Ast/node.sch Ast/unit.sch         \
+      Tools/location.sch 
 ./Cgen/emit-cop.o ./Cgen/emit-cop.class: Tools/location.sch              \
       Tools/fprint.sch Tools/trace.sch 
 ./Expand/define.o ./Expand/define.class: Expand/expander.sch             \
@@ -1099,9 +1110,9 @@ Integrate/kk.o Integrate/kk.class: Tools/trace.sch
 ./Read/inline.o ./Read/inline.class: Tools/trace.sch Ast/unit.sch 
 ./SawJvm/code.o ./SawJvm/code.class: Tools/location.sch 
 Module/java.o Module/java.class: Ast/unit.sch Tools/trace.sch 
+./Ast/alphatize.o ./Ast/alphatize.class: Ast/node.sch Tools/location.sch 
 ./Expand/mvalue.o ./Expand/mvalue.class: Expand/expander.sch             \
       Tools/trace.sch 
-./Ast/alphatize.o ./Ast/alphatize.class: Ast/node.sch Tools/location.sch 
 Cfa/struct.o Cfa/struct.class: Tools/trace.sch 
 Ast/glo-decl.o Ast/glo-decl.class: Tools/trace.sch 
 BackEnd/dotnet.o BackEnd/dotnet.class: Engine/pass.sch 
@@ -1135,16 +1146,13 @@ Module/eval.o Module/eval.class: Ast/unit.sch Ast/node.sch
 Ast/remove.o Ast/remove.class: Ast/node.sch 
 ./Ast/sexp.o ./Ast/sexp.class: Tools/trace.sch Tools/location.sch 
 ./Ast/build.o ./Ast/build.class: Engine/pass.sch Ast/node.sch 
-./Ast/check-init.o ./Ast/check-init.class: Ast/unit.sch 
-./Bdb/emit.o ./Bdb/emit.class: Ast/node.sch Ast/unit.sch                 \
-      Tools/location.sch 
 ./Coerce/apply.o ./Coerce/apply.class: Tools/trace.sch                   \
       Tools/location.sch 
+./Ast/check-init.o ./Ast/check-init.class: Ast/unit.sch 
 Integrate/definition.o Integrate/definition.class: Tools/trace.sch       \
       Tools/verbose.sch 
 Foreign/cptr.o Foreign/cptr.class: Tools/trace.sch 
 Cc/exec.o Cc/exec.class: Tools/trace.sch 
-Bdb/initialize.o Bdb/initialize.class: Tools/trace.sch Ast/unit.sch 
 Object/plain-access.o Object/plain-access.class: Tools/trace.sch 
 Coerce/app.o Coerce/app.class: Tools/trace.sch 
 Foreign/cstruct.o Foreign/cstruct.class: Tools/trace.sch 
