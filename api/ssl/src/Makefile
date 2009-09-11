@@ -268,7 +268,7 @@ lib-jvm: $(JAVA_SRC_DIR)/ssl_client_socket.java \
          $(JAVA_SRC_DIR)/ssl_server_socket.java
 	@ $(MAKE) lib-jvmfull
 
-lib-jvmfull: $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
+lib-jvmfull: .jfile $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
 	@ $(MAKE) lib.zip
 
 $(CLASS_DIR): 

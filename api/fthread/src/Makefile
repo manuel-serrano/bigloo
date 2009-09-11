@@ -249,7 +249,7 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a: .afile $(OBJECTS)
 	@ echo "-------------------------------"
 
 #*--- lib-jvm ---------------------------------------------------------*/
-lib-jvm: $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
+lib-jvm: .jfile $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
 	@ $(MAKE) lib.zip
 
 $(CLASS_DIR): 

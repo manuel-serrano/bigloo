@@ -78,7 +78,8 @@ build.auto:
 #*    native version                                                   */
 #*---------------------------------------------------------------------*/
 native: build.native
-build.native: o .afile .etags $(BOOTBINDIR)/$(BGLPKG)
+build.native: o .afile .etags
+	@ $(MAKE) $(BOOTBINDIR)/$(BGLPKG)
 
 $(BOOTBINDIR)/$(BGLPKG): $(MODULES:%=o/%.o)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $+
@@ -87,8 +88,8 @@ $(BOOTBINDIR)/$(BGLPKG): $(MODULES:%=o/%.o)
 #*    jvm version                                                      */
 #*---------------------------------------------------------------------*/
 jvm: build.jvm
-build.jvm: o/class_s/bigloo/bglpkg .afile .etags .jfile jvm-stdlibs \
-     $(BOOTBINDIR)/$(BGLPKG).jar
+build.jvm: o/class_s/bigloo/bglpkg .afile .etags .jfile jvm-stdlibs
+	@ $(MAKE) $(BOOTBINDIR)/$(BGLPKG).jar
 
 $(BOOTBINDIR)/$(BGLPKG).jar: $(MODULES:%=o/class_s/bigloo/bglpkg/%.class) \
      META-INF/MANIFEST.MF
