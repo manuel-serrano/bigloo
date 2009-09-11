@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Jan 10 18:32:45 2007 (serrano)                */
+;*    Last change :  Fri Sep 11 13:22:16 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -198,8 +198,11 @@
 	    ((null? locals)
 	     ;; we save the definition for a better location in
 	     ;; the source file.
-	     (global-src-set! old src-exp)
-	     old)
+	     (if (null? types)
+		 (begin
+		    (global-src-set! old src-exp)
+		    old)
+		 (mismatch-error old src-exp "(arity differs)")))
 	    ((or (null? types)
 		 (not (compatible-type? #f
 					(local-type (car locals))

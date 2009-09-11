@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Mon Sep  7 15:23:16 2009 (serrano)                */
+#*    Last change :  Fri Sep 11 11:14:17 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -47,14 +47,15 @@ done
 #*    We know that on some platform, the GC does not support shared    */
 #*    libraries (e.g. BSD, Mac PPC).                                   */
 #*---------------------------------------------------------------------*/
-if [ "$HOSTOS " = "linux " ]; then
-  case $HOSTCPU in
-    ppc)
-      exit 1;;
-    *)
-      ;;
-  esac
-fi
+#* if [ "$HOSTOS " = "linux " ]; then                                  */
+#*   case $HOSTCPU in                                                  */
+#*     ppc)                                                            */
+#*       echo ""                                                       */
+#*       exit 0;;                                                      */
+#*     *)                                                              */
+#*       ;;                                                            */
+#*   esac                                                              */
+#* fi                                                                  */
 
 file=actest$USER
 aout=actest$USER
