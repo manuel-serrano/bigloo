@@ -5910,7 +5910,7 @@ public final class foreign
 
    public static void srand( int seed )
       {
-	 randg = new Random( 1 );
+	 randg = new Random( seed );
       }
 
    public static void bgl_sleep( int microsecs ) {
