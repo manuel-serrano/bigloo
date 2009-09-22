@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Sep  8 15:23:20 2009 (serrano)                */
+#*    Last change :  Fri Sep 18 16:46:01 2009 (serrano)                */
 #*    Copyright   :  1997-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -13,7 +13,7 @@
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
 POPULATION	= Makefile \
-                  bigloo_config.h.in bigloo_gc.h.in \
+                  bigloo_config.h.in bigloo_gc.h.in bigloo_config.sch.in \
                   configure.java.in configure.cs.in \
                   mkruntest runtest.in \
                   os osversion cpu \
@@ -77,5 +77,4 @@ distrib:
           fi
 	@ $(MAKE) clean
 	@ chmod a+rx $(POPULATION)
-	@ /bin/rm -f readline
 

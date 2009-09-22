@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Sun Aug 30 10:08:04 2009 (serrano)                */
+;*    Last change :  Mon Sep 14 16:50:41 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */

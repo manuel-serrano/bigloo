@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Sep 10 11:32:44 2009 (serrano)                */
+#*    Last change :  Thu Sep 17 22:17:18 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -351,6 +351,7 @@ POPULATION	= $(SOURCE_FILES) \
 		  Tools/trace.sch \
 		  Tvector/tvector.sch \
 		  Type/coercer.sch \
+                  Init/pass-args-parse.sch \
                   Makefile
 
 #*---------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Fri Sep 11 18:19:32 2009 (serrano)                */
+#*    Last change :  Thu Sep 17 22:03:48 2009 (serrano)                */
 #*    Copyright   :  2007-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
@@ -75,7 +75,7 @@ cp sparc_linux_mach_dep.c $gc
 cp sparc_linux_mach_dep.c "$gc"_fth
 
 # Patch for MacOS X 10.6 and higher
-if [ "$hostos " = "darwin" ]; then
+if [ "$hostos " = "darwin " ]; then
   if [ "`echo $hostosversion | sed 's/[a-z].*$//' | sed 's/[.]//g'`" -ge "1000" ]; then
     sed -ie "s/<ucontext\.h>/<sys\/ucontext\.h>/g" $gc/mach_dep.c
     sed -ie "s/<ucontext\.h>/<sys\/ucontext\.h>/g" "$gc"_fth/mach_dep.c

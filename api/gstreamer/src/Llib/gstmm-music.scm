@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Sep  2 08:37:16 2009 (serrano)                */
+;*    Last change :  Mon Sep 14 21:00:58 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -164,11 +164,14 @@
 	    (let loop ()
 	       (mutex-lock! %loop-mutex)
 	       (let ((msg (unwind-protect
-			     (gst-bus-poll bus)
+			     (gst-bus-poll bus :timeout #l1167000000)
 			     (mutex-unlock! %loop-mutex))))
 		  (cond
 		     (%abort-loop
 		      ;; we are done
+		      #f)
+		     ((not msg)
+		      ;; time out
 		      #f)
 		     ((gst-message-eos? msg)
 		      ;; end of stream

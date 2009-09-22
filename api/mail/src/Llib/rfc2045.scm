@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Jul  8 18:14:48 2009 (serrano)                */
+;*    Last change :  Fri Sep 18 02:24:17 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -115,7 +115,7 @@
 	  (ignore)))
       ((: #\? #\= XDIGIT XDIGIT)
        (if rfc2047
-	   (display (the-substring 2 0) out)
+	   (display (the-substring 2 (the-length)) out)
 	   (let ((num1 (hexa (the-byte-ref 2)))
 		 (num2 (hexa (the-byte-ref 3))))
 	      (write-char #\? out)
