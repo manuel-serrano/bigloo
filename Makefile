@@ -158,14 +158,14 @@ boot: checkgmake
 	  $(MAKE) -C gc boot; \
         fi
 	if [ -x $(BGLBUILDBIGLOO) ]; then \
-	  $(MAKE) -C runtime .afile; \
-	  $(MAKE) -C runtime heap; \
-	  $(MAKE) -C runtime boot; \
-	  $(MAKE) -C comptime; \
+	  $(MAKE) -C runtime .afile && \
+	  $(MAKE) -C runtime heap && \
+	  $(MAKE) -C runtime boot && \
+	  $(MAKE) -C comptime && \
 	  $(MAKE) -C comptime boot; \
 	else \
-	  $(MAKE) -C runtime boot; \
-	  $(MAKE) -C comptime boot; \
+	  $(MAKE) -C runtime boot && \
+	  $(MAKE) -C comptime boot && \
 	  $(MAKE) -C runtime heap; \
 	fi
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
