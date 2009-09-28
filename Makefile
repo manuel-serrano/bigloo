@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Sep 17 22:06:45 2009 (serrano)                */
+#*    Last change :  Mon Sep 28 19:51:09 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -333,12 +333,12 @@ fullbootstrap:
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
 	$(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION))
 	$(MAKE) -C recette clean
-	@ if [ "$(MSG) " = " " ]; then \
+	@ if [ "$(LOGMSG) " = " " ]; then \
             echo "Warning, No MSG provided using standard revision message"; \
-            echo "use \"make fullbootstrap MSG=a-message\""; \
+            echo "use \"make fullbootstrap LOGMSG=a-message\""; \
 	    $(MAKE) -s revision LOGMSG="bootstrap"; \
           else \
-	    $(MAKE) -s revision LOGMSG="$(MSG) (bootstrap)"; \
+	    $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"; \
           fi
 	@ echo "Bigloo full bootstrap Done..."
 	@ echo "-------------------------------"
@@ -647,8 +647,10 @@ install-progs:
         fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.config)
-	(cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
-         chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.sch)
+	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
+           cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
+           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
+         fi)
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.misc)
 	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \

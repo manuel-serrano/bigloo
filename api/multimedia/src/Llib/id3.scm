@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Thu Sep 17 21:33:22 2009 (serrano)                */
+;*    Last change :  Mon Sep 28 19:48:03 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -264,12 +264,13 @@
    ;; get the bom
    (let* ((n0 (char->integer (mmap-ref mm o)))
 	  (n1 (char->integer (mmap-ref mm (+ o 1))))
-	  (len (- sz 2))
+	  (sz (/fx sz 2))
+	  (len (- sz 1))
 	  (res (make-ucs2-string (elong->fixnum len))))
       (if (and (=fx n0 #xfe) (=fx n1 #xff))
 	  ;; big-endian
 	  (let loop ((i 0)
-		     (j (+ sz 2)))
+		     (j (+ o 2)))
 	     (if (= i len)
 		 res
 		 (let* ((u0 (char->integer (mmap-ref mm j)))
@@ -279,7 +280,7 @@
 		    (loop (+ i 1) (+ j 2)))))
 	  ;; little-endian
 	  (let loop ((i 0)
-		     (j (+ sz 2)))
+		     (j (+ o 2)))
 	     (if (= i len)
 		 res
 		 (let* ((u0 (char->integer (mmap-ref mm j)))
@@ -287,18 +288,47 @@
 			(u (+fx (bit-lsh u1 8) u0)))
 		    (ucs2-string-set! res i (integer->ucs2 u))
 		    (loop (+ i 1) (+ j 2))))))))
-	  
+
+;*---------------------------------------------------------------------*/
+;*    get-utf16-be-string ...                                          */
+;*    -------------------------------------------------------------    */
+;*    This assumes an UCS-2 string.                                    */
+;*---------------------------------------------------------------------*/
+(define (get-utf16-be-string mm o::elong len::elong)
+   (let* ((sz (/fx len 2))
+	  (res (make-ucs2-string (elong->fixnum sz))))
+      (let loop ((i 0)
+		 (j o))
+	 (if (= i len)
+	     res
+	     (let* ((u0 (char->integer (mmap-ref mm j)))
+		    (u1 (char->integer (mmap-ref mm (+ j 1))))
+		    (u (+fx (bit-lsh u0 8) u1)))
+		(ucs2-string-set! res i (integer->ucs2 u))
+		(loop (+ i 1) (+ j 2)))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-get-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (id3v2-get-string mm o::elong sz::elong)
    (if (= sz 1)
        ""
-       (if (char=? (mmap-ref mm o) #a000)
-	   ;; an IS 8859-1 string
-	   (mmap-substring/len mm (+ o 1) (- sz 1))
+       (case (mmap-ref mm o)
+	  ((#a000)
+	   ;; an ISO 8859-1 string
+	   (iso-latin->utf8! (mmap-substring/len mm (+ o 1) (- sz 1))))
+	  ((#a001)
 	   ;; an UCS2 string
-	   (get-ucs2-string mm (+ o 2) (- sz 1)))))
+	   (ucs2-string->utf8-string (get-ucs2-string mm (+ o 2) (- sz 1))))
+	  ((#a002)
+	   ;; UTF-16BE without BOM
+	   (ucs2-string->utf8-string (get-utf16-be-string mm (+ o 2) (- sz 1))))
+	  ((#a003)
+	   ;; an utf-8 string
+	   (mmap-substring/len mm (+ o 1) (- sz 1)))
+	  (else
+	   ;; fallback
+	   (mmap-substring/len mm (+ o 1) (- sz 1))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    id3v2.2-frame ...                                                */
