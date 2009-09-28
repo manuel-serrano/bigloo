@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Jul 30 17:44:01 2009 (serrano)                */
+/*    Last change :  Fri Sep 25 16:18:42 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1407,6 +1407,21 @@ bgl_input_port_seek( obj_t port, long pos ) {
    }
 
    return BFALSE;
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_output_port_filepos ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF long
+bgl_output_port_filepos( obj_t port ) {
+   long (*sysseek)() = PORT( port ).sysseek;
+
+   if( sysseek ) {
+      return (long)sysseek( PORT_STREAM( port ), 0, SEEK_CUR );
+   } else {
+      return 0;
+   }
 }
 
 /*---------------------------------------------------------------------*/

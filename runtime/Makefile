@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Sep 10 11:33:18 2009 (serrano)                */
+#*    Last change :  Thu Sep 24 13:55:53 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -937,7 +937,7 @@ sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s
 	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
 
 generic_mach_dep: Mlib/mach_dep.c
-	$(CC) $(CEFLAGS) -c -o mach_dep.o $< && \
+	$(CC) $(CUNSAFEPFLAGS) $(CEFLAGS) -c -o mach_dep.o $< && \
         mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
 
 #*---------------------------------------------------------------------*/

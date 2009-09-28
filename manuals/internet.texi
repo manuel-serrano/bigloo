@@ -120,14 +120,20 @@ unmodified if no decoding is for the URL.
                                [:username #f] [:password #f]
                                [:http-version "HTTP/1.1"]
                                [:content-type #f]
+                               [:connection "close"]
                                [:header '((user-agent: "Mozilla/5.0"))]
                                [:args '()]
                                [:body #f]
 
 Opens an HTTP connection. Returns a socket.
 
+It is an error to specify a header twice. In particular, it is illegal
+to re-define keyword-ed arguments in the @var{:header} list. For instance,
+it is illegal to include in the @code{:header} actual list value a 
+value for the @code{Connection} HTTP connection.
+
 @smalllisp
-(define (wget urt)
+(define (wget uri)
    
    (define (parser ip status-code header clen tenc)
       (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
@@ -136,17 +142,17 @@ Opens an HTTP connection. Returns a socket.
 	      (raise (instantiate::&io-port-error
 			(proc 'open-input-file)
 			(msg "Cannot open URL, authentication required")
-			(obj (string-append "http://" string)))))
+			(obj uri))))
 	     ((404)
 	      (raise (instantiate::&io-file-not-found-error
 			(proc 'open-input-file)
 			(msg "Cannot open URL")
-			(obj (string-append "http://" string)))))
+			(obj uri))))
 	     (else
 	      (raise (instantiate::&io-port-error
 			(proc 'open-input-file)
 			(msg (format "Cannot open URL (~a)" status-code))
-			(obj (string-append "http://" string))))))
+			(obj uri)))))
 	  (cond
 	     ((not (input-port? ip))
 	      (open-input-string ""))
@@ -167,6 +173,28 @@ Opens an HTTP connection. Returns a socket.
 		   (wget (&http-redirection-url e))
 		   (raise e)))
 	    (read-string (http-parse-response ip op parser))))))
+@end smalllisp
+
+The optional argument @code{args} is used for @code{post} method. The actual
+value should be a list of lists. Each of these sublists must have two values:
+
+@itemize @bullet
+@item the argument name
+@item the argument actual value
+@end itemize
+
+The argument name can be either a string which is the name of the
+argument or a list of two elements. In that case, the first element of
+these list is the argument name. The second element should be a string
+that denotes additional parameter.
+
+Example:
+
+@smalllisp
+(http :host "localhost" :port 8080 :method 'post
+   :header '((enctype: "multipart/form-data"))
+   :args `(("x" "foo") (("foo.scm" "filename=\"foo.scm\"\nContent-type: application/octet-stream" ,(with-input-from-file "foo.scm" read-string))))
+   ...)
 @end smalllisp
 
 @end deffn
