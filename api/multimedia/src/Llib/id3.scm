@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Sep  2 18:01:30 2009 (serrano)                */
+;*    Last change :  Thu Sep 17 21:33:22 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -577,26 +577,28 @@
 		(msg msg)
 		(obj path))))
    
-   (mmap-read-position-set! mm #e0)
+   (define (local-read-ogg-comments path mm)
+      (unless (neq-input-string mm "OggS")
+	 (unless (char=? #a000 (mmap-get-char mm))
+	    (err "invalid OggS page0"))
+	 (mmap-read-position-set! mm (+fx 21 (mmap-read-position mm)))
+	 (let ((ps (char->integer (mmap-get-char mm))))
+	    ;; ps should be 0 .. 511 and not negative.  is the correct?
+	    (mmap-read-position-set! mm (+fx ps (mmap-read-position mm)))
+	    (let ((packet-type (mmap-get-char mm)))
+	       (when (neq-input-string mm "vorbis")
+		  (err "invalid ogg vorbis identification"))
+	       (case packet-type
+		  ((#a001)
+		   (mmap-read-position-set! mm (+fx 23 (mmap-read-position mm)))
+		   (local-read-ogg-comments path mm))
+		  ((#a003)
+		   (parse-metadata-block-vorbis-comment mm))
+		  (else
+		   (err "invalid ogg vorbis common header")))))))
    
-   (unless (neq-input-string mm "OggS")
-      (unless (char=? #a000 (mmap-get-char mm))
-	 (err "invalid OggS page0"))
-      (mmap-read-position-set! mm (+fx 21 (mmap-read-position mm)))
-      (let ((ps (char->integer (mmap-get-char mm))))
-	 ;; ps should be 0 .. 511 and not negative.  is the correct?
-	 (mmap-read-position-set! mm (+fx ps (mmap-read-position mm)))
-	 (let ((packet-type (mmap-get-char mm)))
-	    (when (neq-input-string mm "vorbis")
-	       (err "invalid ogg vorbis identification"))
-	    (case packet-type
-	       ((#a001)
-		(mmap-read-position-set! mm (+fx 23 (mmap-read-position mm)))
-		(read-ogg-comments path mm))
-	       ((#a003)
-		(parse-metadata-block-vorbis-comment mm))
-	       (else
-		(err "invalid ogg vorbis common header")))))))
+   (mmap-read-position-set! mm #e0)
+   (local-read-ogg-comments path mm))
    
 ;*---------------------------------------------------------------------*/
 ;*    read-flac-comments ...                                           */
@@ -608,6 +610,7 @@
 ;*    (As a reminder, little-endian means digit N is worth R**N.)      */
 ;*---------------------------------------------------------------------*/
 (define (read-flac-comments mm)
+   
    (define block4s '())
    
    (define (parse-metadata-block-data block-type block-length)

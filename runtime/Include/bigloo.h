@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jul  9 11:38:44 2009 (serrano)                */
+/*    Last change :  Fri Sep 25 16:23:23 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1747,10 +1747,10 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    ((i) == EOF)
 
 #define BGL_OUTPUT_PORT_FILEPOS( _p ) \
-   ftell( PORT( _p ).stream )
+   (bgl_output_port_filepos( _p ))
    
 #define BGL_OUTPUT_PORT_FILEPOS_SET( _p, _i ) \
-   (fseek( PORT( _p ).stream, (_i), SEEK_SET ), BUNSPEC)
+   (bgl_output_port_seek( _p, _i ))
 
 #define BGL_OUTPUT_PORT_FHOOK( o ) (OUTPUT_PORT( o ).fhook)
 #define BGL_OUTPUT_PORT_FHOOK_SET( o, v ) ((OUTPUT_PORT( o ).fhook) = (v))
@@ -2774,6 +2774,8 @@ BGL_RUNTIME_DECL obj_t bgl_open_output_file( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_append_output_file( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_open_output_string( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_open_output_procedure( obj_t, obj_t, obj_t, obj_t );
+BGL_RUNTIME_DECL long bgl_output_port_filepos( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_output_port_seek( obj_t, long );
    
 BGL_RUNTIME_DECL obj_t create_vector( int );
 

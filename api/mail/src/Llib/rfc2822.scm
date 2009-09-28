@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Mon Mar 23 11:02:59 2009 (serrano)                */
+;*    Last change :  Wed Sep 23 00:49:49 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
@@ -148,7 +148,14 @@
 		(else
 		 (liip (-fx i 1))))))
 	 (else
-	  from))))
+	  (let loop ((i 0))
+	     (cond
+		((=fx i len)
+		 "")
+		((char-whitespace? (string-ref from i))
+		 (loop (+fx i 1)))
+		(else
+		 (substring from i len))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822-address-display-paren-name ...                           */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sat Jan 17 15:40:16 2009 (serrano)                */
+;*    Last change :  Thu Sep 17 12:56:46 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -16,7 +16,7 @@
    
    (import __multimedia-music
 	   __multimedia-id3)
-
+   
    (export (class mpd-database
 	      (mpd-database-init!)
 	      (directories::pair-nil read-only)
@@ -31,10 +31,26 @@
 	      (%nsongs::int (default 0))
 	      (%uptime (default #unspecified))
 	      (%db-update (default #unspecified)))
-
+	   
 	   (mpd ::music ::input-port ::output-port ::mpd-database #!key log)
-	   (mpd-database-init! ::mpd-database)))
+	   (mpd-database-init! ::mpd-database)
 
+	   (generic mpd-database-file->path ::mpd-database ::bstring)
+	   (generic mpd-database-stats ::mpd-database ::obj)
+	   (generic mpd-database-listall ::mpd-database ::output-port)
+	   (generic mpd-database-listalbum ::mpd-database ::output-port)
+	   (generic mpd-database-listartistalbum ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-listgenrealbum ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-listgenre ::mpd-database ::output-port)
+	   (generic mpd-database-listartist ::mpd-database ::output-port)
+	   (generic mpd-database-lsinfo ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-find-album ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-find-artist ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-search-artist-album ::mpd-database ::output-port ::obj ::obj)
+	   (generic mpd-database-search-artist-title ::mpd-database ::output-port ::obj ::obj)
+	   (generic mpd-database-find-title ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-find-genre ::mpd-database ::output-port ::obj)))
+						  
 ;*---------------------------------------------------------------------*/
 ;*    mpd-version ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -628,9 +644,11 @@
       ((album)
        (cond
 	  ((equal? string2 "artist")
-	   (mpd-database-listalbum db string3 op))
+	   (mpd-database-listartistalbum db op string3))
+	  ((equal? string2 "genre")
+	   (mpd-database-listgenrealbum db op string3))
 	  (else
-	   (mpd-database-listalbum db string2 op)))
+	   (mpd-database-listartistalbum db op string2)))
        'ok)
       ((artist)
        (mpd-database-listartist db op)
@@ -649,7 +667,7 @@
 ;*    lsinfo ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-command (lsinfo dir)
-   (mpd-database-lsinfo db dir op)
+   (mpd-database-lsinfo db op dir)
    'ok)
 
 ;*---------------------------------------------------------------------*/
@@ -867,7 +885,7 @@
 ;*    mpd->file ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (mpd->file file db)
-   (with-access::mpd-database db (%base %prefixes)
+   (with-access::mpd-database db (%prefixes)
       (match-case (file-name->list file)
 	 ((?base ?dir . ?rest)
 	  (let* ((prefix (make-file-name base dir))
@@ -885,7 +903,7 @@
 ;*    file->mpd ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (file->mpd file db offset)
-   (with-access::mpd-database db (%base %roots)
+   (with-access::mpd-database db (%roots)
       (if (=fx offset 0)
 	  (let ((root (hashtable-get %roots file)))
 	     (if (string? root)
@@ -1053,6 +1071,19 @@
 	   nsongs))
 
 ;*---------------------------------------------------------------------*/
+;*    mpd-database-file->path ::mpd-database ...                       */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-file->path o::mpd-database file)
+   (with-access::mpd-database o (%base directories)
+      (if (null? directories)
+	  file
+	  (let* ((dir (car (file-name->list file)))
+		 (n (string-contains (car directories) dir)))
+	     (if (integer? n)
+		 (string-append (substring (car directories) 0 n) file)
+		 file)))))
+
+;*---------------------------------------------------------------------*/
 ;*    mpd-database-stats ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-stats o::mpd-database op)
@@ -1100,7 +1131,17 @@ db_update: ~a\n"
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listalbum ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-generic (mpd-database-listalbum o::mpd-database artist op)
+(define-generic (mpd-database-listalbum o::mpd-database op)
+   (for-each (lambda (a)
+		(display "Album: " op)
+		(display (car a) op)
+		(newline op))
+	     (mpd-database-%albums o)))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-listartistalbum ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-listartistalbum o::mpd-database op artist)
    (for-each (lambda (a)
 		(display "Album: " op)
 		(display (car a) op)
@@ -1111,6 +1152,19 @@ db_update: ~a\n"
 			       (string=? (basename (dirname dir)) artist)))
 			 (mpd-database-%albums o))
 		 (mpd-database-%albums o))))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-listgenrealbum ...                                  */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-listgenrealbum o::mpd-database op genre)
+   (for-each (lambda (a)
+		(display "Album: " op)
+		(display (car a) op)
+		(newline op))
+	     (filter (lambda (c)
+			(let ((dir (cdr c)))
+			   (string=? (basename (dirname (dirname dir))) genre)))
+		     (mpd-database-%albums o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenre ...                                       */
@@ -1135,7 +1189,7 @@ db_update: ~a\n"
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-lsinfo ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-generic (mpd-database-lsinfo o::mpd-database dir op)
+(define-generic (mpd-database-lsinfo o::mpd-database op dir)
    (with-access::mpd-database o (%base %prefixes %roots directories)
       (cond
 	 ((or (not (string? dir))

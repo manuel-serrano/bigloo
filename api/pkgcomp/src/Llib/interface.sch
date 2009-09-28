@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 12 05:22:11 2006                          */
-;*    Last change :  Thu Mar 26 11:24:10 2009 (serrano)                */
+;*    Last change :  Sat Sep 26 00:50:24 2009 (serrano)                */
 ;*    Copyright   :  2006-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the INTERFACE expander                     */
@@ -13,7 +13,7 @@
 ;*    @interface-source-directory ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (@interface-source-directory x name)
-   (let ((access ((bigloo-module-resolver) name)))
+   (let ((access ((bigloo-module-resolver) name '*)))
       (if (pair? access)
 	  (dirname (car access))
 	  ".")))

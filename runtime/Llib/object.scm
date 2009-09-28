@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Jul 16 12:06:39 2009 (serrano)                */
+;*    Last change :  Sun Sep 20 11:55:30 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1173,7 +1173,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (object-print obj::object port print-slot::procedure)
    (define (class-field-write/display field)
-      (let* ((name      (class-field-name field))
+      (let* ((name (class-field-name field))
 	     (get-value (class-field-accessor field)))
 	 (display " [" port)
 	 (display name port)
@@ -1195,16 +1195,16 @@
 			  (display #\space port)
 			  (print-slot (get-value obj i) port)
 			  (loop (+fx i 1)))))))))
-   (let* ((class      (object-class obj))
+   (let* ((class (object-class obj))
 	  (class-name (class-name class))
-	  (fields     (class-fields class)))
+	  (fields (class-fields class)))
       (display "#|" port)
       (display class-name port)
       (if (is-nil? obj)
 	  (display " nil|" port)
 	  (if (class-fields? fields)
 	      (let loop ((fields fields)
-			 (class  class))
+			 (class class))
 		 (cond
 		    ((null? fields)
 		     (let ((super (class-super class)))
@@ -1219,7 +1219,7 @@
 		     (class-field-write/display (car fields))
 		     (loop (cdr fields) class))))
 	      (display #\| port)))))
-      
+
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */
 ;*---------------------------------------------------------------------*/

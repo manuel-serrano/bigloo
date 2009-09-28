@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Sep  8 08:28:30 2009 (serrano)                */
+;*    Last change :  Fri Sep 25 19:52:27 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -70,6 +70,7 @@
 		 (login #f) (authorization #f) (username #f) (password #f)
 		 (http-version "HTTP/1.1")
 		 (content-type #f)
+		 (connection "close")
 		 (header '((user-agent: "Mozilla/5.0")))
 		 (args '())
 		 (body #f))
@@ -113,6 +114,7 @@
 	      (login #f) (authorization #f) (username #f) (password #f)
 	      (http-version "HTTP/1.1")
 	      (content-type #f)
+	      (connection "close")
 	      (header '((user-agent: "Mozilla/5.0")))
 	      (args '())
 	      (body #f))
@@ -152,11 +154,12 @@
       ((and (string? username) (string? password))
        (display-authentication (string-append username ":" password) out)))
    ;; connection keep-alive
-   (display-line "Connection: close" out)
+   (display-line "Connection: " connection out)
    (cond
       ((eq? method 'post)
        ;; post method
-       (if (eq? content-type 'multipart/form-data)
+       (cond
+	  ((eq? content-type 'multipart/form-data)
 	   (let* ((boundary (generate-http-boundary))
 		  (content (generate-http-post-body boundary args)))
 	      (display-line "Content-Length: " (string-length content) out)
@@ -164,13 +167,15 @@
 			    (substring boundary 2 (string-length boundary))
 			    out)
 	      (display-line out)
-	      (display content out))
-	   (let ((content (x-www-form-urlencode args)))
-	      (display-line "Content-Type: application/x-www-form-urlencoded" out)
+	      (display content out)))
+	  (else
+	   (let ((content (x-www-form-urlencode args))
+		 (ct (or content-type "application/x-www-form-urlencoded")))
+	      (display-line "Content-Type: " ct out)
 	      (display-line "Content-Length: " (string-length content) out)
 	      (display-line out)
 	      (display content out)
-	      (display-line out))))
+	      (display-line out)))))
       ((string? body)
        ;; a request with a fixed length body
        (display-line "Content-Length: " (string-length body) out)
@@ -224,8 +229,11 @@
 		    (close-output-port port))
 		 (let ((a (car args)))
 		    (display-line boundary port)
-		    (display-line "Content-Disposition: form-data; name=\""
-				  (car a) "\"" port)
+		    (if (pair? (car a))
+			(display-line "Content-Disposition: form-data; name=\""
+				      (caar a) "\";" (cadar a) port)
+			(display-line "Content-Disposition: form-data; name=\""
+				      (car a) "\"" port))
 		    (display-line port)
 		    (display-line (cadr a) port)
 		    (loop (cdr args))))))))

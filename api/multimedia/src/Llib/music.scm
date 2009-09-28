@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Sat Jan  3 08:55:43 2009 (serrano)                */
+;*    Last change :  Mon Sep 14 16:09:44 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -64,13 +64,13 @@
 	   (generic music-crossfade ::music ::int)
 	   (generic music-random-set! ::music ::bool)
 	   (generic music-repeat-set! ::music ::bool)
+	   (generic music-reset-error! ::music)
 	   
 	   (generic music-status::musicstatus ::music)
 	   (generic music-update-status! ::music ::musicstatus)
 	   (generic music-song::int ::music)
 	   (generic music-songpos::int ::music)
 	   (generic music-meta::pair-nil ::music)
-	   (generic music-reset-error! ::music)
 	   
 	   (generic music-volume-get::obj ::music)
 	   (generic music-volume-set! ::music ::obj)
@@ -109,9 +109,11 @@
 (define-generic (music-pause m::music))
 (define-generic (music-next m::music))
 (define-generic (music-prev m::music))
+
 (define-generic (music-crossfade m::music sec::int))
 (define-generic (music-random-set! m::music flag::bool))
 (define-generic (music-repeat-set! m::music flag::bool))
+(define-generic (music-reset-error! m::music) #unspecified)
 
 (define-generic (music-volume-get::obj m::music))
 (define-generic (music-volume-set! m::music v::obj))
@@ -141,12 +143,6 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (music-meta::pair-nil m::music)
    '())
-
-;*---------------------------------------------------------------------*/
-;*    music-reset-error! ...                                           */
-;*---------------------------------------------------------------------*/
-(define-generic (music-reset-error! m::music)
-   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    music-charset-convert ...                                        */
