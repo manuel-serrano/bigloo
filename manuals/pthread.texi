@@ -135,25 +135,25 @@ Posix thread condition variables follows the common thread API
 @smalllisp
 (module example
   (library pthread)
-  (main argv))
+  (main main))
 
 (define (main argv)
    (let ((res #f)
 	 (lock (make-mutex))
 	 (cv (make-condition-variable)))
-      (let* ((th1 (thread-start-joinable!
-		   (instantiate::pthread
-                      (body (lambda ()
-                               (mutex-lock! lock)
-		               (condition-variable-wait! lock cv)
-		               (mutex-unlock! lock)
-		               (set! res 23))))))
-	     (th2 (thread-start!
-		   (instantiate::pthread
-                      (body (lambda ()
-                      	       (mutex-lock! lock)
-		               (condition-variable-signal! cv)
-		               (mutex-unlock! lock)))))))
-	 (thread-join! th1))
+      (thread-join!
+       (thread-start-joinable!
+	(instantiate::pthread
+	   (body (lambda ()
+		    (mutex-lock! lock)
+		    (thread-start!
+		     (instantiate::pthread
+			(body (lambda ()
+				 (mutex-lock! lock)
+				 (condition-variable-signal! cv)
+				 (mutex-unlock! lock)))))
+		    (condition-variable-wait! cv lock)
+		    (set! res 23) 
+		    (mutex-unlock! lock))))))
       res))
 @end smalllisp
