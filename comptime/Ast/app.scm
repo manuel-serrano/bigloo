@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Sep 11 08:10:21 2009 (serrano)                */
+;*    Last change :  Mon Sep 28 17:55:29 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -342,8 +342,24 @@
 		  ;; `(,(let-sym) ((f #unspecified)) (set! f ,v) (,f @args))
 		  (let ((exp `(,(let-sym) ((,f ,v)) (,f ,@args))))
 		     (sexp->node exp stack loc site))))
+	    (define (unique vals)
+	       (let loop ((vs vals)
+			  (nvals '()))
+		  (cond
+		     ((null? vs)
+		      (reverse! nvals))
+		     ((null? (cdr vs))
+		      (reverse! (cons (car vs) nvals)))
+		     ((eq? (caar vs) (car (cadr vs)))
+		      (user-warning/location loc
+					     (variable-id v)
+					     "Illegal duplicated key"
+					     (caar vs))
+		      (loop (cdr vs) nvals))
+		     (else
+		      (loop (cdr vs) (cons (car vs) nvals))))))
 	    (define (body keys vals stack)
-	       ;; prepare the optional arguments
+	       ;; prepare the keyword arguments
 	       (let loop ((keys keys)
 			  (vals vals)
 			  (env '())
@@ -400,21 +416,13 @@
 			    (not (and (atom? a) (keyword? (atom-value a))))))
 		      collected)
 		(funcall)
-		(let ((vals (dsssl-key-args-sort
-			     (map (lambda (v)
-				     (list (keyword->symbol
-					    (atom-value (car v)))
-					   (cadr v)))
-				  collected))))
-		   ;; check unicity
-		   (let loop ((vs vals))
-		      (cond
-			 ((or (null? vs) (null? (cdr vs)))
-			  #t)
-			 ((eq? (caar vs) (car (cadr vs)))
-			  (error (variable-id v)
-				 "Illegal duplicated key"
-				 (car vs)))))
+		(let ((vals (unique
+			     (dsssl-key-args-sort
+			      (map (lambda (v)
+				      (list (keyword->symbol
+					     (atom-value (car v)))
+					    (cadr v)))
+				   collected)))))
 		   ;; check that all keys are correct
 		   (let* ((fkeys (map (lambda (k)
 					 (fast-id-of-id (car k) loc))
@@ -423,9 +431,10 @@
 					  (not (memq (car v) fkeys)))
 				       vals)))
 		      (when (pair? err)
-			 (error (variable-id v)
-				"Illegal keyword(s) argument(s)"
-				(map car err))))
+			 (user-error/location loc
+					      (variable-id v)
+					      "Illegal keyword(s) argument(s)"
+					      (map car err))))
  		   (let* ((stack '())
 			  (bindings (map cons stack (take args arity))))
 		      (instantiate::let-var

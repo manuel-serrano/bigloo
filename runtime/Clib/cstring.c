@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Fri Jul 24 11:19:29 2009 (serrano)                */
+/*    Last change :  Mon Sep 28 14:37:46 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -660,7 +660,7 @@ bgl_float_to_ieee_string__NOT_USED( float o ) {
 #else
    int i, j;
    for( j = 0, i = (sizeof( float ) - 1); i >= 0; i--, j++ ) {
-      aux[ i ] = tmp[ i ];
+      aux[ j ] = tmp[ i ];
    }
    aux[ j ] = 0;
 #endif
