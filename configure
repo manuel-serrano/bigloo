@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 11 10:09:44 2009 (serrano)                */
+#*    Last change :  Tue Sep 29 11:37:21 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3085,6 +3085,11 @@ echo  >> $configurelog
 if [ -x configure.postcmd ]; then
   echo "Post configuration setup...";
 fi
+
+#*---------------------------------------------------------------------*/
+#*    Generate the config.status file for debian packages              */
+#*---------------------------------------------------------------------*/
+echo "configuration completed" > config.status
 
 #*---------------------------------------------------------------------*/
 #*    Ok, we are done now                                              */

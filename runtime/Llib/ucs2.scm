@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 18 10:24:03 1997                          */
-;*    Last change :  Tue Mar 11 15:53:00 2008 (serrano)                */
+;*    Last change :  Tue Sep 29 16:02:48 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    UCS-2 Characters Scheme management.                              */
 ;*=====================================================================*/
@@ -250,12 +250,11 @@
 ;*    integer->ucs2 ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (integer->ucs2::ucs2 int::int)
-   (if (and (>fx int 0)
-	    (<fx int 65536))
+   (if (and (>=fx int 0) (<fx int 65536))
        (if (c-ucs2-defined? int)
 	   (c-integer->ucs2 int)
-	   (error "integer->ucs2" "Undefined UCS-2 character" int))
-       (error "integer->ucs2" "integer out of range or " int)))
+	   (error 'integer->ucs2 "Undefined UCS-2 character" int))
+       (error 'integer->ucs2 "integer out of range or " int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ucs2->integer ...                                                */
@@ -276,7 +275,7 @@
    (let ((int (ucs2->integer ucs2)))
       (if (<fx int 256)
 	  (integer->char int)
-	  (error "ucs2->char"
+	  (error 'ucs2->char
 		 "UCS-2 character out of ISO-LATIN-1 range"
 		 ucs2))))
 

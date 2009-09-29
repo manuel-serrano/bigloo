@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Sep 17 22:17:18 2009 (serrano)                */
+#*    Last change :  Tue Sep 29 10:58:00 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -363,7 +363,7 @@ POPULATION	= $(SOURCE_FILES) \
 #*    Bootstrap (one round) the compiler                               */
 #*---------------------------------------------------------------------*/
 bigloo:
-	@ $(MAKE) bigloo.$(DEFAULT)
+	$(MAKE) bigloo.$(DEFAULT)
 
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */
@@ -397,10 +397,10 @@ distrib:
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
-	@ $(MAKE) $(AFILE)
-	@ $(MAKE) $(JFILE)
-	@ $(MAKE) dist-updates
-	@ $(MAKE) dist-bigloo.exe CSRCSUFFIX="%.c"
+	$(MAKE) $(AFILE)
+	$(MAKE) $(JFILE)
+	$(MAKE) dist-updates
+	$(MAKE) dist-bigloo.exe CSRCSUFFIX="%.c"
 
 #*---------------------------------------------------------------------*/
 #*    bigloo.plain and bigloo.new                                      */
@@ -422,21 +422,21 @@ new: bigloo.new
 so: bigloo.$(SHAREDSUFFIX)
 
 bigloo.plain: Tools/license.scm
-	@- $(RM) -f Tools/date.scm
-	@ $(MAKE) Tools/date.scm
-	@ $(MAKE) $(AFILE)
-	@ $(MAKE) $(JFILE)
-	@ $(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
+	- $(RM) -f Tools/date.scm
+	$(MAKE) Tools/date.scm
+	$(MAKE) $(AFILE)
+	$(MAKE) $(JFILE)
+	$(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 bigloo.new:
-	@ $(MAKE) $(BIGLOO_DEST).$(NEW_SUFFIX)
+	$(MAKE) $(BIGLOO_DEST).$(NEW_SUFFIX)
 
 renew:
-	@ $(RM) -f $(BIGLOO_DEST).$(NEW_SUFFIX)
-	@ $(MAKE) new
+	$(RM) -f $(BIGLOO_DEST).$(NEW_SUFFIX)
+	$(MAKE) new
 
 bigloo.$(SHAREDSUFFIX):
-	@ $(MAKE) $(BIGLOO_DEST).$(SHAREDSUFFIX)
+	$(MAKE) $(BIGLOO_DEST).$(SHAREDSUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*    bigloo                                                           */
@@ -456,7 +456,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 	    echo "Waiting a few seconds for the lock on $@ to be released..."; \
 	    sleep 5s; \
 	  fi
-	@ mv $(BIGLOO_DEST).aux $@
+	mv $(BIGLOO_DEST).aux $@
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -465,7 +465,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(NEW_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 	@ echo "Linking..."
-	@ $(BIGLOO) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
+	$(BIGLOO) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -474,7 +474,7 @@ $(BIGLOO_DEST).$(NEW_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS)
 	@ echo "Linking..."
-	@ $(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(O_OBJECTS) \
+	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(O_OBJECTS) \
                     -ldopt $(CSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
@@ -483,7 +483,7 @@ $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS)
 #*    mainnewo (for Bigloo++ regeneration)                             */
 #*---------------------------------------------------------------------*/
 mainnewo: $(O_LESS_MAIN_OBJECTS_OBJECTS)
-	@ $(BIGLOO) $(BFLAGS) $(EFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(ADDITIONAL_BFLAGS) \
+	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(ADDITIONAL_BFLAGS) \
 	    $(INIT_MAIN_SCM) $(O_LESS_MAIN_OBJECTS) $(ADDITIONAL_LIBRARIES)
 
 #*---------------------------------------------------------------------*/
@@ -529,26 +529,26 @@ Tools/license.scm: $(LICENSE)
 
 ude: Tools/date.scm Tools/license.scm $(AFILE) $(JFILE) $(ETAGS)
 	@ echo "depend:"
-	@ $(MAKE) dep
+	$(MAKE) dep
 
 $(AFILE): $(SOURCE_FILES)
 	@ echo "$(AFILE):"
-	@ $(AFILE_BIN) -o $(AFILE) $(SOURCE_FILES)
+	$(AFILE_BIN) -o $(AFILE) $(SOURCE_FILES)
 
 $(JFILE): $(AFILE)
 	@ echo "$(JFILE):"
-	@ $(JFILE_BIN) -o $(JFILE) $(SOURCE_FILES)
+	$(JFILE_BIN) -o $(JFILE) $(SOURCE_FILES)
 
 $(ETAGS): $(AFILE)
 	@ echo ".etags:"
-	@ $(BTAGS_BIN) --define-var doc-define -o $(ETAGS) $(SOURCE_FILES)
+	$(BTAGS_BIN) --define-var doc-define -o $(ETAGS) $(SOURCE_FILES)
 
 #*---------------------------------------------------------------------*/
 #*    qnctags                                                          */
 #*---------------------------------------------------------------------*/
 .PHONY: qnctags
 qnctags:
-	@ etags `find . -name '*.scm' -print -o -name '*.[ch]' -print`
+	etags `find . -name '*.scm' -print -o -name '*.[ch]' -print`
 
 #*---------------------------------------------------------------------*/
 #*    dep                                                              */
@@ -557,8 +557,8 @@ qnctags:
 dep: Tools/date.scm Tools/license.scm
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	@ $(DEPEND_BIN) -fno-mco $(SOURCE_FILES) >> /tmp/Makefile.aux
-	@ mv /tmp/Makefile.aux Makefile
+	$(DEPEND_BIN) -fno-mco $(SOURCE_FILES) >> /tmp/Makefile.aux
+	mv /tmp/Makefile.aux Makefile
 
 #*---------------------------------------------------------------------*/
 #*    dist-updates                                                     */
@@ -628,7 +628,7 @@ bigboot:
 .PHONY: install install-compiler alias-compiler uninstall
 
 install: install-compiler 
-	@ $(MAKE) alias-compiler
+	$(MAKE) alias-compiler
 
 install-compiler:
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
@@ -660,10 +660,10 @@ uninstall:
 .PHONY: clean cleanall distclean
 
 clean-common:
-	@- $(RM) -f $(AFILE)
-	@- $(RM) -f $(JFILE)
-	@- $(RM) -f .etags
-	@ find . \( -name '*[~%]'                   \
+	- $(RM) -f $(AFILE)
+	- $(RM) -f $(JFILE)
+	- $(RM) -f .etags
+	find . \( -name '*[~%]'                     \
                        -o -name '.??*[~%]'          \
                        -o -name '#*#'               \
                        -o -name '?*#'               \
@@ -671,17 +671,17 @@ clean-common:
                      -type f -exec $(RM) {} \;   
 
 clean-c:
-	@- $(RM) -f $(O_OBJECTS)
+	- $(RM) -f $(O_OBJECTS)
 
 clean-jvm:
-	@- $(RM) -f $(CLASS_OBJECTS)
-	@- $(RM) -f $(BIGLOO_DEST).jvm
-	@- $(RM) -f $(BIGLOO_DEST).jar
+	- $(RM) -f $(CLASS_OBJECTS)
+	- $(RM) -f $(BIGLOO_DEST).jvm
+	- $(RM) -f $(BIGLOO_DEST).jar
 
 clean-dotnet:
-	@- $(RM) -f $(DOTNET_OBJECTS)
-	@- $(RM) -f $(BIGLOO_DEST)-dotnet$(SCRIPTEXTENSION)
-	@- $(RM) -f $(BIGLOO_DEST)-dotnet$(EXE_SUFFIX)
+	- $(RM) -f $(DOTNET_OBJECTS)
+	- $(RM) -f $(BIGLOO_DEST)-dotnet$(SCRIPTEXTENSION)
+	- $(RM) -f $(BIGLOO_DEST)-dotnet$(EXE_SUFFIX)
 
 clean: clean-common clean-c clean-jvm clean-dotnet
 	@ echo "cleanup done..."
@@ -692,20 +692,20 @@ cleanall: clean
              echo "*** ERROR:Illegal dir to make a cleanall `pwd`"; \
              exit 1; \
           fi
-	@- $(RM) -f $(C_OBJECTS)
-	@- $(RM) -f Tools/date.scm Tools/license.scm
-	@- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
+	- $(RM) -f $(C_OBJECTS)
+	- $(RM) -f Tools/date.scm Tools/license.scm
+	- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 distclean: 
-	@- $(RM) -f $(O_OBJECTS)
-	@- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
+	- $(RM) -f $(O_OBJECTS)
+	- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*     touchall ...                                                    */
 #*---------------------------------------------------------------------*/
 .PHONY: touchall
 touchall:
-	@ touch $(SOURCE_FILES)
+	touch $(SOURCE_FILES)
 	@ echo "touchall done..."
 	@ echo "-------------------------------"
 

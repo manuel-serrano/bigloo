@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Mon Jul  4 21:58:25 2005 (serrano)                */
+/*    Last change :  Tue Sep 29 14:53:55 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -503,7 +503,7 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
    /* and we fill it */
    for( read = 0, write = 0; read < len; read++ ) {
       ucs2_t ucs2 = cucs2[ read ];
-      int    len  = utf8_size( ucs2 );
+      int len  = utf8_size( ucs2 );
 
       if( len == 1 )
 	 cresult[ write++ ] = (unsigned char)ucs2;
@@ -512,7 +512,6 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
 	    cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
 	    ucs2 >>= 6;
 	 }
-
 	 
 	 cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
 	 ucs2 >>= 6;

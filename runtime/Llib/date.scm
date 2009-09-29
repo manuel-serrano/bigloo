@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Oct 22 17:02:52 2008 (serrano)                */
-;*    Copyright   :  2003-08 Manuel Serrano                            */
+;*    Last change :  Tue Sep 29 11:31:08 2009 (serrano)                */
+;*    Copyright   :  2003-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -506,7 +506,7 @@
 		   :min minute
 		   :hour hour
 		   :month month
-		   :year year
+		   :year (if (<fx year 100) (+fx year 2000) year)
 		   :day day
 		   :timezone zone
 		   :dst 0)))))
@@ -521,7 +521,7 @@
 		   :min minute
 		   :hour hour
 		   :month month
-		   :year year
+		   :year (if (<fx year 100) (+fx year 2000) year)
 		   :day day
 		   :timezone zone
 		   :dst 0)))))

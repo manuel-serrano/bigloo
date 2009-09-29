@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 10 11:31:42 2009 (serrano)                */
+#*    Last change :  Tue Sep 29 15:29:18 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -54,7 +54,7 @@ BHEAPFLAGS	= -unsafe -q \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= bibtex
+_BGL_OBJECTS	= bibtex gb2312
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)

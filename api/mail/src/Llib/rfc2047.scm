@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Sep  3 11:16:36 2009 (serrano)                */
+;*    Last change :  Tue Sep 29 15:52:23 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
@@ -121,15 +121,20 @@
 	     ((q)
 	      (let ((pout (open-output-string)))
 		 (read/rp encoded-text-grammar (the-port) pout)
-		 (let ((s (close-output-port pout)))
-		    (display (charset cset cs (quoted-printable-decode s))
-			     out)))
+		 (let* ((s (close-output-port pout))
+			(es (if (procedure? cset)
+				(cset (quoted-printable-decode s) cs)
+				(charset cset cs (quoted-printable-decode s)))))
+		    (display es out)))
 	      (ignore))
 	     ((b)
 	      (let ((pout (open-output-string)))
 		 (read/rp encoded-text-grammar (the-port) pout)
-		 (let ((s (close-output-port pout)))
-		    (display (charset cset cs (base64-decode s)) out)))
+		 (let* ((s (close-output-port pout))
+			(es (if (procedure? cset)
+				(cset (base64-decode s) cs)
+				(charset cset cs (base64-decode s)))))
+		    (display es out)))
 	      (ignore))
 	     (else
 	      (read/rp encoded-text-grammar (the-port) out)))))
@@ -155,16 +160,18 @@
 ;*---------------------------------------------------------------------*/
 (define (rfc2047-decode-port in::input-port out::output-port
 			     #!key (charset 'iso-latin-1))
-   (let ((cset (case charset
-		  ((utf-8 UTF-8)
-		   'utf-8)
-		  ((iso-latin-1 ISO-LATIN-1 iso-8859-1 ISO-8859-1)
-		   'iso-latin-1)
-		  ((cp1252 CP1252 cp-1252 CP-1252)
-		   'cp1252)
-		  (else
-		   (error 'rfc2047-decode-port "Illegal charset" charset)))))
-      (read/rp rfc2047-grammar in out cset)))
+   (let ((cs (if (procedure? charset)
+		 charset
+		 (case charset
+		    ((utf-8 UTF-8)
+		     'utf-8)
+		    ((iso-latin-1 ISO-LATIN-1 iso-8859-1 ISO-8859-1)
+		     'iso-latin-1)
+		    ((cp1252 CP1252 cp-1252 CP-1252)
+		     'cp1252)
+		    (else
+		     (error 'rfc2047-decode-port "Illegal charset" charset))))))
+      (read/rp rfc2047-grammar in out cs)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rfc2047-decode ...                                               */
