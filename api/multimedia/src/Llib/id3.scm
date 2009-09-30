@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Mon Sep 28 19:48:03 2009 (serrano)                */
+;*    Last change :  Wed Sep 30 05:38:58 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -22,7 +22,8 @@
 	      (track::int (default 0))
 	      (year::int read-only)
 	      (genre::bstring read-only)
-	      (comment::bstring read-only))
+	      (comment::bstring read-only)
+	      (ufid::obj read-only (default #unspecified)))
 
 	   (class vorbis::musictag)
 	   
@@ -244,6 +245,13 @@
 	(string=? (mmap-substring/len mm #e0 #e5) "ID3\003\000")))
 
 ;*---------------------------------------------------------------------*/
+;*    id3v2.4? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (id3v2.4? mm)
+   (and (>elong (mmap-length mm) 3)
+	(string=? (mmap-substring/len mm #e0 #e5) "ID3\003\000")))
+
+;*---------------------------------------------------------------------*/
 ;*    id3v2-size ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (id3v2-size mm o)
@@ -267,6 +275,9 @@
 	  (sz (/fx sz 2))
 	  (len (- sz 1))
 	  (res (make-ucs2-string (elong->fixnum len))))
+      ;; debug
+      [assert (n0 n1) (or (and (=fx n0 #xfe) (=fx n1 #xff)
+			       (and (=fx n0 #xff) (=fx n1 #xfe))))]
       (if (and (=fx n0 #xfe) (=fx n1 #xff))
 	  ;; big-endian
 	  (let loop ((i 0)
@@ -319,10 +330,10 @@
 	   (iso-latin->utf8! (mmap-substring/len mm (+ o 1) (- sz 1))))
 	  ((#a001)
 	   ;; an UCS2 string
-	   (ucs2-string->utf8-string (get-ucs2-string mm (+ o 2) (- sz 1))))
+	   (ucs2-string->utf8-string (get-ucs2-string mm (+ o 1) (- sz 1))))
 	  ((#a002)
 	   ;; UTF-16BE without BOM
-	   (ucs2-string->utf8-string (get-utf16-be-string mm (+ o 2) (- sz 1))))
+	   (ucs2-string->utf8-string (get-utf16-be-string mm (+ o 1) (- sz 1))))
 	  ((#a003)
 	   ;; an utf-8 string
 	   (mmap-substring/len mm (+ o 1) (- sz 1)))
@@ -406,6 +417,12 @@
 			(loop (+ i (+ sz 10)) frames)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    id3v2.4-frames ...                                               */
+;*---------------------------------------------------------------------*/
+(define (id3v2.4-frames mm)
+   (id3v2.3-frames mm))
+
+;*---------------------------------------------------------------------*/
 ;*    id3v2-get-frame ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (id3v2-get-frame key frames default)
@@ -470,7 +487,29 @@
 	 (comment (id3v2-get-frame "COMM" frames ""))
 	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
-	 (cd (id3v2-get-frame "MCDI" frames #f)))))
+	 (cd (id3v2-get-frame "MCDI" frames #f))
+	 (ufid (id3v2-get-frame "UFID" frames #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    mp3-id3v2.4 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (mp3-id3v2.4 mm)
+   (let ((frames (id3v2.4-frames mm)))
+      (instantiate::id3
+	 (version "id3v2.4")
+	 (title (id3v2-get-frame "TIT2" frames "???"))
+	 (artist (id3v2-get-frame "TPE1" frames "???"))
+	 (orchestra (id3v2-get-frame "TPE2" frames #f))
+	 (conductor (id3v2-get-frame "TPE3" frames #f))
+	 (interpret (id3v2-get-frame "TPE4" frames #f))
+	 (album (id3v2-get-frame "TALB" frames "???"))
+	 (year (string->integer (id3v2-get-frame "TYER" frames "-1")))
+	 (recording (id3v2-get-frame "TRDA" frames #f))
+	 (comment (id3v2-get-frame "COMM" frames ""))
+	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
+	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
+	 (cd (id3v2-get-frame "MCDI" frames #f))
+	 (ufid (id3v2-get-frame "UFID" frames #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-id3 ...                                                      */
@@ -488,6 +527,7 @@
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (cond
+		((id3v2.4? mm) (mp3-id3v2.4 mm))
 		((id3v2.3? mm) (mp3-id3v2.3 mm))
 		((id3v2.2? mm) (mp3-id3v2.2 mm))
 		((id3v1.1? mm) (mp3-id3v1.1 mm))
@@ -696,6 +736,7 @@
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (cond
+		((id3v2.4? mm) (mp3-id3v2.4 mm))
 		((id3v2.3? mm) (mp3-id3v2.3 mm))
 		((id3v2.2? mm) (mp3-id3v2.2 mm))
 		((id3v1.1? mm) (mp3-id3v1.1 mm))

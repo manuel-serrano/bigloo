@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Sep  7 14:59:26 2009 (serrano)                */
+#*    Last change :  Wed Sep 30 05:16:44 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -178,6 +178,7 @@ install: install.$(EMACSBRAND)
 
 install.emacs21: doinstall
 install.emacs22: doinstall
+install.emacs23: doinstall
 install.xemacs: doinstall
 
 install.generic:
