@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Sep 28 19:51:09 2009 (serrano)                */
+#*    Last change :  Thu Oct  1 18:24:04 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -729,7 +729,7 @@ clean:
              exit 1; \
           fi
 	$(RM) -f configure.log
-	$(MAKE) -c gc clean
+	$(MAKE) -C gc clean
 	(cd comptime && $(MAKE) clean)
 	(cd runtime && $(MAKE) clean)
 	(cd manuals && $(MAKE) clean)
