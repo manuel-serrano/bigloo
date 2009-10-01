@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Fri Aug 29 14:56:48 2008                          */
-;*    Last change :  Fri Aug 29 17:13:51 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Thu Oct  1 14:09:50 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Support for both atom-2005 (1.0) and atom 0.3                    */
 ;*    Even if the latter is deprecated, google still use it for        */
@@ -303,7 +303,7 @@
 		   :content content
 		   :authors authors
 		   :source source
-		   :rest rest)))
+		   rest)))
       
       
       (define (atom:feed attr body)
@@ -372,7 +372,7 @@
 			      :date updated
 			      :rights rights
 			      :subtitle subtitle
-			      :rest rest)
+			      rest)
 		       (reverse! items))))
       
       (cond
