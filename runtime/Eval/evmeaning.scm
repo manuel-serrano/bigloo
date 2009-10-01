@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Thu Jul  9 12:21:28 2009 (serrano)                */
+;*    Last change :  Thu Oct  1 11:40:57 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -913,11 +913,17 @@
 	    (%inline1 cdr code stack denv pair))
 	   ((160)
 	    (let ((a0 (evmeaning (evcode-ref code 2) stack denv)))
-	       (if (and (pair? a0) (pair? (cdr a0)))
-		   (cadr a0)
+	       (cond
+		  ((and (pair? a0) (pair? (cdr a0)))
+		   (cadr a0))
+		  ((pair? a0)
 		   (evmeaning-type-error code
 					 (evcode-ref code 0)
-					 "pair" a0))))
+					 "pair" (cdr a0)))
+		  (else
+		   (evmeaning-type-error code
+					 (evcode-ref code 0)
+					 "pair" a0)))))
 	   (else
 	    ;; unknown byte code
 	    (evmeaning-error code "eval" "unknown byte-code" code))))
