@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Thu Aug 20 10:20:53 2009 (serrano)                */
+;*    Last change :  Thu Oct  1 16:13:16 2009 (serrano)                */
 ;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -243,7 +243,7 @@
        (let* ((pf (parse-formal-ident fun))
 	      (id (car pf))
 	      (pa (map+ parse-formal-ident (cons f0 formals)))
-	      (def (gensym))
+	      (def (gensym id))
 	      (epa (expand-args pa e))
 	      (va (and (not (null? formals))
 		       (or (not (pair? formals))
@@ -252,7 +252,8 @@
 			  ,@(map+ (lambda (a)
 				     (if (pair? a) (car a) a))
 				  epa)))
-	      (met-body `(met ,@(map+ (lambda (a)
+	      (met (gensym id))
+	      (met-body `(,met ,@(map+ (lambda (a)
 					 (if (pair? a) (car a) a))
 				      epa))))
 	  (if (all? symbol? (cdr (cadr x)))
@@ -264,9 +265,9 @@
 					   ,(if va
 						(cons 'apply def-body)
 						def-body))))
-			       (let ((met (and (object? ,(caar pa))
-					       (find-method ,(caar pa) ,id))))
-				  (if (procedure? met)
+			       (let ((,met (and (object? ,(caar pa))
+						(find-method ,(caar pa) ,id))))
+				  (if (procedure? ,met)
 				      ,(if va (cons 'apply met-body) met-body)
 				      (,def)))))))
 		     (add-generic! ,id
