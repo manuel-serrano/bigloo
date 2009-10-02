@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Sep 30 05:16:44 2009 (serrano)                */
+#*    Last change :  Fri Oct  2 09:59:03 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -191,7 +191,7 @@ install.false:
 
 doinstall: bmacs-config.el site-lisp
 	@ echo "Installing Emacs file in $(DESTDIR)$(EMACSDIR)..."
-	@ for f in $(EMACS_DIST_OBJ); do \
+	@ for f in $(EMACS_DIST_OBJ) bmacs-config.el; do \
           if [ -f $$f ]; then \
             echo "   ...$$f"; \
 	    cp $$f $(DESTDIR)$(EMACSDIR); \
