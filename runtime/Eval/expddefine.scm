@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Fri Oct  2 09:40:28 2009 (serrano)                */
+;*    Last change :  Mon Oct  5 08:17:56 2009 (serrano)                */
 ;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -253,8 +253,10 @@
 				     (if (pair? a) (car a) a))
 				  epa)))
 	      (met (if (any? (lambda (a)
-				(eq? (car (parse-formal-ident a)) id))
-			     formals)
+				(if (pair? a)
+				    (eq? (car a) id)
+				    (eq? a id)))
+			     pa)
 		       (gensym id)
 		       id))
 	      (met-body `(,met ,@(map+ (lambda (a)

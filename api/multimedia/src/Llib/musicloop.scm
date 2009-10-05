@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Sep 14 16:50:41 2009 (serrano)                */
+;*    Last change :  Sun Oct  4 10:04:02 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -46,6 +46,7 @@
 	    ;; signal that the loop is done
 	    (begin
 	       (mutex-lock! %loop-mutex)
+	       (set! %abort-loop #t)
 	       (condition-variable-broadcast! %loop-condv)
 	       (mutex-unlock! %loop-mutex))))))
 
@@ -122,9 +123,9 @@
 (define-generic (music-event-loop-abort! o::music)
    (with-access::music o (%loop-mutex %abort-loop %loop-condv)
       (mutex-lock! %loop-mutex)
-      (set! %abort-loop #t)
-      (condition-variable-wait! %loop-condv %loop-mutex)
-      (mutex-unlock! %loop-mutex)))
+      (unless %abort-loop
+	 (condition-variable-wait! %loop-condv %loop-mutex)
+	 (mutex-unlock! %loop-mutex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-parse-opt ...                                   */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sun Aug 30 10:07:49 2009 (serrano)                */
+;*    Last change :  Sun Oct  4 10:03:56 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -238,19 +238,22 @@
 (define-method (music-close mpc::mpc)
    ;; close the associated socket
    (with-access::mpc mpc (%socket %closed %mutex)
-      (with-lock %mutex
-	 (lambda ()
-	    (unless (music-closed? mpc)
-	       (when (socket? %socket)
-		  ;; tell the the server that we are down
-		  (exec mpc "close")
-		  ;; close the socket
-		  (socket-close %socket)
-		  (set! %socket #f))
-	       ;; abort the event loop
-	       (call-next-method)
-	       ;; mark that we are closed
-	       (set! %closed #t))))))
+      (let ((doclose (with-lock %mutex
+			(lambda ()
+			   (unless (music-closed? mpc)
+			      ;; mark that we are closed
+			      (set! %closed #t)
+			      #t)))))
+	 (when doclose
+	    (call-next-method)
+	    (with-lock %mutex
+	       (lambda ()
+		  (when (socket? %socket)
+		     ;; tell the the server that we are down
+		     (exec mpc "close")
+		     ;; close the socket
+		     (socket-close %socket)
+		     (set! %socket #f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::mpc ...                                          */

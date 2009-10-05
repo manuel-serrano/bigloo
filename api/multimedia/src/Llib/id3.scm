@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Sep 30 05:38:58 2009 (serrano)                */
+;*    Last change :  Sun Oct  4 18:35:21 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -249,7 +249,7 @@
 ;*---------------------------------------------------------------------*/
 (define (id3v2.4? mm)
    (and (>elong (mmap-length mm) 3)
-	(string=? (mmap-substring/len mm #e0 #e5) "ID3\003\000")))
+	(string=? (mmap-substring/len mm #e0 #e5) "ID3\004\000")))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-size ...                                                   */
@@ -503,8 +503,8 @@
 	 (conductor (id3v2-get-frame "TPE3" frames #f))
 	 (interpret (id3v2-get-frame "TPE4" frames #f))
 	 (album (id3v2-get-frame "TALB" frames "???"))
-	 (year (string->integer (id3v2-get-frame "TYER" frames "-1")))
-	 (recording (id3v2-get-frame "TRDA" frames #f))
+	 (year (string->integer (id3v2-get-frame "TDRC" frames "-1")))
+	 (recording (id3v2-get-frame "TORY" frames #f))
 	 (comment (id3v2-get-frame "COMM" frames ""))
 	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
