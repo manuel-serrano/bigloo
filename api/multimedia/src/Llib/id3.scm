@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sun Oct  4 18:35:21 2009 (serrano)                */
+;*    Last change :  Tue Oct  6 09:58:09 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */

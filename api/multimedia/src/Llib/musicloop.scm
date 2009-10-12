@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Sun Oct  4 10:04:02 2009 (serrano)                */
+;*    Last change :  Wed Oct  7 20:01:44 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -75,7 +75,7 @@
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
 	       (music-update-status! m stat2)
-
+	       
 	       (when (newstate? stat2 stat1)
 		  ;; onstate
 		  (when onstate (onstate stat2))
@@ -86,16 +86,16 @@
 			(let ((plist (music-playlist-get m)))
 			   (if (and (>=fx song 0) (<fx song (length plist)))
 			       (onmeta (list-ref plist song) plist)
-			       (onmeta #f plist))))))
+			       (onmeta #f plist)))))
+		  
+		  (when (and onerror (musicstatus-err stat2))
+		     ;; onerror
+		     (onerror (musicstatus-err stat2))))
 	       
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume
 		  (onvol (musicstatus-volume stat2)))
-
-	       (when (and onerror (musicstatus-err stat2))
-		  ;; onerror
-		  (onerror (musicstatus-err stat2)))
-
+	       
 	       ;; wait a little bit
 	       (sleep frequency)
 	       
@@ -104,7 +104,7 @@
 	       (when %reset-loop
 		  (set! %reset-loop #f)
 		  (musicstatus-state-set! stat2 'reset))
-
+	       
 	       ;; loop back
 	       (loop stat2 stat1))))))
 

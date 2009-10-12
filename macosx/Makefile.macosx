@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr 24 07:14:06 2009                          */
-#*    Last change :  Tue May 26 15:38:38 2009 (serrano)                */
+#*    Last change :  Fri Oct  9 14:33:26 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Makefile for Bigloo MacOSX port. It builds the Bigloo's .dmg.    */
@@ -32,6 +32,8 @@ BEE_EMACS_PATH=/usr/local/share/emacs/bigloo
 
 PACKAGEMAKER=/Developer/usr/bin/packagemaker
 TEXTUTIL=/usr/bin/textutil
+
+PREFIX=/usr/local
 
 MACOSXDIR=$(BOOTDIR)/macosx
 BGL_ROOT=$(MACOSXDIR)/root
@@ -82,7 +84,7 @@ dmg: $(DMG)
 
 # typical configure
 configure:
-	./configure --jvm=yes --enable-thread --lispdir="$(BEE_EMACS_PATH)"
+	./configure --jvm=yes --enable-thread --lispdir="$(BEE_EMACS_PATH)" --prefix=$(PREFIX)
 
 dirs:
 	mkdir -p $(BGL_ROOT) && \

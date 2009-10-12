@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Mon Jul 20 12:20:47 2009 (serrano)                */
+;*    Last change :  Tue Oct  6 07:29:05 2009 (serrano)                */
 ;*    Copyright   :  2000-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -158,7 +158,7 @@
 	      (field static big-endian::bool "BGL_BIG_ENDIAN")
 	      "bigloo.configure"))
 
-   (export    (bigloo-config ::symbol)
+   (export    (bigloo-config #!optional config)
 	      (bigloo-configuration::pair)
 	      (bigloo-configuration-add-entry! ::symbol ::obj)))
 
@@ -225,11 +225,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-config config)
-   (let ((c (assq config (bigloo-configuration))))
-      (if (pair? c)
-	  (cdr c)
-	  #unspecified)))
+(define (bigloo-config #!optional config)
+   (if (not config)
+       (bigloo-configuration)
+       (let ((c (assq config (bigloo-configuration))))
+	  (if (pair? c)
+	      (cdr c)
+	      #unspecified))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-configuration ...                                         */
