@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Tue Mar 11 15:56:35 2008 (serrano)                */
+;*    Last change :  Tue Oct 13 10:29:28 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -130,7 +130,8 @@
 	    (eappend-2 ::pair-nil ::obj)
 	    (append . obj)
 	    (eappend . obj)
-	    (append!::pair-nil ::pair-nil ::pair-nil)
+	    (append!::pair-nil . obj)
+	    (append-2!::pair-nil ::pair-nil ::pair-nil)
 	    (reverse::pair-nil ::pair-nil)
 	    (ereverse::pair-nil ::pair-nil)
 	    (take::pair-nil ::pair-nil ::long)
@@ -552,7 +553,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    append! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (append! x y)
+(define (append! . l)
+   (labels ((append-list (l)
+			 (let ((len (length l)))
+			    (if (=fx len 0)
+				'()
+				(if (=fx len 1)
+				    (car l)
+				    (if (=fx len 2)
+					(append-2! (car l)
+						   (car (cdr l)))
+					(append-2! (car l)
+						   (append-list (cdr l)))))))))
+      (append-list l)))
+
+;*---------------------------------------------------------------------*/
+;*    append-2! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (append-2! x y)
   (if (null? x)
       y
       (do ((a x b)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Oct  1 18:24:04 2009 (serrano)                */
+#*    Last change :  Tue Oct 13 10:43:40 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -235,14 +235,14 @@ manual-pdf:
 #*    bigboot ...                                                      */
 #*    -------------------------------------------------------------    */
 #*    Boot a new Bigloo system on a an host. This boot uses an already */
-#*    installed Bigloo on that hosts. That is, it recompiles, all the  */
+#*    installed Bigloo on that host. That is, it recompiles, all the   */
 #*    Scheme source files.                                             */
 #*    -------------------------------------------------------------    */
 #*    To use this entry:                                               */
 #*      1- configure the system:                                       */
 #*          ./configure --bootconfig                                   */
 #*      2- type something like:                                        */
-#*          make bigboot BIGLOO=/usr/local/bin/bigloo                  */
+#*          make bigboot BIGLOOBOOT=/usr/local/bin/bigloo              */
 #*---------------------------------------------------------------------*/
 bigboot: 
 	@ if [ "$(BIGLOOBOOT) " = " " ]; then \

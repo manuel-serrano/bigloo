@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep 29 11:37:21 2009 (serrano)                */
+#*    Last change :  Tue Oct 13 10:43:10 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -53,7 +53,11 @@ cc=$CC  # left blank for default automatic configuration
 cflags=$CFLAGS
 lflags=$LDFLAGS
 bigloo=$BIGLOO # used only for cross compiling
-bflags="-O3 -q"
+if [ "$BFLAGS " != " " ]; then
+  bflags=$BFLAGS;
+else
+  bflags="-O3 -q";
+fi
 bootflags=""
 featureflags=
 coflags=-O3
@@ -471,6 +475,9 @@ while : ; do
 
     --rm=*)
       bgl_shell_rm="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bflags=*)
+      bflags="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --cflags=*)
       cflags="`echo $1 | sed 's/^[^=]*=//'`";;

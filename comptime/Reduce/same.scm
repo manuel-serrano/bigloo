@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 12:54:32 1996                          */
-;*    Last change :  Sun Jan 21 03:52:42 2001 (serrano)                */
-;*    Copyright   :  1996-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct 13 12:05:44 2009 (serrano)                */
+;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The comparison of two nodes.                                     */
 ;*=====================================================================*/

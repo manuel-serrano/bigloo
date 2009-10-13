@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Fri Sep 11 08:17:31 2009 (serrano)                */
+;*    Last change :  Tue Oct 13 12:11:12 2009 (serrano)                */
 ;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -39,7 +39,8 @@
 	    ast_let
 	    ast_labels
 	    ast_node
-	    ast_var)
+	    ast_var
+	    ast_sexp)
    (export  (install-initial-expander)))
 
 ;*---------------------------------------------------------------------*/
@@ -145,6 +146,19 @@
 	     ,@(map (lambda (l) (e l e)) lists)))
 	  (else
 	   (error #f "Illegal `append' form" x)))))
+   
+   ;; append!
+   (install-O-comptime-expander
+    'append!
+    (lambda (x::obj e::procedure)
+       (match-case x
+	  ((?- ?l1 ?l2)
+	   `(append-2! ,(e l1 e) ,(e l2 e)))
+	  ((?- . ?lists)
+	   `(append!
+	     ,@(map (lambda (l) (e l e)) lists)))
+	  (else
+	   (error #f "Illegal `append!' form" x)))))
    
    ;; eappend
    (install-O-comptime-expander
@@ -821,11 +835,12 @@
 	     ((@ current-output-port __r4_ports_6_10_1))))
 	  ((?- . ?obj)
 	   (let ((p (mark-symbol-non-user! (gensym 'port))))
-	      (e `(let ((,p ((@ current-output-port __r4_ports_6_10_1))))
-		     ,@(map
-			(lambda (y) (epairify `(,(disp y) ,y ,p) x))
-			obj)
-		     ((@ newline-1 __r4_output_6_10_3) ,p))
+	      (e `(,(let-sym)
+		   ((,p ((@ current-output-port __r4_ports_6_10_1))))
+		   ,@(map
+		      (lambda (y) (epairify `(,(disp y) ,y ,p) x))
+		      obj)
+		   ((@ newline-1 __r4_output_6_10_3) ,p))
 		 e))))))
    
    ;; fprint
@@ -838,11 +853,12 @@
 		,port) e))
 	  ((?- ?port . ?obj)
 	   (let ((aux (mark-symbol-non-user! (gensym 'port))))
-	      (e `(let ((,aux ,port))
-		     ,@(map (lambda (y)
-			       (epairify `(,(disp y) ,y ,aux) x))
-			    obj)
-		     ((@ newline-1 __r4_output_6_10_3) ,aux))
+	      (e `(,(let-sym)
+		   ((,aux ,port))
+		   ,@(map (lambda (y)
+			     (epairify `(,(disp y) ,y ,aux) x))
+			  obj)
+		   ((@ newline-1 __r4_output_6_10_3) ,aux))
 		 e)))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
@@ -919,11 +935,12 @@
 		      (val (let ((sym (gensym 'value)))
 			      (mark-symbol-non-user! sym)
 			      sym))
-		      (aux `(let ((,lbl ,lam))
-			       (GC-profile-push ,(symbol->string lbl) ,lbl)
-			       (let ((,val (,lbl)))
-				  (GC-profile-pop)
-				  ,val)))
+		      (aux `(,(let-sym)
+			     ((,lbl ,lam))
+			     (GC-profile-push ,(symbol->string lbl) ,lbl)
+			     (let ((,val (,lbl)))
+				(GC-profile-pop)
+				,val)))
 		      (res (if (epair? x)
 			       (econs (car aux) (cdr aux) (cer x))
 			       aux)))
@@ -946,12 +963,13 @@
 		      (val (let ((sym (gensym 'value)))
 			      (mark-symbol-non-user! sym)
 			      sym))
-		      (aux `(let ((,lbl ,lam))
-			       (GC-collect-profile-push ,(symbol->string lbl)
-							,lbl)
-			       (let ((,val (,lbl)))
-				  (GC-profile-pop)
-				  ,val)))
+		      (aux `(,(let-sym)
+			     ((,lbl ,lam))
+			     (GC-collect-profile-push ,(symbol->string lbl)
+						      ,lbl)
+			     (let ((,val (,lbl)))
+				(GC-profile-pop)
+				,val)))
 		      (res (if (epair? x)
 			       (econs (car aux) (cdr aux) (cer x))
 			       aux)))
@@ -1025,15 +1043,15 @@
 	  (formals (map (lambda (x) (mark-symbol-non-user! (gensym))) actuals))
 	  (msg (mark-symbol-non-user! (gensym))))
       (epairify-rec
-       `(let (,@(map (lambda (f v) (list f (e v e))) formals actuals)
-		(,msg ,(string-append (symbol->string fun) ": argument not a "
-				      tname)))
-	   ,(let loop ((args formals))
-	       (if (null? args)
-		   (cons fun formals)
-		   `(if (,pred ,(car args))
-			,(loop (cdr args))
-			((@ error  __error) #f ,msg ,(car args))))))
+       `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
+		       (,msg ,(string-append (symbol->string fun) ": argument not a "
+					     tname)))
+		    ,(let loop ((args formals))
+			(if (null? args)
+			    (cons fun formals)
+			    `(,(if-sym) (,pred ,(car args))
+					,(loop (cdr args))
+					((@ error  __error) #f ,msg ,(car args))))))
        x)))
 
 ;*---------------------------------------------------------------------*/
@@ -1046,16 +1064,17 @@
 	     (foff (mark-symbol-non-user! (gensym)))
 	     (len (mark-symbol-non-user! (gensym))))
 	  (epairify-rec
-	   `(let ((,fobj ,(e aobj e))
-		  (,foff ,(e aoff e)))
-	       (let ((,len (,flen ,fobj)))
-		  (if (,pred ,foff ,len)
-		      (,fun ,fobj ,foff ,@(map (lambda (x) (e x e)) rest))
-		      ((@ error  __error)
-		       #f
-		       ,(string-append (symbol->string fun)
-				       ": index out of bound")
-		       ,foff))))
+	   `(,(let-sym) ((,fobj ,(e aobj e))
+			 (,foff ,(e aoff e)))
+			(,(let-sym)
+			 ((,len (,flen ,fobj)))
+			 (,(if-sym) (,pred ,foff ,len)
+				    (,fun ,fobj ,foff ,@(map (lambda (x) (e x e)) rest))
+				    ((@ error  __error)
+				     #f
+				     ,(string-append (symbol->string fun)
+						     ": index out of bound")
+				     ,foff))))
 	   x)))
       (else
        (error #f "Illegal expression" x))))
@@ -1084,34 +1103,35 @@
 	     (ufun (mark-symbol-non-user! (gensym)))
 	     (msg-list (mark-symbol-non-user! (gensym))))
 	  (epairify-rec 
-	   `(let (,@(map (lambda (f v) (list f (e v e))) formals actuals)
-		    (,ufun ,(e fun e))
-		    (,msg-list ,(string-append (symbol->string op)
-					       ": argument not a list")))
-	       (if (correct-arity? ,ufun ,(length actuals))
-		   ,(let loop ((args formals))
-		       (if (null? args)
-			   (if (>fx (length actuals) 1)
-			       `(let ,(map (lambda (lf f)
-					      `(,lf (length ,f)))
-					   lformals formals)
-				   (if (= ,@lformals)
-				       (,op ,ufun ,@formals)
-				       ((@ error  __error)
-					#f
-					,(string-append
-					  (symbol->string op)
-					  ": various lists length")
-					(list ,@lformals))))
-			       `(,op ,ufun ,@formals))
-			   `(if (list? ,(car args))
-				,(loop (cdr args))
-				((@ error  __error) #f ,msg-list ,(car args)))))
-		   ((@ error  __error)
-		    #f
-		    ,(string-append (symbol->string op)
-				    ": incorrect function arity")
-		    ,(length actuals))))
+	   `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
+			   (,ufun ,(e fun e))
+			   (,msg-list ,(string-append (symbol->string op)
+						      ": argument not a list")))
+			(if (correct-arity? ,ufun ,(length actuals))
+			    ,(let loop ((args formals))
+				(if (null? args)
+				    (if (>fx (length actuals) 1)
+					`(,(let-sym)
+					  ,(map (lambda (lf f)
+						   `(,lf (length ,f)))
+						lformals formals)
+					  (,(if-sym) (= ,@lformals)
+						     (,op ,ufun ,@formals)
+						     ((@ error  __error)
+						      #f
+						      ,(string-append
+							(symbol->string op)
+							": various lists length")
+						      (list ,@lformals))))
+					`(,op ,ufun ,@formals))
+				    `(,(if-sym) (list? ,(car args))
+						,(loop (cdr args))
+						((@ error  __error) #f ,msg-list ,(car args)))))
+			    ((@ error  __error)
+			     #f
+			     ,(string-append (symbol->string op)
+					     ": incorrect function arity")
+			     ,(length actuals))))
 	   x)))
       (else
        (error #f (car x) "Illegal form"))))

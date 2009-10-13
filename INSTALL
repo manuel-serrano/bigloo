@@ -208,7 +208,7 @@ Installing the BEE
            ESC-x: customize-group ude
 
 
-TESTING CIGLOO
+Testing CIGLOO
 **************
 
    7.  To test Cigloo, go in the directory cigloo/Example and just
