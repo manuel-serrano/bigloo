@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/cross.scm              */
+;*    serrano/prgm/project/bigloo/comptime/Init/lib-dir.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Fri Sep  4 08:40:23 2009 (serrano)                */
+;*    Last change :  Tue Oct 13 20:06:11 2009 (serrano)                */
 ;*    Copyright   :  2009 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Processes the lib-dir-compilation parameter.                       */
+;*    Processes the lib-dir-compilation parameter.                     */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -42,7 +42,7 @@
       (when (not (and (string=? *bigloo-version* lib-version)
 		      (string=? *bigloo-specific-version*
 				lib-specific-version)))
-	 ;; Replace with error?
+	 ;; replace with error?
 	 (warning "Cross compilation for different Bigloos is risky."))))
 
 ;*---------------------------------------------------------------------*/

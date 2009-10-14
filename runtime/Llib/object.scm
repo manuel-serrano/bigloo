@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Sep 20 11:55:30 2009 (serrano)                */
+;*    Last change :  Wed Oct 14 05:19:57 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -158,6 +158,7 @@
 	    (procedure->generic::procedure ::procedure)
 	    (add-generic!::obj ::procedure ::obj)
 	    (add-method!::procedure ::procedure ::obj ::procedure)
+	    (add-eval-method!::procedure ::procedure ::obj ::procedure)
 	    (inline find-method ::object ::procedure)
 	    (find-class-method class ::procedure)
 	    (find-method-from::pair ::object ::procedure class)
@@ -921,35 +922,60 @@
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
+;*    %add-method! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (%add-method! generic class method)
+   (with-lock $bigloo-generic-mutex
+      (lambda ()
+	 (if (not (generic-added? generic))
+	     ;; we check the installation of the generic in order to
+	     ;; allow cycle in module graph.
+	     (add-generic-sans-lock! generic #f))
+	 (let* ((method-array (generic-method-array generic))
+		(cnum (class-num class))
+		(previous (method-array-ref generic method-array cnum))
+		(def (generic-default generic)))
+	    (let loop ((class class))
+	       (let* ((cn (class-num class))
+		      (current (method-array-ref generic method-array cn)))
+		  (if (or (eq? current def) (eq? current previous))
+		      (begin
+			 ;; we add the method
+			 (method-array-set! generic method-array cn method)
+			 ;; and we recursivly iterate on subclasses
+			 (for-each loop (class-subclasses class)))))))
+	 method)))
+
+;*---------------------------------------------------------------------*/
 ;*    add-method! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (add-method! generic class method)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (cond
-	    ((not (class? class))
-	     (error 'add-method! "Illegal class" class))
-	    ((not (=fx (procedure-arity generic) (procedure-arity method)))
-	     (error 'add-method! "arity mismatch" (cons generic method)))
-	    (else
-	     (if (not (generic-added? generic))
-		 ;; we check the installation of the generic in order to
-		 ;; allow cycle in module graph.
-		 (add-generic-sans-lock! generic #f))
-	     (let* ((method-array (generic-method-array generic))
-		    (cnum (class-num class))
-		    (previous (method-array-ref generic method-array cnum))
-		    (def (generic-default generic)))
-		(let loop ((class class))
-		   (let* ((cn (class-num class))
-			  (current (method-array-ref generic method-array cn)))
-		      (if (or (eq? current def) (eq? current previous))
-			  (begin
-			     ;; we add the method
-			     (method-array-set! generic method-array cn method)
-			     ;; and we recursivly iterate on subclasses
-			     (for-each loop (class-subclasses class)))))))
-	     method)))))
+   (cond
+      ((not (class? class))
+       (error 'add-method! "Illegal class" class))
+      ((not (=fx (procedure-arity generic) (procedure-arity method)))
+       (error 'add-method! "arity mismatch" (cons generic method)))
+      (else
+       (%add-method! generic class method))))
+
+;*---------------------------------------------------------------------*/
+;*    add-eval-method! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    This function is similar to ADD-METHOD! but the arity check      */
+;*    differs. Since eval function of more than four arguments are     */
+;*    implemented with -1-arity procedure, ADD-EVAL-METHOD must        */
+;*    enforce a more permissive arity check.                           */
+;*---------------------------------------------------------------------*/
+(define (add-eval-method! generic class method)
+   (cond
+      ((not (class? class))
+       (error 'add-eval-method! "Illegal class" class))
+      ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
+	    (>fx (procedure-arity generic) 4)
+	    (not (=fx (procedure-arity method) -1)))
+       (error 'add-eval-method! "arity mismatch" (cons generic method)))
+      (else
+       (%add-method! generic class method))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-method ...                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Thu Oct  1 11:40:57 2009 (serrano)                */
+;*    Last change :  Wed Oct 14 05:14:15 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -402,6 +402,17 @@
 		0
 		body
 		stack)))
+	   
+	   ((bounce (code stack denv) (42))
+	    ;; ...untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda ()
+		   (let ((!b body))
+		      (evmeaning !b stack denv)))
+		0
+		body
+		stack)))
 	   ((bounce (code stack denv) (38))
 	    ;; procedure arity 1, traced
 	    (let ((body (evcode-ref code 0))
@@ -419,6 +430,16 @@
 		1
 		body
 		stack)))
+	   ((bounce (code stack denv) (43))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda (x)
+		   (let ((!b body))
+		      (evmeaning !b (cons x stack) denv)))
+		1
+		body
+		stack)))
 	   ((bounce (code stack denv) (39))
 	    ;; procedure arity 2, traced
 	    (let ((body (evcode-ref code 0))
@@ -433,6 +454,16 @@
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
+		2
+		body
+		stack)))
+	   ((bounce (code stack denv) (44))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda (x y)
+		   (let ((!b body))
+		      (evmeaning !b (cons x (cons y stack)) denv)))
 		2
 		body
 		stack)))
@@ -457,6 +488,16 @@
 		3
 		body
 		stack)))
+	   ((bounce (code stack denv) (45))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda (x y z)
+		   (let ((!b body))
+		      (evmeaning !b (cons x (cons y (cons z stack))) denv)))
+		3
+		body
+		stack)))
 	   ((bounce (code stack denv) (41))
 	    ;; procedure arity 4, traced
 	    (let ((body (evcode-ref code 0))
@@ -478,46 +519,6 @@
 			    ($env-pop-trace !denv)
 			    res))))
 		4
-		body
-		stack)))
-	   ((bounce (code stack denv) (42))
-	    ;; ...untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda ()
-		   (let ((!b body))
-		      (evmeaning !b stack denv)))
-		0
-		body
-		stack)))
-	   ((bounce (code stack denv) (43))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda (x)
-		   (let ((!b body))
-		      (evmeaning !b (cons x stack) denv)))
-		1
-		body
-		stack)))
-	   ((bounce (code stack denv) (44))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda (x y)
-		   (let ((!b body))
-		      (evmeaning !b (cons x (cons y stack)) denv)))
-		2
-		body
-		stack)))
-	   ((bounce (code stack denv) (45))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda (x y z)
-		   (let ((!b body))
-		      (evmeaning !b (cons x (cons y (cons z stack))) denv)))
-		3
 		body
 		stack)))
 	   ((bounce (code stack denv) (46))
@@ -549,6 +550,16 @@
 		-1
 		body
 		stack)))
+	   ((bounce (code stack denv) (51))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda x
+		   (let ((!b body))
+		      (evmeaning !b (cons x stack) denv)))
+		-1
+		body
+		stack)))	   
 	   ((bounce (code stack denv) (48))
 	    ;; procedure arity -2, traced
 	    (let ((body  (evcode-ref code 0))
@@ -563,6 +574,16 @@
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
+		-2
+		body
+		stack)))
+	   ((bounce (code stack denv) (52))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda (x . y)
+		   (let ((!b body))
+		      (evmeaning !b (cons x (cons y stack)) denv)))
 		-2
 		body
 		stack)))
@@ -587,6 +608,18 @@
 		-3
 		body
 		stack)))
+	   ((bounce (code stack denv) (53))
+	    ;; untraced
+	    (let ((body (evcode-ref code 0)))
+	       (evmeaning-procedure!
+		(lambda (x y . z)
+		   (let ((!b body))
+		      (evmeaning !b
+				 (cons x (cons y (cons z stack)))
+				 denv)))
+		-3
+		body
+		stack)))	   
 	   ((bounce (code stack denv) (50))
 	    ;; procedure arity -4, traced
 	    (let ((body  (evcode-ref code 0))
@@ -609,38 +642,6 @@
 			    ($env-pop-trace !denv)
 			    res))))
 		-4
-		body
-		stack)))
-	   ((bounce (code stack denv) (51))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda x
-		   (let ((!b body))
-		      (evmeaning !b (cons x stack) denv)))
-		-1
-		body
-		stack)))
-	   ((bounce (code stack denv) (52))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda (x . y)
-		   (let ((!b body))
-		      (evmeaning !b (cons x (cons y stack)) denv)))
-		-2
-		body
-		stack)))
-	   ((bounce (code stack denv) (53))
-	    ;; untraced
-	    (let ((body (evcode-ref code 0)))
-	       (evmeaning-procedure!
-		(lambda (x y . z)
-		   (let ((!b body))
-		      (evmeaning !b
-				 (cons x (cons y (cons z stack)))
-				 denv)))
-		-3
 		body
 		stack)))
 	   ((bounce (code stack denv) (54))

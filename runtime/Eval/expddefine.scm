@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Mon Oct  5 08:17:56 2009 (serrano)                */
+;*    Last change :  Wed Oct 14 05:24:08 2009 (serrano)                */
 ;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -313,7 +313,7 @@
 		      (or (not (pair? formals))
 			  (not (null? (cdr (last-pair formals))))))))
 	  (if (and (pair? p0) (symbol? (cdr p0)))
-	      (let* ((res `(add-method!
+	      (let* ((res `(add-eval-method!
 			    ,fun
 			    ,(cdr p0)
 			    ,(e `(lambda ,(expand-args (cons f0 formals) e)

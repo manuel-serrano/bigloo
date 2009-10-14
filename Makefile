@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Oct 13 10:43:40 2009 (serrano)                */
+#*    Last change :  Tue Oct 13 20:52:53 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -266,6 +266,19 @@ dobigboot:
 	@ (cd comptime && $(MAKE))
 	@ (cd runtime && $(MAKE) clean-quick heap libs)
 	@ echo "Big boot Done..."
+	@ echo "-------------------------------"
+
+bootstrap:
+	@ $(MAKE) -C gc clean
+	@ $(MAKE) -C gc boot
+	@ mkdir -p bin
+	@ mkdir -p lib/$(RELEASE)
+	@ (cd runtime && $(MAKE) bigboot)
+	@ (cd comptime && $(MAKE) bigboot)
+	@ (cd runtime && $(MAKE) heap-c BIGLOO=$(BOOTDIR)/bin/bigloo)
+	@ (cd comptime && $(MAKE) BIGLOO=$(BOOTDIR)/bin/bigloo)
+	@ (cd runtime && $(MAKE) clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo)
+	@ echo "Bootstrap Done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
