@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Sep 29 10:58:00 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 10:41:13 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -422,10 +422,10 @@ new: bigloo.new
 so: bigloo.$(SHAREDSUFFIX)
 
 bigloo.plain: Tools/license.scm
-	- $(RM) -f Tools/date.scm
-	$(MAKE) Tools/date.scm
 	$(MAKE) $(AFILE)
 	$(MAKE) $(JFILE)
+	- $(RM) -f Tools/date.scm
+	$(MAKE) Tools/date.scm
 	$(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 bigloo.new:
