@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Sep 29 11:00:53 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 17:06:46 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -62,7 +62,7 @@ LIBQ		=
 BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
                   -unsafe -q -mkheap -mklib -s -no-hello
 #*--- Bigloo, common --------------------------------------------------*/
-BCOMMONFLAGS	= $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
+BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
 #*--- Bigloo, safe ----------------------------------------------------*/
 BSAFEFLAGS	= $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
