@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 11 15:08:52 2008                          */
-;*    Last change :  Mon Feb 11 15:10:43 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Wed Oct 14 11:00:14 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GSTREAMER error classes.                                         */
 ;*=====================================================================*/
@@ -15,4 +15,11 @@
 (module __gstreamer_gsterror
 
    (export (class &gst-error::&error)
-	   (class &gst-create-error::&gst-error)))
+	   (class &gst-create-error::&gst-error)
+
+	   (inline gst-debug-level)))
+
+;*---------------------------------------------------------------------*/
+;*    gst-debug-level ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (gst-debug-level) 4)

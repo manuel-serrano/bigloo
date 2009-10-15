@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 16:06:35 2007                          */
-;*    Last change :  Wed Jul 23 17:07:12 2008 (serrano)                */
-;*    Copyright   :  2007-08 Manuel Serrano                            */
+;*    Last change :  Wed Oct 14 11:00:35 2009 (serrano)                */
+;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstObject wrapper                                                */
 ;*=====================================================================*/
@@ -90,7 +90,7 @@
 ;*    %gst-object-finalize-debug ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-finalize-debug o)
-   (when (> (bigloo-debug) 2)
+   (when (> (bigloo-debug) (gst-debug-level))
       (with-lock *gst-object-debug-mutex*
 	 (lambda ()
 	    (set! *gst-object-debug-count* (+fx -1 *gst-object-debug-count*))
@@ -112,7 +112,7 @@
 		   (proc '%gst-object-init)
 		   (msg "Illegal gst-object")
 		   (obj o))))
-      (when (> (bigloo-debug) 2) (%gst-object-init-debug o))
+      (when (> (bigloo-debug) (gst-debug-level)) (%gst-object-init-debug o))
       (cond
 	 ((procedure? $finalizer)
 	  ;; user finalizer
@@ -156,7 +156,7 @@
 ;*    %gst-object-finalize! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-finalize! o)
-   (when (> (bigloo-debug) 2) (%gst-object-finalize-debug o))
+   (when (> (bigloo-debug) (gst-debug-level)) (%gst-object-finalize-debug o))
    (%gst-object-finalize-closures! o)
    (%gst-object-unref! o))
 
@@ -204,7 +204,7 @@
 (define (closure-gcmark! proc)
    (mutex-lock! *gcmark-mutex*)
    (set! *gcmark-closure* (cons proc *gcmark-closure*))
-   (when (> (bigloo-debug) 2)
+   (when (> (bigloo-debug) (gst-debug-level))
       (with-lock *gst-object-debug-mutex*
 	 (lambda ()
 	    (tprint "closure-gcmark: " (length *gcmark-closure*)))))
@@ -216,7 +216,7 @@
 (define (closure-gcunmark! proc)
    (mutex-lock! *gcmark-mutex*)
    (set! *gcmark-closure* (remq! proc *gcmark-closure*))
-   (when (> (bigloo-debug) 2)
+   (when (> (bigloo-debug) (gst-debug-level))
       (with-lock *gst-object-debug-mutex*
 	 (lambda ()
 	    (tprint "closure-gcunmark: " (length *gcmark-closure*)))))

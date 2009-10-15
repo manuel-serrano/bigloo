@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Oct 13 20:52:53 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 09:15:33 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -107,8 +107,6 @@ LOGMSG		= ""
 SUDO		= sudo
 
 BOOTCAPI	= no
-
-BIGBOOTCONFIGURE=--bootconfig
 
 #*---------------------------------------------------------------------*/
 #*    The directory that compose a version                             */
@@ -243,32 +241,22 @@ manual-pdf:
 #*          ./configure --bootconfig                                   */
 #*      2- type something like:                                        */
 #*          make bigboot BIGLOOBOOT=/usr/local/bin/bigloo              */
+#*         or                                                          */
+#*          make bigboot BGLBUILDBINDIR=/usr/local/bin                 */
 #*---------------------------------------------------------------------*/
 bigboot: 
-	@ if [ "$(BIGLOOBOOT) " = " " ]; then \
+	@ if [ "$(BIGLOOBOOT) " = " " -a "$(BGLBUILDBINDIR) " = " " ]; then \
             echo "*** Error, the variable BIGLOOBOOT is unbound"; \
             echo "Use \"$(MAKE) dobigboot\" if you know what you are doing!"; \
             exit 0; \
           else \
-            $(MAKE) dobigboot; \
+            if [ "$(BIGLOOBOOT) " != " " ]; then
+              $(MAKE) dobigboot BGLBUILDBINDIR=`dirname $(BIGLOOBOOT)`; \
+            else \
+              $(MAKE) dobigboot; \
           fi
 
 dobigboot:
-	@ ./configure $(BIGBOOTCONFIGURE)
-	@ $(MAKE) -C gc clean
-	@ $(MAKE) -C gc boot
-	@ mkdir -p bin
-	@ mkdir -p lib/$(RELEASE)
-	@ (cd runtime && $(MAKE) bigboot BIGLOO=$(BIGLOOBOOT))
-	@ (cd comptime && $(MAKE) bigboot BIGLOO=$(BIGLOOBOOT))
-	@ ./configure $(BIGBOOTCONFIGURE)
-	@ (cd runtime && $(MAKE) heap-c)
-	@ (cd comptime && $(MAKE))
-	@ (cd runtime && $(MAKE) clean-quick heap libs)
-	@ echo "Big boot Done..."
-	@ echo "-------------------------------"
-
-bootstrap:
 	@ $(MAKE) -C gc clean
 	@ $(MAKE) -C gc boot
 	@ mkdir -p bin
@@ -278,7 +266,7 @@ bootstrap:
 	@ (cd runtime && $(MAKE) heap-c BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd comptime && $(MAKE) BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd runtime && $(MAKE) clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo)
-	@ echo "Bootstrap Done..."
+	@ echo "Big boot Done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/

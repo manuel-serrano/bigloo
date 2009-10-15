@@ -41,6 +41,8 @@
    
    (export (__make-parser action-table reduction-table)))
 
+(define (lalr-debug)           5)
+
 (define *max-stack-size*       500)
 (define *stack-size-increment* 200)
 
@@ -72,7 +74,7 @@
 	    (acts    #f)
 	    (act     #f)
 	    (eof?    #f)
-	    (debug   (>=fx (bigloo-debug) 3)))
+	    (debug   (>=fx (bigloo-debug) (lalr-debug))))
 	 
 	 (let loop ((sp 0))
 	    (set! state (vector-ref stack sp))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Oct 14 05:33:51 2009 (serrano)                */
+;*    Last change :  Wed Oct 14 21:26:14 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -172,6 +172,7 @@
 		      #f)
 		     ((not msg)
 		      ;; time out
+		      (sleep 10)
 		      #f)
 		     ((gst-message-eos? msg)
 		      ;; end of stream
@@ -289,21 +290,18 @@
 ;*    music-event-loop-abort! ::gstmusic ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (music-event-loop-abort! o::gstmusic)
-   (tprint ">>> music-event-loop-abort ::gstmusic")
    (with-access::gstmusic o (%loop-mutex %loop-condv %abort-loop)
       (mutex-lock! %loop-mutex)
       (unless %abort-loop
 	 (set! %abort-loop #t)
 	 (reset-sans-lock! o)
 	 (condition-variable-wait! %loop-condv %loop-mutex))
-      (mutex-unlock! %loop-mutex))
-   (tprint "<<< music-event-loop-abort ::gstmusic"))
+      (mutex-unlock! %loop-mutex)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-close ::gstmusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-close o::gstmusic)
-   (tprint ">>> music-close ::gstmusic")
    (with-access::gstmusic o (%pipeline %mutex)
       (let ((closed (with-lock %mutex (lambda () (music-closed? o)))))
 	 (unless closed
@@ -311,8 +309,7 @@
 	    (with-lock %mutex
 	       (lambda ()
 		  (when (gst-element? %pipeline)
-		     (gst-element-state-set! %pipeline 'null)))))))
-      (tprint "<<< music-close ::gstmusic"))
+		     (gst-element-state-set! %pipeline 'null))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::gstmusic ...                                     */

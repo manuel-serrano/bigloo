@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Wed Sep  2 08:34:11 2009 (serrano)                */
+/*    Last change :  Wed Oct 14 21:33:51 2009 (serrano)                */
 /*    Copyright   :  2007-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -644,7 +644,9 @@ bgl_gst_element_factory_get_static_pad_templates( GstElementFactory *factory ) {
 void
 bgl_gst_invoke_finalizers() {
 #if( !BGL_AUTO_FINALIZER )
+#  if( !defined( BGL_FORBID_GC_COLLECT ) )
    GC_COLLECT();
+#  endif   
    GC_invoke_finalizers();
 #endif
 }

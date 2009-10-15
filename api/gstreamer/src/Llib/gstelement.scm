@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:46:10 2007                          */
-;*    Last change :  Sun Jan 25 17:15:44 2009 (serrano)                */
+;*    Last change :  Wed Oct 14 21:25:55 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstElement wrapper                                               */

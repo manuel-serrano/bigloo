@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  3 09:21:35 2008                          */
-;*    Last change :  Sat Mar  8 08:59:42 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Wed Oct 14 11:00:43 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstMessage                                                       */
 ;*=====================================================================*/
@@ -84,13 +84,13 @@
 		   (proc '%gst-message-init)
 		   (msg "Illegal gst-message")
 		   (obj o))))
-      (when (> (bigloo-debug) 0) (%gst-object-init-debug o))
+      (when (> (bigloo-debug) (gst-debug-level)) (%gst-object-init-debug o))
       (cond
 	 ((procedure? $finalizer)
 	  ($gst-add-finalizer! o $finalizer))
 	 ($finalizer
 	  ($gst-add-finalizer! o (lambda (o)
-				    (when (> (bigloo-debug) 0)
+				    (when (> (bigloo-debug) (gst-debug-level))
 				       (%gst-object-finalize-debug o))
 				    ($gst-message-unref!
 				     (gst-message-$builtin o))))))
