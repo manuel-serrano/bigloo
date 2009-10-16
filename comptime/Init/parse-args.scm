@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Sep  4 08:36:50 2009 (serrano)                */
+;*    Last change :  Thu Oct 15 19:36:54 2009 (serrano)                */
 ;*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -301,8 +301,8 @@
        (set! *user-load-path* (cons dir *user-load-path*)))
       ;; library path
       (pass lib-dir
-	    (("-lib-dir" ?dir (help "Set lib-path to DIR"))
-	     (process-lib-dir-parameter dir)))
+       (("-lib-dir" ?dir (help "Set lib-path to DIR"))
+	(process-lib-dir-parameter dir)))
       (("-L" ?name (help "Set additional library path"))
        (set! *lib-dir* (cons name *lib-dir*)))
       (("-lib-version" ?version (help "Set the Bigloo library version"))
@@ -463,7 +463,7 @@
 ;*--- Safety ----------------------------------------------------------*/
       (section "Safety")
       ;; unsafe
-      (("-unsafe?opt" (help "-unsafe[atrsvle]" "Don't check [type/arity/range/struct/version/library/eval]"))
+      (("-unsafe?opt" (help "-unsafe[atrsvleh]" "Don't check [type/arity/range/struct/version/library/eval/heap]"))
        (parse-safe/unsafe-args opt #t))
       (("-safe?opt" (help "-safe[atrsvle]" "Enforce check [type/arity/range/struct/version/library/eval]"))
        (parse-safe/unsafe-args opt #f))
@@ -562,8 +562,9 @@
       (("-no-hello" (help "Dont' say hello even in verbose mode"))
        (set! *hello* #f))
       ;; warning
-      (("-w" (help "Inhibit all warning messages"))
-       (bigloo-warning-set! 0))
+      (pass lib-dir
+       (("-w" (help "Inhibit all warning messages"))
+	(bigloo-warning-set! 0)))
       (("-wslots" (help "Inhibit overriden slots warning messages"))
        (set! *warning-overriden-slots* #f))
       (("-Wvariables" (help "Enable overriden variable warning messages"))
@@ -1049,6 +1050,9 @@
 			(set! *unsafe-library* val))
 		       ((#\e)
 			(set! *unsafe-eval* val))
+		       ((#\h)
+			;; only change heap is h is specified
+			(set! *unsafe-heap* val))
 		       (else
 			(error "parse-arg" "Illegal -unsafe option" string)))
 		    (liip (+fx i 1))))))))

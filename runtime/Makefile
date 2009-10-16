@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Oct 15 17:06:46 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 19:25:24 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -709,7 +709,6 @@ boot-dotnet: heap-jvm lib-dotnet_s lib-dotnet_u
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
 bigboot: objs includes
-	@ $(MAKE) lib-c_u
 	@ $(MAKE) lib-c_s
 	@ $(MAKE) heap-c
 

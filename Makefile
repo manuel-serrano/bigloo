@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/trashcan/BGL/bigloo3.2c/Makefile                         */
+#*    serrano/prgm/project/bigloo/Makefile                             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Oct 15 16:54:41 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 19:54:25 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -242,16 +242,16 @@ manual-pdf:
 #*      2- type something like:                                        */
 #*          make bigboot BIGLOOBOOT=/usr/local/bin/bigloo              */
 #*         or                                                          */
-#*          make bigboot BGLBOOTBINDIR=/usr/local/bin                  */
+#*          make bigboot BGLBUILDBINDIR=/usr/local/bin                 */
 #*---------------------------------------------------------------------*/
 bigboot: 
-	@ if [ "$(BIGLOOBOOT) " = " " -a "$(BGLBOOTBINDIR) " = " " ]; then \
+	@ if [ "$(BIGLOOBOOT) " = " " -a "$(BGLBUILDBINDIR) " = " " ]; then \
             echo "*** Error, the variable BIGLOOBOOT is unbound"; \
             echo "Use \"$(MAKE) dobigboot\" if you know what you are doing!"; \
             exit 0; \
           else \
             if [ "$(BIGLOOBOOT) " != " " ]; then \
-              $(MAKE) dobigboot BGLBOOTBINDIR=`dirname $(BIGLOOBOOT)`; \
+              $(MAKE) dobigboot BGLBUILDBINDIR=`dirname $(BIGLOOBOOT)`; \
             else \
               $(MAKE) dobigboot; \
             fi \
@@ -262,8 +262,8 @@ dobigboot:
 	@ $(MAKE) -C gc boot
 	@ mkdir -p bin
 	@ mkdir -p lib/$(RELEASE)
-	@ (cd runtime && $(MAKE) bigboot BGLBUILDBINDIR=$(BGLBOOTBINDIR))
-	@ (cd comptime && $(MAKE) bigboot BGLBUILDBINDIR=$(BGLBOOTBINDIR))
+	@ (cd runtime && $(MAKE) bigboot BBFLAGS="-w")
+	@ (cd comptime && $(MAKE) bigboot BBFLAGS="-w -unsafeh")
 	@ (cd runtime && $(MAKE) heap-c BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd comptime && $(MAKE) BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd runtime && $(MAKE) clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo)

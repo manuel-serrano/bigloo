@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Wed Dec 24 09:23:20 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Oct 15 20:45:16 2009 (serrano)                */
+;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -95,7 +95,7 @@
       (for-each (lambda (new old)
 		   (local-user?-set! new (local-user? old)))
 		new-args
-		old-args)
+		var-args)
       ;; we set the new sfun
       (local-user?-set! local (cond
 				 ((global? variable)

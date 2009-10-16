@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Tue Aug 14 10:30:06 2007 (serrano)                */
-;*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Oct 15 19:28:55 2009 (serrano)                */
+;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore an heap                                               */
 ;*=====================================================================*/
@@ -71,13 +71,15 @@
 				       (format "~a vs. ~a"
 					       target
 					       (backend-language (the-backend)))))
-			     (unless (equal? version *bigloo-version*)
+			     (unless (or *unsafe-heap*
+					 (equal? version *bigloo-version*))
 				(error *heap-name*
 				       "Release mismatch"
 				       (format "Heap is `~a', Bigloo is `~a'"
 					       version
 					       *bigloo-version*)))
-			     (unless (equal? specific *bigloo-specific-version*)
+			     (unless (or *unsafe-heap*
+					 (equal? specific *bigloo-specific-version*))
 				(error *heap-name*
 				       "Specific version mismatch"
 				       (format "Heap is `~a', Bigloo is `~a'"

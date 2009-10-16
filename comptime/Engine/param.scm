@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Sep  4 08:44:55 2009 (serrano)                */
+;*    Last change :  Thu Oct 15 19:28:44 2009 (serrano)                */
 ;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -46,6 +46,7 @@
 	    *unsafe-version*
 	    *unsafe-library*
 	    *unsafe-eval*
+	    *unsafe-heap*
 	    *warning-overriden-slots*
 	    *warning-overriden-variables*
 	    *profile-library*
@@ -786,6 +787,9 @@
 	      #f)
 (param-define *unsafe-eval*
 	      "Disable type checking for eval functions"
+	      #f)
+(param-define *unsafe-heap*
+	      "Disable heap version checking"
 	      #f)
 (param-define *warning-overriden-slots*
 	      "Set to #t to warn about virtual slot overriding"

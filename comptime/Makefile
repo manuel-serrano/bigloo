@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Oct 15 10:41:13 2009 (serrano)                */
+#*    Last change :  Thu Oct 15 19:38:31 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -448,7 +448,7 @@ bigloo.$(SHAREDSUFFIX):
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT)" \
 	          -o $(BIGLOO_DEST).aux \
 	          $(O_OBJECTS)
@@ -465,7 +465,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(NEW_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -474,7 +474,7 @@ $(BIGLOO_DEST).$(NEW_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(O_OBJECTS) \
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ $(O_OBJECTS) \
                     -ldopt $(CSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
@@ -483,7 +483,7 @@ $(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS)
 #*    mainnewo (for Bigloo++ regeneration)                             */
 #*---------------------------------------------------------------------*/
 mainnewo: $(O_LESS_MAIN_OBJECTS_OBJECTS)
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(ADDITIONAL_BFLAGS) \
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(ADDITIONAL_BFLAGS) \
 	    $(INIT_MAIN_SCM) $(O_LESS_MAIN_OBJECTS) $(ADDITIONAL_LIBRARIES)
 
 #*---------------------------------------------------------------------*/
@@ -719,19 +719,19 @@ getsources:
 #*     .scm --> .o                                                     */
 #*---------------------------------------------------------------------*/
 $(SCMOBJSUFFIX): %.scm
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -c $*.scm -o $*.o
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -c $*.scm -o $*.o
 
 #*---------------------------------------------------------------------*/
 #*     .scm --> .class                                                 */
 #*---------------------------------------------------------------------*/
 $(SCMCLASSSUFFIX): %.scm
-	$(BIGLOO) -jvm $(BJVMFLAGS) $(EFLAGS) -c $*.scm -o $*.class
+	$(BIGLOO) -jvm $(BBFLAGS) $(BJVMFLAGS) $(EFLAGS) -c $*.scm -o $*.class
 
 #*---------------------------------------------------------------------*/
 #*     .scm --> .obj                                                   */
 #*---------------------------------------------------------------------*/
 $(DOTNETOBJSUFFIX): %.scm
-	$(BIGLOO) -dotnet $(BDOTNETFLAGS) $(EFLAGS) -c $*.scm -o $*.obj
+	$(BIGLOO) -dotnet $(BBFLAGS) $(BDOTNETFLAGS) $(EFLAGS) -c $*.scm -o $*.obj
 
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
@@ -744,7 +744,7 @@ $(COBJSUFFIX): %.c
 #*     .scm --> .c                                                     */
 #*---------------------------------------------------------------------*/
 $(CSRCSUFFIX): %.scm
-	$(BIGLOO) $(BDISTFLAGS) $(EFLAGS) -indent $*.scm
+	$(BIGLOO) $(BBFLAGS) $(BDISTFLAGS) $(EFLAGS) -indent $*.scm
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
