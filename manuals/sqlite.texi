@@ -192,6 +192,14 @@ Example2:
 @end smalllisp
 
 @deffn {Bigloo Sqlite function} sqlite-name-of-tables @var{sqlite}
+Returns the name of tables in the database. This list can also be
+obtained with
+
+@smalllisp
+(sqlite-map db
+   (lambda (x) x)
+   "SELECT name FROM sqlite_master WHERE type='table'")
+@end smalllisp
 @end deffn
 
 @deffn {Bigloo Sqlite function} sqlite-last-insert-rowid @var{sqlite}
