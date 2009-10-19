@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Wed Jun 24 14:37:08 2009 (serrano)                */
+;*    Last change :  Sun Oct 18 07:29:59 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -588,9 +588,11 @@
 		    (read-string (the-port)))
 		   (else
 		    ""))))
-      (let ((body (read/rp gram ip)))
-	 (close-input-port ip)
-	 body)))
+      (if (input-port? ip)
+	  (let ((body (read/rp gram ip)))
+	     (close-input-port ip)
+	     body)
+	  (error 'mailbox-message-boxy "mail does not exist" path))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-message-header ::maildir ...                             */
