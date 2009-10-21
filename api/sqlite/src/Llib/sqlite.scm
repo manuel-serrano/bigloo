@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Mon Apr 20 07:11:22 2009 (serrano)                */
+;*    Last change :  Tue Oct 20 08:25:38 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -331,10 +331,10 @@
 			 (loop (+fx i 1)))))))
 	 (define (display-sqlite-list obj p)
 	    (cond
-	       ((not (pair? obj))
-		(error 'sqlite-format "Illegal list" obj))
 	       ((null? obj)
 		#unspecified)
+	       ((not (pair? obj))
+		(error 'sqlite-format "Illegal list" obj))
 	       ((null? (cdr obj))
 		(display (car obj) p))
 	       (else

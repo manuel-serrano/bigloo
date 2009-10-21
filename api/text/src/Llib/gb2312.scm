@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 13:56:53 2009                          */
-;*    Last change :  Tue Sep 29 16:17:22 2009 (serrano)                */
+;*    Last change :  Tue Oct 20 10:28:10 2009 (serrano)                */
 ;*    Copyright   :  2009 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Guojia Biaozhun Chinese characters                               */
@@ -4061,7 +4061,7 @@
 			   ((>=fx n #x8140)
 			    (vector-ref gb2312-table2 (-fx n #x8140)))
 			   (else
-			    (error 'gbx2312 "Illegal character" n)))))
+			    (error 'gb2312 "Illegal character" n)))))
 		(ucs2-string-set! res (/fx i 2) (integer->ucs2 cp))
 		(loop (+fx i 2)))))))
 

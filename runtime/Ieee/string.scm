@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Mar  4 18:07:16 2009 (serrano)                */
+;*    Last change :  Tue Oct 20 07:46:36 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -172,7 +172,7 @@
 	    (inline string-ci>?::bool ::bstring ::bstring)
 	    (inline string-ci<=?::bool ::bstring ::bstring)
 	    (inline string-ci>=?::bool ::bstring ::bstring)
-	    (inline substring::bstring ::bstring ::long ::long)
+	    (substring::bstring string::bstring ::long #!optional (end::long (string-length string)))
 	    (inline substring-ur::bstring ::bstring ::long ::long)
 	    (string-contains ::bstring ::bstring #!optional (start::int 0))
 	    (string-contains-ci ::bstring ::bstring #!optional (start::int 0))
@@ -421,15 +421,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (substring string start end)
-   ;; no macro on inline so we don't use `and'
-   (if (if (>=fx end start)
-	   (if (>=fx start 0)
-	       (string-bound-check? end (+fx (string-length string) 1))
-	       #f)
-	   #f)
-       (c-substring string start end)
-       (error "substring" "Illegal index" (cons start end))))
+(define (substring string start #!optional (end::long (string-length string)))
+   (let ((len (string-length string)))
+      (cond
+	 ((or (<fx start 0) (>fx start len))
+	  (error "substring"
+		 (string-append "Illegal start index \"" string "\"")
+		 start))
+	 ((<fx end 0)
+	  (c-substring string start len))
+	 ((or (<fx end start) (>fx end len))
+	  (error "substring"
+		 (string-append "Illegal end index \"" string "\"")
+		 end))
+	 (else
+	  (c-substring string start end)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ur@ ...                                         */

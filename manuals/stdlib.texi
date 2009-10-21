@@ -1218,7 +1218,7 @@ a positive integer if @var{string1} > @var{string2}.
 @end smalllisp
 @end deffn
 
-@deffn {library procedure} substring string start end
+@deffn {library procedure} substring string start [end]
 
 @var{string} must be a string, and @var{start} and @var{end} must be
 exact integers satisfying:
@@ -1226,6 +1226,8 @@ exact integers satisfying:
 @smallexample
   0 <= START <= END <= (string-length STRING)
 @end smallexample
+
+The optional argument @var{end} defaults to @code{(string-length STRING)}.
 
 @code{substring} returns a newly allocated string formed from the
 characters of @var{STRING} beginning with index @var{START} (inclusive) 
