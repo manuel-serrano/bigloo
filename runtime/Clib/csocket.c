@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Jul  3 20:47:52 2009 (serrano)                */
+/*    Last change :  Thu Oct 22 16:34:54 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -772,7 +772,7 @@ bgl_gethostent( obj_t hostname ) {
 obj_t
 bgl_host( obj_t hostname ) {
    struct hostent *hp = bgl_gethostent( hostname );
-   
+
    return string_to_bstring( inet_ntoa( *(struct in_addr *)(hp->h_addr) ) );
 }
 
@@ -827,7 +827,7 @@ bgl_gethostname() {
    struct hostent *hp;
    static char h[ MAXHOSTNAME + 1 ];
    obj_t res;
-   
+
    gethostname( h, MAXHOSTNAME );
    hp = bglhostbyname( string_to_bstring( h ) );
 
