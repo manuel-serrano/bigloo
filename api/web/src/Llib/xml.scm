@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Tue Jan 13 07:12:06 2009 (serrano)                */
+;*    Last change :  Wed Oct 21 17:33:34 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -278,7 +278,7 @@
       ((: "<!--"
 	  (* (or (out "-") (: "-" (out "-")) (: "--" (out ">"))))
 	  "-->")
-       (ignore))
+       (cons 'comment (ignore)))
       ((: "<!" (: (or (out "[-") (: "-" (out "-")))
 		  (* (out ">]"))
 		  (? (: "[" (* (out "]")) "]"))
