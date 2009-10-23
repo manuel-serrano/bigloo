@@ -1,3 +1,8 @@
+Fri Oct 23 11:44:40 CEST 2009 (Manuel Serrano):
+
+	* api/web/src/Llib/{xml,html}.scm: improve the HTML parser.
+	
+
 Tue Sep  8 08:13:24 CEST 2009 (Manuel Serrano):
 
 	* runtime/Llib/dsssl.scm: accept #!rest after #!key (see the
