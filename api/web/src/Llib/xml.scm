@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Fri Oct 23 11:10:12 2009 (serrano)                */
+;*    Last change :  Fri Oct 23 11:26:34 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -87,8 +87,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    collect-up-to ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (collect-up-to ignore tag port make specials strict decoder encoding)
-
+(define (collect-up-to ignore tag attributes port make specials strict decoder encoding)
+   
    (define (collect ignore tags)
       (let ((name (input-port-name port))
 	    (po (input-port-position port)))
@@ -98,33 +98,32 @@
 	       ((symbol? item)
 		(cond
 		   ((eq? item tag)
-		    (reverse! acc))
+		    (make tag attributes (reverse! acc)))
 		   (strict
 		    (xml-parse-error "Illegal closing tag"
 				     (format "`~a' expected, `~a' provided"
 					     tag item)
 				     name po))
 		   ((null? acc)
-		    '())
+		    (make tag attributes '()))
 		   ((null? (cdr acc))
-		    (car acc))
+		    (make tag attributes (car acc)))
 		   (else
-		    (reverse! acc))))
+		    (make tag attributes (reverse! acc)))))
 	       ((special? item)
 		(let ((nitem (make (special-tag item)
 				   (special-attributes item)
 				   (special-body item))))
 		   (if (memq (special-tag item) tags)
 		       (loop acc nitem)
-		       ;; what to do with nitem ?
-		       (reverse! acc))))
+		       (list (make tag attributes (reverse! acc)) nitem))))
 	       ((eof-object? item)
 		(if strict
 		    (xml-parse-error
 		     (format "Premature end of line, expecting tag `~a'"
 			     tag)
 		     item name po)
-		    (reverse! acc)))
+		    (make tag attributes (reverse! acc))))
 	       (else
 		(let ((po (input-port-last-token-position port)))
 		   (loop (econs item acc (list 'at name po)) (ignore))))))))
@@ -134,9 +133,9 @@
 	 ((not spec)
 	  (collect ignore '()))
 	 ((null? (cdr spec))
-	  '())
+	  (make tag attributes '()))
 	 ((procedure? (cdr spec))
-	  ((cdr spec) port))
+	  (make tag attributes ((cdr spec) port)))
 	 ((pair? (cdr spec))
 	  (let ((ignore (lambda ()
 			   (read/rp xml-grammar port special specials strict decoder encoding)))) 
@@ -321,9 +320,8 @@
       ((: "<" id ">")
        (let* ((t (the-substring 1 (-fx (the-length) 1)))
 	      (ts (string->symbol t))
-	      (p (the-port))
-	      (b (collect-up-to ignore ts p make specials strict decoder encoding)))
-	  (make ts '() b)))
+	      (p (the-port)))
+	  (collect-up-to ignore ts '() p make specials strict decoder encoding)))
       ((: "<" id "/>")
        (let ((t (the-substring 1 (-fx (the-length) 2))))
 	  (make (string->symbol t) '() '())))
@@ -337,8 +335,7 @@
 		   ((pair? obj)
 		    (loop (cons obj attr)))
 		   ((eq? obj '>)
-		    (let ((b (collect-up-to ignore ts p make specials strict decoder encoding)))
-		       (make ts (reverse! attr) b)))
+		    (collect-up-to ignore ts (reverse! attr) p make specials strict decoder encoding))
 		   ((eq? obj '/>)
 		    (make ts (reverse! attr) '())))))))
       ((: "</" id ">")
