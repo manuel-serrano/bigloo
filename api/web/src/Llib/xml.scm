@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Wed Oct 21 17:33:34 2009 (serrano)                */
+;*    Last change :  Fri Oct 23 11:10:12 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -45,10 +45,8 @@
    (when (>fx content-length 0)
       (set! content-length (+fx content-length (input-port-position port))))
    (let loop ((decoder (lambda (x) x)))
-      (let ((obj (read/rp xml-grammar port procedure specials strict decoder)))
+      (let ((obj (read/rp xml-grammar port procedure specials strict decoder encoding)))
 	 (cond
-	    ((xmlkont? obj)
-	     (cons (xmlkont-val obj) (loop decoder)))
 	    ((eof-object? obj)
 	     '())
 	    ((and (>fx content-length 0)
@@ -61,11 +59,6 @@
 		    (cons obj (loop decoder)))))
 	    (else
 	     (cons obj (loop decoder)))))))
-
-;*---------------------------------------------------------------------*/
-;*    xmlkont ...                                                      */
-;*---------------------------------------------------------------------*/
-(define-struct xmlkont val rest)
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-parse-error ...                                              */
@@ -87,10 +80,16 @@
       (string-append "{" (string c) "}" (if (string? line) line ""))))
 
 ;*---------------------------------------------------------------------*/
+;*    special ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-struct special tag attributes body)
+
+;*---------------------------------------------------------------------*/
 ;*    collect-up-to ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (collect-up-to tag specials strict ignore port)
-   (define (regular)
+(define (collect-up-to ignore tag port make specials strict decoder encoding)
+
+   (define (collect ignore tags)
       (let ((name (input-port-name port))
 	    (po (input-port-position port)))
 	 (let loop ((acc '())
@@ -105,10 +104,20 @@
 				     (format "`~a' expected, `~a' provided"
 					     tag item)
 				     name po))
+		   ((null? acc)
+		    '())
+		   ((null? (cdr acc))
+		    (car acc))
 		   (else
 		    (reverse! acc))))
-	       ((xmlkont? item)
-		(loop (cons (xmlkont-val item) acc) (xmlkont-rest item)))
+	       ((special? item)
+		(let ((nitem (make (special-tag item)
+				   (special-attributes item)
+				   (special-body item))))
+		   (if (memq (special-tag item) tags)
+		       (loop acc nitem)
+		       ;; what to do with nitem ?
+		       (reverse! acc))))
 	       ((eof-object? item)
 		(if strict
 		    (xml-parse-error
@@ -119,12 +128,21 @@
 	       (else
 		(let ((po (input-port-last-token-position port)))
 		   (loop (econs item acc (list 'at name po)) (ignore))))))))
+   
    (let ((spec (assq tag specials)))
-      (if (pair? spec)
-	  (if (null? (cdr spec))
-	      '()
-	      ((cdr spec) port))
-	  (regular))))
+      (cond
+	 ((not spec)
+	  (collect ignore '()))
+	 ((null? (cdr spec))
+	  '())
+	 ((procedure? (cdr spec))
+	  ((cdr spec) port))
+	 ((pair? (cdr spec))
+	  (let ((ignore (lambda ()
+			   (read/rp xml-grammar port special specials strict decoder encoding)))) 
+	     (collect ignore (cdr spec))))
+	 (else
+	  (error 'xml-parse "Illegal special handler" spec)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    attribute-value-grammar ...                                      */
@@ -271,14 +289,15 @@
 		     make
 		     specials
 		     strict
-		     decoder)
-
+		     decoder
+		     encoding)
+      
       ((+ (in " \t\n\r"))
        (ignore))
       ((: "<!--"
 	  (* (or (out "-") (: "-" (out "-")) (: "--" (out ">"))))
 	  "-->")
-       (cons 'comment (ignore)))
+       (cons 'comment (the-string)))
       ((: "<!" (: (or (out "[-") (: "-" (out "-")))
 		  (* (out ">]"))
 		  (? (: "[" (* (out "]")) "]"))
@@ -303,12 +322,8 @@
        (let* ((t (the-substring 1 (-fx (the-length) 1)))
 	      (ts (string->symbol t))
 	      (p (the-port))
-	      (r (collect-up-to ts specials strict ignore p)))
-	  (if (xmlkont? r)
-	      (begin
-		 (xmlkont-val-set! r (make ts '() (xmlkont-val r)))
-		 r)
-	      (make ts '() r))))
+	      (b (collect-up-to ignore ts p make specials strict decoder encoding)))
+	  (make ts '() b)))
       ((: "<" id "/>")
        (let ((t (the-substring 1 (-fx (the-length) 2))))
 	  (make (string->symbol t) '() '())))
@@ -322,12 +337,8 @@
 		   ((pair? obj)
 		    (loop (cons obj attr)))
 		   ((eq? obj '>)
-		    (let ((r (collect-up-to ts specials strict ignore p)))
-		       (if (xmlkont? r)
-			   (let ((v (make ts (reverse! attr) (xmlkont-val r))))
-			      (xmlkont-val-set! r v)
-			      r)
-			   (make ts (reverse! attr) r))))
+		    (let ((b (collect-up-to ignore ts p make specials strict decoder encoding)))
+		       (make ts (reverse! attr) b)))
 		   ((eq? obj '/>)
 		    (make ts (reverse! attr) '())))))))
       ((: "</" id ">")

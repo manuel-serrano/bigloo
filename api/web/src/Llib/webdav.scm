@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Thu Oct 22 16:25:42 2009 (serrano)                */
+;*    Last change :  Thu Oct 22 17:13:53 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -59,7 +59,6 @@
 ;*---------------------------------------------------------------------*/
 (define (webdav-propfind url timeout proxy #!optional (header (webdav-header)))
    (let loop ((url url))
-      (tprint "webdav-propfind.1 url=" url)
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
 	 (let ((socket (http :method 'PROPFIND
@@ -79,7 +78,6 @@
  </prop>
 </propfind>")))
 	    (close-output-port (socket-output socket))
-	    (tprint "webdav-propfind.2 url=" url)
 	    (unwind-protect
 	       (with-handler
 		  (lambda (e)
