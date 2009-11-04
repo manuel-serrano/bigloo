@@ -1,1 +1,10 @@
-See macosx/Readme.
+Bigloo MacOS X support is complete. That is, all Bigloo features are
+supported on this platform.
+
+In order to build a MacOS dmg file, proceed as follows:
+
+  % tar xvfz bigloo<VERSION>.tar.gz
+  % cd bigloo<VERSION>
+  % make -f macosx/Makefile.macosx all
+
+
