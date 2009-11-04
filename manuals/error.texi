@@ -146,7 +146,7 @@ Returns the result(s) of calling @var{thunk} with no arguments. The
 exception handler in the dynamic environment in effect during the call
 to @var{thunk}. When possible, prefer @code{with-handler} to 
 @code{with-exception-handler} because the former is more efficient than
-the latter.
+the latter and because its semantics is more intuitive.
 @end deffn
 
 @deffn {bigloo form} with-handler handler body
@@ -156,29 +156,16 @@ exception handler in the dynamic environment in effect during the evaluation
 of @var{body}. Contrarily to @code{with-exception-handler}, if an exception
 is raised, the @var{handler} is invoked and the value of the 
 @code{with-handler} form is the value produced by invoking the @var{handler}.
+The handler is executed in the continuation of the @code{with-handler}
+form.
 
 JVM note: When executed within a JVM, the form @code{with-handler}
 also catches Java exceptions.
 
-The form @code{with-handler} is intrinsically more efficient than the
-function @code{with-exception-handler}. From a semantics point of 
-view, @code{with-handler} could be re-written in terms of 
-@code{with-exception-handler} such as:
-
-@smalllisp
-(with-handler handler1 body1)
-@equiv{}
-(bind-exit (exit)
-  (with-exception-handler 
-    (lambda (e)
-      (exit (handler1 e)))
-    (lambda ()
-      body)))
-@end smalllisp
-
-It should be noted that the error handler is executed before the execution
-stack is unwound. Hence, error handlers are executed before protected blocks.
-For instance in the following code:
+Important note: Since Bigloo version 3.2c, error handlers are executed
+@emph{after} the execution stack is unwound. Hence, error handlers are
+executed @emph{after} protected blocks.  For instance in the following
+code:
 
 @smalllisp
 (with-handler 
@@ -188,7 +175,7 @@ For instance in the following code:
       protect))
 @end smalllisp
 
-The @var{action} is executed @emph{before} @var{protect}.
+The @var{action} is executed @emph{after} @var{protect}.
 
 @end deffn
 
