@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Dec  5 09:06:09 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Oct 30 10:40:30 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -70,7 +70,7 @@
 				      (push-exit! ,an-exit 1)
 				      (let ((,an-exitd ($get-exitd-top)))
 					 (labels ((,exit (,val)
-							 (unwind-until!
+							 ((@ unwind-until! __bexit)
 							  ,an-exitd
 							  ,val)))
 					    (let ((,res (begin ,@body)))
@@ -103,7 +103,7 @@
 					       ,aux))))
 			 ,(e (expand-progn cleanup) e)
 			 (if (val-from-exit? ,val)
-			     (unwind-until! (car ,val) (cdr ,val))
+			     ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
 			     ,val))))
 	     (replace! x new))))
       (else
@@ -113,7 +113,8 @@
 ;*    expand-with-handler ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-with-handler x e)
-   (define (expand handler body)
+   
+   (define (expand.old handler body)
       (let ((hdl (gensym 'handler))
 	     (ohs (gensym 'handlers))
 	     (nh (gensym 'handler))
@@ -130,7 +131,7 @@
 					     (push-exit! ,exit 0)
 					     (let ((,etop ($get-exitd-top)))
 						(let ((,nh (lambda (e)
-							      (unwind-until!
+							      ((@ unwind-until! __bexit)
 							       ,etop
 							       (,hdl e)))))
 						   ($set-error-handler!
@@ -140,11 +141,34 @@
 						      ,tmp)))))))
 		       ($set-error-handler! ,ohs)
 		       (if (val-from-exit? ,val)
-			   (unwind-until! (car ,val) (cdr ,val))
+			   ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
 			   ,val)))
 		 (error 'with-handler
 			"Incorrect handler arity"
 			,hdl)))))
+
+   (define (expand handler body)
+      (let ((ohs (gensym 'ohs))
+	    (err (gensym 'err))
+	    (escape (gensym 'escape)))
+	 (e `(bind-exit (,escape)
+		(let ((,err (cons #f #unspecified))
+		      (,ohs ($get-error-handler)))
+		   (unwind-protect
+		      (begin
+			 ($set-error-handler!
+			  (cons (lambda (e)
+				   (set-car! ,err #t)
+				   (set-cdr! ,err e)
+				   (,escape e))
+				,ohs))
+			 ,@body)
+		      (begin
+			 ($set-error-handler! ,ohs)
+			 (when (car ,err)
+			    (,escape (,handler (cdr ,err))))))))
+	    e)))
+   
    (define (add-trace body)
       (let ((loc (find-location x)))
 	 (if (and (location? loc)
@@ -162,10 +186,13 @@
 			  ,(econs '$pop-trace '() loc)
 			  ,vid))))
 	     body)))
+   
    (match-case x
       ((?- ?handler . ?body)
        (replace! x (add-trace (expand handler body))))
       (else
        (error #f "Illegal `with-handler' form" x))))
+
+   
 			  
        

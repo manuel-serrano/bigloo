@@ -1,20 +1,20 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gc/Makefile-gc-7.1                   */
+#*    serrano/prgm/project/bigloo/gc/Makefile-gc-7.0                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 16:57:31 2009                          */
-#*    Last change :  Thu Sep  3 16:57:43 2009 (serrano)                */
+#*    Last change :  Wed Oct 28 18:16:29 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    gc-7.1 specific entries                                          */
 #*=====================================================================*/
 
 boot-gc:
-	$(MAKE) -C $(CUSTOMGC) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a CFLAGS="$(CCFLAGS)"
-	$(MAKE) -C $(CUSTOMGC) $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) CFLAGS="$(CCFLAGS)"
+	$(MAKE) -C $(CUSTOMGC) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a CFLAGS="$(CFLAGS) $(CGCFLAGS)"
+	$(MAKE) -C $(CUSTOMGC) $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) CFLAGS="$(CFLAGS) $(CGCFLAGS)"
 
 boot-gc_fth:
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	   $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a CFLAGS="$(CCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth && \
-           $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) CFLAGS="$(CCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth; \
+	   $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth && \
+           $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth; \
 	fi

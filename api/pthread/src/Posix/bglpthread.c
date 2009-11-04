@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Fri Jul 17 17:43:08 2009 (serrano)                */
+/*    Last change :  Tue Nov  3 09:31:37 2009 (serrano)                */
 /*    Copyright   :  2002-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo fair threads implementation.       */
@@ -104,10 +104,10 @@ bglpth_thread_new( obj_t thunk ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
+/*    void                                                             */
 /*    bglpth_thread_cleanup ...                                        */
 /*---------------------------------------------------------------------*/
-static void
+void
 bglpth_thread_cleanup( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t cleanup = self->cleanup;
@@ -138,6 +138,22 @@ bglpth_thread_cleanup( void *arg ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglpth_thread_init ...                                           */
+/*---------------------------------------------------------------------*/
+void
+bglpth_thread_init( bglpthread_t self, char *stack_bottom ) {
+   /* The environment is stored in a specific variable for dynamic   */
+   /* access but it is pointed to by the thread structure for the GC */
+   bglpth_dynamic_env_set( self->env );
+
+   BGL_DYNAMIC_ENV( self->env ).stack_bottom = stack_bottom;
+   BGL_DYNAMIC_ENV( self->env ).current_thread = self;
+   
+   bgl_init_trace();
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void *                                                    */
 /*    bglpth_thread_run ...                                            */
 /*---------------------------------------------------------------------*/
@@ -146,15 +162,8 @@ bglpth_thread_run( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t thunk = self->thunk;
 
-   /* The environment is stored in a specific variable for dynamic   */
-   /* access but it is pointed to by the thread structure for the GC */
-   bglpth_dynamic_env_set( self->env );
-
-   BGL_DYNAMIC_ENV( self->env ).stack_bottom = (char *)&arg;
-   BGL_DYNAMIC_ENV( self->env ).current_thread = self;
+   bglpth_thread_init( self, (char *)&arg );
    
-   bgl_init_trace();
-
    pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, 0 );
    
    pthread_cleanup_push( bglpth_thread_cleanup, arg );
@@ -175,6 +184,31 @@ bglpth_thread_run( void *arg ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_thread_thunk ...                                          */
+/*---------------------------------------------------------------------*/
+obj_t bglpth_thread_thunk( bglpthread_t thread ) {
+   return thread->thunk;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglpth_thread_env_create ...                                     */
+/*---------------------------------------------------------------------*/
+void
+bglpth_thread_env_create( bglpthread_t thread, obj_t bglthread ) {
+   thread->bglthread = bglthread;
+   thread->env = bgl_dup_dynamic_env( BGL_CURRENT_DYNAMIC_ENV() );
+
+#if( BGL_HAS_THREAD_LOCALSTORAGE )
+   pthread_mutex_lock( &gc_conservative_mark_mutex );
+   gc_conservative_mark_envs =
+      MAKE_PAIR( thread->env, gc_conservative_mark_envs );
+   pthread_mutex_unlock( &gc_conservative_mark_mutex );
+#endif
+}
+
+/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_thread_start ...                                          */
 /*---------------------------------------------------------------------*/
@@ -186,15 +220,7 @@ bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
 
    if( dt ) pthread_attr_setdetachstate( &a, PTHREAD_CREATE_DETACHED );
 
-   thread->bglthread = bglthread;
-   thread->env = bgl_dup_dynamic_env( BGL_CURRENT_DYNAMIC_ENV() );
-
-#if( BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_mutex_lock( &gc_conservative_mark_mutex );
-   gc_conservative_mark_envs =
-      MAKE_PAIR( thread->env, gc_conservative_mark_envs );
-   pthread_mutex_unlock( &gc_conservative_mark_mutex );
-#endif
+   bglpth_thread_env_create( thread, bglthread );
    
    if( pthread_create( &(thread->pthread), &a, bglpth_thread_run, thread ) )
       FAILURE( string_to_bstring( "thread-start!" ),
@@ -282,12 +308,16 @@ bglpth_setup_thread() {
    /* keep the environment in a global for the GC */
    bglpth_single_thread_denv = single_thread_denv;
 
+   /* create the key when a global structure is used */
+#if( !BGL_HAS_THREAD_LOCALSTORAGE )
+   pthread_key_create( &bgldenv_key, 0L );
+#endif
+   
    /* store it in a thread variable */
    bglpth_dynamic_env_set( single_thread_denv );
 
    /* mark the main environment as multithreaded */
 #if( !BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_key_create( &bgldenv_key, 0L );
    single_thread_denv = 0;
    bgl_multithread_dynamic_denv_register( &bglpth_dynamic_env );
 #else

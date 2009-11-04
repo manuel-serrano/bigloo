@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 25 15:39:16 2008                          */
-/*    Last change :  Wed Dec 17 14:46:15 2008 (serrano)                */
-/*    Copyright   :  2008 Manuel Serrano                               */
+/*    Last change :  Tue Nov  3 09:35:28 2009 (serrano)                */
+/*    Copyright   :  2008-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo implementation for Glib threads                           */
 /*=====================================================================*/
@@ -12,11 +12,21 @@
 #if( BGL_GC == BGL_BOEHM_GC )
 #  include <glib.h>
 #endif
-#include <pthread.h>
 #include <gst/gst.h>
 #include <string.h>
 #include "bglgst_config.h"
-#include "bglgst.h"
+#include <pthread.h>
+#if( defined( BGL_GSTREAMER_USE_THREADS ) )
+#  define GC_PRIVATE_H
+#  include <gc.h>
+#  include <bigloo.h>
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    imports                                                          */
+/*---------------------------------------------------------------------*/
+extern obj_t bglpth_thread_thunk();
+void *bglpth_thread_new();
 
 /*---------------------------------------------------------------------*/
 /*    static GMutex *                                                  */
@@ -194,6 +204,28 @@ bglgst_private_get( GPrivate *private_key ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void *                                                    */
+/*    bglgst_thread_run ...                                            */
+/*---------------------------------------------------------------------*/
+static void *
+bglgst_thread_run( void *self ) {
+   obj_t thunk = bglpth_thread_thunk( self );
+   GThreadFunc thread_func = (GThreadFunc)CAR( thunk );
+   gpointer arg = CDR( thunk );
+
+   
+   /* The environment is stored in a specific variable for dynamic   */
+   /* access but it is pointed to by the thread structure for the GC */
+   bglpth_thread_init( self );
+
+   /* Start the gstreamer thread */
+   thread_func( arg );
+
+   /* Cleanup the Bigloo thread */
+   bglpth_thread_cleanup( self );
+}
+		      
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bglgst_thread_create ...                                         */
 /*---------------------------------------------------------------------*/
@@ -208,7 +240,10 @@ bglgst_thread_create( GThreadFunc thread_func,
 		      GError **error ) {
   pthread_attr_t attr;
   gint ret;
+  void *self = bglpth_thread_new( MAKE_PAIR( (obj_t)thread_func, (obj_t)arg ) );
 
+  bglpth_thread_env_create( self, BFALSE );
+  
   g_return_if_fail( thread_func );
   g_return_if_fail( priority >= G_THREAD_PRIORITY_LOW );
   g_return_if_fail( priority <= G_THREAD_PRIORITY_URGENT );
@@ -231,7 +266,7 @@ bglgst_thread_create( GThreadFunc thread_func,
 			       PTHREAD_CREATE_JOINABLE
 			       : PTHREAD_CREATE_DETACHED );
 
-  ret = pthread_create( thread, &attr, (void* (*)(void*))thread_func, arg );
+  ret = pthread_create( thread, &attr, bglgst_thread_run, self );
 
   pthread_attr_destroy( &attr );
 

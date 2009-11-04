@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jun 15 13:52:40 2009 (serrano)                */
+;*    Last change :  Fri Oct 30 07:47:50 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -308,8 +308,9 @@
        (warning-notify exc))
       (else
        (let ((port (current-error-port)))
-	  (display "*** Uncaught exception: " port)
+	  (display "*** UNKNOWN EXCEPTION: " port)
 	  (write-circle exc port)
+	  (newline port)
 	  (notify-dump-trace-stack)))))
 
 ;*---------------------------------------------------------------------*/

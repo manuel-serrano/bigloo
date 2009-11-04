@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 10 11:31:09 2009 (serrano)                */
+#*    Last change :  Tue Nov  3 17:30:35 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -196,9 +196,8 @@ lib-c: $(TAGS) .afile objs
 objs:
 	mkdir -p $@
 
-
-lib-c-static:$(LIB)/lib$(LIBNAME)_s-$(RELEASE).a \
-             $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a
+lib-c-static: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a \
+              $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a
 
 lib-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \

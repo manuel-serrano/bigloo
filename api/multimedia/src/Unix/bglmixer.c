@@ -3,13 +3,14 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb  3 15:25:23 2000                          */
-/*    Last change :  Wed Dec 17 14:33:21 2008 (serrano)                */
+/*    Last change :  Thu Oct 29 06:49:52 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    A control over the audio mixer for Bigloo. To a large extent     */
 /*    this file is inspired of mixctl.h by Sam Hawker                  */
 /*    <shawkie@geocities.com>.                                         */
 /*=====================================================================*/
-#if( !defined( _MINGW_VER ) && !_MSC_VER )
+#include <bigloo_config.h>
+#if( BGL_HAVE_MIXER && !defined( _MINGW_VER ) && !_MSC_VER )
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/ioctl.h>
@@ -77,7 +78,7 @@ extern bool bgl_mixer_dev_p( mixer_t, int );
 /*---------------------------------------------------------------------*/
 static void do_status( struct mixer * );
 
-#if( !(__NetBSD__ || __FreeBSD__ || __linux__ ) )
+#if( !BGL_HAVE_MIXER || !(__NetBSD__ || __FreeBSD__ || __linux__ ) )
 obj_t
 bgl_open_mixer( char *dname ) {
    C_SYSTEM_FAILURE( BGL_IO_ERROR,

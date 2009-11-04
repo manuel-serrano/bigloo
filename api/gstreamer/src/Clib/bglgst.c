@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Wed Oct 14 21:33:51 2009 (serrano)                */
+/*    Last change :  Tue Nov  3 09:33:01 2009 (serrano)                */
 /*    Copyright   :  2007-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -21,7 +21,7 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t void_star_to_obj();
-extern bglgst_thread_init();
+extern void bglgst_thread_init();
 
 /*---------------------------------------------------------------------*/
 /*    Threads                                                          */
@@ -847,10 +847,11 @@ closure_marshal( GClosure *closure,
    cb->proc = proc;
    cb->arity = n_param_values;
 
+   CHECK_PROCEDURE( proc, n_param_values );
+   
    switch( n_param_values ) {
       case 0: {
 	 if( bglgst_use_threadsp() ) {
-	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
 		 BEOA );
@@ -862,7 +863,6 @@ closure_marshal( GClosure *closure,
 
       case 1: {
 	 if( bglgst_use_threadsp() ) {
-	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
@@ -876,7 +876,6 @@ closure_marshal( GClosure *closure,
 
       case 2: {
 	 if( bglgst_use_threadsp() ) {
-	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
@@ -892,7 +891,6 @@ closure_marshal( GClosure *closure,
 
       case 3: {
 	 if( bglgst_use_threadsp() ) {
-	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),
@@ -910,7 +908,6 @@ closure_marshal( GClosure *closure,
 
       case 4: {
 	 if( bglgst_use_threadsp() ) {
-	    single_thread_denv = bgl_gst_denv;
 	    PROCEDURE_ENTRY( proc )
 	       ( proc,
 		 bgl_g_value_to_obj( param_values + 0, 1, 1 ),

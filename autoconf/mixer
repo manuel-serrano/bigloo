@@ -1,0 +1,151 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/mixer                       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Wed Oct 28 19:54:35 2009 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check mixer support                                              */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#if( !defined( _MINGW_VER ) && !_MSC_VER )
+# include <stdio.h>
+# include <stdlib.h>
+# include <sys/ioctl.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <string.h>
+# ifdef __NetBSD__
+# include <soundcard.h>
+# endif
+# ifdef __FreeBSD__
+# include <machine/soundcard.h>
+# endif
+# ifdef __linux__
+# include <linux/soundcard.h>
+# endif
+#endif
+
+struct mixdev {
+   char support;
+   char stereo;
+   char recsrc;
+   char records;
+   char *name;
+   char *label;
+   int value;
+   int mask;
+};
+
+typedef struct mixer {
+   void *header;
+   int mixfd;
+   int mixfdopen;
+   char *device;
+
+   int nrdevices;       // maximum number of devices
+   int devmask;         // supported devices
+   int stmask;          // stereo devices
+   int recmask;         // devices which can be recorded from
+   int caps;            // capabilities
+   int recsrc;          // devices which are being recorded from
+   struct mixdev *mixdevs;
+} *mixer_t;
+
+int main( int argc, char *argv[] ) {
+   char *dname = argv[ 1 ];
+   struct mixer *mixer = (struct mixer *)malloc( sizeof( struct mixer ) );
+   mixer->device = (char *)malloc( strlen( dname ) + 1 );
+   strcpy( mixer->device, dname );
+
+   if( mixer->mixfdopen = (mixer->mixfd = open( dname, O_NONBLOCK ) )!=-1 ) {
+      char *devnames[] = SOUND_DEVICE_NAMES;
+      char *devlabels[] = SOUND_DEVICE_LABELS;
+      int mixmask = 1, i;
+      
+      mixer->nrdevices = SOUND_MIXER_NRDEVICES;
+
+      ioctl( mixer->mixfd, SOUND_MIXER_READ_DEVMASK, &(mixer->devmask) );
+      ioctl( mixer->mixfd, SOUND_MIXER_READ_STEREODEVS, &(mixer->stmask) );
+      ioctl( mixer->mixfd, SOUND_MIXER_READ_RECMASK, &(mixer->recmask) );
+      ioctl( mixer->mixfd, SOUND_MIXER_READ_CAPS, &(mixer->caps) );
+
+      mixer->mixdevs = (struct mixdev *)malloc( sizeof( struct mixdev ) *
+						mixer->nrdevices );
+      
+      for( i = 0; i < mixer->nrdevices; i++ ) {
+            mixer->mixdevs[ i ].support = mixer->devmask & mixmask;
+            mixer->mixdevs[ i ].stereo = mixer->stmask & mixmask;
+            mixer->mixdevs[ i ].records = mixer->recmask & mixmask;
+            mixer->mixdevs[ i ].mask = mixmask;
+            mixer->mixdevs[ i ].name = devnames[i];
+            mixer->mixdevs[ i ].label = devlabels[i];
+            mixmask *= 2;
+         }
+
+      fprintf( stderr, "%p", mixer );
+
+      return mixer != 0;
+   } else {
+      return 0;
+   }
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   echo 1
+else
+   \rm -f $file.*
+   echo 0
+fi
+

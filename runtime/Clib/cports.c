@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep 25 16:18:42 2009 (serrano)                */
+/*    Last change :  Tue Oct 27 14:14:18 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -488,13 +488,12 @@ strseek( void *port, long offset, int whence ) {
 	 if( errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR ) { \
 	    continue; \
 	 } else { \
-	    if( err ) \
+  	    if( err ) { \
 	       C_SYSTEM_FAILURE( bglerror( errno ), \
 			         "write/display", \
 			         strerror( errno ), \
 			         port ); \
-	    else \
-               break; \
+            } else break; \
 	 } \
       } else { \
 	 _slen -= _n; \
@@ -591,11 +590,12 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	       OUTPUT_PORT( port ).syswrite;
 	    long n = syswrite( PORT_STREAM( port ), str, slen );
 	    
-	    if( n < 0 && err ) 
+	    if( n < 0 && err ) {
 	       C_SYSTEM_FAILURE( bglerror( errno ),
 				 "write/display",
 				 strerror( errno ),
 				 port );
+	    }
 	 }
       }
       

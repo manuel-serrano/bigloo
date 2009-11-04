@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 14 21:33:59 2009 (serrano)                */
+#*    Last change :  Tue Nov  3 16:55:33 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -153,6 +153,9 @@ openssldtls=
 
 #*--- sqlite library (left blank for autoconfiguration) ---------------*/
 sqlitelibs=
+
+#*--- dbus library (left blank for autoconfiguration) -----------------*/
+dbuslibs=
 
 #*--- gstreamer (left blank for autoconfiguration) --------------------*/
 gstreamer=
@@ -736,6 +739,15 @@ while : ; do
       fi;
       mode=benchmark;;
 
+    --debug)
+      cflags="$cflags -g";
+      bflags="$bflags -cg";;
+
+    --debug2)
+      cstrip="";
+      cflags="-g";
+      bflags="-cg -q";;
+
     --cpicflags=*)
       cpicflags="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -862,7 +874,8 @@ while : ; do
       echo "   --cc=comp [default gcc]" >&2;
       echo "   --ld=comp [default gcc]" >&2;
       echo "   --as=asm" >&2;
-      echo "   --cflags=compilation flags" >&2;
+      echo "   --bflags=Bigloo compilation flags" >&2;
+      echo "   --cflags=C compilation flags" >&2;
       echo "   --lflags=compiler link flags" >&2;
       echo "   --coflags=optimization_flags" >&2;
       echo "   --cpicflags=pic_flags" >&2;
@@ -917,6 +930,7 @@ while : ; do
       echo "Misc:"  >&2;
       echo "   --finalization=yes|no [default no]" >&2;
       echo "   --benchmark=yes|no [default no] (must use --arch too)" >&2;
+      echo "   --debug[2] (configure for debugging)" >&2;
       echo "   --stack-check=no" >&2;
       echo "   --enable-thread-local-storage" >&2;
       echo "   --disable-thread-local-storage" >&2;
@@ -1296,6 +1310,13 @@ else
 fi
 
 #*---------------------------------------------------------------------*/
+#*    multimedia                                                       */
+#*---------------------------------------------------------------------*/
+havemixer=1
+
+havemixer=`$autoconf mixer` || exit 1
+
+#*---------------------------------------------------------------------*/
 #*    hostos specific configuration                                    */
 #*---------------------------------------------------------------------*/
 echo "+ host specific configuration ($hostos)..." >> $configurelog
@@ -1629,13 +1650,29 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for sqlite
 if [ "$sqlitelibs " = " " ]; then
-   sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
+  sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
+fi
+
+#*---------------------------------------------------------------------*/
+#*    dbus                                                             */
+#*---------------------------------------------------------------------*/
+# find out the C library for dbus
+if [ "$dbuslibs " = " " ]; then
+   dbuslibs=`$autoconf dbus --cflags="$cflags"` || exit 1;
+fi
+
+if [ "$dbuslibs " != " " ]; then
+  dbusld=`echo $dbuslibs | awk -F "@" '{ print $1 }'`
+  dbusincl=`echo $dbuslibs | awk -F "@" '{ print $2 }'`
+else 
+  dbusld=""
+  dbusincl=""
 fi
 
 #*---------------------------------------------------------------------*/
 #*    gstreamer                                                        */
 #*---------------------------------------------------------------------*/
-# find out the C library for sqlite
+# find out the C library for gstreamer
 if [ "$gstreamer " = " " ]; then
    gstreamer=`$autoconf gstreamer --cflags="$cflags"` || exit 1;
 fi
@@ -2292,6 +2329,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
+              -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
         > $p
     fi
   done
@@ -2519,7 +2557,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
-  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial" >> $makefile_cfg
+  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BGLBUILDLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
   echo "EXTRALIBS=$extralibs" >> $makefile_cfg
   echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   echo "CLOSELIBS= # always empty, does not contain GC, override by makefiles" >> $makefile_cfg
@@ -2694,6 +2732,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "SQLITESRFI=sqlite" >> $makefile_cfg
   fi
     
+  echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
+  cat api/sqlite/src/Misc/sqlite.init.in \
+      | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
+      >>  lib/$release/sqlite.init
 
   # GSTREAMER
   if [ "$gstreamer " != " " ]; then
@@ -2734,11 +2776,27 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GSTREAMERFLAGS=" >> $makefile_cfg
   fi
   
-  # Patch the code of the SQLITE init file
-  echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
-  cat api/sqlite/src/Misc/sqlite.init.in \
-      | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
-      >>  lib/$release/sqlite.init
+  # DBUS
+  if [ $dbusld != " " ]; then
+    echo ";; automatically generated. Don't edit" >  lib/$release/dbus.init
+    cat api/dbus/src/Misc/dbus.init.in \
+        | sed -e "s|@DBUSLIBS@|$dbusld|g" \
+              -e "s|@DBUSCFLAGS@|$dbusincl|g" \
+        >>  lib/$release/dbus.init
+    echo "CDBUSFLAGS=$dbusincl" >> $makefile_cfg
+  else
+    for a in $apis; do
+       if [ "dbus" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+  fi
+  
 
   # SCMPKG
   configure=api/pkgcomp/src/Llib/configure.scm

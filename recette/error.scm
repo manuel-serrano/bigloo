@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Tue Dec  5 08:54:22 2006 (serrano)                */
+;*    Last change :  Fri Oct 30 10:45:48 2009 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -221,6 +221,11 @@
 	    (lambda (e) e)
 	    1)
 	 1)
+   (test "with-handler.1b"
+	 (with-handler
+	    (lambda (e) 2)
+	    (raise 1))
+	 2)
    (test "with-handler.2"
 	 (bind-exit (exit)
 	    (with-handler
@@ -335,5 +340,65 @@
 		      (raise (bind-exit (exit2)
 				(with-handler
 				   (lambda (e) 23) (exit2 1)))))))
-	 2))
+	 2)
+   (test "with-handler/unwind-protect.1"
+	 (let ((x '()))
+	    (with-handler
+	       (lambda (e)
+		  (set! x (cons 1 x)))
+	       (unwind-protect
+		  (raise 'foo)
+		  (set! x (cons 2 x))))
+	    x)
+	 '(1 2))
+   (test "with-handler/unwind-protect.1"
+	 (let ((x '()))
+	    (with-handler
+	       (lambda (e)
+		  x)
+	       (with-handler
+		  (lambda (e)
+		     (set! x (cons 1 x))
+		     (raise e))
+		  (unwind-protect
+		     (raise 'foo)
+		     (set! x (cons 2 x))))))
+	 '(1 2))
+   (test "with-handler/unwind-protect.2"
+	 (let ((x '()))
+	    (with-handler
+	       (lambda (e)
+		  (set! x (cons 1 x)))
+	       (unwind-protect
+		  (with-handler
+		     (lambda (e)
+			(set! x (cons 2 x))
+			(raise e)
+			(set! x (cons 23 x)))
+		     (unwind-protect
+			(raise 'glop)
+			(set! x (cons 3 x))))
+		  (set! x (cons 4 x))))
+	    x)
+	 '(1 4 2 3))
+   (test "with-handler/unwind-protect.3"
+	 (let ((x '()))
+	    (unwind-protect
+	       (with-handler
+		  (lambda (e)
+		     (set! x (cons 1 x)))
+		  (unwind-protect
+		     (with-handler
+			(lambda (e)
+			   (set! x (cons 2 x))
+			   (raise e)
+			   (set! x (cons 18 x)))
+			(unwind-protect
+			   (raise 'glop)
+			   (set! x (cons 3 x))))
+		     (set! x (cons 4 x))))
+	       (set! x (cons 5 x)))
+	    x)
+	 '(5 1 4 2 3)))
+
    
