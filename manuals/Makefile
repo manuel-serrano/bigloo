@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Thu Sep  3 11:40:01 2009 (serrano)                */
+#*    Last change :  Wed Nov  4 13:57:41 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
@@ -63,7 +63,7 @@ POPULATION	= Makefile \
 #*---------------------------------------------------------------------*/
 #*    Everything ...                                                   */
 #*---------------------------------------------------------------------*/
-all: info ps html pdf
+all: info ps sui html pdf
 allwww: all bigloo.info.tar.gz # bdb.info.tar.gz
 
 dvi: bigloo.dvi
@@ -85,6 +85,8 @@ bigloo.info.tar.gz: bigloo.info
 #*    html                                                             */
 #*---------------------------------------------------------------------*/
 html: bigloo.html r5rs.html bdb.html
+sui: bigloo.sui r5rs.sui bdb.sui
+
 bigloo.html bigloo.sui: r5rs.sui $(MASTER) $(SOURCES) option.texi version.texi
 	$(SKRIBEINFO) $(MASTER) | $(SKRIBE) $(SFLAGS) $(SBFLAGS) -o bigloo.html
 
