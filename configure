@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 19:24:51 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 19:42:05 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -770,11 +770,11 @@ while : ; do
           fthread) addf=0;;
         esac;
       done
-      if [ $addp = 1 ]; then
-        apis="pthread $apis";
-      fi
       if [ $addf = 1 ]; then
         apis="fthread $apis";
+      fi
+      if [ $addp = 1 ]; then
+        apis="pthread $apis";
       fi
       ;;
 
@@ -1067,6 +1067,8 @@ packrat_is_enabled=no
 pkglib_is_enabled=no
 sqlite_is_enabled=no
 dbus_is_enabled=no
+fthread_is_enabled=no
+pthread_is_enabled=no
 
 for a in $apis; do
   case $a in
@@ -1075,12 +1077,14 @@ for a in $apis; do
     sqlite) sqlite_is_enabled="yes";;
     pkglib) pkglib_is_enabled="yes";;
     dbus) dbus_is_enabled="yes";;
+    pthread) pthread_is_enabled="yes";;
+    fthread) fthread_is_enabled="yes";;
   esac
 done
 
 if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
     echo "*** ERROR: packrat library requires srfi1."
-    echo "Either disable packrat, or enable srfi1."
+    echo "Either disable packrat or enable srfi1."
     echo 
     echo "Enabled apis: $apis"
     exit 1
@@ -1088,7 +1092,15 @@ fi
 
 if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
     echo "*** ERROR: pkglib library requires sqlite."
-    echo "Either disable pkglib, or enable sqlite."
+    echo "Either disable pkglib or enable sqlite."
+    echo 
+    echo "Enabled apis: $apis"
+    exit 1
+fi
+
+if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
+    echo "*** ERROR: fthread library requires pthread."
+    echo "Either disable fthread or enable pthread."
     echo 
     echo "Enabled apis: $apis"
     exit 1
