@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 18:29:39 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 18:45:54 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2790,7 +2790,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
   
   # DBUS
-  if [ $dbusld != " " ]; then
+  if [ "$dbusld " != " " ]; then
     echo ";; automatically generated. Don't edit" >  lib/$release/dbus.init
     cat api/dbus/src/Misc/dbus.init.in \
         | sed -e "s|@DBUSLIBS@|$dbusld|g" \
