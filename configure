@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 18:45:54 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 18:52:29 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2894,34 +2894,25 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     if [ "$jvmbackend" = "yes" ]; then
       $autoconfdir/ziptest --zip=$zip --zflags=$zflags --user=$user --tmp=$buildtmp
 
-      if [ $? = 0 ]; then
-         echo "   zip: yes"
-      else
-         echo "   zip: no"
-         echo "*** ERROR:configure:Can't configure JVM back-end"
-         exit 3
+      if [ $? != 0 ]; then
+        echo "*** ERROR:configure:Can't find zip needed for the JVM back-end"
+        exit 3
       fi
 
       $autoconfdir/jartest --jar=$jar --user=$user --tmp=$buildtmp
 
-      if [ $? = 0 ]; then
-         echo "   jar: yes"
-      else
-         echo "   jar: no"
-         echo "*** ERROR:configure:Can't configure JVM back-end"
-         exit 3
+      if [ $? != 0 ]; then
+        echo "*** ERROR:configure:Can't find jar nedded for the JVM back-end"
+        exit 3
       fi
 
       if [ "$java_configured" = "no" ]; then
         $autoconfdir/javatest --java=$java --jflags=$jflags --jvflags=$jvflags \
                               --javac=$javac --jcflags=$jcflags --user=$user --tmp=$buildtmp
 
-        if [ $? = 0 ]; then
-           echo "   java: yes"
-        else
-           echo "   java: no"
-           echo "*** ERROR:configure:Can't configure JVM back-end"
-           exit 3
+        if [ $? != 0 ]; then
+          echo "*** ERROR:configure:Can't configure JVM back-end"
+          exit 3
         fi
         java_configured=yes
       fi
