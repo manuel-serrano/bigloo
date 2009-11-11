@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 19:01:38 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 19:04:38 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -799,7 +799,17 @@ while : ; do
 
     --enable-*)
       api="`echo $1 | sed 's/--[^-]*-//'`";
-      apis="$api $apis";;
+      add=1;
+      for a in $apis; do
+        if [ "$a " = "$api " ]; then
+          add=0;
+          break;
+        fi
+      done
+      if [ $add = 1 ]; then
+        apis="$api $apis";
+      fi
+      ;;
 
     --disable-*)
       api="`echo $1 | sed 's/--[^-]*-//'`";
