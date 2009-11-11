@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 18:58:55 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 19:01:38 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1666,8 +1666,10 @@ fi
 #*    sqlite                                                           */
 #*---------------------------------------------------------------------*/
 # find out the C library for sqlite
-if [ "$sqlitelibs " = " " ]; then
-  sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
+if [ "$sqlite_is_enabled " = "yes " ]; then
+  if [ "$sqlitelibs " = " " ]; then
+    sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
