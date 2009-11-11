@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 11 19:04:38 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 19:24:51 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -762,7 +762,21 @@ while : ; do
 
     --enable-thread|--enable-threads)
       threadsupport=yes;
-      apis="pthread fthread $apis";;
+      addp=1;
+      addf=1;
+      for a in $apis; do
+        case $a in
+          pthread) addp=0;;
+          fthread) addf=0;;
+        esac;
+      done
+      if [ $addp = 1 ]; then
+        apis="pthread $apis";
+      fi
+      if [ $addf = 1 ]; then
+        apis="fthread $apis";
+      fi
+      ;;
 
     --disable-thread|--disable-threads)
       threadsupport=no;
@@ -2818,6 +2832,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         >>  lib/$release/dbus.init
     echo "CDBUSFLAGS=$dbusincl" >> $makefile_cfg
   else
+    napis=;
     for a in $apis; do
        if [ "dbus" != $a ]; then
          if [ "$napis " = " " ]; then
@@ -2830,7 +2845,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     apis=$napis;
   fi
   
-
   # SCMPKG
   configure=api/pkgcomp/src/Llib/configure.scm
   rm -f $configure
