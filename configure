@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Nov  8 08:23:43 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 18:29:39 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1024,6 +1024,19 @@ echo "Checking local configuration..."
 #*---------------------------------------------------------------------*/
 #*    Weeding out bad configurations                                   */
 #*---------------------------------------------------------------------*/
+# checking the correctness of selected apis
+err=
+for p in $apis; do
+  if [ ! -d api/$p ]; then
+    err="$err $p";
+  fi
+done
+
+if [ "$err " != " " ]; then
+  echo "*** ERROR: unknown api(s):$err";
+  exit 1
+fi
+
 # check apis cross dependencies
 srfi1_is_enabled=no
 packrat_is_enabled=no

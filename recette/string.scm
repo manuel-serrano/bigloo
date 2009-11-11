@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Tue Oct  7 10:04:06 2008 (serrano)                */
+;*    Last change :  Wed Nov 11 08:41:59 2009 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -151,6 +151,8 @@
 ;*---------------------------------------------------------------------*/
 (define (test-string)
    (test-module "string" "string.scm")
+   (test "literal" "\342\202\254"
+	 (apply string (map integer->char '(#o342 #o202 #o254))))
    (test "string=?" (string=? "toto n'est pas content"
 			      "toto n'est pas content")
 	 #t)

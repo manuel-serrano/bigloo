@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 17:02:23 1995                          */
-;*    Last change :  Mon May 15 07:34:52 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 11 18:38:31 2009 (serrano)                */
+;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `set' package.                                               */
 ;*=====================================================================*/
@@ -23,25 +23,20 @@
 	    (node-key cfa_approx)
 	    (node-key-set! cfa_approx))
    (export  (declare-set! ::vector)
-	    (make-set!    <set>)
-	    (set?::bool   <obj>)
-	    (set-extend!  <set>    <obj>)
-	    (set-union!   <set>  . <set>*)
+	    (make-set! <set>)
+	    (set?::bool <obj>)
+	    (set-extend! <set> <obj>)
+	    (set-union! <set> . <set>*)
 	    (set-for-each ::procedure <set>)
-	    (set-length   <set>)
-	    (set->list    <set>)
-	    (set->vector  <set>)))
+	    (set-length <set>)
+	    (set->list <set>)
+	    (set->vector <set>)))
 
 ;*---------------------------------------------------------------------*/
 ;*    The `set' and `meta-set' structures                              */
 ;*---------------------------------------------------------------------*/
-(define-struct meta-set  table compacted-size)
+(define-struct meta-set table compacted-size)
 (define-struct large-set the-set meta)
-
-;*---------------------------------------------------------------------*/
-;*    max sizes                                                        */
-;*---------------------------------------------------------------------*/
-(define max-large-size     10000)
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-set! ...                                                 */
@@ -55,23 +50,17 @@
 			 (+fx quotient 1))
 			(else
 			 (+fx quotient 2)))))
-      (cond
-	 ((>=fx cardinal max-large-size)
-	  (internal-error "define-set!"
-			  "Too many element in set"
-			  (shape table)))
-	 (else
-	  (let loop ((i         0)
-		     (quotient  0)
-		     (mask      1))
-	     (cond
-		((=fx i cardinal)
-		 (meta-set table size))
-		((=fx mask 256)
-		 (loop i (+fx quotient 1) 1))
-		(else
-		 (node-key-set! (vector-ref table i) (cons quotient mask))
-		 (loop (+fx i 1) quotient (*fx mask 2)))))))))
+      (let loop ((i         0)
+		 (quotient  0)
+		 (mask      1))
+	 (cond
+	    ((=fx i cardinal)
+	     (meta-set table size))
+	    ((=fx mask 256)
+	     (loop i (+fx quotient 1) 1))
+	    (else
+	     (node-key-set! (vector-ref table i) (cons quotient mask))
+	     (loop (+fx i 1) quotient (*fx mask 2)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-set! ...                                                    */

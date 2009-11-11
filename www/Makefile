@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Tue Jun  2 15:19:51 2009 (serrano)                */
+#*    Last change :  Tue Nov 10 16:21:18 2009 (serrano)                */
 #*    Copyright   :  2001-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -20,8 +20,8 @@ OFFICIALDATE	= Jun 2009
 #*    Destination                                                      */
 #*---------------------------------------------------------------------*/
 KAOLINHTTP	= kaolin.unice.fr
-MIMOSAHTTP	= www-sop.inria.fr/mimosa/fp
-HOSTHTTP	= $(MIMOSAHTTP)
+INDESHTTP	= www-sop.inria.fr/indes/fp
+HOSTHTTP	= $(INDESHTTP)
 HOSTHTTPDIR	= /users/serrano/public_html/bigloo
 HOSTURL		= http://$(HOSTHTTP)/Bigloo
 BUGLOOURL	= http://$(HOSTHTTP)/Bugloo
@@ -31,16 +31,16 @@ ARCHIVEURL2	= http://news.gmane.org/gmane.lisp.scheme.bigloo
 WIKIURL		= http://bigloo.pbwiki.com
 
 KAOLINFTP	= kaolin.unice.fr
-MIMOSAFTP	= ftp-sop.inria.fr
-HOSTFTP		= $(MIMOSAFTP)
+INDESFTP	= ftp-sop.inria.fr
+HOSTFTP		= $(INDESFTP)
 
 KAOLINFTPDIR	= /pub/Bigloo
-MIMOSAFTPDIR	= /mimosa/fp/Bigloo
-HOSTFTPDIR	= $(MIMOSAFTPDIR)
+INDESFTPDIR	= /indes/fp/Bigloo
+HOSTFTPDIR	= $(INDESFTPDIR)
 
 KAOLINFTPHOMEDIR= /home/ftp
-MIMOSAFTPHOMEDIR= /net/servers/ftp-sop/mimosa/fp	
-HOSTFTPHOMEDIR	= $(MIMOSAFTPHOMEDIR)
+INDESFTPHOMEDIR = /net/servers/ftp-sop/indes/fp	
+HOSTFTPHOMEDIR	= $(INDESFTPHOMEDIR)
 
 HOSTFTPAPPSDIR	= apps
 HOSTFTPLIBSDIR	= libraries

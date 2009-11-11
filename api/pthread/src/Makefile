@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Nov  3 17:30:35 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 07:38:59 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -225,7 +225,8 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
              LIBDEST=$@ \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-             CLOSELIBS="-lbigloo_s-$(RELEASE) $(PTHREADLIBS)"
+             EXTRALIBS="$(PTHREADLIBS)" \
+             CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 	@ $(MAKE) shared-lib \
@@ -360,9 +361,9 @@ dep:
 #*---------------------------------------------------------------------*/
 stdclean:
 	$(RM) -f $(OBJECTS) $(_BGL_OBJECTS:%=%.c)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_s.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_u.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_e.$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(LIB)/$(LIBNAME)_s-$(RELEASE).zip
 	$(RM) -f $(LIB)/$(LIBNAME)_u-$(RELEASE).zip
 	$(RM) -f $(LIB)/$(LIBNAME)_e-$(RELEASE).zip

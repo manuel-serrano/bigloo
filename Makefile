@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Oct 15 19:54:25 2009 (serrano)                */
+#*    Last change :  Wed Nov 11 07:31:35 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -687,9 +687,9 @@ uninstall: uninstall-bee
 	$(MAKE) -C bde uninstall
 	$(MAKE) -C comptime uninstall
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
-	  $(MAKE) -C gc uninstall; \
+	  $(MAKE) -C gc uninstall uninstall-thread; \
         fi
-	$(MAKE) -C runtime uninstall uninstall-thread
+	$(MAKE) -C runtime uninstall
 	-$(MAKE) -C manuals uninstall
 	$(MAKE) -C api uninstall
 	$(RM) -f $(LIBDIR)/Makefile.config
