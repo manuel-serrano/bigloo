@@ -135,7 +135,8 @@
    `(;; Java lib classes/methods
      (obj (class () "java.lang.Object"))
      (string (class () "java.lang.String"))
-     (getbytes (method string () (vector byte) "getBytes"))
+     ;; BPS: changed 12 nov 09 (3.2c) (see, Fields/Methods of bigloo.foreign
+     ;; (getbytes (method string () (vector byte) "getBytes"))
      (concat (method string () string "concat" string))
      (throwable (class () "java.lang.Throwable"))
      (runtimeexception (class () "java.lang.RuntimeException"))
@@ -253,6 +254,7 @@
      (mutex (class () "bigloo.mutex"))
      ;; Fields/Methods of bigloo.foreign
      (foreign (class () "bigloo.foreign"))
+     (getbytes (method foreign () (vector byte) "jstring_to_bstring" string))
      (make_vector0 (method foreign () (vector obj) "make_vector0"))
      (make_vector1 (method foreign () (vector obj) "make_vector1" obj))
      (make_vector2 (method foreign () (vector obj) "make_vector2" obj obj))

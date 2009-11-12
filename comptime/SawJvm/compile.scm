@@ -140,7 +140,7 @@
       (case class
 	 ((sstring)
 	  (push-string me node)
-	  (code! me '(invokevirtual getbytes)) )
+	  (code! me '(invokestatic getbytes)) )
 	 ((sreal)
 	  (push-num me node 'double)
 	  (code! me '(invokestatic double_to_real)) )
@@ -197,7 +197,7 @@
 			   (push-num me (vector-ref vec i) id) )
 			  (else
 			   (push-string me (vector-ref vec i))
-			   (code! me '(invokevirtual getbytes)) ))
+			   (code! me '(invokestatic getbytes)) ))
 		       (code! me (case id
 				    ((boolean byte) '(bastore))
 				    ((char) '(castore))

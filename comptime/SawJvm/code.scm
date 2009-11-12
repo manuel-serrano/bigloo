@@ -325,7 +325,7 @@
 	    ((string? value)
 	     (push-string me value)
 	     ;; CARE do the creation at clinit time
-	     (code! me '(invokevirtual getbytes)) )
+	     (code! me '(invokestatic getbytes)) )
 	    ((eof-object? value)
 	     (code! me '(getstatic *eof*)) )
 	    ((eq? value '#!optional)

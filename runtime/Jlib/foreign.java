@@ -1945,6 +1945,18 @@ public final class foreign
       }
 
    // Conversions
+   public static byte[] jstring_to_bstring(String o)
+      {
+	 final int len = o.length();
+	 byte[] res = new byte[ len ];
+
+	 for( int i = 0; i < len; i++ ) {
+	    res[ i ] = (byte)o.charAt( i );
+	 }
+
+	 return res;
+      }
+   
    public static byte[] string_to_bstring(byte[]o)
       {
 	 return o;
