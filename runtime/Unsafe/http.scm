@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Fri Sep 25 19:52:27 2009 (serrano)                */
+;*    Last change :  Thu Nov 12 11:25:50 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -296,18 +296,20 @@
        (if (eq? (rgc-context) 'code)
 	   (begin
 	      (rgc-context #unspecified)
-	      (instantiate::&io-parse-error
-		 (obj (http-parse-error-msg (the-failure) (the-port)))
-		 (proc 'http-parse-status-line)
-		 (msg "Illegal status line")))
+	      (raise
+	       (instantiate::&io-parse-error
+		  (obj (http-parse-error-msg (the-failure) (the-port)))
+		  (proc 'http-parse-status-line)
+		  (msg "Illegal status line"))))
 	   (let ((http (the-substring 0 (-fx (the-length) 1))))
 	      (rgc-context 'code)
 	      (let ((code (ignore)))
 		 (if (not (fixnum? code))
-		     (instantiate::&io-parse-error
-			(obj (http-parse-error-msg (the-failure) (the-port)))
-			(proc 'http-parse-status-line)
-			(msg "Illegal status code"))
+		     (raise
+		      (instantiate::&io-parse-error
+			 (obj (http-parse-error-msg (the-failure) (the-port)))
+			 (proc 'http-parse-status-line)
+			 (msg "Illegal status code")))
 		     (begin
 			(rgc-context 'line)
 			(let ((phrase (ignore)))
