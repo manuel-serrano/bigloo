@@ -1,3 +1,11 @@
+Thu Nov 12 13:49:13 CET 2009 (Manuel Serrano):
+
+	*** configure: Fix MacOS X configuration.
+
+	*** Fix JVM string supports (on MacOS X), non-ascii JVM strings
+	where not correctly supported.
+	
+
 Fri Oct 23 11:44:40 CEST 2009 (Manuel Serrano):
 
 	* api/web/src/Llib/{xml,html}.scm: improve the HTML parser.

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 20 11:14:27 2009                          */
-;*    Last change :  Mon Apr 20 11:19:16 2009 (serrano)                */
+;*    Last change :  Thu Nov 12 16:17:48 2009 (serrano)                */
 ;*    Copyright   :  2009 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo implementation of SRFI-27                                 */
@@ -42,7 +42,11 @@
 ;*    srfi-27-error ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (srfi-27-error m . args)
-   ((@ error __error)  'srfi-27 m args))
+   ((@ error __error)  'srfi-27
+		       m
+		       (if (and (pair? args) (null? (cdr args)))
+			   (car args)
+			   args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $random-source-make ...                                          */
@@ -62,3 +66,9 @@
 (define-expander error
    (lambda (x e)
       (e `(srfi-27-error ,@(cdr x)) e)))
+
+;*---------------------------------------------------------------------*/
+;*    inexact->exact ...                                               */
+;*---------------------------------------------------------------------*/
+(define (inexact->exact n)
+   (flonum->bignum n))

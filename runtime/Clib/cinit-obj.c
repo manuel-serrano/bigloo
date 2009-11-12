@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Dec 24 07:00:37 2008 (serrano)                */
-/*    Copyright   :  2002-08 Manuel Serrano                            */
+/*    Last change :  Thu Nov 12 16:49:28 2009 (serrano)                */
+/*    Copyright   :  2002-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -51,6 +51,7 @@ extern void bgl_init_io();
 extern void bgl_init_trace();
 extern void bgl_init_process_table();
 extern void bgl_init_dload();
+extern void bgl_init_bignum();
 
 /*---------------------------------------------------------------------*/
 /*    init_objects ...                                                 */
@@ -66,6 +67,7 @@ void bgl_init_objects() {
    bgl_init_dload();
    bgl_init_socket();
    bgl_init_date();
+   bgl_init_bignum();
 
    bigloo_mutex = bgl_make_mutex( bigloo_mutex_name );
    bigloo_generic_mutex = bgl_make_mutex( bigloo_mutex_name );
@@ -210,3 +212,4 @@ BGL_RUNTIME_DEF double
 bgl_infinity() {
    return 1.0 / bgl_zero;
 }
+

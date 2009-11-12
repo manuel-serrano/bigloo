@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Nov 25 10:23:50 2008 (serrano)                */
+;*    Last change :  Thu Nov 12 16:04:15 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1087,8 +1087,23 @@
        1.0)
       ((and (fixnum? x) (fixnum? y) (>=fx y 0))
        (exptfx x y))
-      ((and (bignum? x) (bignum? y) (>=fx y 0))
+      ((and (bignum? x) (bignum? y) (positivebx? y))
        (exptbx x y))
+      ((bignum? x)
+       (let ((y1 (cond
+		    ((flonum? y)
+		     ($fixnum->bignum ($flonum->fixnum y)))
+		    ((fixnum? y)
+		     ($fixnum->bignum y))
+		    ((elong? y)
+		     ($elong->bignum y))
+		    ((llong? y)
+		     ($llong->bignum y))
+		    ((bignum? y)
+		     y)
+		    (else
+		     (error 'expr "not a number" y)))))
+	  (exptbx x y1)))
       (else
        (let ((x1 (cond
 		    ((flonum? x)

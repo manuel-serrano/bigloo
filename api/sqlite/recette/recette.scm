@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Apr 20 07:13:38 2009 (serrano)                */
+;*    Last change :  Thu Nov 12 15:24:44 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
@@ -581,7 +581,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test roolback.1
    (cond-expand
-      (sqlite
+      ((and sqlite (not bigloo-jvm))
        (let ((db (instantiate::sqlite)))
 	  (sqlite-exec db "CREATE TABLE test (field TEXT, value TEXT)")
 	  (sqlite-exec db "INSERT INTO test VALUES (~q,~q)" "a-field" "a-value")

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Fri May 30 07:08:55 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Thu Nov 12 16:53:52 2009 (serrano)                */
+/*    Copyright   :  2003-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -12,6 +12,18 @@
 #include <errno.h>
 #include <string.h>
 #include <bigloo.h>
+
+static obj_t bgl_belongzero, bgl_bllongzero;
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_init_bignum ...                                              */
+/*---------------------------------------------------------------------*/
+void
+bgl_init_bignum() {
+   bgl_belongzero = make_belong( 0 );
+   bgl_bllongzero = make_bllong( 0 );
+}
 
 #if( BGL_HAVE_GMP )   
 
@@ -781,12 +793,16 @@ bgl_safe_minus_elong( long x, long y ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_mul_elong( long x, long y ) {
-   long z = x * y;
+   if( !y )
+      return bgl_belongzero;
+   else {
+      long z = x * y;
 
-   if( z / y == x )
-      return make_belong( z );
-   else
-      return bgl_bignum_mul( bgl_long_to_bignum( x ), bgl_long_to_bignum( y ) );
+      if( z / y == x )
+	 return make_belong( z );
+      else
+	 return bgl_bignum_mul( bgl_long_to_bignum( x ), bgl_long_to_bignum( y ) );
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -839,13 +855,17 @@ bgl_safe_minus_llong( BGL_LONGLONG_T x, BGL_LONGLONG_T y ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_mul_llong( BGL_LONGLONG_T x, BGL_LONGLONG_T y ) {
-   BGL_LONGLONG_T z = x * y;
+   if( ! y )
+      return bgl_bllongzero;
+   else {
+      BGL_LONGLONG_T z = x * y;
 
-   if( z / y == x )
-      return make_bllong( z );
-   else
-      return bgl_bignum_mul( bgl_llong_to_bignum( x ),
-			     bgl_llong_to_bignum( y ) );
+      if( z / y == x )
+	 return make_bllong( z );
+      else
+	 return bgl_bignum_mul( bgl_llong_to_bignum( x ),
+				bgl_llong_to_bignum( y ) );
+   }
 }
 
 /*---------------------------------------------------------------------*/

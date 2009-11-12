@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Apr 20 11:31:37 2009 (serrano)                */
+;*    Last change :  Thu Nov 12 16:20:26 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of srfi27.               */
@@ -114,9 +114,9 @@
 ;*    basic ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test srfi27.large-numbers
-   (do ((k 0 (+ k 1))
-	(n 1 (* n 2)))
-       ((> k 1024))
+   (do ((k 0 (+ k #z1))
+	(n 1 (* n #z2)))
+       ((> k #z1024))
        (my-random-integer n)))
 
 (define-test srfi27.reals
@@ -127,17 +127,17 @@
 
 (define-test srfi27.get/set
    (let* ((state1 (random-source-state-ref default-random-source))
-	  (x1 (my-random-integer (expt 2 32)))
+	  (x1 (my-random-integer (expt #z2 32)))
 	  (state2 (random-source-state-ref default-random-source))
-	  (x2 (my-random-integer (expt 2 32))))
+	  (x2 (my-random-integer (expt #z2 32))))
       (random-source-state-set! default-random-source state1)
-      (let ((y1 (my-random-integer (expt 2 32))))
+      (let ((y1 (my-random-integer (expt #z2 32))))
 	 (if (not (= x1 y1))
 	     (error 'srfi27
 		    "state get/set doesn't work"
 		    (list x1 y1 state1))))
       (random-source-state-set! default-random-source state2)
-      (let ((y2 (my-random-integer (expt 2 32))))
+      (let ((y2 (my-random-integer (expt #z2 32))))
 	 (if (not (= x2 y2))
 	     (error 'srfi27
 		    "state get/set doesn't work"
@@ -145,10 +145,10 @@
 
 (define-test srfi27.randomize
    (let* ((state1 (random-source-state-ref default-random-source))
-	  (x1 (my-random-integer (expt 2 32))))
+	  (x1 (my-random-integer (expt #z2 32))))
       (random-source-state-set! default-random-source state1)
       (random-source-randomize! default-random-source)
-      (let ((y1 (my-random-integer (expt 2 32))))
+      (let ((y1 (my-random-integer (expt #z2 32))))
 	 (if (= x1 y1)
 	     (error 'srfi27
 		    "random-source-randomize! didn't work"
@@ -156,17 +156,17 @@
 
 (define-test srfi27.pseudo-randomize
    (let* ((state1 (random-source-state-ref default-random-source))
-	  (x1 (my-random-integer (expt 2 32))))
+	  (x1 (my-random-integer (expt #z2 32))))
       (random-source-state-set! default-random-source state1)
       (random-source-pseudo-randomize! default-random-source 0 1)
-      (let ((y1 (my-random-integer (expt 2 32))))
+      (let ((y1 (my-random-integer (expt #z2 32))))
 	 (if (= x1 y1)
 	     (error 'srfi27
 		    "random-source-pseudo-randomize! didn't work"
 		    (list x1 state1))))
       (random-source-state-set! default-random-source state1)
       (random-source-pseudo-randomize! default-random-source 1 0)
-      (let ((y1 (my-random-integer (expt 2 32))))
+      (let ((y1 (my-random-integer (expt #z2 32))))
 	 (if (= x1 y1)
 	     (error 'srfi27
 		    "random-source-pseudo-randomize! didn't work"
@@ -245,7 +245,3 @@
 			 *success*
 			 (length *failure*)
 			 (reverse *failure*))))))
-
-
-   
-
