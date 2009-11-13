@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep  6 21:43:08 2009 (serrano)                */
+#*    Last change :  Fri Nov 13 14:00:04 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Does the current os supports SIGCHLD signal?                     */
 #*=====================================================================*/
@@ -76,8 +76,10 @@ if eval "$BUILDSH $compile"; then
 else
    ret_code=$?
    \rm -f $file.*
-   exit $ret_code
+   echo 0
 fi
 
 rm -f $aout
 rm -f $aout*
+
+exit 0
