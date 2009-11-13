@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Thu Sep 10 11:14:48 2009 (serrano)                */
+#*    Last change :  Fri Nov 13 14:08:57 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -99,7 +99,7 @@ EOF
   else
     /bin/rm -f $file*
     echo "no-share"
-    exit 1
+    exit 0
   fi
 
   ldopt=`eval "$HOSTSH $aout"`
@@ -133,7 +133,7 @@ then
 else
   /bin/rm -f $file* $obj*
   echo "no-share"
-  exit 1
+  exit 0
 fi
 
 #*---------------------------------------------------------------------*/
@@ -144,7 +144,7 @@ if [ ! -f $file.$sharedsuffix ]; then
   /bin/rm -f $file* $obj*
   /bin/rm -f $obj-lib.o
   echo "no-share"
-  exit 1
+  exit 0
 fi
 
 #*---------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ else
   res=$?
   /bin/rm -f $file* $obj*
   echo "no-share"
-  exit $res
+  exit 0
 fi
 
 #*---------------------------------------------------------------------*/
@@ -165,4 +165,5 @@ fi
 #*---------------------------------------------------------------------*/
 /bin/rm -f $file* $obj*
 echo $ldopt
+exit 0
 
