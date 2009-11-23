@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 16:57:31 2009                          */
-#*    Last change :  Wed Oct 28 18:15:59 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 12:28:20 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    gc-7.1 specific entries                                          */
@@ -15,6 +15,8 @@ boot-gc:
 
 boot-gc_fth:
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	   $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth && \
+	   $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth; \
+        fi
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
            $(MAKE) -C $(CUSTOMGC)_fth $(BOOTLIBDIR)/libbigloogc_fth$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" LIBQ=_fth; \
 	fi
