@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov 23 18:36:29 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 18:39:56 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1882,9 +1882,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	echo "Aborting";
 	exit 1;
     fi
-    if [ $srfi27_is_enable = "yes" ]; then
+    if [ "$srfi27_is_enabled " = "yes " ]; then
 	echo "*** ERROR:configure: Cannot find GMP library required by SRFI27."
-        echo "Please install GMP first or re-configure with --disable-srfi27."
+        echo "Please install GMP first or re-configure with \"--disable-srfi27\"."
 	echo "Aborting";
 	exit 1;
     fi
