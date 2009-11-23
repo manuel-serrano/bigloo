@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov 11 07:31:35 2009 (serrano)                */
+#*    Last change :  Sat Nov 21 09:09:21 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -168,10 +168,18 @@ boot: checkgmake
 	fi
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
+            LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+            export LD_LIBRARY_PATH; \
+            DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+            export DYLD_LIBRARY_PATH; \
             $(MAKE) -C runtime boot-jvm); \
         fi
 	if [ "$(DOTNETBACKEND)" = "yes" ]; then \
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
+            LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+            export LD_LIBRARY_PATH; \
+            DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+            export DYLD_LIBRARY_PATH; \
             $(MAKE) -C runtime boot-dotnet); \
         fi
 	(LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \

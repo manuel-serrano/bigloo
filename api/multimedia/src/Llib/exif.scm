@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Mar  1 12:31:33 2009 (serrano)                */
+;*    Last change :  Fri Nov 20 13:09:33 2009 (serrano)                */
 ;*    Copyright   :  2004-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -19,12 +19,13 @@
 	      (jpeg-encoding (default #f))
 	      (jpeg-compress (default #f))
 	      (comment (default #f))
-	      (commentpos (default #f))
-	      (commentlen (default #f))
+	      (%commentpos (default #f))
+	      (%commentlen (default #f))
 	      (date (default #f))
 	      (make (default #f))
 	      (model (default #f))
 	      (orientation (default 'landscape))
+	      (%orientationpos (default #f))
 	      (width (default #f))
 	      (height (default #f))
 	      (ewidth (default #f))
@@ -51,6 +52,7 @@
 	   
 	   (jpeg-exif ::bstring)
 	   (jpeg-exif-comment-set! ::bstring ::bstring)
+	   (jpeg-exif-orientation-set! ::bstring ::symbol)
 
 	   (parse-exif-date::date ::bstring)))
 
@@ -338,8 +340,8 @@
 			 (exif-flash-set! exif f)))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
-		      (exif-commentpos-set! exif (+ valptr o0))
-		      (exif-commentlen-set! exif 199)
+		      (exif-%commentpos-set! exif (+ valptr o0))
+		      (exif-%commentlen-set! exif 199)
 		      (when (substring-at? bytes "ASCII\000\000\000" valptr)
 			 (exif-comment-set! exif
 					    (remove-trailing-spaces!
@@ -441,8 +443,8 @@
 	     (let ((s (make-string i)))
 		(blit-string! bytes 0 s 0 i)
 		(exif-comment-set! exif s)
-		(exif-commentpos-set! exif pos)
-		(exif-commentlen-set! exif i)))
+		(exif-%commentpos-set! exif pos)
+		(exif-%commentlen-set! exif i)))
 	    (else
 	     (loop (+fx i 1)))))))
 
@@ -588,18 +590,54 @@
 	  (unwind-protect
 	     (when (> (mmap-length mm) 0)
 		(read-jpeg-sections exif mm path)
-		(with-access::exif exif (commentpos commentlen)
-		   (and commentpos
+		(with-access::exif exif (%commentpos %commentlen)
+		   (and %commentpos
 			(let* ((len (string-length comment))
-			       (s (if (<fx len commentlen)
+			       (s (if (<fx len %commentlen)
 				      comment
-				      (substring comment 0 commentlen))))
-			   (mmap-write-position-set! mm commentpos)
+				      (substring comment 0 %commentlen))))
+			   (mmap-write-position-set! mm %commentpos)
 			   (mmap-put-string! mm "ASCII\000\000\000")
 			   (mmap-put-string! mm s)
 			   (mmap-put-string! mm "\000")
 			   (set! mtime #t)
 			   s))))
+	     (begin
+		(close-mmap mm)
+		;; the glibc is buggous, since mmap does not update mtime,
+		;; we force the update here
+		(when mtime
+		   (let ((pr (open-input-file path))
+			 (pw (append-output-file path)))
+		      (let ((c (read-char pr)))
+			 (set-output-port-position! pw 0)
+			 (write-char c pw))
+		      (close-input-port pr)
+		      (close-output-port pw))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    jpeg-exif-orientation-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-orientation-set! path orientation)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+		    'jpeg-exif-comment-set! "Can't find file" path)
+       (let ((mm (open-mmap path))
+	     (exif (instantiate::exif))
+	     (mtime #f))
+	  (unwind-protect
+	     (when (> (mmap-length mm) 0)
+		(read-jpeg-sections exif mm path)
+		(with-access::exif exif (%orientationpos)
+		   (when %orientationpos
+		      (mmap-write-position-set! mm %orientationpos)
+		      (case orientation
+			 ((landscape) (mmap-put-string! mm "\001"))
+			 ((portrait) (mmap-put-string! mm "\006"))
+			 ((upsidedonw) (mmap-put-string! mm "\010"))
+			 ((seascape) (mmap-put-string! mm "\001")))
+		      (set! mtime #t)
+		      orientation)))
 	     (begin
 		(close-mmap mm)
 		;; the glibc is buggous, since mmap does not update mtime,

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Oct  5 21:25:52 2009 (serrano)                */
+;*    Last change :  Fri Nov 20 19:31:14 2009 (serrano)                */
 ;*    Copyright   :  2006-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -415,8 +415,8 @@
 	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
 		(import-error s))
 	       (else
-		(module-add-access! (car s) (cdr s) abase)
-		(let ((path ((bigloo-module-resolver) (car s) abase)))
+		(module-add-access! (car s) (cdr s) (pwd))
+		(let ((path ((bigloo-module-resolver) (car s) (pwd))))
 		   (evmodule-import! mod (car s) path '() (module-abase) loc))))
 	    (module-abase-set! abase))))
    (if (not (list? clause))
@@ -472,8 +472,8 @@
 	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
 		(from-error s))
 	       (else
-		(module-add-access! (car s) (cdr s) abase)
-		(let ((path ((bigloo-module-resolver) (car s) abase)))
+		(module-add-access! (car s) (cdr s) (pwd))
+		(let ((path ((bigloo-module-resolver) (car s) (pwd))))
 		   (evmodule-from! mod (car s) path '() loc))))
 	    (module-abase-set! abase))))
    (if (not (list? clause))
