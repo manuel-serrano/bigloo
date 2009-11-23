@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Fri Sep  4 18:04:53 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 14:20:29 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler                                          */
 #*=====================================================================*/
@@ -91,9 +91,10 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile" > /dev/null; then
    \rm -f $file.*
-   \rm -f $aout
+   \rm -f $aout*
    echo $cc
 else
    \rm -f $file.*
+   \rm -f $aout*
    echo ""
 fi

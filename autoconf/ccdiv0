@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Fri Sep  4 18:53:10 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 14:18:30 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if the C compiler supports static 0 divisions              */
 #*=====================================================================*/
@@ -62,8 +62,10 @@ EOF
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
+   \rm -f $aout*
    echo "1"
 else
    \rm -f $file.*
+   \rm -f $aout*
    echo "0"
 fi

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Mon Sep  7 08:48:44 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 14:24:03 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for strip                                               */
 #*=====================================================================*/
@@ -62,10 +62,14 @@ EOF
 if ! eval "$BUILDSH $CC $cflags -c $file.c -o $aout" >/dev/null; then
   if [ "`cat $err` " = " " ]; then
     /bin/rm $err
+    /bin/rm $file*
+    /bin/rm $aout*
     echo "true"
     exit 0
   else
     /bin/rm $err
+    /bin/rm $file*
+    /bin/rm $aout*
     echo "true"
     exit 0
   fi
@@ -75,8 +79,12 @@ fi
 #*    We test strip                                                    */
 #*---------------------------------------------------------------------*/
 if ! eval "$BUILDSH $strip $aout > /dev/null" >/dev/null; then
+  /bin/rm $file*
+  /bin/rm $aout*
   echo "true"
 else 
+  /bin/rm $file*
+  /bin/rm $aout*
   echo "$strip"
 fi
 

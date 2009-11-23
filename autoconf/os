@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Sun Sep  6 21:55:48 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 14:21:55 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
 #*    Linux, Cygwin, etc, oses).                                       */
@@ -12,7 +12,6 @@
 
 SH="$HOSTSH"
 
-echo $SH >> /tmp/ttt
 while : ; do
   case $1 in
     "")
