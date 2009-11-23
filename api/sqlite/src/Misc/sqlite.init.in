@@ -13,7 +13,7 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'sqlite
-		  :srfi '(sqlite)
+		  :srfi '(@SQLITESRFI@)
 		  :basename "bigloosqlite"
 		  :module-init '__sqlite_sqlite
 		  :module-eval '__sqlite_makelib

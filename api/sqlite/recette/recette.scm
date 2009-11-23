@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu Nov 12 15:24:44 2009 (serrano)                */
+;*    Last change :  Mon Nov 23 17:28:22 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
@@ -632,7 +632,3 @@
 			 *success*
 			 (length *failure*)
 			 (reverse *failure*))))))
-
-
-   
-

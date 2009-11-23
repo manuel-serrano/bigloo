@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov 23 14:46:42 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 18:18:40 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2797,14 +2797,17 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # SQLITE
   echo "SQLITELIBS=$sqlitelibs" >> $makefile_cfg
   if [ "$sqlitelibs " = " " ]; then
+    sqlitesrfi=sqltiny;
     echo "SQLITESRFI=sqltiny" >> $makefile_cfg
   else
+    sqlitesrfi=sqlite;
     echo "SQLITESRFI=sqlite" >> $makefile_cfg
   fi
     
   echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
   cat api/sqlite/src/Misc/sqlite.init.in \
       | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
+      | sed -e "s|@SQLITESRFI@|$sqlitesrfi|g" \
       >>  lib/$release/sqlite.init
 
   # GSTREAMER

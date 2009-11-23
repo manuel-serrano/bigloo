@@ -1,0 +1,124 @@
+.TH BDB 1 "November 2009" "Bdb (v1.5) (level b)" "Bigloo's Tools"
+.SH NAME
+bdb \- the Bigloo Debugger
+.
+.SH SYNOPSIS
+.B bdb [
+.I options
+.B ]
+.I executable\-file
+.
+.SH DESCRIPTION
+.B Bdb
+is a symbolic debugger for programs compiled and linked with
+.BR bigloo (1).
+.B Bdb
+allows to stop executions by the means of breakpoints. It allows
+to step inside the source code, to inspect global and local variables,
+to inspect the execution stack and to evaluate bigloo expressions.
+.B Bigloo
+is designed to interleave Scheme and C code. In consequence, debugging
+Bigloo programs requires the ability to step into C code.
+.B Bdb 
+allows that because
+.B bdb
+knows how to handle C code and C data structures.
+.B Bdb
+is built on the top of
+.BR gdb (1)
+In consequence, all
+.B gdb
+commands are available through bdb.
+.PP
+When a 
+.B bigloo
+program stops because of an error,
+.B bdb
+stops the execution in the error handler and gives you the opportunity
+to inspect the data structure of your program.
+.TP
+.B *** THIS IS AN ALPHA RELEASE ***
+.PP
+If it fails, if it does not show accurate informations, please, be
+tolerant.
+.
+.SH OPTIONS
+.SS "Getting help"
+.TP
+\fB\-help\fR, \fB\-\-help\fR
+Print a help message.
+.SS "Gdb compatibility"
+.TP
+\fB\-\-quiet\fR
+Do not print version number on startup.
+.SS "Mode and Language"
+.TP
+\fB\-mode \fImode\fR
+Set bdb mode. Legal values are \fBmixte\fR, \fBscheme\fR, and
+\fBc\fR. \fBmixte\fR is used by default.
+.TP
+\fB\-suffix \fIsuffix\fR
+Recognize \fIsuffix\fR as Scheme source
+.SS "Bdb debug configuration:"
+.TP
+\fB\-v[23]\fR
+Set verbose mode on.
+.TP
+\fB\-\-verbose\fR
+Print version information and exit
+.TP
+\fB\-t[234]\fR
+Enables tracing mode
+.TP
+\fB\-active\-prompt\fR
+Enables active prompt (default)
+.TP
+\fB\-no\-active\-prompt\fR
+Disables active prompt
+.SS "bdb environment:"
+.TP
+\fB\-\-bee\fR
+Runs bdb as a Bee client
+.TP
+\fB\-\-emacs\fR, \fB\-\-fullname\fR
+Runs bdb as an Emacs client
+.TP
+\fB\-\-root\-dir \fIdir\fR
+Sets the Bee root directory
+.TP
+\fB\-\-afile \fIafile\fR
+Sets the Bee bglafile file name
+.TP
+\fB\-\-etags \fIetags\fR
+Sets the Bee bgltags file name
+.TP
+\fB\-\-no\-demangling\fR
+Disable demangling (i.e., C mode)
+.TP
+\fB\-\-no\-heap\-explorer\fR
+Disable heap explorer (i.e., C mode)
+.SS "Gdb settings:"
+.TP
+\fB\-\-gdb \fIgdb\fR
+The gdb binary file
+.
+.SH CONFIGURATION FILE
+.TP
+~/.bdbrc
+.SH "SEE ALSO"
+The full documentation for
+.B bdb
+is maintained as a Texinfo manual.  If the
+.B info
+and
+.B bdb
+programs are properly installed at your site, the command
+.IP
+.B info bdb
+.PP
+should give you access to the complete manual.
+.
+.SH AUTHOR
+Manuel SERRANO,
+Manuel.Serrano@inria.fr
+

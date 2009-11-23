@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Wed Nov  4 13:57:41 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 17:11:04 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
@@ -52,7 +52,7 @@ BDB_SOURCES	=
 R5RS_MASTER	= r5rs.texi
 
 MAN		= bigloo.man bglafile.man bgldepend.man bglmake.man bglpp.man \
-                  bglprof.man bgltags.man bglmco.man bgljfile.man
+                  bglprof.man bgltags.man bglmco.man bgljfile.man bdb.man
 
 POPULATION	= Makefile \
                   $(MASTER) $(SOURCES) \
