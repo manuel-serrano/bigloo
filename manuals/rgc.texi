@@ -373,7 +373,7 @@ returns a fresh copy of the matching each time it is called. In consequence,
 @end smalllisp
 @end deffn
 
-@deffn {bigloo rgc procedure} the-substring start length
+@deffn {bigloo rgc procedure} the-substring start end
 Get a copy of a substring of the last matching string. If the @var{length}
 is negative, it is subtracted to the whole match length.
 Here is an example of a rule extracting a part of a match:

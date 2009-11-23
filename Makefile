@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat Nov 21 09:09:21 2009 (serrano)                */
+#*    Last change :  Sun Nov 22 09:09:27 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -167,7 +167,7 @@ boot: checkgmake
 	  $(MAKE) -C runtime heap; \
 	fi
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
-           (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
+           (PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
             LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
             export LD_LIBRARY_PATH; \
             DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
@@ -175,18 +175,18 @@ boot: checkgmake
             $(MAKE) -C runtime boot-jvm); \
         fi
 	if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-           (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
+           (PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
             LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
             export LD_LIBRARY_PATH; \
             DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
             export DYLD_LIBRARY_PATH; \
             $(MAKE) -C runtime boot-dotnet); \
         fi
-	(LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
          export LD_LIBRARY_PATH; \
          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
-         PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
          export PATH; \
          $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
          $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
