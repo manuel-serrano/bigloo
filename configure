@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov 23 13:40:34 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 14:46:42 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1323,11 +1323,13 @@ echo "* threadsupport=$threadsupport" >> $configurelog
 if [ "$threadsupport " = "no " ]; then
    pthreadlibs=no;
    gcthread=no;
+   pthreadhastls=0
 elif [ $hostos = "mingw" ]; then
   # MinGW pre-test
   if [ "$threadsupport " = " " ]; then
      pthreadlibs=no;
      gcthread=no;
+     pthreadhastls=0
   else
      echo "*** ERROR: MinGW does not support threads."
      echo" Disable multithreading and re-configure."
