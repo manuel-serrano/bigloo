@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov 23 10:43:00 2009 (serrano)                */
+#*    Last change :  Mon Nov 23 11:47:30 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1884,6 +1884,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Where to find the socket api
   socketlibs=`$autoconf socket --lib="$socketlibs"` || exit 1
   socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
+ 
+  if [ "$socketlibs " != " " ]; then
+     extralibs="$socketlibs $extralibs"
+  fi
 
   tcpnodelay=`$autoconf setsockopt --lib="$socketlibs" --opt=TCP_NODELAY` || exit 1
   tcpcork=`$autoconf setsockopt --lib="$socketlibs" --opt=TCP_CORK` || exit 1
@@ -2034,7 +2038,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # ld option
   lflags=`$autoconf ldextraopt --lflags="$lflags"` || exit 1
-  rflags=`$autoconf rdynamic --rflags="-rdynamic"` || exit 1
+  if [ "$hostos " != "mingw " ]; then
+    rflags=`$autoconf rdynamic --rflags="-rdynamic"` || exit 1
+  fi
 
   # shared link additional soname option
   if [ "$ldsoname" = "blank" ]; then
