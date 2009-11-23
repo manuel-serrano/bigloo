@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Nov 23 18:20:30 2009 (serrano)                */
+;*    Last change :  Mon Nov 23 18:41:06 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
@@ -89,7 +89,7 @@
 (define-test cond-expand
    (cond-expand
       (sqlite #t)
-      (sqlitny #t)
+      (sqltiny #t)
       (else #f))
    :result #t)
 
