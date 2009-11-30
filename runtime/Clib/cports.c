@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Oct 27 14:14:18 2009 (serrano)                */
+/*    Last change :  Mon Nov 30 09:44:11 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -219,6 +219,7 @@ struct sendfile_info_t {
    int out;
    int in;
    size_t sz;
+   off_t *off;
    long res;
    obj_t port;
 };
@@ -1882,16 +1883,17 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 static void
 gc_sendfile( struct sendfile_info_t *si ) {
    size_t sz = si->sz;
+   off_t *offset = si->off;
    ssize_t res = 0;
    ssize_t n = 0;
    fd_set writefds;
    
 #if DEBUG_SENDCHARS
-   fprintf(stderr, "gc_sendfile out=%p in=%p sz=%d\n", si->out, si->in, si->sz);
+   fprintf(stderr, "gc_sendfile out=%p in=%p offset=%d sz=%d\n", si->out, si->in, offset ? *offset : 0, si->sz);
 #endif
 
    while( sz > 0 ) {
-      if( (n = BGL_SENDFILE( si->out, si->in, 0, sz )) < 0 ) {
+      if( (n = BGL_SENDFILE( si->out, si->in, offset, sz )) < 0 ) {
 	 if( errno == EAGAIN || errno == EINTR ) {
 	    FD_ZERO( &writefds );
 	    FD_SET( si->out, &writefds );
@@ -1944,7 +1946,6 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       
    if( offset >= 0 ) bgl_input_port_seek( ip, offset );
 
-      
    dsz = inp.bufpos - inp.matchstop - 1;
    bgl_output_flush( op, 0, 0 );
 
@@ -2021,7 +2022,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 
 	 n = BGL_SENDFILE( (int)PORT_STREAM( outp ),
 			   fileno( (FILE *)PORT_STREAM( inp ) ),
-			   (offset > 0 ? (off_t *)(&offset) : 0),
+			   0L,
 			   sz );
 	 
 	 bgl_gc_stop_blocking();
@@ -2033,6 +2034,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 	    si.in = fileno( (FILE *)(PORT_STREAM( ip ) ) );
 	    si.sz = sz;
 	    si.port = op;
+	    si.off = 0L;
 
 #ifdef DEBUG_SENDCHARS   
 	    fprintf( stderr, "bgl_sendchars.5: sz=%d offset=%d\n", sz, offset );
@@ -2130,7 +2132,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 si.in = in;
 	 si.sz = sz;
 	 si.port = op;
-
+	 si.off = (offset > 0 ? (off_t *)(&offset) : 0);
+	 
 	 bgl_gc_do_blocking( &gc_sendfile, &si );
 
 	 n = si.res;
