@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Oct 22 16:34:54 2009 (serrano)                */
+/*    Last change :  Mon Nov 30 15:45:11 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -25,6 +25,7 @@
 #include <bigloo_config.h>
 #include <time.h>
 #ifndef _BGL_WIN32_VER
+#   include <sys/types.h> 
 #   include <sys/socket.h>
 #   include <netinet/in.h>
 #   include <arpa/inet.h>
