@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct  8 05:11:58 2001                          */
-;*    Last change :  Mon Dec 17 16:48:18 2007 (serrano)                */
-;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    Last change :  Tue Dec  1 15:36:01 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo libraries                                                 */
 ;*=====================================================================*/
@@ -84,7 +84,7 @@ build a library. In addition check the libraries presented below.
 	 "2.1a")
     ;; Senior
     (lib "Senior"
-	 "http://www-sop.inria.fr/mimosa/rp/Senior/"
+	 "http://www-sop.inria.fr/indes/rp/Senior/"
 	 "Reactive programming with Bigloo"
 	 "J. Demaria"
 	 "2.2b"))])

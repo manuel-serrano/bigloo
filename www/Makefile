@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Tue Nov 10 16:21:18 2009 (serrano)                */
+#*    Last change :  Tue Dec  1 15:21:04 2009 (serrano)                */
 #*    Copyright   :  2001-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -13,8 +13,8 @@ include /users/serrano/prgm/project/bigloo/Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Official release (not necessarily the configured release)        */
 #*---------------------------------------------------------------------*/
-OFFICIALRELEASE	= 3.2b-2
-OFFICIALDATE	= Jun 2009
+OFFICIALRELEASE	= 3.3a
+OFFICIALDATE	= Dec 2009
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */
@@ -65,7 +65,7 @@ BIGLOOZIP	= bigloo`echo $(OFFICIALRELEASE) | sed -e 's/[.]//'`.zip
 BIGLOOWINZIP	= bigloo2.6a-Win32-build3.zip
 BIGLOORPM	= bigloo-$(OFFICIALRELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
 BIGLOODEB	= http://packages.qa.debian.org/b/bigloo.html
-BIGLOOMAEMO	= maemo/bigloo_$(OFFICIALRELEASE)_armel.deb
+BIGLOOMAEMO	= maemo5/bigloo_$(OFFICIALRELEASE)_armel.deb
 BIGLOOMACOSX	= macosx/bigloo-$(OFFICIALRELEASE).dmg
 BIGLOOFDR	= fedora
 BIGLOOWIN32	= http://www.yannis.bres.name/Bigloo

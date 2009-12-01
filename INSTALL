@@ -118,7 +118,7 @@ Testing BIGLOO
        This entry will test *all* configured back-ends.
 
        Postscript and HTML version of the Bigloo documentation can be found at:
-          http://www.inria.fr/mimosa/fp/Bigloo
+          http://www.inria.fr/indes/fp/Bigloo
 
 
 Compiling BIGLOO DEVELOPMENT ENVIRONMENT (BEE)

@@ -3,7 +3,7 @@ Version: @RELEASE@
 Release: 6
 Copyright: see README file
 Group: Development/Languages
-Source: ftp://ftp-sop.inria.fr/mimosa/fp/Bigloo/bigloo@RELEASE@.tar.gz
+Source: ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo@RELEASE@.tar.gz
 Summary: Bigloo is compiler for the Scheme programming language
 %description
 Bigloo is a compiler and interpreter for an extended version of the

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/www/old-bigloo.scr                   */
+;*    serrano/prgm/project/bigloo/www/old-bigloo.skb                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Mon Jan  7 16:56:06 2002 (serrano)                */
-;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    Last change :  Tue Dec  1 15:36:19 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    Global configuration                                             */
 ;*---------------------------------------------------------------------*/
 (define *manuel-serrano*
-  "http://www-sop.inria.fr/mimosa/personnel/Manuel.Serrano")
+  "http://www-sop.inria.fr/indes/personnel/Manuel.Serrano")
 
 ;*---------------------------------------------------------------------*/
 ;*    Document style                                                   */

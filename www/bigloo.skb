@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Wed May 27 09:18:29 2009 (serrano)                */
+;*    Last change :  Tue Dec  1 15:35:52 2009 (serrano)                */
 ;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
@@ -18,13 +18,13 @@
 ;*    Global configuration                                             */
 ;*---------------------------------------------------------------------*/
 (define *manuel-serrano*
-  "http://www.inria.fr/mimosa/Manuel.Serrano")
+  "http://www.inria.fr/indes/Manuel.Serrano")
 
 ;*---------------------------------------------------------------------*/
 ;*    *biglook-url*                                                    */
 ;*---------------------------------------------------------------------*/
 (define *biglook-url*
-   "ftp://ftp-sop.inria.fr/mimosa/fp/Bigloo/apps/biglook-beta-1.0-03Aug07.tgz")
+   "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/apps/biglook-beta-1.0-03Aug07.tgz")
 
 ;*---------------------------------------------------------------------*/
 ;*    menu ...                                                         */
