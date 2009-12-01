@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Nov 22 09:09:27 2009 (serrano)                */
+#*    Last change :  Tue Dec  1 09:01:17 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -645,12 +645,22 @@ jvm-test:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install uninstall
+.PHONY: install install-progs install-devel install-libs uninstall
 
 install: install-progs install-docs
 
-install-progs:
+install-progs: install-devel install-libs
+
+install-devel:
 	$(MAKE) -C comptime install
+	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+	 $(MAKE) -C bde install)
+	$(MAKE) -C bglpkg install
+
+install-libs:
 	$(MAKE) -C runtime install
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc install; \
@@ -663,11 +673,6 @@ install-progs:
          fi)
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.misc)
-	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-	 $(MAKE) -C bde install)
 	$(MAKE) -C api install
 	$(MAKE) -C bglpkg install
 
