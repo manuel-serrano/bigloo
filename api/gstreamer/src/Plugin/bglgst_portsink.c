@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Tue Jul 29 10:08:12 2008                          */
-/*    Last change :  Mon Jan 26 18:27:11 2009 (serrano)                */
+/*    Last change :  Tue Dec  1 18:29:37 2009 (serrano)                */
 /*    Copyright   :  2008-09 Cyprien Nicolas & Manuel Serrano          */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OUTPUT-PORT plugin.                                       */
@@ -289,7 +289,7 @@ bgl_gst_port_sink_render( GstBaseSink * sink, GstBuffer * buffer ) {
 
 redo:
    if (size > 0 && data != NULL) {
-      written = OUTPUT_PORT( portsink->port ).syswrite( PORT_STREAM( portsink->port ), data, size > 32768 ? 32768 : size ); 
+      written = OUTPUT_PORT( portsink->port ).syswrite( PORT_STREAM( portsink->port ), data, size > 32768 ? 32768 : size );
 
       if( written < 0 ) {
 	 GST_ELEMENT_ERROR( portsink, RESOURCE, WRITE,
