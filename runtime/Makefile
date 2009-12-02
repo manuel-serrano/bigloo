@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Oct 15 19:25:24 2009 (serrano)                */
+#*    Last change :  Wed Dec  2 18:33:48 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -737,16 +737,16 @@ install-c:
            (base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
             bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
             if [ ! -d $(LIBDIR) ]; then \
-               mkdir $(LIBDIR); \
+               mkdir -p $(LIBDIR); \
             fi && \
             if [ ! -d $$bbase ]; then \
-               (mkdir $$bbase && chmod a+rx $$bbase); \
+               (mkdir -p $$bbase && chmod a+rx $$bbase); \
             fi && \
             if [ ! -d $$base ]; then \
-               mkdir $$base && chmod a+rx $$base; \
+               mkdir -p $$base && chmod a+rx $$base; \
             fi) && \
 	   if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
-              (mkdir $(LIBDIR)/$(FILDIR) && chmod a+rx $(LIBDIR)/$(FILDIR)); \
+              (mkdir -p $(LIBDIR)/$(FILDIR) && chmod a+rx $(LIBDIR)/$(FILDIR)); \
            fi && \
 	   cp $(BOOTLIBDIR)/bigloo.h $(LIBDIR)/$(FILDIR)/bigloo.h && \
            chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.h && \

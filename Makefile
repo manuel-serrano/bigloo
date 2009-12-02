@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Dec  1 09:01:17 2009 (serrano)                */
+#*    Last change :  Wed Dec  2 18:29:21 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -674,7 +674,6 @@ install-libs:
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.misc)
 	$(MAKE) -C api install
-	$(MAKE) -C bglpkg install
 
 install-docs:
 	$(MAKE) -C manuals install
