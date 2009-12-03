@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Sep  2 19:39:11 2009 (serrano)                */
+;*    Last change :  Thu Dec  3 05:44:35 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -522,6 +522,7 @@
 
     ;; bignum
     (coerce bignum bool        ()               ((lambda (x) #t)))
+    (coerce bignum int         ()               ($bignum->fixnum))
 
     ;; tvector
     (coerce tvector bool       ()               ((lambda (x) #t)))
