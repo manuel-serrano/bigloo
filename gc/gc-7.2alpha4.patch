@@ -1,0 +1,45 @@
+# HG changeset patch
+# User Florian Loitsch <florian.loitsch@inria.fr>
+# Date 1259848140 -3600
+# Node ID 4ec595ab51f5d23de2d4494c3ee78606cea96637
+# Parent  79154bf14be24ab730c11aa325b354fd5d12b8ee
+bigloo-patch
+
+diff -r 79154bf14be2 -r 4ec595ab51f5 Makefile.in
+--- a/Makefile.in	Thu Dec 03 14:47:33 2009 +0100
++++ b/Makefile.in	Thu Dec 03 14:49:00 2009 +0100
+@@ -156,7 +156,7 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
+ am__DEPENDENCIES_1 =
+-am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c checksums.c \
++am__libgc_la_SOURCES_DIST = allchblk.c alloc.c inline-alloc.c blacklst.c checksums.c \
+ 	dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c \
+ 	headers.c malloc.c mallocx.c mark.c mark_rts.c misc.c \
+ 	new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c \
+@@ -167,7 +167,7 @@
+ @PTHREADS_TRUE@	pthread_stop_world.lo
+ @DARWIN_THREADS_TRUE@am__objects_2 = darwin_stop_world.lo
+ @WIN32_THREADS_TRUE@am__objects_3 = win32_threads.lo
+-am_libgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
++am_libgc_la_OBJECTS = allchblk.lo alloc.lo inline-alloc.lo blacklst.lo checksums.lo \
+ 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
+ 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
+ 	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
+@@ -524,7 +524,7 @@
+ 	$(am__append_9) $(am__append_11)
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = bdw-gc.pc
+-libgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
++libgc_la_SOURCES = allchblk.c alloc.c inline-alloc.c blacklst.c checksums.c dbg_mlc.c \
+ 	dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c malloc.c \
+ 	mallocx.c mark.c mark_rts.c misc.c new_hblk.c obj_map.c \
+ 	os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+@@ -765,6 +765,7 @@
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline-alloc.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_mach_dep.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@

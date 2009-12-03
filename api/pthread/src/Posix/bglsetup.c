@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Wed Jul 29 07:25:32 2009 (serrano)                */
+/*    Last change :  Thu Dec  3 19:14:33 2009 (serrano)                */
 /*    Copyright   :  2004-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
