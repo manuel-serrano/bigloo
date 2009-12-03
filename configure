@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec  3 10:58:34 2009 (serrano)                */
+#*    Last change :  Thu Dec  3 18:33:59 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -138,6 +138,9 @@ ln_s="ln -s"
 #*--- gmp version (left blank for autoconfiguration)    ---------------*/
 gmpversion=
 gmpforce=no
+customgmp=no
+gmpsrc=$GMPSRC
+gmpconfigureopt=
 
 #*--- socket library (left empty for automatic configuration) ---------*/
 socketlibs=
@@ -812,6 +815,18 @@ while : ; do
       gmpversion=""
       gmpforce="yes";;
 
+    --customgmp=yes)
+      customgmp=yes;;
+      
+    --customgmp=no)
+      customgmp=no;;
+
+    --gmpsrc=*)
+      gmpsrc="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --gmpconfigureopt=*)
+      gmpconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --enable-*)
       api="`echo $1 | sed 's/--[^-]*-//'`";
       add=1;
@@ -926,7 +941,7 @@ while : ; do
       echo "   --cygwin-dos-path=[dos path]" >&2;
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
-      echo "   --no-gmp (disable GMP libraries support)" >&2;
+      echo "   --no-gmp (disable gmp libraries support)" >&2;
       echo "   --no-ldpreload" >&2;
       echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
       echo "   --sharedcompiler=yes|no [default no] (link Bigloo against shared libraries)" >&2;
@@ -962,6 +977,8 @@ while : ; do
       echo "   --enable-gstreamer-thread" >&2;
       echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
+      echo "   --customgmp=yes|no [default yes]" >&2;
+      echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "" >&2;
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
@@ -1635,6 +1652,27 @@ fi
 echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
+#*    GMP configuration                                                */
+#*---------------------------------------------------------------------*/
+if [ "$customgmp " = "yes " ]; then
+  echo ""
+  echo "Preparing and configuring custom gmp ($gmpsrc)..."
+  echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
+
+  if [ ! -f $gmpsrc ]; then
+    echo "*** ERROR:configure:--gmpsrc. Cannot find gmp \"$gmpsrc\" library."
+    echo "Aborting";
+    exit 1;
+  fi
+
+  gmpversion=`basename $gmpsrc .tar.gz`
+  gmpversion=`basename $gmpversion .tgz`
+
+  (cd gmp && GMP=$gmpsrc; export GC && . ./install-gmp) || exit 1
+  (cd gmp; . ./configure-gmp) || exit 1
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Benchmark mode                                                   */
 #*---------------------------------------------------------------------*/
 if [ "$mode" = "benchmark" ]; then
@@ -1872,27 +1910,31 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   getwd=`$autoconf getwd` || exit 1
 
   # Is gmp available?
-  if [ "$gmpversion " = " " ]; then
+  if [ "$customgmp" != "no" ]; then
+    havegmp=1;
+    featureflags="-srfi enable-gmp $featureflags";
+    extralibs="-lbigloogmp-$release $extralibs"
+  elif [ "$gmpversion " = " " ]; then
     gmpversion=`$autoconf gmp` || exit 1
-  fi
   
-  if [ $gmpversion = "no" ]; then
-    havegmp=0;
-    if [ $gmpforce = "yes" ]; then
+    if [ $gmpversion = "no" ]; then
+      havegmp=0;
+      if [ $gmpforce = "yes" ]; then
 	echo "*** ERROR:configure:--enable-gmp. Cannot find GMP library."
 	echo "Aborting";
-	exit 1;
-    fi
-    if [ "$srfi27_is_enabled " = "yes " ]; then
+ 	exit 1;
+      fi
+      if [ "$srfi27_is_enabled " = "yes " ]; then
 	echo "*** ERROR:configure: Cannot find GMP library required by SRFI27."
         echo "Please install GMP first or re-configure with \"--disable-srfi27\"."
 	echo "Aborting";
 	exit 1;
+      fi
+    else
+      havegmp=1;
+      featureflags="-srfi enable-gmp $featureflags";
+      extralibs="-lgmp $extralibs"
     fi
-  else
-    havegmp=1;
-    featureflags="-srfi enable-gmp $featureflags";
-    extralibs="-lgmp $extralibs"
   fi
 
   # Where to find the socket api
@@ -1985,8 +2027,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
   fi
 
-  long_limbs=`$autoconf limbs --type="long"` || exit 1
-  longlong_limbs=`$autoconf limbs --type="$longlong"` || exit 1
+  long_limbs=`$autoconf limbs --type="long" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
+  longlong_limbs=`$autoconf limbs --type="$longlong" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
 
   long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
   elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1
@@ -2659,6 +2701,13 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
      echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
   fi
   echo >> $makefile_cfg
+
+  # The GMP library
+  if [ "$customgmp " = "yes " ]; then
+    echo "CUSTOMGMP=$gmpversion" >> $makefile_cfg
+  else
+    echo "CUSTOMGMP=no" >> $makefile_cfg
+  fi
 
   # additional bigloo compiler link flags (some architecture such as AIX
   # require a special to link huge executable)

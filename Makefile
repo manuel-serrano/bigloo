@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Dec  3 11:00:01 2009 (serrano)                */
+#*    Last change :  Thu Dec  3 18:38:03 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -135,7 +135,8 @@ DIRECTORIES	= cigloo \
                   bdl \
 		  pnet2ms \
                   bglpkg \
-                  gc
+                  gc \
+                  gmp
 
 #*---------------------------------------------------------------------*/
 #*    The file that have to be removed when building a distrib.        */
@@ -154,6 +155,9 @@ build: boot
 boot: checkgmake
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
+        fi
+	if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gmp boot; \
         fi
 	if [ -x $(BGLBUILDBIGLOO) ]; then \
 	  $(MAKE) -C runtime .afile && \
@@ -268,6 +272,8 @@ bigboot:
 dobigboot:
 	@ $(MAKE) -C gc clean
 	@ $(MAKE) -C gc boot
+	@ $(MAKE) -C gmp clean
+	@ $(MAKE) -C gmp boot
 	@ mkdir -p bin
 	@ mkdir -p lib/$(RELEASE)
 	@ (cd runtime && $(MAKE) bigboot BBFLAGS="-w")
@@ -327,8 +333,14 @@ fullbootstrap:
            echo "$(BIGLOO).$$dt.gz:"; \
            $(GZIP) $(BIGLOO).$$dt$(EXE_SUFFIX))
 	@ ./configure --bootconfig
-	$(MAKE) -C gc clean
-	$(MAKE) -C gc boot
+	if [ "$(GCCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gc clean; \
+	  $(MAKE) -C gc boot; \
+        fi
+	if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gmp clean; \
+	  $(MAKE) -C gmp boot; \
+        fi
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
@@ -665,6 +677,9 @@ install-libs:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc install; \
         fi
+	if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gmp install; \
+        fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.config)
 	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
@@ -700,6 +715,9 @@ uninstall: uninstall-bee
 	$(MAKE) -C comptime uninstall
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc uninstall uninstall-thread; \
+        fi
+	if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gmp uninstall; \
         fi
 	$(MAKE) -C runtime uninstall
 	-$(MAKE) -C manuals uninstall
@@ -744,6 +762,7 @@ clean:
           fi
 	$(RM) -f configure.log
 	$(MAKE) -C gc clean
+	$(MAKE) -C gmp clean
 	(cd comptime && $(MAKE) clean)
 	(cd runtime && $(MAKE) clean)
 	(cd manuals && $(MAKE) clean)
@@ -768,6 +787,7 @@ cleanall:
 	$(RM) -f configure.log
 	$(RM) -f autoconf/runtest
 	$(MAKE) -C gc cleanall
+	$(MAKE) -C gmp cleanall
 	(cd comptime && $(MAKE) cleanall)
 	(cd runtime && $(MAKE) cleanall)
 	(cd manuals && $(MAKE) cleanall)

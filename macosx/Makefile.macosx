@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr 24 07:14:06 2009                          */
-#*    Last change :  Fri Oct  9 14:33:26 2009 (serrano)                */
+#*    Last change :  Thu Dec  3 17:38:42 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Makefile for Bigloo MacOSX port. It builds the Bigloo's .dmg.    */
@@ -84,7 +84,10 @@ dmg: $(DMG)
 
 # typical configure
 configure:
-	./configure --jvm=yes --enable-thread --lispdir="$(BEE_EMACS_PATH)" --prefix=$(PREFIX)
+	if [ "$(GMPSRC) " = " " ]; then
+          echo "Re-run with make -f macosx/Makefile.macosx dmg GMPSRC=\"path-to-tarball\""
+        fi
+	./configure --jvm=yes --enable-thread --lispdir="$(BEE_EMACS_PATH)" --prefix=$(PREFIX) gmpconfigureopt=--host=none-apple-darwin --customgmp=yes --gmpsrc=$(GMPSRC)
 
 dirs:
 	mkdir -p $(BGL_ROOT) && \
