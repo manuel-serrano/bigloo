@@ -754,7 +754,7 @@ namespace bigloo
 
       public static int bgl_bignum_to_long( bignum n )
 	 {
-	    return n.IntegerValue();
+	    return n.value.IntValue();
 	 }
 
       public static bignum ELONG_TO_BIGNUM( long  n )
@@ -844,7 +844,7 @@ namespace bigloo
 
 	 try
 	 {
-	    res = new bint(Convert.ToInt32(str, r));
+	    res = BINT(Convert.ToInt32(str, r));
 	 }
 	 catch (OverflowException e)
 	 {
@@ -1044,11 +1044,21 @@ namespace bigloo
 	    return new bignum(n1.value + n2.value);
 	 }
 
+      public static Object BGL_SAFE_BX_TO_FX( Object n )
+	 {
+	    bignum o = (bignum)n;
+	    if( o.value.bitCount() < 32 ) {
+	       return BINT( o.value.IntValue() );
+	    } else {
+	       return n;
+	    }
+	 }
+	       
       public static Object SAFE_PLUS_FX( int n1, int n2 )
       {
 	 try
 	 {
-	    return new bint(checked(n1 + n2));
+	    return BINT(checked(n1 + n2));
 	 }
 	 catch (OverflowException e)
 	 {
@@ -1108,7 +1118,7 @@ namespace bigloo
       {
 	 try
 	 {
-	    return new bint(checked(n1 - n2));
+	    return BINT(checked(n1 - n2));
 	 }
 	 catch (OverflowException e)
 	 {
@@ -1168,7 +1178,7 @@ namespace bigloo
       {
 	 try
 	 {
-	    return new bint(checked(n1 * n2));
+	    return BINT(checked(n1 * n2));
 	 }
 	 catch (OverflowException e)
 	 {
@@ -1226,7 +1236,7 @@ namespace bigloo
 	 }
 	 else
 	 {
-	    return new bint(n1 / n2);
+	    return BINT(n1 / n2);
 	 }
       }
 

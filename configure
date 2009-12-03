@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec  1 15:44:06 2009 (serrano)                */
+#*    Last change :  Thu Dec  3 10:58:34 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -17,6 +17,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=3.3a
+version=-2
 bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -2546,6 +2547,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The Bigloo release number
   echo "RELEASE=$release" >> $makefile_cfg
+  echo "VERSION=$version" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The repository

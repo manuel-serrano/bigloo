@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Fri Dec 19 17:13:31 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Thu Dec  3 11:00:50 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -53,7 +53,8 @@
        (import __bignum)))
 
    (extern (macro $bignum?::bool (::obj) "BIGNUMP")
-	   
+
+	   (macro $bignum->fixnum-safe::obj (::obj) "BGL_SAFE_BX_TO_FX")
 	   (macro +fx-safe::obj (::long ::long) "BGL_SAFE_PLUS_FX")
 	   (macro -fx-safe::obj (::long ::long) "BGL_SAFE_MINUS_FX")
 	   (macro *fx-safe::obj (::long ::long) "BGL_SAFE_MUL_FX")
@@ -107,6 +108,8 @@
 		    "DIVREM_BIGNUM")
 	    (method static $quotientbx::bignum (::bignum ::bignum)
 		    "QUOTIENT_BIGNUM")
+	    (method static $bignum->fixnum-safe::obj (::obj)
+		    "BGL_SAFE_BX_TO_FX")
 	    (method static $quotientfx-safe::obj (::long ::long)
 		    "SAFE_DIV_FX")
 	    (method static $quotientelong-safe::obj (::elong ::elong)

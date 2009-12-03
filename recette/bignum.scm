@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Fri May 30 09:18:30 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Thu Dec  3 13:16:18 2009 (serrano)                */
+;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
 ;*=====================================================================*/
@@ -38,7 +38,7 @@
    (test "bignum?.5" (bignum? "#z1") #f)
    (test "number?.1" (number? #z1) #t)
    (test "integer?.1" (integer? #z1) #t)
-   (test "write.1" (with-output-to-string (lambda () (write (+ #z123456 1))))
+   (test "write.1" (with-output-to-string (lambda () (write #z123457)))
 	 "#z123457")
    (test "read.1" (with-input-from-string "#z123457" read) (+ #z123456 1))
    (test "string->bignum.1" (string->bignum "1000111010110000111110101111101010101" 2) #z76606824277)
@@ -108,6 +108,10 @@
    (test "bignum.30" (>bx (string->bignum "ABCDEF" 16)
 			  (string->bignum "ABCDEE" 16)) #t)
    (test "bignum.31" (*bx #z10000 #z0) #z0)
-   (test "bignum.32" (*bx #z10000000000000000000000000000000000 #z0) #z0))
+   (test "bignum.32" (*bx #z10000000000000000000000000000000000 #z0) #z0)
+   (test "bignum.33" (fixnum? (+ 34 (car (list 35)))) #t)
+   (test "bignum.34" (fixnum? (+ 34 (car (list #z35)))) #t)
+   (test "bignum.35" (fixnum? (+ #z34 (car (list #z35)))) #t)
+   (test "bignum.36" (fixnum? (+ #z34 (car (list 35)))) #t))
 
  

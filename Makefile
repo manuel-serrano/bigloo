@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Dec  2 18:29:21 2009 (serrano)                */
+#*    Last change :  Thu Dec  3 11:00:01 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -437,7 +437,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz:
 	@ $(RM) -f Makefile.config;
 	@ (cd .. && \
            mv bigloo bigloo$(RELEASE) && \
-           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz bigloo$(RELEASE))
+           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE))
 	@ echo "$@ Done..."
 	@ echo "-------------------------------"
 
@@ -532,23 +532,23 @@ true-comptime-jvm:
 #*---------------------------------------------------------------------*/
 rpm: bigloo$(RELEASE).spec bigloo$(RELEASE).$(RPMARCH).rpm
 
-bigloo$(RELEASE).$(RPMARCH).rpm: $(RPMSOURCESDIR)/bigloo$(RELEASE).tar.gz
+bigloo$(RELEASE)$(VERSION).$(RPMARCH).rpm: $(RPMSOURCESDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 	@ $(SUDO) rpm -bb --rmsource bigloo$(RELEASE).spec
 	@ $(SUDO) cp $(RPMRPMDIR)/$(RPMARCH)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm $(DISTRIBDIR)
 	@ $(SUDO) chown $$LOGNAME $(DISTRIBDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
 	@ $(SUDO) $(RM) $(RPMRPMDIR)/$(RPMARCH)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
 	@ echo "Removing $(RPMBUILDDIR)/bigloo$(RELEASE)"
 	@ $(SUDO) $(RM) -rf $(RPMBUILDDIR)/bigloo$(RELEASE)
-	@ echo "Removing $(RPMSOURCEDIR)/bigloo$(RELEASE).tar.gz"
-	@ $(SUDO) $(RM) -rf $(RPMSOURCEDIR)/bigloo$(RELEASE).tar.gz
+	@ echo "Removing $(RPMSOURCEDIR)/bigloo$(RELEASE)$(VERSION).tar.gz"
+	@ $(SUDO) $(RM) -rf $(RPMSOURCEDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 	@ $(RM) -f bigloo$(RELEASE).spec
 
 .PHONY: $(RPMSOURCESDIR)/bigloo$(RELEASE).tar.gz
 
-$(RPMSOURCESDIR)/bigloo$(RELEASE).tar.gz:
+$(RPMSOURCESDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ echo "building bigloo.spec for libc version: $(LIBCVERSION)"
-	@ echo "Copying bigloo.tar.gz into $(RPMSOURCESDIR)/bigloo$(RELEASE).tar.gz"
-	@ $(SUDO) cp $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz $(RPMSOURCESDIR)/bigloo$(RELEASE).tar.gz
+	@ echo "Copying bigloo.tar.gz into $(RPMSOURCESDIR)/bigloo$(RELEASE)$(VERSION).tar.gz"
+	@ $(SUDO) cp $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz $(RPMSOURCESDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 
 #*---------------------------------------------------------------------*/
 #*    bigloo$(RELEASE).spec                                            */
@@ -580,8 +580,8 @@ ftplibrary:
 ftp:
 	@ rcp $(DISTRIBDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm \
               $(FTPHOSTNAME):$(FTPDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
-	@ rcp $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz         \
-              $(FTPHOSTNAME):$(FTPDIR)/bigloo$(RELEASE).tar.gz
+	@ rcp $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz         \
+              $(FTPHOSTNAME):$(FTPDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 	@ (rsh $(FTPHOSTNAME) chmod a+rx -R $(FTPDIR))
 
 #*---------------------------------------------------------------------*/

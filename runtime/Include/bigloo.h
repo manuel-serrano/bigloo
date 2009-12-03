@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Sep 25 16:23:23 2009 (serrano)                */
+/*    Last change :  Thu Dec  3 10:30:49 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2133,6 +2133,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #  define BXPOSITIVE( x ) (BXSIZ( x ) > 0)
 #  define BXNEGATIVE( x ) (BXSIZ( x ) < 0)
 
+#  define BGL_SAFE_BX_TO_FX( x ) bgl_safe_bignum_to_fixnum( x )
 #  define BGL_SAFE_PLUS_FX( x, y ) bgl_safe_plus_fx( x, y )
 #  define BGL_SAFE_MINUS_FX( x, y ) bgl_safe_minus_fx( x, y )
 #  define BGL_SAFE_MUL_FX( x, y ) bgl_safe_mul_fx( x, y )
@@ -2148,6 +2149,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
    
 extern gmp_randstate_t gmp_random_state;
    
+extern obj_t bgl_safe_bignum_to_fixnum( obj_t );
 extern obj_t bgl_safe_plus_fx( long, long );
 extern obj_t bgl_safe_minus_fx( long, long );
 extern obj_t bgl_safe_mul_fx( long, long );
@@ -2165,6 +2167,7 @@ extern obj_t bgl_safe_quotient_llong( BGL_LONGLONG_T, BGL_LONGLONG_T );
 #else
 #  define BGL_BIGNUM_U16VECT( bx ) (BIGNUM( bx ).u16vect)
 
+#  define BGL_SAFE_BX_TO_FX( x ) (x)
 #  define BGL_SAFE_PLUS_FX( x, y ) BINT( (x) + (y) )
 #  define BGL_SAFE_MINUS_FX( x, y ) BINT( (x) - (y) )
 #  define BGL_SAFE_MUL_FX( x, y ) BINT( (x) * (y) )

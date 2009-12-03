@@ -1050,6 +1050,15 @@ public final class foreign
 	 return (n1 / n2);
       }
 
+   public static Object BGL_SAFE_BX_TO_FX(Object o)
+      {
+	 if( ((bignum)o).value.bitCount() < 32 ) {
+	    return BINT( ((bignum)o).value.intValue() );
+	 }
+	 else
+	    return o;
+      }
+   
    public static Object SAFE_DIV_FX(int n1, int n2)
       {
 	 if (n1 == Integer.MIN_VALUE && n2 == -1)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Thu Nov 12 16:04:15 2009 (serrano)                */
+;*    Last change :  Thu Dec  3 13:15:07 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -333,12 +333,14 @@
 	 (opbx (symbol-append op 'bx))
 	 (opfl (symbol-append op 'fl))
 	 (opelong (symbol-append op 'elong))
-	 (opllong (symbol-append op 'llong)))
+	 (opllong (symbol-append op 'llong))
+	 (oppost 'begin))
       (case op
 	 ((+ - * /)
 	  (set! opfx (symbol-append opfx '-safe))
 	  (set! opelong (symbol-append opelong '-safe))
-	  (set! opllong (symbol-append opllong '-safe))))
+	  (set! opllong (symbol-append opllong '-safe))
+	  (set! oppost '$bignum->fixnum-safe)))
       `(cond
 	  ((fixnum? ,x)
 	   (cond
@@ -351,7 +353,7 @@
 	      ((llong? y)
 	       (,opllong (fixnum->llong ,x) ,y))
 	      ((bignum? ,y)
-	       (,opbx (fixnum->bignum ,x) ,y))
+	       (,oppost (,opbx (fixnum->bignum ,x) ,y)))
 	      (else
 	       (error ',op "not a number" ,y))))
 	  ((flonum? ,x)
@@ -399,9 +401,9 @@
  	  ((bignum? ,x)
  	   (cond
  	      ((bignum? ,y)
- 	       (,opbx ,x ,y))
+ 	       (,oppost (,opbx ,x ,y)))
  	      ((fixnum? ,y)
- 	       (,opbx ,x (fixnum->bignum ,y)))
+ 	       (,oppost (,opbx ,x (fixnum->bignum ,y))))
  	      ((flonum? ,y)
  	       (,opfl (bignum->flonum ,x) ,y))
  	      ((elong? ,y)
