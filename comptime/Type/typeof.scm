@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Thu Apr 22 11:11:51 2004 (serrano)                */
-;*    Copyright   :  1996-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec  3 09:38:27 2009 (serrano)                */
+;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -32,6 +32,8 @@
        *bnil*)
       ((fixnum? atom)
        *long*)
+      ((bignum? atom)
+       *bignum*)
       ((real? atom)
        *real*)
       ((boolean? atom)
