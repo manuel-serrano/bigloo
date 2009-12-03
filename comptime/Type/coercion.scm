@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Thu Dec  3 09:43:24 2009 (serrano)                */
-;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov  7 16:52:29 2006 (serrano)                */
+;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
 ;*=====================================================================*/
@@ -78,7 +78,6 @@
    [assert (check coerce) (check-coercion? check coerce)]
    (trace (ast 2) "add-coercion!:" (shape from) " -> " (shape to)
 	  " check: " check " coerce: " coerce #\Newline)
-   (tprint "ADD-COERCION: " (shape from) " -> " (shape to) #\Newline)
    (if (null? check) (set! check '(())))
    (if (null? coerce) (set! coerce '(())))
    (let ((from (get-aliased-type from))
