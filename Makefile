@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Dec  3 18:38:03 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 06:49:50 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -153,11 +153,11 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*---------------------------------------------------------------------*/
 build: boot
 boot: checkgmake
-	if [ "$(GCCUSTOM)" = "yes" ]; then \
-	  $(MAKE) -C gc boot; \
-        fi
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp boot; \
+        fi
+	if [ "$(GCCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gc boot; \
         fi
 	if [ -x $(BGLBUILDBIGLOO) ]; then \
 	  $(MAKE) -C runtime .afile && \

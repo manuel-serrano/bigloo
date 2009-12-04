@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  4 06:13:57 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 06:49:41 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2698,9 +2698,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # The GMP library
   if [ "$customgmp " = "yes " ]; then
+    echo "GMPCUSTOM=yes" >> $makefile_cfg
     echo "CUSTOMGMP=$gmpversion" >> $makefile_cfg
   else
-    echo "CUSTOMGMP=no" >> $makefile_cfg
+    echo "GMPCUSTOM=no" >> $makefile_cfg
   fi
 
   # additional bigloo compiler link flags (some architecture such as AIX
