@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Thu Dec  3 17:42:48 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 06:17:22 2009 (serrano)                */
 #*    Copyright   :  2007-09 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GMP.                            */
@@ -15,6 +15,7 @@ bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
 
 tar=$TAR
 patch=$PATCH
+wget=$WGET
 
 if [ "$tar " = " " ]; then
   tar=tar
@@ -22,6 +23,24 @@ fi
 
 if [ "$patch " = " " ]; then
   patch=patch
+fi
+
+if [ "$wget " = " " ]; then
+  wget=wget
+fi
+
+remote=
+
+if [ "`echo $src | grep '^http://'` " != " " \
+     -o "`echo $src | grep '^ftp://'` " != " " ]; then
+  $wget $src -O `basename $src`
+  src=`basename $src`
+fi
+
+if [ ! -f $src ]; then
+  echo "*** ERROR:configure:--gmpsrc. Cannot find gmp \"$src\" library."
+  echo "Aborting";
+  exit 1;
 fi
 
 tar xfz $src || (echo "tar xfz $src failed"; exit 1)

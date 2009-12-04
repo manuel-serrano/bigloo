@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr 24 07:14:06 2009                          */
-#*    Last change :  Thu Dec  3 17:38:42 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 06:12:52 2009 (serrano)                */
 #*    Copyright   :  2009 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Makefile for Bigloo MacOSX port. It builds the Bigloo's .dmg.    */
@@ -57,6 +57,7 @@ DMG=$(DMG_DIR)/$(DMG_NAME)
 
 FIND=find
 HDIUTIL=hdiutil
+GMPSRC=ftp://ftp.gmplib.org/pub/gmp-4.3.1/gmp-4.3.1.tar.gz
 
 -include Makefile.config
 

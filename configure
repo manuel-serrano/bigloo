@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec  3 18:33:59 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 06:13:57 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -717,7 +717,7 @@ while : ; do
     --dotnetclrstyle=*)
       dotnetclrstyle="`echo $1 | sed 's/^[^=]*=//'`";;
 
-    --customgc=yes)
+    --customgc=yes|--customgc)
       customgc=yes;;
 
     --customgc=no)
@@ -815,7 +815,7 @@ while : ; do
       gmpversion=""
       gmpforce="yes";;
 
-    --customgmp=yes)
+    --customgmp=yes|--customgmp)
       customgmp=yes;;
       
     --customgmp=no)
@@ -1658,12 +1658,6 @@ if [ "$customgmp " = "yes " ]; then
   echo ""
   echo "Preparing and configuring custom gmp ($gmpsrc)..."
   echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
-
-  if [ ! -f $gmpsrc ]; then
-    echo "*** ERROR:configure:--gmpsrc. Cannot find gmp \"$gmpsrc\" library."
-    echo "Aborting";
-    exit 1;
-  fi
 
   gmpversion=`basename $gmpsrc .tar.gz`
   gmpversion=`basename $gmpversion .tgz`
