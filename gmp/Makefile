@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Dec  3 18:38:53 2009 (serrano)                */
+#*    Last change :  Fri Dec  4 07:01:48 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -49,6 +49,7 @@ $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX):
              SONAME=libbigloogmp-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \
              EXTRALIBS= \
+             CLOSELIBS= -lm -lc \
              OBJECTS="$(OBJDIR)/*.o"
 
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a:
