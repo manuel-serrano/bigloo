@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Dec  2 18:33:48 2009 (serrano)                */
+#*    Last change :  Sun Dec  6 14:18:04 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -737,7 +737,7 @@ install-c:
            (base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
             bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
             if [ ! -d $(LIBDIR) ]; then \
-               mkdir -p $(LIBDIR); \
+               mkdir -p $(LIBDIR) && chmod a+rx $(LIBDIR); \
             fi && \
             if [ ! -d $$bbase ]; then \
                (mkdir -p $$bbase && chmod a+rx $$bbase); \

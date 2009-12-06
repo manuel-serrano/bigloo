@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Thu Oct 22 17:13:53 2009 (serrano)                */
+;*    Last change :  Sat Dec  5 07:25:58 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -17,6 +17,8 @@
    (import __web_xml)
    
    (export (webdav-directory->path-list::pair-nil ::bstring
+						  #!key (timeout 0) (proxy #f))
+	   (webdav-directory->prop-list::pair-nil ::bstring
 						  #!key (timeout 0) (proxy #f))
 	   (webdav-directory->list::pair-nil ::bstring
 					     #!key (timeout 0) (proxy #f))
@@ -104,6 +106,27 @@
 			  (webdav-prop-path x))
 		  (format "~a://~a:~a~a" protocol host port
 			  (webdav-prop-path x))))
+	   (webdav-propfind url timeout proxy))))
+      
+;*---------------------------------------------------------------------*/
+;*    webdav-directory->prop-list ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Returns the list of properties of a webdav repository. The       */
+;*    files can be obtained with regular HTTP GET commands.            */
+;*---------------------------------------------------------------------*/
+(define (webdav-directory->prop-list url #!key (timeout 0) (proxy #f))
+   (multiple-value-bind (protocol userinfo host port _)
+      (url-parse url)
+      (map (lambda (x)
+	      (let ((href (if userinfo
+			      (format "~a://~a@~a:~a~a" protocol userinfo host port
+				      (webdav-prop-path x))
+			      (format "~a://~a:~a~a" protocol host port
+				      (webdav-prop-path x)))))
+		 (list href
+		       :type (webdav-prop-type x)
+		       :modified (webdav-prop-modified x)
+		       :size (webdav-prop-size x))))
 	   (webdav-propfind url timeout proxy))))
       
 ;*---------------------------------------------------------------------*/
