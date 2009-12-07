@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Oct  2 09:59:03 2009 (serrano)                */
+#*    Last change :  Mon Dec  7 09:38:15 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -208,7 +208,7 @@ site-lisp:
           echo "*** ERROR: Emacs lisp dir not configured!"; \
           exit 1; \
         else \
-          mkdir -p $(DESTDIR)$(EMACSDIR); \
+          mkdir -p $(DESTDIR)$(EMACSDIR) && chmod a+rx $(DESTDIR)$(EMACSDIR); \
         fi \
 
 #*---------------------------------------------------------------------*/
