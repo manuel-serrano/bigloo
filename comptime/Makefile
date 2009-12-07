@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Oct 15 19:38:31 2009 (serrano)                */
+#*    Last change :  Mon Dec  7 16:13:43 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -582,6 +582,7 @@ dist-updates:
 .PHONY: boot doboot
 
 boot: 
+	touch $(AFILE)
 	$(MAKE) doboot SCMOBJSUFFIX="" COBJSUFFIX=%.o
 
 doboot: $(O_OBJECTS)

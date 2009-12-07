@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Dec  6 14:18:04 2009 (serrano)                */
+#*    Last change :  Mon Dec  7 16:14:03 2009 (serrano)                */
 #*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -689,6 +689,7 @@ one-distlib: $(C_OBJECTS)
 #*    Boot the library on a bare system.                               */
 #*---------------------------------------------------------------------*/
 boot: dirs includes
+	touch $(AFILE)
 	@ $(MAKE) boot-libs
 
 boot-libs:
