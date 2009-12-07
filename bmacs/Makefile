@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Dec  7 09:38:15 2009 (serrano)                */
+#*    Last change :  Mon Dec  7 09:43:39 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -200,7 +200,7 @@ doinstall: bmacs-config.el site-lisp
           fi; \
         done
 	chmod $(BMASK) $(DESTDIR)$(EMACSDIR)/*.el*
-	@ mkdir -p $(DESTDIR)$(EMACSDIR)/etc
+	@ mkdir -p $(DESTDIR)$(EMACSDIR)/etc && chmod a+rx $(DESTDIR)$(EMACSDIR)/etc
 	@ cp etc/bass-snap.au $(DESTDIR)$(EMACSDIR)/etc
 
 site-lisp:
