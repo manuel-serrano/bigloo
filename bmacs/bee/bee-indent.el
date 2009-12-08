@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Fri Feb 22 11:57:08 2008 (serrano)                */
+;*    Last change :  Tue Dec  8 08:31:13 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -681,6 +681,7 @@ of the start of the containing expression."
 ;; hop
 (put '$roundtrip                'bee-indent-hook 1)
 (put 'service                   'bee-indent-hook 1)
+(put 'add-event-listener!       'bee-indent-hook 2)
 
 ;; sql
 (put 'sqlite-exec               'bee-indent-hook 1)
