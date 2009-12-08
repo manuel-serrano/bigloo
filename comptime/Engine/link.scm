@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Wed May 23 15:32:53 2007 (serrano)                */
-;*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec  8 07:27:25 2009 (serrano)                */
+;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
 ;*    -------------------------------------------------------------    */

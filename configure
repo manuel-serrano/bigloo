@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  4 06:49:41 2009 (serrano)                */
+#*    Last change :  Tue Dec  8 07:40:40 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2272,7 +2272,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       osclass="mingw"
       pathseparator=";"
       fileseparator="/"
-      ostmp="$buildtmpdir"
+      ostmp="$buildtmp"
       staticlibsuf="a"    
       ucs2displayable=0;;
 
@@ -2287,10 +2287,14 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       osclass="unix"
       pathseparator=":"
       fileseparator="/"
-      ostmp="$buildtmpdir"
+      ostmp="$buildtmpr"
       staticlibsuf="a"    
       ucs2displayable=0;;
   esac
+
+  if [ "$ostmp " = " " ]; then
+    ostmp=/tmp
+  fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet bigloo_config_sch
   for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet $bigloo_config_sch; do

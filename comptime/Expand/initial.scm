@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Oct 13 12:11:12 2009 (serrano)                */
+;*    Last change :  Tue Dec  8 07:31:49 2009 (serrano)                */
 ;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -44,9 +44,22 @@
    (export  (install-initial-expander)))
 
 ;*---------------------------------------------------------------------*/
+;*    installedp ...                                                   */
+;*---------------------------------------------------------------------*/
+(define installedp #f)
+
+;*---------------------------------------------------------------------*/
 ;*    install-initial-expander ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (install-initial-expander)
+   (unless installedp
+      (set! installedp #t)
+      (install-expanders)))
+
+;*---------------------------------------------------------------------*/
+;*    install-expanders ...                                            */
+;*---------------------------------------------------------------------*/
+(define (install-expanders)
    ;; In order to be able to install O-macros,
    ;; we first of all, we perform Oenv initialization
    (initialize-Oenv!)

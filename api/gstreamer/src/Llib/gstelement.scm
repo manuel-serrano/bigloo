@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:46:10 2007                          */
-;*    Last change :  Wed Oct 14 21:25:55 2009 (serrano)                */
+;*    Last change :  Tue Dec  8 07:49:46 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstElement wrapper                                               */
@@ -122,12 +122,17 @@
 (define (gst-element-link! el0::gst-element el1::gst-element . els)
    
    (define (link! src dst)
-      (unless ($gst-element-link! ($gst-element (gst-element-$builtin src))
-				  ($gst-element (gst-element-$builtin dst)))
-	 (raise (instantiate::&gst-error
-		   (proc 'gst-element-link!)
-		   (msg "Element cannot be linked")
-		   (obj (list src dst))))))
+      (if (gst-element? dst)
+	  (unless ($gst-element-link! ($gst-element (gst-element-$builtin src))
+				      ($gst-element (gst-element-$builtin dst)))
+	     (raise (instantiate::&gst-error
+		       (proc 'gst-element-link!)
+		       (msg "Element cannot be linked")
+		       (obj (list src dst)))))
+	  (raise (instantiate::&gst-error
+		    (proc 'gst-element-link!)
+		    (msg "Illegal element ")
+		    (obj dst)))))
       
    (link! el0 el1)
    (let loop ((src el1)

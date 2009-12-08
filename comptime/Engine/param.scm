@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Oct 15 19:28:44 2009 (serrano)                */
+;*    Last change :  Tue Dec  8 07:25:15 2009 (serrano)                */
 ;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -324,9 +324,9 @@
 ;; the tmp directory
 (param-define *bigloo-tmp*
 	      "The tmp directory name"
-	      (let ((Venv (getenv "TMPDIR")))
-		 (if (string? Venv)
-		     Venv
+	      (let ((tmp (getenv "TMPDIR")))
+		 (if (string? tmp)
+		     tmp
 		     (os-tmp))))
 ;; Shall we include the license in the C files ?
 (param-define *bigloo-licensing?*
