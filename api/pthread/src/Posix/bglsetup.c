@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Thu Dec  3 19:14:33 2009 (serrano)                */
+/*    Last change :  Wed Dec  9 09:59:42 2009 (serrano)                */
 /*    Copyright   :  2004-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
@@ -38,7 +38,9 @@ bglpth_setup_gc() {
 #endif
 
 #if( BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_DO_BLOCKING )
-   extern void GC_do_blocking();
+#if( BGL_GC_VERSION == 710 )  
+   extern void *GC_do_blocking();
+#endif
    
    bgl_gc_do_blocking = &GC_do_blocking;
 #endif

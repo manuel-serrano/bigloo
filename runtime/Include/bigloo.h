@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Dec  3 10:30:49 2009 (serrano)                */
+/*    Last change :  Wed Dec  9 10:01:48 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2850,7 +2850,7 @@ BGL_RUNTIME_DECL void (*bgl_gc_stop_blocking )( void );
 #endif
    
 #if( BGL_GC_HAVE_DO_BLOCKING )
-BGL_RUNTIME_DECL void (*bgl_gc_do_blocking )( void (*fun)(), void * );
+BGL_RUNTIME_DECL void *(*bgl_gc_do_blocking )( void (*fun)(), void * );
 #endif
    
 BGL_RUNTIME_DECL obj_t bgl_make_client_socket( obj_t, int, int, obj_t, obj_t );

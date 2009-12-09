@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Jun 19 15:18:00 2009 (serrano)                */
+/*    Last change :  Wed Dec  9 09:59:52 2009 (serrano)                */
 /*    Copyright   :  2004-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -27,7 +27,7 @@ static bool_t bgl_act2_default( obj_t o1, obj_t o2 ) { return 1; }
 static bool_t bgl_act2long_default( obj_t o1, long o2 ) { return 1; }
 static bool_t bgl_act3long_default( obj_t o1, obj_t o2, long o3 ) { return 1; }
 
-static void bgl_gc_do_blocking_default( void (*fun)(), void *o2 ) {
+static void *bgl_gc_do_blocking_default( void (*fun)(), void *o2 ) {
    fun( o2 );
 }
 
@@ -49,7 +49,7 @@ static obj_t (*bgl_condvar_init)( obj_t ) = &bgl_init_default;
 BGL_RUNTIME_DEF void (*bgl_gc_start_blocking)( void ) = &bgl_act0_default;
 BGL_RUNTIME_DEF void (*bgl_gc_stop_blocking)( void ) = &bgl_act0_default;
 
-BGL_RUNTIME_DEF void (*bgl_gc_do_blocking)( void (*fun)(), void * ) = &bgl_gc_do_blocking_default;
+BGL_RUNTIME_DEF void *(*bgl_gc_do_blocking)( void (*fun)(), void * ) = &bgl_gc_do_blocking_default;
 
 BGL_RUNTIME_DEF bool_t (*bgl_mutex_lock)( obj_t ) = &bgl_act_default;
 BGL_RUNTIME_DEF bool_t (*bgl_mutex_timed_lock)( obj_t, long ) = &bgl_act2long_default;
