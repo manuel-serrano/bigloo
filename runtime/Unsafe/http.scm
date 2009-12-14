@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Thu Nov 12 11:25:50 2009 (serrano)                */
+;*    Last change :  Sun Dec 13 19:43:17 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -70,7 +70,7 @@
 		 (login #f) (authorization #f) (username #f) (password #f)
 		 (http-version "HTTP/1.1")
 		 (content-type #f)
-		 (connection "close")
+		 (connection #unspecified)
 		 (header '((user-agent: "Mozilla/5.0")))
 		 (args '())
 		 (body #f))
@@ -114,7 +114,7 @@
 	      (login #f) (authorization #f) (username #f) (password #f)
 	      (http-version "HTTP/1.1")
 	      (content-type #f)
-	      (connection "close")
+	      (connection #unspecified)
 	      (header '((user-agent: "Mozilla/5.0")))
 	      (args '())
 	      (body #f))
@@ -154,7 +154,8 @@
       ((and (string? username) (string? password))
        (display-authentication (string-append username ":" password) out)))
    ;; connection keep-alive
-   (display-line "Connection: " connection out)
+   (when (string? connection)
+      (display-line "Connection: " connection out))
    (cond
       ((eq? method 'post)
        ;; post method

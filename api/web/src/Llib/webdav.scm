@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Wed Dec  9 05:44:20 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 05:55:53 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -57,21 +57,66 @@
    '())
 
 ;*---------------------------------------------------------------------*/
+;*    cache ...                                                        */
+;*---------------------------------------------------------------------*/
+(define cache-host #unspecified)
+(define cache-port 0)
+(define cache-socket #f)
+
+(define cache-mutex (make-mutex 'webdav))
+
+;*---------------------------------------------------------------------*/
+;*    cache-get ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (cache-get host port)
+   (mutex-lock! cache-mutex)
+   (tprint "cache-get host=" host " port=" port
+	   " socket=" cache-socket
+	   " " (and (socket? cache-socket) (socket-down? cache-socket)))
+   (if (and (socket? cache-socket)
+	    (=fx cache-port port)
+	    (string=? cache-host host))
+       (let ((socket cache-socket))
+	  (set! cache-socket #f)
+	  (mutex-unlock! cache-mutex)
+	  socket)
+       (begin
+	  (mutex-unlock! cache-mutex)
+	  #f)))
+       
+;*---------------------------------------------------------------------*/
+;*    cache-offer ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (cache-offer host port socket)
+   (tprint "cache-offer host=" host " port=" port)
+   (mutex-lock! cache-mutex)
+   (when (socket? cache-socket)
+      (tprint "socket-close: " cache-socket)
+      (socket-close cache-socket))
+   (set! cache-host host)
+   (set! cache-port port)
+   (set! cache-socket socket)
+   (mutex-unlock! cache-mutex))
+
+;*---------------------------------------------------------------------*/
 ;*    webdav-propfind ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (webdav-propfind url timeout proxy #!optional (header (webdav-header)))
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
-	 (let ((socket (http :method 'PROPFIND
-			  :host host
-			  :port port
-			  :timeout timeout
-			  :path abspath
-			  :header header
-			  :proxy proxy
-			  :login login
-			  :body "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+	 (let liip ((socket (cache-get host port)))
+	    (let ((socket (http :method 'PROPFIND
+			     :host host
+			     :port port
+			     :socket socket
+			     :timeout timeout
+			     :path abspath
+			     :header header
+			     :proxy proxy
+			     :login login
+			     :connection "keep-alive"
+			     :body "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <propfind xmlns=\"DAV:\">
  <prop>
   <resourcetype xmlns=\"DAV:\"/>
@@ -79,17 +124,21 @@
   <getcontentlength xmlns=\"DAV:\"/>
  </prop>
 </propfind>")))
-	    (close-output-port (socket-output socket))
-	    (unwind-protect
-	       (with-handler
-		  (lambda (e)
-		     (if (&http-redirection? e)
-			 (loop (&http-redirection url))
-			 (raise e)))
-		  (http-parse-response (socket-input socket)
-				       (socket-output socket)
-				       (make-webdav-response-parser url)))
-	       (socket-close socket))))))
+	       (let ((l (with-handler
+			   (lambda (e)
+			      (socket-close socket)
+			      (cond
+				 ((and (socket? socket) (&io-parse-error e))
+				  (liip #f))
+				 ((&http-redirection? e)
+				  (loop (&http-redirection url)))
+				 (else
+				  (raise e))))
+			   (http-parse-response (socket-input socket)
+						(socket-output socket)
+						(make-webdav-response-parser url)))))
+		  (cache-offer host port socket)
+		  l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    webdav-directory->path-list ...                                  */
@@ -175,28 +224,34 @@
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
-	 (let ((socket (http :method method
-			  :host host
-			  :port port
-			  :timeout timeout
-			  :path abspath
-			  :proxy proxy
-			  :header header
-			  :login login
-			  :body body)))
-	    (close-output-port (socket-output socket))
-	    (unwind-protect
-	       (with-handler
-		  (lambda (e)
-		     (if (&http-redirection? e)
-			 (loop (&http-redirection url))
-			 (raise e)))
-		  (http-parse-response (socket-input socket)
-				       (socket-output socket)
-				       (lambda (ip status header clen tenc)
-					  (if (memq status return)
-					      #t #unspecified))))
-	       (socket-close socket))))))
+	 (let liip ((socket (cache-get host port)))
+	    (let ((socket (http :method method
+			     :host host
+			     :port port
+			     :socket socket
+			     :timeout timeout
+			     :path abspath
+			     :proxy proxy
+			     :header header
+			     :login login
+			     :body body)))
+	       (let ((l (with-handler
+			   (lambda (e)
+			      (socket-close socket)
+			      (cond
+				 ((and (socket? socket) (&io-parse-error e))
+				  (liip #f))
+				 ((&http-redirection? e)
+				  (loop (&http-redirection url)))
+				 (else
+				  (raise e))))
+			   (http-parse-response (socket-input socket)
+						(socket-output socket)
+						(lambda (ip status header clen tenc)
+						   (if (memq status return)
+						       #t #unspecified))))))
+		  (cache-offer host port socket)
+		  l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    webdav-delete-file ...                                           */

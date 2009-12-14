@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Tue Jul 29 10:08:12 2008                          */
-/*    Last change :  Tue Dec  1 18:29:37 2009 (serrano)                */
+/*    Last change :  Sun Dec 13 07:15:29 2009 (serrano)                */
 /*    Copyright   :  2008-09 Cyprien Nicolas & Manuel Serrano          */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OUTPUT-PORT plugin.                                       */
@@ -294,7 +294,7 @@ redo:
       if( written < 0 ) {
 	 GST_ELEMENT_ERROR( portsink, RESOURCE, WRITE,
 			    ("Error while writing to port <%p>.", portsink->port),
-			    ("%s", g_strerror (errno)) );
+			    ("%s", g_strerror( errno )) );
     
 	 return GST_FLOW_ERROR;
       }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sun Oct  4 10:03:56 2009 (serrano)                */
+;*    Last change :  Sat Dec 12 08:48:20 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -724,9 +724,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop mpc::mpc)
    (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "stop" ok-parser)
-	 (mpc-cmd mpc "clearerror" ok-parser))))
+		    (lambda ()
+		       (mpc-cmd mpc "stop" ok-parser)
+		       (mpc-cmd mpc "clearerror" ok-parser))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::mpc ...                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Fri Oct 23 11:26:34 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 05:44:36 2009 (serrano)                */
 ;*    Copyright   :  2005-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -46,6 +46,8 @@
       (set! content-length (+fx content-length (input-port-position port))))
    (let loop ((decoder (lambda (x) x)))
       (let ((obj (read/rp xml-grammar port procedure specials strict decoder encoding)))
+	 (when (and (fixnum? content-length) (>fx content-length 0))
+	    (input-port-fill-barrier-set! port -1))
 	 (cond
 	    ((eof-object? obj)
 	     '())
