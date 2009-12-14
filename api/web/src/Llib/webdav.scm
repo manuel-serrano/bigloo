@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Mon Dec 14 05:55:53 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 11:22:13 2009 (serrano)                */
 ;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -70,10 +70,8 @@
 ;*---------------------------------------------------------------------*/
 (define (cache-get host port)
    (mutex-lock! cache-mutex)
-   (tprint "cache-get host=" host " port=" port
-	   " socket=" cache-socket
-	   " " (and (socket? cache-socket) (socket-down? cache-socket)))
    (if (and (socket? cache-socket)
+	    (not (socket-down? cache-socket))
 	    (=fx cache-port port)
 	    (string=? cache-host host))
        (let ((socket cache-socket))
@@ -88,10 +86,8 @@
 ;*    cache-offer ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (cache-offer host port socket)
-   (tprint "cache-offer host=" host " port=" port)
    (mutex-lock! cache-mutex)
    (when (socket? cache-socket)
-      (tprint "socket-close: " cache-socket)
       (socket-close cache-socket))
    (set! cache-host host)
    (set! cache-port port)
@@ -128,7 +124,7 @@
 			   (lambda (e)
 			      (socket-close socket)
 			      (cond
-				 ((and (socket? socket) (&io-parse-error e))
+				 ((and (socket? socket) (&io-parse-error? e))
 				  (liip #f))
 				 ((&http-redirection? e)
 				  (loop (&http-redirection url)))
