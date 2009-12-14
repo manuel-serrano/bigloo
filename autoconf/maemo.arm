@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Oct 14 20:55:10 2009 (serrano)                */
+#*    Last change :  Mon Dec 14 16:40:28 2009 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect if we are running under maemo for ARM (QEMU)              */
 #*=====================================================================*/
@@ -31,11 +31,15 @@ done
 #*    processor.                                                       */
 #*---------------------------------------------------------------------*/
 if [ "$HOSTCPU " = "arm " ]; then
-  grep -i arm /proc/cpuinfo;
-  if [ "$*" = "0" ]; then
+  if [ "`pkg-config maemo-version --modversion` " = " " ]; then
     echo "no"
   else
-    echo "yes"
+    grep -i arm /proc/cpuinfo;
+    if [ "$*" = "0" ]; then
+      echo "no"
+    else
+      echo "yes"
+    fi
   fi
 else
   echo "no"
