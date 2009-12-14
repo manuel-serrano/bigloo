@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Oct 14 21:26:14 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 14:21:16 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -174,6 +174,8 @@
 		      ;; time out
 		      (sleep 10)
 		      #f)
+		     ((gst-message-info? msg)
+		      (when onvol (onvol (musicstatus-volume %status))))
 		     ((gst-message-eos? msg)
 		      ;; end of stream
 		      (mutex-lock! %mutex)
@@ -563,6 +565,19 @@
       %meta))
 
 ;*---------------------------------------------------------------------*/
+;*    post-volume ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (post-volume o::gstmusic)
+   (with-access::gstmusic o (%pipeline %loop-mutex)
+      (with-lock %loop-mutex
+	 (lambda ()
+	    (let* ((s (instantiate::gst-structure
+			 ($builtin ($gst-structure-empty-new "volume"))))
+		   (m (gst-message-new-custom $gst-message-info %pipeline s))
+		   (bus (gst-pipeline-bus %pipeline)))
+	       (gst-bus-post bus m))))))
+
+;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::gstmusic ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-get o::gstmusic)
@@ -581,4 +596,5 @@
    (with-access::gstmusic o (%status %audiomixer)
       (when (gst-element? %audiomixer)
 	 (gst-object-property-set! %audiomixer :volume (/ vol 100))
-	 (musicstatus-volume-set! %status vol))))
+	 (musicstatus-volume-set! %status vol)
+	 (post-volume o))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Thu Sep 17 12:56:46 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 13:46:44 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */

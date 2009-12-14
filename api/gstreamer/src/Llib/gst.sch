@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
-;*    Last change :  Fri Dec 26 10:29:49 2008 (serrano)                */
-;*    Copyright   :  2007-08 Manuel Serrano                            */
+;*    Last change :  Mon Dec 14 14:11:17 2009 (serrano)                */
+;*    Copyright   :  2007-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of GSTREAMER functions                                */
 ;*=====================================================================*/
@@ -700,6 +700,8 @@
        (::$gst-structure) "(bool_t)!")
     (macro $gst-structure->object::$gst-object
        (::$gst-structure) "(GstObject *)")
+    (macro $gst-structure-empty-new::$gst-structure
+       (::string) "gst_structure_empty_new")
     (macro $gst-structure::$gst-structure
        (::$gst-object) "GST_STRUCTURE")
     (macro $gst-structure-free!::void

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Wed Sep  2 07:09:55 2009 (serrano)                */
+/*    Last change :  Mon Dec 14 12:03:12 2009 (serrano)                */
 /*    Copyright   :  2008-09 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
@@ -116,7 +116,7 @@ static guint bgl_gst_port_src_signals[ LAST_SIGNAL ] = { 0 };
 static void
 bgl_gst_port_src_set_port( BglPortSrc *src, gpointer new_port, char *new_uri ) {
 #if( defined( BGL_DEBUG ) )   
-   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p\n  src->port=%p\n", __FILE__, __LINE__, new_port, src->port );
+   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p\n  src->port=%p closed:%d\n", __FILE__, __LINE__, new_port, src->port, INPUT_PORT_CLOSEP( new_port ) );
 #endif
    
    if( !INPUT_PORTP( new_port ) ) {
@@ -490,6 +490,10 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 /*       }                                                             */
    }
 
+#if( defined( BGL_DEBUG ) )
+   fprintf( stderr, "bgl_rgc_blit_string( %p, %p, 0, %d )\n",
+	    src->port, readstr, length );
+#endif   
    if( !(readlen = bgl_rgc_blit_string( src->port, readstr, 0, length )) ) {
       /* end of file */
       gst_buffer_unref( buf );

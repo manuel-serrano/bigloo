@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  3 09:21:35 2008                          */
-;*    Last change :  Wed Oct 14 11:00:43 2009 (serrano)                */
+;*    Last change :  Mon Dec 14 14:15:40 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstMessage                                                       */
@@ -50,7 +50,7 @@
 	    (gst-message-new-state::symbol ::gst-message)
 	    (gst-message-old-state::symbol ::gst-message)
 	    (gst-message-pending-state::symbol ::gst-message)
-	    (gst-message-structure ::gst-message)
+	    (gst-message-structure::gst-structure ::gst-message)
 
 	    (gst-message-tag?::bool ::gst-message)
 	    (gst-message-eos?::bool ::gst-message)
@@ -62,6 +62,8 @@
 	    (gst-message-buffering?::bool ::gst-message)
 	    (gst-message-state-changed?::bool ::gst-message)
 	    (gst-message-state-dirty?::bool ::gst-message)
+	    (gst-message-info?::bool ::gst-message)
+	    (gst-message-application?::bool ::gst-message)
 
 	    (gst-message-new-application::gst-message ::gst-object ::gst-structure)
 	    (gst-message-new-custom::gst-message ::$gst-message-type ::gst-object ::gst-structure)
@@ -254,6 +256,18 @@
    (=fx (gst-message-type msg) $gst-message-state-dirty))
 
 ;*---------------------------------------------------------------------*/
+;*    gst-message-info? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (gst-message-info? msg::gst-message)
+   (=fx (gst-message-type msg) $gst-message-info))
+
+;*---------------------------------------------------------------------*/
+;*    gst-message-application? ...                                     */
+;*---------------------------------------------------------------------*/
+(define (gst-message-application? msg::gst-message)
+   (=fx (gst-message-type msg) $gst-message-application))
+
+;*---------------------------------------------------------------------*/
 ;*    gst-message-new-application ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-application src::gst-object struct::gst-structure)
@@ -265,7 +279,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-custom ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (gst-message-new-custom type src struct)
+(define (gst-message-new-custom type src::gst-object struct::gst-structure)
    ($make-gst-message
     ($gst-message-new-custom type
 			     (gst-object-$builtin src)
