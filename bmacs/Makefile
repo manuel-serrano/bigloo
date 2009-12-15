@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Dec  7 09:43:39 2009 (serrano)                */
+#*    Last change :  Tue Dec 15 14:02:02 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
@@ -115,8 +115,7 @@ POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
 #*---------------------------------------------------------------------*/
 all: $(EMACSBRAND)
 
-emacs22:
-emacs23:
+emacs22 emacs23:
 	(expr=load-path; \
           for p in . $(LOADPATH); do \
              expr="(cons \"../$$p\" (cons \"$$p\" $$expr))"; \
