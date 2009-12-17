@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec  5 11:22:04 2002                          */
-;*    Last change :  Wed Nov  9 13:41:28 2005 (serrano)                */
-;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    Last change :  Wed Dec 16 05:39:25 2009 (serrano)                */
+;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The DotNet link and shell script generation                      */
 ;*=====================================================================*/
@@ -242,7 +242,7 @@
 	 (print "#!/bin/sh")
 	 (newline)
 	 (print "DOTNETCLR=" *dotnet-clr*)
-	 (print "MONO_PATH=" (uncygdrive path) " $DOTNETCLR "
+	 (print "MONO_PATH=$MONO_PATH:" (uncygdrive path) " $DOTNETCLR "
 		*dotnet-clr-opt*
 		" $BIGLOODOTNETOPT $BUGLOODOTNETOPT "
 		(prefix target) ".exe "

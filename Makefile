@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Dec  4 06:49:50 2009 (serrano)                */
+#*    Last change :  Tue Dec 15 14:40:50 2009 (serrano)                */
 #*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -525,7 +525,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
 	@ mv bigloo$(RELEASE) bgl`echo $(RELEASE) | sed -e 's/[.]//'`
 	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip
 	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE).zip Done..."
+	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).zip Done..."
 	@ echo "-------------------------------"
 
 # This entry as to be isolated from the general bigloo_s.zip rule
