@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Wed Dec 16 08:01:50 2009 (serrano)                */
+;*    Last change :  Mon Dec 21 08:19:38 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -632,8 +632,6 @@ of the start of the containing expression."
 (put 'with-handler              'bee-indent-hook 0)
 (put 'with-alarm                'bee-indent-hook 1)
 (put 'with-lock                 'bee-indent-hook 1)
-(put 'with-hop                  'bee-indent-hook 1)
-(put 'with-url                  'bee-indent-hook 1)
 
 ;; define forms
 (put 'define-macro              'bee-indent-hook 1)
@@ -683,6 +681,10 @@ of the start of the containing expression."
 (put '$roundtrip                'bee-indent-hook 1)
 (put 'service                   'bee-indent-hook 1)
 (put 'add-event-listener!       'bee-indent-hook 2)
+(put 'timeout                   'bee-indent-hook 1)
+(put 'after                     'bee-indent-hook 1)
+(put 'with-hop                  'bee-indent-hook 1)
+(put 'with-url                  'bee-indent-hook 1)
 
 ;; sql
 (put 'sqlite-exec               'bee-indent-hook 1)

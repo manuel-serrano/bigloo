@@ -1,3 +1,9 @@
+Sun Dec 20 16:08:24 CET 2009 (Manuel Serrano):
+
+	*** runtime/Clib/cucs2.c: Fix UCS2 encoding (currency characters 
+	not recognized).
+	
+
 Thu Nov 12 13:49:13 CET 2009 (Manuel Serrano):
 
 	*** configure: Fix MacOS X configuration.

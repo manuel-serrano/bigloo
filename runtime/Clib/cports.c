@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun Dec 13 19:54:32 2009 (serrano)                */
+/*    Last change :  Sun Dec 20 22:00:24 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1947,7 +1947,13 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
    if( offset >= 0 ) bgl_input_port_seek( ip, offset );
 
    dsz = inp.bufpos - inp.matchstop - 1;
+#ifdef DEBUG_SENDCHARS   
+   fprintf( stderr, "bgl_sendchars.1: sz=%d offset=%d dsz=%d\n", sz, offset, dsz );
+#endif	 
    bgl_output_flush( op, 0, 0 );
+#ifdef DEBUG_SENDCHARS   
+   fprintf( stderr, "bgl_sendchars.1b: sz=%d offset=%d dsz=%d\n", sz, offset, dsz );
+#endif	 
 
    if( dsz > 0 ) {
       /* flush the input buffer when it contains characters */

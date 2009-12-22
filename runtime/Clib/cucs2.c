@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun May 18 08:35:34 1997                          */
-/*    Last change :  Fri Nov 28 13:59:18 2008 (serrano)                */
+/*    Last change :  Sun Dec 20 15:57:11 2009 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    UCS-2 Characters management.                                     */
 /*    -------------------------------------------------------------    */
@@ -1232,7 +1232,7 @@ static unsigned int A[] = {
     0x00AF0001,  /*  43   Lu, hasLower (add 2), hasTitle, identifier start */
     0x007F0003,  /*  44   Lt, hasUpper (subtract 1), hasLower (add 1), hasTitle, identifier start */
     0x009F0002,  /*  45   Ll, hasUpper (subtract 2), hasTitle, identifier start */
-    0x00000000,  /*  46   unassigned */
+    0x0000001A,  /*  46   currency (MS 20dec09) */
     0x34970002,  /*  47   Ll, hasUpper (subtract 210), identifier start */
     0x33970002,  /*  48   Ll, hasUpper (subtract 206), identifier start */
     0x33570002,  /*  49   Ll, hasUpper (subtract 205), identifier start */
@@ -1322,8 +1322,7 @@ static unsigned int A[] = {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-ucs2_definedp( int ch )
-{
+ucs2_definedp( int ch ) {
    return (A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ] & 0x1F) != UNASSIGNED;
 }
 
@@ -1337,8 +1336,7 @@ ucs2_definedp( int ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-ucs2_lowerp( ucs2_t ch )
-{
+ucs2_lowerp( ucs2_t ch ) {
    return (A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch & 0x3F) ] ] & 0x1F) == LOWERCASE_LETTER;
 }
 
@@ -1348,8 +1346,7 @@ ucs2_lowerp( ucs2_t ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-ucs2_upperp( ucs2_t ch )
-{
+ucs2_upperp( ucs2_t ch ) {
    return (A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ] & 0x1F) == UPPERCASE_LETTER;
 }
 
@@ -1370,8 +1367,7 @@ ucs2_digitp( ucs2_t ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-ucs2_letterp( ucs2_t ch )
-{
+ucs2_letterp( ucs2_t ch ) {
    return (((((1 << UPPERCASE_LETTER) |
 	      (1 << LOWERCASE_LETTER) |
 	      (1 << TITLECASE_LETTER) |
@@ -1395,8 +1391,7 @@ ucs2_letterp( ucs2_t ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-ucs2_whitespacep( ucs2_t ch )
-{
+ucs2_whitespacep( ucs2_t ch ) {
    return (A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ] & 0x00070000) == 0x00040000;
 }
 
@@ -1406,8 +1401,7 @@ ucs2_whitespacep( ucs2_t ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 ucs2_t
-ucs2_toupper( ucs2_t ch )
-{
+ucs2_toupper( ucs2_t ch ) {
    unsigned int val = A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ];
    
    if( (val & 0x00100000) != 0 )
@@ -1422,8 +1416,7 @@ ucs2_toupper( ucs2_t ch )
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 ucs2_t
-ucs2_tolower( ucs2_t ch )
-{
+ucs2_tolower( ucs2_t ch ) {
    unsigned int val = A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch & 0x3F) ] ];
    
    if ((val & 0x00200000) != 0)
