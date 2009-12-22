@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 15 14:03:08 2009 (serrano)                */
+#*    Last change :  Tue Dec 22 09:45:55 2009 (serrano)                */
 #*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1948,6 +1948,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       featureflags="-srfi enable-gmp $featureflags";
       extralibs="-lgmp $extralibs"
     fi
+  else
+    havegmp=0;
   fi
 
   # Where to find the socket api
