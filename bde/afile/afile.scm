@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:49:15 1993                          */
-;*    Last change :  Thu Mar 26 10:33:06 2009 (serrano)                */
+;*    Last change :  Thu Dec 24 05:41:24 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Module access file generator.                                    */
 ;*=====================================================================*/
@@ -17,7 +17,7 @@
 ;*    Global variables                                                 */
 ;*---------------------------------------------------------------------*/
 (define *verbose*    #f)
-(define *suffixes*   '("scm" "sch" "bgl" "snow" "spi"))
+(define *suffixes*   '("scm" "sch" "bgl" "snow" "spi" "hop"))
 (define *gui-suffix* "bld")
 (define *module-keywords* '(module))
 (define *add-accesses* '())
