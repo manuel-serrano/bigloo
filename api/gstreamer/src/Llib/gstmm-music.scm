@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Dec 14 14:38:20 2009 (serrano)                */
+;*    Last change :  Sun Dec 27 18:49:27 2009 (serrano)                */
 ;*    Copyright   :  2008-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -200,7 +200,7 @@
 		      ;; state changed
 		      (let ((nstate (case (gst-message-new-state msg)
 				       ((playing) 'play)
-				       ((paused) 'paused)
+				       ((paused) 'pause)
 				       ((ready) 'stop)
 				       ((null) 'stop))))
 			 (mutex-lock! %mutex)
