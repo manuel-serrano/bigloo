@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Wed Dec 23 18:18:51 2009 (serrano)                */
+;*    Last change :  Mon Dec 28 19:20:20 2009 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -681,6 +681,7 @@ of the start of the containing expression."
 (put '$roundtrip                'bee-indent-hook 1)
 (put 'service                   'bee-indent-hook 1)
 (put 'add-event-listener!       'bee-indent-hook 2)
+(put 'remove-event-listener!    'bee-indent-hook 2)
 (put 'timeout                   'bee-indent-hook 1)
 (put 'after                     'bee-indent-hook 1)
 (put 'with-hop                  'bee-indent-hook 1)
