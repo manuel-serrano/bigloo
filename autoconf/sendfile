@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Christian Loitsch                                 */
 #*    Creation    :  Wed Apr 16 12:11:17 2003                          */
-#*    Last change :  Sun Sep  6 21:49:59 2009 (serrano)                */
+#*    Last change :  Mon Jan  4 16:25:02 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if sendfile exists.                                        */
 #*=====================================================================*/
@@ -62,7 +62,7 @@ int   argc;
 char *argv[];
 {
    char buffer [50];
-   FILE *fd = fopen( "/etc/passwd", "r" );
+   FILE *fd = fopen( "/etc/hosts", "r" );
    int s = socket( AF_INET, SOCK_STREAM, 0 );
    int res;
 
@@ -109,7 +109,7 @@ int   argc;
 char *argv[];
 {
    char buffer [50];
-   FILE *fd = fopen( "/etc/passwd", "r" );
+   FILE *fd = fopen( "/etc/hosts", "r" );
    int s = socket( AF_INET, SOCK_STREAM, 0 );
    int res;
 
