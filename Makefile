@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jan  6 10:28:26 2010 (serrano)                */
+#*    Last change :  Wed Jan  6 10:31:20 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -433,7 +433,7 @@ distrib:
            $(MAKE) true-distrib)
 	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
 
-true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz
+true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 
 $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz
