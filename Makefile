@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jan  6 10:31:20 2010 (serrano)                */
+#*    Last change :  Wed Jan  6 10:36:53 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -436,7 +436,7 @@ distrib:
 true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 
 $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
-	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz
+	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
 	@ for p in $(NO_DIST_FILES); do \
              $(RM) -rf $$p; \
           done
@@ -448,8 +448,8 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
           done
 	@ $(RM) -f Makefile.config;
 	@ (cd .. && \
-           mv bigloo bigloo$(RELEASE) && \
-           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE))
+           mv bigloo bigloo$(RELEASE)$(VERSION) && \
+           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
