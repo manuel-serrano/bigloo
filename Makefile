@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Dec 15 14:40:50 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jan  6 10:28:26 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -281,7 +281,7 @@ dobigboot:
 	@ (cd runtime && $(MAKE) heap-c BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd comptime && $(MAKE) BIGLOO=$(BOOTDIR)/bin/bigloo)
 	@ (cd runtime && $(MAKE) clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo)
-	@ echo "Big boot Done..."
+	@ echo "Big boot done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
@@ -362,7 +362,7 @@ fullbootstrap:
           else \
 	    $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"; \
           fi
-	@ echo "Bigloo full bootstrap Done..."
+	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
@@ -393,7 +393,7 @@ c-fullbootstrap:
 	@ (cd recette && $(MAKE) -i touchall; \
            $(MAKE) recette && ./recette$(EXE_SUFFIX))
 	@ $(MAKE) -s revision LOGMSG="C Full Bootstrap succeeded at `date '+%d%b%y'`"
-	@ echo "Bigloo C full bootstrap Done..."
+	@ echo "Bigloo C full bootstrap done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
@@ -435,7 +435,7 @@ distrib:
 
 true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz
 
-$(DISTRIBDIR)/bigloo$(RELEASE).tar.gz:
+$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz
 	@ for p in $(NO_DIST_FILES); do \
              $(RM) -rf $$p; \
@@ -450,7 +450,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE).tar.gz:
 	@ (cd .. && \
            mv bigloo bigloo$(RELEASE) && \
            tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE))
-	@ echo "$@ Done..."
+	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
@@ -525,7 +525,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
 	@ mv bigloo$(RELEASE) bgl`echo $(RELEASE) | sed -e 's/[.]//'`
 	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip
 	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).zip Done..."
+	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).zip done..."
 	@ echo "-------------------------------"
 
 # This entry as to be isolated from the general bigloo_s.zip rule
