@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  1 08:52:59 2008                          */
-;*    Last change :  Mon Feb 11 15:11:04 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Jan  5 16:38:19 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBin wrapper                                                   */
 ;*=====================================================================*/
@@ -26,14 +26,16 @@
 	    __gstreamer_gststructure)
 
    (export  (class gst-bin::gst-element
-	       (%elements::pair-nil (default '())))
+	       (elements::pair-nil (default '())))
 
 	    ($make-gst-bin ::$gst-bin ::obj)
+	    ($gst-bin-elements-set! ::gst-bin ::pair-nil)
 
 	    (gst-bin-add! ::gst-bin ::gst-element . els)
 	    (gst-bin-remove! ::gst-bin ::gst-element . els))
 
-   (extern  (export $make-gst-bin "bgl_gst_bin_new")))
+   (extern  (export $make-gst-bin "bgl_gst_bin_new")
+	    (export $gst-bin-elements-set! "bgl_gst_bin_elements_set")))
 
 ;*---------------------------------------------------------------------*/
 ;*    %gst-object-init ::gst-bin ...                                   */
@@ -53,6 +55,12 @@
       ($finalizer finalizer)))
 
 ;*---------------------------------------------------------------------*/
+;*    $gst-bin-elements-set! ...                                       */
+;*---------------------------------------------------------------------*/
+(define ($gst-bin-elements-set! o el)
+   (gst-bin-elements-set! o el))
+
+;*---------------------------------------------------------------------*/
 ;*    gst-bin-add! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (gst-bin-add! o::gst-bin el0 . els)
@@ -66,9 +74,9 @@
 	  ;; since we want GST object to be reclaimed only when Bigloo
 	  ;; no longer uses it, we manually increment its ref counter when
 	  ;; adding an element into a bin.
-	  (with-access::gst-bin o (%elements)
+	  (with-access::gst-bin o (elements)
 	     (%gst-object-ref! el)
-	     (set! %elements (cons el %elements)))
+	     (set! elements (cons el elements)))
 	  (raise (instantiate::&gst-error
 		    (proc 'gst-bin-add!)
 		    (msg "Element cannot be added")
@@ -94,8 +102,8 @@
 			    ($gst-element (gst-element-$builtin el)))
 	  ;; we have to remove the Bigloo object from the pipeline
 	  ;; otherwise the GC won't ever free the element
-	  (with-access::gst-bin o (%elements)
-	     (set! %elements (remq! el %elements)))
+	  (with-access::gst-bin o (elements)
+	     (set! elements (remq! el elements)))
 	  (raise (instantiate::&gst-error
 		    (proc 'gst-bin-remove!)
 		    (msg "Element cannot be removed")

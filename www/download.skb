@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Thu Jun  4 11:35:33 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Mon Jan  4 16:56:05 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
 ;*=====================================================================*/
@@ -91,7 +91,7 @@ Bigloo is available on the ftp server
 	(,[,(bold "Win32") installer version (full back-ends support)]
 	 ,*bigloo.win32b* ,*bigloo.win32*)
 	(,[,(bold "Maemo") package]
-	 ,*bigloo.maemo*)
+	 ,@(string-split *bigloo.maemo* " \n"))
 	(,[,(bold "GNU-Linux Debian") package]
 	 ,*bigloo.deb*)
 	(,[,(bold "Fedora") package]

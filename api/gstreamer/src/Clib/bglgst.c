@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Tue Nov  3 09:33:01 2009 (serrano)                */
-/*    Copyright   :  2007-09 Manuel Serrano                            */
+/*    Last change :  Tue Jan  5 19:41:05 2010 (serrano)                */
+/*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
 /*=====================================================================*/
@@ -1337,6 +1337,34 @@ bgl_gst_caps_new_simple( obj_t media_type, obj_t pair, obj_t finalizer ) {
    return bgl_gst_caps_new( caps, finalizer );
 }
 
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    make_bin ...                                                     */
+/*---------------------------------------------------------------------*/
+static obj_t
+make_bin( GstElement *el ) {
+   obj_t obj = bgl_gst_object_to_obj( (GstObject *)el, 0 );
+   
+   GList *gl = GST_BIN_CHILDREN( el );
+   obj_t bl = MAKE_PAIR( BNIL, BNIL );
+   obj_t last = bl;
+
+   while( gl ) {
+      obj_t o = bgl_gst_object_to_obj( (GstObject *)gl->data, BTRUE );
+      obj_t p = MAKE_PAIR( o, BNIL );
+
+      SET_CDR( last, p );
+      last = p;
+
+      gl = g_list_next( gl );
+   }
+
+   bgl_gst_bin_elements_set( obj, CDR( bl ) );
+   
+   return obj;
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_gst_parse_launch ...                                         */
@@ -1359,7 +1387,7 @@ bgl_gst_parse_launch( char *descr ) {
 	 fprintf( stderr, "*** WARNING: %s\n", err->message );
       }
 
-      return bgl_gst_object_to_obj( (GstObject *)el, 0 );
+      return make_bin( el );
    }
 }
 
@@ -1398,8 +1426,8 @@ bgl_gst_parse_launchv( obj_t args ) {
       if( err ) {
 	 fprintf( stderr, "*** WARNING: %s\n", err->message );
       }
-      
-      return bgl_gst_object_to_obj( (GstObject *)el, 0 );
+
+      return make_bin( el );
    }
 }
 
