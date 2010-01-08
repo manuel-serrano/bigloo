@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Mon Dec 28 19:20:20 2009 (serrano)                */
+;*    Last change :  Thu Jan  7 14:40:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -198,12 +198,14 @@ of the start of the containing expression."
                   ;; Last sexp is on same line as containing sexp.
                   ;; It's almost certainly a function call.
                   (parse-partial-sexp (point) last-sexp 0 t)
-                  (if (/= (point) last-sexp)
-                      ;; Indent beneath first argument or, if only one sexp
-                      ;; on line, indent beneath that.
-                      (progn (forward-sexp 1)
-                             (parse-partial-sexp (point) last-sexp 0 t)))
-                  (backward-prefix-chars))
+		  (if (/= (point) last-sexp)
+		      (if (eq bee-indent-style 'left)
+			  (setq desired-indent (- (+ (current-column) bee-body-indent) 1))
+			;; Indent beneath first argument or, if only one sexp
+			;; on line, indent beneath that.
+			(progn (forward-sexp 1)
+			       (parse-partial-sexp (point) last-sexp 0 t))))
+		      (backward-prefix-chars))
                  (t
                   ;; Indent beneath first sexp on same line as last-sexp.
                   ;; Again, it's almost certainly a function call.

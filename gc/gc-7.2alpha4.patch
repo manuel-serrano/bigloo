@@ -43,3 +43,42 @@ diff -r 79154bf14be2 -r 4ec595ab51f5 Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_mach_dep.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@
+diff -aur gc-7.2alpha4/dyn_load.c gc-7.2alpha4.patched/dyn_load.c
+--- gc-7.2alpha4/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
++++ gc-7.2alpha4.patched/dyn_load.c	2009-12-07 15:06:48.302725000 +0100
+@@ -85,11 +85,16 @@
+     || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
+                              || defined(NETBSD) || defined(OPENBSD)))
+ # include <stddef.h>
+-# if !defined(OPENBSD)
++# if !defined(OPENBSD) && !defined(PLATFORM_ANDROID)
+     /* FIXME: Why we exclude it for OpenBSD? */
++    /* we exclude ANDROID because linker.h below includes its own version */
+ #   include <elf.h>
+ # endif
+-# include <link.h>
++# if defined(PLATFORM_ANDROID)
++#   include <linker.h>
++# else
++#   include <link.h>
++# endif
+ #endif
+ 
+ /* Newer versions of GNU/Linux define this macro.  We
+@@ -572,9 +577,15 @@
+ #  define PF_W         2
+ #  endif
+ #else
++# if !defined(PLATFORM_ANDROID)
+ #  include <elf.h>
++# endif
+ #endif
+-#include <link.h>
++# if defined(PLATFORM_ANDROID)
++#   include <linker.h>
++# else
++#   include <link.h>
++# endif
+ 
+ # endif
+ 

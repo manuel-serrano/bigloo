@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Thu Dec  3 18:20:21 2009 (serrano)                */
-#*    Copyright   :  1997-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jan  7 21:50:58 2010 (serrano)                */
+#*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -40,10 +40,10 @@ POPULATION	= Makefile \
                   processor dotnettest sendfile sleep posixfileops \
                   timezone timeval \
                   gcflags mmap macosx openssl openssl-dtls sqlite \
-                  stdint stdlibint unistdint maemo.arm \
+                  stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
                   gstreamer gstreameraudio dbus gmp limbs signbit \
-                  getuid getprotoent machdep arflags mixer
+                  getuid gecos getprotoent machdep arflags mixer
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

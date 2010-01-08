@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan  5 20:52:14 2010 (serrano)                */
+#*    Last change :  Thu Jan  7 21:02:14 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -16,8 +16,8 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=3.3a
-version=-4
+release=3.3b
+version=
 bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -180,6 +180,7 @@ gcversion=
 # standard (i.e. already existing and operational) Boehm's GC
 # and when customgc=no
 stdgclib=gc
+gcneedstackbase=0
 
 isoc99=0
 stdint=
@@ -1186,6 +1187,14 @@ else
   fi
 fi
 
+# detect if we are compilling for android
+android=`$autoconf android ` || exit 1
+if [ "android " = "yes " ]; then
+  cflags="$cflags -DPLATFORM_ANDROID"
+  hostos="android"
+  hostcpu="arm"
+fi
+
 # Second, replace runtest by one that contains the host information.
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
@@ -1197,7 +1206,8 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --buildsh="$buildsh" \
    --tmp="$buildtmp" \
    --user="$user" \
-   --cc=$cc
+   --cc="$cc" \
+   --cflags="$cflags"
 
 #*---------------------------------------------------------------------*/
 #*    Cross Compilation                                                */
@@ -1846,6 +1856,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     getuid=`$autoconf getuid` || exit 1
   fi
 
+  # gecos
+  if [ "$gecos " = " " ]; then
+    gecos=`$autoconf gecos` || exit 1
+  fi
+
   # getprotoent
   if [ "$getprotoent " = " " ]; then
     getprotoent=`$autoconf getprotoent` || exit 1
@@ -2341,6 +2356,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
               -e "s|@HAVE_UNISTDINT@|$unistdint|" \
               -e "s|@HAVE_GETUID@|$getuid|" \
+              -e "s|@HAVE_GECOS@|$gecos|" \
               -e "s|@HAVE_GETPROTOENT@|$getprotoent|" \
               -e "s|@SETJMP@|$setjmp|" \
               -e "s|@JMP_BUF@|$jmpbuf|" \
@@ -2422,6 +2438,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@LIBRARY_DIRECTORY@|$libdir$dirsep$fildir|" \
               -e "s|@BGL_GC_LIBRARY@|$gclib|" \
               -e "s|@BGL_GC_CUSTOM@|$isgccustom|" \
+              -e "s|@BGL_GC_NEED_STACKBASE@|$gcneedstackbase|" \
               -e "s|@ZIP_DIRECTORY@|$syszipdirstr|" \
               -e "s|@DLL_DIRECTORY@|$sysdlldirstr|" \
               -e "s|@DNS_CACHE@|$dnscache|" \

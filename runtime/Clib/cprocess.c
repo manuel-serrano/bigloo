@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Fri Sep 12 14:43:06 2008 (serrano)                */
+/*    Last change :  Thu Jan  7 20:04:51 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -48,6 +48,10 @@ typedef int intptr_t;
 #  define execve _execve
 #  define execvp _execvp
 #  define pipe( fd_array ) _pipe( fd_array, 1024, _O_TEXT )
+#endif
+
+#ifndef NOFILE
+#  define NOFILE 256
 #endif
 
 /*---------------------------------------------------------------------*/

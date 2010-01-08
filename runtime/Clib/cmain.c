@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Sat Sep  6 14:03:07 2008 (serrano)                */
+/*    Last change :  Thu Jan  7 19:36:12 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -58,6 +58,10 @@ BGL_RUNTIME_DEF obj_t command_line = 0L;
 char *executable_name = 0L;
 char **bgl_envp;
 int bgl_envp_len;
+
+#if( BGL_GC_NEED_STACKBASE )
+void * __stack_base__; /* see the initialization below */
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -125,6 +129,11 @@ _bigloo_main(int argc, char *argv[], char *en[], obj_t (*bigloo_main)(obj_t)) {
    obj_t cons;
    long  i;
 
+   /* store the __stack_base__ address for the collector */
+#if( BGL_GC_NEED_STACKBASE )
+    __stack_base__= (void *)&argc;
+#endif
+   
    /* we store the global environment */
    bgl_envp = en;
    bgl_envp_len = 0;

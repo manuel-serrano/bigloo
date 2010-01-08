@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Fri Jun 12 11:53:51 2009 (serrano)                */
+;*    Last change :  Thu Jan  7 14:31:31 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -90,6 +90,11 @@
   "*Force special indentation for quoted lists and vectors"
   :group 'bee
   :type 'boolean)
+
+(defcustom bee-indent-style 'left
+  "*Force special indentation for quoted lists and vectors"
+  :group 'bee
+  :type '(choice (const (left) (const column))))
 
 ;; bigloo make-make
 (defcustom bee-bmake "bglmake"

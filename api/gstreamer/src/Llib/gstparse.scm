@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 14 10:42:12 2008                          */
-;*    Last change :  Mon Jan 14 11:32:30 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Thu Jan  7 06:31:35 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstParse binding                                                 */
 ;*=====================================================================*/
@@ -25,14 +25,16 @@
 	    __gstreamer_gstpluginfeature
 	    __gstreamer_gstelement)
 
-   (export  (gst-parse-launch::obj ::bstring)
+   (export  (gst-parse-launch::obj ::bstring . ::obj)
 	    (gst-parse-launchv::obj ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-parse-launch ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (gst-parse-launch string)
-   ($gst-parse-launch string))
+(define (gst-parse-launch string . obj)
+   (if (null? obj)
+       ($gst-parse-launch string)
+       ($gst-parse-launch (format string obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-parse-launchv ...                                            */

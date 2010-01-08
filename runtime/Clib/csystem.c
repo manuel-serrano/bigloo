@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Mon Jan  5 21:24:58 2009 (serrano)                */
-/*    Copyright   :  2002-09 Manuel Serrano                            */
+/*    Last change :  Thu Jan  7 19:59:22 2010 (serrano)                */
+/*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -356,7 +356,9 @@ passwd2list( struct passwd *pw ) {
       /* the home directory */
       res = MAKE_PAIR( string_to_bstring( pw->pw_dir ), res );
       /* the real name */
+#if BGL_HAVE_GECOS
       res = MAKE_PAIR( string_to_bstring( pw->pw_gecos ), res );
+#endif   
       /* the group id */
       res = MAKE_PAIR( BINT( pw->pw_gid ), res );
       /* the user id */

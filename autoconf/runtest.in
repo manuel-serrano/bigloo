@@ -5,8 +5,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 11:48:49 2009                          */
-#*    Last change :  Tue Sep  8 11:42:58 2009 (serrano)                */
-#*    Copyright   :  2009 Manuel Serrano                               */
+#*    Last change :  Thu Jan  7 19:29:46 2010 (serrano)                */
+#*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This file is in charge of spawning actual tests.                 */
 #*=====================================================================*/
@@ -24,6 +24,7 @@ LOG="@LOG@"
 USER="@USER@"
 TMP="@TMP@"
 CC="@CC@"
+CFLAGS="@CFLAGS@"
 
 verbose=2
 
@@ -69,6 +70,9 @@ while : ; do
     --cc=*)
       CC="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
+    --cflags=*)
+      CFLAGS="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
     -v0)
       verbose=0;;
 
@@ -91,6 +95,7 @@ while : ; do
       echo "  --user=<user-name>" >&2;
       echo "  --tmp=<dir-name>" >&2;
       echo "  --cc=<path>>" >&2;
+      echo "  --cflags=<flag>>" >&2;
       echo "  -v[012]" >&2;
       exit 1;;
 
@@ -132,6 +137,7 @@ if [ $verbose = 2 ]; then
   echo "USER=$USER"
   echo "TMP=$TMP"
   echo "CC=$CC"
+  echo "CFLAGS=$CFLAGS"
 
   echo "$AUTOCONFDIR/$test $opts"
 fi
@@ -146,6 +152,7 @@ fi
  export USER;
  export TMP;
  export CC;
+ export CFLAGS;
 
  if [ $verbose = 1 ]; then
    echo -n "executing $AUTOCONFDIR/$test -> " >&2

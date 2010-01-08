@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jan  6 10:36:53 2010 (serrano)                */
+#*    Last change :  Thu Jan  7 21:05:40 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -252,28 +252,24 @@ manual-pdf:
 #*      1- configure the system:                                       */
 #*          ./configure --bootconfig                                   */
 #*      2- type something like:                                        */
-#*          make bigboot BIGLOOBOOT=/usr/local/bin/bigloo              */
-#*         or                                                          */
 #*          make bigboot BGLBUILDBINDIR=/usr/local/bin                 */
 #*---------------------------------------------------------------------*/
 bigboot: 
-	@ if [ "$(BIGLOOBOOT) " = " " -a "$(BGLBUILDBINDIR) " = " " ]; then \
-            echo "*** Error, the variable BIGLOOBOOT is unbound"; \
+	@ if [ "$(BGLBUILDBINDIR) " = " " ]; then \
+            echo "*** Error, the variable BGLBUILDBINDIR is unbound"; \
             echo "Use \"$(MAKE) dobigboot\" if you know what you are doing!"; \
             exit 0; \
           else \
-            if [ "$(BIGLOOBOOT) " != " " ]; then \
-              $(MAKE) dobigboot BGLBUILDBINDIR=`dirname $(BIGLOOBOOT)`; \
-            else \
-              $(MAKE) dobigboot; \
-            fi \
+            $(MAKE) dobigboot; \
           fi
 
 dobigboot:
 	@ $(MAKE) -C gc clean
 	@ $(MAKE) -C gc boot
-	@ $(MAKE) -C gmp clean
-	@ $(MAKE) -C gmp boot
+	@ if [ "$(GMPCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C gmp clean; \
+	  $(MAKE) -C gmp boot; \
+        fi
 	@ mkdir -p bin
 	@ mkdir -p lib/$(RELEASE)
 	@ (cd runtime && $(MAKE) bigboot BBFLAGS="-w")
