@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Nov 30 15:45:11 2009 (serrano)                */
+/*    Last change :  Sun Jan 10 18:59:44 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -460,7 +460,7 @@ make_bglhostent_from_addrinfo( obj_t hostaddr, struct addrinfo *ai ) {
 /*    re-entrant while gethostbyname is not.                           */
 /*---------------------------------------------------------------------*/
 static void
-bglhostentbyname( obj_t hostname, struct bglhostent *bhp ) {
+bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int cann ) {
 #if( !BGL_HAVE_GETADDRINFO )
    struct hostent *hp;
    struct bglhostent *res;
@@ -481,9 +481,10 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp ) {
    hints.ai_family = AF_UNSPEC;
    hints.ai_socktype = SOCK_STREAM;
    hints.ai_protocol = 0;
-   hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
+   hints.ai_flags = cann ? AI_CANONNAME | AI_ADDRCONFIG : AI_ADDRCONFIG;
 
    if( !( v=getaddrinfo( BSTRING_TO_STRING( hostname ), 0L, &hints, &res )) ) {
+
       bglhostent_fill_from_addrinfo( hostname, bhp, res );
       freeaddrinfo( res );
    } else {
@@ -532,7 +533,7 @@ invalidate_hostbyname( obj_t hostname ) {
 /*    client don't have to deploy a lock machinery for using it.       */
 /*---------------------------------------------------------------------*/
 static struct hostent *
-bglhostbyname( obj_t hostname ) {
+bglhostbyname( obj_t hostname, int cann ) {
    struct bglhostent *bhp;
 
 #if BGL_DNS_CACHE
@@ -602,7 +603,7 @@ retry_cache:
 	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s QUERYING DNS...\n",
 		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ) );
 #endif	 
-	 bglhostentbyname( hostname, bhp );
+	 bglhostentbyname( hostname, bhp, cann );
 	 
 #if( DEBUG_CACHE_DNS )
 	 fprintf( stderr, ">>> state=%d (ok=%d)\n",
@@ -623,7 +624,7 @@ retry_cache:
 #endif
    {
       bhp = make_bglhostent( hostname, 0 );
-      bglhostentbyname( hostname, bhp );
+      bglhostentbyname( hostname, bhp, cann );
 
       return (bhp->state == BGLHOSTENT_STATE_OK) ? &(bhp->hp) : 0L;
    }
@@ -740,7 +741,7 @@ static struct hostent *
 bgl_gethostent( obj_t hostname ) {
    struct hostent *hp;
 
-   if( (hp = bglhostbyname( hostname )) == NULL ) {
+   if( (hp = bglhostbyname( hostname, 1 )) == NULL ) {
       char *msg;
       
       switch( h_errno ) {
@@ -791,13 +792,17 @@ bgl_hostinfo( obj_t hostname ) {
    char **runner;
    obj_t s;
 
-   for( runner = hp->h_addr_list; *runner; runner++ ) {
-      s = string_to_bstring( inet_ntoa( *(struct in_addr *)(*runner) ) );
-      addr = MAKE_PAIR( s, addr );
+   if( hp->h_addr_list ) {
+      for( runner = hp->h_addr_list; *runner; runner++ ) {
+	 s = string_to_bstring( inet_ntoa( *(struct in_addr *)(*runner) ) );
+	 addr = MAKE_PAIR( s, addr );
+      }
    }
 
-   for( runner = hp->h_aliases; *runner; runner++ ) {
-      alias = MAKE_PAIR( string_to_bstring( *runner ), alias );
+   if( hp->h_aliases ) {
+      for( runner = hp->h_aliases; *runner; runner++ ) {
+	 alias = MAKE_PAIR( string_to_bstring( *runner ), alias );
+      }
    }
 
    if( PAIRP( alias ) ) {
@@ -830,7 +835,7 @@ bgl_gethostname() {
    obj_t res;
 
    gethostname( h, MAXHOSTNAME );
-   hp = bglhostbyname( string_to_bstring( h ) );
+   hp = bglhostbyname( string_to_bstring( h ), 1 );
 
    res = string_to_bstring( hp ? hp->h_name : "localhost" );
 
@@ -1001,7 +1006,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    obj_t hname;
 
    /* Locate the host IP address */
-   if( (hp = bglhostbyname( hostname )) == NULL ) {
+   if( (hp = bglhostbyname( hostname, 0 )) == NULL ) {
       C_SYSTEM_FAILURE( BGL_IO_UNKNOWN_HOST_ERROR,
 			"make-client-socket",
 			"unknown or misspelled host name",
@@ -1177,7 +1182,7 @@ bgl_make_server_socket( obj_t hostname, int port, int backlog ) {
       socket_error( "make-server-socket", "bad port number", BINT( port ) );
 
    /* Locate the host IP address */
-   if( (hostname != BFALSE) && !(hp = bglhostbyname( hostname )) ) {
+   if( (hostname != BFALSE) && !(hp = bglhostbyname( hostname, 0 )) ) {
      socket_error( "make-server-socket", "unknown or misspelled host name", 
                    hostname );
    }
