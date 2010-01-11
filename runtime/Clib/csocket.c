@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun Jan 10 18:59:44 2010 (serrano)                */
+/*    Last change :  Mon Jan 11 08:58:41 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -460,7 +460,7 @@ make_bglhostent_from_addrinfo( obj_t hostaddr, struct addrinfo *ai ) {
 /*    re-entrant while gethostbyname is not.                           */
 /*---------------------------------------------------------------------*/
 static void
-bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int cann ) {
+bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
 #if( !BGL_HAVE_GETADDRINFO )
    struct hostent *hp;
    struct bglhostent *res;
@@ -481,7 +481,7 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int cann ) {
    hints.ai_family = AF_UNSPEC;
    hints.ai_socktype = SOCK_STREAM;
    hints.ai_protocol = 0;
-   hints.ai_flags = cann ? AI_CANONNAME | AI_ADDRCONFIG : AI_ADDRCONFIG;
+   hints.ai_flags = canon ? AI_CANONNAME | AI_ADDRCONFIG : AI_ADDRCONFIG;
 
    if( !( v=getaddrinfo( BSTRING_TO_STRING( hostname ), 0L, &hints, &res )) ) {
 
@@ -533,7 +533,7 @@ invalidate_hostbyname( obj_t hostname ) {
 /*    client don't have to deploy a lock machinery for using it.       */
 /*---------------------------------------------------------------------*/
 static struct hostent *
-bglhostbyname( obj_t hostname, int cann ) {
+bglhostbyname( obj_t hostname, int canon ) {
    struct bglhostent *bhp;
 
 #if BGL_DNS_CACHE
@@ -549,7 +549,8 @@ retry_cache:
       /* is it currently in the table? */
       if( bhp
 	  && bigloo_strcmp( bhp->hostaddr, hostname )
-	  && ((time( 0 ) - bhp->exptime) <= 0) ) {
+	  && ((time( 0 ) - bhp->exptime) <= 0)
+	  && (!canon || bhp->hp.h_aliases ) ) {
 	 bgl_mutex_unlock( socket_mutex );
 
 	 /* we still have to check if the entry in the table corresponds */
@@ -603,7 +604,7 @@ retry_cache:
 	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s QUERYING DNS...\n",
 		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ) );
 #endif	 
-	 bglhostentbyname( hostname, bhp, cann );
+	 bglhostentbyname( hostname, bhp, canon );
 	 
 #if( DEBUG_CACHE_DNS )
 	 fprintf( stderr, ">>> state=%d (ok=%d)\n",
@@ -624,7 +625,7 @@ retry_cache:
 #endif
    {
       bhp = make_bglhostent( hostname, 0 );
-      bglhostentbyname( hostname, bhp, cann );
+      bglhostentbyname( hostname, bhp, canon );
 
       return (bhp->state == BGLHOSTENT_STATE_OK) ? &(bhp->hp) : 0L;
    }
@@ -1488,8 +1489,6 @@ bgl_socket_hostname( obj_t sock ) {
 #endif      
       
 #if( BGL_HAVE_GETADDRINFO )
-      /* getnameinfo needs the sockaddr structure to be fully */
-      /* initialized, cannling getsockname performs this init */
       socklen_t len = sizeof( sin );
 
       /* cannot fail because we have created the socket */
