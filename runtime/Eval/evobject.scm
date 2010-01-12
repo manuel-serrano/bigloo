@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Aug 19 14:42:20 2009 (serrano)                */
-;*    Copyright   :  2006-09 Manuel Serrano                            */
+;*    Last change :  Tue Jan 12 11:55:22 2010 (serrano)                */
+;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -352,8 +352,10 @@
 	 #f
 	 (not (class-field-mutable? field))
 	 (class-field-default-value field)
-	 #f
-	 #f
+	 (when (class-field-virtual? field)
+	    (class-field-accessor field))
+	 (when (class-field-virtual? field)
+	    (class-field-mutator field))
 	 #f
 	 (class-field-info field)))
 

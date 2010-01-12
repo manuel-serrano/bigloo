@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Thu Jan  7 14:40:12 2010 (serrano)                */
+;*    Last change :  Mon Jan 11 12:12:39 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -199,7 +199,7 @@ of the start of the containing expression."
                   ;; It's almost certainly a function call.
                   (parse-partial-sexp (point) last-sexp 0 t)
 		  (if (/= (point) last-sexp)
-		      (if (eq bee-indent-style 'left)
+		      (if (eq bee-indent-style 'TODO)
 			  (setq desired-indent (- (+ (current-column) bee-body-indent) 1))
 			;; Indent beneath first argument or, if only one sexp
 			;; on line, indent beneath that.
