@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Jan  6 09:18:16 2007 (serrano)                */
-;*    Copyright   :  1996-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 13 06:38:46 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -66,7 +66,7 @@
 	      (class (type-of-id with-access loc)))
 	  (cond
 	     ((not (tclass? class))
-	      (error #f "Illegal `with-access' form" x))
+	      (error #f "Illegal `with-access' class" x))
 	     (else
 	      (let loop ((s slots)
 			 (nslots '()))
@@ -98,7 +98,7 @@
 								   body
 								   e))))))))
 		    ((not (pair? s))
-		     (error #f "Illegal `with-access' form" x))
+		     (error #f "Illegal `with-access' slot" x))
 		    ((symbol? (car s))
 		     (loop (cdr s) (cons (list (car s) (car s)) nslots)))
 		    ((and (pair? (car s))
