@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Sep  6 21:26:08 2009 (serrano)                */
+#*    Last change :  Thu Jan 14 08:48:27 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the getaddrinfo in replacement of gethostbyname.       */
 #*=====================================================================*/
@@ -82,7 +82,7 @@ main( int argc, char *argv[] ) {
    hints.ai_protocol = 0;
    hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
 
-   if( !(status = getaddrinfo( "www.google.com", 0L, &hints, &res )) ) {
+   if( !(status = getaddrinfo( "localhost", 0L, &hints, &res )) ) {
       for( rp = res; rp != NULL; rp = rp->ai_next ) {
 	 if( rp->ai_canonname ) printf( " canonname=%s\n", rp->ai_canonname );
          printf( " ip=%s\n", inet_ntoa( ((struct sockaddr_in *)(rp->ai_addr))->sin_addr ) );
