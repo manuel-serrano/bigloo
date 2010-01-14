@@ -90,10 +90,10 @@ public class output_buffered_port extends output_port {
 	 }
       } catch( final Exception e ) {
 	 if( out != null ) foreign.fail( "flush", e.getMessage(), this );
-	 
+
 	 return bbool.faux;
       }
-      
+
       return super.flush();
    }
    
@@ -171,7 +171,6 @@ public class output_buffered_port extends output_port {
 	    invoke_flush_hook( bigloo.foreign.BINT( len ) );
 	    for ( int i = 0 ;i < len ; ++i ) {
 	       out.write( (byte)s.charAt( i ) );
-	       System.err.write( (byte)s.charAt( i ) );
 	    }
 	 }
       } catch ( final Exception e ) {
