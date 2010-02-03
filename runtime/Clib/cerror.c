@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Sat Dec 27 09:55:01 2008 (serrano)                */
-/*    Copyright   :  2002-08 Manuel Serrano                            */
+/*    Last change :  Wed Feb  3 14:44:17 2010 (serrano)                */
+/*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -13,6 +13,16 @@
 #endif
 #include <bigloo.h>
 
+#ifdef PLATFORM_ANDROID
+# define HAS_ERRNOH 1
+#endif
+
+#if( defined( HAS_ERRNOH ) )
+#  include <errno.h>
+#else
+extern int errno;
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    Les recuperations externes                                       */
 /*---------------------------------------------------------------------*/
@@ -20,7 +30,6 @@
 extern void perror();
 extern char *strerror( int );
 extern void exit( int );
-extern int errno;
 #endif
 
 /*---------------------------------------------------------------------*/

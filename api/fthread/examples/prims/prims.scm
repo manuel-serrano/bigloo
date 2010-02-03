@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 13 14:24:10 2001                          */
-;*    Last change :  Mon Jun 29 09:56:21 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Sat Jan 23 19:42:04 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Prim numbers demonstration                                       */
 ;*=====================================================================*/
@@ -34,15 +34,15 @@
 (define *transient* #f)
 (define *winx* #f)
 (define *winy* #f)
-(define *width* 300)
-(define *height* 300)
+(define *width* 600)
+(define *height* 500)
 (define *canvas* #unspecified)
 (define *status-lbl* #unspecified)
 
 (define *live* 0)
 (define *multiple* 0)
 
-(define *speed* 10)
+(define *speed* 16)
 (define *play* #t)
 
 (define *color* (instantiate::rgb-color
@@ -195,7 +195,7 @@
       (orientation 'horizontal)
       (parent parent)
       (from 2)
-      (to 100)
+      (to 20)
       (value *speed*)
       (show-value? #t)
       (tooltips "Speed")

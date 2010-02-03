@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jan  7 21:02:14 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 14:40:08 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1539,6 +1539,9 @@ case $hostos in
     lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
     ;;
 
+  android)
+    sharedlibraryclosed=yes;;
+
   *)
     syszipdir=$zipdir
     syszipdirstr=$zipdir
@@ -2323,7 +2326,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       osclass="unix"
       pathseparator=":"
       fileseparator="/"
-      ostmp="$buildtmpr"
+      ostmp="$buildtmp"
       staticlibsuf="a"    
       ucs2displayable=0;;
   esac

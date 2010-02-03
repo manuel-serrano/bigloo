@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Thu Jan  7 20:48:29 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 14:50:09 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
 #*    Linux, Cygwin, etc, oses).                                       */
@@ -48,6 +48,8 @@ if eval "$SH uname" > /dev/null ; then
       echo "osf";;
     AIX*)
       echo "aix";;
+    android)
+      echo "android";;
     *)
       echo "unix";;
   esac

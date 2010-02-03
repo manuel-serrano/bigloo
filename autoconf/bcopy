@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jan  7 19:31:41 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 14:47:25 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the ptr size on the current architecture                    */
 #*=====================================================================*/
@@ -51,7 +51,7 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <strings.h>
-#if( defined( PLATFORM_ANDROID ) )
+#if( !defined( PLATFORM_ANDROID ) )
 #  include <stddef.h>
 #endif
 

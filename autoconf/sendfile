@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Christian Loitsch                                 */
 #*    Creation    :  Wed Apr 16 12:11:17 2003                          */
-#*    Last change :  Mon Jan  4 16:25:02 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 14:40:53 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if sendfile exists.                                        */
 #*=====================================================================*/
@@ -74,6 +74,7 @@ char *argv[];
 
    if( res >= 0 ) return 0;
    if( errno == EPIPE ) return 0;
+   return 1;
 }
 EOF
 
@@ -121,6 +122,7 @@ char *argv[];
 
    if( res >= 0 ) return 0;
    if( errno == EPIPE ) return 0;
+   return 1;
 }
 EOF
 

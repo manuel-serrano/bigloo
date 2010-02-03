@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Dec  3 19:08:03 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb  3 14:49:41 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -32,7 +32,7 @@ POPULATION = Makefile \
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-CCFLAGS = $(CFLAGS) $(CGCFLAGS) $(GCOFLAGS) $(CPICFLAGS) -I $(BOOTLIBDIR)
+CCFLAGS = $(CFLAGS) $(CGCFLAGS) $(GCOFLAGS) $(CPICFLAGS) -I$(BOOTLIBDIR)
 
 #*---------------------------------------------------------------------*/
 #*    boot                                                             */

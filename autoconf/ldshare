@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Fri Nov 13 14:08:57 2009 (serrano)                */
+#*    Last change :  Wed Feb  3 14:49:02 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -102,7 +102,7 @@ EOF
     exit 0
   fi
 
-  ldopt=`eval "$HOSTSH $aout"`
+  ldopt=`eval "$HOSTSH $aout" | sed -e 's/[\r\n]//g;'`
   /bin/rm -f $file-guess*
 fi
 
