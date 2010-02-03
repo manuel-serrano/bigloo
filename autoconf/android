@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/android                     */
+#*    /misc/virtual/android/BGL/bigloo3.3b/autoconf/android            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Marcos Dione                                      */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jan  7 20:48:03 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 16:38:03 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Detect if we are compiling for Android                           */
 #*=====================================================================*/
@@ -32,7 +32,7 @@ done
 #*---------------------------------------------------------------------*/
 if [ "$HOSTCPU " = "arm " ]; then
   # yes, those \r and $ that you see there are actuallty part of the output
-  if [ "$($HOSTSH getprop ro.build.id | sed -e 's/\r//g')" == "CUPCAKE" ]; then
+  if [ "`$HOSTSH getprop ro.build.id` " = "CUPCAKE " ]; then
     echo "yes"
   else
     echo "no"

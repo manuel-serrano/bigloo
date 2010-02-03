@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/gcversion                   */
+#*    /misc/virtual/android/BGL/bigloo3.3b/autoconf/gcversion          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sat Sep  5 06:02:21 2009 (serrano)                */
+#*    Last change :  Wed Feb  3 15:36:02 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -68,7 +68,7 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval "$BUILDSH $compile" 2> /dev/null; then
+if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout"
    ret_code=$?
    rm -f $aout
@@ -92,7 +92,7 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval "$BUILDSH $compile" 2> /dev/null; then
+if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout"
    ret_code=$?
    rm -f $aout
@@ -111,7 +111,7 @@ main( int argc, char *argv[] ) {
 }
 EOF
 
-if eval "$BUILDSH $compile" 2> /dev/null; then
+if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout"
    ret_code=$?
    rm -f $aout

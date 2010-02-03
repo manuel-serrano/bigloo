@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ldshare                     */
+#*    /misc/virtual/android/BGL/bigloo3.3b/autoconf/ldshare            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Wed Feb  3 14:49:02 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 15:41:00 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -102,7 +102,7 @@ EOF
     exit 0
   fi
 
-  ldopt=`eval "$HOSTSH $aout" | sed -e 's/[\r\n]//g;'`
+  ldopt=`eval "$HOSTSH $aout"`
   /bin/rm -f $file-guess*
 fi
 

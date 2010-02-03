@@ -3,7 +3,7 @@
 #*    serrano/prgm/project/bigloo/gc/install-gc-7.2alpha4              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano, Florian Loitsch                   */
-#*    Copyright   :  2007-09 Manuel Serrano, Florian Loitsch           */
+#*    Copyright   :  2007-10 Manuel Serrano, Florian Loitsch           */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
@@ -27,6 +27,7 @@ fi
 
 # untar the two version of the GC
 tar xfz $src -C ../gc || (echo "tar xfz $src failed"; exit 1)
+/bin/rm -rf "../gc/$gc"_fth
 mv ../gc/$gc "../gc/$gc"_fth || (echo "mv gc-7.2 failed"; exit 1)
 
 tar xfz $src  -C ../gc || (echo "tar xfz $src failed"; exit 1)

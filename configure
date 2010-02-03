@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Feb  3 14:40:08 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 16:47:22 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -417,6 +417,9 @@ while : ; do
 
     --gcincdir=*)
       gcincdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --gccustomversion=*)
+      gccustom="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --fildir=*)
       fildir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -914,6 +917,7 @@ while : ; do
       echo "   --gcprefix=dir (non-custom gc installation prefix (/usr)"  >&2;
       echo "   --gclibdir=dir (non-custom gc library dir (/usr/lib)" >&2;
       echo "   --gcincdir=dir (non-custon gc include dir (/usr/include/gc)" >&2;
+      echo "   --gccustomversion=version (custom gc version, e.g. \"gc-7.1\")" >&2;
       echo "" >&2;
       echo "Tools and compilers:"  >&2;
       echo "   --bigloo=comp [default bigloo]" >&2;
@@ -1187,14 +1191,6 @@ else
   fi
 fi
 
-# detect if we are compilling for android
-android=`$autoconf android ` || exit 1
-if [ "android " = "yes " ]; then
-  cflags="$cflags -DPLATFORM_ANDROID"
-  hostos="android"
-  hostcpu="arm"
-fi
-
 # Second, replace runtest by one that contains the host information.
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
@@ -1208,6 +1204,15 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --user="$user" \
    --cc="$cc" \
    --cflags="$cflags"
+
+# detect if we are compilling for android
+android=`$autoconf android` || exit 1
+if [ "$android " = "yes " ]; then
+  cflags="$cflags -DPLATFORM_ANDROID"
+  hostos="android"
+  hostcpu="arm"
+  gcneedstackbase=1
+fi
 
 #*---------------------------------------------------------------------*/
 #*    Cross Compilation                                                */
@@ -2678,8 +2683,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       echo "BGLBUILDBINDIR=$bootdir/bin" >> $makefile_cfg
       echo "BGLBUILDLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
   else
+      buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'`
       echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
-      echo "BGLBUILDLIBDIR=" >> $makefile_cfg
+      echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
   fi
   echo >> $makefile_cfg
 
@@ -2718,7 +2724,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
-  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BGLBUILDLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
+  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
   echo "EXTRALIBS=$extralibs" >> $makefile_cfg
   echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   echo "CLOSELIBS= # always empty, does not contain GC, override by makefiles" >> $makefile_cfg
