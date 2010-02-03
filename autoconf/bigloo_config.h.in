@@ -40,6 +40,9 @@
 #undef BGL_ISOC99
 #define BGL_ISOC99 @BGL_ISOC99@
 
+#undef BGL_HAS_ERRNOH
+#define BGL_HAS_ERRNOH @BGL_HAS_ERRNOH@
+
 #undef BGL_CCDIV0
 #define BGL_CCDIV0 @BGL_CCDIV0@
 

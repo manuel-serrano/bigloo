@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Wed Feb  3 14:44:17 2010 (serrano)                */
+/*    Last change :  Wed Feb  3 17:13:27 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -13,11 +13,7 @@
 #endif
 #include <bigloo.h>
 
-#ifdef PLATFORM_ANDROID
-# define HAS_ERRNOH 1
-#endif
-
-#if( defined( HAS_ERRNOH ) )
+#if( BGL_HAS_ERRNOH )
 #  include <errno.h>
 #else
 extern int errno;

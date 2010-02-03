@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Feb  3 16:47:22 2010 (serrano)                */
+#*    Last change :  Wed Feb  3 17:14:26 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1842,6 +1842,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     csflags="";
   fi
 
+  # errnoh
+  errnoh=`$autoconf checkinclude '#include <errno.h>'` || exit 1
+
   # The -p C compiler options
   cpflags=`$autoconf ccprof` || exit 1
 
@@ -2359,6 +2362,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@STACK_GROWS_DOWN@|$stackgrows|" \
               -e "s|@PTR_ALIGNMENT@|$alignment|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
+              -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \
               -e "s|@HAVE_STDINT@|$stdint|" \
               -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
