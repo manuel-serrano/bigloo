@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Sun Feb  7 07:41:06 2010 (serrano)                */
+#*    Last change :  Tue Feb  9 18:32:37 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles arch specific parts.                   */
@@ -30,3 +30,8 @@ pop:
           done;
 	@ echo arch/Makefile
 
+
+#*---------------------------------------------------------------------*/
+#*    distrib                                                          */
+#*---------------------------------------------------------------------*/
+distrib:
