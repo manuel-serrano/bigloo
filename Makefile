@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jan  7 21:05:40 2010 (serrano)                */
+#*    Last change :  Sun Feb  7 07:37:26 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -128,7 +128,7 @@ DIRECTORIES	= cigloo \
                   manuals \
                   doc \
                   win32 \
-                  macosx \
+                  arch \
                   www \
                   api \
                   srfi \

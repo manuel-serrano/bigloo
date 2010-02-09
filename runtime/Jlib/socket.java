@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Sun Apr 26 06:36:22 2009 (serrano)                */
-/*    Copyright   :  2000-09 Manuel Serrano                            */
+/*    Last change :  Tue Feb  9 15:37:12 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Socket implementation for the JVM back-end.                  */
 /*=====================================================================*/
@@ -50,7 +50,7 @@ public abstract class socket extends obj {
 				       byte[] outbuf,
 				       byte[] name )
       throws IOException {
-      input = new input_socket_port( client_socket.getInputStream(), inbuf );
+      input = new input_socket_port( client_socket, inbuf );
       output = output_buffered_port.make_output_buffered_port( client_socket.getOutputStream(), outbuf, name );
    }
 

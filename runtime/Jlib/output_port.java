@@ -99,7 +99,9 @@ public class output_port extends obj
 	 } else {
 	    if( s instanceof bigloo.bint &&
 		flushbuf instanceof byte[] &&
-		bigloo.foreign.CINT( (bigloo.bint)s ) <= ((byte[])flushbuf).length ) {
+		bigloo.foreign.CINT( (bigloo.bint)s ) <= ((byte[])flushbuf).length &&
+	       bigloo.foreign.CINT( (bigloo.bint)s ) > 0 )
+	    {
 	       out.write( (byte[])flushbuf,
 			  0,
 			  bigloo.foreign.CINT( (bigloo.bint)s ) );

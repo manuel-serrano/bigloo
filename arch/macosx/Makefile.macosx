@@ -1,0 +1,131 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/arch/macosx/Makefile.macosx          */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Apr 24 07:14:06 2009                          */
+#*    Last change :  Sun Feb  7 07:39:00 2010 (serrano)                */
+#*    Copyright   :  2009-10 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Makefile for Bigloo MacOSX port. It builds the Bigloo's .dmg.    */
+#*    -------------------------------------------------------------    */
+#*    Obviously macosx gcc and packagemaker are required.              */
+#*    They both come with the Xcode Tools package.                     */
+#*                                                                     */
+#*    In the root directory, build arch/macosx/bigloo.dmg (-j3 is not  */
+#*    required. just as example):                                      */
+#*       make -f arch/macosx/Makefile.macosx all                       */
+#*    which is equivalent to:                                          */
+#*       make -f arch/macosx/Makefile.macosx configure                 */
+#*       make -j3 -f arch/macosx/Makefile.macosx build                 */
+#*       make -f arch/macosx/Makefile.macosx compile-bee               */
+#*       make -f arch/macosx/Makefile.macosx dmg                       */
+#*                                                                     */
+#*    Note: the dmg (arch/macosx/dmg) directory will not be cleaned by */
+#*    'clean'. This allows for customizations (such as background      */
+#*    images, etc.).                                                   */
+#*=====================================================================*/
+
+TITLE=Bigloo
+BEE_TITLE=Bee
+
+BEE_EMACS_PATH=/usr/local/share/emacs/bigloo
+
+PACKAGEMAKER=/Developer/usr/bin/packagemaker
+TEXTUTIL=/usr/bin/textutil
+
+PREFIX=/usr/local
+
+MACOSXDIR=$(BOOTDIR)/arch/macosx
+BGL_ROOT=$(MACOSXDIR)/root
+BEE_ROOT=$(MACOSXDIR)/bee_root
+DMG_DIR=$(MACOSXDIR)
+DMG_ROOT=$(MACOSXDIR)/dmg
+# pkg will be output directly into dmg-directory
+BGL_PKGDIR=$(DMG_ROOT)
+BEE_PKGDIR=$(DMG_ROOT)
+
+RESOURCES=$(MACOSXDIR)/resources
+BGL_INFO_PLIST=$(MACOSXDIR)/Info.plist
+BEE_INFO_PLIST=$(MACOSXDIR)/Info.plist.bee
+BGL_PKG_NAME=bigloo-$(RELEASE).pkg
+BEE_PKG_NAME=bee-$(RELEASE).pkg
+DMG_NAME=bigloo-$(RELEASE).dmg
+
+BGL_PKG=$(BGL_PKGDIR)/$(BGL_PKG_NAME)
+BEE_PKG=$(BEE_PKGDIR)/$(BEE_PKG_NAME)
+DMG=$(DMG_DIR)/$(DMG_NAME)
+
+FIND=find
+HDIUTIL=hdiutil
+GMPSRC=ftp://ftp.gmplib.org/pub/gmp-4.3.1/gmp-4.3.1.tar.gz
+
+-include Makefile.config
+
+all:
+	$(MAKE) -f arch/macosx/Makefile.macosx configure && \
+	$(MAKE) -f arch/macosx/Makefile.macosx build && \
+	$(MAKE) -j1 -f arch/macosx/Makefile.macosx compile-bee && \
+	$(MAKE) -j1 -f arch/macosx/Makefile.macosx dmg
+
+build:
+	$(MAKE)
+
+compile-bee:
+	$(MAKE) compile-bee
+
+$(DMG): $(BGL_PKG) $(BEE_PKG)
+	cp $(BOOTDIR)/COPYING $(DMG_ROOT) && \
+	cp $(BOOTDIR)/ChangeLog $(DMG_ROOT) && \
+	(cd $(BGL_ROOT) && find usr > $(DMG_ROOT)/Files-Bigloo.txt) && \
+	(cd $(BEE_ROOT) && find usr > $(DMG_ROOT)/Files-Bee.txt) && \
+	$(HDIUTIL) create -srcfolder $(DMG_ROOT) -volname $(TITLE) -format UDZO -ov "$@"
+
+dmg: $(DMG)
+
+
+# typical configure
+configure:
+	if [ "$(GMPSRC) " = " " ]; then \
+          echo "Re-run with make -f arch/macosx/Makefile.macosx dmg GMPSRC=\"path-to-tarball\""; \
+        fi
+	./configure --jvm=yes --enable-thread --lispdir="$(BEE_EMACS_PATH)" --prefix=$(PREFIX) --gmpconfigureopt=--host=none-apple-darwin --customgmp=yes --gmpsrc=$(GMPSRC)
+
+dirs:
+	mkdir -p $(BGL_ROOT) && \
+	mkdir -p $(BEE_ROOT) && \
+	mkdir -p $(RESOURCES) && \
+	mkdir -p $(DMG_ROOT)
+
+resources: dirs
+	cp $(BOOTDIR)/LICENSE $(RESOURCES)/License.txt && \
+	$(TEXTUTIL) -convert rtf -fontsize 9 -font Courier $(RESOURCES)/License.txt && \
+	rm $(RESOURCES)/License.txt && \
+	cp $(BOOTDIR)/README $(RESOURCES)/Readme.txt
+
+# I haven't tested .net yet.
+$(BGL_PKG): dirs resources
+	$(MAKE) DESTDIR="$(BGL_ROOT)" install && \
+	$(FIND) $(BGL_ROOT) -name '.DS_Store' -delete && \
+	$(PACKAGEMAKER) --root $(BGL_ROOT) --title "$(TITLE)" \
+                        --info $(BGL_INFO_PLIST) \
+                        --version "$(RELEASE)" --resources $(RESOURCES) \
+                        --out $@
+
+$(BEE_PKG): dirs resources
+	$(MAKE) DESTDIR="$(BEE_ROOT)" install-bee && \
+	$(FIND) $(BEE_ROOT) -name '.DS_Store' -delete && \
+	$(PACKAGEMAKER) --root $(BEE_ROOT) --title "$(BEE_TITLE)" \
+                        --info $(BEE_INFO_PLIST) \
+                        --version "$(RELEASE)" --resources $(RESOURCES) \
+                        --out $@
+
+.PHONY: configure dirs clean dmg build resources
+
+
+clean:
+	-rm -rf $(BGL_ROOT) $(BEE_ROOT) $(RESOURCES) $(BGL_PKG) $(BEE_PKG) $(DMG)
+	-rm -rf $(DMG_ROOT)/COPYING
+	-rm -rf $(DMG_ROOT)/ChangeLog
+	-rm -rf $(DMG_ROOT)/Files-Bigloo.txt
+	-rm -rf $(DMG_ROOT)/Files-Bee.txt
+

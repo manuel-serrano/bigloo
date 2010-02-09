@@ -34,7 +34,9 @@ public final class foreign
 	 final stackwriter sw = new stackwriter( p.out, true );
 
 	 //o.printStackTrace( new PrintStream( p.out ) );
-	 o.printStackTrace( sw );
+	 synchronized( p ) {
+	    o.printStackTrace( sw );
+	 }
       }
 
    /////
@@ -4199,8 +4201,8 @@ public final class foreign
 	 return stack_trace.pop_trace();
       }
 
-   public static Object dump_trace_stack(output_port p,
-					 int depth) throws IOException
+   public static Object dump_trace_stack(output_port p, int depth)
+      throws IOException
       {
 	 Object o = stack_trace.dump(p, depth);
 	 dump_stack( p );
@@ -4598,10 +4600,11 @@ public final class foreign
 	 return java.net.InetAddress.getByName( new String( hostname ) ).getAddress();
       }
       catch( Exception _ ) {
-	 bigloo.runtime.Llib.error.bgl_system_failure( BGL_IO_UNKNOWN_HOST_ERROR,
-						       symbol.make_symbol("host".getBytes()),
-						       "unknown or misspelled host name".getBytes(),
-						       hostname );
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    BGL_IO_UNKNOWN_HOST_ERROR,
+	    symbol.make_symbol("host".getBytes()),
+	    "unknown or misspelled host name".getBytes(),
+	    hostname );
 	 return "error".getBytes();
       }
    }
@@ -4889,7 +4892,7 @@ public final class foreign
       }
 
    public static boolean bgl_input_port_timeout_set(input_port p, int to) {
-      return false;
+      return p.timeout_set( to / 1000 );
    }
    
    public static boolean bgl_output_port_timeout_set(output_port p, int to) {
@@ -5190,13 +5193,15 @@ public final class foreign
       try {
 	 return p.rgc_fill_buffer();
       } catch( Exception e ) {
+	 String msg = e.getMessage();
 	 bigloo.runtime.Llib.error.bgl_system_failure(
-	    BGL_IO_READ_ERROR,
+	    (e instanceof java.net.SocketTimeoutException ?
+	     BGL_IO_TIMEOUT_ERROR : BGL_IO_READ_ERROR),
 	    symbol.make_symbol( "read".getBytes() ),
-	    e.getMessage().getBytes(),
+	    (msg != null ? msg.getBytes() : FOREIGN_TYPE_NAME( e )),
 	    p );
 	 return false;
-      } 
+      }
    }
 
    public static byte[] rgc_buffer_substring(input_port p, int o, int e)

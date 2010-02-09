@@ -77,6 +77,7 @@ SOURCES		= $(_BGL_SOURCES)
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) \
                   $(BIGLOO_SRC_DIR)/idea-round.png \
+                  $(BIGLOO_SRC_DIR)/bits32.sch \
                   $(MISC_SRC_DIR)/make-lib.scm \
                   $(MISC_SRC_DIR)/$(TARGETNAME).init \
                   Makefile

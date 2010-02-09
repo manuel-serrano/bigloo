@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Sun Apr 19 06:23:35 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Fri Feb  5 15:52:22 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
 ;*=====================================================================*/
@@ -115,7 +115,7 @@
 	       ((+ (or (out #\return #\newline #\; #\\) "\\n"))
 		(let ((val (unescape (the-string) cset decode)))
 		   (cons val (ignore))))
-	       ((: (? #\return) #\Newline)
+	       ((: #\return #\Newline)
 		'())
 	       ((: #\; (+ #\;))
 		(let ((len (-fx (the-length) 1)))
@@ -126,7 +126,8 @@
 		(parse-error "Illegal values"
 			     (read-line (the-port))
 			     (the-port))))))
-      (if (memq 'quoted-printable options)
+      (if (or (memq 'quoted-printable options)
+	      (member '(encoding . "QUOTED-PRINTABLE") options))
 	  (read/rp g port cset quoted-printable-decode)
 	  (read/rp g port cset #f))))
 
@@ -206,7 +207,7 @@
 					 (list street)
 					 city region zip country))))))))
 	    (else
-	     (read-line (the-port)))))
+	     (read-values (the-port) options cset))))
       
       ((: IDENT #\:)
        (parse-content-line (the-downcase-keyword) '())

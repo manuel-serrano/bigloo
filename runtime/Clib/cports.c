@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun Dec 20 22:00:24 2009 (serrano)                */
+/*    Last change :  Tue Feb  9 18:11:33 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -518,7 +518,8 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
       
       if( INTEGERP( s ) &&
 	  STRINGP( buf ) &&
-	  (CINT( s ) <= STRING_LENGTH( buf )) ) {
+	  (CINT( s ) <= STRING_LENGTH( buf )) &&
+	  (CINT( s ) > 0) ) {
 	 write_string( port, BSTRING_TO_STRING( buf ), CINT( s ), err );
       }
    }

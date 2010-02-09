@@ -102,7 +102,7 @@ public class output_buffered_port extends output_port {
 	 if( count < buffer.length ) {
 	    buffer[ count++ ] = (byte)cn;
 	 } else {
-	    invoke_flush_hook( bigloo.foreign.BINT( count ) );
+	    if( count > 0 ) invoke_flush_hook( bigloo.foreign.BINT( count ) );
 	    out.write( buffer );
 	    buffer[ 0 ] = (byte)cn;
 	    count = 1;
@@ -123,8 +123,9 @@ public class output_buffered_port extends output_port {
 	       out.write( buffer, 0, count );
 	       count = 0;
 	    }
-	    
-	    invoke_flush_hook( bigloo.foreign.BINT( s.length ) );
+
+	    if( s.length > 0 )
+	       invoke_flush_hook( bigloo.foreign.BINT( s.length ) );
 	    out.write( s );
 	 }
       } catch( final Exception e ) {
@@ -145,8 +146,8 @@ public class output_buffered_port extends output_port {
 	       out.write( buffer, 0, count );
 	       count = 0;
 	    }
-	    
-	    invoke_flush_hook( bigloo.foreign.BINT( l ) );
+
+	    if( l > 0 ) invoke_flush_hook( bigloo.foreign.BINT( l ) );
 	    out.write( s, offset, l );
 	 }
       } catch ( final Exception e ) {
@@ -164,11 +165,11 @@ public class output_buffered_port extends output_port {
 	    }
 	 } else {
 
-	    invoke_flush_hook( bigloo.foreign.BINT( count ) );
+	    if( count > 0 ) invoke_flush_hook( bigloo.foreign.BINT( count ) );
 	    out.write( buffer, 0, count );
 	    count = 0;
-	    
-	    invoke_flush_hook( bigloo.foreign.BINT( len ) );
+
+	    if( len > 0 ) invoke_flush_hook( bigloo.foreign.BINT( len ) );
 	    for ( int i = 0 ;i < len ; ++i ) {
 	       out.write( (byte)s.charAt( i ) );
 	    }

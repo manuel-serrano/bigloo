@@ -85,4 +85,8 @@ public abstract class input_port extends obj
   {
     p.write( "[PORT " + name + " @" + filepos + "-" + matchstart + "." + forward + "." + matchstop + "-" + bufsiz + "." + bufpos + "]" );
   }
+
+   public boolean timeout_set( int to ) {
+      return false;
+   }
 }
