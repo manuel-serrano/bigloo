@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 10 10:01:39 2010 (serrano)                */
+/*    Last change :  Wed Feb 10 10:52:44 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Socket implementation for the JVM back-end.                  */
@@ -79,6 +79,7 @@ public abstract class socket extends obj {
       } catch( Throwable _ ) {
 	 ;
       }
+
       return bigloo.foreign.BUNSPEC;
    }
 

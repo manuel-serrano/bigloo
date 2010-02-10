@@ -4717,7 +4717,7 @@ public final class foreign
       }
 
    public static Object socket_close(socket s) {
-	 return s.close();
+      return s.close();
       }
 
    public static Object bgl_getprotoents()
