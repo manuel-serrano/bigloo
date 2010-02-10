@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Sep  8 09:55:09 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Wed Feb 10 18:04:09 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -64,6 +64,7 @@
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
 	    (library-file-name::bstring ::symbol ::bstring ::symbol)
 	    (library-load ::obj . opt)
+	    (library-load_e ::obj . opt)
 	    (library-exists? ::symbol . opt)))
 
 ;*---------------------------------------------------------------------*/
@@ -301,6 +302,77 @@
 		       (if (string? libs)
 			   (dynamic-load libs init_s module_s)
 			   (dynamic-load rsc init_s module_s))
+		       (dynamic-load libe init_e module_e)))
+		   (when (and info (libinfo-init info))
+		      (eval '((libinfo-init info))))
+		   (when (and info (libinfo-eval info))
+		      (eval '((libinfo-eval info))))))))
+	 ($eval-module-set! mod))))
+
+;*---------------------------------------------------------------------*/
+;*    library-load_e ...                                               */
+;*---------------------------------------------------------------------*/
+(define (library-load_e lib . path)
+   (let ((mod (eval-module)))
+      ($eval-module-set! (interaction-environment))
+      (unwind-protect
+	 (cond
+	    ((string? lib)
+	     (dynamic-load lib))
+	    ((not (symbol? lib))
+	     (bigloo-type-error 'library-load "string or symbol" lib))
+	    (else
+	     (let* ((path (if (pair? path)
+			      path
+			      (let ((venv (getenv "BIGLOOLIB")))
+				 (if (not venv)
+				     (bigloo-library-path)
+				     (cons "." (unix-path->list venv))))))
+		    (init (find-file/path (library-init-file lib) path))
+		    (be (cond-expand
+			   (bigloo-c 'bigloo-c)
+			   (bigloo-jvm 'bigloo-jvm)
+			   (bigloo-.net 'bigloo-.net))))
+		(when init (loadq init))
+		(let* ((info (library-info lib))
+		       (n (make-shared-lib-name
+			   (library-file-name lib "" be) be))
+		       (ns (make-shared-lib-name
+			    (library-file-name lib "_s" be) be))
+		       (ne (make-shared-lib-name
+			    (library-file-name lib "_e" be) be))
+		       (rsc (let ((p (string-append "/resource/bigloo/"
+						    (symbol->string lib)
+						    "/make-lib.class")))
+			       ;; JVM supports fake file system in the JAR
+			       ;; file. In Bigloo it is a sub-directory of
+			       ;; /resource inside ressources, we always search
+			       ;; for a class named make-lib. This means that
+			       ;; all JVM libraries must be provided with
+			       ;; such a class.
+			       (and (file-exists? p) p)))
+		       (libe (find-file/path ne path))
+		       (name (symbol->string lib))
+		       (init_e (and info (libinfo-init_e info)))
+		       (module_e (and info
+				      (cond-expand
+					 (bigloo-c (libinfo-module_e info))
+					 (else (libinfo-class_e info))))))
+		   (cond
+		      ((not (string? rsc))
+		       (error 'library-load
+			      (format "Can't find library `~a' (`~a')" lib ns)
+			      path))
+		      ((not (string? libe))
+		       (cond-expand
+			  ((not bigloo-jvm)
+			   (evmeaning-warning
+			    #f
+			    'library-load
+			    (format "Can't find _e library `~a' (`~a') in path "
+				    lib ne)
+			    path))))
+		      (else
 		       (dynamic-load libe init_e module_e)))
 		   (when (and info (libinfo-init info))
 		      (eval '((libinfo-init info))))

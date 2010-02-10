@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Jul 28 16:58:20 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Wed Feb 10 18:02:00 2010 (serrano)                */
+;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/

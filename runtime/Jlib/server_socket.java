@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 10 10:14:08 2010 (serrano)                */
+/*    Last change :  Wed Feb 10 11:18:52 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
@@ -96,14 +96,11 @@ public class server_socket extends socket {
    }
 
    public Object close() {
-      System.err.println( ">>> server_socket.close" );
       try {
 	 server_socket.close();
       } catch( Throwable _ ) {
-	 System.err.println( "!!! server_socket.close" );
 	 ;
       }
-	 System.err.println( "<<< server_socket.close" );
       down = true;
       return bigloo.foreign.BUNSPEC;
    }
