@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  1 08:52:59 2008                          */
-;*    Last change :  Tue Jan  5 16:38:19 2010 (serrano)                */
+;*    Last change :  Wed Feb 10 18:36:08 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBin wrapper                                                   */
@@ -32,7 +32,8 @@
 	    ($gst-bin-elements-set! ::gst-bin ::pair-nil)
 
 	    (gst-bin-add! ::gst-bin ::gst-element . els)
-	    (gst-bin-remove! ::gst-bin ::gst-element . els))
+	    (gst-bin-remove! ::gst-bin ::gst-element . els)
+	    (gst-bin-get ::gst-bin ::bstring))
 
    (extern  (export $make-gst-bin "bgl_gst_bin_new")
 	    (export $gst-bin-elements-set! "bgl_gst_bin_elements_set")))
@@ -119,4 +120,12 @@
    
    #unspecified)
 
-   
+;*---------------------------------------------------------------------*/
+;*    gst-bin-get ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (gst-bin-get o::gst-bin name)
+   (let loop ((els (gst-bin-elements o)))
+      (when (pair? els)
+	 (if (string=? (gst-element-name (car els)) name)
+	     (car els)
+	     (loop (cdr els))))))
