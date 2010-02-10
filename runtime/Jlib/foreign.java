@@ -3948,6 +3948,30 @@ public final class foreign
 	 return e;
       }
 
+   public static RuntimeException fail(Object proc, Throwable x, Object env)
+      {
+	 byte[] msg = (x.getMessage() != null)
+	    ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
+	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+
+	 final RuntimeException e = new RuntimeException("bigloo error...");
+	 final stackwriter sw = new stackwriter(System.err, true);
+
+	 e.printStackTrace(sw);
+	 sw.flush();
+
+	 bigloo_abort();
+      
+	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+
+	 if (v instanceof bint)
+	    System.exit(CINT((bint) v));
+	 else
+	    System.exit(1);
+
+	 return e;
+      }
+
    public static Throwable fail( Throwable e, Object proc, Object msg, Object env)
       {
 	 final stackwriter sw = new stackwriter(System.err, true);
@@ -4687,14 +4711,12 @@ public final class foreign
 	 return s.local_addr();
       }
 
-   public static Object socket_shutdown(socket s, boolean b)
-      throws IOException
-      {
+   public static Object socket_shutdown(socket s, boolean b) {
+
 	 return s.shutdown(b);
       }
 
-   public static Object socket_close(socket s) throws IOException
-      {
+   public static Object socket_close(socket s) {
 	 return s.close();
       }
 

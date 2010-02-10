@@ -62,7 +62,7 @@ public class output_port extends obj
 	    if (out == null)
 	       return bigloo.foreign.BUNSPEC;
 	    else
-	       foreign.fail( "close", e.getMessage(), this );
+	       foreign.fail( "close", e, this );
 	 }
 
 	 return this;
@@ -79,7 +79,7 @@ public class output_port extends obj
 	 catch (final Exception e)
 	 {
 	    if (out != null)
-	       foreign.fail( "flush", e.getMessage(), this );
+	       foreign.fail( "flush", e, this );
 	    return bbool.faux;
 	 }
       }
@@ -121,7 +121,7 @@ public class output_port extends obj
 	 catch (final Exception e)
 	 {
 	    if (out != null)
-	       foreign.fail( "write", e.getMessage(), this );
+	       foreign.fail( "write", e, this );
 	 }
       }
 
@@ -135,7 +135,7 @@ public class output_port extends obj
 	 catch (final Exception e)
 	 {
 	    if (out != null)
-	       foreign.fail( "write", e.getMessage(), this );
+	       foreign.fail( "write", e, this );
 	 }
       }
 
@@ -149,7 +149,7 @@ public class output_port extends obj
 	 catch (final Exception e)
 	 {
 	    if (out != null)
-	       foreign.fail( "write", e.getMessage(), this );
+	       foreign.fail( "write", e, this );
 	 }
       }
 
@@ -167,7 +167,7 @@ public class output_port extends obj
 	 catch (final Exception e)
 	 {
 	    if (out != null)
-	       foreign.fail( "write", e.getMessage(), this );
+	       foreign.fail( "write", e, this );
 	 }
       }
 

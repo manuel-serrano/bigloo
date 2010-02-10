@@ -73,7 +73,7 @@ public class output_buffered_port extends output_port {
       try {
 	 flush();
       } catch( final Exception e ) {
-	 if( out != null ) foreign.fail( "close", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "close", e, this );
 	 
 	 return bbool.faux;
       }
@@ -89,7 +89,7 @@ public class output_buffered_port extends output_port {
 	    count = 0;
 	 }
       } catch( final Exception e ) {
-	 if( out != null ) foreign.fail( "flush", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "flush", e, this );
 
 	 return bbool.faux;
       }
@@ -108,7 +108,7 @@ public class output_buffered_port extends output_port {
 	    count = 1;
 	 }
       } catch (final Exception e) {
-	 if( out != null ) foreign.fail( "write", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "write", e, this );
       }
    }
 
@@ -129,7 +129,7 @@ public class output_buffered_port extends output_port {
 	    out.write( s );
 	 }
       } catch( final Exception e ) {
-	 if( out != null ) foreign.fail( "write", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "write", e, this );
       }
    }
 
@@ -151,7 +151,7 @@ public class output_buffered_port extends output_port {
 	    out.write( s, offset, l );
 	 }
       } catch ( final Exception e ) {
-	 if( out != null ) foreign.fail( "write", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "write", e, this );
       }
    }
 
@@ -175,7 +175,7 @@ public class output_buffered_port extends output_port {
 	    }
 	 }
       } catch ( final Exception e ) {
-	 if( out != null ) foreign.fail( "write", e.getMessage(), this );
+	 if( out != null ) foreign.fail( "write", e, this );
       }
    }
 }

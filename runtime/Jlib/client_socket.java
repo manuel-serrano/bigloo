@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Sun Apr 26 05:26:48 2009 (serrano)                */
-/*    Copyright   :  2000-09 Manuel Serrano                            */
+/*    Last change :  Wed Feb 10 09:07:38 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -77,14 +77,22 @@ public class client_socket extends socket {
       return socket.getLocalAddress().getHostAddress().getBytes();
    }
 
-   public Object shutdown( final boolean  close_socket ) throws IOException {
-      close();
-      down= true;
+   public Object shutdown( final boolean close_socket ) {
+      try {
+	 close();
+	 down= true;
+      } catch( Throwable _ ) {
+	 ;
+      }
       return bigloo.foreign.BUNSPEC;
    }
 
-   public Object close() throws IOException {
-      socket.close();
+   public Object close() {
+      try {
+	 socket.close();
+      } catch( Throwable _ ) {
+	 ;
+      }
       return super.close();
    }
 

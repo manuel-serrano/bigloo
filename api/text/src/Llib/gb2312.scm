@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 13:56:53 2009                          */
-;*    Last change :  Tue Oct 20 10:28:10 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Wed Feb 10 08:45:54 2010 (serrano)                */
+;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Guojia Biaozhun Chinese characters                               */
 ;*    see http://en.wikipedia.org/wiki/GB_2312                         */
@@ -4043,6 +4043,15 @@
       #xfa0c #xfa0d #xfa0e #xfa0f #xfa11 #xfa13 #xfa14 #xfa18   ;; fe40
       #xfa1f #xfa20 #xfa21 #xfa23 #xfa24 #xfa27 #xfa28 #xfa29   ;; fe48
       ))
+
+;; Until the tvector initialization is fixed for the JVM, let's break
+;; the compiler optimizing to force a plain vector encoding.
+(cond-expand
+   (bigloo-jvm
+    (vector-set! gb2312-table1 0 0.0)
+    (vector-set! gb2312-table1 0 #x0000)
+    (vector-set! gb2312-table2 0 0.0)
+    (vector-set! gb2312-table2 0 #x4e02)))
    
 ;*---------------------------------------------------------------------*/
 ;*    gb2312->ucs2 ...                                                 */

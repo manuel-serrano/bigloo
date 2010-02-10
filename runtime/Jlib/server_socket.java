@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Apr 21 18:13:46 2009 (serrano)                */
-/*    Copyright   :  2000-09 Manuel Serrano                            */
+/*    Last change :  Wed Feb 10 10:14:08 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -78,22 +78,32 @@ public class server_socket extends socket {
       return new client_socket( accepted_socket, inbuf, outbuf );
    }
 
-   public Object shutdown( final boolean  close_socket ) throws IOException {
-      if (client_socket != null)
-	 try {
-	    client_socket.shutdownOutput();
-	    client_socket.shutdownInput();
-	 } catch (Exception _) {
-	 }
+   public Object shutdown( final boolean close_socket ) {
+      try {
+	 if (client_socket != null)
+	    try {
+	       client_socket.shutdownOutput();
+	       client_socket.shutdownInput();
+	    } catch (Exception _) {
+	    }
 
-      if (close_socket)
-	 close();
+	 if( close_socket ) close();
+      } catch( Throwable _ ) {
+	 ;
+      }
 
       return bigloo.foreign.BUNSPEC;
    }
 
-   public Object close() throws IOException {
-      server_socket.close();
+   public Object close() {
+      System.err.println( ">>> server_socket.close" );
+      try {
+	 server_socket.close();
+      } catch( Throwable _ ) {
+	 System.err.println( "!!! server_socket.close" );
+	 ;
+      }
+	 System.err.println( "<<< server_socket.close" );
       down = true;
       return bigloo.foreign.BUNSPEC;
    }
