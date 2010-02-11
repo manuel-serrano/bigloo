@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Feb 10 08:24:38 2010 (serrano)                */
+#*    Last change :  Thu Feb 11 16:03:06 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -601,7 +601,6 @@ while : ; do
 
     --os-macosx)
       tuning="MacOS X";
-      threadsupport=no;
       ldlibs="-lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
       ldcomplibs="-lc \$(GCCLOSELIB) -lc";
       ldinstallname="-install_name";
