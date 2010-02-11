@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:49:15 1993                          */
-;*    Last change :  Thu Dec 24 05:41:24 2009 (serrano)                */
+;*    Last change :  Thu Feb 11 09:56:43 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Module access file generator.                                    */
 ;*=====================================================================*/
@@ -45,7 +45,7 @@
 	 ((("-m" "--module-keyword") ?k (help "Add module keyword"))
 	  (set! *module-keywords* (cons (string->symbol k) *module-keywords*)))
 	 ((("-a" "--access") ?module ?file (help "Manually add access"))
-	  (set! *add-accesses* (cons (cons module file) *add-accesses*)))
+	  (set! *add-accesses* (cons (list (string->symbol module) file) *add-accesses*)))
 	 ((("-w" "--no-warning") (help "Inhibit warning messages"))
 	  (bigloo-warning-set! 0))
 	 (else

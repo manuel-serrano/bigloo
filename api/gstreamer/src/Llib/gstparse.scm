@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 14 10:42:12 2008                          */
-;*    Last change :  Thu Jan  7 06:31:35 2010 (serrano)                */
+;*    Last change :  Thu Feb 11 11:26:19 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstParse binding                                                 */
@@ -34,7 +34,7 @@
 (define (gst-parse-launch string . obj)
    (if (null? obj)
        ($gst-parse-launch string)
-       ($gst-parse-launch (format string obj))))
+       ($gst-parse-launch (apply format string obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-parse-launchv ...                                            */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Nov 20 19:31:14 2009 (serrano)                */
-;*    Copyright   :  2006-09 Manuel Serrano                            */
+;*    Last change :  Thu Feb 11 11:21:50 2010 (serrano)                */
+;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -389,14 +389,22 @@
 	  (when (>fx (bigloo-debug-module) 0)
 	     (fprint (current-error-port)
 		     "*** loading module `" ident "' [" path "]..."))
-	  (for-each evmodule-load path)
-	  (let ((mod2 (eval-find-module ident)))
-	     (if (not (evmodule? mod2))
-		 (import-error (string-append "Cannot find module `"
-					      (symbol->string ident)
-					      "' in source")
-			       path)
-		 (import-module mod2)))))))
+	  (unwind-protect
+	     (let loop ((path path)
+			(mod2 #f))
+		(if (pair? path)
+		    (begin
+		       (evmodule-loadq (car path))
+		       (let ((mod2 (eval-find-module ident)))
+			  ($eval-module-set! mod2)
+			  (loop (cdr path) mod2)))
+		    (if (not (evmodule? mod2))
+			(import-error (string-append "Cannot find module `"
+						     (symbol->string ident)
+						     "' in source")
+				      path)
+			(import-module mod2))))
+	     ($eval-module-set! mod))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import ...                                              */
