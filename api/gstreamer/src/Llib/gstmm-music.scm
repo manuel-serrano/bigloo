@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Sun Dec 27 18:49:27 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Sun Feb 14 18:51:56 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
 ;*    multimedia MUSIC class.                                          */
@@ -192,6 +192,7 @@
 			    (set! song (+fx 1 song))
 			    (mutex-unlock! %mutex)
 			    (music-play o)
+			    (tprint "play-next volume=" volume)
 			    (when (>=fx volume 0)
 			       (mutex-lock! %mutex)
 			       (music-volume-set! o volume)
@@ -213,6 +214,7 @@
 				(set! state nstate)
 				(when (gst-element? (gstmusic-%pipeline o))
 				   (set! volume (music-volume-get o))
+				   (tprint "nstate volume=" volume)
 				   (set! songpos (music-position o))
 				   (set! songlength (music-duration o)))
 				(mutex-unlock! %mutex)
@@ -226,6 +228,7 @@
 		      ;; tag found
 		      (mutex-lock! %mutex)
 		      (for-each (lambda (tag)
+				   (tprint "tag=" tag)
 				   (let ((key (string->symbol (car tag))))
 				      (case key
 					 ((bitrate)
@@ -529,7 +532,8 @@
 	     (begin
 		(set! songpos (music-position o))
 		(set! songlength (music-duration o))
-		(set! volume (music-volume-get o)))
+		(set! volume (music-volume-get o))
+		(tprint "update-status volume=" volume))
 	     (musicstatus-state-set! status 'stop))
 	 (mutex-unlock! %mutex)
 	 status)))
@@ -574,6 +578,7 @@
 	  (let ((vol (inexact->exact
 		      (* 100 (gst-object-property %audiomixer :volume)))))
 	     (musicstatus-volume-set! %status vol)
+	     (tprint "music-volume-get: " vol)
 	     vol)
 	  0)))
 

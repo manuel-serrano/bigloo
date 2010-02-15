@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Dec  9 09:59:52 2009 (serrano)                */
-/*    Copyright   :  2004-09 Manuel Serrano                            */
+/*    Last change :  Sun Feb 14 08:47:26 2010 (serrano)                */
+/*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -158,6 +158,8 @@ bgl_make_nil_condvar() {
 BGL_RUNTIME_DEF
 obj_t
 make_dynamic_env() {
+   int i;
+   
    obj_t env = GC_MALLOC( sizeof( struct bgl_dynamic_env ) );
 
    env->dynamic_env_t.header = MAKE_HEADER( DYNAMIC_ENV_TYPE, 0 );
@@ -175,21 +177,9 @@ make_dynamic_env() {
    env->dynamic_env_t.befored_top = 0L;
 
    env->dynamic_env_t.mvalues_number = 1;
-   env->dynamic_env_t.mvalues[ 0 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 1 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 2 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 3 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 4 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 5 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 6 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 7 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 8 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 9 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 10 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 12 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 13 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 14 ] = BUNSPEC;
-   env->dynamic_env_t.mvalues[ 15 ] = BUNSPEC;
+   for( i = 0; i < 16; i++ ) {
+      env->dynamic_env_t.mvalues[ i ] = BUNSPEC;
+   }
 
    env->dynamic_env_t.error_handler = BNIL;
    env->dynamic_env_t.uncaught_exception_handler = BNIL;
@@ -207,14 +197,19 @@ make_dynamic_env() {
    env->dynamic_env_t.current_thread = 0L;
 
    env->dynamic_env_t.lexical_stack = BNIL;
-
+ 
    env->dynamic_env_t.bytecode = BUNSPEC;
    env->dynamic_env_t.module = BUNSPEC;
    env->dynamic_env_t.abase = BUNSPEC;
 
    env->dynamic_env_t.parameters = BNIL;
-   env->dynamic_env_t.user_data = BNIL;
+   
+   for( i = 0; i < 32; i++ ) {
+      env->dynamic_env_t.sig_handlers[ i ] = BFALSE;
+   }
 
+   env->dynamic_env_t.user_data = BNIL;
+   
    return BREF( env );
 }
 
@@ -225,6 +220,8 @@ make_dynamic_env() {
 BGL_RUNTIME_DEF
 obj_t
 bgl_dup_dynamic_env( obj_t o ) {
+   int i;
+   
    obj_t env = make_dynamic_env();
    struct bgl_dynamic_env *dst = (struct bgl_dynamic_env *)CREF( env );
    struct bgl_dynamic_env *src = (struct bgl_dynamic_env *)CREF( o );
@@ -243,6 +240,10 @@ bgl_dup_dynamic_env( obj_t o ) {
    env->dynamic_env_t.module = o->dynamic_env_t.module;
    env->dynamic_env_t.abase = o->dynamic_env_t.abase;
    
+   for( i = 0; i < 32; i++ ) {
+      env->dynamic_env_t.sig_handlers[ i ] = o->dynamic_env_t.sig_handlers[ i ];
+   }
+
    return env;
 }
 

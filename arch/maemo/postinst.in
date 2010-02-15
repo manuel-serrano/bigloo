@@ -1,0 +1,18 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/private/maemo/postinst.in            */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 17:37:58 2010                          */
+#*    Last change :  Thu Jan 14 20:52:29 2010 (serrano)                */
+#*    Copyright   :  2010 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Bigloo post debian installation for maemo                        */
+#*=====================================================================*/
+
+search=`grep @BGLPREFIX@ /etc/ld.so.conf`
+
+if [ "$search" != "@BGLPREFIX@/lib" ]; then
+  echo "@BGLPREFIX@/lib" >> /etc/ld.so.conf
+  ldconfig
+fi

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar  5 14:48:55 2005                          */
-;*    Last change :  Fri Apr 10 06:52:27 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Sun Feb 14 10:18:38 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The native interfaces for threads                                */
 ;*=====================================================================*/
@@ -42,7 +42,8 @@
 	   (macro $pthread-specific::obj (::$pthread) "BGLPTH_THREAD_SPECIFIC")
 	   (macro $pthread-specific-set!::void (::$pthread ::obj) "BGLPTH_THREAD_SPECIFIC_SET")
 	   (macro $pthread-cleanup::obj (::$pthread) "BGLPTH_THREAD_CLEANUP")
-	   (macro $pthread-cleanup-set!::void (::$pthread ::obj) "BGLPTH_THREAD_CLEANUP_SET")))
+	   (macro $pthread-cleanup-set!::void (::$pthread ::obj) "BGLPTH_THREAD_CLEANUP_SET")
+	   (macro $pthread-term-sig::int "BGL_PTHREAD_TERM_SIG")))
 
 
 	   

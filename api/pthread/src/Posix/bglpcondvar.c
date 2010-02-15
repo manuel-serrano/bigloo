@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 17 14:28:13 2008 (serrano)                */
-/*    Copyright   :  2004-08 Manuel Serrano                            */
+/*    Last change :  Sun Feb 14 10:56:21 2010 (serrano)                */
+/*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
 /*=====================================================================*/
@@ -60,6 +60,7 @@ bglpth_condvar_wait( obj_t cv, obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
    bool_t res;
 
+   mut->thread = 0L;
    bglpth_mutex_mark_unlocked( m, mut );
    res = !pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
 

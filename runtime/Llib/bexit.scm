@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Oct 30 09:52:24 2009 (serrano)                */
+;*    Last change :  Sun Feb 14 07:53:44 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -94,10 +94,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    unwind-stack-value? ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    I have introduced this function just because it helps the        */
+;*    MS has introduced this function just because it helps the        */
 ;*    bootstrap. val-from-exit? is used inside the compiler with       */
-;*    the prototype obj->obj and I wanted to use this function         */
-;*    inside callcc.c with the prototype obj->bool.                    */
+;*    the prototype obj->obj and MS wanted to use it inside callcc.c   */
+;*    with the prototype obj->bool.                                    */
 ;*---------------------------------------------------------------------*/
 (define (unwind-stack-value? val)
    (val-from-exit? val))
@@ -124,6 +124,7 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-stack-until! exitd estamp val proc)
    (let loop ()
+;*       (tprint "unwind-stack-until! " ($get-exitd-top) " exitd=" exitd " estamp=" estamp " val=" val " proc=" proc) */
       (if (eq? ($get-exitd-top) #f)
 	  (if (procedure? proc)
 	      (proc val)
@@ -138,6 +139,7 @@
 		((and (eq? exit-top exitd) 
 		      (or (not (fixnum? estamp))
 			  (=fx (exitd-stamp exit-top) estamp)))
+;* 		 (tprint "pop-exit, action1")                          */
 		 (if (exitd-call/cc? exit-top)
 		     ;; this exit has been pushed by call/cc
 		     (call/cc-jump-exit (exitd->exit exit-top) val)
@@ -145,6 +147,7 @@
 		     (jump-exit (exitd->exit exit-top) val))
 		 #unspecified)
 		((not (exitd-user? exit-top))
+;* 		 (tprint "pop-exit, action2")                          */
 		 (let ((p ($get-exitd-val)))
 		    (set-car! (car p) exitd)
 		    (set-cdr! (car p) proc)
@@ -152,6 +155,7 @@
 		    (jump-exit (exitd->exit exit-top) p))
 		 #unspecified)
 		(else
+;* 		 (tprint "pop-exit, action3")                          */
 		 (loop)))))))
 
 ;*---------------------------------------------------------------------*/

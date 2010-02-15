@@ -1,0 +1,16 @@
+To build a .deb package for Maemo:
+
+ 1. start mameo et chroot:
+
+    # sudo /mpeg/maemo/scratchbox/sbin/sbox_ctl start
+    # /mpeg/maemo/scratchbox/login
+
+ 2. run the bigloo/private/debian/makedeb.sh (which generate files inside
+    dans ~/prgm/distrib/maemo)
+
+    It is not needed to create a build directory in (chrooted) $HOME because
+    the shell script starts creating a bigloo-build directory into which
+    all files are copied.
+
+    # cd $HOME
+    # /users/serrano/prgm/project/bigloo/private/debian/makedeb.sh

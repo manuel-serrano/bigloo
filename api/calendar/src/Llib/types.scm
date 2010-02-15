@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:22:30 2005                          */
-;*    Last change :  Mon Apr 21 08:26:50 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Fri Feb 12 18:59:18 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Calendar types                                                   */
 ;*=====================================================================*/
@@ -60,7 +60,7 @@
 	   (class caltodo::calevent)
 	   
 	   (class calrecurrence
-	      (frequency::symbol (default 'YEARLY))
+	      (frequency::symbol (default 'NONE))
 	      (interval::int (default 1))
 	      (count (default #f))
 	      (until (default #f))

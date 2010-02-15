@@ -1,37 +1,28 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/Makefile                        */
+#*    serrano/prgm/project/bigloo/arch/maemo/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Sat Feb 13 08:34:54 2010 (serrano)                */
+#*    Creation    :  Sun Feb  7 07:41:50 2010                          */
+#*    Last change :  Sun Feb 14 18:54:07 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile that handles arch specific parts.                   */
+#*    The Makefile that handles maemo specific files                   */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
-include ../Makefile.config
+include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    DIRECTORIES                                                      */
+#*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx maemo
+POPULATION = Makefile changelog control makedeb.sh postinst.in rules.in \
+  README
 
 #*---------------------------------------------------------------------*/
-#*    Populating the ARCHs                                             */
+#*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
-pop: 
-	@ for d in $(DIRECTORIES) ; do \
-             for f in `cd $$d && $(MAKE) -s pop;`; do \
-                echo arch/$$f; \
-             done; \
-          done;
-	@ echo arch/Makefile
+pop:
+	@ echo $(POPULATION:%=maemo/%)
 
-
-#*---------------------------------------------------------------------*/
-#*    distrib                                                          */
-#*---------------------------------------------------------------------*/
-distrib:

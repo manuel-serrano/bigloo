@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sun Dec 27 18:42:42 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Sun Feb 14 11:40:37 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
 ;*=====================================================================*/
@@ -28,6 +28,19 @@
 	      (%closed::bool (default #f))
 	      (%mpd (default #f))
 	      (%socket (default #f)))))
+
+#;(define-expander with-lock
+   (lambda (x e)
+      (match-case x
+	 ((?- ?mutex ?proc)
+	  (match-case (cer x)
+	     ((at ?name ?pos)
+	      (e `(unwind-protect
+		     (begin
+			(tprint ">>> with-lock(mpc.scm): " ,mutex "=" (mutex-state ,mutex) " pos: " ,pos " " (current-thread))
+			((@ with-lock  __thread) ,mutex ,proc))
+		     (tprint "<<< with-lock: " ,mutex "=" (mutex-state ,mutex) " pos: " ,pos  " " (current-thread)))
+		 e)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-timed-lock ...                                              */
@@ -316,7 +329,7 @@
 	       (set-error! mpc (mpc-%status mpc) e)
 	       '())
 	    (mpc-cmd mpc "playlist" playlist-parser)))))
-
+ 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-add! ::mpc ...                                    */
 ;*---------------------------------------------------------------------*/
@@ -380,17 +393,17 @@
 	      (obj (parse-error-msg (the-failure) (the-port))))))))
 
    (define mpc-value-grammar
-   (regular-grammar ()
-      ((* blank)
-       (ignore))
-      ((: (* all) #\Newline)
-       (the-substring 0 -1))
-      (else
-       (raise
-	(instantiate::&io-parse-error
-	   (proc 'mpc)
-	   (msg "Illegal ignore value")
-	   (obj (parse-error-msg (the-failure) (the-port))))))))
+      (regular-grammar ()
+	 ((* blank)
+	  (ignore))
+	 ((: (* all) #\Newline)
+	  (the-substring 0 -1))
+	 (else
+	  (raise
+	   (instantiate::&io-parse-error
+	      (proc 'mpc)
+	      (msg "Illegal ignore value")
+	      (obj (parse-error-msg (the-failure) (the-port))))))))
 
    (define mpc-time-grammar
       (regular-grammar (status)
@@ -555,6 +568,9 @@
    
    (define (status-parser mpc)
       (with-access::mpc mpc (%socket)
+;* 	 (tprint "status-parse: mutex: " (mpc-%mutex mpc)              */
+;* 		 "=" (mutex-state (mpc-%mutex mpc))                    */
+;* 		 " thread=" (current-thread))                          */
 	 ;; parse the result of the status command
 	 (let ((status (parse (socket-input %socket) status)))
 	    (with-access::musicstatus status (state)
@@ -724,9 +740,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop mpc::mpc)
    (with-timed-lock (mpc-%mutex mpc)
-		    (lambda ()
-		       (mpc-cmd mpc "stop" ok-parser)
-		       (mpc-cmd mpc "clearerror" ok-parser))))
+      (lambda ()
+	 (mpc-cmd mpc "stop" ok-parser)
+	 (mpc-cmd mpc "clearerror" ok-parser))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::mpc ...                                            */

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Jun  3 17:17:06 2009 (serrano)                */
-/*    Copyright   :  2004-09 Manuel Serrano                            */
+/*    Last change :  Sun Feb 14 11:30:32 2010 (serrano)                */
+/*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -47,10 +47,10 @@ static obj_t sym_not_abandoned = 0L;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    symbols_init ...                                                 */
+/*    bgl_mutex_symbols_init ...                                       */
 /*---------------------------------------------------------------------*/
 static void
-symbols_init() {
+bgl_mutex_symbols_init() {
    if( !sym_not_owned ) {
       sym_not_owned = string_to_symbol( "not-owned" );
       sym_abandoned = string_to_symbol( "abandoned" );
@@ -114,19 +114,18 @@ obj_t
 bglpth_mutex_state( obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
 
+   bgl_mutex_symbols_init();
+   
    if( mut->locked ) {
       if( mut->thread ) {
 	 return mut->thread->bglthread;
       }
       
-      symbols_init();
-      
       return sym_not_owned;
    } else {
-      symbols_init();
-      
-      if( mut->thread ) 
+      if( mut->thread ) {
 	 return sym_abandoned;
+      }
       else 
 	 return sym_not_abandoned;
    }
@@ -166,7 +165,7 @@ bglpth_mutexes_unlock( bglpthread_t thread ) {
    
    while( w ) {
       obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
-      
+
       bglpth_mutex_unlock_sans_thread( w );
       w = n;
    }
@@ -244,14 +243,13 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
 #endif
 
    res = !pthread_mutex_timedlock( &(mut->pmutex), &timeout );
-   mut->locked = res;
-   
-   if( res  ) {
-      bglpthread_t cth = bglpth_current_pthread();
 
-      if( cth ) mut->thread = cth;
+   if( res  ) {
+      bglpth_mutex_mark_locked( m, mut );
+   } else {
+      mut->thread = 0L;
    }
-   
+
    return res;
 #else
    int res;
@@ -260,6 +258,12 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
 	  && (ms > 0) ) {
       ms -= 100;
       bgl_sleep( 100 * 1000 );
+   }
+
+   if( !res  ) {
+      bglpth_mutex_mark_locked( m, mut );
+   } else {
+      mut->thread = 0L;
    }
 
    return !res;

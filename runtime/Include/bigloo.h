@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  9 10:01:48 2009 (serrano)                */
+/*    Last change :  Sun Feb 14 08:46:25 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -559,6 +559,8 @@ typedef union scmobj {
       union scmobj *abase;
       /* parameters list */
       union scmobj *parameters;
+      /* signal handlers */
+      union scmobj *sig_handlers[ 32 ];
       /* thread backend */
       union scmobj *thread_backend;
       /* user per thread data */
@@ -1175,6 +1177,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_PARAMETERS_SET( env, _l ) \
   (BGL_DYNAMIC_ENV( env ).parameters = (_l))
    
+#define BGL_ENV_SIG_HANDLERS( env ) \
+  (BGL_DYNAMIC_ENV( env ).sig_handlers)
+   
 #define BGL_ENV_CURRENT_OUTPUT_PORT( env ) \
    (BGL_DYNAMIC_ENV( env ).current_output_port)
 #define BGL_ENV_CURRENT_OUTPUT_PORT_SET( env, _1 ) \
@@ -1275,6 +1280,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_PARAMETERS( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_PARAMETERS_SET( _l ) \
    BGL_ENV_PARAMETERS_SET( BGL_CURRENT_DYNAMIC_ENV(), _l )
+   
+#define BGL_SIG_HANDLERS() \
+   BGL_ENV_SIG_HANDLERS( BGL_CURRENT_DYNAMIC_ENV() )
    
 #define BGL_THREAD_BACKEND() \
    BGL_ENV_THREAD_BACKEND( BGL_CURRENT_DYNAMIC_ENV() )

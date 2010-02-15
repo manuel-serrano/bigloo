@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu Jan  7 19:59:22 2010 (serrano)                */
+/*    Last change :  Sun Feb 14 08:57:13 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -42,11 +42,6 @@
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    La table des handlers de signaux                                 */
-/*---------------------------------------------------------------------*/
-static obj_t handler[ 32 ];
-
-/*---------------------------------------------------------------------*/
 /*    Signal mutex                                                     */
 /*---------------------------------------------------------------------*/
 static obj_t signal_mutex = BUNSPEC;
@@ -72,26 +67,27 @@ bgl_init_signal() {
 /*---------------------------------------------------------------------*/
 static obj_t
 get_handler( int num ) {
+   obj_t handler = BGL_SIG_HANDLERS()[ num ];
+   
    /* Re-install the signal handler because some OS (such as Solaris) */
    /* de-install it when the signal is raised.                        */
 #if !HAVE_SIGACTION
-   signal( num, (void (*)( int ))(get_handler) );
+   signal( num, (void (*)(int))(get_handler) );
 #endif
-   return ((obj_t (*)())PROCEDURE_ENTRY(handler[ num ]))( handler[ num ],
-                                                          BINT( num ),
-                                                          BEOA );
+
+   return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
 }
     
 /*---------------------------------------------------------------------*/
 /*    obj_t ...                                                        */
 /*---------------------------------------------------------------------*/
 obj_t
-c_signal( int sig, obj_t thunk ) {
+c_signal( int sig, obj_t obj ) {
    bgl_mutex_lock( signal_mutex );
-   
-   if( PROCEDUREP( thunk ) ) {
-      /* store the thunk in the signal table */
-      handler[ sig ] = thunk;
+
+   if( PROCEDUREP( obj ) ) {
+      /* store the obj in the signal table */
+      BGL_SIG_HANDLERS()[ sig ] = obj;
 
 #if HAVE_SIGACTION
       {
@@ -107,13 +103,13 @@ c_signal( int sig, obj_t thunk ) {
 #endif      
       
    } else {
-      /* on met le thunk dans la table des handlers */
-      handler[ sig ] = thunk;
+      /* store the obj in the signal table */
+      BGL_SIG_HANDLERS()[ sig ] = obj;
       
-      if( thunk == BTRUE ) {
+      if( obj == BTRUE ) {
 	 signal( (int)sig, SIG_IGN );
       } else {
-	 if( thunk == BFALSE ) {
+	 if( obj == BFALSE ) {
 	    signal( (int)sig, SIG_DFL );
 	 }
       }
@@ -130,7 +126,7 @@ c_signal( int sig, obj_t thunk ) {
 /*---------------------------------------------------------------------*/
 obj_t
 get_signal_handler( int sig ) {
-   return PROCEDUREP( handler[ sig ] ) ? handler[ sig ] : BFALSE;
+   return BGL_SIG_HANDLERS()[ sig ];
 }
 
 /*---------------------------------------------------------------------*/

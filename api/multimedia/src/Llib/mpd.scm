@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Dec 14 13:46:44 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Mon Feb 15 06:54:53 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
 ;*=====================================================================*/
@@ -336,6 +336,7 @@
 (define-command (status)
    (let ((status (music-status backend)))
       (with-access::musicstatus status (volume song songid state)
+	 (tprint "status=" status)
 	 (let ((vol (if (vector? volume) (vector-ref volume 0) volume)))
 	    (disp "volume: " vol))
 	 (disp "state: " state)

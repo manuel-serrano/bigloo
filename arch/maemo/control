@@ -1,0 +1,43 @@
+Source: bigloo
+Section: user/programming
+Priority: optional
+Maintainer: unknown <Manuel.Serrano@inria.fr>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.1
+
+Package: libbigloo-full
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: a practical Scheme compiler
+ The runtime library for the Bigloo Scheme compiler.
+
+Package: bigloo
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: a practical Scheme compiler
+ Bigloo is a Scheme implementation devoted to one goal: enabling
+ Scheme based programming style where C(++) is usually
+ required. Bigloo attempts to make Scheme practical by offering
+ features usually presented by traditional programming languages but
+ not offered by Scheme and functional programming. Bigloo compiles
+ Scheme modules. It delivers small and fast stand alone binary
+ executables. Bigloo enables full connections between Scheme and C
+ programs, between Scheme and Java programs, and between Scheme and C#
+ programs.
+ .
+ The Bigloo C code generator delivers fast binaries executables for
+ the Unix operating system. The Bigloo JVM code generator delivers
+ highly portable JVM class files (or jar files) that can be run on any
+ JVM runtime environment (Sun's JDK, Netscape Applets, etc.). We have
+ measured that in general, Scheme modules when compiled to JVM are in
+ between 2 and 4 times slower than their C counterpart.
+ .
+ The list of features is available at:
+ http://www-sop.inria.fr/indes/fp/Bigloo/bigloo-1.html
+
+Package: bigloo-doc
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: a practical Scheme compiler
+ The documentation of the Bigloo Scheme compiler.
+

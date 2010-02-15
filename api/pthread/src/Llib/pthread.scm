@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Wed Feb 10 18:02:00 2010 (serrano)                */
+;*    Last change :  Sun Feb 14 10:01:45 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -17,7 +17,9 @@
    (import  __pth_backend)
    
    (include "pthread.sch")
-    
+
+   (extern ($bgl_debug_top_stack::int () "bgl_debug_top_stack"))
+   
    (export (class pthread::thread
 	      ;; the user thunk
 	      (body::procedure read-only)
@@ -81,7 +83,7 @@
 			    ($set-uncaught-exception-handler!
 			     (lambda (val)
 				(error (format "unwind-until!:~a" o)
-				       "exit out of dynamic scope"
+				       "exit out of thread dynamic scope"
 				       val)))
 			    (with-handler
 			       (lambda (e)
@@ -90,7 +92,13 @@
 				     (set! end-exception  u)
 				     (exception-notify e)
 				     #f))
-			       (set! end-result (body))))))))
+			       (cond-expand
+				  (bigloo-c
+				   (bind-exit (exit)
+				      (signal $pthread-term-sig (lambda (s) (exit #f)))
+				      (set! end-result (body))))
+				  (else
+				   (set! end-result (body))))))))))
 	     (set! $builtin ($pthread-new b))))))
     
 ;*---------------------------------------------------------------------*/

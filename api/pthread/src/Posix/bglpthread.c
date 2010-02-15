@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Nov  3 09:31:37 2009 (serrano)                */
-/*    Copyright   :  2002-09 Manuel Serrano                            */
+/*    Last change :  Sun Feb 14 10:59:00 2010 (serrano)                */
+/*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo fair threads implementation.       */
 /*=====================================================================*/
@@ -161,10 +161,13 @@ static void *
 bglpth_thread_run( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t thunk = self->thunk;
+   sigset_t set;
 
    bglpth_thread_init( self, (char *)&arg );
-   
+
+#if( BGL_PTHREAD_TERM_SIG != 0 )
    pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, 0 );
+#endif
    
    pthread_cleanup_push( bglpth_thread_cleanup, arg );
    
@@ -277,7 +280,11 @@ bool_t
 bglpth_thread_terminate( bglpthread_t t ) {
    pthread_mutex_lock( &(t->mutex) );
    if( t->status != 2 ) {
+#if( BGL_PTHREAD_TERM_SIG != 0 )
+      pthread_kill( t->pthread, BGL_PTHREAD_TERM_SIG );
+#else      
       pthread_cancel( t->pthread );
+#endif
       pthread_mutex_unlock( &(t->mutex) );
       return 1;
    } else {

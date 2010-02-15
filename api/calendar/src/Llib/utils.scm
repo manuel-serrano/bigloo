@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 24 15:54:35 2006                          */
-;*    Last change :  Wed Nov  8 12:16:51 2006 (serrano)                */
-;*    Copyright   :  2006 Manuel Serrano                               */
+;*    Last change :  Fri Feb 12 19:07:14 2010 (serrano)                */
+;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Calendar utitility functions.                                    */
 ;*=====================================================================*/
@@ -82,7 +82,8 @@
 	       (and (date? dtend)
 		    (or (>fx (date-hour dtend) 0)
 			(>fx (date-minute dtend) 0)
-			(>fx (date-second dtend) 0))
+			(>fx (date-second dtend) 0)
+			(>fx (date-day dtend) 0))
 		    (let ((ds (date->seconds d)))
 		       (or (is-day? dtend d)
 			   (and (<elong (date->seconds dtstart) ds)
@@ -92,7 +93,7 @@
 ;*    recurrence-during-day? ...                                       */
 ;*    -------------------------------------------------------------    */
 ;*    This implementation is highly partial. It is far from            */
-;*    implementation the complete test required by ICAL (rfc 2445).    */
+;*    implementing the complete test required by ICAL (rfc 2445).      */
 ;*    Someone more courageous that I am should help here...            */
 ;*---------------------------------------------------------------------*/
 (define (recurrence-during-day? e::calevent d::date)
@@ -101,7 +102,7 @@
 	 (and (with-access::calrecurrence rec (until count)
 		 (or (not (date? until))
 		     (>elong (date->seconds until) ds)))
-	      (with-access::calrecurrence rec ((i interval)
+ 	      (with-access::calrecurrence rec ((i interval)
 					       frequency
 					       bymonth)
 		 (case frequency

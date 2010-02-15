@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Wed Feb  3 17:13:27 2010 (serrano)                */
+/*    Last change :  Sun Feb 14 06:31:27 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -194,3 +194,26 @@ bgl_get_last_error_message( char *default_message ) {
    return result;
 }
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_debug_top_stack ...                                          */
+/*    -------------------------------------------------------------    */
+/*    A debugging function (i.e., never used) that can be used         */
+/*    to inspect an exitd stack.                                       */
+/*                                                                     */
+/*---------------------------------------------------------------------*/
+int bgl_debug_top_stack() {
+   struct exitd *top = (struct exitd *)BGL_EXITD_TOP();
+
+   fprintf( stderr, "bgl_debug_top_stack:\n" );
+
+   while( top && (obj_t)top != BFALSE ) {
+      fprintf( stderr, "   %p\n", top );
+      top = top->prev;
+   }
+
+   return 0;
+}
+      
+

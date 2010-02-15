@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:14:19 2005                          */
-;*    Last change :  Wed Nov  8 12:16:12 2006 (serrano)                */
-;*    Copyright   :  2005-06 Manuel Serrano                            */
+;*    Last change :  Fri Feb 12 18:18:29 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    iCalendar parser                                                 */
 ;*=====================================================================*/
@@ -154,7 +154,12 @@
 	  (when (string? summary)
 	     (write-line "SUMMARY" '() summary op))
 	  (when (string? description)
-	     (write-line "DESCRIPTION" '() description op))
+	     (if (string-index description #\Newline)
+		 (write-line "DESCRIPTION"
+			     '(("ENCODING" "BASE64"))
+			     (base64-encode description)
+			     op)
+		 (write-line "DESCRIPTION" '() description op)))
 	  (when (string? uid)
 	     (write-line "UID" '() uid op))
 	  (when (string? attach)
@@ -376,7 +381,10 @@
 	      (fname (input-port-name (the-port)))
 	      (name (the-symbol))
 	      (params (read/rp *params-lexer* (the-port)))
-	      (val (apply string-append (read/rp *value-lexer* (the-port)))))
+	      (encv (apply string-append (read/rp *value-lexer* (the-port))))
+	      (val (if (member '("ENCODING" "BASE64") params)
+		       (base64-decode encv)
+		       encv)))
 	  (instantiate::line
 	     (name name)
 	     (params params)
@@ -451,12 +459,12 @@
 ;*    *value-lexer* ...                                                */
 ;*---------------------------------------------------------------------*/
 (define *value-lexer*
-   (regular-grammar ((WSP (or #a032 #a009 #\Newline))
+   (regular-grammar ((WSP (or #a032 #a009))
 		     (VALUE-CHAR (or WSP (in (#x21 #x7e) (in (#x80 #xf8)))))
 		     (CR #a013)
 		     (LF #a010)
 		     (SPACE #a032)
-		     (CRLF (: CR LF)))
+		     (CRLF (: (? CR) LF)))
       ((+ VALUE-CHAR)
        (let ((val (the-string)))
 	  (cons val (ignore))))
