@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Feb 14 10:22:20 2010 (serrano)                */
+#*    Last change :  Tue Feb 16 18:01:07 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1212,6 +1212,11 @@ if [ "$android " = "yes " ]; then
   hostos="android"
   hostcpu="arm"
   gcneedstackbase=1
+fi
+
+# detect PPC
+if [ "$hostcpu " = "ppc " ]; then 
+  gccustom=gc-7.1
 fi
 
 #*---------------------------------------------------------------------*/

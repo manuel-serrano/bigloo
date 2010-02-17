@@ -1,8 +1,13 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/os                          */
+#*    serrano/prgm/project/bigloo/autoconf/gcconfigureopt              */
 #*    -------------------------------------------------------------    */
-#*    Guess the host and host system using GC's config.guess         */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Feb 16 17:39:56 2010                          */
+#*    Last change :  Tue Feb 16 17:52:37 2010 (serrano)                */
+#*    Copyright   :  2010 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    gcconfigureopt                                                   */
 #*=====================================================================*/
 
 gcdir=""
@@ -24,4 +29,14 @@ done
 build=`eval "$BUILDSH $gcdir/config.guess"`
 host=`eval "$HOSTSH $gcdir/config.guess"`
 
-echo "--host=$host --build=$build"
+opt=
+
+if [ "$host " != " " ]; then
+  opt="--host=$host"
+fi
+
+if [ "$build " != " " ]; then
+  opt="$opt --build=$build"
+fi
+
+echo $opt
