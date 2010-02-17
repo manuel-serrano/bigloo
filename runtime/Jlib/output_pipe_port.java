@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 30 14:14:16 2009                          */
-/*    Last change :  Thu Jul  2 18:20:48 2009 (serrano)                */
-/*    Copyright   :  2009 Manuel Serrano                               */
+/*    Last change :  Wed Feb 17 16:08:44 2010 (serrano)                */
+/*    Copyright   :  2009-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java output pipe ports                                           */
 /*=====================================================================*/

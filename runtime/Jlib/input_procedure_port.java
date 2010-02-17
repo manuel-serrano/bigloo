@@ -22,7 +22,7 @@ public class input_procedure_port extends input_port
     return true;
   }
 
-  public void close() throws IOException
+  public void close() 
   {
      super.close();
      eof = true;

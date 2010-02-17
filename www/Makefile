@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Sat Feb  6 07:27:59 2010 (serrano)                */
+#*    Last change :  Wed Feb 17 10:49:54 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -68,7 +68,8 @@ BIGLOODEB	= http://packages.qa.debian.org/b/bigloo.html
 MAEMOFTP	= ftp://ftp-sop.inria.fr/indes/fp/Hop/maemo/dists/freemantle/free/binary-armel/
 BIGLOOMAEMO	= $(MAEMOFTP)/bigloo_$(OFFICIALRELEASE)_armel.deb \
                   $(MAEMOFTP)/libbigloo-full_$(OFFICIALRELEASE)_armel.deb
-BIGLOOMACOSX	= macosx/bigloo-$(OFFICIALRELEASE).dmg
+MACOSXFTP	= ftp://ftp-sop.inria.fr/indes/fp/Bigloo
+BIGLOOMACOSX	= $(MACOSXFTP)/macosx/bigloo-$(OFFICIALRELEASE).dmg
 BIGLOOFDR	= fedora
 BIGLOOWIN32	= http://www.yannis.bres.name/Bigloo
 BIGLOOWIN32b	= http://code.google.com/p/winbigloo/

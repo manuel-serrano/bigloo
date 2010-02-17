@@ -26,7 +26,7 @@ public abstract class input_port extends obj
     buf[0] = (byte)'\0';
   }
 
-  public void close() throws IOException
+  public void close() 
   {
     if( chook instanceof procedure )
      {

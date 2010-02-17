@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Sun Feb 14 07:53:44 2010 (serrano)                */
+;*    Last change :  Wed Feb 17 16:14:07 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -124,6 +124,7 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-stack-until! exitd estamp val proc)
    (let loop ()
+;*       (tprint "unwind-stack-until!...")                             */
 ;*       (tprint "unwind-stack-until! " ($get-exitd-top) " exitd=" exitd " estamp=" estamp " val=" val " proc=" proc) */
       (if (eq? ($get-exitd-top) #f)
 	  (if (procedure? proc)

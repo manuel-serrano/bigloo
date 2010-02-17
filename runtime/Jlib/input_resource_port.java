@@ -85,10 +85,14 @@ public class input_resource_port extends input_port {
       return input_resource_port.exists( cname );
    }
    
-   public void close() throws IOException {
+   public void close() {
       eof = true;
       other_eof = true;
-      in.close();
+      try {
+	 in.close();
+      } catch( Throwable _ ) {
+	 ;
+      }
       super.close();
    }
 

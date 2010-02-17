@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Tue Feb  9 15:46:07 2010 (serrano)                */
+/*    Last change :  Wed Feb 17 15:59:56 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
@@ -36,11 +36,15 @@ public class input_socket_port extends input_port {
 	 foreign.fail( "socket", "Cannot find socket input stream", this );
    }
 
-   public void close() throws IOException {
+   public void close() {
       eof = true;
       other_eof = true;
       buffer = null;
-      in.close();
+      try {
+	 in.close();
+      } catch( Throwable _ ) {
+	 ;
+      }
       super.close();
    }
 

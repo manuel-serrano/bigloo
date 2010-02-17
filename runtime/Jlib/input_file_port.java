@@ -13,11 +13,14 @@ public class input_file_port extends input_port
     in = new RandomAccessFile( new String( file ), "r" );
   }
 
-  public void close() throws IOException
-  {
+   public void close() {
     eof = true;
     other_eof = true;
-    in.close();
+    try {
+       in.close();
+    } catch( Throwable _ ) {
+       ;
+    }
     super.close();
   }
 

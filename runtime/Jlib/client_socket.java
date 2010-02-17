@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 10 11:18:44 2010 (serrano)                */
+/*    Last change :  Wed Feb 17 16:12:56 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
@@ -92,8 +92,11 @@ public class client_socket extends socket {
 	 socket.close();
       } catch( Throwable _ ) {
 	 ;
+      } finally {
+	 super.close();
       }
-      return super.close();
+
+      return bigloo.foreign.BUNSPEC;
    }
 
    public int PORT() {

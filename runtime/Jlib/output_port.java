@@ -49,20 +49,14 @@ public class output_port extends obj
 
    public Object close()
       {
-	 try
-	 {
+	 try {
 	    out.close();
-	    if( chook instanceof procedure )
-	    {
-	       ((procedure)chook).funcall1(this);
-	    }
+	 } catch( Throwable _ ) {
+	    ;
 	 }
-	 catch (final Exception e)
+	 if( chook instanceof procedure )
 	 {
-	    if (out == null)
-	       return bigloo.foreign.BUNSPEC;
-	    else
-	       foreign.fail( "close", e, this );
+	    ((procedure)chook).funcall1(this);
 	 }
 
 	 return this;
@@ -72,7 +66,6 @@ public class output_port extends obj
       {
 	 try
 	 {
-	    invoke_flush_hook( bigloo.foreign.BINT( 0 ) );
 	    out.flush();
 	    return bbool.vrai;
 	 }
@@ -90,23 +83,27 @@ public class output_port extends obj
 	 return bigloo.foreign.BFALSE;
       }
 
-   protected void invoke_flush_hook( bigloo.bint size ) throws IOException {
+   protected void invoke_flush_hook( bigloo.bint size ) {
       if( fhook instanceof procedure ) {
 	 Object s = ((procedure)fhook).funcall2( this, size );
 
-	 if( s instanceof byte[] ) {
-	    out.write( (byte [])s, 0, ((byte [])s).length );
-	 } else {
-	    if( s instanceof bigloo.bint &&
-		flushbuf instanceof byte[] &&
-		bigloo.foreign.CINT( (bigloo.bint)s ) <= ((byte[])flushbuf).length &&
-	       bigloo.foreign.CINT( (bigloo.bint)s ) > 0 )
-	    {
-	       out.write( (byte[])flushbuf,
-			  0,
-			  bigloo.foreign.CINT( (bigloo.bint)s ) );
-	    }
+	 try {
+	    if( s instanceof byte[] ) {
+	       out.write( (byte [])s, 0, ((byte [])s).length );
+	    } else {
+	       if( s instanceof bigloo.bint &&
+		   flushbuf instanceof byte[] &&
+		   bigloo.foreign.CINT( (bigloo.bint)s ) <= ((byte[])flushbuf).length &&
+		   bigloo.foreign.CINT( (bigloo.bint)s ) > 0 )
+	       {
+		  out.write( (byte[])flushbuf,
+			     0,
+			     bigloo.foreign.CINT( (bigloo.bint)s ) );
+	       }
 	       
+	    }
+	 } catch( Throwable _ ) {
+	    ;
 	 }
       }
    }

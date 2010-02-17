@@ -4098,15 +4098,15 @@ public final class foreign
    public static Object debug_handler(bexception v, exit tag) {
       if (tag.userp == 0)
       {
-	 //print("** PROTECT " + v + " " + tag);
+	 // System.err.println("** PROTECT " + v + " " + tag);
 	 return v.value;
       }
       if (v.tag == tag)
       {
-	 //print("** TAG reached " + v + " " + tag);
+	 // System.err.println("** TAG reached " + v + " " + tag);
 	 return v.value;
       }
-      //print("** TAG forward " + v + " " + tag);
+      // System.err.println("** TAG forward " + v + " " + tag);
       throw v;
    }
 
@@ -4141,7 +4141,7 @@ public final class foreign
    }
 
    public static Object PUSH_EXIT(exit v, int protect) {
-      //print("** PUSH " + v + " " + protect);
+//      print("** PUSH " + v + " " + protect + " abgldynamic=" + bgldynamic.abgldynamic.get() + " thread=" + Thread.currentThread());
       v.userp = protect;
       v.prev = (exit) bgldynamic.abgldynamic.get().exitd_top;
       bgldynamic.abgldynamic.get().exitd_top = v;
@@ -4149,9 +4149,14 @@ public final class foreign
    }
 
    public static Object POP_EXIT() {
-      //print("** POP " + EXIT_TOP + " -> " + ((EXIT)EXIT_TOP).prev);
-      bgldynamic.abgldynamic.get().exitd_top =
-	 ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
+//      print("** POP abgldynamic=" + bgldynamic.abgldynamic.get()  + " thread=" + Thread.currentThread());
+
+      try {
+	 bgldynamic.abgldynamic.get().exitd_top =
+	    ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
+      } catch( Throwable _ ) {
+	 System.err.println( "\n\n\n******************* POP_EXIT: " + _ );
+      }
       return unspecified.unspecified;
    }
 
@@ -4717,8 +4722,9 @@ public final class foreign
       }
 
    public static Object socket_close(socket s) {
-      return s.close();
-      }
+      s.close();
+      return BUNSPEC;
+   }
 
    public static Object bgl_getprotoents()
       {

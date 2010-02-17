@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 13:56:53 2009                          */
-;*    Last change :  Wed Feb 10 08:45:54 2010 (serrano)                */
+;*    Last change :  Wed Feb 17 16:43:48 2010 (serrano)                */
 ;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Guojia Biaozhun Chinese characters                               */

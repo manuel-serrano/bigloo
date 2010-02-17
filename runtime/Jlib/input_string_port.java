@@ -63,7 +63,7 @@ public class input_string_port extends input_port {
       return bigloo.foreign.BTRUE;
    }
 
-   public void close() throws IOException {
+   public void close() {
       eof = true;
       other_eof= true;
       super.close();

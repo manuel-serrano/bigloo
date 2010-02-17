@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Mon Jan  4 16:56:05 2010 (serrano)                */
+;*    Last change :  Wed Feb 17 10:50:03 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -67,7 +67,7 @@ Bigloo is available on the ftp server
 	    `(,(car title.files)
 	      ": "
 	      ,(itemize (map (lambda (file)
-				(cond
+ 				(cond
 				   ((or (substring-at? file "http://" 0)
 					(substring-at? file "ftp://" 0))
 				    (item (ref :url file :text (basename file))))

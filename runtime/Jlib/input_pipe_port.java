@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Mon Aug 25 13:40:19 2008 (serrano)                */
-/*    Copyright   :  2000-08 Manuel Serrano                            */
+/*    Last change :  Wed Feb 17 16:10:33 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
@@ -64,11 +64,15 @@ public class input_pipe_port extends input_port {
    }
 
    /*--- public methods --------------------------------------------------*/
-   public void close() throws IOException {
+   public void close() {
       super.close();
       eof = true;
       other_eof = true;
-      in.close();
+      try {
+	 in.close();
+      } catch( Throwable _ ) {
+	 ;
+      }
    }
 
    public boolean rgc_charready() {

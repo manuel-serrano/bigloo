@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 10 10:52:44 2010 (serrano)                */
+/*    Last change :  Wed Feb 17 15:58:28 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Socket implementation for the JVM back-end.                  */
@@ -68,16 +68,12 @@ public abstract class socket extends obj {
    }
 
    public Object close() {
-      try {
-	 if (!closed) {
-	    closed= true;
-	    if (input instanceof input_port)
-	       ((input_port)input).close();
-	    if (output instanceof output_port)
-	       ((output_port)output).close();
-	 }
-      } catch( Throwable _ ) {
-	 ;
+      if (!closed) {
+	 closed= true;
+	 if (input instanceof input_port)
+	    ((input_port)input).close();
+	 if (output instanceof output_port)
+	    ((output_port)output).close();
       }
 
       return bigloo.foreign.BUNSPEC;

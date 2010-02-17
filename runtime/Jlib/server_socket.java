@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 10 11:18:52 2010 (serrano)                */
+/*    Last change :  Wed Feb 17 16:13:18 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
@@ -100,8 +100,9 @@ public class server_socket extends socket {
 	 server_socket.close();
       } catch( Throwable _ ) {
 	 ;
+      } finally {
+	 down = true;
       }
-      down = true;
       return bigloo.foreign.BUNSPEC;
    }
 

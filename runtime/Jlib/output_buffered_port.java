@@ -70,31 +70,29 @@ public class output_buffered_port extends output_port {
    }
    
    public Object close() {
-      try {
-	 flush();
-      } catch( final Exception e ) {
-	 if( out != null ) foreign.fail( "close", e, this );
-	 
-	 return bbool.faux;
-      }
+      flush();
       
       return super.close();
    }
    
    public Object flush() {
-      try {
-	 if( count > 0 ) {
-	    invoke_flush_hook( bigloo.foreign.BINT( count ) );
+      if( count > 0 ) {
+	 invoke_flush_hook( bigloo.foreign.BINT( count ) );
+	 try {
 	    out.write( buffer, 0, count );
-	    count = 0;
+	 } catch( Throwable _ ) {
+	    ;
 	 }
-      } catch( final Exception e ) {
-	 if( out != null ) foreign.fail( "flush", e, this );
-
-	 return bbool.faux;
+	 count = 0;
       }
 
-      return super.flush();
+      try {
+	 super.flush();
+      } catch( Throwable _ ) {
+	 return bbool.faux;
+      }
+      
+      return bbool.vrai;
    }
    
    public void write( final int cn ) {
