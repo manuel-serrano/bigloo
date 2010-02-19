@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Feb 17 15:49:40 2010 (serrano)                */
+;*    Last change :  Fri Feb 19 13:57:33 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -317,7 +317,6 @@
 ;*    default-exception-handler ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (default-exception-handler val)
-   (tprint "~~~~~~~~~~~~~~~~~~~~~~~~ DEFAULT_EXCEPTION_HANDLER: " val)
    (exception-notify val)
    (unless (&warning? val)
       (let ((retval (if (&error? val) 1 2)))

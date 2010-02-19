@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Tue Oct 13 10:29:28 2009 (serrano)                */
+;*    Last change :  Thu Feb 18 15:03:56 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -1013,9 +1013,13 @@
 ;*    tree-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (tree-copy l)
-   (if (pair? l)
-       (cons (tree-copy (car l)) (tree-copy (cdr l)))
-       l))
+   (cond
+      ((epair? l)
+       (econs (tree-copy (car l)) (tree-copy (cdr l)) (tree-copy (cer l))))
+      ((pair? l)
+       (cons (tree-copy (car l)) (tree-copy (cdr l))))
+      (else
+       l)))
 
 ;*---------------------------------------------------------------------*/
 ;*    delete-duplicates ...                                            */
