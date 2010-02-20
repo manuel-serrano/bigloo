@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sat Feb 20 07:13:32 2010 (serrano)                */
+;*    Last change :  Sat Feb 20 07:29:39 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -576,10 +576,9 @@
 		  (set! %socket #f)
 		  #t)))))
 
-   (with-handler
-      (lambda (e)
-	 (set-error! mpc status e))
-      (mpc-cmd mpc "status" status-parser)))
+   ;; don't protect with a handler because it is assumed that the
+   ;; handler has been set by the caller
+   (mpc-cmd mpc "status" status-parser))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status! ...                                         */
@@ -589,14 +588,19 @@
       (lambda ()
 	 (with-access::musicstatus status (state)
 	    (unless (eq? state 'eof)
+	       (with-handler
+		  (lambda (e)
+		     (set-error! mpc status e))
 	       ;; first ping to check if the connection is still open
 	       (let loop ((retry #t))
 		  (cond
 		     ((mpc-cmd mpc "ping" ok-parser)
+			 ;; it is still open
 		      (music-update-status-sans-lock! mpc status))
 		     (retry
+			 ;; it is apparently closed, try to re-open it once
 		      (music-reset-error! mpc)
-		      (loop #f)))))))))
+			 (loop #f))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-status ...                                                 */
@@ -732,7 +736,10 @@
 (define-method (music-seek mpc::mpc ntime::obj . nsong)
    (with-timed-lock (mpc-%mutex mpc)
       (lambda ()
-	 (music-update-status-sans-lock! mpc (music-%status mpc))
+	 (with-handler
+	    (lambda (e)
+	       (set-error! mpc (music-%status mpc) e))
+	    (music-update-status-sans-lock! mpc (music-%status mpc)))
 	 (with-access::musicstatus (music-%status mpc) (song songpos)
 	    (let ((song (if (null? nsong) song (car nsong)))
 		  (time (if (fixnum? ntime)
