@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Fri Feb 19 19:24:28 2010 (serrano)                */
+#*    Last change :  Sun Feb 21 09:12:28 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking GC compilation flags                                    */
 #*=====================================================================*/
@@ -14,7 +14,7 @@
 #*---------------------------------------------------------------------*/
 cflags=""
 cgcflags68="-DSILENT -DNO_SIGNALS -DNO_DEBUGGING -Iinclude"
-cgcflagsdarwin="-DNO_DEBUGGING -Iinclude -I./libatomic_ops/src"
+#cgcflagsdarwin="-DNO_DEBUGGING -Iinclude -I./libatomic_ops/src"
 cgcflags="-DNO_DEBUGGING -Iinclude -Ilibatomic_ops-install/include"
 
 
@@ -51,7 +51,7 @@ case $HOSTOS in
      echo "$cgcflags -DGC_DLL -DGC_BUILD -DGC_DLL -DNO_EXECUTE_PERMISSION -DALLINTERIOR_POINTERS -DATOMIC_UNCOLLECTABLE -D_REENTRANT ";;
 
    darwin)
-     flags="$cgcflagsdarwin -DGC_DARWIN_THREADS=1";
+     flags="$cgcflags -DGC_DARWIN_THREADS=1";
 
      case $HOSTCPU in
        i386)
