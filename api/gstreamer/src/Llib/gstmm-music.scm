@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Fri Feb 19 07:53:32 2010 (serrano)                */
+;*    Last change :  Fri Feb 26 07:50:24 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -39,7 +39,6 @@
 	       (%audiosrc (default #unspecified))
 	       (%audiosink (default #unspecified))
 	       (%audiomixer (default #unspecified))
-		
 	       (%audiodecode (default #unspecified))
 	       (%audioconvert (default #unspecified))
 	       (%audioresample (default #unspecified))
@@ -101,7 +100,7 @@
 		  (set! %audioresample (gst-element-factory-make "audioresample"))
 		  (unless (gst-element? %audioresample)
 		     (error '|music-init ::gstmusic|
-			      "Cannot create audioconvert"
+			      "Cannot create audioresampler"
 			      o)))
 	       (set! %pipeline (instantiate::gst-pipeline))
 	       (unless (gst-element? %audioresample)
@@ -221,7 +220,8 @@
 					 (mutex-unlock! %mutex))
 				      (let* ((plist (music-playlist-get o))
 					     (file (list-ref plist song)))
-					 (onmeta file plist))))))))
+					 (when onmeta
+					    (onmeta file plist)))))))))
 		     ((gst-message-tag? msg)
 		      ;; tag found
 		      (mutex-lock! %mutex)
