@@ -12,7 +12,7 @@ export ANDSRC=$ANDROIDROOT/eclair-git
 export ANDSDK=$ANDROIDROOT/android-sdk-linux
 
 # we can't fire a emulator automatically, so just do it yourself by hand
-export ANDROID_SERIAL="emulator-5556"
+export ANDROID_SERIAL="emulator-5554"
 
 # droid-wrapper
 # http://github.com/tmurakam/droid-wrapper/
@@ -26,12 +26,14 @@ export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
 
 if [ "$1" == "configure" ]; then
    ./configure \
-      --prefix=$HOME/local/soft/$(basename $(pwd)) \
+      --prefix=$HOME/local/soft/$(basename $(pwd))-android \
       --stack-check=no \
-      --hostsh=arch/android/android-target.sh --disable-srfi27 \
-      --build-bindir=$HOME/local/soft/bigloo3.3b/bin \
-      --gccustomversion=gc-7.2alpha4
+      --disable-srfi27 \
+      --gccustomversion=gc-7.2alpha4 \
+      --build-bindir=$HOME/local/bin \
+      --hostsh=arch/android/android-target.sh \
    shift
+      # --build-bindir=$HOME/local/soft/bigloo3.3b/bin \
 fi
 
 if [ "$1" == "build" ]; then
