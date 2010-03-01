@@ -226,7 +226,7 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
              LIBDEST=$@ \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
              EXTRALIBS="$(PTHREADLIBS)" \
-             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE) -lbigloopth_s-$(RELEASE)"
+             CLOSELIBS="-lbigloo_s-$(RELEASE) -lbigloopth_s-$(RELEASE)"
 
 $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 	@ $(MAKE) shared-lib \
