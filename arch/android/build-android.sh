@@ -31,7 +31,7 @@ if [ "$1" == "configure" ]; then
       --disable-srfi27 \
       --gccustomversion=gc-7.2alpha4 \
       --build-bindir=$HOME/local/bin \
-      --hostsh=arch/android/android-target.sh \
+      --hostsh=arch/android/android-target.sh
    shift
       # --build-bindir=$HOME/local/soft/bigloo3.3b/bin \
 fi
