@@ -348,11 +348,13 @@
 ;*    music-playlist-add! ::gstmusic ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-add! gstmusic::gstmusic n)
+   (tprint "music-playlist-add: " n)
    (call-next-method)
    (with-access::gstmusic gstmusic (%mutex %playlist %status)
       (with-lock %mutex
 	 (lambda ()
 	    (set! %playlist (append %playlist (list n)))
+	    (tprint "playlist=" %playlist)
 	    (with-access::musicstatus %status (playlistid playlistlength)
 	       (set! playlistid (+fx 1 playlistid))
 	       (set! playlistlength (+fx 1 playlistlength)))))))
