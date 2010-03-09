@@ -9,15 +9,15 @@
                               _ ___/ /|/                             
                           ,;'( )__, ) '                              
                          ;;  //   L__.                               
-                         '   \\   /  '                               
+                         '   \   /  '                               
                               ^   ^                                  
                                                                      
-               Copyright (c) 1992 - 2009 Manuel Serrano
+               Copyright (c) 1992 - 2010 Manuel Serrano
                                                                      
      Bug descriptions, user reports, comments or suggestions are      
      welcome. Send them to                                           
        bigloo@sophia.inria.fr                                        
-       http://www.inria.fr/mimosa/fp/Bigloo                                 
+       http://www.inria.fr/indes/fp/Bigloo                                 
                                                                      
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by 

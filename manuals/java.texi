@@ -240,7 +240,7 @@ The <declare-class-clause> clause denotes importation of Java classes.
 <declare-class-clause> @expansion{} @code{(}class <typed-ident> <slot>* <string>@code{)} 
 <slot> @expansion{} <field> | <method> | <constructor>
 <field> @expansion{} @code{(field} <modifier> <typed-ident> <string>@code{)}
-<method> @expansion{} @code{(field} <modifier> <typed-ident> @code{(}<typed-ident>*@code{)} <string>@code{)}
+<method> @expansion{} @code{(method} <modifier> <typed-ident> @code{(}<typed-ident>*@code{)} <string>@code{)}
 <constructor> @expansion{} @code{(constructor} <ident> @code{(}<typed-ident>*@code{))}
 <modifier> @expansion{} @code{public} | @code{private} | @code{protected}
      | @code{static} | @code{final} | @code{synchronized} | @code{abstract}
