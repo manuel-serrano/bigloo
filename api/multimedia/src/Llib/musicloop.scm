@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Thu Mar 11 08:38:14 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 09:21:16 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -28,8 +28,6 @@
 ;*    music-event-loop ::music ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-generic (music-event-loop o::music . obj)
-   (tprint "MUSIC-EVENT-LOOP")
-   (exit 0)
    (with-access::music o (%loop-mutex %loop-condv %status %abort-loop %reset-loop)
       (mutex-lock! %loop-mutex)
       (set! %abort-loop #f)
@@ -44,7 +42,7 @@
 	 ;; enter the loop
 	 (unwind-protect
 	    ;; the event loop is protected against timeout errors
-	    (music-event-loop-inner o (or frequency 2000000) onstate onmeta onerror onvol)
+	    (music-event-loop-inner o frequency onstate onmeta onerror onvol)
 	    ;; signal that the loop is done
 	    (begin
 	       (mutex-lock! %loop-mutex)
@@ -74,13 +72,16 @@
    (with-access::music m (%loop-mutex %abort-loop %reset-loop %status)
       (mutex-lock! %loop-mutex)
       (let loop ((stat1 (duplicate::musicstatus %status
-			   (state 'init)))
+			   (state 'unspecified)))
 		 (stat2 (instantiate::musicstatus
-			   (state 'stop))))
+			   (state 'init))))
+	 (tprint ">>> LOOP")
 	 (let ((stop (or (music-closed? m) (music-%abort-loop m))))
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
+	       (tprint ">>> MUSIC-UPDATE-STATUS..." (current-thread))
 	       (music-update-status! m stat2)
+	       (tprint "<<< MUSIC-UPDATE-STATUS..." (current-thread))
 	       
 	       (when (newstate? stat2 stat1)
 		  
@@ -109,6 +110,7 @@
 		  (set! %reset-loop #f)
 		  (musicstatus-state-set! stat2 'reset))
 	       
+	       (tprint "<<< LOOP")
 	       ;; loop back
 	       (loop stat2 stat1))))))
 
@@ -165,7 +167,13 @@
 ;*---------------------------------------------------------------------*/
 (define (music-event-loop-parse-opt obj)
    
-   (define (get-opt key arity)
+   (define (get-opt key def)
+      (let ((c (memq key obj)))
+	 (if (and (pair? c) (pair? (cdr c)))
+	     (cadr c)
+	     def)))
+      
+   (define (get-proc-opt key arity)
       (let ((c (memq key obj)))
 	 (when (and (pair? c) (pair? (cdr c)))
 	    (cond
@@ -178,9 +186,10 @@
 	       (else
 		(cadr c))))))
    
-   (values (get-opt :onstate 1)
-	   (get-opt :onmeta 1)
-	   (get-opt :onerror 1)
-	   (get-opt :onvolume 1)))
+   (values (get-proc-opt :onstate 1)
+	   (get-proc-opt :onmeta 1)
+	   (get-proc-opt :onerror 1)
+	   (get-proc-opt :onvolume 1)
+	   (get-opt :frequency 2000000)))
 
 

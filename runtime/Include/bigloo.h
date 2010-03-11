@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Feb 14 08:46:25 2010 (serrano)                */
+/*    Last change :  Thu Mar 11 09:38:45 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -534,6 +534,7 @@ typedef union scmobj {
       union scmobj *mvalues[ 16 ];
       /* exceptions and call/cc */
       char *stack_bottom;
+      union scmobj *exit_value;
       union scmobj *exitd_top;
       union scmobj *exitd_stamp;
       struct befored *befored_top;
@@ -1200,6 +1201,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_STACK_BOTTOM_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).stack_bottom = (_1), BUNSPEC)
    
+#define BGL_ENV_EXIT_VALUE( env ) \
+   (BGL_DYNAMIC_ENV( env ).exit_value)
+#define BGL_ENV_EXIT_VALUE_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).exit_value = (_1), BUNSPEC)
+   
 #define BGL_ENV_EXITD_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_top)
 #define BGL_ENV_EXITD_TOP_SET( env, _1 ) \
@@ -1288,6 +1294,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_THREAD_BACKEND( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_THREAD_BACKEND_SET( _v ) \
    BGL_ENV_THREAD_BACKEND_SET( BGL_CURRENT_DYNAMIC_ENV(), _v )
+   
+#define BGL_EXIT_VALUE() \
+   BGL_ENV_EXIT_VALUE( BGL_CURRENT_DYNAMIC_ENV() )
+#define BGL_EXIT_VALUE_SET( _1 ) \
+   BGL_ENV_EXIT_VALUE_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
    
 #define BGL_EXITD_TOP() \
    BGL_ENV_EXITD_TOP( BGL_CURRENT_DYNAMIC_ENV() )
@@ -2321,12 +2332,10 @@ extern bool_t BXNEGATIVE( obj_t );
 /*---------------------------------------------------------------------*/
 /*    `exit' machinery                                                 */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t _exit_value_;
-
 #define SET_EXIT( exit ) \
    SETJMP( jmpbuf )
 #define JUMP_EXIT( exit, val ) \
-   _exit_value_ = val, LONGJMP( exit, 1 )
+   BGL_EXIT_VALUE_SET( val ), LONGJMP( exit, 1 )
 
 #ifdef __ia64__
 /* IA64 code */
@@ -2359,7 +2368,7 @@ extern struct ia64_rv_t ia64_getcontext (ucontext_t *) __asm__ ("getcontext");
        0 : 1))
 
 #  define CALLCC_JUMP_EXIT( exit, val ) \
-   (_exit_value_ = val, \
+   (BGL_EXIT_VALUE_SET( val ), \
     memcpy( (void *)__libc_ia64_register_backing_store_base, \
             ((callcc_jmp_buf *)exit)->backing_store, \
             ((callcc_jmp_buf *)exit)->backing_store_size), \

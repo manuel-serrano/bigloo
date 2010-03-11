@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Sat Jan 19 10:28:34 2008 (serrano)                */
+/*    Last change :  Thu Mar 11 09:44:48 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -225,6 +225,7 @@ call_cc( obj_t proc ) {
    /* this variable _must_ be named jmpbuf because of SET_EXIT */
    /* that uses this name.                                     */
    callcc_jmp_buf jmpbuf; 
+   const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
 
    /* Warning CALLCC_SET_EXIT is a magic macro. It handles IA64 arch */
    if( !CALLCC_SET_EXIT( BUNSPEC ) ) {
@@ -232,7 +233,6 @@ call_cc( obj_t proc ) {
       obj_t stack;
       char *stack_top;
       unsigned long stack_size;
-      const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
       obj_t aux;
 
       /* We push the exit taking care that it is a _user_ exit. */
@@ -292,11 +292,11 @@ call_cc( obj_t proc ) {
 	 return val;
       }
    } else {
-      if( unwind_stack_value_p( _exit_value_ ) )
+      if( unwind_stack_value_p( BGL_ENV_EXIT_VALUE( env ) ) )
          return the_failure( c_constant_string_to_string( "call/cc" ),
 			     c_constant_string_to_string( "illegal continuation" ),
 			     BINT( PROCEDURE_ARITY( proc ) ) );
       else
-	 return (obj_t)_exit_value_;
+	 return BGL_ENV_EXIT_VALUE( env );
    }
 }

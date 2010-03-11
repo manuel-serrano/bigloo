@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Nov 12 16:49:28 2009 (serrano)                */
-/*    Copyright   :  2002-09 Manuel Serrano                            */
+/*    Last change :  Thu Mar 11 09:40:01 2010 (serrano)                */
+/*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -18,7 +18,6 @@ obj_t an_object;
 
 obj_t quote;
 obj_t *c_allocated_char;
-BGL_RUNTIME_DEF obj_t _exit_value_;
 
 obj_t bprof_port = BUNSPEC;
 
