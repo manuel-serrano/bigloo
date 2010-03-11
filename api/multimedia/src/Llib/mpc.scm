@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Wed Mar 10 07:45:02 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 08:31:29 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -174,7 +174,7 @@
 	    ;; we can now emit our command if we have a socket
 	    ;; (still possibly closed by the server)
 	    (when %socket
-	       (tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date))
+	       (tprint "exec...(" _c_ ") cmd=" cmd "\n time=" (current-date))
 	       (let ((v (with-handler
 			   (lambda (e)
 			      (tprint "exec error (" _c_ "), count=" count " mpc=" mpc " cmd=" cmd " -> " e)

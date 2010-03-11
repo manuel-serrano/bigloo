@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Wed Mar 10 07:49:47 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 08:38:14 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -28,6 +28,8 @@
 ;*    music-event-loop ::music ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-generic (music-event-loop o::music . obj)
+   (tprint "MUSIC-EVENT-LOOP")
+   (exit 0)
    (with-access::music o (%loop-mutex %loop-condv %status %abort-loop %reset-loop)
       (mutex-lock! %loop-mutex)
       (set! %abort-loop #f)
