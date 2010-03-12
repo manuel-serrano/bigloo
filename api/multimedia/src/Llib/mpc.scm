@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Mar 11 12:02:08 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 17:17:22 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -607,7 +607,6 @@
 	    (unless (eq? state 'eof)
 	       (with-handler
 		  (lambda (e)
-		     (tprint "MUSIC-UPDATE-STATUS: set-error: " e)
 		     (set-error! mpc status e))
 	       ;; first ping to check if the connection is still open
 	       (let loop ((retry #t))

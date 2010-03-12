@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Tue Jan  5 19:41:05 2010 (serrano)                */
+/*    Last change :  Fri Mar 12 10:41:00 2010 (serrano)                */
 /*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -1055,6 +1055,9 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	       return BUNSPEC;
 	 } if( !strcmp( tname, "GstBuffer" ) ) {
 	    return BUNSPEC;
+	 } if( !strcmp( tname, "gdouble" ) ) {
+	    gdouble d;
+	    return make_real( gst_tag_list_get_double( list, tag, &d ) );
 	 } else {
 	    fprintf( stderr, "WARNING: bgl_gsttag_value_to_obj (%s:%d), unknown tag type %s \n",
 		     __FILE__, __LINE__, 

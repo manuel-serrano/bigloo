@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Mar 10 07:52:21 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 17:16:00 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -351,13 +351,11 @@
 ;*    music-playlist-add! ::gstmusic ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-add! gstmusic::gstmusic n)
-   (tprint "music-playlist-add: " n)
    (call-next-method)
    (with-access::gstmusic gstmusic (%mutex %playlist %status)
       (with-lock %mutex
 	 (lambda ()
 	    (set! %playlist (append %playlist (list n)))
-	    (tprint "playlist=" %playlist)
 	    (with-access::musicstatus %status (playlistid playlistlength)
 	       (set! playlistid (+fx 1 playlistid))
 	       (set! playlistlength (+fx 1 playlistlength)))))))
