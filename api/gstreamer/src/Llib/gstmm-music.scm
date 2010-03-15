@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Thu Mar 11 17:16:00 2010 (serrano)                */
+;*    Last change :  Sun Mar 14 08:19:05 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -236,6 +236,7 @@
 					  (onmeta file))))))))
 		     ((and (gst-message-tag? msg) onmeta)
 		      ;; tag found
+		      (tprint "meta: " (gst-message-tag-list msg))
 		      (mutex-lock! %mutex)
 		      (let ((notify #f))
 		      (for-each (lambda (tag)
