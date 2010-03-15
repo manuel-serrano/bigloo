@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Sun Mar 14 08:19:05 2010 (serrano)                */
+;*    Last change :  Mon Mar 15 11:20:49 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -541,7 +541,11 @@
 ;*    music-songpos ::gstmusic ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (music-songpos o::gstmusic)
-   (music-duration o))
+   ;; this function assumes that %pipeline is still valid (i.e., the
+   ;; gstmm music player has not been closed yet)
+   (llong->fixnum
+    (/llong (gst-element-query-position (gstmusic-%pipeline o))
+	    #l1000000000)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-meta ...                                                   */
