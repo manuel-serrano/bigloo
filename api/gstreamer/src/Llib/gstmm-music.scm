@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Mar 17 19:37:49 2010 (serrano)                */
+;*    Last change :  Mon Mar 22 12:13:06 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -279,7 +279,7 @@
 		  (unless %abort-loop
 		     ;; wait to give a chance to other threads
 		     ;; to acquire the lock
-		     (sleep 1001)
+		     (sleep 113)
 		     (loop nvol npid meta))))))))
 
 ;*---------------------------------------------------------------------*/

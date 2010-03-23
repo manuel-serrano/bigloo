@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  1 08:52:59 2008                          */
-;*    Last change :  Sat Mar  8 06:10:21 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Mar 23 07:55:11 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstPipeline wrapper                                              */
 ;*=====================================================================*/
@@ -39,6 +39,7 @@
 			  ($make-gst-bus b %gst-object-finalize!)))))))
 
 	    (gst-pipeline-new::gst-pipeline ::bstring)
+	    (gst-pipeline-play ::gst-pipeline)
 	    ($make-gst-pipeline ::$gst-pipeline ::obj))
 
    (extern  (export $make-gst-pipeline "bgl_gst_pipeline_new")))
@@ -72,4 +73,22 @@
       ($builtin ($gst-element->object ($gst-pipeline-new name)))
       ($finalizer %gst-object-finalize!)))
 
-
+;*---------------------------------------------------------------------*/
+;*    gst-pipeline-play ...                                            */
+;*---------------------------------------------------------------------*/
+(define (gst-pipeline-play pipeline::gst-pipeline)
+   (let ((bus (gst-pipeline-bus pipeline))
+	 (mtypes (bit-or $gst-message-eos $gst-message-error)))
+      (gst-element-state-set! pipeline 'playing)
+      (let loop ()
+	 (let ((msg (gst-bus-poll bus :types mtypes)))
+	    (cond
+	       ((gst-message-eos? msg)
+		'done)
+	       ((gst-message-error? msg)
+		(error 'gst-pipeline-play
+		       "Cannot play"
+		       (gst-message-error-string msg)))
+	       (else
+		(loop)))))
+      (gst-element-state-set! pipeline 'null)))
