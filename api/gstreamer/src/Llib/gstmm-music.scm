@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Mar 22 12:13:06 2010 (serrano)                */
+;*    Last change :  Tue Mar 23 20:18:06 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -197,7 +197,9 @@
 			    (mutex-lock! %mutex)
 			    (set! song (+fx 1 song))
 			    (mutex-unlock! %mutex)
-			    (music-play o))))
+			    (music-play o)
+			    (when (>=fx volume 0)
+			       (music-volume-set! o volume)))))
 		     ((gst-message-state-changed? msg)
 		      ;; state changed
 		      (let ((nstate (case (gst-message-new-state msg)
@@ -221,7 +223,7 @@
 				   (set! volume (music-volume-get o))
 				   (set! songpos (music-position o))
 				   (set! songlength (music-duration o)))
-				(when (>=fx volume 0)
+				(when (and (eq? nstate 'play) (>=fx volume 0))
 				   (music-volume-set! o volume))
 				(mutex-unlock! %mutex)
 				(when onstate (onstate %status))
