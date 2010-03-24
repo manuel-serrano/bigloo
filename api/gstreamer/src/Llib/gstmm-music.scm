@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Tue Mar 23 20:18:06 2010 (serrano)                */
+;*    Last change :  Wed Mar 24 08:57:51 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -224,6 +224,10 @@
 				   (set! songpos (music-position o))
 				   (set! songlength (music-duration o)))
 				(when (and (eq? nstate 'play) (>=fx volume 0))
+				   ;; Some gstreamer player are wrong and
+				   ;; tend to forget the volume level. As a
+				   ;; workaround, we enforce it each time we
+				   ;; receive a play state change message.
 				   (music-volume-set! o volume))
 				(mutex-unlock! %mutex)
 				(when onstate (onstate %status))
