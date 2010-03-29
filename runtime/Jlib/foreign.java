@@ -280,7 +280,7 @@ public final class foreign
 
    public static int BCHAR_TO_UCHAR(bchar c)
       {
-	 return c.value;
+	 return (c.value & 0xFF);
       }
 
    public static int BCHAR_TO_UBYTE(bchar c)
