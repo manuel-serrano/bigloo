@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Oct 16 07:01:48 2009 (serrano)                */
+;*    Last change :  Mon Mar 29 15:07:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -435,13 +435,19 @@
 					      (variable-id v)
 					      "Illegal keyword(s) argument(s)"
 					      (map car err))))
- 		   (let* ((stack '())
+		   (body keys vals stack)))))))
+		   
+ 		   '(let* ((stack '())
+			  (_ (unless (=fx (length stack) arity)
+				(tprint "PAS GLOP stack=" (length stack)
+					" artiy=" arity " "
+					(shape `(,var ,@args)))))
 			  (bindings (map cons stack (take args arity))))
 		      (instantiate::let-var
 			 (loc loc)
 			 (type (variable-type v))
 			 (bindings bindings)
-			 (body (body keys vals stack))))))))))
+			 (body (body keys vals stack))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-fx-app-node ...                                             */

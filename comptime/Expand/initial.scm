@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Dec  8 07:31:49 2009 (serrano)                */
-;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 29 15:08:16 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -1054,7 +1054,8 @@
    (let* ((fun (car x))
 	  (actuals (cdr x))
 	  (formals (map (lambda (x) (mark-symbol-non-user! (gensym))) actuals))
-	  (msg (mark-symbol-non-user! (gensym))))
+	  (msg (mark-symbol-non-user! (gensym)))
+	  (loc (find-location x)))
       (epairify-rec
        `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
 		       (,msg ,(string-append (symbol->string fun) ": argument not a "
@@ -1064,7 +1065,7 @@
 			    (cons fun formals)
 			    `(,(if-sym) (,pred ,(car args))
 					,(loop (cdr args))
-					((@ error  __error) #f ,msg ,(car args))))))
+					,(err/loc loc fun msg (car args))))))
        x)))
 
 ;*---------------------------------------------------------------------*/
@@ -1075,7 +1076,8 @@
       ((?fun ?aobj ?aoff . ?rest)
        (let ((fobj (mark-symbol-non-user! (gensym)))
 	     (foff (mark-symbol-non-user! (gensym)))
-	     (len (mark-symbol-non-user! (gensym))))
+	     (len (mark-symbol-non-user! (gensym)))
+	     (loc (find-location x)))
 	  (epairify-rec
 	   `(,(let-sym) ((,fobj ,(e aobj e))
 			 (,foff ,(e aoff e)))
@@ -1083,11 +1085,7 @@
 			 ((,len (,flen ,fobj)))
 			 (,(if-sym) (,pred ,foff ,len)
 				    (,fun ,fobj ,foff ,@(map (lambda (x) (e x e)) rest))
-				    ((@ error  __error)
-				     #f
-				     ,(string-append (symbol->string fun)
-						     ": index out of bound")
-				     ,foff))))
+				    ,(err/loc loc fun "index out of bound" foff))))
 	   x)))
       (else
        (error #f "Illegal expression" x))))
@@ -1114,7 +1112,8 @@
 	     (lformals (map (lambda (x) (mark-symbol-non-user! (gensym)))
 			    actuals))
 	     (ufun (mark-symbol-non-user! (gensym)))
-	     (msg-list (mark-symbol-non-user! (gensym))))
+	     (msg-list (mark-symbol-non-user! (gensym)))
+	     (loc (find-location x)))
 	  (epairify-rec 
 	   `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
 			   (,ufun ,(e fun e))
@@ -1130,25 +1129,34 @@
 						lformals formals)
 					  (,(if-sym) (= ,@lformals)
 						     (,op ,ufun ,@formals)
-						     ((@ error  __error)
-						      #f
-						      ,(string-append
-							(symbol->string op)
-							": various lists length")
-						      (list ,@lformals))))
+						     ,(err/loc loc
+							       op
+							       "Various list length"
+							       `(list ,@lformals))))
 					`(,op ,ufun ,@formals))
 				    `(,(if-sym) (list? ,(car args))
 						,(loop (cdr args))
 						((@ error  __error) #f ,msg-list ,(car args)))))
-			    ((@ error  __error)
-			     #f
-			     ,(string-append (symbol->string op)
-					     ": incorrect function arity")
-			     ,(length actuals))))
+			    ,(err/loc loc
+				      op
+				      "Incorrect function arity"
+				      (length actuals))))
 	   x)))
       (else
        (error #f (car x) "Illegal form"))))
 
+;*---------------------------------------------------------------------*/
+;*    err/loc ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (err/loc loc proc msg obj)
+   (if (location? loc)
+       `((@ error/location  __error) ',proc
+				     ,msg
+				     ,obj
+				     ,(location-fname loc)
+				     ,(location-pos loc))
+       `((@ error  __error) ',proc ,msg ,obj)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    disp ...                                                         */
 ;*---------------------------------------------------------------------*/
