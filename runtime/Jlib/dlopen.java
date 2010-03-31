@@ -95,7 +95,7 @@ public abstract class dlopen {
 
 	 String name = prefix( zentry.getName().getBytes() ).replace( '/', '.' );
 
-	 Class new_class = java.lang.ClassLoader.getSystemClassLoader().loadClass( name );
+         Class new_class = foreign.class.getClassLoader().loadClass( name );
 
 	 if( init ) {
 	    try {
