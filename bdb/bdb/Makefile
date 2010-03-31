@@ -85,7 +85,7 @@ OBJECTS = Command/command.mco Command/explore.mco Init/setrc.mco        \
       Gdb/autoconf.mco Engine/param.mco Tools/version.mco               \
       Command/display.mco Engine/repl.mco Gdb/ginvoke.mco               \
       Patient/server.mco Command/run.mco Tools/speek.mco                \
-      Command/all-cmd.mco Tools/date.mco Init/parse-args.mco            \
+      Command/all_cmd.mco Tools/date.mco Init/parse_args.mco            \
       Tools/io.mco Command/help.mco Command/print.mco                   \
       Patient/mangling.mco Command/whatis.mco Tools/tools.mco           \
       Patient/pinvoke.mco Command/file.mco Command/break.mco            \
@@ -96,7 +96,7 @@ OBJECTS = Command/command.mco Command/explore.mco Init/setrc.mco        \
       Tools/error.o Command/backtrace.o Patient/value.o Gdb/annotate.o  \
       Gdb/autoconf.o Engine/param.o Tools/version.o Command/display.o   \
       Engine/repl.o Gdb/ginvoke.o Patient/server.o Command/run.o        \
-      Tools/speek.o Command/all-cmd.o Tools/date.o Init/parse-args.o    \
+      Tools/speek.o Command/all_cmd.o Tools/date.o Init/parse_args.o    \
       Tools/io.o Command/help.o Command/print.o Patient/mangling.o      \
       Command/whatis.o Tools/tools.o Patient/pinvoke.o Command/file.o   \
       Command/break.o Command/mangle.o Gdb/proc.o Command/expr.o        \
@@ -110,8 +110,8 @@ OBJECTS_P = Command/command_p.mco Command/explore_p.mco                 \
       Patient/value_p.mco Gdb/annotate_p.mco Gdb/autoconf_p.mco         \
       Engine/param_p.mco Tools/version_p.mco Command/display_p.mco      \
       Engine/repl_p.mco Gdb/ginvoke_p.mco Patient/server_p.mco          \
-      Command/run_p.mco Tools/speek_p.mco Command/all-cmd_p.mco         \
-      Tools/date_p.mco Init/parse-args_p.mco Tools/io_p.mco             \
+      Command/run_p.mco Tools/speek_p.mco Command/all_cmd_p.mco         \
+      Tools/date_p.mco Init/parse_args_p.mco Tools/io_p.mco             \
       Command/help_p.mco Command/print_p.mco Patient/mangling_p.mco     \
       Command/whatis_p.mco Tools/tools_p.mco Patient/pinvoke_p.mco      \
       Command/file_p.mco Command/break_p.mco Command/mangle_p.mco       \
@@ -124,7 +124,7 @@ OBJECTS_P = Command/command_p.mco Command/explore_p.mco                 \
       Gdb/autoconf_p.o Engine/param_p.o Tools/version_p.o               \
       Command/display_p.o Engine/repl_p.o Gdb/ginvoke_p.o               \
       Patient/server_p.o Command/run_p.o Tools/speek_p.o                \
-      Command/all-cmd_p.o Tools/date_p.o Init/parse-args_p.o            \
+      Command/all_cmd_p.o Tools/date_p.o Init/parse_args_p.o            \
       Tools/io_p.o Command/help_p.o Command/print_p.o                   \
       Patient/mangling_p.o Command/whatis_p.o Tools/tools_p.o           \
       Patient/pinvoke_p.o Command/file_p.o Command/break_p.o            \
@@ -137,7 +137,7 @@ SOURCES = Tools/tty.c Command/command.scm Command/explore.scm           \
       Gdb/autoconf.scm Engine/param.scm Tools/version.scm               \
       Command/display.scm Engine/repl.scm Gdb/ginvoke.scm               \
       Patient/server.scm Command/run.scm Tools/speek.scm                \
-      Command/all-cmd.scm Tools/date.scm Init/parse-args.scm            \
+      Command/all_cmd.scm Tools/date.scm Init/parse_args.scm            \
       Tools/io.scm Command/help.scm Command/print.scm                   \
       Patient/mangling.scm Command/whatis.scm Tools/tools.scm           \
       Patient/pinvoke.scm Command/file.scm Command/break.scm            \
@@ -148,8 +148,8 @@ SOURCES_C = Command/command.c Command/explore.c Init/setrc.c            \
       Command/set.c Bee/etags.c Tools/error.c Command/backtrace.c       \
       Patient/value.c Gdb/annotate.c Gdb/autoconf.c Engine/param.c      \
       Tools/version.c Command/display.c Engine/repl.c Gdb/ginvoke.c     \
-      Patient/server.c Command/run.c Tools/speek.c Command/all-cmd.c    \
-      Tools/date.c Init/parse-args.c Tools/io.c Command/help.c          \
+      Patient/server.c Command/run.c Tools/speek.c Command/all_cmd.c    \
+      Tools/date.c Init/parse_args.c Tools/io.c Command/help.c          \
       Command/print.c Patient/mangling.c Command/whatis.c Tools/tools.c \
       Patient/pinvoke.c Command/file.c Command/break.c Command/mangle.c \
       Gdb/proc.c Command/expr.c Command/info.c Bee/binvoke.c            \

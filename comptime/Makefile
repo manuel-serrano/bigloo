@@ -87,7 +87,7 @@ LICENSE		= ../LICENSE
 #*    The compiler source files ...                                    */
 #*---------------------------------------------------------------------*/
 #*--- init ------------------------------------------------------------*/
-INIT_FILE_NOMAIN= parse-args setrc extend lib-dir
+INIT_FILE_NOMAIN= parse_args setrc extend lib_dir
 INIT_FILE	= $(INIT_FILE_NOMAIN) main
 
 INIT_OBJ_NOMAIN	= $(INIT_FILE_NOMAIN:%=Init/%.o)
@@ -128,10 +128,10 @@ MODULE_FILE	= foreign impuse main prototype with class include \
 MODULE_OBJ	= $(MODULE_FILE:%=Module/%.o)
 
 #*--- ast -------------------------------------------------------------*/
-AST_FILE	= build venv glo-decl node unit dump glo-def pragma \
-                  var find-gdefs ident remove local sexp labels let \
+AST_FILE	= build venv glo_decl node unit dump glo_def pragma \
+                  var find_gdefs ident remove local sexp labels let \
                   exit substitute alphatize occur toccur app apply lvtype \
-                  hrtype shrinkify check-init private check-sharing init \
+                  hrtype shrinkify check_init private check_sharing init \
 
 AST_OBJ		= $(AST_FILE:%=Ast/%.o)
 
@@ -177,7 +177,7 @@ COERCE_OBJ	= $(COERCE_FILE:%=Coerce/%.o)
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration integration28c \
-                  new-body loc2glo gloclo clocto globalize
+                  new_body loc2glo gloclo clocto globalize
 
 GLOBALIZE_OBJ	= $(GLOBALIZE_FILE:%=Globalize/%.o)
 
@@ -196,7 +196,7 @@ CFA_OBJ		= $(CFA_FILE:%=Cfa/%.o)
 
 #*--- Integrate -------------------------------------------------------*/
 INTEGRATE_FILE	= walk definition iinfo a kk u g ctn cto kaptured \
-                  let-fun loc2glo node free
+                  let_fun loc2glo node free
 
 INTEGRATE_OBJ	= $(INTEGRATE_FILE:%=Integrate/%.o)
 
@@ -206,7 +206,7 @@ TAILC_FILE	= walk
 TAILC_OBJ	= $(TAILC_FILE:%=Tailc/%.o)
 
 #*--- Cgen ------------------------------------------------------------*/
-CGEN_FILE	= compile cop emit-cop cgen capp
+CGEN_FILE	= compile cop emit_cop cgen capp
 
 CGEN_OBJ	= $(CGEN_FILE:%=Cgen/%.o)
 
@@ -225,9 +225,9 @@ JVM_OBJ		= $(JVM_FILE:%=Jvm/%.o)
 
 #*--- BackEnd ---------------------------------------------------------*/
 BACKEND_FILE    = backend walk init lib cplib cvm bvm \
-                  c c-main c-proto c-emit  \
-                  jvm jvm-class \
-                  dotnet dotnet-class
+                  c c_main c_proto c_emit  \
+                  jvm jvm_class \
+                  dotnet dotnet_class
 
 BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 
@@ -290,18 +290,18 @@ EFFECT_OBJ	= $(EFFECT_FILE:%=Effect/%.o)
 
 #*--- object ----------------------------------------------------------*/
 OBJECT_FILE	= class generic method getter \
-                  plain-access wide-access java-access \
+                  plain_access wide_access java_access \
                   struct slots tools coercion predicate creator nil
 
 OBJECT_OBJ	= $(OBJECT_FILE:%=Object/%.o)
 
 #*--- bdb -------------------------------------------------------------*/
-BDB_FILE	= setting spread-obj bdb-initialize walk bdb-emit
+BDB_FILE	= setting spread_obj bdb_initialize walk bdb_emit
 
 BDB_OBJ		= $(BDB_FILE:%=Bdb/%.o)
 
 #*--- prof ------------------------------------------------------------*/
-PROF_FILE	= unit prof-emit
+PROF_FILE	= unit prof_emit
 
 PROF_OBJ	= $(PROF_FILE:%=Prof/%.o)
 

@@ -50,7 +50,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= block-ciphers ciphers aes cast128 des idea pad \
+_BGL_OBJECTS	= block_ciphers ciphers aes cast128 des idea pad \
                   util string2key \
                   dsa rsa elgamal DER pem
 

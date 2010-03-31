@@ -62,8 +62,8 @@ _BGL_OBJECTS	= gstbin gstbus gstbuffer gstcaps gstelement \
                   gstpipeline gstpluginfeature gstregistry gstpad \
                   gstpadtemplate gstplugin gstreamer gsterror \
                   gststructure gsttypefind gstparse \
-                  gstplugin-bglports \
-                  gstmm-music
+                  gstplugin_bglports \
+                  gstmm_music
 
 ifeq "$(GSTREAMERLIBS) " " "
 _C_OBJECTS	= 

@@ -70,7 +70,7 @@ BSAFEFLAGS	= $(BCOMMONFLAGS) \
                   -copt $(CPICFLAGS)
 CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
-BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -gjvm -jfile $(JFILE)
+BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile $(JFILE)
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
 #*--- Bigloo .NET flags -----------------------------------------------*/
 BDOTNETFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-mono-workaround -dotnet-pnet-workaround

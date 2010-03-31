@@ -51,7 +51,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= xml css css-ast css-lexer css-parser cgi rss atom feeds \
+_BGL_OBJECTS	= xml css css_ast css_lexer css_parser cgi rss atom feeds \
                   html webdav date
 
 _OBJECTS	= $(_BGL_OBJECTS)

@@ -39,7 +39,7 @@ BFLAGS=        -rm -afile $(AFILE) -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
 #*---------------------------------------------------------------------*/
-OBJECTS=       pnet2ms.o win32-base.o win32-registry.o win32-helpers.o
+OBJECTS=       pnet2ms.o win32-base.o win32_registry.o win32_helpers.o
 
 SOURCE_FILES=  $(OBJECTS:%.o=%.scm)
 
