@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Fri Mar 12 10:41:00 2010 (serrano)                */
+/*    Last change :  Wed Apr  7 09:31:23 2010 (serrano)                */
 /*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -1125,7 +1125,13 @@ bgl_gst_message_error_string( GstMessage *msg ) {
 /*---------------------------------------------------------------------*/
 char *
 bgl_gst_message_info_string( GstMessage *msg ) {
+#if( defined(  GST_MESSAGE_SRC_NAME ) )
+   /* gstreamer is recent enought, gst_message_parse_info is bound */
    return bgl_gst_message_error_parser( msg, &gst_message_parse_info );
+#else
+   /* gstreamer is too old, return a fake info string */
+   return "no info available (gstreamer too old)";
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
