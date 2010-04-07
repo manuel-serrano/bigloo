@@ -377,7 +377,10 @@
 	     (castclass me type) ))))
 
 (define-method (gen-fun fun::rtl_cast_null me);
-   (ldnull me) )
+   (let ( (type (rtl_cast_null-type fun)) )
+      (if (eq? type 'float)
+	  (push-num me 0 'float)
+	  (ldnull me)) ))
 
 ;; Box
 (define-method (gen-fun fun::rtl_makebox me);

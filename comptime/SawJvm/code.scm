@@ -565,7 +565,10 @@
 	    (code! me `(checkcast ,(compile-type me type))) ))))
 
 (define-method (gen-fun fun::rtl_cast_null me);
-   (code! me `(aconst_null)) )
+   (let ( (type (rtl_cast_null-type fun)) ) 
+      (if (eq? (type-name type) 'float)
+	  (code! me `(fconst_0))
+	  (code! me `(aconst_null)) )))
 
 ;;
 ;; Box

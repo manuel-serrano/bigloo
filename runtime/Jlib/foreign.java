@@ -2201,9 +2201,8 @@ public final class foreign
 	 final int len = src.length;
 	 int size = 0;
 
-	 for (int i = 1; i < len; ++i, ++size)
-	    if (src[i] == '\\')
-	    {
+	 for (int i = 1; i < len; ++i, ++size) {
+	    if (src[i] == '\\') {
 	       if ((i + 3 < len)
 		   && isdigit(src[i + 1])
 		   && isdigit(src[i + 2]) && isdigit(src[i + 3]))
@@ -2211,20 +2210,19 @@ public final class foreign
 	       else
 		  i += 1;
 	    }
+	 }
+	 int utf8shrink = 0;
 
 	 final byte[] result = new byte[size];
 	 int j = 0;
 
-	 for (int i = 1; i < len; ++i, ++j)
-	 {
-	    if (src[i] != '\\')
+	 for (int i = 1; i < len; ++i, ++j) {
+	    if (src[i] != '\\') {
 	       result[j] = src[i];
-	    else
-	    {
+	    } else {
 	       final byte cn = src[++i];
 
-	       switch (cn)
-	       {
+	       switch (cn) {
 		  case (byte) '\0':
 		     result[j] = (byte) '\\';
 		  break;
@@ -2246,66 +2244,96 @@ public final class foreign
 		  case (byte) 'v':
 		     result[j] = (byte) 11;
 		  break;
-		  default:
-		  {
-		     if (i + 2 < len)
-		     {
+		  default: {
+		     if (i + 2 < len) {
 			final byte s0 = src[i];
 			final byte s1 = src[i + 1];
 			final byte s2 = src[i + 2];
 
-			if (isdigit(s0) && isdigit(s1) && isdigit(s2))
-			{
+			if (isdigit(s0) && isdigit(s1) && isdigit(s2)) {
 			   result[j] = (byte) (64 * ((int) (s0 - '0'))
 					       + 8 * ((int) (s1 - '0'))
 					       + ((int) (s2 - '0')));
 			   i += 2;
-			}
-			else
-			{
+			} else {
 			   if (((s0 == (byte) 'x') || (s0 == (byte) 'X'))
-			       && (isdigit(s1)
-				   || (((byte) 'a' <= s1)
-				       && (s1 <= (byte) 'f'))
-				   || (((byte) 'A' <= s1)
-				       && (s1 <= (byte) 'F')))
-			       && (isdigit(s2) || (((byte) 'a' <= s2)
-						   && (s2 <= (byte) 'f'))
-				   || (((byte) 'A' <= s2)
-				       && (s2 <= (byte) 'F'))))
-			   {
-			      final byte n1 = (byte) (isdigit(s1)
-						      ? (s1 - (byte) '0')
-						      : 10 + (((byte) 'a' <= s1)
-							      ? (s1 - (byte) 'a')
-							      : (s1 - (byte) 'A')));
-			      final byte n2 = (byte) (isdigit(s2)
-						      ? (s2 - (byte) '0')
-						      : 10 + (((byte) 'a' <= s2)
-							      ? (s2 - (byte) 'a')
-							      : (s2 - (byte) 'A')));
+			       && isxdigit(s1)
+			       && isxdigit(s2) ) {
+			      final byte n1 = xdigit_to_byte( s1 );
+			      final byte n2 = xdigit_to_byte( s2 );
 
 			      result[j] = (byte) (n1 * 16 + n2);
 			      i += 2;
+			   } else {
+			      if (i + 4 < len) {
+				 final byte s3 = src[i + 3];
+				 final byte s4 = src[i + 4];
+				 
+				 if( ((s0 == (byte) 'u') || (s0 == (byte) 'U'))
+				      && isxdigit(s1)
+				      && isxdigit(s2) 
+				      && isxdigit(s3) 
+				      && isxdigit(s4) ) {
+				    final byte n1 = xdigit_to_byte( s1 );
+				    final byte n2 = xdigit_to_byte( s2 );
+				    final byte n3 = xdigit_to_byte( s3 );
+				    final byte n4 = xdigit_to_byte( s4 );
+				    final char u =
+				       (char)(n1*4096 + n2*512 + n3*16 + n4);
+				    final char[] ucs2 = make_ucs2_string( 1, u );
+				    final byte[] utf8 = ucs2_string_to_utf8_string( ucs2 );
+
+				    System.arraycopy(utf8, 0, result, j, STRING_LENGTH( utf8 ));
+				    
+				    i += 4;
+				    utf8shrink += (5 - STRING_LENGTH( utf8 ));
+				    j += (STRING_LENGTH( utf8 ) - 1);
+				 } else {
+				    result[j] = cn;
+				 }
+			      } else {
+				 result[j] = cn;
+			      }
 			   }
-			   else
-			      result[j] = cn;
 			}
-		     }
-		     else
+		     } else {
 			result[j] = cn;
+		     }
 		  }
 		  break;
 	       }
 	    }
 	 }
 
-	 return result;
+	 if( utf8shrink > 0 ) {
+	    final byte[] res = new byte[ size - utf8shrink ];
+	    System.arraycopy( result, 0, res, 0, size - utf8shrink );
+	    return res;
+	 } else {
+	    return result;
+	 }
       }
 
    static boolean isdigit(byte cn)
       {
 	 return (((byte) '0' <= cn) && (cn <= (byte) '9'));
+      }
+
+   private static boolean isxdigit( byte b ) {
+      if( isdigit( b ) ) {
+	 return true;
+      } else if( b <= (byte)'F' ) {
+	 return b >= (byte)'A';
+      } else return (b <= (byte)'f') && (b >= (byte)'a');
+   }
+
+   private static byte xdigit_to_byte( byte b ) {
+      if( isdigit(b) )
+	 return (byte)(b - (byte)'0');
+      else if( (byte) 'a' <= b )
+	 return (byte)(10 + (b - (byte) 'a'));
+			   else
+	 return (byte)(10 + (b - (byte) 'A'));
       }
 
    public static byte[] escape_scheme_string(byte[]src)

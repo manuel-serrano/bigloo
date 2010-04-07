@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Sep  3 11:52:34 2009 (serrano)                */
+;*    Last change :  Wed Apr  7 14:39:06 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -307,7 +307,8 @@
       ;; ucs2 strings
       ((: "u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
        (let ((str (the-substring 1 (-fx (the-length) 1))))
-  	  (utf8-string->ucs2-string (escape-C-string str))))
+  	  (utf8-string->ucs2-string
+	   (iso-latin->utf8 (escape-C-string str)))))
       
       ;; fixnums
       ((: "b" (? (in "-+")) (+ (in ("01"))))
