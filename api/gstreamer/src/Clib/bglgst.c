@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Wed Apr  7 09:46:28 2010 (serrano)                */
+/*    Last change :  Fri Apr  9 09:19:08 2010 (serrano)                */
 /*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -13,6 +13,7 @@
 #endif
 #include <gst/gst.h>
 #include <string.h>
+#include <locale.h>
 #include "bglgst_config.h"
 #include "bglgst.h"
 #include "../Plugin/bglgst_port.h"
@@ -146,6 +147,7 @@ bgl_gst_init( obj_t args ) {
       int argc;
       char **argv;
       int len = bgl_list_length( args );
+      char *locale = setlocale( LC_ALL, 0 );
 
       /* convert scheme vector to an char*[] for gst_init */
       argv = alloca( sizeof( char * ) * len );
@@ -169,6 +171,9 @@ bgl_gst_init( obj_t args ) {
 
       /* initialize GStreamer */
       gst_init( &argc, &argv );
+
+      /* WARNING: restore the previous locale that is changed by gst_init! */
+      setlocale( LC_ALL, locale );
 
       /* allocated the callback array */
       callbacks = g_malloc( sizeof( callback_t ) * callback_length );
