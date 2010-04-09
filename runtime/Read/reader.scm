@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Wed Apr  7 14:39:06 2010 (serrano)                */
+;*    Last change :  Fri Apr  9 15:23:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -543,7 +543,6 @@
        (list->vector
 	(reverse! (collect-up-to ignore "vector" (the-port) posp))))
 
-
       ;; typed homogeneous vectors
       ((: "#" letterid "(")
        ;; we increment the number of open parenthesis
@@ -595,6 +594,20 @@
 			      (string-upcase! s)))))
 		     (l (reverse! (collect-up-to ignore "vector" (the-port) posp))))
 		 (list->tvector id l))))))
+      
+      ;; tagged vectors (Camloo backward compatibility)
+      ((: #\# digit digit digit #\()
+       (let ((open-key par-open)
+	     (tag (string->integer (the-substring 1 4))))
+	  (set! par-open (+fx 1 par-open))
+	  (let ((res (list->vector
+		      (let loop ((walk (ignore)))
+			 (cond
+			    ((=fx open-key par-open)
+			     (list tag))
+			    (else
+			     (cons walk (loop (ignore)))))))))
+	     res)))
       
       ;; structures
       ("#{"
