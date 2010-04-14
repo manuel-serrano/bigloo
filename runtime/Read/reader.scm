@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Fri Apr  9 16:06:04 2010 (serrano)                */
+;*    Last change :  Tue Apr 13 05:26:09 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -347,10 +347,8 @@
 			  (the-port))))))
       
       ;; constants
-      ((: "<" (+ (or digit (uncase (in "afAF")))) ">")
-       (if (not (=fx (the-length) 6))
-	   (read-error "Illegal constant" (the-string) (the-port))
-	   (make-cnst (string->integer (the-substring 1 5) 16))))
+      ((: "<" (= 4 (or digit (uncase (in ("AF"))))) ">")
+       (make-cnst (string->integer (the-substring 1 5) 16)))
 
       (else
        (let ((c (the-failure)))
