@@ -156,7 +156,7 @@ the library loaded, the SRFI-0 features @code{pthread} and @code{srfi-18}
 will be bound. When loading the library, the two modules @code{__pth_thread}
 and @code{__pth_makelib} will be initialized. In the JVM version these
 modules are compiled in the classes @code{"bigloo.pthread.pthread"}
-and @code{"bigloo.pthread.make-lib"}.
+and @code{"bigloo.pthread.make_lib"}.
 
 @smalllisp
 (declare-library! 'pthread 
@@ -166,7 +166,7 @@ and @code{"bigloo.pthread.make-lib"}.
                   :module-init '__pth_thread
                   :module-eval '__pth_makelib
                   :class-init "bigloo.pthread.pthread"
-		  :class-eval "bigloo.pthread.make-lib")
+		  :class-eval "bigloo.pthread.make_lib")
 @end smalllisp
 
 @end itemize
@@ -387,10 +387,10 @@ clause of this source file is:
 @end smalllisp
 
 Prior to compiling the library, we have to create the heap associated file
-(let's name it @code{make-lib.scm}). This file could be:
+(let's name it @code{make_lib.scm}). This file could be:
 
 @smalllisp
-(module __make-lib
+(module __make_lib
    (import (__bformat "bformat.scm")))
 @end smalllisp
 
@@ -398,7 +398,7 @@ Building it is simple:
 
 @display
 bigloo -unsafe -q -mkaddheap -mkaddlib -heap-library bformat \
-     make-lib.scm -addheap bformat.heap
+     make_lib.scm -addheap bformat.heap
 @end display
 
 The options @code{-mkaddheap} and @code{-mkaddlib} tell Bigloo that it 
@@ -499,7 +499,7 @@ int print_point_2d( struct point_2d *pt ) @{
 We want our library to be composed of the whole exported Scheme
 functions. Thus the file to build the heap library could look like:
 
-@noindent @code{make-lib.scm}:
+@noindent @code{make_lib.scm}:
 @smalllisp
 (module __make-point-lib
    (import (point "scm-point.scm"))
@@ -586,7 +586,7 @@ all: heap lib example
 heap: point.heap
 
 point.heap: point.sch scm-point.scm
-        $(BIGLOO) $(BHEAPFLAGS) make-lib.scm -addheap point.heap
+        $(BIGLOO) $(BHEAPFLAGS) make_lib.scm -addheap point.heap
 
 lib: lib_u lib.a
 

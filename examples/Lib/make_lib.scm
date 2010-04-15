@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/examples/Lib/make-lib.scm            */
+;*    serrano/prgm/project/bigloo/examples/Lib/make_lib.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 19 13:01:37 1998                          */

@@ -105,7 +105,7 @@ O_OBJ_MLIB      = $(OBJ_MLIB:%=$(O)/%)
 #*---------------------------------------------------------------------*/
 #*    C objects                                                        */
 #*---------------------------------------------------------------------*/
-CLIB		= cinit-obj cmain cerror cports cstring csymbol cvector \
+CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cwriter capply cstruct csystem ccontrol ceval chash \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
@@ -355,7 +355,7 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
 #*---------------------------------------------------------------------*/
 POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
-                  Llib/make-lib.scm \
+                  Llib/make_lib.scm \
 		  Ieee/bignum.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
@@ -425,7 +425,7 @@ heap-c: $(AFILE) includes
         export LD_LIBRARY_PATH; \
 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
         export DYLD_LIBRARY_PATH; \
-        $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make-lib.scm -heap $(HEAPC_FILE)
+        $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
@@ -437,7 +437,7 @@ heap-jvm: $(AFILE) $(JFILE) includes
 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
         export DYLD_LIBRARY_PATH; \
         $(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
-                  $(EFLAGS) Llib/make-lib.scm -heap $(HEAPJVM_FILE)
+                  $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 

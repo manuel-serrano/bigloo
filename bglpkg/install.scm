@@ -116,7 +116,7 @@
 ;*    Templates ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define *Makefile* (makefile "etc/Makefile"))
-(define *make-lib.scm* (makefile "etc/make-lib.scm"))
+(define *make_lib.scm* (makefile "etc/make_lib.scm"))
 (define *init* (makefile "etc/init"))
 
 ;*---------------------------------------------------------------------*/
@@ -136,7 +136,7 @@
 			       (cdr (bglpkg-library)))
 			  (cdr (bglpkg-library))
 			  (bigloo-config 'release-number))))
-	 (install-make-lib libname modules exn macros)
+	 (install-make_lib libname modules exn macros)
 	 (install-init libname version macros)
 	 (install-makefile libname version sources modules mko mkr))))
    
@@ -196,19 +196,19 @@
 		     name)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    install-make-lib ...                                             */
+;*    install-make_lib ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (install-make-lib name modules exceptions macros)
-   (with-trace 3 'install-make-lib
+(define (install-make_lib name modules exceptions macros)
+   (with-trace 3 'install-make_lib
       (trace-item "name=" name)
       (trace-item "exceptions=" exceptions)
       (let* ((destdir (bglpkg-destdir))
-	     (path (make-file-name destdir "make-lib.scm")))
+	     (path (make-file-name destdir "make_lib.scm")))
 	 (when (or (not (file-exists? path)) (bglpkg-force-action))
 	    (unless (directory? destdir) (make-directories destdir))
 	    (with-output-to-file path
 	       (lambda ()
-		  (sed *make-lib.scm*
+		  (sed *make_lib.scm*
 		       `((@LIBNAME@ ,name)
 			 (@DLOADSYM@ ,name)
 			 (@MODULES@ ,(list-to-string modules))

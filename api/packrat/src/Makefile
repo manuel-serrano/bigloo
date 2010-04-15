@@ -58,13 +58,13 @@ _BGL_OBJECTS	= packrat json
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
-EOBJECTS	= objs/make-lib.o
+EOBJECTS	= objs/make_lib.o
 
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
-BGL_ECLASSES	= $(CLASS_EDIR)/make-lib.class
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 BGL_DOTNET_OBJ	= $(_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make-lib.obj
+BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
@@ -75,7 +75,7 @@ INCLUDES	= $(BIGLOO_SRC_DIR)/packrat.sch
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(INCLUDES) \
-                  $(MISC_SRC_DIR)/make-lib.scm \
+                  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(TARGETNAME).init.in \
                   Makefile
 
@@ -144,15 +144,15 @@ heap: heap-c heap-jvm
 heap-c: $(HEAP_FILE)
 heap-jvm: $(HEAPJVM_FILE)
 
-$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAP_FILE)
-	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAP_FILE)
+	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAP_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
-$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAPJVM_FILE)
-	@ $(BIGLOO) -jvm $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAPJVM_FILE)
+	@ $(BIGLOO) -jvm $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAPJVM_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -302,12 +302,12 @@ ude:
 .afile: $(SOURCES)
 	@ $(AFILE) -o .afile $(_BGL_SOURCES) 
 
-.jfile: $(SOURCES) $(MISC_SRC_DIR)/make-lib.scm
+.jfile: $(SOURCES) $(MISC_SRC_DIR)/make_lib.scm
 	@ $(JFILE) -o .jfile \
                    -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
                    -pbase $(PBASE) \
                    $(_BGL_OBJECTS:%=%.scm) \
-                   make-lib.scm
+                   make_lib.scm
 
 .etags: $(SOURCES)
 	@ $(BTAGS) -o .etags $(_BGL_SOURCES)

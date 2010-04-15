@@ -107,7 +107,7 @@ $(AFILE):
 HEAP		= $(LIBNAME).heap
 INTERFACES	= $(notdir $(SOURCES))
 OBJECTS		= $(INTERFACES:%.spi=$(ODIR)/%.o)
-EOBJECTS	= $(ODIR)/make-lib.o
+EOBJECTS	= $(ODIR)/make_lib.o
 BOOTLIBDIR	= $(BUILDDIR)
 
 #*---------------------------------------------------------------------*/
@@ -146,7 +146,7 @@ uninstall.native:
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_e-$(VERSION)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_u-$(VERSION)
 
-$(HEAP): make-lib.scm $(AFILE)
+$(HEAP): make_lib.scm $(AFILE)
 	$(RM) -f $@
 	$(BIGLOO) -spi $(BCFLAGS) $(EFLAGS) $(BHEAPFLAGS) $< -addheap $@
 

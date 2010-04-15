@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bglpkg/etc/make-lib.scm              */
+;*    serrano/prgm/project/bigloo/bglpkg/etc/make_lib.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 13:16:31 2007                          */

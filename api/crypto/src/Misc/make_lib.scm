@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/crypto/src/Misc/make-lib.scm         */
+;*    .../prgm/project/bigloo/api/crypto/src/Misc/make_lib.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*        adapted :  Florian Loitsch                                   */

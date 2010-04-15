@@ -53,7 +53,7 @@ INCLUDES	= param.sch makefile.sch
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
 POPULATION 	= $(INCLUDES) $(FILES) configure.scm.in Makefile \
-	          README etc/Makefile etc/make-lib.scm etc/init
+	          README etc/Makefile etc/make_lib.scm etc/init
 
 #*---------------------------------------------------------------------*/
 #*    The bglpkg executable                                            */
@@ -227,7 +227,7 @@ distclean: devclean
 #*---------------------------------------------------------------------*/
 $(OBJECTS): .afile
 
-o/install.o: etc/Makefile etc/make-lib.scm etc/init
+o/install.o: etc/Makefile etc/make_lib.scm etc/init
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

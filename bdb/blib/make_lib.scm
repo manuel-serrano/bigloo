@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bdb/blib/make-lib.scm                */
+;*    serrano/prgm/project/bigloo/bdb/blib/make_lib.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
@@ -11,7 +11,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __make-lib
+(module __make_lib
    
    (import __bdb
 	   __bdb_env))
