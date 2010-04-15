@@ -18,7 +18,7 @@
 		  :module-init '__ssl_ssl
 		  :module-eval '__ssl_makelib
 		  :class-init "bigloo.ssl.ssl"
-		  :class-eval "bigloo.ssl.make-lib")
+		  :class-eval "bigloo.ssl.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

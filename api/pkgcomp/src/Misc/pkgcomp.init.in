@@ -18,4 +18,4 @@
 		  :module-init '@configure
 		  :module-eval '@makelib
 		  :class-init "bigloo.pkgcomp.configure"
-		  :class-eval "bigloo.pkgcomp.make-lib")
+		  :class-eval "bigloo.pkgcomp.make_lib")

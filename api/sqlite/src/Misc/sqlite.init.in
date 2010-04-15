@@ -18,7 +18,7 @@
 		  :module-init '__sqlite_sqlite
 		  :module-eval '__sqlite_makelib
 		  :class-init "bigloo.sqlite.sqlite"
-		  :class-eval "bigloo.sqlite.make-lib")
+		  :class-eval "bigloo.sqlite.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */
