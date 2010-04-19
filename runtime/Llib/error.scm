@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Mar 29 14:45:24 2010 (serrano)                */
+;*    Last change :  Mon Apr 19 15:06:20 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -216,32 +216,41 @@
    (error proc msg obj))
 
 ;*---------------------------------------------------------------------*/
+;*    get-stack-string ...                                             */
+;*---------------------------------------------------------------------*/
+(define (get-stack-string)
+   (when (or (>fx (bigloo-debug) 0) (string? "BIGLOOSTACKDEPTH"))
+      (let ((p (open-output-string)))
+	 (notify-dump-trace-stack/port p)
+	 (close-output-port p))))
+
+;*---------------------------------------------------------------------*/
 ;*    error/errno ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (error/errno sysno proc msg obj)
    (cond
       ((=fx sysno $errno-io-error)
-       (raise (make-&io-error #f #f proc msg obj)))
+       (raise (make-&io-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-port-error)
-       (raise (make-&io-port-error #f #f proc msg obj)))
+       (raise (make-&io-port-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-read-error)
-       (raise (make-&io-read-error #f #f proc msg obj)))
+       (raise (make-&io-read-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-write-error)
-       (raise (make-&io-write-error #f #f proc msg obj)))
+       (raise (make-&io-write-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-unknown-host-error)
-       (raise (make-&io-unknown-host-error #f #f proc msg obj)))
+       (raise (make-&io-unknown-host-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-file-not-found-error)
-       (raise (make-&io-file-not-found-error #f #f proc msg obj)))
+       (raise (make-&io-file-not-found-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-parse-error)
-       (raise (make-&io-parse-error #f #f proc msg obj)))
+       (raise (make-&io-parse-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-malformed-url-error)
-       (raise (make-&io-malformed-url-error #f #f proc msg obj)))
+       (raise (make-&io-malformed-url-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-sigpipe-error)
-       (raise (make-&io-sigpipe-error #f #f proc msg obj)))
+       (raise (make-&io-sigpipe-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-io-timeout-error)
-       (raise (make-&io-timeout-error #f #f proc msg obj)))
+       (raise (make-&io-timeout-error #f #f (get-stack-string) proc msg obj)))
       ((=fx sysno $errno-process-exception)
-       (raise (make-&process-exception #f #f proc msg obj)))
+       (raise (make-&process-exception #f #f (get-stack-string) proc msg obj)))
       (else
        (error proc msg obj))))
 
@@ -311,7 +320,9 @@
 	  (display "*** UNKNOWN EXCEPTION: " port)
 	  (write-circle exc port)
 	  (newline port)
-	  (notify-dump-trace-stack)))))
+	  (if (and (&exception? exc) (string? (&exception-stack exc)))
+	      (display (&exception-stack exc) port)
+	      (notify-dump-trace-stack/port port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */
@@ -338,13 +349,13 @@
 ;*    error ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (error proc msg obj)
-   (raise (make-&error #f #f proc msg obj)))
+   (raise (make-&error #f #f (get-stack-string) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/location ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (error/location proc msg obj fname loc)
-   (raise (make-&error fname loc proc msg obj)))
+   (raise (make-&error fname loc (get-stack-string) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/source ...                                                 */
@@ -386,7 +397,7 @@
 		 (else
 		  "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
-      (raise (make-&type-error #f #f proc msg obj type))))
+      (raise (make-&type-error #f #f (get-stack-string) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-type-error/location ...                                   */
@@ -401,19 +412,19 @@
 		  "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
       (raise
-       (make-&type-error fname loc proc msg obj type))))
+       (make-&type-error fname loc (get-stack-string) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (warning . args)
-   (warning-notify (make-&warning #f #f args)))
+   (warning-notify (make-&warning #f #f (get-stack-string) args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/location ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (warning/location fname loc . args)
-   (warning-notify (make-&warning fname loc args)))
+   (warning-notify (make-&warning fname loc (get-stack-string) args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/c-location ...                                           */
@@ -423,7 +434,7 @@
 ;*    Bigloo values.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (warning/c-location fname loc . args)
-   (apply warning/location fname loc args))
+   (apply warning/location fname loc (get-stack-string) args))
 			    
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error ...                                                */
@@ -438,7 +449,9 @@
       (display " -- " port)
       (display-circle (&error-obj err) port)
       (newline port)
-      (notify-dump-trace-stack)
+      (if (string? (&error-stack err))
+	  (display (&error-stack err) port)
+	  (notify-dump-trace-stack/port port))
       (flush-output-port port)))
 
 ;*---------------------------------------------------------------------*/
@@ -483,9 +496,11 @@
 	 (display " -- " port)
 	 (display-circle obj port)
 	 (newline port)
-	 (notify-dump-trace-stack)
+	 (if (string? (&error-stack err))
+	     (display (&error-stack err) port)
+	     (notify-dump-trace-stack/port port))
 	 ;; we are now done, we flush
-	 (flush-output-port (current-error-port)))))
+	 (flush-output-port port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/loc ...                                            */
@@ -661,8 +676,14 @@
 ;*    notify-dump-trace-stack ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (notify-dump-trace-stack)
-   (if (or (string? "BIGLOOSTACKDEPTH") (>fx (bigloo-debug) 0))
-       (dump-trace-stack (current-error-port)
+   (notify-dump-trace-stack/port (current-error-port)))
+
+;*---------------------------------------------------------------------*/
+;*    notify-dump-trace-stack/port ...                                 */
+;*---------------------------------------------------------------------*/
+(define (notify-dump-trace-stack/port port)
+   (if (or (>fx (bigloo-debug) 0) (string? "BIGLOOSTACKDEPTH"))
+       (dump-trace-stack port
 			 (if (fixnum? (bigloo-trace-stack-depth))
 			     (bigloo-trace-stack-depth)
 			     10))))

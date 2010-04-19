@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Tue Mar 11 15:45:05 2008 (serrano)                */
+;*    Last change :  Mon Apr 19 14:59:02 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -138,7 +138,7 @@
 	     (set-eval-global-value! cell addr)
 	     (warning-notify
 	      (make-&eval-warning
-	       #f #f
+	       #f #f #f
 	       (list "Rebinding compiled constant" var)))))))
 
 ;*---------------------------------------------------------------------*/
