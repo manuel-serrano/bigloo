@@ -4258,14 +4258,6 @@ public final class foreign
 	 return stack_trace.pop_trace();
       }
 
-   public static Object dump_trace_stack(output_port p, int depth)
-      throws IOException
-      {
-	 Object o = stack_trace.dump(p, depth);
-	 dump_stack( p );
-	 return o;
-      }
-   
    public static Object get_trace_stack(int depth) throws IOException
       {
 	 return stack_trace.get(depth);

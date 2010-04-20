@@ -4515,11 +4515,6 @@ namespace bigloo
 	    return stack_trace.pop_trace();
 	 }
 
-      public static Object dump_trace_stack( output_port p, int depth )
-	 {
-	    return stack_trace.dump( p, depth );
-	 }
-
       public static Object get_trace_stack( int depth )
 	 {
 	    return stack_trace.get( depth );

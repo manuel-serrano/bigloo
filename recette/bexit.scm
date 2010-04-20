@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Thu Oct  6 11:29:42 2005 (serrano)                */
+;*    Last change :  Tue Apr 20 08:07:50 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -151,10 +151,10 @@
 	    (lambda ()
 	       (bind-exit (exit)
 		  (test-trace-stack-hux exit))
-	       (dump-trace-stack (current-output-port) 10)
+	       (display-trace-stack (get-trace-stack) (current-output-port))
 	       (bind-exit (exit)
 		  (test-trace-stack-hux exit))
-	       (dump-trace-stack (current-output-port) 10)))
+	       (display-trace-stack (get-trace-stack) (current-output-port))))
 	 #t)
       (lambda (e a b c)
 	 (fprint (current-error-port) "+++ ERROR: " a " " b " -- " c)
