@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Apr 19 15:06:12 2010 (serrano)                */
+;*    Last change :  Wed Apr 21 11:52:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -86,7 +86,7 @@
 	    (class &exception::&condition
 	       (fname (default #f))
 	       (location (default #f))
-	       (stack (default #f)))
+	       (stack (default (get-trace-stack))))
 	    
 	    (class &error::&exception
 	       (proc read-only)

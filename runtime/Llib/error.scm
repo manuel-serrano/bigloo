@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Apr 20 11:12:45 2010 (serrano)                */
+;*    Last change :  Wed Apr 21 12:13:30 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -654,7 +654,7 @@
 	       ((fixnum? depth) depth)
 	       ((getenv "BIGLOOSTACKDEPTH") => string->integer)
 	       ((fixnum? (bigloo-trace-stack-depth)) (bigloo-trace-stack-depth))
-	       (else 10))))
+	       (else (*fx (bigloo-debug) 10)))))
       ($get-trace-stack d)))
 
 ;*---------------------------------------------------------------------*/
