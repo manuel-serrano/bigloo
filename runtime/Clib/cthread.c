@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Mar 11 09:35:40 2010 (serrano)                */
+/*    Last change :  Wed Apr 21 14:56:13 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -189,6 +189,7 @@ make_dynamic_env() {
    env->dynamic_env_t.interrupt_notifier = BNIL;
    
    env->dynamic_env_t.top_of_frame = 0L;
+   env->dynamic_env_t.exit_traces = BNIL;
    env->dynamic_env_t.top.symbol = BUNSPEC;
    env->dynamic_env_t.top.link = 0;
 

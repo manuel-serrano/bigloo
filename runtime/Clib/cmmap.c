@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Wed Mar 17 20:45:45 2010 (serrano)                */
+/*    Last change :  Wed Apr 21 14:50:06 2010 (serrano)                */
 /*    Copyright   :  2005-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
@@ -166,7 +166,7 @@ bgl_close_mmap( obj_t mm ) {
    
 #if HAVE_MMAP
    if( BGL_MMAP( mm ).map
-       && BGL_MMAP( mm ).map != BSTRING_TO_STRING( BGL_MMAP( mm ).name ) )
+       && BGL_MMAP( mm ).map != (unsigned char *)BSTRING_TO_STRING( BGL_MMAP( mm ).name ) )
       r2 = munmap( BGL_MMAP( mm ).map, BGL_MMAP( mm ).length );
    else
       r2 = 0;

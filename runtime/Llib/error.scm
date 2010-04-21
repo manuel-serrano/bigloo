@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Apr 21 12:13:30 2010 (serrano)                */
+;*    Last change :  Wed Apr 21 13:03:16 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -206,6 +206,17 @@
 	    (set! *unsafe-type*    #t)
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t)))
+
+;*---------------------------------------------------------------------*/
+;*    get-trace-stack ...                                              */
+;*---------------------------------------------------------------------*/
+(define (get-trace-stack #!optional depth)
+   (let ((d (cond
+	       ((fixnum? depth) depth)
+	       ((getenv "BIGLOOSTACKDEPTH") => string->integer)
+	       ((fixnum? (bigloo-trace-stack-depth)) (bigloo-trace-stack-depth))
+	       (else (*fx (bigloo-debug) 10)))))
+      ($get-trace-stack d)))
 
 ;*---------------------------------------------------------------------*/
 ;*    the_failure ...                                                  */
@@ -645,17 +656,6 @@
 		       (cdr args))))
       (newline (current-error-port))
       (flush-output-port (current-error-port))))
-
-;*---------------------------------------------------------------------*/
-;*    get-trace-stack ...                                              */
-;*---------------------------------------------------------------------*/
-(define (get-trace-stack #!optional depth)
-   (let ((d (cond
-	       ((fixnum? depth) depth)
-	       ((getenv "BIGLOOSTACKDEPTH") => string->integer)
-	       ((fixnum? (bigloo-trace-stack-depth)) (bigloo-trace-stack-depth))
-	       (else (*fx (bigloo-debug) 10)))))
-      ($get-trace-stack d)))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-trace-stack ...                                          */

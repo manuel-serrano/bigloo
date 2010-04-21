@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Apr  7 14:35:33 2010 (serrano)                */
+/*    Last change :  Wed Apr 21 14:51:57 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -567,6 +567,7 @@ typedef union scmobj {
       union scmobj *thread_backend;
       /* user per thread data */
       union scmobj *user_data;
+      union scmobj *exit_traces;
    } dynamic_env_t;
 
 } *obj_t;
@@ -1207,6 +1208,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_EXIT_VALUE_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).exit_value = (_1), BUNSPEC)
    
+#define BGL_ENV_EXIT_TRACES( env ) \
+   (BGL_DYNAMIC_ENV( env ).exit_traces)
+#define BGL_ENV_EXIT_TRACES_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).exit_traces = (_1), BUNSPEC)
+   
 #define BGL_ENV_EXITD_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_top)
 #define BGL_ENV_EXITD_TOP_SET( env, _1 ) \
@@ -1409,12 +1415,28 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 /* after a bind-exit, we must reset the current trace */
 /* See cgen/emit-cop.scm and SawC/code.scm            */
+/* MS 21apr2010: these macros cannot use a local var  */
+/* because longjmp does not restore them. Hence, the  */
+/* top_of_stack value has to be stored in the env.    */   
+#define BGL_ENV_STORE_TRACE( env ) \
+   BGL_ENV_EXIT_TRACES_SET( env, \
+     MAKE_PAIR( (obj_t)BGL_ENV_GET_TOP_OF_FRAME( env ), BGL_ENV_EXIT_TRACES( env ) ) )
+
+#define BGL_ENV_RESTORE_TRACE( env ) \
+   { \
+     struct bgl_dframe *exit_trace = \
+      (struct bgl_dframe *)CAR( BGL_ENV_EXIT_TRACES( env ) ); \
+     BGL_ENV_EXIT_TRACES_SET( env, CDR( BGL_ENV_EXIT_TRACES( env ) ) ); \
+     BGL_ENV_SET_TOP_OF_FRAME( env, exit_trace ); \
+  }
+   
+/* after a bind-exit, we must reset the current trace */
+/* See cgen/emit-cop.scm and SawC/code.scm            */
 #define BGL_STORE_TRACE() \
-   struct bgl_dframe *bgl_exit_trace = \
-      BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() )
+   BGL_ENV_STORE_TRACE( BGL_CURRENT_DYNAMIC_ENV() )
 
 #define BGL_RESTORE_TRACE() \
-   BGL_ENV_SET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV(), bgl_exit_trace )
+   BGL_ENV_RESTORE_TRACE( BGL_CURRENT_DYNAMIC_ENV() )
    
 /*---------------------------------------------------------------------*/
 /*    Failures                                                         */
