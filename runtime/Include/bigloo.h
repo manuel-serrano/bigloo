@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Apr 21 14:51:57 2010 (serrano)                */
+/*    Last change :  Wed Apr 21 19:40:03 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -551,6 +551,7 @@ typedef union scmobj {
       /* stack traces */
       struct bgl_dframe top;
       struct bgl_dframe *top_of_frame;
+      union scmobj *exit_traces;
       /* current thread */
       void *current_thread;
       /* thread lexical stack */
@@ -567,7 +568,6 @@ typedef union scmobj {
       union scmobj *thread_backend;
       /* user per thread data */
       union scmobj *user_data;
-      union scmobj *exit_traces;
    } dynamic_env_t;
 
 } *obj_t;
@@ -1423,12 +1423,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
      MAKE_PAIR( (obj_t)BGL_ENV_GET_TOP_OF_FRAME( env ), BGL_ENV_EXIT_TRACES( env ) ) )
 
 #define BGL_ENV_RESTORE_TRACE( env ) \
-   { \
-     struct bgl_dframe *exit_trace = \
-      (struct bgl_dframe *)CAR( BGL_ENV_EXIT_TRACES( env ) ); \
-     BGL_ENV_EXIT_TRACES_SET( env, CDR( BGL_ENV_EXIT_TRACES( env ) ) ); \
-     BGL_ENV_SET_TOP_OF_FRAME( env, exit_trace ); \
-  }
+   BGL_ENV_SET_TOP_OF_FRAME( env, (struct bgl_dframe *)CAR( BGL_ENV_EXIT_TRACES( env ) ) ); \
+   BGL_ENV_EXIT_TRACES_SET( env, CDR( BGL_ENV_EXIT_TRACES( env ) ) );
    
 /* after a bind-exit, we must reset the current trace */
 /* See cgen/emit-cop.scm and SawC/code.scm            */
