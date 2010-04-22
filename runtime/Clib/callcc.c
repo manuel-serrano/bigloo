@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Thu Mar 11 09:44:48 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 08:42:45 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -28,7 +28,7 @@ extern obj_t make_fx_procedure();
 extern obj_t c_constant_string_to_string();
 
 extern obj_t restore_stack();
-extern obj_t unwind_stack_until( obj_t, obj_t, obj_t, obj_t );
+extern obj_t unwind_stack_until( struct exitd *, obj_t, obj_t, obj_t );
 extern bool_t unwind_stack_value_p( obj_t );
 extern void *bgl_get_top_of_stack();
 
@@ -84,9 +84,10 @@ obj_t
 apply_continuation( obj_t kont, obj_t value ) {
    obj_t stack;
    obj_t restore;
-   obj_t etop;
+   struct exitd *etop;
    obj_t estamp;
    const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+   struct exitd ctop;
 
    if( !PROCEDUREP( kont ) ||
        ((obj_t)(PROCEDURE_ENTRY( kont )) != ((obj_t)&apply_continuation)) )
@@ -103,9 +104,6 @@ apply_continuation( obj_t kont, obj_t value ) {
    
    restore = make_fx_procedure( restore_stack, 1, 1 );
    PROCEDURE_SET( restore, 0, kont );
-
-   /* restore stack traces */
-   BGL_ENV_SET_TOP_OF_FRAME( env, STACK( stack ).top_frame );
 
    /* We check that the continuation is applied on the same thread */
    if( STACK( stack ).stack_bot != BGL_ENV_STACK_BOTTOM( env ) )
@@ -234,8 +232,7 @@ call_cc( obj_t proc ) {
       char *stack_top;
       unsigned long stack_size;
       obj_t aux;
-
-      /* We push the exit taking care that it is a _user_ exit. */
+      /* We push the exit taking care that it is a callcc exit. */
       PUSH_ENV_EXIT( env, (obj_t)(&jmpbuf), EXITD_CALLCC );
       
       /* sur sparc, il est indispensables de flusher les registres. */
@@ -258,11 +255,10 @@ call_cc( obj_t proc ) {
       STACK( stack ).size       = (long)stack_size;
       STACK( stack ).self       = CREF( stack );
       STACK( stack ).exitd_top  = BGL_ENV_EXITD_TOP( env );
-      STACK( stack ).stamp      = ((struct exitd *)BGL_ENV_EXITD_TOP( env ))->stamp;
+      STACK( stack ).stamp      = BGL_ENV_EXITD_TOP( env )->stamp;
       STACK( stack ).before_top = BGL_ENV_BEFORED_TOP( env );
       STACK( stack ).stack_top  = stack_top;
       STACK( stack ).stack_bot  = BGL_ENV_STACK_BOTTOM( env );
-      STACK( stack ).top_frame  = BGL_ENV_GET_TOP_OF_FRAME( env );
 
       /* on construit la continuation */
       continuation = make_fx_procedure( &apply_continuation, 1, 2 );

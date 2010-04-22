@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Tue Apr 20 08:07:50 2010 (serrano)                */
+;*    Last change :  Wed Apr 21 21:05:50 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -166,6 +166,21 @@
 (define (test-trace-stack-bar x)
    (x 3))
 
+(define (test-trace-stack2)
+   (let ((p (open-output-string)))
+      (let loop ((i 3))
+	 (when (> i 0)
+	    (display-trace-stack (get-trace-stack) p)
+	    (bind-exit (exit)
+	       (test-trace-stack2-aux (list exit)))
+	    (display-trace-stack (get-trace-stack) p)
+	    (loop (- i 1)))))
+   #t)
+
+(define (test-trace-stack2-aux l)
+   (bind-exit (esc)
+      ((car l) #t)))
+
 ;*---------------------------------------------------------------------*/
 ;*    test-bind-exit ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -188,6 +203,7 @@
    (test "unwind" (eval '(unwind-protect 10 10)) 10)
    (test "unwind" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
    (test "unwind" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
-   (test "stack traces.1" (test-stack-traces) #t)
-   (test "trace stack" (test-trace-stack) #t))
+   (test "trace stack.1" (test-stack-traces) #t)
+   (test "trace stack.2" (test-trace-stack) #t)
+   (test "trace stack.3" (test-trace-stack2) #t))
 	 

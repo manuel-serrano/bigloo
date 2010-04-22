@@ -4050,6 +4050,10 @@ public final class foreign
 	 return bgldynamic.abgldynamic.get().exitd_top;
       }
 
+   public static boolean BGL_EXITD_BOTTOMP( Object o ) {
+      return o == BFALSE;
+   }
+      
    public static Object BGL_EXITD_TOP_SET(Object o)
       {
 	 bgldynamic.abgldynamic.get().exitd_top = o;

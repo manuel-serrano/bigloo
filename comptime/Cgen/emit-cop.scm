@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Apr 21 14:32:56 2010 (serrano)                */
+;*    Last change :  Thu Apr 22 05:14:20 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -567,18 +567,16 @@
 (define-method (emit-cop cop::cset-ex-it)
    (with-access::cset-ex-it cop (exit jump-value body loc)
       (emit-bdb-loc loc)
-      (display "{BGL_STORE_TRACE(); " *c-port*)
       (display "if( SET_EXIT(" *c-port*)
       (emit-cop exit)
       (display ") ) { " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
-      (display "BGL_RESTORE_TRACE(); " *c-port*)
       (emit-cop jump-value)
       (emit-bdb-loc loc)
       (display "} else {" *c-port*)
       (emit-cop body)
       (emit-bdb-loc loc)
-      (display "}} " *c-port*)
+      (display "} " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       #f))
 

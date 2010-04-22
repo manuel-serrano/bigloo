@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Apr 21 19:40:03 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 08:42:44 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -399,13 +399,12 @@ typedef union scmobj {
    struct stack {                /*  Les piles de `call/cc'            */
       header_t        header;    /*  sont:                             */
       union scmobj   *self;      /*        - un ptr sur soit meme      */
-      union scmobj   *exitd_top; /*        - un ptr sur les exits      */
+      struct exitd   *exitd_top; /*        - un ptr sur les exits      */
       union scmobj   *stamp;     /*        - an exitd stamp            */
       long            size;      /*        - une taille                */
       struct befored *before_top;/*        - un ptr sur les befores    */
       char           *stack_top; /*        - the top of the stack      */
       char           *stack_bot; /*        - the bottom of the stack   */
-      struct bgl_dframe *top_frame; /*     - the head of the traces    */
       void           *stack;     /*        - un espace memoire         */
    } stack_t;
 
@@ -536,7 +535,7 @@ typedef union scmobj {
       /* exceptions and call/cc */
       char *stack_bottom;
       union scmobj *exit_value;
-      union scmobj *exitd_top;
+      struct exitd *exitd_top;
       union scmobj *exitd_stamp;
       struct befored *befored_top;
       union scmobj *exitd_val;
@@ -1409,9 +1408,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define POP_TRACE() \
    BGL_ENV_POP_TRACE( bgl_denv )
    
-#define SET_TRACE( name ) BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), name )
+#define SET_TRACE( name ) \
+   BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), name )
 
-#define GET_TRACE() BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
+#define GET_TRACE() \
+   BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
 
 /* after a bind-exit, we must reset the current trace */
 /* See cgen/emit-cop.scm and SawC/code.scm            */
@@ -2414,6 +2415,7 @@ struct exitd {
    void *exit;
    long userp;
    obj_t stamp;
+   struct bgl_dframe *top_of_frame;
    struct exitd *prev;
 };
 
@@ -2425,17 +2427,17 @@ struct exitd {
    struct exitd exitd; \
    exitd.exit  = _xit; \
    exitd.userp = _ser; \
-   exitd.prev  = ((struct exitd *)BGL_ENV_EXITD_TOP( env )); \
+   exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
+   exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
-   BGL_ENV_EXITD_TOP_SET( env, (obj_t)(&exitd) );
+   BGL_ENV_EXITD_TOP_SET( env, (&exitd) );
    
 #define PUSH_EXIT( _xit, _ser ) \
    PUSH_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser )
 
 #define POP_ENV_EXIT( env ) \
-   BGL_ENV_EXITD_TOP_SET( \
-      env, \
-      (obj_t)(((struct exitd *)BGL_ENV_EXITD_TOP( env ))->prev) )
+   BGL_ENV_SET_TOP_OF_FRAME( env, BGL_ENV_EXITD_TOP( env )->top_of_frame); \
+   BGL_ENV_EXITD_TOP_SET( env, BGL_ENV_EXITD_TOP( env )->prev ); \
 
 #define POP_EXIT() \
    POP_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV() )
@@ -2452,6 +2454,9 @@ struct exitd {
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)
 
+#define BGL_EXITD_BOTTOMP( exitd ) \
+   ((exitd) == BFALSE)
+   
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */
 /*---------------------------------------------------------------------*/
