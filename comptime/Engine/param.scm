@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Dec  8 07:25:15 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 23 07:57:15 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -81,6 +81,7 @@
 	    ;; warning, any change about this variable name must be reported
 	    ;; in the no-trace-no-check macro of Llib/error.scm file
 	    *compiler-debug*
+	    *compiler-debug-trace*
 	    *error-localization*
 	    *compiler-sharing-debug?*
 	    ;; -------------------------------------------------------------
@@ -570,6 +571,10 @@
 ;; debugging level
 (param-define *compiler-debug*
 	      "Debugging level"
+	      0)
+;; trace level
+(param-define *compiler-debug-trace*
+	      "Debugging trace level"
 	      0)
 ;; error-localization
 (param-define *error-localization*

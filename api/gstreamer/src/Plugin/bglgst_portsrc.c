@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Thu Mar 18 07:09:39 2010 (serrano)                */
+/*    Last change :  Fri Apr 23 18:13:38 2010 (serrano)                */
 /*    Copyright   :  2008-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
@@ -88,6 +88,33 @@ enum {
    PROP_PORT,
    PROP_URI,
 };
+
+
+/*---------------------------------------------------------------------*/
+/*    Backward gstreamer compatibility                                 */
+/*---------------------------------------------------------------------*/
+#if( !BGL_GSTREAMER_HAVE_PARSE_INFO )
+static GstBuffer *gst_buffer_try_new_and_alloc( guint size ) {
+   GstBuffer *newbuf;
+   guint8 *malloc_data;
+
+   malloc_data = g_try_malloc( size );
+
+   if( G_UNLIKELY (malloc_data == NULL && size != 0) ) {
+      return NULL;
+   }
+
+   /* FIXME: there's no g_type_try_create_instance() in GObject yet, so this
+    * will still abort if a new GstBuffer structure can't be allocated */
+   newbuf = gst_buffer_new();
+
+   GST_BUFFER_MALLOCDATA( newbuf ) = malloc_data;
+   GST_BUFFER_DATA( newbuf ) = malloc_data;
+   GST_BUFFER_SIZE( newbuf ) = size;
+
+   return newbuf;
+}
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Boilerplate                                                      */

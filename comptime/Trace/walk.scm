@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Aug 22 16:21:05 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 23 08:45:39 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -86,14 +86,14 @@
 	       (not (memq 'no-trace (sfun-property fun))))
 	  (begin
 	     (enter-function (trace-id var))
-	     (let* ((new-body  (if (or (>=fx *compiler-debug* 3)
+	     (let* ((new-body  (if (or (>fx *compiler-debug-trace* 1)
 				       (and (global? var)
 					    (eq? (global-id var)
 						 'toplevel-init)))
 				   ;; we always goes trough the first level
 				   ;; (i.e. not the nested local functions)
 				   ;; of the toplevel-init function even
-				   ;; if [*compiler-debug* < 3]. That way
+				   ;; if [*compiler-debug-trace* < 2]. That way
 				   ;; we are sure that global closures will
 				   ;; be correctly traced and not labeled
 				   ;; [toplevel-init].
