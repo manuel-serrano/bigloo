@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 14 13:46:57 2004                          */
-;*    Last change :  Mon Apr 19 14:59:25 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 18:01:49 2010 (serrano)                */
 ;*    Copyright   :  2004-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The error of evmeaning                                           */
@@ -62,7 +62,6 @@
 	   (evmeaning-reset-error!)
 	   (evmeaning-set-error-location! ::obj)
 	   (evmeaning-warning ::obj . ::obj)
-	   (evmeaning-annotate-exception! ::obj)
 	   (evmeaning-exception-handler ::obj)
 	   (evmeaning-arity-error ::obj ::obj ::int ::int)))
 

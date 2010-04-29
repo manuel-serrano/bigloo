@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Mon Mar 29 09:12:22 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 18:29:15 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -104,6 +104,12 @@
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
+	 (unless (string? host)
+	    (raise
+	     (instantiate::&io-malformed-url-error
+		(proc 'webdav-propfind)
+		(msg "missing host")
+		(obj url))))
 	 (let liip ((socket (cache-get host port)))
 	    (let ((socket (http :method 'PROPFIND
 			     :host host
@@ -223,6 +229,12 @@
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
+	 (unless (string? host)
+	    (raise
+	     (instantiate::&io-malformed-url-error
+		(proc 'webdav-propfind)
+		(msg "missing host")
+		(obj url))))
 	 (let liip ((socket (cache-get host port)))
 	    (let ((socket (http :method method
 			     :host host

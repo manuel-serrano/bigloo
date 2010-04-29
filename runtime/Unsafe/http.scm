@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Mon Mar 22 10:26:12 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 18:22:53 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -124,6 +124,8 @@
        (set! in (socket-input socket))
        (set! out (socket-output socket)))
       ((and (not in) (not out))
+       (unless (and host port)
+	  (error 'http "Missing either \"host\" or \"port\" argument" host))
        (set! socket (make-http-socket host port proxy timeout))
        (set! in (socket-input socket))
        (set! out (socket-output socket)))

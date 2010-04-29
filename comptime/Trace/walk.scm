@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Apr 23 08:45:39 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 17:15:50 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -58,16 +58,14 @@
 ;*    rather anonymous [toplevel-init] ident, we use the name of       */
 ;*    the module.                                                      */
 ;*---------------------------------------------------------------------*/
-(define (trace-id variable)
+(define (trace-id v)
    (cond
-      ((and (global? variable)
-	    (eq? (global-id variable) 'toplevel-init))
-       (symbol-append (string->symbol "%toplevel@") (global-module variable)))
-      ((and (global? variable)
-	    (eq? (global-id variable) 'imported-modules-init))
-       (symbol-append (string->symbol "%import@") (global-module variable)))
+      ((and (global? v) (eq? (global-id v) 'toplevel-init))
+       (symbol-append (string->symbol "%toplevel@") (global-module v)))
+      ((and (global? v) (eq? (global-id v) 'imported-modules-init))
+       (symbol-append (string->symbol "%import@") (global-module v)))
       (else
-       (variable-id variable))))
+       (variable-id v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-fun! ...                                                   */
@@ -83,7 +81,8 @@
 		    (find-location (find-last-sexp (global-src var)))
 		    (node-loc (find-last-node body)))))
       (if (and (not (fun-predicate-of fun))
-	       (not (memq 'no-trace (sfun-property fun))))
+	       (not (memq 'no-trace (sfun-property fun)))
+	       (user-symbol? (variable-id var)))
 	  (begin
 	     (enter-function (trace-id var))
 	     (let* ((new-body  (if (or (>fx *compiler-debug-trace* 1)

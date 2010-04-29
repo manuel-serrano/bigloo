@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Apr 21 13:03:16 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 18:18:18 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -671,8 +671,9 @@
       (display ". " port)
       (display sym port)
       (when (>fx num 1)
-	 (display " x " port)
-	 (display num port))
+	 (display " (* " port)
+	 (display num port)
+	 (display ")" port))
       (newline port))
    
    (when (pair? stack)
