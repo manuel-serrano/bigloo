@@ -5264,6 +5264,16 @@ namespace bigloo
 	    p.pseudoeof = e;
 	 }
 
+      public static int BGL_INPUT_PORT_LENGTH( input_port p )
+	 {
+	    return p.length;
+	 }
+
+      public static void BGL_INPUT_PORT_LENGTH_SET( input_port p, int e )
+	 {
+	    p.length = e;
+	 }
+
       public static int OUTPUT_PORT_FILEPOS( output_port p )
 	 {
 	    return 0;

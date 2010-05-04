@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Feb 20 06:59:39 2010 (serrano)                */
+/*    Last change :  Thu Mar 18 07:08:58 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -979,6 +979,7 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
    new_input_port->port_t.userdata = BUNSPEC;
    new_input_port->input_port_t.filepos = 0;
    new_input_port->input_port_t.fillbarrier = -1;
+   new_input_port->input_port_t.length = -1;
    new_input_port->input_port_t.eof = 0;
    new_input_port->input_port_t.matchstart = 0;
    new_input_port->input_port_t.matchstop = 0;
@@ -1241,6 +1242,7 @@ bgl_open_input_string( obj_t string, int start ) {
 
    CREF(port)->input_port_t.eof = 1;
    CREF(port)->input_port_t.bufpos = bufsiz + 1;
+   CREF( port )->input_port_t.length = bufsiz;
 
    return port;
 }

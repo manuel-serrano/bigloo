@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Mon Dec 14 12:03:12 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Thu Mar 18 07:09:39 2010 (serrano)                */
+/*    Copyright   :  2008-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
 /*    -------------------------------------------------------------    */
@@ -168,13 +168,13 @@ bgl_gst_port_src_get_size( GstBaseSrc *basesrc, guint64 *size ) {
    switch( (long)PORT( port ).kindof ) {
       case (long) KINDOF_FILE:
 	 *size = bgl_file_size( BSTRING_TO_STRING( PORT( port ).name ) );
-#if( defined( BGL_DEBUG ) )
-	 fprintf( stderr, "bgl_gst_src_get_size(%s:%d)\n  file=%s\n  size=%d\n", __FILE__, __LINE__, BSTRING_TO_STRING( PORT( port ).name ), *size );
-#endif	 
 	 return TRUE;
+	 
       case (long) KINDOF_STRING:
-	 *size = BGL_INPUT_PORT_BUFSIZ( port ) - 1;
+      case (long) KINDOF_SOCKET:
+	 *size = BGL_INPUT_PORT_LENGTH( port );
 	 return TRUE;
+	 
       default:
 	 return FALSE;
    }
@@ -195,6 +195,7 @@ bgl_gst_port_src_is_seekable( GstBaseSrc *basesrc ) {
       case (long) KINDOF_FILE:
       case (long) KINDOF_STRING:
 	 return TRUE;
+	 
       default:
 	 return FALSE;
    }

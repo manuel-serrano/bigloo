@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Mar 17 18:59:05 2010 (serrano)                */
+/*    Last change :  Thu Mar 18 07:00:05 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -349,9 +349,10 @@ typedef union scmobj {
       long            matchstart;/*    - the start of a match position */
       long            matchstop; /*    - the end of the match          */
       long            forward;   /*    - the position of READ-CHAR     */
-      long            bufpos;    /*    - the buffer write offset       */
+      long            bufpos;    /*    - the buffer read offset        */
       union scmobj   *buf;       /*    - the buffer as a bgl string    */      
       int             lastchar;  /*    - the last char before a fill   */
+      long            length;    /*    - the (char number) of the port */
    } input_port_t;
 
    struct input_procedure_port {
@@ -1876,6 +1877,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define BGL_INPUT_PORT_BUFSIZ( o ) \
    (STRING_LENGTH( BGL_INPUT_PORT_BUFFER( o ) ))
+
+#define BGL_INPUT_PORT_LENGTH( o ) \
+   (INPUT_PORT( o ).length)
+
+#define BGL_INPUT_PORT_LENGTH_SET( o, v ) \
+   (INPUT_PORT( o ).length = (v))
 
 /*---------------------------------------------------------------------*/
 /*    Binary ports                                                     */

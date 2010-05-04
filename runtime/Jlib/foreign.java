@@ -4967,6 +4967,16 @@ public final class foreign
 	 p.pseudoeof = e;
       }
 
+   public static int BGL_INPUT_PORT_LENGTH(input_port p)
+      {
+	 return p.length;
+      }
+
+   public static void BGL_INPUT_PORT_LENGTH_SET(input_port p, int e)
+      {
+	 p.length = e;
+      }
+
    public static int INPUT_PORT_TOKENPOS(input_port p)
       {
 	 return INPUT_PORT_FILEPOS(p)-RGC_BUFFER_LENGTH(p);

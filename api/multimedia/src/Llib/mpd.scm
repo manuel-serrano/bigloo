@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Mar  1 08:19:40 2010 (serrano)                */
+;*    Last change :  Thu Mar 18 06:33:48 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -264,7 +264,6 @@
 (define (mpd-list-begin db backend ip op cmd)
    (let loop ((lines '()))
       (let ((line (read-line ip)))
-	 (tprint "list-begin line=" line)
 	 (unless (eof-object? line)
 	    (let ((c (get-line-command line)))
 	       (if (eq? c 'command_list_end)
