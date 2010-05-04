@@ -37,6 +37,7 @@ The section @ref{Files} describes functions for handling files.
 @deffn {library procedure} call-with-input-file string proc
 @deffnx {bigloo procedure} call-with-input-string string proc
 @deffnx {library procedure} call-with-output-file string proc
+@deffnx {library procedure} call-with-output-string proc
 These two procedures call @var{proc} with one argument, a port obtained
 by opening @var{string}.
 See @ref{Ports,,r5rs.info,R5RS}, for more details.

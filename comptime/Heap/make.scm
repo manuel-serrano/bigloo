@@ -67,6 +67,9 @@
 			    (global-import-set! g 'import))
 			   (else
 			    #unspecified))
+			;; shrink global to be sure that we do not save extra
+			;; information
+			(when (wide-object? g) (shrink! g))
 			;; and occurrence ones
 			(global-occurrence-set! g 0)
 			(global-library-set! g *heap-library*)))
@@ -137,6 +140,9 @@
 			    (global-import-set! g 'import))
 			   (else
 			    #unspecified))
+			;; shrink global to be sure that we do not save extra
+			;; information
+			(when (wide-object? g) (shrink! g))
 			;; and occurrence ones
 			(global-occurrence-set! g 0)
 			(global-library-set! g *heap-library*)))
