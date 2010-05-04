@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Mar 18 09:57:02 2010 (serrano)                */
+;*    Last change :  Mon Apr 19 15:59:06 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -339,7 +339,7 @@
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
 	    (call-with-output-file ::bstring ::procedure)
-            (call-with-output-string ::procedure)
+	    (call-with-output-string::bstring ::procedure)
 
 	    (inline input-port? ::obj)
 	    (inline input-string-port? ::obj)
@@ -477,9 +477,8 @@
 ;*---------------------------------------------------------------------*/
 (define (call-with-output-string proc)
    (let ((port (open-output-string)))
-      (unwind-protect
 	 (proc port)
-	 (close-output-port port))))
+      (close-output-port port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port? ...                                                  */
