@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Wed Apr 14 17:28:25 2010 (serrano)                */
+;*    Last change :  Thu Apr 15 15:53:01 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -106,11 +106,8 @@
 				     (format "`~a' expected, `~a' provided"
 					     tag item)
 				     name po))
-		   ((null? acc)
-		    (make tag attributes '()))
-		   ((null? (cdr acc))
-		    (make tag attributes (car acc)))
 		   (else
+		    (tprint "item=" item " tag=" tag " tags=" tags " " acc)
 		    (make tag attributes (reverse! acc)))))
 	       ((special? item)
 		(let ((nitem (make (special-tag item)
@@ -135,6 +132,7 @@
 	 ((not spec)
 	  (collect ignore '()))
 	 ((null? (cdr spec))
+	  (tprint "\nCOLLECT-TUP-TO: " tag)
 	  (make tag attributes '()))
 	 ((procedure? (cdr spec))
 	  (make tag attributes ((cdr spec) port)))
