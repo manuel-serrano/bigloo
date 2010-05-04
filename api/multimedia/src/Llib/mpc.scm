@@ -882,7 +882,7 @@
 ;*    music-volume-set! ::mpc ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! mpc::mpc vol)
-   (with-timed-lock (mpc-%mutex mpc)
+   (with-lock (mpc-%mutex mpc)
       (lambda ()
 	 (let ((cmd (string-append "setvol " (integer->string vol))))
 	    (mpc-cmd mpc cmd ok-parser)))))

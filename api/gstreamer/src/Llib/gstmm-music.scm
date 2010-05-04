@@ -483,34 +483,6 @@
 		   (gst-element-state-set! %pipeline 'paused)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    music-next ::gstmusic ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (music-next o::gstmusic)
-   (with-access::gstmusic o (%playlist %status)
-      (with-access::musicstatus %status (song playlistlength)
-	 (if (>=fx song (-fx playlistlength 1))
-	     (raise
-	      (instantiate::&io-error
-		 (proc '|music-next ::gstmusic|)
-		 (msg "No next soung")
-		 (obj (musicstatus-song %status))))
-	     (music-play o (+fx song 1))))))
-
-;*---------------------------------------------------------------------*/
-;*    music-prev ::gstmusic ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (music-prev o::gstmusic)
-   (with-access::gstmusic o (%playlist %status)
-      (with-access::musicstatus %status (song playlistlength)
-	 (if (or (<fx song 0) (=fx playlistlength 0))
-	     (raise
-	      (instantiate::&io-error
-		 (proc '|music-prev ::gstmusic|)
-		 (msg "No previous soung")
-		 (obj (musicstatus-song %status))))
-	     (music-play o (-fx song 1))))))
-
-;*---------------------------------------------------------------------*/
 ;*    music-position ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (music-position o)

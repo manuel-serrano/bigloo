@@ -108,8 +108,28 @@
 (define-generic (music-seek m::music p::obj . song))
 (define-generic (music-stop m::music))
 (define-generic (music-pause m::music))
-(define-generic (music-next m::music))
-(define-generic (music-prev m::music))
+
+(define-generic (music-next m::music)
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (song playlistlength)
+	 (if (>=fx song (-fx playlistlength 1))
+	     (raise
+	      (instantiate::&io-error
+		 (proc 'music-next)
+		 (msg "No next soung")
+		 (obj (musicstatus-song %status))))
+	     (music-play m (+fx song 1))))))
+
+(define-generic (music-prev m::music)
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (song playlistlength)
+	 (if (or (<fx song 0) (=fx playlistlength 0))
+	     (raise
+	      (instantiate::&io-error
+		 (proc 'music-prev)
+		 (msg "No previous soung")
+		 (obj (musicstatus-song %status))))
+	     (music-play m (-fx song 1))))))
 
 (define-generic (music-crossfade m::music sec::int))
 (define-generic (music-random-set! m::music flag::bool))
