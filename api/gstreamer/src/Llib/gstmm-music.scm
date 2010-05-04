@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Mar 24 08:57:51 2010 (serrano)                */
+;*    Last change :  Tue Mar 30 12:12:46 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -211,7 +211,6 @@
 			 (if (eq? nstate (musicstatus-state %status))
 			     (mutex-unlock! %mutex)
 			     (with-access::musicstatus %status (state
-								volume
 								song
 								songpos
 								songlength
@@ -220,15 +219,8 @@
 					" nstate=" nstate)
 				(set! state nstate)
 				(when (gst-element? (gstmusic-%pipeline o))
-				   (set! volume (music-volume-get o))
 				   (set! songpos (music-position o))
 				   (set! songlength (music-duration o)))
-				(when (and (eq? nstate 'play) (>=fx volume 0))
-				   ;; Some gstreamer player are wrong and
-				   ;; tend to forget the volume level. As a
-				   ;; workaround, we enforce it each time we
-				   ;; receive a play state change message.
-				   (music-volume-set! o volume))
 				(mutex-unlock! %mutex)
 				(when onstate (onstate %status))
 				;; at this moment we don't know if we will
@@ -236,9 +228,14 @@
 				(when (and onmeta (not meta) (eq? state 'play))
 				      (let* ((plist (music-playlist-get o))
 					     (file (list-ref plist song)))
-				      (if (file-exists? file)
-					  (onmeta (or (file-musictag file) file))
-					  (onmeta file))))))))
+					  (onmeta (or (file-musictag file) file))))))
+			 (with-access::musicstatus %status (volume)
+			    (when (and (eq? nstate 'play) (>=fx volume 0))
+			       ;; Some gstreamer player are wrong and
+			       ;; tend to forget the volume level. As a
+			       ;; workaround, we enforce it each time we
+			       ;; receive a play state change message.
+			       (music-volume-set! o volume)))))
 		     ((and (gst-message-tag? msg) onmeta)
 		      ;; tag found
 		      (tprint "meta: " (gst-message-tag-list msg))
