@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Mar 11 10:02:59 2010 (serrano)                */
+;*    Last change :  Thu Mar 11 12:02:08 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -161,13 +161,17 @@
 	    (unless %socket
 	       (with-handler
 		  (lambda (e)
-		     (tprint "init-socket! error (" _c_ "), count=" count " mpc=" mpc " cmd=" cmd " -> " e)
-		     (raise e))
+                     (tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+                     (raise (instantiate::&io-error
+                               (proc 'mpc-cmpd)
+                               (msg (format "Host \"~a:~a\" unreachable"
+                                            host port))
+                               (obj mpc))))
 		  (tprint "init-socket... (" _c_ ") cmd=" cmd)
 	       (init-socket! mpc))
 	       (with-handler
 		  (lambda (e)
-		     (tprint "ack-parser error (" _c_ "), count=" count " mpc=" mpc " cmd=" cmd " -> " e)
+                     (tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e)
 		     (raise e))
 		  (tprint "ack-parser...(" _c_ ") cmd=" cmd)
 		  (ack-parser mpc)))
@@ -177,7 +181,7 @@
 	       (tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date) " " (current-thread))
 	       (let ((v (with-handler
 			   (lambda (e)
-			      (tprint "exec error (" _c_ "), count=" count " mpc=" mpc " cmd=" cmd " -> " e)
+                              (tprint "exec error (" _c_ "), count=" count " cmd=" cmd " -> " e)
 		      (if (>fx count 0)
 			  (begin
 				     (set-error! mpc %status e)
@@ -603,6 +607,7 @@
 	    (unless (eq? state 'eof)
 	       (with-handler
 		  (lambda (e)
+		     (tprint "MUSIC-UPDATE-STATUS: set-error: " e)
 		     (set-error! mpc status e))
 	       ;; first ping to check if the connection is still open
 	       (let loop ((retry #t))
