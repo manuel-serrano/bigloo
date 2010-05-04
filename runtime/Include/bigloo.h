@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 22 08:42:44 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 09:56:19 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1311,6 +1311,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_EXITD_TOP_SET( _1 ) \
    BGL_ENV_EXITD_TOP_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
    
+#define BGL_EXITD_TOP_AS_OBJ() \
+   ((obj_t)BGL_EXITD_TOP())
+
 #define BGL_EXITD_VAL() \
    BGL_ENV_EXITD_VAL( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_EXITD_VAL_SET( _1 ) \
@@ -2454,8 +2457,8 @@ struct exitd {
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)
 
-#define BGL_EXITD_BOTTOMP( exitd ) \
-   ((exitd) == BFALSE)
+#define BGL_EXITD_BOTTOMP( extd ) \
+   ((extd) == 0L)
    
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Apr 22 07:33:55 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 09:47:45 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -171,7 +171,7 @@ make_dynamic_env() {
    env->dynamic_env_t.current_display = BUNSPEC;
 
    env->dynamic_env_t.exit_value = BUNSPEC;
-   env->dynamic_env_t.exitd_top = BFALSE;
+   env->dynamic_env_t.exitd_top = 0L;
    env->dynamic_env_t.exitd_val = MAKE_PAIR( BUNSPEC, BUNSPEC );
    SET_CAR( env->dynamic_env_t.exitd_val, MAKE_PAIR( BUNSPEC, BUNSPEC ) );
    env->dynamic_env_t.exitd_stamp = BINT( 0 );
