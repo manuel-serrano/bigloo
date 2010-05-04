@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sat Feb 20 07:29:39 2010 (serrano)                */
+;*    Last change :  Mon Mar  1 08:41:14 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -196,7 +196,7 @@
    (regular-grammar ()
       ((* blank)
        (ignore))
-      ((: (out " \r\n") (+ (out "\n")) #\Newline)
+      ((: (out " \r\n") (* (out "\n")) #\Newline)
        (the-substring 0 -1))
       (else
        (raise
@@ -720,6 +720,34 @@
 	       (set-error! mpc (mpc-%status mpc) e)
 	       0)
 	    (mpc-cmd mpc "status" music-time-parser)))))
+
+;*---------------------------------------------------------------------*/
+;*    music-meta ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-method (music-meta mpc::mpc)
+
+   (define mpc-meta-grammar
+      (regular-grammar ()
+	 ((bol (: (+ (out #\: #\Newline)) #\:))
+	  (let* ((k (the-substring 0 -1))
+		 (s (string->symbol (string-downcase! k)))
+		 (v (read/rp *mpc-string-grammar* (the-port))))
+	     (cons (cons s v) (ignore))))
+	 ("OK\n"
+	  '())))
+	 
+   (define (currentsong-parser mpc)
+      (let ((ip (socket-input (mpc-%socket mpc))))
+	 (read/rp mpc-meta-grammar ip)))
+   
+   (with-timed-lock (mpc-%mutex mpc)
+      (lambda ()
+	 (with-handler
+	    (lambda (e)
+	       (tprint "e=" e)
+	       (set-error! mpc (mpc-%status mpc) e)
+	       '())
+	    (mpc-cmd mpc "currentsong" currentsong-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::mpc ...                                             */

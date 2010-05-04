@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Sat Jan  3 19:51:22 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Sat Feb 27 07:45:36 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
 ;*=====================================================================*/
@@ -262,28 +262,6 @@
 	 (with-lock %mutex
 	    (lambda ()
 	       (read-playing o))))))
-
-;*---------------------------------------------------------------------*/
-;*    signal-onstate ...                                               */
-;*---------------------------------------------------------------------*/
-(define (signal-onstate onstate o)
-   (with-access::mplayer o (%status)
-      (with-access::musicstatus %status (songlength state)
-	 (if (=fx songlength 0)
-	     ;; this is actually a pause state...
-	     (onstate (duplicate::musicstatus %status (state 'pause)))
-	     (onstate %status)))))
-
-;*---------------------------------------------------------------------*/
-;*    signal-onmeta ...                                                */
-;*---------------------------------------------------------------------*/
-(define (signal-onmeta onmeta o)
-   (let ((plist (music-playlist-get o)))
-      (when (pair? plist)
-	 (let* ((index (musicstatus-song (mplayer-%status o)))
-		(file (list-ref plist index)))
-	    (tprint "SIGNAL-META file=" file " plist=" (length plist))
-	    (onmeta file plist)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status! ...                                         */

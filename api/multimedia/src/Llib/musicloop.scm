@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Sun Feb 14 11:41:05 2010 (serrano)                */
+;*    Last change :  Mon Mar  1 09:18:33 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-music-event-loop
 
-   (import __multimedia-music)
+   (import __multimedia-music
+	   __multimedia-id3)
    
    (export (generic music-event-loop ::music . ::obj)
 	   (generic music-event-loop-inner ::music ::obj ::obj ::obj ::obj)
@@ -65,6 +66,10 @@
       (with-access::musicstatus stat2 (volume)
 	 (not (eq? (musicstatus-volume stat1) volume))))
    
+   (define (newplaylist? stat2 stat1)
+      (with-access::musicstatus stat2 (playlistid)
+	 (not (eq? (musicstatus-playlistid stat1) playlistid))))
+   
    (with-access::music m (%loop-mutex %abort-loop %reset-loop frequency %status)
       (mutex-lock! %loop-mutex)
       (let loop ((stat1 (duplicate::musicstatus %status
@@ -77,16 +82,14 @@
 	       (music-update-status! m stat2)
 	       
 	       (when (newstate? stat2 stat1)
+		  
 		  ;; onstate
-		  (when onstate (onstate stat2))
+		  (when onstate
+		     (onstate stat2))
 		  
 		  ;; onmeta
-		  (with-access::musicstatus stat2 (song playlistlength)
-		     (when (>fx playlistlength 0)
-			(let ((plist (music-playlist-get m)))
-			   (if (and (>=fx song 0) (<fx song (length plist)))
-			       (onmeta (list-ref plist song) plist)
-			       (onmeta #f plist)))))
+		  (when (and onmeta (eq? (musicstatus-state stat2) 'play))
+		     (onmeta (music-get-meta stat2 m)))
 		  
 		  (when (and onerror (musicstatus-err stat2))
 		     ;; onerror
@@ -107,6 +110,35 @@
 	       
 	       ;; loop back
 	       (loop stat2 stat1))))))
+
+;*---------------------------------------------------------------------*/
+;*    music-get-meta ...                                               */
+;*---------------------------------------------------------------------*/
+(define (music-get-meta status m)
+   
+   (define (alist->id3 l)
+      
+      (define (get k l d)
+	 (let ((c (assq k l)))
+	    (if (pair? c) (cdr c) d)))
+      
+      (instantiate::id3
+	 (title (get 'title l "???"))
+	 (artist (get 'artist l "???"))
+	 (album (get 'album l "???"))
+	 (genre (get 'genre l "???"))
+	 (year (get 'year l 0))
+	 (comment (get 'comment l ""))
+	 (version (get 'version l "v1"))))
+   
+   (with-access::musicstatus status (song playlistlength)
+      (when (>fx playlistlength 0)
+	 (let ((plist (music-playlist-get m)))
+	    (if (and (>=fx song 0) (<fx song (length plist)))
+		(let ((f (list-ref plist song)))
+		   (if (file-exists? f)
+		       (or (file-musictag f) (alist->id3 (music-meta m)) f)
+		       (or (alist->id3 (music-meta m)) f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-reset! ::music ...                              */
@@ -146,7 +178,7 @@
 		(cadr c))))))
    
    (values (get-opt :onstate 1)
-	   (get-opt :onmeta 2)
+	   (get-opt :onmeta 1)
 	   (get-opt :onerror 1)
 	   (get-opt :onvolume 1)))
 
