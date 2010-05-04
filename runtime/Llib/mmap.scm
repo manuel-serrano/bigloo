@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Tue Mar 11 15:51:07 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Wed Mar 17 18:54:02 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
 ;*    -------------------------------------------------------------    */
@@ -44,6 +44,7 @@
    
    (extern  (macro $mmap?::bool (::obj) "BGL_MMAPP")
 	    (macro $mmap-open::mmap (::bstring ::bool ::bool) "bgl_open_mmap")
+	    (macro $string->mmap::mmap (::bstring ::bool ::bool) "bgl_string_to_mmap")
 	    (macro $mmap-close::obj (::mmap) "bgl_close_mmap")
 	    (macro $mmap-length::elong (::mmap) "BGL_MMAP_LENGTH")
 	    (macro $mmap-name::obj (::mmap) "BGL_MMAP_NAME")
@@ -62,6 +63,8 @@
 		       "BGL_MMAPP")
 	       (method static $mmap-open::mmap (::bstring ::bool ::bool)
 		       "bgl_open_mmap")
+	       (method static $string->mmap::mmap (::bstring ::bool ::bool)
+		       "bgl_string_to_mmap")
 	       (method static $mmap-close::obj (::mmap)
 		       "bgl_close_mmap")
 	       (method static $mmap-length::elong (::mmap)
@@ -89,6 +92,7 @@
    
    (export  (inline mmap?::bool ::obj)
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
+	    (string->mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (inline close-mmap ::mmap)
 	    (inline mmap-length::elong ::mmap)
 	    (inline mmap-read-position::elong ::mmap)
@@ -118,6 +122,12 @@
 (define (open-mmap name::bstring #!key (read #t) (write #t))
    ($mmap-open name read write))
 
+;*---------------------------------------------------------------------*/
+;*    string->mmap ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (string->mmap s::bstring #!key (read #t) (write #t))
+   ($string->mmap s read write))
+   
 ;*---------------------------------------------------------------------*/
 ;*    close-mmap ...                                                   */
 ;*---------------------------------------------------------------------*/

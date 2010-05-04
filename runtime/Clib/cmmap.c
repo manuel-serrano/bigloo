@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Wed Dec 17 13:31:18 2008 (serrano)                */
-/*    Copyright   :  2005-08 Manuel Serrano                            */
+/*    Last change :  Wed Mar 17 20:45:45 2010 (serrano)                */
+/*    Copyright   :  2005-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
 /*=====================================================================*/
@@ -114,6 +114,29 @@ bgl_open_mmap( obj_t name, bool_t r, bool_t w ) {
 #endif
 }
 
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_string_to_mmap ...                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_string_to_mmap( obj_t s, bool_t r, bool_t w ) {
+   obj_t mm;
+
+   mm = GC_MALLOC( BGL_MMAP_SIZE );
+
+   mm->mmap_t.header = MAKE_HEADER( MMAP_TYPE, 0 );
+   mm->mmap_t.name = s;
+   mm->mmap_t.length = STRING_LENGTH( s );
+   mm->mmap_t.fd = 0;
+   mm->mmap_t.map = BSTRING_TO_STRING( s );
+   mm->mmap_t.rp = 0;
+   mm->mmap_t.wp = 0;
+
+   return BREF( mm );
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_sync_mmap ...                                                */
@@ -142,7 +165,8 @@ bgl_close_mmap( obj_t mm ) {
       r1 = close( BGL_MMAP( mm ).fd );
    
 #if HAVE_MMAP
-   if( BGL_MMAP( mm ).map )
+   if( BGL_MMAP( mm ).map
+       && BGL_MMAP( mm ).map != BSTRING_TO_STRING( BGL_MMAP( mm ).name ) )
       r2 = munmap( BGL_MMAP( mm ).map, BGL_MMAP( mm ).length );
    else
       r2 = 0;

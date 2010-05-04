@@ -14,6 +14,10 @@ public class mmap extends obj {
    FileChannel fc;
    RandomAccessFile raf;
 
+   protected mmap() {
+      rp = 0; wp = 0;
+   }
+   
    public mmap( String resource ) {
       try {
 	 map = null;
@@ -110,6 +114,10 @@ public class mmap extends obj {
       } catch( IOException _ ) {
 	 return 0;
       }
+   }
+   
+   public void put( long i, byte c ) {
+      ;
    }
    
    public void write( final output_port  p ) {

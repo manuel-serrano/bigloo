@@ -6347,9 +6347,12 @@ namespace bigloo
 	 return new mmap( fname, r, w );
       }
 
+      public static mmap bgl_string_to_mmap( byte[] s, bool r, bool w ) {
+	 return new mmaps( s, r, w );
+      }
+      
       public static Object bgl_close_mmap( mmap o ) {
-	 o.br.Close();
-	 o.bw.Close();
+	 o.close();
 	 return BTRUE;
       }
 
@@ -6362,7 +6365,7 @@ namespace bigloo
       }
    
       public static Object BGL_MMAP_SET( mmap o, long i, int c ) {
-	 o.set( i, c );
+	 o.put( i, c );
 	 return o;
       }
       

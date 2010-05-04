@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Mar 11 09:38:45 2010 (serrano)                */
+/*    Last change :  Wed Mar 17 18:59:05 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2849,6 +2849,7 @@ BGL_RUNTIME_DECL bool_t (*bgl_condvar_signal)( obj_t );
 BGL_RUNTIME_DECL bool_t (*bgl_condvar_broadcast)( obj_t );
 
 BGL_RUNTIME_DECL obj_t bgl_open_mmap( obj_t, bool_t, bool_t );
+BGL_RUNTIME_DECL obj_t bgl_string_to_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DEF obj_t bgl_close_mmap( obj_t );
    
 #if !HAVE_MMAP   

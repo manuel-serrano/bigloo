@@ -6079,6 +6079,10 @@ public final class foreign
       }
    }
 
+   public static mmap bgl_string_to_mmap( byte[] s, boolean r, boolean w ) {
+      return new mmaps( s, r, w );
+   }
+
    public static Object bgl_close_mmap( mmap o ) {
       return o.close();
    }
@@ -6097,7 +6101,11 @@ public final class foreign
    }
    
    public static Object BGL_MMAP_SET( mmap o, long i, int c ) {
+      if( o.map == null ) {
+	 o.put( i, (byte)(c & 0xff) );
+      } else {
       o.map.put( (int)i, (byte)(c & 0xff) );
+      }
       return o;
    }
 

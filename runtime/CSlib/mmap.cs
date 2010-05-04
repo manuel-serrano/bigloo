@@ -8,6 +8,10 @@ namespace bigloo {
       public readonly long len;
       public long rp, wp;
 
+      protected mmap( byte[] s ) {
+	 name = s;
+      }
+      
       public mmap( byte[] fname, bool r, bool w ) {
 	 String s = foreign.newstring( fname );
 	 br = r ? new FileStream( s, FileMode.Open, FileAccess.Read, FileShare.ReadWrite ) : null;
@@ -18,7 +22,7 @@ namespace bigloo {
 	 wp = 0;
       }
 
-      public int get( long i ) {
+      public virtual int get( long i ) {
 	 if( br != null ) {
 	    if( i != rp ) {
 	       br.Seek( (long)i, 0 );
@@ -32,7 +36,7 @@ namespace bigloo {
 	 }
       }
 
-      public void set( long i, int c ) {
+      public virtual void put( long i, int c ) {
 	 if( bw != null ) {
 	    if( i != wp ) {
 	       bw.Seek( (long)i, 0 );
@@ -52,6 +56,11 @@ namespace bigloo {
 	 }
       }
 
+      public virtual void close() {
+	 if( br !=null ) br.Close();
+	 if( bw !=null ) bw.Close();
+      }
+      
       public override void write( output_port p ) {
 	 p.write( "#<mmap:" + name + ":" + len + ">" );
       }

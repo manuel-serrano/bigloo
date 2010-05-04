@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Mar 11 17:17:22 2010 (serrano)                */
+;*    Last change :  Wed Mar 17 13:42:10 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -161,17 +161,16 @@
 	    (unless %socket
 	       (with-handler
 		  (lambda (e)
-                     (tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e)
-                     (raise (instantiate::&io-error
-                               (proc 'mpc-cmpd)
-                               (msg (format "Host \"~a:~a\" unreachable"
-                                            host port))
-                               (obj mpc))))
-		  (tprint "init-socket... (" _c_ ") cmd=" cmd)
+		     (tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     (raise (instantiate::&io-error
+			       (proc 'mpc-cmpd)
+			       (msg (format "~a:~a unreachable" host port))
+			       (obj mpc))))
+		  '(tprint "init-socket... (" _c_ ") cmd=" cmd)
 	       (init-socket! mpc))
 	       (with-handler
 		  (lambda (e)
-                     (tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     '(tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e)
 		     (raise e))
 		  (tprint "ack-parser...(" _c_ ") cmd=" cmd)
 		  (ack-parser mpc)))
@@ -181,14 +180,14 @@
 	       (tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date) " " (current-thread))
 	       (let ((v (with-handler
 			   (lambda (e)
-                              (tprint "exec error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+			       '(tprint "exec error (" _c_ "), count=" count " cmd=" cmd " -> " e)
 		      (if (>fx count 0)
 			  (begin
 				     (set-error! mpc %status e)
 			     (retry (-fx count 1)))
 				  (raise e)))
 			   (exec mpc cmd))))
-		  (tprint "parser...(" _c_ ") cmd=" cmd)
+		  '(tprint "parser...(" _c_ ") cmd=" cmd)
 		  (parser mpc)))))))
 
 (define _c_ 0)

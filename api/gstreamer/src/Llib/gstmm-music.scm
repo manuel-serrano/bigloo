@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Mar 15 11:20:49 2010 (serrano)                */
+;*    Last change :  Wed Mar 17 19:37:49 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -179,7 +179,6 @@
 			 ((not (=fx vol nvol))
 			  (when onvol (onvol nvol)))
 			 ((not (=fx pid npid))
-			  (tprint "gstmm playlistid changed, pid=" pid " npid=" npid)
 			  (when onstate (onstate %status)))
 			  (sleep 10))
 		      #f)

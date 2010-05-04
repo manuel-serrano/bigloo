@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Dec  7 16:14:03 2009 (serrano)                */
-#*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Mar 17 19:27:36 2010 (serrano)                */
+#*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -152,7 +152,7 @@ JLIB		= foreign buffer configure stackwriter\
                   process flusher stack_trace dlopen \
                   bucs2 ucs2string bgldynamic date os \
                   input_procedure_port input_gzip_port input_resource_port \
-                  mutex condvar mmap \
+                  mutex condvar mmap mmaps \
                   hvector \
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
@@ -187,7 +187,7 @@ CSLIB		= foreign buffer configure stackwriter\
 		  bucs2 ucs2string bgldynamic date \
 		  output_stream_port output_socket_port os \
 		  input_procedure_port input_gzip_port \
-                  mutex condvar mmap \
+                  mutex condvar mmap mmaps \
                   hvector \
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
