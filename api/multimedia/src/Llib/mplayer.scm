@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Sat Feb 27 07:45:36 2010 (serrano)                */
+;*    Last change :  Wed Mar 10 07:50:39 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
@@ -19,6 +19,7 @@
 	   __multimedia-music-event-loop)
    
    (export (class mplayer::musicproc
+	      (frequency::long (default 2000000))
 	      (path::bstring read-only (default "mplayer"))
 	      (args::pair-nil read-only (default '("-vo" "null" "-quiet" "-slave" "-idle")))
 	      (ao::obj read-only (default #unspecified))

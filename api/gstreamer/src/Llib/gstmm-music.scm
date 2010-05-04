@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Mar  1 13:39:19 2010 (serrano)                */
+;*    Last change :  Wed Mar 10 07:52:21 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -14,11 +14,11 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __gstreamer_multimedia_music
-   
+
    (library multimedia pthread)
-   
+
    (include "gst.sch")
-   
+
    (import  __gstreamer_gstreamer
 	    __gstreamer_gstobject
 	    __gstreamer_gstelement
@@ -33,9 +33,9 @@
 	    __gstreamer_gstpipeline
 	    __gstreamer_gstelement
 	    __gstreamer_gstmessage)
-   
+
    (export  (class gstmusic::music
-	       
+
 	       (%audiosrc (default #unspecified))
 	       (%audiosink (default #unspecified))
 	       (%audiomixer (default #unspecified))
@@ -43,7 +43,7 @@
 	       (%audioconvert (default #unspecified))
 	       (%audioresample (default #unspecified))
 	       (%pipeline (default #f))
-	       
+
 	       (%playlist::pair-nil (default '()))
 	       (%meta::pair-nil (default '()))
 	       (%tag::obj (default '())))))
@@ -107,7 +107,7 @@
 		  (error '|music-init ::gstmusic|
 			   "Cannot create pipeline"
 			   o))
-	       
+
 	       (gst-bin-add! %pipeline
 			     %audiosrc
 			     %audiodecode
@@ -115,14 +115,14 @@
 			     %audioresample
 			     %audiomixer
 			     %audiosink)
-	       
+
 	       (gst-element-link! %audiosrc
 				  %audiodecode)
 	       (gst-element-link! %audioconvert
 				  %audioresample
 				  %audiomixer
 				  %audiosink)
-	       
+
 	       (gst-object-connect! %audiodecode
 				    "pad-added"
 				    (lambda (el pad)
@@ -152,7 +152,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-inner ::gstmusic ...                            */
 ;*---------------------------------------------------------------------*/
-(define-method (music-event-loop-inner o::gstmusic onstate onmeta onerror onvol)
+(define-method (music-event-loop-inner o::gstmusic frequency::long onstate onmeta onerror onvol)
    (with-access::gstmusic o (%mutex %loop-mutex %pipeline %status %abort-loop)
       (when %pipeline
 	 (mutex-lock! %loop-mutex)
@@ -179,6 +179,7 @@
 			 ((not (=fx vol nvol))
 			  (when onvol (onvol nvol)))
 			 ((not (=fx pid npid))
+			  (tprint "gstmm playlistid changed, pid=" pid " npid=" npid)
 			  (when onstate (onstate %status)))
 			  (sleep 10))
 		      #f)
@@ -214,6 +215,8 @@
 								songpos
 								songlength
 								playlistid)
+				(tprint "gstmm state changed state=" state
+					" nstate=" nstate)
 				(set! state nstate)
 				(when (gst-element? (gstmusic-%pipeline o))
 				   (set! volume (music-volume-get o))
@@ -272,7 +275,7 @@
 		      ;; refresh
 		      (when onstate (onstate %status))))
 
-		  
+
 		  (unless %abort-loop
 		     ;; wait to give a chance to other threads
 		     ;; to acquire the lock
@@ -336,7 +339,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-reset! o::gstmusic)
    (music-close o))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-get ::gstmusic ...                                */
 ;*---------------------------------------------------------------------*/
@@ -469,7 +472,7 @@
 	    (when (gst-element? %pipeline)
 	       (gst-element-state-set! %pipeline 'null)
 	       (gst-element-state-set! %pipeline 'ready))))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::gstmusic ...                                       */
 ;*---------------------------------------------------------------------*/

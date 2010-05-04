@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Mar  1 09:18:33 2010 (serrano)                */
+;*    Last change :  Wed Mar 10 07:49:47 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -18,7 +18,7 @@
 	   __multimedia-id3)
    
    (export (generic music-event-loop ::music . ::obj)
-	   (generic music-event-loop-inner ::music ::obj ::obj ::obj ::obj)
+	   (generic music-event-loop-inner ::music ::long ::obj ::obj ::obj ::obj)
 	   (generic music-event-loop-reset! ::music)
 	   (generic music-event-loop-abort! ::music)
 
@@ -28,13 +28,12 @@
 ;*    music-event-loop ::music ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-generic (music-event-loop o::music . obj)
-   (with-access::music o (frequency %loop-mutex %loop-condv
-				    %status %abort-loop %reset-loop)
+   (with-access::music o (%loop-mutex %loop-condv %status %abort-loop %reset-loop)
       (mutex-lock! %loop-mutex)
       (set! %abort-loop #f)
       (set! %reset-loop #f)
       (mutex-unlock! %loop-mutex)
-      (multiple-value-bind (onstate onmeta onerror onvol)
+      (multiple-value-bind (onstate onmeta onerror onvol frequency)
 	 (music-event-loop-parse-opt obj)
 	 ;; setup state
 	 (with-access::musicstatus %status (state volume)
@@ -43,7 +42,7 @@
 	 ;; enter the loop
 	 (unwind-protect
 	    ;; the event loop is protected against timeout errors
-	    (music-event-loop-inner o onstate onmeta onerror onvol)
+	    (music-event-loop-inner o (or frequency 2000000) onstate onmeta onerror onvol)
 	    ;; signal that the loop is done
 	    (begin
 	       (mutex-lock! %loop-mutex)
@@ -54,7 +53,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-inner ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-generic (music-event-loop-inner m::music onstate onmeta onerror onvol)
+(define-generic (music-event-loop-inner m::music frequency onstate onmeta onerror onvol)
    
    (define (newstate? stat2 stat1)
       (with-access::musicstatus stat2 (state song playlistid)
@@ -70,7 +69,7 @@
       (with-access::musicstatus stat2 (playlistid)
 	 (not (eq? (musicstatus-playlistid stat1) playlistid))))
    
-   (with-access::music m (%loop-mutex %abort-loop %reset-loop frequency %status)
+   (with-access::music m (%loop-mutex %abort-loop %reset-loop %status)
       (mutex-lock! %loop-mutex)
       (let loop ((stat1 (duplicate::musicstatus %status
 			   (state 'init)))
