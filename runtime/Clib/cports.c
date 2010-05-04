@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Feb  9 18:11:33 2010 (serrano)                */
+/*    Last change :  Sat Feb 20 06:59:39 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -529,7 +529,7 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 /*    obj_t                                                            */
 /*    output_flush ...                                                 */
 /*    -------------------------------------------------------------    */
-/*    Reads automatically invoke a flush on stdout.                    */
+/*    Read automatically invokes a flush on stdout.                    */
 /*    In order to avoid locks during writes we need to handle the      */
 /*    flushes differently for stdout.                                  */
 /*    Invariant: stdout-buffer is already flushed up to stdout_from.   */

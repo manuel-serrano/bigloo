@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sun Feb 14 11:40:37 2010 (serrano)                */
+;*    Last change :  Sat Feb 20 07:13:32 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -568,9 +568,6 @@
    
    (define (status-parser mpc)
       (with-access::mpc mpc (%socket)
-;* 	 (tprint "status-parse: mutex: " (mpc-%mutex mpc)              */
-;* 		 "=" (mutex-state (mpc-%mutex mpc))                    */
-;* 		 " thread=" (current-thread))                          */
 	 ;; parse the result of the status command
 	 (let ((status (parse (socket-input %socket) status)))
 	    (with-access::musicstatus status (state)
@@ -590,7 +587,16 @@
 (define-method (music-update-status! mpc::mpc status::musicstatus)
    (with-lock (mpc-%mutex mpc)
       (lambda ()
-	 (music-update-status-sans-lock! mpc status))))
+	 (with-access::musicstatus status (state)
+	    (unless (eq? state 'eof)
+	       ;; first ping to check if the connection is still open
+	       (let loop ((retry #t))
+		  (cond
+		     ((mpc-cmd mpc "ping" ok-parser)
+		      (music-update-status-sans-lock! mpc status))
+		     (retry
+		      (music-reset-error! mpc)
+		      (loop #f)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-status ...                                                 */
