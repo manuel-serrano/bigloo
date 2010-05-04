@@ -341,7 +341,6 @@
 	    (let ((s (if (and (string? prefix) (substring-at? s prefix 0))
 			 (substring s (string-length prefix) (string-length s))
 			 s)))
-	       (tprint "music-playlist-add ::mpc s=" s)
 	       (mpc-cmd mpc (string-append "add \"" s "\"") ok-parser))))))
 
 ;*---------------------------------------------------------------------*/
@@ -358,7 +357,6 @@
 (define-method (music-playlist-clear! mpc::mpc)
    (with-timed-lock (mpc-%mutex mpc)
       (lambda ()
-	 (tprint "***** music-playlist-clear ::mpc")
 	 (mpc-cmd mpc "clear" ok-parser))))
 
 ;*---------------------------------------------------------------------*/

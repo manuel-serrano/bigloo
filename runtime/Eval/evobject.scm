@@ -354,7 +354,8 @@
 	 (class-field-default-value field)
 	 (when (class-field-virtual? field)
 	    (class-field-accessor field))
-	 (when (class-field-virtual? field)
+	 (when (and (class-field-virtual? field)
+		    (class-field-mutable? field))
 	    (class-field-mutator field))
 	 #f
 	 (class-field-info field)))
