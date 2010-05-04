@@ -22,7 +22,10 @@ export DROID_ROOT=$ANDSRC
 export DROID_TARGET=5
 
 # bigloo/gc
+export BS_BIGLOO=$HOME/local/soft/bigloo-android
 export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BS_BIGLOO/lib
 
 if [ "$1" == "configure" ]; then
    ./configure \
@@ -30,7 +33,7 @@ if [ "$1" == "configure" ]; then
       --stack-check=no \
       --disable-srfi27 \
       --gccustomversion=gc-7.2alpha4 \
-      --build-bindir=$HOME/local/bin \
+      --build-bindir=$BS_BIGLOO/bin \
       --hostsh=arch/android/android-target.sh
    shift
       # --build-bindir=$HOME/local/soft/bigloo3.3b/bin \
