@@ -5264,12 +5264,12 @@ namespace bigloo
 	    p.pseudoeof = e;
 	 }
 
-      public static int BGL_INPUT_PORT_LENGTH( input_port p )
+      public static long BGL_INPUT_PORT_LENGTH( input_port p )
 	 {
 	    return p.length;
 	 }
 
-      public static void BGL_INPUT_PORT_LENGTH_SET( input_port p, int e )
+      public static void BGL_INPUT_PORT_LENGTH_SET( input_port p, long e )
 	 {
 	    p.length = e;
 	 }

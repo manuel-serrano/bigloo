@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Mar 17 20:42:54 2010 (serrano)                */
+;*    Last change :  Thu Mar 18 09:58:02 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -762,5 +762,3 @@
       (else
        (error/errno $errno-io-file-not-found-error
 		    'file-musictag "Can't find file" path))))
-
-

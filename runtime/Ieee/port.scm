@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Mar 18 07:27:34 2010 (serrano)                */
+;*    Last change :  Thu Mar 18 09:57:02 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -108,9 +108,9 @@
 		   "INPUT_PORT_FILLBARRIER_SET")
 	    (macro $input-port-size::long (::input-port)
 		   "BGL_INPUT_PORT_LENGTH")
-	    (macro $input-port-length-set!::void (::input-port ::long)
+	    (macro $input-port-length-set!::void (::input-port ::elong)
 		   "BGL_INPUT_PORT_LENGTH_SET")
-	    (macro c-input-port-last-token-position::long (::input-port)
+	    (macro c-input-port-last-token-position::elong (::input-port)
 		   "INPUT_PORT_TOKENPOS")
 	    (macro c-input-port-bufsiz::int (::input-port)
 		   "BGL_INPUT_PORT_BUFSIZ")
@@ -280,9 +280,9 @@
 	       (method static $input-port-fill-barrier-set!::void (::input-port ::long)
 		       "INPUT_PORT_FILLBARRIER_SET")
 
-	       (method static $input-port-length::long (::input-port)
+	       (method static $input-port-length::elong (::input-port)
 		       "BGL_INPUT_PORT_LENGTH")
-	       (method static $input-port-length-set!::void (::input-port ::long)
+	       (method static $input-port-length-set!::void (::input-port ::elong)
 		       "BGL_INPUT_PORT_LENGTH_SET")
 
 	       (method static c-input-port-last-token-position::long (::input-port)
@@ -878,8 +878,10 @@
 		      :header '()))
 	     (ip (socket-input sock))
 	     (op (socket-output sock)))
+	 (input-port-close-hook-set! ip (lambda (ip) (socket-close sock)))
 	 (with-handler
 	    (lambda (e)
+	       (socket-close sock)
 	       (if (&http-redirection? e)
 		   (open-input-file (&http-redirection-url e) bufinfo)
 		   (raise e)))
