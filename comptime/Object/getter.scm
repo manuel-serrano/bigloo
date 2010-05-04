@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon May  7 15:26:58 2007 (serrano)                */
-;*    Copyright   :  1996-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 23 21:46:45 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
 ;*    -------------------------------------------------------------    */
@@ -346,7 +346,6 @@
 	  (slot-set!-id  (symbol-append slot-ref-id '-set!))
 	  (slot-set!-tid (symbol-append slot-set!-id '::obj))
 	  (tid           (make-typed-formal (type-id class)))
-	  (holder        (tclass-holder class))
 	  (v-id          (mark-symbol-non-user! (gensym 'val)))
 	  (obj           (mark-symbol-non-user! (gensym 'obj)))
 	  (v-tid         (make-typed-ident v-id (type-id (slot-type slot))))

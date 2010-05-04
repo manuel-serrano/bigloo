@@ -6,7 +6,8 @@ namespace bigloo
   {
     public readonly String name;
     public int filepos = 0;
-    public int pseudoeof = 0;
+    public int pseudoeof = -1;
+    public long length = -1;
     public int bufsiz;
     public bool eof = false;
     public bool other_eof = false;

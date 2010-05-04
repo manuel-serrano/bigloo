@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  1 17:44:12 1992                          */
-;*    Last change :  Thu Apr  3 11:30:55 2003 (serrano)                */
+;*    Last change :  Mon Mar 29 15:46:09 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test la facon de gerer les appels recursifs terminaux.        */
 ;*---------------------------------------------------------------------*/
@@ -22,7 +22,7 @@
 ;*---------------------------------------------------------------------*/
 (define (test1)
    (letrec ((loop (lambda (x y)
-		     (if (eq? x 0)
+		     (if (=fx x 0)
 			 y
 			 (loop (- x 1) x)))))
       (loop 2 2)))

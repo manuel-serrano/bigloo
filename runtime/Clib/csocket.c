@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Jan 11 08:58:41 2010 (serrano)                */
+/*    Last change :  Tue Mar 16 17:30:27 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -199,12 +199,12 @@ socket_timeout_error( obj_t hostname, int port ) {
 /*    client_socket_error ...                                          */
 /*---------------------------------------------------------------------*/
 static void
-client_socket_error( obj_t hostname, int port, char *msg ) {
+client_socket_error( obj_t hostname, int port, char *msg, int err ) {
    char buffer1[ 512 ];
    char buffer2[ 512 ];
 
    if( msg ) sprintf( buffer1, "%s, ", msg );
-   sprintf( buffer1, "%s (%d)", strerror( errno ), errno );
+   sprintf( buffer1, "%s (%d)", strerror( err ), err );
 
    if( port >= 0 ) {
       sprintf( buffer2, "%s:%d", BSTRING_TO_STRING( hostname ), port );
@@ -1016,7 +1016,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 
    /* Get a socket */
    if( BAD_SOCKET( s = (int)socket( AF_INET, SOCK_STREAM, 0 ) ) ) {
-      client_socket_error( hostname, port, "cannot create socket" );
+      client_socket_error( hostname, port, "cannot create socket", errno );
    }
 
    /* Setup a connect address */
@@ -1063,7 +1063,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	       invalidate_hostbyname( hostname );
 	       
 	       close( s );
-	       client_socket_error( hostname, port, "Connection failed" );
+	       client_socket_error( hostname, port, "Connection failed", errno );
 	    } else {
 	       int len = sizeof( int );
 	       int r = getsockopt( s, SOL_SOCKET, SO_ERROR, (void *)&err, (socklen_t *)&len );
@@ -1072,7 +1072,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 		  /* we have experienced a failure so we */
 		  /* invalidate the host name entry */
 		  close( s );
-		  client_socket_error( hostname, port, 0 );
+		  client_socket_error( hostname, port, 0, err );
 	       }
 	    }
 	 }
@@ -1083,7 +1083,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	 invalidate_hostbyname( hostname );
       
 	 close( s );
-	 client_socket_error( hostname, port, "Connection failed" );
+	 client_socket_error( hostname, port, "Connection failed", errno );
       }
 #else
       /* we have experienced a failure so we */
@@ -1091,7 +1091,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
       invalidate_hostbyname( hostname );
       
       close( s );
-      client_socket_error( hostname, port, "Connection failed" );
+      client_socket_error( hostname, port, "Connection failed", errno );
 #endif
    }
 
@@ -1125,7 +1125,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
 
    /* Get a socket */
    if( BAD_SOCKET( s = (int)socket( AF_UNIX, SOCK_STREAM, 0 ) ) ) {
-      client_socket_error( path, -1, "cannot create socket" );
+      client_socket_error( path, -1, "cannot create socket", errno );
    }
 
 #if( BGL_HAVE_FCNTL )
@@ -1142,7 +1142,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    
    if( err < 0 ) {
       close( s );
-      client_socket_error( path, -1, "Connection failed" );
+      client_socket_error( path, -1, "Connection failed", errno );
    }
 
    /* Create a new Scheme socket object */
@@ -1161,7 +1161,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    
    return BREF( a_socket );
 #else
-   client_socket_error( path, -1, "unix socket domain not supported" );
+   client_socket_error( path, -1, "unix socket domain not supported", errno );
 #endif   
 }
 

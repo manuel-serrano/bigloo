@@ -2503,109 +2503,140 @@ namespace bigloo
 	    int                              len= src.Length;
 	    int                              size= 0;
 
-	    for ( int i= 1 ; i < len ; ++i, ++size )
-	       if (src[i] == '\\') 
-	       {
+	 for (int i = 1; i < len; ++i, ++size) {
+	    if (src[i] == '\\') {
 		  if (   (i+3 < len)
 			 && isdigit( src[i+1] )
-			 && isdigit( src[i+2] )
-			 && isdigit( src[i+3] ))
+		   && isdigit(src[i + 2]) && isdigit(src[i + 3]))
 		     i+= 3;
 		  else
 		     i+= 1;
 	       }
+	 }
+	 int utf8shrink = 0;
 
-	    byte[]                           dst= new byte[size];
+	 byte[] result = new byte[size];
 	    int                              j= 0;
 
-	    for ( int i= 1 ; i < len ; ++i, ++j )
-	    {
-	       if (src[i] != '\\')
-		  dst[j]= src[i];
-	       else 
-	       {
+	 for (int i = 1; i < len; ++i, ++j) {
+	    if (src[i] != '\\') {
+	       result[j] = src[i];
+	    } else {
 		  byte                         cn= src[++i];
 
-		  switch( cn ) 
-		  {
+	       switch (cn) {
 		     case (byte)'\0':
-			dst[j]= (byte)'\\';
+		     result[j] = (byte) '\\';
 		     break;
 		     case (byte)'n' : 
-			dst[j]= (byte)'\n';
+		     result[j] = (byte) '\n';
 		     break;
 		     case (byte)'t':
-			dst[j]= (byte)'\t';
+		     result[j] = (byte) '\t';
 		     break;
 		     case (byte)'b': 
-			dst[j]= (byte)'\b';
+		     result[j] = (byte) '\b';
 		     break;
 		     case (byte)'r': 
-			dst[j]= (byte)'\r';
+		     result[j] = (byte) '\r';
 		     break;
 		     case (byte)'f': 
-			dst[j]= (byte)'\f';
+		     result[j] = (byte) '\f';
 		     break;
 		     case (byte)'v': 
-			dst[j]= (byte)11;
+		     result[j] = (byte) 11;
 		     break;
-		     default: 
-		     {
-			if (i+2 < len) 
-			{
+		  default: {
+		     if (i + 2 < len) {
 			   byte                   s0= src[i];
 			   byte                   s1= src[i+1];
 			   byte                   s2= src[i+2];
 
-			   if (isdigit( s0 ) && isdigit( s1 ) && isdigit( s2 )) 
-			   {
-			      dst[j]= (byte)(  (s0 - (byte)'0')*64
-					       + (s1 - (byte)'0')*8
-					       + (s2 - (byte)'0'));
+			if (isdigit(s0) && isdigit(s1) && isdigit(s2)) {
+			   result[j] = (byte) (64 * ((int) (s0 - '0'))
+					       + 8 * ((int) (s1 - '0'))
+					       + ((int) (s2 - '0')));
 			      i+= 2;
-			   } 
-			   else 
-			   {
-			      if (   ((s0 == (byte)'x') || (s0 == (byte)'X'))
-				     && (   isdigit( s1 )
-					    || (((byte)'a' <= s1) && (s1 <= (byte)'f'))
-					    || (((byte)'A' <= s1) && (s1 <= (byte)'F')))
-				     && (   isdigit( s2 )
-					    || (((byte)'a' <= s2) && (s2 <= (byte)'f'))
-					    || (((byte)'A' <= s2) && (s2 <= (byte)'F')))) 
-			      {
-				 byte               n1= (byte)(isdigit( s1 )
-							       ? (s1 - (byte)'0')
-							       : 10 + (((byte)'a' <= s1)
-								       ? (s1 - (byte)'a')
-								       : (s1 - (byte)'A')));
-				 byte               n2= (byte)(isdigit( s2 )
-							       ? (s2 - (byte)'0')
-							       : 10 + (((byte)'a' <= s2)
-								       ? (s2 - (byte)'a')
-								       : (s2 - (byte)'A')));
+			} else {
+			   if (((s0 == (byte) 'x') || (s0 == (byte) 'X'))
+			       && isxdigit(s1)
+			       && isxdigit(s2) ) {
+			      byte n1 = xdigit_to_byte( s1 );
+			      byte n2 = xdigit_to_byte( s2 );
 
-				 dst[j]= (byte)(n1*16 + n2);
-				 i+= 2;
-			      } 
-			      else 
-				 dst[j] = cn;
+			      result[j] = (byte) (n1 * 16 + n2);
+			      i += 2;
+			   } else {
+			      if (i + 4 < len) {
+				 byte s3 = src[i + 3];
+				 byte s4 = src[i + 4];
+				 
+				 if( ((s0 == (byte) 'u') || (s0 == (byte) 'U'))
+				      && isxdigit(s1)
+				      && isxdigit(s2) 
+				      && isxdigit(s3) 
+				      && isxdigit(s4) ) {
+				    byte n1 = xdigit_to_byte( s1 );
+				    byte n2 = xdigit_to_byte( s2 );
+				    byte n3 = xdigit_to_byte( s3 );
+				    byte n4 = xdigit_to_byte( s4 );
+				    char u =
+				       (char)(n1*4096 + n2*512 + n3*16 + n4);
+				    char[] ucs2 = make_ucs2_string( 1, u );
+				    byte[] utf8 = ucs2_string_to_utf8_string( ucs2 );
+
+				    bcopy(utf8, 0, result, j, STRING_LENGTH( utf8 ));
+				    
+				    i += 4;
+				    utf8shrink += (5 - STRING_LENGTH( utf8 ));
+				    j += (STRING_LENGTH( utf8 ) - 1);
+				 } else {
+				    result[j] = cn;
+				 }
+			      } else {
+				 result[j] = cn;
+			      }
 			   }
-			} 
-			else
-			   dst[j] = cn;
+			}
+		     } else {
+			result[j] = cn;
 		     }
-		     break;
 		  }
+		  break;
 	       }
 	    }
-
-	    return dst;
 	 }
+
+	 if( utf8shrink > 0 ) {
+	    byte[] res = new byte[ size - utf8shrink ];
+	    bcopy( result, 0, res, 0, size - utf8shrink );
+	    return res;
+	 } else {
+	    return result;
+	 }
+      }
 
       static bool isdigit( byte  cn )
 	 {
 	    return(((byte)'0' <= cn) && (cn <= (byte)'9'));
+	 }
+
+      static bool isxdigit( byte b )
+	 {
+	    if(isdigit( b ) ) {
+	       return true;
+	    } else if( b <= (byte)'F' ) {
+	       return b >= (byte)'A';
+	    } else return (b <= (byte)'f') && (b >= (byte)'a');
+	 }
+
+      private static byte xdigit_to_byte( byte b ) {
+	 if( isdigit(b) )
+	    return (byte)(b - (byte)'0');
+	 else if( (byte) 'a' <= b )
+	    return (byte)(10 + (b - (byte) 'a'));
+			   else 
+	    return (byte)(10 + (b - (byte) 'A'));
 	 }
 
       public static byte[] escape_scheme_string( byte[]  src )
@@ -4286,6 +4317,10 @@ namespace bigloo
 	    return bgldynamic.abgldynamic.get().exitd_top;
 	 }
 
+      public static bool BGL_EXITD_BOTTOMP( Object o ) {
+	 return o == BFALSE;
+      }
+      
       public static Object BGL_EXITD_TOP_SET( Object  o )
 	 {
 	    bgldynamic.abgldynamic.get().exitd_top= o;
@@ -4482,11 +4517,6 @@ namespace bigloo
       public static Object BGL_ENV_POP_TRACE( bgldynamic env ) 
 	 {
 	    return stack_trace.pop_trace();
-	 }
-
-      public static Object dump_trace_stack( output_port p, int depth )
-	 {
-	    return stack_trace.dump( p, depth );
 	 }
 
       public static Object get_trace_stack( int depth )
@@ -5262,6 +5292,16 @@ namespace bigloo
       public static void INPUT_PORT_FILLBARRIER_SET( input_port p, int e )
 	 {
 	    p.pseudoeof = e;
+	 }
+
+      public static long BGL_INPUT_PORT_LENGTH( input_port p )
+	 {
+	    return p.length;
+	 }
+
+      public static void BGL_INPUT_PORT_LENGTH_SET( input_port p, long e )
+	 {
+	    p.length = e;
 	 }
 
       public static int OUTPUT_PORT_FILEPOS( output_port p )
@@ -6347,9 +6387,12 @@ namespace bigloo
 	 return new mmap( fname, r, w );
       }
 
+      public static mmap bgl_string_to_mmap( byte[] s, bool r, bool w ) {
+	 return new mmaps( s, r, w );
+      }
+      
       public static Object bgl_close_mmap( mmap o ) {
-	 o.br.Close();
-	 o.bw.Close();
+	 o.close();
 	 return BTRUE;
       }
 
@@ -6362,7 +6405,7 @@ namespace bigloo
       }
    
       public static Object BGL_MMAP_SET( mmap o, long i, int c ) {
-	 o.set( i, c );
+	 o.put( i, c );
 	 return o;
       }
       

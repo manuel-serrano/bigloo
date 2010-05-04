@@ -334,10 +334,8 @@ MPC can be programmed with Bigloo.
 			(with-access::musicstatus status (state song volume)
 			   (print "state   : " state)
 			   (print "song    : " song)))
-	    :onmeta (lambda (meta playlist)
-		       (print "meta    : " meta)
-		       (print "playlist: ")
-		       (for-each (lambda (s) (print "        " s)) playlist))
+	    :onmeta (lambda (meta)
+		       (print "meta    : " meta))
 	    :onvolume (lambda (volume)
 		       (print "volume  : " volume))))))
 @end smalllisp
@@ -533,7 +531,7 @@ of a player changes. The keyword arguments are:
 @itemize @bullet
 @item @code{:onstate}, a function of one parameter. When the player state 
 changes, this function is called with an instance of @code{musicstatus} 
-as actual parameter.
+as first actual parameter.
 @item @code{:onmeta}, a function of two parameters. This function is
 called when a metadata is detected in the music currently played.
 @item @code{:onerror}, a function of one parameter, invoked when an error

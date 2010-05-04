@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Mon Dec 14 11:22:13 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Thu Apr 29 18:29:15 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
 ;*=====================================================================*/
@@ -16,7 +16,10 @@
    
    (import __web_xml)
    
-   (export (webdav-directory->path-list::pair-nil ::bstring
+   (export (class &webdav-access-control-exception::&access-control-exception
+	      (header::pair-nil read-only))
+
+	   (webdav-directory->path-list::pair-nil ::bstring
 						  #!key (timeout 0) (proxy #f))
 	   (webdav-directory->prop-list::pair-nil ::bstring
 						  #!key (timeout 0) (proxy #f))
@@ -101,6 +104,12 @@
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
+	 (unless (string? host)
+	    (raise
+	     (instantiate::&io-malformed-url-error
+		(proc 'webdav-propfind)
+		(msg "missing host")
+		(obj url))))
 	 (let liip ((socket (cache-get host port)))
 	    (let ((socket (http :method 'PROPFIND
 			     :host host
@@ -220,6 +229,12 @@
    (let loop ((url url))
       (multiple-value-bind (proto login host port abspath)
 	 (url-parse url)
+	 (unless (string? host)
+	    (raise
+	     (instantiate::&io-malformed-url-error
+		(proc 'webdav-propfind)
+		(msg "missing host")
+		(obj url))))
 	 (let liip ((socket (cache-get host port)))
 	    (let ((socket (http :method method
 			     :host host
@@ -331,10 +346,11 @@
 	 (case status
 	    ((207) (webdav-responses x))
 	    ((200) (webdav-response x '()))
-	    ((401) (raise (instantiate::&access-control-exception
+	    ((401) (raise (instantiate::&webdav-access-control-exception
 			     (message "Authentication required")
 			     (obj url)
-			     (permission 401))))
+			     (permission 401)
+			     (header header))))
 	    (else '())))))
 
 ;*---------------------------------------------------------------------*/

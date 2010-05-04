@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Tue Oct  6 09:58:09 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Thu Mar 18 09:58:02 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -730,11 +730,8 @@
 ;*    file-musictag ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (file-musictag path)
-   (if (not (file-exists? path))
-       (error/errno $errno-io-file-not-found-error
-		    'file-musictag "Can't find file" path)
-       (let ((mm (open-mmap path :write #f)))
-	  (unwind-protect
+   
+   (define (mmap-musictag mm)
 	     (cond
 		((id3v2.4? mm) (mp3-id3v2.4 mm))
 		((id3v2.3? mm) (mp3-id3v2.3 mm))
@@ -743,6 +740,25 @@
 		((id3v1? mm) (mp3-id3v1 mm))
 		((read-flac-comments mm) => ogg-comments->musictag)
 		((read-ogg-comments path mm) => ogg-comments->musictag)
-		(else #f))
-	     (close-mmap mm)))))
+	 (else #f)))
 
+   (cond
+      ((file-exists? path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (mmap-musictag mm)
+	     (close-mmap mm))))
+      ((open-input-file path)
+       =>
+       (lambda (p)
+	  (unwind-protect
+	     (let ((s (read-chars 8192 p)))
+		;; reads the first 8KB and tries to find a tag
+		(let ((mm (string->mmap s)))
+		   (unwind-protect
+		      (mmap-musictag mm)
+		      (close-mmap mm))))
+	     (close-input-port p))))
+      (else
+       (error/errno $errno-io-file-not-found-error
+		    'file-musictag "Can't find file" path))))

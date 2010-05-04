@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 19 17:56:44 2010 (serrano)                */
+#*    Last change :  Sun Feb 21 09:01:27 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1489,6 +1489,8 @@ case $hostos in
     ;;
 
   darwin)
+    # MS: up to now I have not been able to get 7.2 compiled and linked on mac
+    gccustom=gc-7.1;
     sharedlibraryclosed=yes;
     if [ "$macosx " = "auto " ]; then
       macosx=`$autoconf macosx` || exit 1
@@ -1581,6 +1583,7 @@ echo >> $configurelog
 #*    GC configuration                                                 */
 #*---------------------------------------------------------------------*/
 echo "+ GC configuration ($customgc)..." >> $configurelog
+
 cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
 
 # We check the standard GC if we have to use one

@@ -33,11 +33,12 @@
 
 ;;
 (define (inline-call? me::jvm var::global)
+   (when (jvm-inline me)
    (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function)) )
       (if fun
 	  (fun me)
 	  (let ( (name (global-name var)) (id (global-id var)) )
-	     'not-inlined ))))
+		'not-inlined )))))
 
 (define *too-hard* '(%exit long->bint c-cons c-write-char))
 
@@ -49,10 +50,11 @@
 
 ;;
 (define (inline-call-with-args? me::jvm var::global args)
+   (when (jvm-inline me)
    (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function_args)) )
       (if fun
 	  (fun me args)
-	  'not-inlined )))
+	     'not-inlined ))))
 
 (define-macro (define-inline-call-args name . body)
    `(begin
@@ -62,10 +64,11 @@
 
 ;;
 (define (inline-predicate? me::jvm var::global on? lab)
+   (when (jvm-inline me)
    (let ( (fun (getprop (global-id var) 'saw_jvm_inline_predicate)) )
       (if fun
 	  (fun me on? lab)
-	  'not-inlined )))
+	     'not-inlined ))))
 
 (define-macro (define-inline-predicate name . body)
    `(begin
@@ -208,7 +211,9 @@
    (code! me '(getfield bchar_value)) )
 
 (define-inline-call $bchar->uchar ; "BCHAR_TO_UCHAR"
-   (code! me `(getfield bchar_value)) )
+   (code! me `(getfield bchar_value))
+   (code! me '(sipush 255))
+   (code! me '(iand)) )
 
 (define-inline-call $uchar->char ; "UCHAR_TO_CHAR"
    (code! me '(i2b)) )

@@ -4,17 +4,25 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue Feb 16 17:55:45 2010 (serrano)                */
+#*    Last change :  Mon Mar 15 08:43:33 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
+
+# GC's config.guess needs the env SHELL variable to be defined
+if [ "$SHELL " = " " ]; then \
+  sh=/bin/sh;
+else
+  sh=$SHELL;
+fi
 
 # configure the collector for single-threaded applications
 (cd gc/$gccustom && \
  export CC=$cc && \
  export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
  export LDFLAGS=$lflags && \
+ export SHELL=$sh && \
  ./configure $gcconfiguredir $gcconfigureopt --disable-threads >> configure.log || \
  (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
 
@@ -24,6 +32,7 @@ if [ "$threadsupport " != "no " ]; then
    export CC=$cc && \
    export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
    export LDFLAGS=$lflags && \
+   export SHELL=$sh && \
    echo "Configuring custom multi-threaded GC..." && \
    ./configure $gcconfiguredir $gcconfigureopt --enable-thread >> configure.log || \
    (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1

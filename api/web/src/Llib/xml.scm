@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Dec 14 05:44:36 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Thu Apr 15 16:11:24 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -106,10 +106,6 @@
 				     (format "`~a' expected, `~a' provided"
 					     tag item)
 				     name po))
-		   ((null? acc)
-		    (make tag attributes '()))
-		   ((null? (cdr acc))
-		    (make tag attributes (car acc)))
 		   (else
 		    (make tag attributes (reverse! acc)))))
 	       ((special? item)

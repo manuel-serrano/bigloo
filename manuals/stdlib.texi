@@ -546,6 +546,12 @@ Returns a new fresh symbol. If @var{obj} is provided and is a string or
 a symbol, it is used as prefix for the new symbol.
 @end deffn
 
+@deffn {bigloo procedure} genuuid
+
+Returns a string containing a new fresh @emph{Universal Unique Identifier} 
+(see @url{http://fr.wikipedia.org/wiki/Universal_Unique_Identifier}).
+@end deffn
+
 @deffn {bigloo procedure} symbol-plist symbol-or-keyword
 Returns the property-list associated with @var{symbol-or-keyword}. 
 @end deffn

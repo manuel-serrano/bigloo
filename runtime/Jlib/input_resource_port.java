@@ -10,16 +10,16 @@ public class input_resource_port extends input_port {
    public input_resource_port( String resource, final byte[] buf )
       throws IOException {
       super( resource, buf );
-      in = java.lang.ClassLoader.getSystemResourceAsStream( name.replace( '\\', '/' ) );
+      in = foreign.class.getClassLoader().getResourceAsStream( name.replace( '\\', '/' ) );
    }
 
    public static boolean exists( String name ) {
-      return java.lang.ClassLoader.getSystemResource( name.replace( '\\', '/' ) ) != null;
+      return foreign.class.getClassLoader().getResource( name.replace( '\\', '/' ) ) != null;
    }
 
    public static int file_size( String name ) {
       try {
-	 InputStream in = java.lang.ClassLoader.getSystemResourceAsStream( name.replace( '\\', '/' ) );
+	 InputStream in = foreign.class.getClassLoader().getResourceAsStream( name.replace( '\\', '/' ) );
 	 int sz = in.available();
 	 in.close();
 	 return sz;
@@ -60,7 +60,7 @@ public class input_resource_port extends input_port {
 	 if( input_resource_port.exists( cname ) ) {
 	    InputStream in;
 	    Object res = bigloo.foreign.BNIL;
-	    in = java.lang.ClassLoader.getSystemResourceAsStream( cname );
+	    in = foreign.class.getClassLoader().getResourceAsStream( cname );
 	    byte[] o;
 
 	    while( (o = readline( in )) != null ) {
@@ -161,7 +161,7 @@ public class input_resource_port extends input_port {
    Object bgl_input_port_reopen() throws IOException {
       in.close();
 
-      in = java.lang.ClassLoader.getSystemClassLoader().getResourceAsStream( name );
+      in = foreign.class.getClassLoader().getResourceAsStream( name );
 
       filepos = 0;
       eof = false;

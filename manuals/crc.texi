@@ -1,7 +1,10 @@
 @c =================================================================== @c
-@c    serrano/prgm/project/bigloo/manuals/internet.texi                @c
+@c    serrano/prgm/project/bigloo/manuals/crc.texi                     @c
 @c    ------------------------------------------------------------     @c
 @c    Author      :  Florian Loitsch                                   @c
+@c    Creation    :  Wed Mar 24 12:11:10 2010                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2010 Manuel Serrano                               @c
 @c    ------------------------------------------------------------     @c
 @c    CRC                                                              @c
 @c =================================================================== @c

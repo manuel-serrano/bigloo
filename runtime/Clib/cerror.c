@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Sun Feb 14 06:31:27 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 05:40:01 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -201,10 +201,9 @@ bgl_get_last_error_message( char *default_message ) {
 /*    -------------------------------------------------------------    */
 /*    A debugging function (i.e., never used) that can be used         */
 /*    to inspect an exitd stack.                                       */
-/*                                                                     */
 /*---------------------------------------------------------------------*/
 int bgl_debug_top_stack() {
-   struct exitd *top = (struct exitd *)BGL_EXITD_TOP();
+   struct exitd *top = BGL_EXITD_TOP();
 
    fprintf( stderr, "bgl_debug_top_stack:\n" );
 

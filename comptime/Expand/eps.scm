@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Tue May 15 08:33:13 2007 (serrano)                */
-;*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 29 12:12:50 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    << Expansion-Passing Style: Beyond Conventional Macro >>,        */
@@ -358,8 +358,8 @@
 		     (let* ((id (id-of-id (car nx))))
 			(if (pair? (memq id s))
 			    nx
-			    (let ((b (or (find-O-expander id)
-					 (find-G-expander id))))
+			    (let ((b (or (find-G-expander id)
+					 (find-O-expander id))))
 			       (if b
 				   (let ((e (expander-expander b)))
 				      (e x *initial-expander*))
