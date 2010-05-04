@@ -1,5 +1,5 @@
 ;; Automatically generated file (don't edit) */
-;; Fri Mar 12 15:50:26 CET 2010
+;; Sat Mar 13 09:30:41 CET 2010
 
 (provide 'bmacs-config)
 (defvar bmacs-docdir "/home/mdione/local/soft/bigloo-hg-android/doc/bigloo-3.3b")
