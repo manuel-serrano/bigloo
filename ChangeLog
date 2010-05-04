@@ -1,3 +1,8 @@
+Thu Mar 11 09:59:52 CET 2010 (Manuel Serrano):
+
+	*** runtime/comptime, c-backend. Make C BIND-EXIT thread-safe!
+	
+
 Sun Dec 20 16:08:24 CET 2009 (Manuel Serrano):
 
 	*** runtime/Clib/cucs2.c: Fix UCS2 encoding (currency characters 
