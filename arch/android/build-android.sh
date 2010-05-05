@@ -1,7 +1,9 @@
 #! /bin/bash
 
+# TODO: make ANDROIDROOT and BS_BIGLOO parameters
+
 if [ "$(basename $0)" == "build-android.sh" ]; then
-set -e
+   set -e
 fi
 
 # root for all things android
