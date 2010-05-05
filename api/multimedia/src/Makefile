@@ -182,7 +182,8 @@ objs:
 	mkdir -p $@
 
 lib-c-static: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a \
-              $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a
+              $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a \
+              $(LIB)/lib$(LIBNAME)_e-$(RELEASE).a
 
 lib-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
@@ -227,6 +228,11 @@ $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a: .afile $(OBJECTS)
 	@ $(RANLIB) $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
+
+$(LIB)/lib$(LIBNAME)_e-$(RELEASE).a: .afile $(OBJECTS)
+	@ $(RM) -f $(LIB)/lib$(LIBNAME)_e-$(RELEASE).a
+	@ $(AR) $(ARFLAGS) $(LIB)/lib$(LIBNAME)_e-$(RELEASE).a $(OBJECTS)
+	@ $(RANLIB) $(LIB)/lib$(LIBNAME)_e-$(RELEASE).a
 
 #*--- lib-jvm ---------------------------------------------------------*/
 lib-jvm: .jfile $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
