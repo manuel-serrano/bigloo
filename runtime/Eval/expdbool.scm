@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:12:21 1993                          */
-;*    Last change :  Tue Mar 11 15:46:23 2008 (serrano)                */
+;*    Last change :  Sat Apr 24 06:48:59 2010 (serrano)                */
 ;*                                                                     */
 ;*    Les expanseurs des formes booleenes.                             */
 ;*---------------------------------------------------------------------*/
@@ -81,10 +81,12 @@
 		 (evepairify res exp))))
 	 ((and (eq? (cadr clause1) '=>) (=fx (length clause1) 3))
 	  (let* ((aux (get-new-test-name "cd"))
-		 (res `(let ((test-result ,(car clause1))
-			     (thunk2 (lambda (,aux) (,(caddr clause1) ,aux)))
-			     (thunk3 (lambda () (cond ,@clause2+))))
-			  (if test-result (thunk2 test-result) (thunk3)))))
+		 (test (get-new-test-name "test"))
+		 (res `(let ((,test ,(car clause1)))
+			  (if ,test
+			      (let ((,aux ,test))
+				 (,(caddr clause1) ,aux))
+			      (cond ,@clause2+)))))
 	     (if (epair? (car clause1))
 		 (econs (car res) (cdr res) (cer (car clause1)))
 		 (evepairify res exp))))

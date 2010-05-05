@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Feb 17 16:14:07 2010 (serrano)                */
+;*    Last change :  Thu Apr 22 09:55:05 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -16,17 +16,17 @@
    ;; disable debugging traces when compiling this module otherwise
    ;; the Bigloo error handling is all wrong
    (option  (set! *compiler-debug* 0))
-   
+
    (import  __error
 	    __object
 	    __thread)
-   
+
    (use     __type
 	    __bigloo
 	    __tvector
 	    __structure
 	    __bignum
-	    
+
 	    __r4_equivalence_6_2
 	    __r4_vectors_6_8
 	    __r4_booleans_6_1
@@ -38,20 +38,21 @@
 	    __r4_numbers_6_5_flonum
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
-	    
+
 	    __evenv)
 
    (extern  (macro push-exit!::obj (::exit ::long) "PUSH_EXIT")
 	    (macro pop-exit!::obj () "POP_EXIT")
 	    (macro call/cc-jump-exit::obj (::exit ::obj) "CALLCC_JUMP_EXIT")
-	    (macro exitd->exit::exit (::obj) "EXITD_TO_EXIT")
+	    (macro $exitd->exit::exit (::obj) "EXITD_TO_EXIT")
 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
-	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP")
+	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
+	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")
-	    
+
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
 
@@ -64,7 +65,7 @@
 		       "POP_EXIT")
 	       (method static call/cc-jump-exit::obj (::exit ::obj)
 		       "CALLCC_JUMP_EXIT")
-	       (method static exitd->exit::exit (::obj)
+	       (method static $exitd->exit::exit (::obj)
 		       "EXITD_TO_EXIT")
 	       (method static exitd-user?::bool (::obj)
 		       "EXITD_USERP")
@@ -74,11 +75,13 @@
 		       "EXITD_STAMP")
 	       (method static $get-exitd-top::obj ()
 		       "BGL_EXITD_TOP")
+	       (method static $exitd-bottom?::bool (::obj)
+		       "BGL_EXITD_BOTTOMP")
 	       (method static $set-exitd-top!::obj (::obj)
 		       "BGL_EXITD_TOP_SET")
 	       (method static $get-exitd-val::obj ()
 		       "BGL_EXITD_VAL")))
-   
+
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
@@ -124,9 +127,8 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-stack-until! exitd estamp val proc)
    (let loop ()
-;*       (tprint "unwind-stack-until!...")                             */
-;*       (tprint "unwind-stack-until! " ($get-exitd-top) " exitd=" exitd " estamp=" estamp " val=" val " proc=" proc) */
-      (if (eq? ($get-exitd-top) #f)
+      (let ((exitd-top ($get-exitd-top)))
+	 (if ($exitd-bottom? exitd-top)
 	  (if (procedure? proc)
 	      (proc val)
 	      (let ((hdl ($get-uncaught-exception-handler)))
@@ -134,30 +136,27 @@
 		      hdl
 		      default-uncaught-exception-handler)
 		  val)))
-	  (let ((exit-top ($get-exitd-top)))
+	     (begin
 	     (pop-exit!)
-	     (cond  
-		((and (eq? exit-top exitd) 
+	     (cond
+		   ((and (eq? exitd-top exitd)
 		      (or (not (fixnum? estamp))
-			  (=fx (exitd-stamp exit-top) estamp)))
-;* 		 (tprint "pop-exit, action1")                          */
-		 (if (exitd-call/cc? exit-top)
+			     (=fx (exitd-stamp exitd-top) estamp)))
+		    (if (exitd-call/cc? exitd-top)
 		     ;; this exit has been pushed by call/cc
-		     (call/cc-jump-exit (exitd->exit exit-top) val)
+			(call/cc-jump-exit ($exitd->exit exitd-top) val)
 		     ;; this is a regular exit
-		     (jump-exit (exitd->exit exit-top) val))
+			(jump-exit ($exitd->exit exitd-top) val))
 		 #unspecified)
-		((not (exitd-user? exit-top))
-;* 		 (tprint "pop-exit, action2")                          */
+		   ((not (exitd-user? exitd-top))
 		 (let ((p ($get-exitd-val)))
 		    (set-car! (car p) exitd)
 		    (set-cdr! (car p) proc)
 		    (set-cdr! p val)
-		    (jump-exit (exitd->exit exit-top) p))
+		       (jump-exit ($exitd->exit exitd-top) p))
 		 #unspecified)
 		(else
-;* 		 (tprint "pop-exit, action3")                          */
-		 (loop)))))))
+		    (loop))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Mon Sep 28 14:37:46 2009 (serrano)                */
+/*    Last change :  Thu Apr  8 08:26:57 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1049,6 +1049,12 @@ string_cige( obj_t bst1, obj_t bst2 ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    xdigit_to_byte ...                                               */
+/*---------------------------------------------------------------------*/
+#define XDIGIT_TO_BYTE( s_ ) \
+  (isdigit(s_) ? (s_ - '0') : 10 + ((s_ >= 'a') ?  (s_ - 'a') : (s_ - 'A')))
+
+/*---------------------------------------------------------------------*/
 /*    escape_C_string ...                                              */
 /*    -------------------------------------------------------------    */
 /*    Cette fonction construit une chaine ou la representation des     */
@@ -1088,34 +1094,34 @@ escape_C_string( unsigned char *src ) {
 	 len--;
 	 
          switch( *++src ) {
-            case '\0' : *dst++ = '\\';
+            case '\0': *dst++ = '\\'; src++;
 	       break;
 
-            case 'n'  : *dst++ = '\n';
+            case 'n': *dst++ = '\n'; src++;
 	       break;
                         
-            case 't'  : *dst++ = '\t';
+            case 't': *dst++ = '\t'; src++;
 	       break;
                         
-            case 'b'  : *dst++ = '\b';
+            case 'b': *dst++ = '\b'; src++;
 	       break;
                         
-            case 'r'  : *dst++ = '\r';
+            case 'r': *dst++ = '\r'; src++;
 	       break;
                         
-            case 'f'  : *dst++ = '\f';
+            case 'f': *dst++ = '\f'; src++;
 	       break;
                         
-            case 'v'  : *dst++ = '\v';
+            case 'v': *dst++ = '\v'; src++;
 	       break;
                         
-            case '\\' : *dst++ = '\\';
+            case '\\': *dst++ = '\\'; src++;
 	       break;
                         
-            case '\'' : *dst++ = '\'';
+            case '\'': *dst++ = '\''; src++;
 	       break;
                         
-            case '"'  : *dst++ = '\"';
+            case '"': *dst++ = '\"'; src++;
 	       break;
 
 #if( defined( __STDC___ ) )                          
@@ -1126,43 +1132,105 @@ escape_C_string( unsigned char *src ) {
 	       break;
 #endif                        
 
-            default   : {
-	       char s0 = *src;
+	    case 'x':
+	    case 'X': {
 	       char s1 = *(src+1);
+
+	       if( !isxdigit( s1 ) ) {
+		  *dst++ = *src++;
+	       } else {
 	       char s2 = *(src+2);
 	       
-	       if( isdigit( s0 ) && isdigit( s1 ) && isdigit( s2 ) ) {
+		  if( !isxdigit( s2 ) ) {
+		     *dst++ = *src++;
+		  } else {
+		     char n1, n2;
+
+		     n1 = XDIGIT_TO_BYTE( s1 );
+		     n2 = XDIGIT_TO_BYTE( s2 );
+			
+		     *dst++ = n1*16 + n2;
+		     src += 3;
+		     len -= 2;
+		  }
+	       }
+	       break;
+	    }
+
+	    case 'u':
+	    case 'U': {
+	       char s1 = *(src+1);
+
+	       if( !isxdigit( s1 ) ) {
+		  *dst++ = *src++;
+	       } else {
+		  char s2 = *(src+2);
+		  
+		  if( !isxdigit( s2 ) ) {
+		     *dst++ = *src++;
+		  } else {
+		     char s3 = *(src+3);
+		     
+		     if( !isxdigit( s3 ) ) {
+			*dst++ = *src++;
+		     } else {
+			char s4 = *(src+4);
+		     
+			if( !isxdigit( s4 ) ) {
+			   *dst++ = *src++;
+			} else {
+			   char n1, n2, n3, n4;
+			   ucs2_t u;
+			   obj_t ucs2, utf8;
+
+			   n1 = XDIGIT_TO_BYTE( s1 );
+			   n2 = XDIGIT_TO_BYTE( s2 );
+			   n3 = XDIGIT_TO_BYTE( s3 );
+			   n4 = XDIGIT_TO_BYTE( s4 );
+
+			   u = (ucs2_t)(n1*4096 + n2*512 + n3*16 + n4);
+			   ucs2 = make_ucs2_string( 1, u );
+			   utf8 = ucs2_string_to_utf8_string( ucs2 );
+			   memcpy( dst, BSTRING_TO_STRING( utf8 ), STRING_LENGTH( utf8 ) );
+			   src += 5;
+			   dst += STRING_LENGTH( utf8 );
+			   len -= (5 - STRING_LENGTH( utf8 ));
+			}
+		     }
+		  }
+	       }
+	       break;
+	    }
+
+            default: {
+	       if( !isdigit( *src ) ) {
+		  *dst++ = *src++;
+	       } else {
+		  char s1 = *(src+1);
+
+		  if( !isdigit( s1 ) ) {
+		     *dst++ = *src++;
+		  } else {
+		     char s2 = *(src+2);
+		     
+		     if( !isdigit( s2 ) ) {
+			*dst++ = *src++;
+		     } else {
 		  unsigned char aux;
 	       
 		  aux = (*src     - '0')*64 +
    		        (*(src+1) - '0')*8 +
 		        (*(src+2) - '0');
 		  *dst++ = aux;
-		  src+=2;
-		  len -= 2;
-	       } else {
-		  if( ((s0 == 'x') || (s0 == 'X')) &&
-		      isxdigit( s1 ) &&
-		      isxdigit( s2 ) ) {
-		     char n1, n2;
 
-		     n1 = isdigit(s1) ? (s1 - '0') :
-			10 + ((s1 >= 'a') ?  (s1 - 'a') : (s1 - 'A'));
-		     n2 = isdigit(s2) ? (s2 - '0') :
-			10 + ((s2 >= 'a') ?  (s2 - 'a') : (s2 - 'A'));
-			
-		     *dst++ = n1*16 + n2;
-		     src+=2;
+			src += 3;
 		     len -= 2;
 		  }
-		  else
-		     *dst++ = *src;
 	       }
-		 
+	       }
 	       break;
 	    }
          }
-         src++;
       }
    }
    *dst = '\0';

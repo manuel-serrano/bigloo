@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Wed Nov 10 09:43:08 2004 (serrano)                */
+;*    Last change :  Thu Apr 15 15:36:01 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -47,7 +47,37 @@
 ;*    hrtype-node! ::var ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (hrtype-node! node::var)
-   (with-access::var node (type)
+   (with-access::var node (type variable)
+      ;; MS 15 apr 2010. It might be that a body contains a reference
+      ;; to an unbound global variable. For instance, the camloo raise
+      ;; function is defined as:
+      ;; 
+      ;;    (define-inline (raise value)
+      ;;       (set! *try* 1)
+      ;;       (if (eq? current_handler #f)
+      ;;           (error "Fatal error" "uncaught exception." value)
+      ;;           (begin
+      ;;              (invoke-continuation value)
+      ;;              (unspecified))))
+      ;;
+      ;; when used in client code, this function will be inlined.
+      ;; It turns out that (unspecified) is also an inline function, defined
+      ;; in the standard library, defined as:
+      ;;
+      ;;    (define-inline (unspecified) __unspec__)
+      ;;
+      ;; Hence, inlining raised in a client code introduces a
+      ;; reference to the version of __unspec__ that was used when generating
+      ;; the camloo heap, which is not the same one as the one used when
+      ;; compiling the client code. This global has to be "rebound", this is
+      ;; the purpose of this patch
+      (when (and (global? variable)
+		 (global-bucket-position (global-id variable)
+					 (global-module variable)))
+	 (let ((n (find-global/module (global-id variable)
+					    (global-module variable))))
+	    (when (global? n)
+	       (set! variable n))))
       (if (type? type)
 	  (set! type (find-type (type-id type)))))
    #unspecified)

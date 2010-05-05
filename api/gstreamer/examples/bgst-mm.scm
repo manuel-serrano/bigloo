@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 11:44:28 2008                          */
-;*    Last change :  Fri Dec 26 10:59:01 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Fri Mar 12 10:37:36 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player                                            */
 ;*=====================================================================*/
@@ -88,29 +88,24 @@
       (set! m
 	    (case backend
 	       ((gstreamer)
-		(instantiate::gstmusic
-		   (frequency frequency)))
+		(instantiate::gstmusic))
 	       ((gstreamer-bt)
 		(instantiate::gstmusic
-		   (%audiosink (gst-element-factory-make "alsasink" :device "pcm.bluetooth"))
-		   (frequency frequency)))
+		   (%audiosink (gst-element-factory-make "alsasink" :device "pcm.bluetooth"))))
 	       ((mpg123)
 		(if command
 		    (instantiate::mpg123
-		       (path command)
-		       (frequency frequency))
+		       (path command))
 		    (instantiate::mpg123)))
 	       ((mplayer)
 		(if command
 		    (instantiate::mplayer
-		       (path command)
-		       (frequency frequency))
+		       (path command))
 		    (instantiate::mplayer)))
 	       ((mpc)
 		(instantiate::mpc
 		   (host mpchost)
-		   (port mpcport)
-		   (frequency frequency)))))
+		   (port mpcport)))))
 
       (when volume (music-volume-set! m volume))
 	    
@@ -130,7 +125,8 @@
 	(lambda ()
 	   (music-event-loop
 	    m
-	    :onmeta (lambda (meta playlist)
+	    :frequency frequency
+	    :onmeta (lambda (meta)
 		       (if (list? meta)
 			   (for-each (lambda (meta)
 					(verb 2

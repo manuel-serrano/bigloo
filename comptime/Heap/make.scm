@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:44:08 1995                          */
-;*    Last change :  Tue Aug 14 10:29:13 2007 (serrano)                */
+;*    Last change :  Thu Apr 15 15:53:34 2010 (serrano)                */
 ;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of a library heap                                   */
@@ -42,7 +42,7 @@
 	     (if (not (binary-port? port))
 		 (error "make-heap" "Can't open output port" hname)
 		 (begin
-		    (output-obj port 
+		    (output-obj port
 				(vector (backend-language (the-backend))
 					*bigloo-version*
 					*bigloo-specific-version*
@@ -67,6 +67,9 @@
 			    (global-import-set! g 'import))
 			   (else
 			    #unspecified))
+			;; shrink global to be sure that we do not save extra
+			;; information
+			(when (wide-object? g) (shrink! g))
 			;; and occurrence ones
 			(global-occurrence-set! g 0)
 			(global-library-set! g *heap-library*)))
@@ -137,6 +140,9 @@
 			    (global-import-set! g 'import))
 			   (else
 			    #unspecified))
+			;; shrink global to be sure that we do not save extra
+			;; information
+			(when (wide-object? g) (shrink! g))
 			;; and occurrence ones
 			(global-occurrence-set! g 0)
 			(global-library-set! g *heap-library*)))

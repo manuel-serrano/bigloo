@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Thu Oct 15 19:28:55 2009 (serrano)                */
-;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 15 14:52:18 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We restore an heap                                               */
+;*    We restore a heap                                                */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

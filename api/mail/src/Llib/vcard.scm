@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Fri Feb  5 15:52:22 2010 (serrano)                */
+;*    Last change :  Tue Apr  6 16:01:39 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
@@ -115,8 +115,11 @@
 	       ((+ (or (out #\return #\newline #\; #\\) "\\n"))
 		(let ((val (unescape (the-string) cset decode)))
 		   (cons val (ignore))))
-	       ((: #\return #\Newline)
+	       ((or (: #\return #\Newline) #\Newline)
 		'())
+	       ((: #\Newline (+ (or #\tab #\space)))
+		(let ((val (the-string)))
+		   (cons val (ignore))))
 	       ((: #\; (+ #\;))
 		(let ((len (-fx (the-length) 1)))
 		   (append (make-list len "") (ignore))))
@@ -206,6 +209,10 @@
 			     (list (list po
 					 (list street)
 					 city region zip country))))))))
+	    ((email:)
+	     (with-access::vcard vcard (emails)
+		(let ((vals (read-values (the-port) options cset)))
+		   (set! emails vals))))
 	    (else
 	     (read-values (the-port) options cset))))
       

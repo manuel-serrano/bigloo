@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Fri Mar  6 17:45:24 2009 (serrano)                */
+/*    Last change :  Wed Apr 21 15:15:57 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    We dump a execution trace                                        */
 /*=====================================================================*/
@@ -25,56 +25,7 @@ bgl_init_trace() {
 }
 
 /*---------------------------------------------------------------------*/
-/*    dump_trace_stack ...                                             */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-dump_trace_stack( obj_t port, int depth ) {
-   long level = 0L;
-   struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() );
-   obj_t old = 0;
-   int recursion = 0;
-   char buffer[ 100 ];
-
-   while( (level < depth) && runner ) {
-      if( SYMBOLP( runner->symbol ) ) {
-	 if( EQP( runner->symbol, old ) )
-	    recursion++;
-	 else {
-	    if( recursion > 0 ) {
-	       bgl_display_string( string_to_bstring( " (" ), port );
-	       bgl_display_fixnum( BINT( 1 + recursion ), port );
-	       bgl_display_string( string_to_bstring( " times)\n" ), port );
-	    } else {
-	       if( level > 0 )
-		  bgl_display_string( string_to_bstring( "\n" ), port );
-	    }
-
-	    sprintf( buffer, "  %3ld.", level );
-	    bgl_display_string( string_to_bstring( buffer ), port );
-	    bgl_display_string( SYMBOL_TO_STRING( runner->symbol ), port );
-	    
-	    recursion = 0;
-	 }
-	 old = runner->symbol;
-			
-	 level++; 
-      }
-      
-      runner = runner->link;
-   }
-   
-   if( recursion > 0 ) {
-      bgl_display_string( string_to_bstring( " (" ), port );
-      bgl_display_fixnum( BINT( 1 + recursion ), port );
-      bgl_display_string( string_to_bstring( " times)\n" ), port );
-   }
-   
-   bgl_display_string( string_to_bstring( "\n" ), port );
-   
-   return BUNSPEC;
-}
-
-/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    get_trace_stack ...                                              */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
@@ -83,7 +34,7 @@ get_trace_stack( int depth ) {
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() );
    obj_t l = BNIL;
 
-   while( (level < depth) && runner ) {
+   while( ((depth < 0) || (level < depth)) && runner ) {
       if( SYMBOLP( runner->symbol ) ) {
 	 l = MAKE_PAIR( runner->symbol, l );
 	 level++; 
@@ -92,10 +43,11 @@ get_trace_stack( int depth ) {
       runner = runner->link;
    }
    
-   return l;
+   return bgl_reverse_bang( l );
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    cref ...                                                         */
 /*---------------------------------------------------------------------*/
 obj_t
@@ -104,6 +56,7 @@ cref( obj_t obj ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    car ...                                                          */
 /*---------------------------------------------------------------------*/
 obj_t
@@ -112,6 +65,7 @@ car( obj_t obj ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    cdr ...                                                          */
 /*---------------------------------------------------------------------*/
 obj_t
@@ -120,6 +74,7 @@ cdr( obj_t obj ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    byteshow ...                                                     */
 /*---------------------------------------------------------------------*/
 static void
@@ -139,6 +94,7 @@ byteshow( unsigned char *addr ) {
 }
              
 /*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    memshow ...                                                      */
 /*---------------------------------------------------------------------*/
 void

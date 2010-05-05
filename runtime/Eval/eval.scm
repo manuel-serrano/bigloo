@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Wed May 13 16:43:47 2009 (serrano)                */
+;*    Last change :  Thu Apr 29 18:01:15 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -131,9 +131,10 @@
    
    (let ((loc (find-loc exp #f))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
-      (if (> (bigloo-debug) 0)
+      (if (and loc (> (bigloo-debug) 0))
 	  (with-handler
-	     evmeaning-exception-handler
+	     (lambda (e)
+		(eval-exception-handler e loc))
 	     (eval-inner sexp env loc))
 	  (eval-inner sexp env loc))))
  
@@ -150,11 +151,23 @@
 
    (let ((loc (find-loc exp #f))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
-      (if (> (bigloo-debug) 0)
+      (if (and loc (> (bigloo-debug) 0))
 	  (with-handler
-	     evmeaning-exception-handler
+	     (lambda (e)
+		(eval-exception-handler e loc))
 	     (eval-inner! sexp env loc))
 	  (eval-inner! sexp env loc))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-exception-handler ...                                       */
+;*---------------------------------------------------------------------*/
+(define (eval-exception-handler e loc)
+   (when (and (&exception? e) (not (&exception-fname e)))
+      (match-case loc
+	 ((at ?fname ?loc)
+	  (&exception-fname-set! e fname)
+	  (&exception-location-set! e loc))))
+   (raise e))
 
 ;*---------------------------------------------------------------------*/
 ;*    byte-code-compile ...                                            */

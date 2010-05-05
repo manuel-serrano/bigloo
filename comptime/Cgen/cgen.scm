@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Sep 12 07:53:05 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 11 09:39:42 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -612,7 +612,7 @@
 		      (jump-value (node->cop (instantiate::pragma
 						(loc loc)
 						(type *_*)
-						(format "_exit_value_")
+						(format "BGL_EXIT_VALUE()")
 						(expr* '()))
 					     kont))
 		      (body (instantiate::csequence
