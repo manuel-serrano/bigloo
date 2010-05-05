@@ -111,7 +111,7 @@
       (let ( (file (car *src-files*)) )
 	 (let ( (bfile (if (string? file) (basename file) "-")) )
 	    ;; CARE May be some cleanup of me (decl fields methods classes)
-	    `((module me procedure ()
+	    `((module me procedure (serializable)
 		      (declare ,@(reverse! declarations))
 		      (fields myname ,@fields)
 		      (sourcefile ,bfile)
@@ -135,6 +135,7 @@
    `(;; Java lib classes/methods
      (obj (class () "java.lang.Object"))
      (string (class () "java.lang.String"))
+     (serializable (class () "java.io.Serializable"))
      ;; BPS: changed 12 nov 09 (3.2c) (see, Fields/Methods of bigloo.foreign
      ;; (getbytes (method string () (vector byte) "getBytes"))
      (concat (method string () string "concat" string))

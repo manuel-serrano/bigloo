@@ -125,7 +125,7 @@
 	       (else
 		(let ((po (input-port-last-token-position port)))
 		   (loop (econs item acc (list 'at name po)) (ignore))))))))
-   
+
    (let ((spec (assq tag specials)))
       (cond
 	 ((not spec)

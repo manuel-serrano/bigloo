@@ -13,14 +13,14 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __multimedia-mpg123
-
+   
    (import __multimedia-music
 	   __multimedia-musicproc
 	   __multimedia-music-event-loop
 	   __multimedia-id3)
-
+   
    (export (class mpg123::musicproc
-
+	      
 	      (path::bstring read-only (default "mpg123"))
 	      (args::pair-nil read-only (default '("--remote")))
 
@@ -88,7 +88,7 @@
       ((+ digit) (the-fixnum))
       ((: (+ digit) #\. (* digit)) (the-fixnum))
       (else (the-failure))))
-
+	 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-grammar ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -230,7 +230,7 @@
       (musicstatus-khz-set! status (musicstatus-khz %status))
       (musicstatus-err-set! status (musicstatus-err %status)))
    (mutex-unlock! (mpg123-%mutex o)))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop ::mpg123 ...                                    */
 ;*---------------------------------------------------------------------*/

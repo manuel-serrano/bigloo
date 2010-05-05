@@ -1125,10 +1125,10 @@ escape_C_string( unsigned char *src ) {
 	       break;
 
 #if( defined( __STDC___ ) )                          
-            case 'a'  : *dst++ = '\a';
+            case 'a': *dst++ = '\a';
 	       break;
 
-            case '?'  : *dst++ = '\?';
+            case '?': *dst++ = '\?';
 	       break;
 #endif                        
 
@@ -1139,8 +1139,8 @@ escape_C_string( unsigned char *src ) {
 	       if( !isxdigit( s1 ) ) {
 		  *dst++ = *src++;
 	       } else {
-	       char s2 = *(src+2);
-	       
+		  char s2 = *(src+2);
+		  
 		  if( !isxdigit( s2 ) ) {
 		     *dst++ = *src++;
 		  } else {
@@ -1165,17 +1165,17 @@ escape_C_string( unsigned char *src ) {
 		  *dst++ = *src++;
 	       } else {
 		  char s2 = *(src+2);
-		  
+
 		  if( !isxdigit( s2 ) ) {
 		     *dst++ = *src++;
 		  } else {
 		     char s3 = *(src+3);
-		     
+
 		     if( !isxdigit( s3 ) ) {
 			*dst++ = *src++;
 		     } else {
 			char s4 = *(src+4);
-		     
+
 			if( !isxdigit( s4 ) ) {
 			   *dst++ = *src++;
 			} else {
@@ -1216,21 +1216,21 @@ escape_C_string( unsigned char *src ) {
 		     if( !isdigit( s2 ) ) {
 			*dst++ = *src++;
 		     } else {
-		  unsigned char aux;
+			unsigned char aux;
 	       
-		  aux = (*src     - '0')*64 +
-   		        (*(src+1) - '0')*8 +
-		        (*(src+2) - '0');
-		  *dst++ = aux;
+			aux = (*src - '0')*64 +
+			   (*(src+1) - '0')*8 +
+			   (*(src+2) - '0');
+			*dst++ = aux;
 
 			src += 3;
-		     len -= 2;
+			len -= 2;
+		     }
 		  }
-	       }
 	       }
 	       break;
 	    }
-         }
+	 }
       }
    }
    *dst = '\0';

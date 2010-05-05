@@ -94,13 +94,13 @@ apply_continuation( obj_t kont, obj_t value ) {
       /* We check if a kont is a legal continution by checking if */
       /* it is first a continuation and then if its entry is is   */
       /* apply continuation.                                      */
-      the_failure(  c_constant_string_to_string( "apply_continuation" ),
-		    c_constant_string_to_string( "continuation" ),
-		    kont );
+      the_failure( c_constant_string_to_string( "apply_continuation" ),
+		   c_constant_string_to_string( "continuation" ),
+		   kont );
    
-   stack   = CREF( PROCEDURE_REF( kont, 0 ) );
-   etop    = STACK( stack ).exitd_top;
-   estamp  = STACK( stack ).stamp;
+   stack = CREF( PROCEDURE_REF( kont, 0 ) );
+   etop = STACK( stack ).exitd_top;
+   estamp = STACK( stack ).stamp;
    
    restore = make_fx_procedure( restore_stack, 1, 1 );
    PROCEDURE_SET( restore, 0, kont );

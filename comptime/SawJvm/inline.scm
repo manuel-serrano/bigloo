@@ -34,10 +34,10 @@
 ;;
 (define (inline-call? me::jvm var::global)
    (when (jvm-inline me)
-   (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function)) )
-      (if fun
-	  (fun me)
-	  (let ( (name (global-name var)) (id (global-id var)) )
+      (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function)) )
+	 (if fun
+	     (fun me)
+	     (let ( (name (global-name var)) (id (global-id var)) )
 		'not-inlined )))))
 
 (define *too-hard* '(%exit long->bint c-cons c-write-char))
@@ -51,9 +51,9 @@
 ;;
 (define (inline-call-with-args? me::jvm var::global args)
    (when (jvm-inline me)
-   (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function_args)) )
-      (if fun
-	  (fun me args)
+      (let ( (fun (getprop (global-id var) 'saw_jvm_inline_function_args)) )
+	 (if fun
+	     (fun me args)
 	     'not-inlined ))))
 
 (define-macro (define-inline-call-args name . body)
@@ -65,9 +65,9 @@
 ;;
 (define (inline-predicate? me::jvm var::global on? lab)
    (when (jvm-inline me)
-   (let ( (fun (getprop (global-id var) 'saw_jvm_inline_predicate)) )
-      (if fun
-	  (fun me on? lab)
+      (let ( (fun (getprop (global-id var) 'saw_jvm_inline_predicate)) )
+	 (if fun
+	     (fun me on? lab)
 	     'not-inlined ))))
 
 (define-macro (define-inline-predicate name . body)

@@ -78,9 +78,9 @@
                 (exit  (sexp->node exit stack loc 'value)))
 	     (instantiate::jump-ex-it
 		(loc loc)
-				      (type *_*)
-				      (exit exit)
-				      (value value))))
+		(type *_*)
+		(exit exit)
+		(value value))))
          (else
 	  (error-sexp->node "Illegal `jump-exit' form" exp loc)))))
          

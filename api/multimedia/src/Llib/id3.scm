@@ -696,7 +696,7 @@
       (let* ((block-type (char->integer (mmap-get-char mm)))
 	     (block-length (ubigendian3 mm)))
 	 (parse-metadata-block-data block-type block-length)))
-
+   
    (mmap-read-position-set! mm #e0)
    
    (unless (neq-input-string mm "fLaC")
@@ -732,16 +732,16 @@
 (define (file-musictag path)
    
    (define (mmap-musictag mm)
-	     (cond
-		((id3v2.4? mm) (mp3-id3v2.4 mm))
-		((id3v2.3? mm) (mp3-id3v2.3 mm))
-		((id3v2.2? mm) (mp3-id3v2.2 mm))
-		((id3v1.1? mm) (mp3-id3v1.1 mm))
-		((id3v1? mm) (mp3-id3v1 mm))
-		((read-flac-comments mm) => ogg-comments->musictag)
-		((read-ogg-comments path mm) => ogg-comments->musictag)
+      (cond
+	 ((id3v2.4? mm) (mp3-id3v2.4 mm))
+	 ((id3v2.3? mm) (mp3-id3v2.3 mm))
+	 ((id3v2.2? mm) (mp3-id3v2.2 mm))
+	 ((id3v1.1? mm) (mp3-id3v1.1 mm))
+	 ((id3v1? mm) (mp3-id3v1 mm))
+	 ((read-flac-comments mm) => ogg-comments->musictag)
+	 ((read-ogg-comments path mm) => ogg-comments->musictag)
 	 (else #f)))
-
+   
    (cond
       ((file-exists? path)
        (let ((mm (open-mmap path :write #f)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Tue Apr 13 05:26:09 2010 (serrano)                */
+;*    Last change :  Mon May  3 16:19:14 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -291,9 +291,7 @@
       
       ((: "a" (= 3 digit))
        (let ((string (the-string)))
-	  (if (not (=fx (the-length) 4))
-	      (read-error "Illegal ascii character" string (the-port))
-	      (integer->char (string->integer (the-substring 1 4))))))
+	  (integer->char (string->integer (the-substring 1 4)))))
       
       ;; ucs-2 characters
       ((: "u" (= 4 xdigit))
@@ -592,7 +590,7 @@
 			      (string-upcase! s)))))
 		     (l (reverse! (collect-up-to ignore "vector" (the-port) posp))))
 		 (list->tvector id l))))))
-      
+
       ;; tagged vectors (Camloo backward compatibility)
       ((: #\# digit digit digit #\()
        (let ((open-key par-open)

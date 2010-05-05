@@ -40,8 +40,8 @@
    ;; tracing of toplevel defined closures. This transformation is applied
    ;; before regular tracing because it only scans [begin] top level forms.
    ;; It stops before any nested expression.
-   (let* ((id   'toplevel-init)
-	  (glo  (find-global id *module*)))
+   (let* ((id 'toplevel-init)
+	  (glo (find-global id *module*)))
       (if (global? glo)
 	  (with-access::sfun (global-value glo) (body)
 	     (set! body (toplevel-trace-node body)))))

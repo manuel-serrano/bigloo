@@ -20,7 +20,7 @@ bgl_init_trace() {
 
    BGL_DYNAMIC_ENV( env ).top.symbol = BUNSPEC;
    BGL_DYNAMIC_ENV( env ).top.link = 0;
- 
+
    BGL_ENV_SET_TOP_OF_FRAME( env, &(BGL_DYNAMIC_ENV( env ).top) );
 }
 

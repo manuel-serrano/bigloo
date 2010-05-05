@@ -161,7 +161,7 @@
 		  (format "~a://~a:~a~a" protocol host port
 			  (webdav-prop-path x))))
 	   (webdav-propfind url timeout proxy))))
-      
+       
 ;*---------------------------------------------------------------------*/
 ;*    webdav-directory->prop-list ...                                  */
 ;*    -------------------------------------------------------------    */

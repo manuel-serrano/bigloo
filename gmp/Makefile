@@ -69,7 +69,7 @@ pop:
 .PHONY: clean cleanall distclean
 
 clean:
-	if [ -d "$(GMP)" ]; then \
+	if [ -d $(GMP) ]; then \
 	  $(MAKE) -C $(GMP) clean; \
         fi
 	$(RM) -rf objs

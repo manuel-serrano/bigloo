@@ -405,7 +405,7 @@
 					   (when (>fx (bigloo-warning) 0)
 					      (display "*** WARNING:multipart"
 						       (current-error-port))
-					      (display "Illegal mimetype, assuming text/plain\n"
+					      (display " Illegal mimetype, assuming text/plain\n"
 						       (current-error-port)))
 						       
 					   '(text plain))

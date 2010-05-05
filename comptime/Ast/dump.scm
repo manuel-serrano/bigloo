@@ -228,7 +228,7 @@
 (define-method (node->sexp node::cast-null)
    (node->sexp-hook node)
    (with-access::cast-null node (type)
-      `(cast-null::,(type-id type))))
+      `(cast-null:: ,(type-id type))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::cast ...                                            */

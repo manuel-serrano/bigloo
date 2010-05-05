@@ -16,17 +16,17 @@
    ;; disable debugging traces when compiling this module otherwise
    ;; the Bigloo error handling is all wrong
    (option  (set! *compiler-debug* 0))
-
+   
    (import  __error
 	    __object
 	    __thread)
-
+   
    (use     __type
 	    __bigloo
 	    __tvector
 	    __structure
 	    __bignum
-
+	    
 	    __r4_equivalence_6_2
 	    __r4_vectors_6_8
 	    __r4_booleans_6_1
@@ -38,7 +38,7 @@
 	    __r4_numbers_6_5_flonum
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
-
+	    
 	    __evenv)
 
    (extern  (macro push-exit!::obj (::exit ::long) "PUSH_EXIT")
@@ -52,7 +52,7 @@
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")
-
+	    
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
 
@@ -81,7 +81,7 @@
 		       "BGL_EXITD_TOP_SET")
 	       (method static $get-exitd-val::obj ()
 		       "BGL_EXITD_VAL")))
-
+   
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
@@ -129,33 +129,33 @@
    (let loop ()
       (let ((exitd-top ($get-exitd-top)))
 	 (if ($exitd-bottom? exitd-top)
-	  (if (procedure? proc)
-	      (proc val)
-	      (let ((hdl ($get-uncaught-exception-handler)))
-		 ((if (procedure? hdl)
-		      hdl
-		      default-uncaught-exception-handler)
-		  val)))
+	     (if (procedure? proc)
+		 (proc val)
+		 (let ((hdl ($get-uncaught-exception-handler)))
+		    ((if (procedure? hdl)
+			 hdl
+			 default-uncaught-exception-handler)
+		     val)))
 	     (begin
-	     (pop-exit!)
-	     (cond
-		   ((and (eq? exitd-top exitd)
-		      (or (not (fixnum? estamp))
+		(pop-exit!)
+		(cond  
+		   ((and (eq? exitd-top exitd) 
+			 (or (not (fixnum? estamp))
 			     (=fx (exitd-stamp exitd-top) estamp)))
 		    (if (exitd-call/cc? exitd-top)
-		     ;; this exit has been pushed by call/cc
+			;; this exit has been pushed by call/cc
 			(call/cc-jump-exit ($exitd->exit exitd-top) val)
-		     ;; this is a regular exit
+			;; this is a regular exit
 			(jump-exit ($exitd->exit exitd-top) val))
-		 #unspecified)
+		    #unspecified)
 		   ((not (exitd-user? exitd-top))
-		 (let ((p ($get-exitd-val)))
-		    (set-car! (car p) exitd)
-		    (set-cdr! (car p) proc)
-		    (set-cdr! p val)
+		    (let ((p ($get-exitd-val)))
+		       (set-car! (car p) exitd)
+		       (set-cdr! (car p) proc)
+		       (set-cdr! p val)
 		       (jump-exit ($exitd->exit exitd-top) p))
-		 #unspecified)
-		(else
+		    #unspecified)
+		   (else
 		    (loop))))))))
 
 ;*---------------------------------------------------------------------*/

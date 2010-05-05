@@ -1240,8 +1240,8 @@ bgl_open_input_string( obj_t string, int start ) {
 			       KINDOF_STRING,
 			       buffer );
 
-   CREF(port)->input_port_t.eof = 1;
-   CREF(port)->input_port_t.bufpos = bufsiz + 1;
+   CREF( port )->input_port_t.eof = 1;
+   CREF( port )->input_port_t.bufpos = bufsiz + 1;
    CREF( port )->input_port_t.length = bufsiz;
 
    return port;

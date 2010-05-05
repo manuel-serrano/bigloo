@@ -146,13 +146,13 @@
 	     (hashtable-put! *modules-table* id mod))
 	  (let ((old (hashtable-get *modules-table* id)))
 	     (if old 
-	      (begin
-		 (hashtable-update! *modules-table* id (lambda (v) mod) mod)
-		 (let ((msg (string-append "Module redefinition `"
-					   (symbol->string id)
+		 (begin
+		    (hashtable-update! *modules-table* id (lambda (v) mod) mod)
+		    (let ((msg (string-append "Module redefinition `"
+					      (symbol->string id)
 					      "', file \""
 					      (%evmodule-path old) "\"")))
-		    (evmeaning-warning #f msg)))
+		       (evmeaning-warning #f msg)))
 		 (hashtable-put! *modules-table* id mod))))
       (mutex-unlock! *modules-mutex*)
       mod))

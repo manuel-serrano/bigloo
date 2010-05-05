@@ -14,11 +14,11 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __gstreamer_multimedia_music
-
+   
    (library multimedia pthread)
-
+   
    (include "gst.sch")
-
+   
    (import  __gstreamer_gstreamer
 	    __gstreamer_gstobject
 	    __gstreamer_gstelement
@@ -33,9 +33,9 @@
 	    __gstreamer_gstpipeline
 	    __gstreamer_gstelement
 	    __gstreamer_gstmessage)
-
+   
    (export  (class gstmusic::music
-
+	       
 	       (%audiosrc (default #unspecified))
 	       (%audiosink (default #unspecified))
 	       (%audiomixer (default #unspecified))
@@ -43,7 +43,7 @@
 	       (%audioconvert (default #unspecified))
 	       (%audioresample (default #unspecified))
 	       (%pipeline (default #f))
-
+	       
 	       (%playlist::pair-nil (default '()))
 	       (%meta::pair-nil (default '()))
 	       (%tag::obj (default '())))))
@@ -107,7 +107,7 @@
 		  (error '|music-init ::gstmusic|
 			   "Cannot create pipeline"
 			   o))
-
+	       
 	       (gst-bin-add! %pipeline
 			     %audiosrc
 			     %audiodecode
@@ -115,14 +115,14 @@
 			     %audioresample
 			     %audiomixer
 			     %audiosink)
-
+	       
 	       (gst-element-link! %audiosrc
 				  %audiodecode)
 	       (gst-element-link! %audioconvert
 				  %audioresample
 				  %audiomixer
 				  %audiosink)
-
+	       
 	       (gst-object-connect! %audiodecode
 				    "pad-added"
 				    (lambda (el pad)
@@ -226,9 +226,9 @@
 				;; at this moment we don't know if we will
 				;; see tags, so we emit a fake onmeta
 				(when (and onmeta (not meta) (eq? state 'play))
-				      (let* ((plist (music-playlist-get o))
-					     (file (list-ref plist song)))
-					  (onmeta (or (file-musictag file) file))))))
+				   (let* ((plist (music-playlist-get o))
+					  (file (list-ref plist song)))
+				      (onmeta (or (file-musictag file) file))))))
 			 (with-access::musicstatus %status (volume)
 			    (when (and (eq? nstate 'play) (>=fx volume 0))
 			       ;; Some gstreamer player are wrong and
@@ -241,24 +241,24 @@
 		      (tprint "meta: " (gst-message-tag-list msg))
 		      (mutex-lock! %mutex)
 		      (let ((notify #f))
-		      (for-each (lambda (tag)
-				   (let ((key (string->symbol (car tag))))
-				      (case key
-					 ((bitrate)
-					  (musicstatus-bitrate-set!
-					   %status
-					   (elong->fixnum
-					    (/elong (cdr tag) #e1000))))
-					 ((artist title album year)
+			 (for-each (lambda (tag)
+				      (let ((key (string->symbol (car tag))))
+					 (case key
+					    ((bitrate)
+					     (musicstatus-bitrate-set!
+					      %status
+					      (elong->fixnum
+					       (/elong (cdr tag) #e1000))))
+					    ((artist title album year)
 					     (set! notify #t)
-					  (gstmusic-%meta-set!
-					   o
-					   (cons (cons key (cdr tag))
-						 (gstmusic-%meta o))))
-					 (else
-					  #unspecified))))
-				(gst-message-tag-list msg))
-		      (mutex-unlock! %mutex)
+					     (gstmusic-%meta-set!
+					      o
+					      (cons (cons key (cdr tag))
+						    (gstmusic-%meta o))))
+					    (else
+					     #unspecified))))
+				   (gst-message-tag-list msg))
+			 (mutex-unlock! %mutex)
 			 (when notify
 			    (set! meta #t)
 			    (onmeta (gstmusic-%meta o)))))
@@ -278,7 +278,7 @@
 		      ;; refresh
 		      (when onstate (onstate %status))))
 
-
+		  
 		  (unless %abort-loop
 		     ;; wait to give a chance to other threads
 		     ;; to acquire the lock
@@ -342,7 +342,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-reset! o::gstmusic)
    (music-close o))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-get ::gstmusic ...                                */
 ;*---------------------------------------------------------------------*/
@@ -473,7 +473,7 @@
 	    (when (gst-element? %pipeline)
 	       (gst-element-state-set! %pipeline 'null)
 	       (gst-element-state-set! %pipeline 'ready))))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::gstmusic ...                                       */
 ;*---------------------------------------------------------------------*/

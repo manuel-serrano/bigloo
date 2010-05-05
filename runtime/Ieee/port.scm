@@ -16,7 +16,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module __r4_ports_6_10_1
-
+   
    (import  __error
 	    __bexit
 	    __r4_input_6_10_2
@@ -26,7 +26,7 @@
 	    __gunzip
 	    __url
 	    __http)
-
+   
    (use     __type
 	    __bigloo
 	    __tvector
@@ -35,7 +35,7 @@
 	    __binary
 	    __base64
 	    __bignum
-
+	    
 	    __r4_vectors_6_8
 	    __r4_strings_6_7
 	    __r4_characters_6_6
@@ -49,9 +49,9 @@
 	    __r4_pairs_and_lists_6_3
 	    __r4_output_6_10_3
 	    __r5_control_features_6_4
-
+	    
 	    __evenv)
-
+   
    (extern  (macro c-input-port?::bool  (::obj)
 		   "INPUT_PORTP")
 	    (macro c-input-string-port?::bool  (::obj)
@@ -66,14 +66,14 @@
 		   "BGL_OUTPUT_STRING_PORTP")
 	    (macro c-output-procedure-port?::bool (::obj)
 		   "BGL_OUTPUT_PROCEDURE_PORTP")
-
+	    
 	    (macro c-current-output-port::output-port (::dynamic-env)
 		   "BGL_ENV_CURRENT_OUTPUT_PORT")
 	    (macro c-current-error-port::output-port (::dynamic-env)
 		   "BGL_ENV_CURRENT_ERROR_PORT")
 	    (macro c-current-input-port::input-port (::dynamic-env)
 		   "BGL_ENV_CURRENT_INPUT_PORT")
-
+	    
 	    (macro c-current-output-port-set!::void (::dynamic-env ::output-port)
 		   "BGL_ENV_CURRENT_OUTPUT_PORT_SET")
 	    (macro c-current-error-port-set!::void (::dynamic-env ::output-port)
@@ -83,7 +83,7 @@
 
 	    (macro c-input-gzip-port-input-port::input-port (::input-port)
 		   "BGL_INPUT_GZIP_PORT_INPUT_PORT")
-
+	    
 	    ($open-input-file::obj (::bstring ::bstring) "bgl_open_input_file")
 	    ($open-input-pipe::obj (::bstring ::bstring) "bgl_open_input_pipe")
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
@@ -120,7 +120,7 @@
 	    (macro c-output-port-position::long (::output-port)
 		   "BGL_OUTPUT_PORT_FILEPOS")
 	    (c-set-output-port-position!::obj (::output-port ::long) "bgl_output_port_seek")
-
+	    
 	    (c-close-output-port::obj (::obj) "bgl_close_output_port")
 	    (c-get-output-string::bstring (::output-port)"get_output_string")
 	    (c-default-io-bufsiz::int "default_io_bufsiz")
@@ -129,13 +129,13 @@
 		   "FLUSH_OUTPUT_PORT")
 	    (macro $reset-output-string-port::obj (::output-port)
 		   "bgl_reset_output_string_port")
-
+	    
 	    (c-fexists?::bool (::string) "fexists")
 	    (macro c-delete-file::bool (::string) "unlink")
 	    (macro c-delete-directory::bool  (::string) "rmdir")
 	    (macro c-rename-file::int (::string ::string) "rename")
 	    (macro c-mkdir::bool (::string ::long) "!BGL_MKDIR")
-
+	    
  	    (macro c-output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
  	    (macro c-input-port-name::bstring (::input-port) "INPUT_PORT_NAME")
 
@@ -151,7 +151,7 @@
 		   "BGL_OUTPUT_PORT_FLUSHBUF")
 	    (macro $output-port-flushbuf-set!::void (::output-port ::obj)
 		   "BGL_OUTPUT_PORT_FLUSHBUF_SET")
-
+	    
 	    (macro c-input-port-chook::obj (::input-port)
 		   "PORT_CHOOK")
 	    (macro c-input-port-chook-set!::void (::input-port ::procedure)
@@ -161,12 +161,12 @@
 		   "BGL_INPUT_PORT_BUFFER")
 	    (macro $input-port-buffer-set!::void (::input-port ::bstring)
 		   "bgl_input_port_buffer_set")
-
+	    
 	    (macro $output-port-buffer::bstring (::output-port)
 		   "BGL_OUTPUT_PORT_BUFFER")
 	    (macro $output-port-buffer-set!::void (::output-port ::bstring)
 		   "bgl_output_port_buffer_set")
-
+	    
 	    ($directory?::bool (::string) "directoryp")
 	    ($directory->list::obj (::string) "directory_to_list")
 	    ($directory->path-list::obj (::string ::int ::char)
@@ -192,10 +192,10 @@
 		       "OUTPUT_STRING_PORTP")
 	       (method static c-output-procedure-port?::bool (::obj)
 		       "OUTPUT_PROCEDURE_PORTP")
-
+	       
 	       (field static c-default-io-bufsiz::int
 		      "default_io_bufsiz")
-
+	       
 	       (method static c-current-output-port::output-port (::dynamic-env)
 		       "getCurrentOutputPort")
 	       (method static c-current-error-port::output-port (::dynamic-env)
@@ -208,7 +208,7 @@
 		       "setCurrentErrorPort")
 	       (method static c-current-input-port-set!::void (::dynamic-env ::input-port)
 		       "setCurrentInputPort")
-
+	       
 	       (method static $open-input-file::obj (::bstring ::bstring)
 		       "bgl_open_input_file")
 	       (method static $open-input-pipe::obj (::bstring ::bstring)
@@ -245,7 +245,7 @@
 		       "bgl_output_port_seek")
 	       (method static c-input-port-bufsiz::int (::input-port)
 		       "bgl_input_port_bufsiz")
-
+	       
 	       (method static c-closed-input-port?::bool (::input-port)
 		       "CLOSED_RGC_BUFFER")
 	       (method static c-close-output-port::obj (::output-port)
@@ -258,7 +258,7 @@
 		       "FLUSH_OUTPUT_PORT")
 	       (method static $reset-output-string-port::obj (::output-port)
 		       "bgl_reset_output_string_port")
-
+	       
 	       (method static c-fexists?::bool (::string)
 		       "fexists")
 	       (method static c-delete-file::bool (::string)
@@ -269,7 +269,7 @@
 		       "rename")
 	       (method static c-mkdir::bool (::string ::int)
 		       "mkdir")
-
+	       
 	       (method static c-output-port-position::long (::output-port)
 		       "OUTPUT_PORT_FILEPOS")
 	       (method static c-input-port-position::long (::input-port)
@@ -279,12 +279,12 @@
 		       "INPUT_PORT_FILLBARRIER")
 	       (method static $input-port-fill-barrier-set!::void (::input-port ::long)
 		       "INPUT_PORT_FILLBARRIER_SET")
-
+	       
 	       (method static $input-port-length::elong (::input-port)
 		       "BGL_INPUT_PORT_LENGTH")
 	       (method static $input-port-length-set!::void (::input-port ::elong)
 		       "BGL_INPUT_PORT_LENGTH_SET")
-
+	       
 	       (method static c-input-port-last-token-position::long (::input-port)
 		       "INPUT_PORT_TOKENPOS")
 	       (method static c-input-port-name::bstring (::input-port)
@@ -307,7 +307,7 @@
 		       "INPUT_PORT_CHOOK")
 	       (method static c-input-port-chook-set!::void (::input-port ::procedure)
 		       "INPUT_PORT_CHOOK_SET")
-
+	       
 	       (method static $input-port-buffer::bstring (::input-port)
 		       "BGL_INPUT_PORT_BUFFER")
 	       (method static $input-port-buffer-set!::void (::input-port ::bstring)
@@ -316,10 +316,10 @@
 		       "BGL_OUTPUT_PORT_BUFFER")
 	       (method static $output-port-buffer-set!::void (::output-port ::bstring)
 		       "bgl_output_port_buffer_set")
-
+	       
 	       (method static c-input-gzip-port-input-port::input-port (::input-port)
 		       "BGL_INPUT_GZIP_PORT_INPUT_PORT")
-
+	       
 	       (method static $directory?::bool (::string)
 		       "directoryp")
 	       (method static $directory->list::obj (::string)
@@ -328,19 +328,19 @@
 		       "bgl_last_modification_time")
 	       (method static c-file-size::elong (::string)
 		       "bgl_file_size")
-
+	       
 	       (method static c-file-uid::int (::string)
 		       "bgl_file_uid")
 	       (method static c-file-gid::int (::string)
 		       "bgl_file_gid")
 	       (method static c-file-mode::int (::string)
 		       "bgl_file_mode")))
-
+	    
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
 	    (call-with-output-file ::bstring ::procedure)
 	    (call-with-output-string::bstring ::procedure)
-
+	    
 	    (inline input-port? ::obj)
 	    (inline input-string-port? ::obj)
 	    (inline input-procedure-port? ::obj)
@@ -349,11 +349,11 @@
 	    (inline port?::bool ::obj)
 	    (inline output-string-port? ::obj)
 	    (inline output-procedure-port? ::obj)
-
-	    (inline current-input-port::input-port)
+	    
+	    (inline current-input-port::input-port) 
 	    (inline current-error-port::output-port)
 	    (inline current-output-port::output-port)
-
+	    
 	    (with-input-from-file ::bstring ::procedure)
 	    (with-input-from-string ::bstring ::procedure)
 	    (with-input-from-port ::input-port ::procedure)
@@ -363,16 +363,16 @@
 	    (with-error-to-string ::procedure)
 	    (with-output-to-port ::output-port ::procedure)
 	    (with-output-to-procedure ::procedure ::procedure)
-
+	    
 	    (with-error-to-file ::bstring ::procedure)
 	    (with-error-to-port ::output-port ::procedure)
 	    (with-error-to-procedure ::procedure ::procedure)
-
+	    
 	    (open-input-file ::bstring #!optional (bufinfo #t))
 	    (open-input-string ::bstring #!optional (start 0))
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
-
+	    
 	    (inline input-port-timeout-set! ::input-port ::long)
 	    (inline open-input-c-string ::string)
 	    (inline reopen-input-c-string ::input-port ::string)
@@ -411,7 +411,7 @@
 	    (inline input-port-buffer-set! ::input-port ::bstring)
 	    (inline output-port-buffer::bstring ::output-port)
 	    (inline output-port-buffer-set! ::output-port ::bstring)
-
+	    
 	    (inline file-exists?::bool ::string)
 	    (inline delete-file ::string)
 	    (inline make-directory::bool ::string)
@@ -431,7 +431,7 @@
 	    (input-port-protocol-set! protocol open)
 
 	    (get-port-buffer::bstring ::symbol ::obj ::int))
-
+   
    (pragma  (c-input-port? (predicate-of input-port) nesting)
 	    (c-output-port? (predicate-of output-port) nesting)
 	    (c-output-string-port? nesting)
@@ -463,7 +463,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-output-file ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (call-with-output-file string proc)
+(define (call-with-output-file string proc) 
    (let ((port (open-output-file string)))
       (if (output-port? port)
 	  (unwind-protect
@@ -475,9 +475,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-output-string ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (call-with-output-string proc)
+(define (call-with-output-string proc) 
    (let ((port (open-output-string)))
-	 (proc port)
+      (proc port)
       (close-output-port port)))
 
 ;*---------------------------------------------------------------------*/
@@ -839,7 +839,7 @@
 ;*    %open-input-http-socket ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (%open-input-http-socket string bufinfo)
-
+   
    (define (parser ip status-code header clen tenc)
       (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
 	  (case status-code
@@ -867,7 +867,7 @@
 	      ip)
 	     (else
 	      ip))))
-
+   
    (multiple-value-bind (protocol login host port abspath)
       (url-sans-protocol-parse string "http")
       (let* ((sock (http :host host
@@ -1075,7 +1075,7 @@
 		    'set-input-port-position!
 		    "Can't seek port"
 		    port)))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    input-port-position ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -1087,14 +1087,14 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-fill-barrier port::input-port)
    ($input-port-fill-barrier port))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    input-port-fill-barrier-set! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-fill-barrier-set! port::input-port pos::long)
    ($input-port-fill-barrier-set! port pos)
    pos)
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    input-port-last-token-position ...                               */
 ;*---------------------------------------------------------------------*/
@@ -1116,7 +1116,7 @@
 		    'set-output-port-position!
 		    "Can't seek port"
 		    port)))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    output-port-position ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -1228,7 +1228,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (file-exists? name)
    (c-fexists? name))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    file-gzip? ...                                                   */
 ;*---------------------------------------------------------------------*/
@@ -1240,7 +1240,7 @@
 		 (lambda (e)
 		    #f)
 		 (gunzip-parse-header (current-input-port)))))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    delete-file ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -1267,7 +1267,7 @@
 			     (file-separator))
 		     aux
 		     (make-directory string)))))))
-
+      
 ;*---------------------------------------------------------------------*/
 ;*    delete-directory ...                                             */
 ;*---------------------------------------------------------------------*/
@@ -1348,7 +1348,7 @@
 	     (else
 	      (map! (lambda (f) (make-file-name dir f))
 		    (directory->list dir))))))))
-
+	   
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-modification-time@ ...                               */
 ;*---------------------------------------------------------------------*/

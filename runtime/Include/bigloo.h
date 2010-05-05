@@ -1219,7 +1219,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define BGL_ENV_EXITD_VAL( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_val)
-#define BGL_ENV_EXITD_VAL_SET( env, _1 )			\
+#define BGL_ENV_EXITD_VAL_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).exitd_val = (_1), BUNSPEC)
    
 #define BGL_ENV_EXITD_STAMP( env ) \
@@ -1229,7 +1229,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define BGL_ENV_BEFORED_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).befored_top)
-#define BGL_ENV_BEFORED_TOP_SET( env, _1 )			\
+#define BGL_ENV_BEFORED_TOP_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).befored_top = (_1), BUNSPEC)
    
 #define BGL_ENV_MVALUES_NUMBER( env ) \
@@ -1310,7 +1310,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_EXITD_TOP( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_EXITD_TOP_SET( _1 ) \
    BGL_ENV_EXITD_TOP_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
-   
+
 #define BGL_EXITD_TOP_AS_OBJ() \
    ((obj_t)BGL_EXITD_TOP())
 
@@ -2464,7 +2464,7 @@ struct exitd {
 /*    `dynamic-wind' before thunk linking.                             */
 /*---------------------------------------------------------------------*/
 struct befored {
-   obj_t           before;
+   obj_t before;
    struct befored *prev;
 };
 
@@ -2926,7 +2926,7 @@ BGL_RUNTIME_DECL int bgl_sigprocmask( int );
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 
 BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
-   
+
 #ifdef __cplusplus
 }
 #endif

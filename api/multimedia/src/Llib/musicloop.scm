@@ -75,28 +75,29 @@
 			   (state 'unspecified)))
 		 (stat2 (instantiate::musicstatus
 			   (state 'init))))
-	 (tprint ">>> LOOP")
 	 (let ((stop (or (music-closed? m) (music-%abort-loop m))))
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
-	       (tprint ">>> MUSIC-UPDATE-STATUS..." (current-thread))
 	       (music-update-status! m stat2)
-	       (tprint "<<< MUSIC-UPDATE-STATUS..." (current-thread))
-	       
+
 	       (when (newstate? stat2 stat1)
-		  
-		  ;; onstate
-		  (when onstate
-		     (onstate stat2))
-		  
-		  ;; onmeta
-		  (when (and onmeta (eq? (musicstatus-state stat2) 'play))
-		     (onmeta (music-get-meta stat2 m)))
-		  
-		  (when (and onerror (musicstatus-err stat2))
-		     ;; onerror
-		     (onerror (musicstatus-err stat2))))
-	       
+		  (case (musicstatus-state stat2)
+		     ((error)
+		      (when (and onerror (musicstatus-err stat2))
+			 ;; onerror
+			 (onerror (musicstatus-err stat2))))
+		     ((play)
+		      ;; onstate
+		      (when onstate
+			 (onstate stat2))
+		      ;; onmeta
+		      (when onmeta
+			 (onmeta (music-get-meta stat2 m))))
+		     (else
+		      ;; onstate
+		      (when onstate
+			 (onstate stat2)))))
+		      
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume
 		  (onvol (musicstatus-volume stat2)))
@@ -109,8 +110,7 @@
 	       (when %reset-loop
 		  (set! %reset-loop #f)
 		  (musicstatus-state-set! stat2 'reset))
-	       
-	       (tprint "<<< LOOP")
+
 	       ;; loop back
 	       (loop stat2 stat1))))))
 
@@ -166,7 +166,7 @@
 ;*    music-event-loop-parse-opt ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (music-event-loop-parse-opt obj)
-   
+
    (define (get-opt key def)
       (let ((c (memq key obj)))
 	 (if (and (pair? c) (pair? (cdr c)))

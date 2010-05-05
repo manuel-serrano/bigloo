@@ -2332,10 +2332,10 @@ public final class foreign
 	 return (byte)(b - (byte)'0');
       else if( (byte) 'a' <= b )
 	 return (byte)(10 + (b - (byte) 'a'));
-			   else
+      else
 	 return (byte)(10 + (b - (byte) 'A'));
-      }
-
+   }
+   
    public static byte[] escape_scheme_string(byte[]src)
       {
 	 final int len = src.length;
@@ -6138,7 +6138,7 @@ public final class foreign
       if( o.map == null ) {
 	 o.put( i, (byte)(c & 0xff) );
       } else {
-      o.map.put( (int)i, (byte)(c & 0xff) );
+	 o.map.put( (int)i, (byte)(c & 0xff) );
       }
       return o;
    }

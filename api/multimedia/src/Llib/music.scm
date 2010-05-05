@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
 ;*    Last change :  Wed Mar 10 07:49:23 2010 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -15,7 +15,7 @@
 (module __multimedia-music
 
    (import __multimedia-music-event-loop)
-
+   
    (export (abstract-class music
 	      (music-init)
 
@@ -41,37 +41,37 @@
 	      (bitrate::int (default 0))
 	      (khz::int (default 0))
 	      (err::obj (default #f)))
-
+	   
 	   (generic music-init ::music)
-
+	   
 	   (generic music-close ::music)
 	   (generic music-closed?::bool ::music)
 	   (generic music-reset! ::music)
-
+	   
 	   (generic music-playlist-get::pair-nil ::music)
 	   (generic music-playlist-add! ::music ::bstring)
 	   (generic music-playlist-delete! ::music ::int)
 	   (generic music-playlist-clear! ::music)
-
+	   
 	   (generic music-play ::music . song)
 	   (generic music-seek ::music ::obj . song)
 	   (generic music-stop ::music)
 	   (generic music-pause ::music)
 	   (generic music-next ::music)
 	   (generic music-prev ::music)
-
+	   
 	   (generic music-crossfade ::music ::int)
 	   (generic music-random-set! ::music ::bool)
 	   (generic music-repeat-set! ::music ::bool)
 	   (generic music-reset-error! ::music)
-
+	   
 	   (generic music-status::musicstatus ::music)
 	   (generic music-update-status! ::music ::musicstatus)
 	   (generic music-song::int ::music)
 	   (generic music-songpos::int ::music)
 	   (generic music-meta::pair-nil ::music)
-           (generic music-can-play-type?::bool ::music ::bstring)
-
+	   (generic music-can-play-type?::bool ::music ::bstring)
+	   
 	   (generic music-volume-get::obj ::music)
 	   (generic music-volume-set! ::music ::obj)
 

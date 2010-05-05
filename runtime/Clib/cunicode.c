@@ -541,51 +541,51 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
       unsigned char byte = cutf8[ read++ ];
 
       if( byte <= 0x7f )
-	 aux[ write ] = (ucs2_t)byte;
+         aux[ write ] = (ucs2_t)byte;
       else {
-	 if( (byte <= 0xbf) || (byte >= 0xfd) )
-	    C_FAILURE( "utf8-string->ucs2-string",
-		       "Illegal first byte",
-		       BCHAR( byte ) );
-	 else {
-	    ucs2_t ucs2;
-	    int bits;
-	    
-	    ucs2 = (ucs2_t)byte;
-	    bits = 6;
+         if( (byte <= 0xbf) || (byte >= 0xfd) )
+            C_FAILURE( "utf8-string->ucs2-string",
+                       "Illegal first byte",
+                       BCHAR( byte ) );
+         else {
+            ucs2_t ucs2;
+            int bits;
+            
+            ucs2 = (ucs2_t)byte;
+            bits = 6;
 
-	    while( byte & 0x40 ) {
-	       unsigned char next = cutf8[ read++ ];
-	       
-	       if( (next <= 0x7f) || (next > 0xbf) )
-		  C_FAILURE( "utf8-string->ucs2-string",
-			     "Illegal following byte",
-			     BCHAR( next ) );
-	       
-	       ucs2 = (ucs2 << 6) + (next & 0x3f);
-	       byte <<= 1;
-	       bits += 5;
-	    }
-	    ucs2 &= ((ucs2_t)1<<bits) - 1;
+            while( byte & 0x40 ) {
+               unsigned char next = cutf8[ read++ ];
+               
+               if( (next <= 0x7f) || (next > 0xbf) )
+                  C_FAILURE( "utf8-string->ucs2-string",
+                             "Illegal following byte",
+                             BCHAR( next ) );
+               
+               ucs2 = (ucs2 << 6) + (next & 0x3f);
+               byte <<= 1;
+               bits += 5;
+            }
+            ucs2 &= ((ucs2_t)1<<bits) - 1;
 
-	    if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
-		(ucs2 > 0xfffd) ||
-		!(ucs2 & (~(unsigned long)0<<(bits - 5))) )
-	       C_FAILURE( "utf8-string->ucs2-string",
-			  "Illegal utf8 character encoding",
-			  BINT( ucs2 ) );
-	    
-	    aux[ write ] = ucs2;
-	 }
+            if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
+                (ucs2 > 0xfffd) ||
+                !(ucs2 & (~(unsigned long)0<<(bits - 5))) )
+               C_FAILURE( "utf8-string->ucs2-string",
+                          "Illegal utf8 character encoding",
+                          BINT( ucs2 ) );
+            
+            aux[ write ] = ucs2;
+         }
       }
    }
-	 
+         
    string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
    cstring = (&(string->ucs2_string_t.char0));
 
    string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
    string->ucs2_string_t.length = write;
    ucs2cpy( cstring, aux, write );
-		
+                
    return BUCS2STRING( string );
 }

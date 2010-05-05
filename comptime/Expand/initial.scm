@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Mon Mar 29 15:08:16 2010 (serrano)                */
+;*    Last change :  Tue May  4 19:07:11 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -244,6 +244,9 @@
    (install-G-comptime-expander 'every
 				(lambda (x::obj e::procedure)
 				   (map-check x e)))
+
+   ;; reduce
+   (install-O-comptime-expander 'reduce expand-reduce)
    
    ;; equal?
    (install-O-comptime-expander

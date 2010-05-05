@@ -29,7 +29,7 @@
    (export  (initialize-Genv!)
 	    (set-genv! <Genv>)
 	    (add-genv! <Genv>)
-	    (get-genv)
+	    (get-genv) 
 	    (find-global ::symbol . <symbol>)
 	    (find-global/module ::symbol ::symbol)
 	    (get-global/module ::symbol ::symbol)
@@ -53,7 +53,7 @@
 ;*---------------------------------------------------------------------*/
 (define (set-genv! Genv)
    (set! *Genv* Genv))
-
+		 
 ;*---------------------------------------------------------------------*/
 ;*    add-genv! ...                                                    */
 ;*    -------------------------------------------------------------    */
@@ -213,7 +213,7 @@
 	     (begin
 		(set-car! args (find-type (type-id (car args))))
 		(loop (cdr args)))))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    get-genv ...                                                     */
 ;*---------------------------------------------------------------------*/
@@ -355,7 +355,7 @@
 					   (module->qualified-type module)))
 			(id id)
 			(value value)
-			(src src)
+			(src src) 
 			(import import))))
 	     (cond
 		((or (not (pair? bucket)) (null? (cdr bucket)))
@@ -393,14 +393,14 @@
 		(if (eq? (car cur) global)
 		    (set-cdr! prev (cdr cur))
 		    (loop (cdr cur) (cdr prev))))))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    for-each-global! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (for-each-global! proc::procedure . env)
    (hashtable-for-each (if (null? env) *Genv* (car env))
 		       (lambda (k bucket) (for-each proc (cdr bucket)))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    global-bucket-position                                           */
 ;*---------------------------------------------------------------------*/
@@ -418,4 +418,4 @@
 		(else
 		 (loop (cdr globals)
 		       (+fx pos 1))))))))
-
+   

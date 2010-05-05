@@ -434,7 +434,7 @@
 			 (user-error/location loc
 					      (variable-id v)
 					      "Illegal keyword(s) argument(s)"
-					      (map car err))))
+ 					      (map car err))))
 		   (body keys vals stack)))))))
 		   
  		   '(let* ((stack '())

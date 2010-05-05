@@ -2494,69 +2494,69 @@ namespace bigloo
 
       public static byte[] escape_C_string( byte[]  src )
 	 {
-	    // on supprime un caractere de cette chaine car elle est rendue par le
-	    // lecteur comme etant `"tototo'. Ceci est du au fait qu'on utilise
-	    // la fonction `the-small-string' qui supprime le premier et le   
-	    // dernier caractere de la chaine lue. Comme les chaines etrangeres
-	    // commencent par 2 caracteres, on en supprime 1 autre maintenant.
+	 // on supprime un caractere de cette chaine car elle est rendue par le
+	 // lecteur comme etant `"tototo'. Ceci est du au fait qu'on utilise
+	 // la fonction `the-small-string' qui supprime le premier et le
+	 // dernier caractere de la chaine lue. Comme les chaines etrangeres
+	 // commencent par 2 caracteres, on en supprime 1 autre maintenant.
 
-	    int                              len= src.Length;
-	    int                              size= 0;
+	 int len = src.Length;
+	 int size = 0;
 
 	 for (int i = 1; i < len; ++i, ++size) {
 	    if (src[i] == '\\') {
-		  if (   (i+3 < len)
-			 && isdigit( src[i+1] )
+	       if ((i + 3 < len)
+		   && isdigit(src[i + 1])
 		   && isdigit(src[i + 2]) && isdigit(src[i + 3]))
-		     i+= 3;
-		  else
-		     i+= 1;
-	       }
+		  i += 3;
+	       else
+		  i += 1;
+	    }
 	 }
 	 int utf8shrink = 0;
 
 	 byte[] result = new byte[size];
-	    int                              j= 0;
+	 int j = 0;
 
 	 for (int i = 1; i < len; ++i, ++j) {
 	    if (src[i] != '\\') {
 	       result[j] = src[i];
 	    } else {
-		  byte                         cn= src[++i];
+	       byte cn = src[++i];
 
 	       switch (cn) {
-		     case (byte)'\0':
+		  case (byte) '\0':
 		     result[j] = (byte) '\\';
-		     break;
-		     case (byte)'n' : 
+		  break;
+		  case (byte) 'n':
 		     result[j] = (byte) '\n';
-		     break;
-		     case (byte)'t':
+		  break;
+		  case (byte) 't':
 		     result[j] = (byte) '\t';
-		     break;
-		     case (byte)'b': 
+		  break;
+		  case (byte) 'b':
 		     result[j] = (byte) '\b';
-		     break;
-		     case (byte)'r': 
+		  break;
+		  case (byte) 'r':
 		     result[j] = (byte) '\r';
-		     break;
-		     case (byte)'f': 
+		  break;
+		  case (byte) 'f':
 		     result[j] = (byte) '\f';
-		     break;
-		     case (byte)'v': 
+		  break;
+		  case (byte) 'v':
 		     result[j] = (byte) 11;
-		     break;
+		  break;
 		  default: {
 		     if (i + 2 < len) {
-			   byte                   s0= src[i];
-			   byte                   s1= src[i+1];
-			   byte                   s2= src[i+2];
+			byte s0 = src[i];
+			byte s1 = src[i + 1];
+			byte s2 = src[i + 2];
 
 			if (isdigit(s0) && isdigit(s1) && isdigit(s2)) {
 			   result[j] = (byte) (64 * ((int) (s0 - '0'))
 					       + 8 * ((int) (s1 - '0'))
 					       + ((int) (s2 - '0')));
-			      i+= 2;
+			   i += 2;
 			} else {
 			   if (((s0 == (byte) 'x') || (s0 == (byte) 'X'))
 			       && isxdigit(s1)
@@ -2635,9 +2635,9 @@ namespace bigloo
 	    return (byte)(b - (byte)'0');
 	 else if( (byte) 'a' <= b )
 	    return (byte)(10 + (b - (byte) 'a'));
-			   else 
+	 else
 	    return (byte)(10 + (b - (byte) 'A'));
-	 }
+      }
 
       public static byte[] escape_scheme_string( byte[]  src )
 	 {

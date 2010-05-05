@@ -115,7 +115,7 @@ public class mmap extends obj {
 	 return 0;
       }
    }
-   
+
    public void put( long i, byte c ) {
       ;
    }

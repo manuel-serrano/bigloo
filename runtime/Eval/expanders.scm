@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Tue Sep 30 03:25:30 2008 (serrano)                */
-;*    Copyright   :  2002-08 Manuel Serrano                            */
+;*    Last change :  Fri Apr 30 17:00:03 2010 (serrano)                */
+;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
