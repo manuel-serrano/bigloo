@@ -57,5 +57,6 @@ chmod a+rx $gc/configure
 chmod a+rx "$gc"_fth/configure
 
 # Copy the inline-alloc.c file
-cp ../runtime/Clib/inline-alloc.c $gc
-cp ../runtime/Clib/inline-alloc.c "$gc"_fth
+pwd
+cp ../runtime/Clib/inline_alloc.c $gc
+cp ../runtime/Clib/inline_alloc.c "$gc"_fth
