@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Thu Apr 29 18:22:53 2010 (serrano)                */
+;*    Last change :  Sat May  8 08:34:01 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -765,6 +765,7 @@
 		      (let ((s (send-chars ip op sz)))
 			 (when (>fx s 0)
 			    (loop (-fx sz s))))))
+		(flush-output-port op)
 		(let ((s (http-read-crlf ip)))
 		   (display s op)
 		   (loop)))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Feb  7 07:37:26 2010 (serrano)                */
+#*    Last change :  Wed May  5 17:36:01 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -321,6 +321,11 @@ compile-bee: compile-bee0
 #*    should be used only when testing a new unstable compiler.        */
 #*---------------------------------------------------------------------*/
 fullbootstrap:
+	@ if [ "$(LOGMSG) " = " " ]; then \
+            echo "Error, No MSG provided using standard revision message"; \
+            echo "use \"make fullbootstrap LOGMSG=a-message\""; \
+            exit -1; \
+          fi
 	@ (dt=`date '+%d%b%y'`; \
            $(RM) -f $(BIGLOO).???????.gz > /dev/null 2>&1; \
            $(RM) -f $(BIGLOO).????????.gz > /dev/null 2>&1; \
@@ -351,13 +356,7 @@ fullbootstrap:
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
 	$(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION))
 	$(MAKE) -C recette clean
-	@ if [ "$(LOGMSG) " = " " ]; then \
-            echo "Warning, No MSG provided using standard revision message"; \
-            echo "use \"make fullbootstrap LOGMSG=a-message\""; \
-	    $(MAKE) -s revision LOGMSG="bootstrap"; \
-          else \
-	    $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"; \
-          fi
+	@ $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"
 	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
 

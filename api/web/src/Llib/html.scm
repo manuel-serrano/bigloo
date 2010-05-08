@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Thu Apr 15 16:10:59 2010 (serrano)                */
+;*    Last change :  Thu May  6 14:39:32 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -126,6 +126,8 @@
 		 (loop (+fx i 5) (+fx c 1)))
 		((substring-at? str "&quot;" i)
 		 (loop (+fx i 6) (+fx c 1)))
+		((substring-at? str "&nbsp;" i)
+		 (loop (+fx i 6) (+fx c 1)))
 		(else
 		 (loop (+fx i 1) (+fx c 1)))))
 	    (else
@@ -152,6 +154,9 @@
 			(loop (+fx i 5) (+fx j 1)))
 		       ((substring-at? str "&quot;" i)
 			(string-set! res j #\")
+			(loop (+fx i 6) (+fx j 1)))
+		       ((substring-at? str "&nbsp;" i)
+			(string-set! res j #\space)
 			(loop (+fx i 6) (+fx j 1)))
 		       (else
 			(string-set! res j (string-ref str i))
