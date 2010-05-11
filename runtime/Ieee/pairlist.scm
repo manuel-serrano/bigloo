@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Tue May  4 19:12:01 2010 (serrano)                */
+;*    Last change :  Tue May 11 13:35:41 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -931,7 +931,7 @@
        ridentify
        (let loop ((list (cdr list))
 		  (ans (car list)))
-	  (if (null? list)
+	  (if (not (pair? list))
 	      ans
 	      (loop (cdr list) (f (car list) ans))))))
 

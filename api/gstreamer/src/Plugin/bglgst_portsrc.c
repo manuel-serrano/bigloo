@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Fri Apr 23 18:13:38 2010 (serrano)                */
+/*    Last change :  Sun May  9 06:09:06 2010 (serrano)                */
 /*    Copyright   :  2008-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
@@ -94,7 +94,9 @@ enum {
 /*    Backward gstreamer compatibility                                 */
 /*---------------------------------------------------------------------*/
 #if( !BGL_GSTREAMER_HAVE_PARSE_INFO )
-static GstBuffer *gst_buffer_try_new_and_alloc( guint size ) {
+#define gst_buffer_try_new_and_alloc( s ) __gst_buffer_try_new_and_alloc( s )
+
+static GstBuffer *__gst_buffer_try_new_and_alloc( guint size ) {
    GstBuffer *newbuf;
    guint8 *malloc_data;
 

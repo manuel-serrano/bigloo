@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Tue May  4 19:15:13 2010 (serrano)                */
+;*    Last change :  Tue May 11 13:45:14 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
@@ -576,10 +576,10 @@
 			     ,ridentity
 			     (let ,loop ((,l (cdr ,l))
 					 (,a (car ,l)))
-				  (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
-				      ,a
-				      (,loop (cdr ,l) (,fun (car ,l) ,a))))))))
-	     (epairify! x res))))
+				  (if ((@ pair? __r4_pairs_and_lists_6_3) ,l)
+				      (,loop (cdr ,l) (,fun (car ,l) ,a))
+				      ,a))))))
+	     (epairify! x (e res e)))))
       ((?- ?fun ?ridentity ?list)
        (let ((res `(reduce ,(e fun e) ,(e ridentity e) ,(e list e))))
 	  (epairify! x res)))

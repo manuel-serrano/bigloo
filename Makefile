@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed May  5 17:36:01 2010 (serrano)                */
+#*    Last change :  Sat May  8 09:56:20 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -326,6 +326,10 @@ fullbootstrap:
             echo "use \"make fullbootstrap LOGMSG=a-message\""; \
             exit -1; \
           fi
+	@ $(MAKE) fullbootstrap-sans-log
+	@ $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"
+
+fullbootstrap-sans-log:
 	@ (dt=`date '+%d%b%y'`; \
            $(RM) -f $(BIGLOO).???????.gz > /dev/null 2>&1; \
            $(RM) -f $(BIGLOO).????????.gz > /dev/null 2>&1; \
@@ -356,7 +360,6 @@ fullbootstrap:
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
 	$(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION))
 	$(MAKE) -C recette clean
-	@ $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"
 	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
 
