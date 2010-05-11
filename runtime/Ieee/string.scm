@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sat May  1 06:36:44 2010 (serrano)                */
+;*    Last change :  Tue May 11 16:21:16 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -198,8 +198,10 @@
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
-				     #!optional (start (-fx (string-length s)
-							     1)))
+				     #!optional (start (-fx (string-length s) 1)))
+	    (string-skip::obj ::bstring ::obj #!optional (start 0))
+	    (string-skip-right::obj s::bstring ::obj
+				    #!optional (start (-fx (string-length s) 1)))
 	    (string-prefix-length::int s1::bstring s2::bstring
 				       #!optional start1 end1 start2 end2)
 	    (string-suffix-length::int s1::bstring s2::bstring
@@ -880,6 +882,113 @@
 			i)
 		       (else
 			(liip (-fx i 1)))))
+		 (begin
+		    (string-set-ur! t (char->integer (string-ref-ur rs i)) #\y)
+		    (loop (-fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-skip ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (string-skip string rs #!optional (start 0))
+   (define (string-char-skip s c)
+      (let ((len (string-length s)))
+	 (let loop ((i start))
+	    (cond
+	       ((>=fx i len)
+		#f)
+	       ((char=? (string-ref-ur s i) c)
+		(loop (+fx i 1)))
+	       (else
+		i)))))
+   (cond
+      ((char? rs)
+       (string-char-skip string rs))
+      ((not (string? rs))
+       (error 'string-skip "Illegal regset" rs))
+      ((=fx (string-length rs) 1)
+       (string-char-skip string (string-ref rs 0)))
+      ((<=fx (string-length rs) 10)
+       (let ((len (string-length string))
+	     (lenj (string-length rs)))
+	  (let loop ((i start))
+	     (if (>=fx i len)
+		 #f
+		 (let ((c (string-ref string i)))
+		    (let liip ((j 0))
+		       (if (=fx j lenj)
+			   i
+			   (if (char=? c (string-ref-ur rs j))
+			       (loop (+fx i 1))
+			       (liip (+fx j 1))))))))))
+      (else
+       (let ((t (make-string 256 #\n))
+	     (len (string-length string)))
+	  (let loop ((i (-fx (string-length rs) 1)))
+	     (if (=fx i -1)
+		 (let liip ((i start))
+		    (cond
+		       ((>=fx i len)
+			#f)
+		       ((char=? (string-ref
+				 t (char->integer (string-ref-ur string i)))
+				#\y)
+			(liip (+fx i 1)))
+		       (else
+			i)))
+		 (begin
+		    (string-set-ur! t (char->integer (string-ref-ur rs i)) #\y)
+		    (loop (-fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-skip-right ...                                            */
+;*---------------------------------------------------------------------*/
+(define (string-skip-right s rs #!optional (start (-fx (string-length s) 1)))
+   (define (string-char-skip s c)
+      (let loop ((i start))
+	 (cond
+	    ((<fx i 0)
+	     #f)
+	    ((char=? (string-ref-ur s i) c)
+	     (loop (-fx i 1)))
+	    (else
+	     i))))
+   (cond
+      ((>fx start (string-length s))
+       (error 'string-index "index out of bound" start))
+      ((char? rs)
+       (string-char-skip s rs))
+      ((not (string? rs))
+       (error 'string-index-right "Illegal regset" rs))
+      ((=fx (string-length rs) 1)
+       (string-char-skip s (string-ref rs 0)))
+      ((<=fx (string-length rs) 10)
+       (let ((len (string-length s))
+	     (lenj (string-length rs)))
+	  (let loop ((i start))
+	     (if (<fx i 0)
+		 #f
+		 (let ((c (string-ref s i)))
+		    (let liip ((j 0))
+		       (if (=fx j lenj)
+			   i
+			   (if (char=? c (string-ref-ur rs j))
+			       (loop (-fx i 1))
+			       (liip (+fx j 1))))))))))
+      (else
+       (let ((t (make-string 256 #\n))
+	     (len (string-length s)))
+	  (let loop ((i (-fx (string-length rs) 1)))
+	     (if (=fx i -1)
+		 (let liip ((i start))
+		    (cond
+		       ((<fx i 0)
+			#f)
+		       ((char=? (string-ref
+				 t (char->integer (string-ref-ur s i)))
+				#\y)
+			(liip (-fx i 1)))
+		       (else
+			i)))
 		 (begin
 		    (string-set-ur! t (char->integer (string-ref-ur rs i)) #\y)
 		    (loop (-fx i 1)))))))))
