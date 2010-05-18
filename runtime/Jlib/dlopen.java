@@ -124,7 +124,7 @@ public abstract class dlopen {
       throws Exception {
       String name = prefix( bigloo.foreign.resource_name( filename ) ).replace( '/', '.' );
 
-      Class new_class = java.lang.ClassLoader.getSystemClassLoader().loadClass( name.replace( '\\', '/' ) );
+      Class new_class = foreign.class.getClassLoader().loadClass( name.replace( '\\', '/' ) );
       
       if( init_sym.length > 0 ) {
 	 try {
