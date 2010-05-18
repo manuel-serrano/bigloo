@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 11:44:28 2008                          */
-;*    Last change :  Tue Dec 30 07:52:24 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Fri Mar 12 10:36:22 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player                                            */
 ;*=====================================================================*/
@@ -51,30 +51,25 @@
 		       ((mpg123)
 			(if command
 			    (instantiate::mpg123
-			       (path command)
-			       (frequency frequency))
-			    (instantiate::mpg123
-			       (frequency frequency))))
+			       (path command))
+			    (instantiate::mpg123)))
 		       ((mplayer)
 			(if command
 			    (instantiate::mplayer
-			       (path command)
-			       (frequency frequency))
-			    (instantiate::mplayer
-			       (frequency frequency))))
+			       (path command))
+			    (instantiate::mplayer)))
 		       ((mpc)
 			(instantiate::mpc
-			   (frequency frequency)
 			   (host mpchost)
-			   (port mpcport)))
-		       ((xmms)
-			(instantiate::xmms
-			   (frequency frequency))))))
+			   (port mpcport))))))
+;* 		       ((xmms)                                         */
+;* 			(instantiate::xmms)))))                        */
 	 (music-playlist-clear! player)
 	 (for-each (lambda (p) (music-playlist-add! player p)) (reverse files))
 	 (music-play player)
 	 (print "Using player: " backend)
 	 (music-event-loop player
+	    :frequency frequency
             :onstate (lambda (status)
 			(with-access::musicstatus status (state song volume
 								songpos

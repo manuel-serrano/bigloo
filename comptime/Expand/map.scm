@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Thu Nov  6 09:32:54 2008 (serrano)                */
-;*    Copyright   :  1992-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May 11 13:45:14 2010 (serrano)                */
+;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
    (export (expand-map      ::obj ::procedure)
 	   (expand-for-each ::obj ::procedure)
 	   (expand-any?     ::obj ::procedure)
-	   (expand-every?   ::obj ::procedure)))
+	   (expand-every?   ::obj ::procedure)
+	   (expand-reduce   ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    epairify! ...                                                    */
@@ -561,3 +562,29 @@
       (else
        (error #f "Illegal `every?' form" x))))
        
+;*---------------------------------------------------------------------*/
+;*    expand-reduce ...                                                */
+;*---------------------------------------------------------------------*/
+(define (expand-reduce x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?ridentity ?list)
+       (let* ((l (mark-symbol-non-user! (gensym 'l)))
+	      (a (mark-symbol-non-user! (gensym 'ans)))
+	      (loop (mark-symbol-non-user! (gensym 'loop))))
+	  (let ((res `(let ((,l ,list))
+			 (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+			     ,ridentity
+			     (let ,loop ((,l (cdr ,l))
+					 (,a (car ,l)))
+				  (if ((@ pair? __r4_pairs_and_lists_6_3) ,l)
+				      (,loop (cdr ,l) (,fun (car ,l) ,a))
+				      ,a))))))
+	     (epairify! x (e res e)))))
+      ((?- ?fun ?ridentity ?list)
+       (let ((res `(reduce ,(e fun e) ,(e ridentity e) ,(e list e))))
+	  (epairify! x res)))
+      (else
+       (error #f "Illegal `reduce' form" x))))
+       
+       
+   

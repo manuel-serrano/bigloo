@@ -7,6 +7,7 @@ public abstract class input_port extends obj
   public final String name;
   public int filepos = 0;
   public int pseudoeof = -1;
+  public int length = -1;
   public int bufsiz;
   public boolean eof = false;
   public boolean other_eof = false;

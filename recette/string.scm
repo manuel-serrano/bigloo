@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Wed Nov 11 08:41:59 2009 (serrano)                */
+;*    Last change :  Tue May 11 16:40:26 2010 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -503,6 +503,24 @@
    (test "string-index-right.3" (string-index-right "foobar-ge-e" "-" 7) 6)
    (test "string-index-right.4" (string-index-right "foobar-ge-e" "_") #f)
    (test "string-index-right.5" (string-index-right "foobar-ge-e" "_" 7) #f)
+   (test "string-skip.1" (string-skip "foobar-gee" #\f) 1)
+   (test "string-skip.2" (string-skip "foobar-gee" "f") 1)
+   (test "string-skip.3" (string-skip "foobar-gee" "fo") 3)
+   (test "string-skip.4" (string-skip "foobar-gee" "fofofofofofofofofofo") 3)
+   (test "string-skip.5" (string-skip "foobar-gee" "of") 3)
+   (test "string-skip.6" (string-skip "foobar-gee" "ofofofofofofofofof") 3)
+   (test "string-skip.7" (string-skip "foobar-ge-e" "_") 0)
+   (test "string-skip.8" (string-skip "foobar-ge-e" "_" 7) 7)
+   (test "string-skip.9" (string-skip "foobar-gee" "fobar-ge") #f)
+   (test "string-skip-right.1" (string-skip-right "foobar-gee" #\e) 7)
+   (test "string-skip-right.2" (string-skip-right "foobar-gee" "e") 7)
+   (test "string-skip-right.3" (string-skip-right "foobar-gee" "ge") 6)
+   (test "string-skip-right.4" (string-skip-right "foobar-gee" "gegegegegegegegegege") 6)
+   (test "string-skip-right.5" (string-skip-right "foobar-gee" "eg") 6)
+   (test "string-skip-right.6" (string-skip-right "foobar-gee" "egegegegegegegegeg") 6)
+   (test "string-skip-right.7" (string-skip-right "foobar-ge-e" "_") 10)
+   (test "string-skip-right.8" (string-skip-right "foobar-ge-e" "_" 7) 7)
+   (test "string-skip-right.9" (string-skip-right "foobar-gee" "fobar-ge") #f)
    (test "string-natural-compare3.1" (string-natural-compare3 "foo" "foo") 0)
    (test "string-natural-compare3.2"
    (string-natural-compare3 "foo0" "foo1") -1)

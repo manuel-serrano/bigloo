@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Mar 29 10:08:10 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Mon Mar 29 09:02:46 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -23,4 +23,5 @@
 	   __web_css-ast
 	   __web_date)
 
-   (eval   (export-all)))
+   (eval   (class &webdav-access-control-exception)
+	   (export-all)))

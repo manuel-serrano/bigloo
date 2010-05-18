@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Thu Feb 18 15:03:56 2010 (serrano)                */
+;*    Last change :  Tue May 11 13:35:41 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -158,6 +158,7 @@
 	    (any?::bool ::procedure . obj)
 	    (find ::procedure ::pair-nil)
 	    (find-tail::obj ::procedure ::pair-nil)
+	    (reduce::obj ::procedure ::obj ::pair-nil)
 	    (make-list::pair-nil ::int . obj)
 	    (list-tabulate::pair-nil ::int ::procedure)
 	    (list-split ::pair-nil ::int . obj)
@@ -921,6 +922,18 @@
 	 (if (pred (car list))
 	     list
 	     (lp (cdr list))))))
+
+;*---------------------------------------------------------------------*/
+;*    reduce ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (reduce f ridentify list)
+   (if (null? list)
+       ridentify
+       (let loop ((list (cdr list))
+		  (ans (car list)))
+	  (if (not (pair? list))
+	      ans
+	      (loop (cdr list) (f (car list) ans))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-list ...                                                    */

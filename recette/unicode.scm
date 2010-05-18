@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Sun Nov 30 10:55:20 2008 (serrano)                */
+;*    Last change :  Wed Apr  7 18:20:10 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode test.                                                    */
 ;*=====================================================================*/
@@ -352,6 +352,11 @@
    (let ((s "été maison pas glöp"))
       (test "utf8/iso-latin" (utf8->iso-latin (iso-latin->utf8 s)) s))
    (let ((s "\xe2\x82\xactoto\xe2\x80\x9a"))
-      (test "utf8/cp1252" (cp1252->utf8 (utf8->cp1252 s)) s)))
+      (test "utf8/cp1252" (cp1252->utf8 (utf8->cp1252 s)) s))
+   (let* ((l '(#\" #\[ #\\ #\u #\0 #\0 #\4 #\1 #\] #\"))
+	  (s0 (apply string l))
+	  (s (with-input-from-string s0 read)))
+      (test "unicode literal.1" (string->list s) (list #\[ (integer->char #x41) #\]))
+      (test "unicode literal.2" (list->string (string->list s)) s)))
 	    
    

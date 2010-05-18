@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Sep  3 11:50:43 2009 (serrano)                */
+;*    Last change :  Fri Apr  2 10:39:29 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1396,22 +1396,20 @@
 ;*    fixnum->string ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (fixnum->string x #!optional (radix::long 10))
-  (integer->string-op fixnum x radix))
-
-#;(define (integer->string x #!optional (radix::long 10))
-  (integer->string-op fixnum x radix))
+   (integer->string-op fixnum x radix))
 
 (define (integer->string x #!optional (radix::long 10))
-  (cond ((fixnum? x)
-	 (fixnum->string x radix))
-	((elong? x)
-	 (elong->string x radix))
-	((llong? x)
-	 (llong->string x radix))
-	((bignum? x)
-	 (bignum->string x radix))
-	(else
-	 (error "->string" "Illegal integer" x))))
+   (cond
+      ((fixnum? x)
+       (fixnum->string x radix))
+      ((elong? x)
+       (elong->string x radix))
+      ((llong? x)
+       (llong->string x radix))
+      ((bignum? x)
+       (bignum->string x radix))
+      (else
+       (error "->string" "Illegal integer" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string/padding ...                                      */

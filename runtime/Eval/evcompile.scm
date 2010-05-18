@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Thu Jul  9 12:24:30 2009 (serrano)                */
+;*    Last change :  Thu Apr 29 17:33:36 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -642,29 +642,33 @@
 ;*    evcompile-lambda ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-lambda formals body where named? loc)
+   
+   (define (traced?)
+      (and named? (symbol? where) (not (getprop where 'non-user))))
+
    (match-case formals
       ((or () (?-) (?- ?-) (?- ?- ?-) (?- ?- ?- ?-))
-       (if named?
+       (if (traced?)
 	   (evcode (+fx (length formals) 37) loc body (loc-where where loc))
 	   (evcode (+fx (length formals) 42) loc body)))
       ((atom ?-)
-       (if named?
+       (if (traced?)
 	   (evcode 47 loc body (loc-where where loc))
 	   (evcode 51 loc body)))
       (((atom ?-) . (atom ?-))
-       (if named?
+       (if (traced?)
 	   (evcode 48 loc body (loc-where where loc))
 	   (evcode 52 loc body)))
       (((atom ?-) (atom ?-) . (atom ?-))
-       (if named?
+       (if (traced?)
 	   (evcode 49 loc body (loc-where where loc))
 	   (evcode 53 loc body)))
       (((atom ?-) (atom ?-) (atom ?-) . (atom ?-))
-       (if named?
+       (if (traced?)
 	   (evcode 50 loc body (loc-where where loc))
 	   (evcode 54 loc body)))
       (else
-       (if named?
+       (if (traced?)
 	   (evcode 55 loc body (loc-where where loc) formals)
 	   (evcode 56 loc body formals)))))
 

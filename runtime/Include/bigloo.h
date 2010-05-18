@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Feb 14 08:46:25 2010 (serrano)                */
+/*    Last change :  Thu Apr 22 09:56:19 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -349,9 +349,10 @@ typedef union scmobj {
       long            matchstart;/*    - the start of a match position */
       long            matchstop; /*    - the end of the match          */
       long            forward;   /*    - the position of READ-CHAR     */
-      long            bufpos;    /*    - the buffer write offset       */
+      long            bufpos;    /*    - the buffer read offset        */
       union scmobj   *buf;       /*    - the buffer as a bgl string    */      
       int             lastchar;  /*    - the last char before a fill   */
+      long            length;    /*    - the (char number) of the port */
    } input_port_t;
 
    struct input_procedure_port {
@@ -398,13 +399,12 @@ typedef union scmobj {
    struct stack {                /*  Les piles de `call/cc'            */
       header_t        header;    /*  sont:                             */
       union scmobj   *self;      /*        - un ptr sur soit meme      */
-      union scmobj   *exitd_top; /*        - un ptr sur les exits      */
+      struct exitd   *exitd_top; /*        - un ptr sur les exits      */
       union scmobj   *stamp;     /*        - an exitd stamp            */
       long            size;      /*        - une taille                */
       struct befored *before_top;/*        - un ptr sur les befores    */
       char           *stack_top; /*        - the top of the stack      */
       char           *stack_bot; /*        - the bottom of the stack   */
-      struct bgl_dframe *top_frame; /*     - the head of the traces    */
       void           *stack;     /*        - un espace memoire         */
    } stack_t;
 
@@ -534,7 +534,8 @@ typedef union scmobj {
       union scmobj *mvalues[ 16 ];
       /* exceptions and call/cc */
       char *stack_bottom;
-      union scmobj *exitd_top;
+      union scmobj *exit_value;
+      struct exitd *exitd_top;
       union scmobj *exitd_stamp;
       struct befored *befored_top;
       union scmobj *exitd_val;
@@ -549,6 +550,7 @@ typedef union scmobj {
       /* stack traces */
       struct bgl_dframe top;
       struct bgl_dframe *top_of_frame;
+      union scmobj *exit_traces;
       /* current thread */
       void *current_thread;
       /* thread lexical stack */
@@ -1200,6 +1202,16 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_STACK_BOTTOM_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).stack_bottom = (_1), BUNSPEC)
    
+#define BGL_ENV_EXIT_VALUE( env ) \
+   (BGL_DYNAMIC_ENV( env ).exit_value)
+#define BGL_ENV_EXIT_VALUE_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).exit_value = (_1), BUNSPEC)
+   
+#define BGL_ENV_EXIT_TRACES( env ) \
+   (BGL_DYNAMIC_ENV( env ).exit_traces)
+#define BGL_ENV_EXIT_TRACES_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).exit_traces = (_1), BUNSPEC)
+   
 #define BGL_ENV_EXITD_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_top)
 #define BGL_ENV_EXITD_TOP_SET( env, _1 ) \
@@ -1207,7 +1219,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define BGL_ENV_EXITD_VAL( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_val)
-#define BGL_ENV_EXITD_VAL_SET( env, _1 )			\
+#define BGL_ENV_EXITD_VAL_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).exitd_val = (_1), BUNSPEC)
    
 #define BGL_ENV_EXITD_STAMP( env ) \
@@ -1217,7 +1229,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define BGL_ENV_BEFORED_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).befored_top)
-#define BGL_ENV_BEFORED_TOP_SET( env, _1 )			\
+#define BGL_ENV_BEFORED_TOP_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).befored_top = (_1), BUNSPEC)
    
 #define BGL_ENV_MVALUES_NUMBER( env ) \
@@ -1289,11 +1301,19 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_THREAD_BACKEND_SET( _v ) \
    BGL_ENV_THREAD_BACKEND_SET( BGL_CURRENT_DYNAMIC_ENV(), _v )
    
+#define BGL_EXIT_VALUE() \
+   BGL_ENV_EXIT_VALUE( BGL_CURRENT_DYNAMIC_ENV() )
+#define BGL_EXIT_VALUE_SET( _1 ) \
+   BGL_ENV_EXIT_VALUE_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
+   
 #define BGL_EXITD_TOP() \
    BGL_ENV_EXITD_TOP( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_EXITD_TOP_SET( _1 ) \
    BGL_ENV_EXITD_TOP_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
-   
+
+#define BGL_EXITD_TOP_AS_OBJ() \
+   ((obj_t)BGL_EXITD_TOP())
+
 #define BGL_EXITD_VAL() \
    BGL_ENV_EXITD_VAL( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_EXITD_VAL_SET( _1 ) \
@@ -1391,18 +1411,32 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define POP_TRACE() \
    BGL_ENV_POP_TRACE( bgl_denv )
    
-#define SET_TRACE( name ) BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), name )
+#define SET_TRACE( name ) \
+   BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), name )
 
-#define GET_TRACE() BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
+#define GET_TRACE() \
+   BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
 
 /* after a bind-exit, we must reset the current trace */
 /* See cgen/emit-cop.scm and SawC/code.scm            */
+/* MS 21apr2010: these macros cannot use a local var  */
+/* because longjmp does not restore them. Hence, the  */
+/* top_of_stack value has to be stored in the env.    */   
+#define BGL_ENV_STORE_TRACE( env ) \
+   BGL_ENV_EXIT_TRACES_SET( env, \
+     MAKE_PAIR( (obj_t)BGL_ENV_GET_TOP_OF_FRAME( env ), BGL_ENV_EXIT_TRACES( env ) ) )
+
+#define BGL_ENV_RESTORE_TRACE( env ) \
+   BGL_ENV_SET_TOP_OF_FRAME( env, (struct bgl_dframe *)CAR( BGL_ENV_EXIT_TRACES( env ) ) ); \
+   BGL_ENV_EXIT_TRACES_SET( env, CDR( BGL_ENV_EXIT_TRACES( env ) ) );
+   
+/* after a bind-exit, we must reset the current trace */
+/* See cgen/emit-cop.scm and SawC/code.scm            */
 #define BGL_STORE_TRACE() \
-   struct bgl_dframe *bgl_exit_trace = \
-      BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() )
+   BGL_ENV_STORE_TRACE( BGL_CURRENT_DYNAMIC_ENV() )
 
 #define BGL_RESTORE_TRACE() \
-   BGL_ENV_SET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV(), bgl_exit_trace )
+   BGL_ENV_RESTORE_TRACE( BGL_CURRENT_DYNAMIC_ENV() )
    
 /*---------------------------------------------------------------------*/
 /*    Failures                                                         */
@@ -1866,6 +1900,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_INPUT_PORT_BUFSIZ( o ) \
    (STRING_LENGTH( BGL_INPUT_PORT_BUFFER( o ) ))
 
+#define BGL_INPUT_PORT_LENGTH( o ) \
+   (INPUT_PORT( o ).length)
+
+#define BGL_INPUT_PORT_LENGTH_SET( o, v ) \
+   (INPUT_PORT( o ).length = (v))
+
 /*---------------------------------------------------------------------*/
 /*    Binary ports                                                     */
 /*---------------------------------------------------------------------*/
@@ -2321,12 +2361,10 @@ extern bool_t BXNEGATIVE( obj_t );
 /*---------------------------------------------------------------------*/
 /*    `exit' machinery                                                 */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t _exit_value_;
-
 #define SET_EXIT( exit ) \
    SETJMP( jmpbuf )
 #define JUMP_EXIT( exit, val ) \
-   _exit_value_ = val, LONGJMP( exit, 1 )
+   BGL_EXIT_VALUE_SET( val ), LONGJMP( exit, 1 )
 
 #ifdef __ia64__
 /* IA64 code */
@@ -2359,7 +2397,7 @@ extern struct ia64_rv_t ia64_getcontext (ucontext_t *) __asm__ ("getcontext");
        0 : 1))
 
 #  define CALLCC_JUMP_EXIT( exit, val ) \
-   (_exit_value_ = val, \
+   (BGL_EXIT_VALUE_SET( val ), \
     memcpy( (void *)__libc_ia64_register_backing_store_base, \
             ((callcc_jmp_buf *)exit)->backing_store, \
             ((callcc_jmp_buf *)exit)->backing_store_size), \
@@ -2380,6 +2418,7 @@ struct exitd {
    void *exit;
    long userp;
    obj_t stamp;
+   struct bgl_dframe *top_of_frame;
    struct exitd *prev;
 };
 
@@ -2391,17 +2430,17 @@ struct exitd {
    struct exitd exitd; \
    exitd.exit  = _xit; \
    exitd.userp = _ser; \
-   exitd.prev  = ((struct exitd *)BGL_ENV_EXITD_TOP( env )); \
+   exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
+   exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
-   BGL_ENV_EXITD_TOP_SET( env, (obj_t)(&exitd) );
+   BGL_ENV_EXITD_TOP_SET( env, (&exitd) );
    
 #define PUSH_EXIT( _xit, _ser ) \
    PUSH_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser )
 
 #define POP_ENV_EXIT( env ) \
-   BGL_ENV_EXITD_TOP_SET( \
-      env, \
-      (obj_t)(((struct exitd *)BGL_ENV_EXITD_TOP( env ))->prev) )
+   BGL_ENV_SET_TOP_OF_FRAME( env, BGL_ENV_EXITD_TOP( env )->top_of_frame); \
+   BGL_ENV_EXITD_TOP_SET( env, BGL_ENV_EXITD_TOP( env )->prev ); \
 
 #define POP_EXIT() \
    POP_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV() )
@@ -2418,11 +2457,14 @@ struct exitd {
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)
 
+#define BGL_EXITD_BOTTOMP( extd ) \
+   ((extd) == 0L)
+   
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */
 /*---------------------------------------------------------------------*/
 struct befored {
-   obj_t           before;
+   obj_t before;
    struct befored *prev;
 };
 
@@ -2796,6 +2838,9 @@ BGL_RUNTIME_DECL obj_t string_to_bstring_len( char *, int );
 BGL_RUNTIME_DECL obj_t close_init_string();
 BGL_RUNTIME_DECL obj_t bgl_string_shrink( obj_t, long );
 
+BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string( obj_t );
+BGL_RUNTIME_DECL obj_t make_ucs2_string( int, ucs2_t );
+   
 BGL_RUNTIME_DECL obj_t bgl_find_runtime_type( obj_t );
    
 BGL_RUNTIME_DECL obj_t cobj_to_foreign( obj_t, void * );
@@ -2840,6 +2885,7 @@ BGL_RUNTIME_DECL bool_t (*bgl_condvar_signal)( obj_t );
 BGL_RUNTIME_DECL bool_t (*bgl_condvar_broadcast)( obj_t );
 
 BGL_RUNTIME_DECL obj_t bgl_open_mmap( obj_t, bool_t, bool_t );
+BGL_RUNTIME_DECL obj_t bgl_string_to_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DEF obj_t bgl_close_mmap( obj_t );
    
 #if !HAVE_MMAP   
@@ -2880,7 +2926,7 @@ BGL_RUNTIME_DECL int bgl_sigprocmask( int );
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 
 BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
-   
+
 #ifdef __cplusplus
 }
 #endif

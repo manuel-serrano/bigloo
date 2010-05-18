@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Tue Oct  3 08:03:45 2006 (serrano)                */
+;*    Last change :  Wed Apr  7 17:35:17 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -228,7 +228,7 @@
 (define-method (node->sexp node::cast-null)
    (node->sexp-hook node)
    (with-access::cast-null node (type)
-      `(cast-null::,(type-id type))))
+      `(cast-null:: ,(type-id type))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::cast ...                                            */

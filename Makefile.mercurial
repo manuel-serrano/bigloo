@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 16 06:22:55 2006                          */
-#*    Last change :  Fri Sep 11 16:56:15 2009 (serrano)                */
-#*    Copyright   :  2006-09 Manuel Serrano                            */
+#*    Last change :  Sat Feb 20 07:34:46 2010 (serrano)                */
+#*    Copyright   :  2006-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Mercurial specific part of the Bigloo Makefile               */
 #*=====================================================================*/
@@ -19,6 +19,7 @@ VM-PULL		= hg pull
 VM-CLONE	= hg clone
 VM-TAG		= hg tag
 VM-UPDATE	= hg update -C tip
+VM-VERIFY	= hg verify
 
 #*---------------------------------------------------------------------*/
 #*    populate ...                                                     */
@@ -38,9 +39,9 @@ populate.hg-populate-bug-workaround:
 #*---------------------------------------------------------------------*/
 revision: populate
 	if [ "$(LOGMSG) " != " " ]; then \
-	   $(VM-COMMIT) $(OPT) -m "$(LOGMSG)"; \
+	   $(VM-COMMIT) $(OPT) -m "$(LOGMSG)" && $(VM-VERIFY); \
         else \
-	   $(VM-COMMIT) $(OPT); \
+	   $(VM-COMMIT) $(OPT) && $(VM-VERIFY); \
         fi
 	if [ -f .bigloorelease ]; then \
           release=`cat .bigloorelease`; \

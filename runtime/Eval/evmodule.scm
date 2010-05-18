@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Feb 11 11:21:50 2010 (serrano)                */
+;*    Last change :  Tue Mar  9 12:17:42 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -144,14 +144,16 @@
 	  (begin
 	     (set! *modules-table* (make-hashtable 100))
 	     (hashtable-put! *modules-table* id mod))
-	  (if (hashtable-get *modules-table* id)
-	      (begin
-		 (hashtable-update! *modules-table* id (lambda (v) mod) mod)
-		 (let ((msg (string-append "Module redefinition `"
-					   (symbol->string id)
-					   "'")))
-		    (evmeaning-warning #f msg)))
-	      (hashtable-put! *modules-table* id mod)))
+	  (let ((old (hashtable-get *modules-table* id)))
+	     (if old 
+		 (begin
+		    (hashtable-update! *modules-table* id (lambda (v) mod) mod)
+		    (let ((msg (string-append "Module redefinition `"
+					      (symbol->string id)
+					      "', file \""
+					      (%evmodule-path old) "\"")))
+		       (evmeaning-warning #f msg)))
+		 (hashtable-put! *modules-table* id mod))))
       (mutex-unlock! *modules-mutex*)
       mod))
 
@@ -394,7 +396,7 @@
 			(mod2 #f))
 		(if (pair? path)
 		    (begin
-		       (evmodule-loadq (car path))
+		       (evmodule-load (car path))
 		       (let ((mod2 (eval-find-module ident)))
 			  ($eval-module-set! mod2)
 			  (loop (cdr path) mod2)))

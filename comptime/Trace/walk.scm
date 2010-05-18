@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Aug 22 16:21:05 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 29 17:15:50 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -40,8 +40,8 @@
    ;; tracing of toplevel defined closures. This transformation is applied
    ;; before regular tracing because it only scans [begin] top level forms.
    ;; It stops before any nested expression.
-   (let* ((id   'toplevel-init)
-	  (glo  (find-global id *module*)))
+   (let* ((id 'toplevel-init)
+	  (glo (find-global id *module*)))
       (if (global? glo)
 	  (with-access::sfun (global-value glo) (body)
 	     (set! body (toplevel-trace-node body)))))
@@ -58,16 +58,14 @@
 ;*    rather anonymous [toplevel-init] ident, we use the name of       */
 ;*    the module.                                                      */
 ;*---------------------------------------------------------------------*/
-(define (trace-id variable)
+(define (trace-id v)
    (cond
-      ((and (global? variable)
-	    (eq? (global-id variable) 'toplevel-init))
-       (symbol-append (string->symbol "%toplevel@") (global-module variable)))
-      ((and (global? variable)
-	    (eq? (global-id variable) 'imported-modules-init))
-       (symbol-append (string->symbol "%import@") (global-module variable)))
+      ((and (global? v) (eq? (global-id v) 'toplevel-init))
+       (symbol-append (string->symbol "%toplevel@") (global-module v)))
+      ((and (global? v) (eq? (global-id v) 'imported-modules-init))
+       (symbol-append (string->symbol "%import@") (global-module v)))
       (else
-       (variable-id variable))))
+       (variable-id v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-fun! ...                                                   */
@@ -83,17 +81,18 @@
 		    (find-location (find-last-sexp (global-src var)))
 		    (node-loc (find-last-node body)))))
       (if (and (not (fun-predicate-of fun))
-	       (not (memq 'no-trace (sfun-property fun))))
+	       (not (memq 'no-trace (sfun-property fun)))
+	       (user-symbol? (variable-id var)))
 	  (begin
 	     (enter-function (trace-id var))
-	     (let* ((new-body  (if (or (>=fx *compiler-debug* 3)
+	     (let* ((new-body  (if (or (>fx *compiler-debug-trace* 1)
 				       (and (global? var)
 					    (eq? (global-id var)
 						 'toplevel-init)))
 				   ;; we always goes trough the first level
 				   ;; (i.e. not the nested local functions)
 				   ;; of the toplevel-init function even
-				   ;; if [*compiler-debug* < 3]. That way
+				   ;; if [*compiler-debug-trace* < 2]. That way
 				   ;; we are sure that global closures will
 				   ;; be correctly traced and not labeled
 				   ;; [toplevel-init].

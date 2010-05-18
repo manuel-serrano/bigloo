@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Feb 15 06:54:53 2010 (serrano)                */
+;*    Last change :  Thu Mar 18 06:33:48 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -264,7 +264,6 @@
 (define (mpd-list-begin db backend ip op cmd)
    (let loop ((lines '()))
       (let ((line (read-line ip)))
-	 (tprint "list-begin line=" line)
 	 (unless (eof-object? line)
 	    (let ((c (get-line-command line)))
 	       (if (eq? c 'command_list_end)
@@ -336,7 +335,6 @@
 (define-command (status)
    (let ((status (music-status backend)))
       (with-access::musicstatus status (volume song songid state)
-	 (tprint "status=" status)
 	 (let ((vol (if (vector? volume) (vector-ref volume 0) volume)))
 	    (disp "volume: " vol))
 	 (disp "state: " state)
@@ -394,12 +392,12 @@
 	    (display "Id: " op)
 	    (display num op)
 	    (newline op))
-	 (let ((id3 (and (file-exists? file)
+	 (let ((tag (and (file-exists? file)
 			 (not (directory? file))
-			 (mp3-id3 file)))
+			 (file-musictag file)))
 	       (dir (dirname file)))
-	    (if (id3? id3)
-		(with-access::id3 id3 ((ar artist) title (al album) track)
+	    (if (musictag? tag)
+		(with-access::musictag tag ((ar artist) title (al album) track)
 		   (let ((a (or artist
 				(if (string-ci=? ar "unknown")
 				    (string-capitalize (basename (dirname dir)))
@@ -428,7 +426,7 @@
 (define (playlistinfo db backend line ip op num::int)
    (with-access::mpd-database db (directories)
       (let ((plist (music-playlist-get backend)))
-	 (if (and (integer? num) (>=fx num 0) (<fx num (length plist)))
+	 (if (and (>=fx num 0) (<fx num (length plist)))
 	     (infofile db (list-ref plist num) num op)
 	     (let loop ((plist plist)
 			(num 0))
@@ -508,7 +506,49 @@
 ;*    currentsong ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-command (currentsong)
-   (playlistinfo db backend line ip op (music-song backend)))
+   
+   (define (metasong file path)
+      ;; the file is not local, ask the player the meta data (if any)
+      (let ((meta (music-meta backend)))
+	 (if (null? meta)
+	     (playlistinfo db backend line ip op (music-song backend))
+	     (let ((num (music-song backend))
+		   (dir (dirname file)))
+		(display "file: " op)
+		(display path op)
+		(newline op)
+		(when num
+		   (display "Pos: " op)
+		   (display num op)
+		   (newline op)
+		   (display "Id: " op)
+		   (display num op)
+		   (newline op)
+		   (let* ((ca (assq 'artist meta))
+			  (ct (assq 'title meta))
+			  (cb (assq 'album meta))
+			  (a (if (pair? ca)
+				 (cdr ca)
+				 (string-capitalize (basename (dirname dir)))))
+			  (t (if (pair? ct)
+				 (cdr ct)
+				 (string-capitalize (basename file))))
+			  (b (if (pair? cb)
+				 (cdr cb)
+				 (string-capitalize (basename dir)))))
+		      (fprint op "Artist: " a)
+		      (fprint op "Title: " t)
+		      (fprint op "Album: " b)))))))
+   
+   (let ((plist (music-playlist-get backend))
+	 (num (music-song backend)))
+      (when (and (>=fx num 0) (<fx num (length plist)))
+	 (let* ((file (list-ref plist num))
+		(path (uri->mpd file db)))
+	    (if (file-exists? path)
+		(infofile db file num op)
+		(metasong file path))))
+      'ok))
 
 ;*---------------------------------------------------------------------*/
 ;*    play ...                                                         */

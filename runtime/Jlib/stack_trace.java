@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 12:49:28 2000                          */
-/*    Last change :  Fri Jun 23 11:20:03 2006 (serrano)                */
-/*    Copyright   :  2000-06 Manuel Serrano                            */
+/*    Last change :  Tue Apr 20 07:51:08 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Stack trace JVM implementation                                   */
 /*=====================================================================*/
@@ -40,53 +40,12 @@ public class stack_trace {
       return unspecified.unspecified;
    }
 
-   public static Object dump( final output_port port, int depth )
-      throws IOException {
-      stack_trace runner = top_of_stack;
-
-      int recursion = 0;
-      int level = 0;
-      Object old = null;
-
-      while ((level < depth) && (runner != null)) {
-	 if (bigloo.foreign.SYMBOLP( runner.symbol )) {
-	    if (runner.symbol == old) {
-	       ++recursion;
-	       ++depth;
-	    } else {
-	       if (0 < recursion) {
-		  port.write( " (%" );
-		  port.write( Integer.toString( 1 + recursion ) );
-		  port.write( " times)\n" );
-	       } else {
-		  if (0 < level)
-		     port.write( "\n" );
-	       }
-
-	       port.write( "  " );
-	       port.write( Integer.toString( level ) );
-	       port.write( ". " );
-	       port.write( ((symbol)(runner.symbol)).string );
-	       recursion= 0;
-	    }
-
-	    old = runner.symbol;
-	    ++level;
-	 }
-
-	 runner= runner.link;
-      }
-      port.write( "\n" );
-
-      return unspecified.unspecified;
-   }
-
    public static Object get( int depth ) throws IOException {
       stack_trace runner = top_of_stack;
       obj l = constant.nil;
       int level= 0;
 
-      while ((level < depth) && (runner != null)) {
+      while (((depth < 0) || (level < depth)) && (runner != null)) {
 	 if (bigloo.foreign.SYMBOLP( runner.symbol )) {
 	    l = new pair(runner.symbol, l);
 	  

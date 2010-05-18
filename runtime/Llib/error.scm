@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Feb 19 13:57:33 2010 (serrano)                */
+;*    Last change :  Thu Apr 29 18:18:18 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -22,7 +22,6 @@
 	    (export find-runtime-type "bgl_find_runtime_type")
 	    (export c-debugging-show-type "bgl_show_type")
 	    
-	    ($dump-trace-stack::obj (::output-port ::int) "dump_trace_stack")
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
 	    (macro $push-trace::obj (::obj) "PUSH_TRACE")
 	    (macro $set-trace::obj (::obj) "SET_TRACE")
@@ -63,8 +62,6 @@
    (java    (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
 	    (class foreign
-	       (method static $dump-trace-stack::obj (::output-port ::int)
-		       "dump_trace_stack")
 	       (method static $get-trace-stack::pair-nil (::int)
 		       "get_trace_stack")
 	       (method static $push-trace::obj (::obj)
@@ -187,8 +184,10 @@
 	    (warning-notify ::obj)
 	    (warning-notify/location ::obj ::bstring ::int)
 	    
-	    (dump-trace-stack ::output-port ::int)
-	    (get-trace-stack ::int)
+	    (get-trace-stack #!optional depth)
+	    (display-trace-stack ::obj ::output-port)
+	    (dump-trace-stack port depth)
+	    
 	    (find-runtime-type::bstring  ::obj)
 	    (c-debugging-show-type::string ::obj)
 	    (bigloo-type-error-msg::bstring  ::bstring ::bstring ::bstring)
@@ -199,8 +198,7 @@
 
 	    (&try ::procedure ::procedure)
 	    
-	    (notify-interrupt ::int)
-	    (notify-dump-trace-stack))
+	    (notify-interrupt ::int))
 	    
    (option  (bigloo-compiler-debug-set! 0)
 	    (set! *compiler-debug* 0)
@@ -208,6 +206,17 @@
 	    (set! *unsafe-type*    #t)
 	    (set! *unsafe-arity*   #t)
 	    (set! *unsafe-range*   #t)))
+
+;*---------------------------------------------------------------------*/
+;*    get-trace-stack ...                                              */
+;*---------------------------------------------------------------------*/
+(define (get-trace-stack #!optional depth)
+   (let ((d (cond
+	       ((fixnum? depth) depth)
+	       ((getenv "BIGLOOSTACKDEPTH") => string->integer)
+	       ((fixnum? (bigloo-trace-stack-depth)) (bigloo-trace-stack-depth))
+	       (else (*fx (bigloo-debug) 10)))))
+      ($get-trace-stack d)))
 
 ;*---------------------------------------------------------------------*/
 ;*    the_failure ...                                                  */
@@ -221,27 +230,27 @@
 (define (error/errno sysno proc msg obj)
    (cond
       ((=fx sysno $errno-io-error)
-       (raise (make-&io-error #f #f proc msg obj)))
+       (raise (make-&io-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-port-error)
-       (raise (make-&io-port-error #f #f proc msg obj)))
+       (raise (make-&io-port-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-read-error)
-       (raise (make-&io-read-error #f #f proc msg obj)))
+       (raise (make-&io-read-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-write-error)
-       (raise (make-&io-write-error #f #f proc msg obj)))
+       (raise (make-&io-write-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-unknown-host-error)
-       (raise (make-&io-unknown-host-error #f #f proc msg obj)))
+       (raise (make-&io-unknown-host-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-file-not-found-error)
-       (raise (make-&io-file-not-found-error #f #f proc msg obj)))
+       (raise (make-&io-file-not-found-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-parse-error)
-       (raise (make-&io-parse-error #f #f proc msg obj)))
+       (raise (make-&io-parse-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-malformed-url-error)
-       (raise (make-&io-malformed-url-error #f #f proc msg obj)))
+       (raise (make-&io-malformed-url-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-sigpipe-error)
-       (raise (make-&io-sigpipe-error #f #f proc msg obj)))
+       (raise (make-&io-sigpipe-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-io-timeout-error)
-       (raise (make-&io-timeout-error #f #f proc msg obj)))
+       (raise (make-&io-timeout-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-process-exception)
-       (raise (make-&process-exception #f #f proc msg obj)))
+       (raise (make-&process-exception #f #f (get-trace-stack) proc msg obj)))
       (else
        (error proc msg obj))))
 
@@ -311,7 +320,10 @@
 	  (display "*** UNKNOWN EXCEPTION: " port)
 	  (write-circle exc port)
 	  (newline port)
-	  (notify-dump-trace-stack)))))
+	  (let ((stack (if (and (&exception? exc) (&exception-stack exc))
+			   (&exception-stack exc)
+			   (get-trace-stack))))
+	     (display-trace-stack stack port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */
@@ -338,13 +350,13 @@
 ;*    error ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (error proc msg obj)
-   (raise (make-&error #f #f proc msg obj)))
+   (raise (make-&error #f #f (get-trace-stack) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/location ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (error/location proc msg obj fname loc)
-   (raise (make-&error fname loc proc msg obj)))
+   (raise (make-&error fname loc (get-trace-stack) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/source ...                                                 */
@@ -386,7 +398,7 @@
 		 (else
 		  "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
-      (raise (make-&type-error #f #f proc msg obj type))))
+      (raise (make-&type-error #f #f (get-trace-stack) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-type-error/location ...                                   */
@@ -401,19 +413,19 @@
 		  "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
       (raise
-       (make-&type-error fname loc proc msg obj type))))
+       (make-&type-error fname loc (get-trace-stack) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (warning . args)
-   (warning-notify (make-&warning #f #f args)))
+   (warning-notify (make-&warning #f #f (get-trace-stack) args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/location ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (warning/location fname loc . args)
-   (warning-notify (make-&warning fname loc args)))
+   (warning-notify (make-&warning fname loc (get-trace-stack) args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/c-location ...                                           */
@@ -423,7 +435,7 @@
 ;*    Bigloo values.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (warning/c-location fname loc . args)
-   (apply warning/location fname loc args))
+   (apply warning/location fname loc (get-trace-stack) args))
 			    
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error ...                                                */
@@ -438,7 +450,7 @@
       (display " -- " port)
       (display-circle (&error-obj err) port)
       (newline port)
-      (notify-dump-trace-stack)
+      (display-trace-stack (or (&error-stack err) (get-trace-stack)) port)
       (flush-output-port port)))
 
 ;*---------------------------------------------------------------------*/
@@ -483,9 +495,9 @@
 	 (display " -- " port)
 	 (display-circle obj port)
 	 (newline port)
-	 (notify-dump-trace-stack)
+	 (display-trace-stack (or (&error-stack err) (get-trace-stack)) port)
 	 ;; we are now done, we flush
-	 (flush-output-port (current-error-port)))))
+	 (flush-output-port port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/loc ...                                            */
@@ -646,27 +658,45 @@
       (flush-output-port (current-error-port))))
 
 ;*---------------------------------------------------------------------*/
+;*    display-trace-stack ...                                          */
+;*---------------------------------------------------------------------*/
+(define (display-trace-stack stack port)
+   
+   (define (display-trace-stack-entry level sym num)
+      (cond
+	 ((<fx level 10) (display "    " port))
+	 ((<fx level 100) (display "   " port))
+	 ((<fx level 1000) (display "  " port)))
+      (display level port)
+      (display ". " port)
+      (display sym port)
+      (when (>fx num 1)
+	 (display " (* " port)
+	 (display num port)
+	 (display ")" port))
+      (newline port))
+   
+   (when (pair? stack)
+      (let loop ((i 1)
+		 (stack (cdr stack))
+		 (hds (car stack))
+		 (hdn 1))
+	 (cond
+	    ((null? stack)
+	     (display-trace-stack-entry i hds hdn)
+	     (flush-output-port port))
+	    ((eq? (car stack) hds)
+	     (loop (+fx i 1) (cdr stack) hds (+fx hdn 1)))
+	    (else
+	     (display-trace-stack-entry i hds hdn)
+	     (loop (+fx i 1) (cdr stack) (car stack) 1))))))
+
+;*---------------------------------------------------------------------*/
 ;*    dump-trace-stack ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (dump-trace-stack port depth)
-   ($dump-trace-stack port depth))
-					       
-;*---------------------------------------------------------------------*/
-;*    get-trace-stack ...                                              */
-;*---------------------------------------------------------------------*/
-(define (get-trace-stack depth)
-   ($get-trace-stack depth))
-					       
-;*---------------------------------------------------------------------*/
-;*    notify-dump-trace-stack ...                                      */
-;*---------------------------------------------------------------------*/
-(define (notify-dump-trace-stack)
-   (if (or (string? "BIGLOOSTACKDEPTH") (>fx (bigloo-debug) 0))
-       (dump-trace-stack (current-error-port)
-			 (if (fixnum? (bigloo-trace-stack-depth))
-			     (bigloo-trace-stack-depth)
-			     10))))
-
+   (display-trace-stack (get-trace-stack depth) port))
+	     
 ;*---------------------------------------------------------------------*/
 ;*    fix-tabulation! ...                                              */
 ;*---------------------------------------------------------------------*/

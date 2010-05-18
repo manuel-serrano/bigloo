@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Mon Dec 14 12:03:12 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Sun May  9 06:09:06 2010 (serrano)                */
+/*    Copyright   :  2008-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
 /*    -------------------------------------------------------------    */
@@ -89,6 +89,35 @@ enum {
    PROP_URI,
 };
 
+
+/*---------------------------------------------------------------------*/
+/*    Backward gstreamer compatibility                                 */
+/*---------------------------------------------------------------------*/
+#if( !BGL_GSTREAMER_HAVE_PARSE_INFO )
+#define gst_buffer_try_new_and_alloc( s ) __gst_buffer_try_new_and_alloc( s )
+
+static GstBuffer *__gst_buffer_try_new_and_alloc( guint size ) {
+   GstBuffer *newbuf;
+   guint8 *malloc_data;
+
+   malloc_data = g_try_malloc( size );
+
+   if( G_UNLIKELY (malloc_data == NULL && size != 0) ) {
+      return NULL;
+   }
+
+   /* FIXME: there's no g_type_try_create_instance() in GObject yet, so this
+    * will still abort if a new GstBuffer structure can't be allocated */
+   newbuf = gst_buffer_new();
+
+   GST_BUFFER_MALLOCDATA( newbuf ) = malloc_data;
+   GST_BUFFER_DATA( newbuf ) = malloc_data;
+   GST_BUFFER_SIZE( newbuf ) = size;
+
+   return newbuf;
+}
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    Boilerplate                                                      */
 /*---------------------------------------------------------------------*/
@@ -168,13 +197,13 @@ bgl_gst_port_src_get_size( GstBaseSrc *basesrc, guint64 *size ) {
    switch( (long)PORT( port ).kindof ) {
       case (long) KINDOF_FILE:
 	 *size = bgl_file_size( BSTRING_TO_STRING( PORT( port ).name ) );
-#if( defined( BGL_DEBUG ) )
-	 fprintf( stderr, "bgl_gst_src_get_size(%s:%d)\n  file=%s\n  size=%d\n", __FILE__, __LINE__, BSTRING_TO_STRING( PORT( port ).name ), *size );
-#endif	 
 	 return TRUE;
+	 
       case (long) KINDOF_STRING:
-	 *size = BGL_INPUT_PORT_BUFSIZ( port ) - 1;
+      case (long) KINDOF_SOCKET:
+	 *size = BGL_INPUT_PORT_LENGTH( port );
 	 return TRUE;
+	 
       default:
 	 return FALSE;
    }
@@ -195,6 +224,7 @@ bgl_gst_port_src_is_seekable( GstBaseSrc *basesrc ) {
       case (long) KINDOF_FILE:
       case (long) KINDOF_STRING:
 	 return TRUE;
+	 
       default:
 	 return FALSE;
    }

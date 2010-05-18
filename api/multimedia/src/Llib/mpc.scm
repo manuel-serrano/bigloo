@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Sun Feb 14 11:40:37 2010 (serrano)                */
+;*    Last change :  Thu Mar 18 06:42:07 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -46,7 +46,7 @@
 ;*    with-timed-lock ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (with-timed-lock mutex thunk)
-   (when (mutex-lock! mutex 10)
+   (when (mutex-lock! mutex 1000)
       (unwind-protect
 	 (thunk)
 	 (mutex-unlock! mutex))))
@@ -114,14 +114,10 @@
    (with-access::mpc mpc (%mutex)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
       (let ((po (socket-output (mpc-%socket mpc))))
-	 (with-handler
-	    (lambda (e)
-	       e)
-	    (begin
-	       (display-string cmd po)
-	       (newline po)
-	       (flush-output-port po)
-	       #t)))))
+	 (display-string cmd po)
+	 (newline po)
+	 (flush-output-port po)
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpc-cmd ...                                                      */
@@ -153,28 +149,48 @@
    (define (init-socket! mpc)
       (with-access::mpc mpc (host port timeout %socket)
 	 (set! %socket (make-client-socket host port :timeout timeout))
-	 (input-port-timeout-set! (socket-input %socket) timeout)
-	 (ack-parser mpc)))
+	 (input-port-timeout-set! (socket-input %socket) timeout)))
 
    (with-access::mpc mpc (%socket %status host port)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
       ;; the player is already closed
       (unless (music-closed? mpc)
+	 (set! _c_ (+fx _c_ 1))
 	 (let retry ((count 3))
 	    ;; the player is not connected yet
 	    (unless %socket
-	       (init-socket! mpc))
+	       (with-handler
+		  (lambda (e)
+		     (tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     (raise (instantiate::&io-error
+			       (proc 'mpc-cmpd)
+			       (msg (format "~a:~a unreachable" host port))
+			       (obj mpc))))
+		  '(tprint "init-socket... (" _c_ ") cmd=" cmd)
+		  (init-socket! mpc))
+	       (with-handler
+		  (lambda (e)
+		     (tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     (raise e))
+		  '(tprint "ack-parser...(" _c_ ") cmd=" cmd)
+		  (ack-parser mpc)))
 	    ;; we can now emit our command if we have a socket
 	    ;; (still possibly closed by the server)
 	    (when %socket
-	       (let ((v (exec mpc cmd)))
-		  (if (&exception? v)
-		      (if (>fx count 0)
-			  (begin
-			     (set-error! mpc %status v)
-			     (retry (-fx count 1)))
-			  (raise v))
-		      (parser mpc))))))))
+	       '(tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date) " " (current-thread))
+	       (let ((v (with-handler
+			   (lambda (e)
+			      (tprint "exec error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+			      (if (>fx count 0)
+				  (begin
+				     (set-error! mpc %status e)
+				     (retry (-fx count 1)))
+				  (raise e)))
+			   (exec mpc cmd))))
+		  '(tprint "parser...(" _c_ ") cmd=" cmd)
+		  (parser mpc)))))))
+
+(define _c_ 0)
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-error-msg ...                                              */
@@ -196,7 +212,7 @@
    (regular-grammar ()
       ((* blank)
        (ignore))
-      ((: (out " \r\n") (+ (out "\n")) #\Newline)
+      ((: (out " \r\n") (* (out "\n")) #\Newline)
        (the-substring 0 -1))
       (else
        (raise
@@ -568,9 +584,6 @@
    
    (define (status-parser mpc)
       (with-access::mpc mpc (%socket)
-;* 	 (tprint "status-parse: mutex: " (mpc-%mutex mpc)              */
-;* 		 "=" (mutex-state (mpc-%mutex mpc))                    */
-;* 		 " thread=" (current-thread))                          */
 	 ;; parse the result of the status command
 	 (let ((status (parse (socket-input %socket) status)))
 	    (with-access::musicstatus status (state)
@@ -579,10 +592,9 @@
 		  (set! %socket #f)
 		  #t)))))
 
-   (with-handler
-      (lambda (e)
-	 (set-error! mpc status e))
-      (mpc-cmd mpc "status" status-parser)))
+   ;; don't protect with a handler because it is assumed that the
+   ;; handler has been set by the caller
+   (mpc-cmd mpc "status" status-parser))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status! ...                                         */
@@ -590,7 +602,21 @@
 (define-method (music-update-status! mpc::mpc status::musicstatus)
    (with-lock (mpc-%mutex mpc)
       (lambda ()
-	 (music-update-status-sans-lock! mpc status))))
+	 (with-access::musicstatus status (state)
+	    (unless (eq? state 'eof)
+	       (with-handler
+		  (lambda (e)
+		     (set-error! mpc status e))
+		  ;; first ping to check if the connection is still open
+		  (let loop ((retry #t))
+		     (cond
+			((mpc-cmd mpc "ping" ok-parser)
+			 ;; it is still open
+			 (music-update-status-sans-lock! mpc status))
+			(retry
+			 ;; it is apparently closed, try to re-open it once
+			 (music-reset-error! mpc)
+			 (loop #f))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-status ...                                                 */
@@ -712,6 +738,34 @@
 	    (mpc-cmd mpc "status" music-time-parser)))))
 
 ;*---------------------------------------------------------------------*/
+;*    music-meta ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-method (music-meta mpc::mpc)
+
+   (define mpc-meta-grammar
+      (regular-grammar ()
+	 ((bol (: (+ (out #\: #\Newline)) #\:))
+	  (let* ((k (the-substring 0 -1))
+		 (s (string->symbol (string-downcase! k)))
+		 (v (read/rp *mpc-string-grammar* (the-port))))
+	     (cons (cons s v) (ignore))))
+	 ("OK\n"
+	  '())))
+	 
+   (define (currentsong-parser mpc)
+      (let ((ip (socket-input (mpc-%socket mpc))))
+	 (read/rp mpc-meta-grammar ip)))
+   
+   (with-timed-lock (mpc-%mutex mpc)
+      (lambda ()
+	 (with-handler
+	    (lambda (e)
+	       (tprint "e=" e)
+	       (set-error! mpc (mpc-%status mpc) e)
+	       '())
+	    (mpc-cmd mpc "currentsong" currentsong-parser)))))
+
+;*---------------------------------------------------------------------*/
 ;*    music-play ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play mpc::mpc . song)
@@ -726,7 +780,10 @@
 (define-method (music-seek mpc::mpc ntime::obj . nsong)
    (with-timed-lock (mpc-%mutex mpc)
       (lambda ()
-	 (music-update-status-sans-lock! mpc (music-%status mpc))
+	 (with-handler
+	    (lambda (e)
+	       (set-error! mpc (music-%status mpc) e))
+	    (music-update-status-sans-lock! mpc (music-%status mpc)))
 	 (with-access::musicstatus (music-%status mpc) (song songpos)
 	    (let ((song (if (null? nsong) song (car nsong)))
 		  (time (if (fixnum? ntime)

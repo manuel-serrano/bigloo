@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Sun Oct  4 09:22:16 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Wed Mar 10 07:49:23 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -18,7 +18,6 @@
    
    (export (abstract-class music
 	      (music-init)
-	      (frequency::long (default 2000000))
 
 	      (%mutex::mutex (default (make-mutex)))
 	      (%loop-mutex::mutex (default (make-mutex)))
@@ -71,6 +70,7 @@
 	   (generic music-song::int ::music)
 	   (generic music-songpos::int ::music)
 	   (generic music-meta::pair-nil ::music)
+	   (generic music-can-play-type?::bool ::music ::bstring)
 	   
 	   (generic music-volume-get::obj ::music)
 	   (generic music-volume-set! ::music ::obj)
@@ -107,8 +107,28 @@
 (define-generic (music-seek m::music p::obj . song))
 (define-generic (music-stop m::music))
 (define-generic (music-pause m::music))
-(define-generic (music-next m::music))
-(define-generic (music-prev m::music))
+
+(define-generic (music-next m::music)
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (song playlistlength)
+	 (if (>=fx song (-fx playlistlength 1))
+	     (raise
+	      (instantiate::&io-error
+		 (proc 'music-next)
+		 (msg "No next soung")
+		 (obj (musicstatus-song %status))))
+	     (music-play m (+fx song 1))))))
+
+(define-generic (music-prev m::music)
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (song playlistlength)
+	 (if (or (<fx song 0) (=fx playlistlength 0))
+	     (raise
+	      (instantiate::&io-error
+		 (proc 'music-prev)
+		 (msg "No previous soung")
+		 (obj (musicstatus-song %status))))
+	     (music-play m (-fx song 1))))))
 
 (define-generic (music-crossfade m::music sec::int))
 (define-generic (music-random-set! m::music flag::bool))
@@ -143,6 +163,12 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (music-meta::pair-nil m::music)
    '())
+
+;*---------------------------------------------------------------------*/
+;*    music-can-play-type? ::music ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (music-can-play-type? m::music mimetype::bstring)
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    music-charset-convert ...                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Thu Sep  3 12:01:04 2009 (serrano)                */
+;*    Last change :  Tue May 11 16:06:36 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -66,6 +66,7 @@
 	    (inline eof-object?::bool ::obj)
 	    (inline char-ready?::bool #!optional (ip (current-input-port)))
 	    (read-line::obj #!optional (ip (current-input-port)))
+	    (read-line-newline::obj #!optional (ip (current-input-port)))
 	    (read-lines::pair-nil #!optional (ip (current-input-port)))
 	    (read-string::bstring #!optional (ip (current-input-port)))
 	    (read-of-strings::obj #!optional (ip (current-input-port)))
@@ -214,6 +215,58 @@
 	     ((char=? c #\Newline)
 	      ;; shrink the buffer and return 
 	      (substring acc 0 w))
+	     (else
+	      ;; fill the buffer
+	      (string-set! acc w c)
+	      (loop (read-char ip) (+fx w 1) m acc))))))
+
+;*---------------------------------------------------------------------*/
+;*    read-line-newline ...                                            */
+;*---------------------------------------------------------------------*/
+(define (read-line-newline #!optional (ip (current-input-port)))
+   (if (>fx (c-input-port-bufsiz ip) 2)
+       (let ((grammar (regular-grammar ((xall (or (out #\Newline #\Return)
+						  #a000)))
+			 ((or (: (+ xall) (or #\Newline #\Return))
+			      (: (+ xall) #\Return #\Newline)
+			      (+ xall)
+			      (or #\Newline #\Return (: #\Return #\Newline)))
+			  (the-string))
+			 (else
+			  (the-failure)))))
+	  (read/rp grammar ip))
+       ;; IOs are unbufferized, uses read-char to get the
+       ;; characters one by one
+       (let loop ((c (read-char ip))
+		  (w 0)
+		  (m 100)
+		  (acc (make-string 100)))
+	  (cond
+	     ((eof-object? c)
+	      ;; shrink the buffer and return 
+	      (if (=fx w 0) c (substring acc 0 w)))
+	     ((=fx w (- m 2))
+	      ;; enlarge the buffer
+	      (loop c
+		    w
+		    (*fx m 2)
+		    (let ((new-acc (make-string (*fx m 2))))
+		       (blit-string! acc 0 new-acc 0 m)
+		       new-acc)))
+	     ((char=? c #\Return)
+	      (let ((c2 (read-char ip)))
+		 (if (char=? c2 #\Newline)
+		     (begin
+			(string-set! acc w #\Return)
+			(string-set! acc (+fx 1 w) #\Newline)
+			(substring acc 0 (+fx w 2)))
+		     (begin
+			(string-set! acc w c)
+			(loop c2 (+fx w 1) m acc)))))
+	     ((char=? c #\Newline)
+	      ;; shrink the buffer and return
+	      (string-set! acc w #\Newline)
+	      (substring acc 0 (+fx w 1)))
 	     (else
 	      ;; fill the buffer
 	      (string-set! acc w c)

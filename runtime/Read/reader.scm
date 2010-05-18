@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Sep  3 11:52:34 2009 (serrano)                */
+;*    Last change :  Mon May  3 16:19:14 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -291,9 +291,7 @@
       
       ((: "a" (= 3 digit))
        (let ((string (the-string)))
-	  (if (not (=fx (the-length) 4))
-	      (read-error "Illegal ascii character" string (the-port))
-	      (integer->char (string->integer (the-substring 1 4))))))
+	  (integer->char (string->integer (the-substring 1 4)))))
       
       ;; ucs-2 characters
       ((: "u" (= 4 xdigit))
@@ -307,7 +305,8 @@
       ;; ucs2 strings
       ((: "u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
        (let ((str (the-substring 1 (-fx (the-length) 1))))
-  	  (utf8-string->ucs2-string (escape-C-string str))))
+  	  (utf8-string->ucs2-string
+	   (iso-latin->utf8 (escape-C-string str)))))
       
       ;; fixnums
       ((: "b" (? (in "-+")) (+ (in ("01"))))
@@ -346,10 +345,8 @@
 			  (the-port))))))
       
       ;; constants
-      ((: "<" (+ (or digit (uncase (in "afAF")))) ">")
-       (if (not (=fx (the-length) 6))
-	   (read-error "Illegal constant" (the-string) (the-port))
-	   (make-cnst (string->integer (the-substring 1 5) 16))))
+      ((: "<" (= 4 (or digit (uncase (in ("AF"))))) ">")
+       (make-cnst (string->integer (the-substring 1 5) 16)))
 
       (else
        (let ((c (the-failure)))
@@ -542,7 +539,6 @@
        (list->vector
 	(reverse! (collect-up-to ignore "vector" (the-port) posp))))
 
-
       ;; typed homogeneous vectors
       ((: "#" letterid "(")
        ;; we increment the number of open parenthesis
@@ -594,6 +590,17 @@
 			      (string-upcase! s)))))
 		     (l (reverse! (collect-up-to ignore "vector" (the-port) posp))))
 		 (list->tvector id l))))))
+
+      ;; tagged vectors (Camloo backward compatibility)
+      ((: #\# digit digit digit #\()
+       (let ((open-key par-open)
+	     (tag (string->integer (the-substring 1 4))))
+	  (set! par-open (+fx 1 par-open))
+	  (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
+				par-poses))
+	  (list->vector
+	   (reverse!
+	    (cons tag (collect-up-to ignore "vector" (the-port) posp))))))
       
       ;; structures
       ("#{"

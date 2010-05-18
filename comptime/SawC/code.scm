@@ -261,7 +261,7 @@
    ;; we have a pending "Rxx = "
    (display "(obj_t) jmpbuf;\n\t")
    (display "{BGL_STORE_TRACE();")
-   (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(_exit_value_);}}") )
+   (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(BGL_EXIT_VALUE());}}") )
 
 ;;
 (define-method (gen-expr fun::rtl_pragma args);

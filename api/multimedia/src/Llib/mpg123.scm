@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Sat Jan  3 19:46:21 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Wed Mar 10 07:51:15 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPG123 Bigloo binding                                        */
 ;*=====================================================================*/
@@ -16,7 +16,8 @@
    
    (import __multimedia-music
 	   __multimedia-musicproc
-	   __multimedia-music-event-loop)
+	   __multimedia-music-event-loop
+	   __multimedia-id3)
    
    (export (class mpg123::musicproc
 	      
@@ -123,7 +124,10 @@
 		   (when (and onmeta tstate)
 		      (let* ((plist (music-playlist-get mpg123))
 			     (file (list-ref plist song)))
-			 (onmeta file plist)))))))
+			 (if (file-exists? file)
+			     (let ((tag (mp3-id3 file)))
+				(onmeta (or tag file)))
+			     (onmeta file))))))))
        (ignore))
       ((: "@S ")
        ;; Stream info at beginning of playback
@@ -230,7 +234,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop ::mpg123 ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (music-event-loop-inner o::mpg123 onstate onmeta onerror onvol)
+(define-method (music-event-loop-inner o::mpg123 frequency::long onstate onmeta onerror onvol)
    (with-access::mpg123 o (%process %mutex %loop-mutex %abort-loop %status)
       (let loop ()
 	 (if (process? %process)
@@ -243,6 +247,11 @@
 		(let ((abort %abort-loop))
 		   (mutex-unlock! %mutex)
 		   (unless (or abort (music-closed? o))
-		      (sleep 1000000)
+		      (sleep frequency)
 		      (loop))))))))
 
+;*---------------------------------------------------------------------*/
+;*    music-can-play-type? ::mpg123 ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (music-can-play-type? m::mpg123 mimetype)
+   (string=? mimetype "audio/mpeg"))

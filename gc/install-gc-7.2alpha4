@@ -52,10 +52,6 @@ for p in configure configure.ac Makefile.direct Makefile.am Makefile.in Makefile
 
 done
 
-# Install the Makefiles.
-#mv $gc/Makefile.direct $gc/Makefile
-#mv "$gc"_fth/Makefile.direct "$gc"_fth/Makefile
-
 # Set the correct mode for configure (configure is not currently used by Bigloo)
 chmod a+rx $gc/configure
 chmod a+rx "$gc"_fth/configure

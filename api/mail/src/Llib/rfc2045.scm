@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Sep 18 02:24:17 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Fri Apr 23 21:35:43 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -191,7 +191,7 @@
        (the-string))
       ((: #\" str #\")
        (the-substring 1 -1))
-      ((: (+ #\Space) #\" str #\")
+      ((: (+ (in #\Tab #\Space)) #\" str #\")
        (let* ((s (the-substring 1 -1))
 	      (i (string-index s #\")))
 	  (substring s i (string-length s))))
@@ -217,7 +217,9 @@
       ((: (+ (out "; \t\n\r=")) #\= (+ (or #\Space #\Newline)))
        (let* ((str (the-substring 0 -2))
 	      (i (string-index str " \n"))
-	      (name (string-downcase! (substring str 0 i)))
+	      (name (if i
+			(string-downcase! (substring str 0 i))
+			(string-downcase! str)))
 	      (val (read/rp token-grammar (the-port))))
 	  (cons (cons (string->symbol name) val) (ignore))))
       ((: (+ (out "; \t\n\r=")) (+ (or #\Space #\Newline))
@@ -403,7 +405,7 @@
 					   (when (>fx (bigloo-warning) 0)
 					      (display "*** WARNING:multipart"
 						       (current-error-port))
-					      (display "Illegal mimetype, assuming text/plain\n"
+					      (display " Illegal mimetype, assuming text/plain\n"
 						       (current-error-port)))
 						       
 					   '(text plain))

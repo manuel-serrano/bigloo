@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Jun  4 15:52:32 2009 (serrano)                */
+;*    Last change :  Mon Apr 19 15:59:06 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -106,7 +106,11 @@
 		   "INPUT_PORT_FILLBARRIER")
 	    (macro $input-port-fill-barrier-set!::void (::input-port ::long)
 		   "INPUT_PORT_FILLBARRIER_SET")
-	    (macro c-input-port-last-token-position::long (::input-port)
+	    (macro $input-port-size::long (::input-port)
+		   "BGL_INPUT_PORT_LENGTH")
+	    (macro $input-port-length-set!::void (::input-port ::elong)
+		   "BGL_INPUT_PORT_LENGTH_SET")
+	    (macro c-input-port-last-token-position::elong (::input-port)
 		   "INPUT_PORT_TOKENPOS")
 	    (macro c-input-port-bufsiz::int (::input-port)
 		   "BGL_INPUT_PORT_BUFSIZ")
@@ -276,6 +280,11 @@
 	       (method static $input-port-fill-barrier-set!::void (::input-port ::long)
 		       "INPUT_PORT_FILLBARRIER_SET")
 	       
+	       (method static $input-port-length::elong (::input-port)
+		       "BGL_INPUT_PORT_LENGTH")
+	       (method static $input-port-length-set!::void (::input-port ::elong)
+		       "BGL_INPUT_PORT_LENGTH_SET")
+	       
 	       (method static c-input-port-last-token-position::long (::input-port)
 		       "INPUT_PORT_TOKENPOS")
 	       (method static c-input-port-name::bstring (::input-port)
@@ -330,6 +339,7 @@
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
 	    (call-with-output-file ::bstring ::procedure)
+	    (call-with-output-string::bstring ::procedure)
 	    
 	    (inline input-port? ::obj)
 	    (inline input-string-port? ::obj)
@@ -461,6 +471,14 @@
 	     (close-output-port port))
 	  (error/errno $errno-io-port-error
 		       'call-with-output-file "can't open file" string))))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-output-string ...                                      */
+;*---------------------------------------------------------------------*/
+(define (call-with-output-string proc) 
+   (let ((port (open-output-string)))
+      (proc port)
+      (close-output-port port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port? ...                                                  */
@@ -845,6 +863,7 @@
 	      (open-input-string ""))
 	     (clen
 	      (input-port-fill-barrier-set! ip (elong->fixnum clen))
+	      ($input-port-length-set! ip clen)
 	      ip)
 	     (else
 	      ip))))
@@ -858,8 +877,10 @@
 		      :header '()))
 	     (ip (socket-input sock))
 	     (op (socket-output sock)))
+	 (input-port-close-hook-set! ip (lambda (ip) (socket-close sock)))
 	 (with-handler
 	    (lambda (e)
+	       (socket-close sock)
 	       (if (&http-redirection? e)
 		   (open-input-file (&http-redirection-url e) bufinfo)
 		   (raise e)))

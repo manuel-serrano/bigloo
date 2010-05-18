@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Oct 15 19:36:54 2009 (serrano)                */
-;*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 23 08:04:41 2010 (serrano)                */
+;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -490,6 +490,9 @@
        (set! *error-localization* #f))
       (("-gjvm" (help "Annote JVM classes for debug"))
        (set! *jvm-debug* #t))
+      (("-gtrace?opt" (help "-gtrace[12]" "Producing stack traces"))
+       (set! *compiler-debug-trace*
+	     (if (=fx (string-length opt) 0) 1 (string->integer opt))))
       (("-g?opt" (help "-g[234]" "Produce Bigloo debug informations"))
        (parse-debug-args opt))
       (("-cg" (help "Compile C files with debug option"))
@@ -1069,6 +1072,7 @@
       ;; -g3 and -call/cc are incompatible
       (unless *call/cc?*
 	 (bigloo-compiler-debug-set! 3)
+	 (set! *compiler-debug-trace* 2)
 	 (set! *compiler-debug* 3)))
    (define (-g4!)
       (bigloo-compiler-debug-set! 4)
@@ -1078,6 +1082,7 @@
    (set! *purify* #t)
    (set! *jvm-debug* #t)
    (set! *jas-warning* #f)
+   (set! *compiler-debug-trace* 1)
    (when (eq? *error-localization-opt* #unspecified)
       (set! *error-localization* #t))
    (if (> (string-length string) 0)

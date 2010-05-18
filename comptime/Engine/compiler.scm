@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep  4 07:57:45 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 23 07:59:09 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -211,7 +211,8 @@
 
 	    ;; when the compiler is invoked in -g2 mode, we install
 	    ;; traces before the inlining
-	    (if (and (>fx (bigloo-compiler-debug) 1)
+	    (if (and (or (>fx *compiler-debug-trace* 0)
+			 (>fx (bigloo-compiler-debug) 1))
 		     (backend-trace-support (the-backend)))
 		(set! ast (profile trace (trace-walk! ast))))
 	    (check-sharing "trace" ast)

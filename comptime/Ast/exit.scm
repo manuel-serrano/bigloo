@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Thu May 15 06:57:09 2003 (serrano)                */
+;*    Last change :  Thu Apr 22 05:30:37 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -76,10 +76,11 @@
          ((?- ?exit . ?value)
           (let ((value (sexp->node (normalize-progn value) stack loc 'value))
                 (exit  (sexp->node exit stack loc 'value)))
-	     (instantiate::jump-ex-it (loc loc)
-				      (type *_*)
-				      (exit exit)
-				      (value value))))
+	     (instantiate::jump-ex-it
+		(loc loc)
+		(type *_*)
+		(exit exit)
+		(value value))))
          (else
 	  (error-sexp->node "Illegal `jump-exit' form" exp loc)))))
          

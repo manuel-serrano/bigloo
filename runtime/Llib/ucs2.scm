@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 18 10:24:03 1997                          */
-;*    Last change :  Tue Sep 29 16:02:48 2009 (serrano)                */
+;*    Last change :  Fri Feb 19 18:17:28 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    UCS-2 Characters Scheme management.                              */
 ;*=====================================================================*/
@@ -101,6 +101,7 @@
 	    (inline ucs2-lower-case?::bool ::ucs2)
 	    (inline ucs2->integer::int ::ucs2)
 	    (integer->ucs2::ucs2 ::int)
+	    (inline integer->ucs2-ur::ucs2 ::int)
 	    (ucs2->char::char ::ucs2)
 	    (inline char->ucs2::ucs2 ::char)
 	    (inline ucs2-upcase::ucs2 ::ucs2)
@@ -132,6 +133,7 @@
 	    (ucs2-lower-case? side-effect-free nesting)
 	    (ucs2->integer side-effect-free nesting)
 	    (integer->ucs2 side-effect-free nesting)
+	    (integer->ucs2-ur side-effect-free nesting)
 	    (c-integer->ucs2 side-effect-free nesting)
 	    (ucs2->char side-effect-free nesting)
 	    (char->ucs2 side-effect-free nesting)
@@ -257,6 +259,12 @@
        (error 'integer->ucs2 "integer out of range or " int)))
 
 ;*---------------------------------------------------------------------*/
+;*    integer->ucs2-ur ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (integer->ucs2-ur::ucs2 int::int)
+   (c-integer->ucs2 int))
+
+;*---------------------------------------------------------------------*/
 ;*    ucs2->integer ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (ucs2->integer::int ucs2::ucs2)
@@ -266,7 +274,7 @@
 ;*    char->ucs2 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (char->ucs2::ucs2 char::char)
-   (integer->ucs2 (char->integer char)))
+   (integer->ucs2-ur (char->integer char)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ucs2->char ...                                                   */

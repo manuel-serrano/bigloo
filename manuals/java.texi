@@ -213,7 +213,6 @@ module.
 * Extending Java classes::
 * Declaring Java arrays::
 * Exporting Scheme variables::
-* Bigloo runtime customization::
 * Bigloo module initialization::
 @end menu
 
@@ -358,7 +357,7 @@ Example:
 @end smalllisp
 
 @c -- Exporting Scheme variables ------------------------------------- @c
-@node Exporting Scheme variables, Bigloo runtime customization, Declaring Java arrays, Connecting Scheme and Java code
+@node Exporting Scheme variables, Bigloo module initialization, Declaring Java arrays, Connecting Scheme and Java code
 @subsection Exporting Scheme variables
 @cindex Exporting Scheme variables to Java
 
@@ -383,32 +382,8 @@ Here is an example of exportation:
 (define (fib x) (if (< x 2) 1 ...))
 @end smalllisp
 
-@c -- Bigloo runtime customization ----------------------------------- @c
-@node Bigloo runtime customization, Bigloo module initialization, Exporting Scheme variables, Connecting Scheme and Java code
-@subsection Bigloo runtime customization
-@pindex bigloo.foreign.must_exitp
-
-When the Scheme program completes normally, that is when the last
-expression of the Bigloo main is executed without error, the Bigloo runtime
-system explicitly call the Java function @code{System.exit}. In some
-situation, it may be useful to disable this call. For this, one
-must set the @code{boolean} Java static variable 
-@code{bigloo.foreign.must_exitp} to @code{false}. This can be implemented
-in Java or in Scheme. Here is a Scheme module that sets the variable to
-@code{false}.
-
-@smalllisp
-(module no-exit
-  (java (class bigloo
-           (field static must-exitp::bool "must_exitp")
-           "bigloo.foreign")))
-
-(cond-expand
-  (bigloo-jvm (set! bigloo-must-exitp #f)))
-@end smalllisp
-
 @c -- Bigloo module initialization ----------------------------------- @c
-@node Bigloo module initialization, ,Bigloo runtime customization, Connecting Scheme and Java code
+@node Bigloo module initialization, ,Exporting Scheme variables, Connecting Scheme and Java code
 @subsection Bigloo module initialization
 @cindex -jvm-cinit-module
 
