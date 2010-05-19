@@ -23,8 +23,8 @@ export DROID_ROOT=$ANDSRC
 # 5 for eclair
 export DROID_TARGET=5
 
-# bigloo/gc
-export BS_BIGLOO=$HOME/local/soft/bigloo-android
+# bigloo/gcc
+export BS_BIGLOO=$HOME/local
 export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BS_BIGLOO/lib
