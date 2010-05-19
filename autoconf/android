@@ -31,8 +31,8 @@ done
 #*    We assume that we are under android (QEMU)                       */
 #*---------------------------------------------------------------------*/
 if [ "$HOSTCPU " = "arm " ]; then
-  # yes, those \r and $ that you see there are actuallty part of the output
-  if [ "`$HOSTSH getprop ro.build.id` " = "CUPCAKE " ]; then
+  build_id=`$HOSTSH getprop ro.build.id`
+  if [ "$build_id " = "CUPCAKE " -o "$build_id " = "ECLAIR " ]; then
     echo "yes"
   else
     echo "no"
@@ -40,4 +40,3 @@ if [ "$HOSTCPU " = "arm " ]; then
 else
   echo "no"
 fi
-

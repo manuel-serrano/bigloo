@@ -17,6 +17,10 @@
 
 #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM && !defined( BGL_GC_THREADS ))
 
+#if( BGL_GC_NEED_STACKBASE )
+void * __stack_base__= 1; /* see the initialization in cmain.c */
+#endif
+
 #if( BGL_GC_VERSION >= 700 )
 #  define GRANULE_SIZE 1
 #endif

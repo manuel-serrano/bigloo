@@ -60,7 +60,7 @@ char **bgl_envp;
 int bgl_envp_len;
 
 #if( BGL_GC_NEED_STACKBASE )
-void * __stack_base__; /* see the initialization below */
+extern void * __stack_base__; /* see the initialization below */
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -129,8 +129,8 @@ _bigloo_main(int argc, char *argv[], char *en[], obj_t (*bigloo_main)(obj_t)) {
    obj_t cons;
    long  i;
 
-   /* store the __stack_base__ address for the collector */
 #if( BGL_GC_NEED_STACKBASE )
+   /* store the __stack_base__ address for the collector */
     __stack_base__= (void *)&argc;
 #endif
    

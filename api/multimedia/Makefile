@@ -111,7 +111,7 @@ install-c:
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/multimedia.heap; \
         fi
 	$(MAKE) install-lib LIB=libbigloomultimedia_s-$(RELEASE);
-	$(MAKE) install-shared-lib LIB=libbigloomultimedia_e-$(RELEASE);
+	$(MAKE) install-lib LIB=libbigloomultimedia_e-$(RELEASE);
 	$(MAKE) install-lnlib LIB=libbigloomultimedia_s-$(RELEASE) LN=libbigloomultimedia_u-$(RELEASE);
 
 install-jvm:
