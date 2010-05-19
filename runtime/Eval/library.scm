@@ -260,11 +260,11 @@
 			    (library-file-name lib "_e" be) be))
 		       (rsc (let ((p (string-append "/resource/bigloo/"
 						    (symbol->string lib)
-						    "/make-lib.class")))
+						    "/make_lib.class")))
 			       ;; JVM supports fake file system in the JAR
 			       ;; file. In Bigloo it is a sub-directory of
 			       ;; /resource inside ressources, we always search
-			       ;; for a class named make-lib. This means that
+			       ;; for a class named make_lib. This means that
 			       ;; all JVM libraries must be provided with
 			       ;; such a class.
 			       (and (file-exists? p) p)))
@@ -343,11 +343,11 @@
 			    (library-file-name lib "_e" be) be))
 		       (rsc (let ((p (string-append "/resource/bigloo/"
 						    (symbol->string lib)
-						    "/make-lib.class")))
+						    "/make_lib.class")))
 			       ;; JVM supports fake file system in the JAR
 			       ;; file. In Bigloo it is a sub-directory of
 			       ;; /resource inside ressources, we always search
-			       ;; for a class named make-lib. This means that
+			       ;; for a class named make_lib. This means that
 			       ;; all JVM libraries must be provided with
 			       ;; such a class.
 			       (and (file-exists? p) p)))

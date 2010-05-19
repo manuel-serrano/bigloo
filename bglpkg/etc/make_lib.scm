@@ -1,19 +1,26 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi1/src/Misc/make-lib.scm      */
+;*    serrano/prgm/project/bigloo/bglpkg/etc/make_lib.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Apr 20 20:00:42 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Creation    :  Tue Jan  2 13:16:31 2007                          */
+;*    Last change :  Wed Nov 14 13:10:14 2007 (serrano)                */
+;*    Copyright   :  2006-07 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file.                          */
+;*    The module used to build the Snow heap files.                    */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __srfi1_makelib
+(module __@LIBNAME@_makelib
+   
+   (option (set! *dlopen-init* "@DLOADSYM@_e"))
+   
+   (import @MODULES@)
+   
+   (eval   (export-all)
+	   @CLASSES@))
 
-   (import __srfi1)
-
-   (eval   (export-all)))
+(cond-expand
+   (bigloo-eval
+    (eval '(begin @MACROS@))))

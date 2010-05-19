@@ -33,7 +33,7 @@ OBJDIR_SYS	= obj_s
 OBJDIR_USR	= obj_s
 # This two variables control how we are booting (from Scheme or C)
 SCMOBJSUFFIX	= %.o
-COBJSUFFIX	= 
+COBJSUFFIX	=
 # Default class file locations
 CLASSDIR_SYS	= class_s
 CLASSDIR_USR	= class_s
@@ -46,13 +46,16 @@ SCMCLASSSUFFIX	= %.class
 SCMDOTNETSUFFIX = %.obj
 # The module association file
 AFILE		= .afile
+# this doesn't work when bootstrapping: BGLBUILDBINDIR points to $BUILD/bin
+# but bglafile is not compiled yet!
+# run make -C runtime .afile BGLBUILDBINDIR=$HOME/local/bin
 AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
 # The package association file
 JFILE		= .jfile
 PBASE		= bigloo.runtime
 JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 # The qualifier of the build library
-LIBQ		= 
+LIBQ		=
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
@@ -70,7 +73,7 @@ BSAFEFLAGS	= $(BCOMMONFLAGS) \
                   -copt $(CPICFLAGS)
 CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
-BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -gjvm -jfile $(JFILE)
+BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile $(JFILE)
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
 #*--- Bigloo .NET flags -----------------------------------------------*/
 BDOTNETFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-mono-workaround -dotnet-pnet-workaround
@@ -97,15 +100,15 @@ CDBGFLAGS	= -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(BACKPTRFLAGS) -DBIGLO
 #*---------------------------------------------------------------------*/
 #*    The assembler objects.                                           */
 #*---------------------------------------------------------------------*/
-_OBJ_MLIB	= mach_dep 
+_OBJ_MLIB	= mach_dep
 
-OBJ_MLIB	= $(_OBJ_MLIB:%=Mlib/%.o)                  
+OBJ_MLIB	= $(_OBJ_MLIB:%=Mlib/%.o)
 O_OBJ_MLIB      = $(OBJ_MLIB:%=$(O)/%)
 
 #*---------------------------------------------------------------------*/
 #*    C objects                                                        */
 #*---------------------------------------------------------------------*/
-CLIB		= cinit-obj cmain cerror cports cstring csymbol cvector \
+CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cwriter capply cstruct csystem ccontrol ceval chash \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
@@ -203,7 +206,7 @@ CS_CSLIB	= $(CSLIB:%=CSlib/%.cs)
 #*---------------------------------------------------------------------*/
 IEEE  		= boolean equiv pairlist char string control number \
                   fixnum flonum port vector symbol input output \
-                  control5 
+                  control5
 
 SCM_IEEE	= $(IEEE:%=Ieee/%.scm)
 C_SCM_IEEE	= $(IEEE:%=Ieee/%.c)
@@ -355,7 +358,7 @@ C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
 #*---------------------------------------------------------------------*/
 POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
-                  Llib/make-lib.scm \
+                  Llib/make_lib.scm \
 		  Ieee/bignum.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
@@ -425,7 +428,7 @@ heap-c: $(AFILE) includes
         export LD_LIBRARY_PATH; \
 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
         export DYLD_LIBRARY_PATH; \
-        $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make-lib.scm -heap $(HEAPC_FILE)
+        $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
@@ -437,7 +440,7 @@ heap-jvm: $(AFILE) $(JFILE) includes
 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
         export DYLD_LIBRARY_PATH; \
         $(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
-                  $(EFLAGS) Llib/make-lib.scm -heap $(HEAPJVM_FILE)
+                  $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
@@ -475,7 +478,7 @@ lib-c_u: includes
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u \
                 LIBQ=_u
 
-lib_p: lib-c_p                
+lib_p: lib-c_p
 lib-c_p: includes
 	$(MAKE) one-lib-c \
                 BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
@@ -524,7 +527,7 @@ lib-jvm_u: includes
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 CLASSDIR_USR=class_u CLASSDIR_SYS=class_u \
                 LIBQ=_u
-                
+
 lib-jvm_p: includes
 	$(MAKE) one-lib-jvm \
                 BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
@@ -577,7 +580,7 @@ lib-jas_u: includes
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 CLASSDIR_USR=class_u CLASSDIR_SYS=class_u \
                 LIBQ=_u
-                
+
 lib-jas_p: includes
 	$(MAKE) one-lib-jas \
                 SCMCLASSSUFFIX="%.jas" \
@@ -650,7 +653,7 @@ one-lib-dotnet-$(DOTNETLDSTYLE): $(DOTNETOBJ)
 #*    makefile) to get the list of file that populate a revision.      */
 #*---------------------------------------------------------------------*/
 .PHONY: pop
-pop: 
+pop:
 	@ echo $(POPULATION:%=runtime/%)
 
 #*---------------------------------------------------------------------*/
@@ -847,7 +850,7 @@ cleanclass:
 
 cleandotnet:
 	$(RM) -f $(DOTNETOBJ)
-	$(RM) -f $(DOTNETOBJ:%.obj=%.il) 
+	$(RM) -f $(DOTNETOBJ:%.obj=%.il)
 
 clean: clean-c clean-jvm
 
@@ -933,7 +936,7 @@ objs/$(OBJDIR_SYS)/Mlib/mach_dep.o: $(NATIVE_MACHDEP)
 sparc_sunos5_mach_dep: Mlib/sparc_sunos5_mach_dep.s
 	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos5_mach_dep.s
 
-sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s 
+sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s
 	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
 
 generic_mach_dep: Mlib/mach_dep.c
@@ -1096,7 +1099,7 @@ $(AFILE):
 #*    $(JFILE)                                                         */
 #*---------------------------------------------------------------------*/
 jfile: $(JFILE)
-$(JFILE): 
+$(JFILE):
 	$(JFILE_BIN) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > $(JFILE)
 
 #*---------------------------------------------------------------------*/

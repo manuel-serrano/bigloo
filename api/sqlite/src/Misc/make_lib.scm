@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bdl/src/make-lib.scm                 */
+;*    serrano/prgm/project/bigloo/api/sqlite/src/Misc/make_lib.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Thu Aug  8 14:34:42 2002 (serrano)                */
-;*    Copyright   :  2001-02 Manuel Serrano                            */
+;*    Last change :  Sun Apr 20 19:54:02 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -12,9 +12,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __bdlread_makelib
+(module __sqlite_makelib
 
-   (import __bdl_types
-	   __bdl_env
-	   __bdl_prgm
-	   __bdl_etags))
+   (import __sqlite_sqlite
+	   __sqlite_sqltiny)
+
+   (eval   (export-all)
+	   (class %sqlite)
+	   (class sqlite)
+	   (class sqltiny)))

@@ -1,42 +1,42 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/fthread/src/Misc/make-lib.scm        */
+;*    .../prgm/project/bigloo/api/crypto/src/Misc/make_lib.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Jun 29 10:06:21 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*        adapted :  Florian Loitsch                                   */
+;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file.                          */
+;*    The module is used to build the heap file.                       */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __fthread_makelib
+(module __crypto-makelib
 
-   (library pthread)
+   (import __crypto-block-ciphers
+	   __crypto-ciphers
 
-   (import __ft_types
-	   __ft_thread
-	   __ft_scheduler
-	   __ft_env
-	   __ft_env2d
-	   __ft_time
-	   __ft_async
+	   __crypto-string2key
 
-	   __ft_%types
-	   __ft_%env
-	   __ft_signal)
+	   __crypto-dsa
+	   __crypto-rsa
+	   __crypto-elgamal
+	   __crypto-pem)
 
    (eval   (export-all)
+	   (class Block-Cipher)
+	   (class Dsa-Key)
+	   (class Complete-Dsa-Key)
+	   (class Rsa-Key)
+	   (class Complete-Rsa-Key)
+	   (class ElGamal-Key)
+	   (class Complete-ElGamal-Key)
+	   )
 
-	   (class fthread)
-	   (class join-timeout-exception)
-	   (class scheduler)
-	   (class ftenv)))
+   (export (%crypto-eval)))
 
 ;*---------------------------------------------------------------------*/
-;*    %fthread-eval ...                                                */
+;*    %crypto-eval ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (%fthread-eval)
+(define (%crypto-eval)
    #unspecified)

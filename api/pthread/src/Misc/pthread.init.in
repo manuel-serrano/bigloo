@@ -18,7 +18,7 @@
 		  :module-init '__pth_thread
 		  :module-eval '__pth_makelib
 		  :class-init "bigloo.pthread.pthread"
-		  :class-eval "bigloo.pthread.make-lib")
+		  :class-eval "bigloo.pthread.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Register the srfi                                                */

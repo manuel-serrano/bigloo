@@ -1,18 +1,19 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/examples/Lib/make-lib.scm            */
+;*    serrano/prgm/project/bigloo/bdb/blib/make_lib.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Sat Dec 19 13:01:37 1998                          */
-;*    Last change :  Mon Apr 21 09:11:00 2008 (serrano)                */
+;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
+;*    Last change :  Sat May 13 11:48:51 2000 (serrano)                */
 ;*    -------------------------------------------------------------    */
-;*    The file to make the point heap.                                 */
+;*    The bdb library constructor                                      */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __make-point-lib
+(module __make_lib
+   
+   (import __bdb
+	   __bdb_env))
 
-   (import (point "scm-point.scm"))
 
-   (eval (export-all)))

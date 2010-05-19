@@ -1,20 +1,20 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi27/src/Misc/make-lib.scm     */
+;*    serrano/prgm/project/bigloo/bdl/src/make_lib.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Apr 20 10:40:34 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Thu Aug  8 14:34:42 2002 (serrano)                */
+;*    Copyright   :  2001-02 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file and the _e library        */
+;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __srfi27_makelib
-   
-   (import __srfi27)
-   
-   (eval   (export-all)))
+(module __bdlread_makelib
 
+   (import __bdl_types
+	   __bdl_env
+	   __bdl_prgm
+	   __bdl_etags))

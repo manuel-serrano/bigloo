@@ -1,26 +1,30 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bglpkg/etc/make-lib.scm              */
+;*    serrano/prgm/project/bigloo/api/mail/src/Misc/make_lib.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Tue Jan  2 13:16:31 2007                          */
-;*    Last change :  Wed Nov 14 13:10:14 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
+;*    Last change :  Sat Dec 13 17:42:37 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the Snow heap files.                    */
+;*    The module used to build the heap file and the _e library        */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __@LIBNAME@_makelib
+(module __mail_makelib
    
-   (option (set! *dlopen-init* "@DLOADSYM@_e"))
-   
-   (import @MODULES@)
+   (import __mail_mailbox
+	   __mail_maildir
+	   __mail_imap
+	   __mail_rfc2045
+	   __mail_rfc2047
+	   __mail_rfc2822
+	   __mail_vcard)
    
    (eval   (export-all)
-	   @CLASSES@))
 
-(cond-expand
-   (bigloo-eval
-    (eval '(begin @MACROS@))))
+	   (class mailbox)
+	   (class maildir)
+	   (class imap)
+	   (class vcard)))

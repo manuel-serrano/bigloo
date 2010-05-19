@@ -1,21 +1,19 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/packrat/src/Misc/make-lib.scm        */
+;*    serrano/prgm/project/bigloo/api/ssl/src/Misc/make_lib.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Apr 20 07:59:54 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Sun Apr 20 19:57:09 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file and the _e library        */
+;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __packrat_makelib
-   
-   (import __packrat)
-   (import __packrat_json)
-   
-   (eval   (export-all)))
+(module __ssl_makelib
 
+   (import __ssl_ssl)
+
+   (eval   (export-all)))

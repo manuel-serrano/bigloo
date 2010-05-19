@@ -177,7 +177,7 @@ gstusethread=1
 customgc=yes
 gccustom=gc-7.2alpha4
 gcversion=
-# the following  variable is relevant only when using 
+# the following  variable is relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC
 # and when customgc=no
 stdgclib=gc
@@ -365,7 +365,7 @@ while : ; do
 
     --bigloo_config.h)
       action="bigloo_config";;
-    
+
     --bigloo.h=*)
       action="bigloo_config";
       bigloo_h="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -686,7 +686,7 @@ while : ; do
     --icc)
       if [ "$cc " = " " ]; then
         cc=icc;
-      fi; 
+      fi;
       as=icc;
       ldopt="no-share";
       coflags="$coflags -O3 -ip";
@@ -823,7 +823,7 @@ while : ; do
 
     --customgmp=yes|--customgmp)
       customgmp=yes;;
-      
+
     --customgmp=no)
       customgmp=no;;
 
@@ -1000,6 +1000,7 @@ while : ; do
       echo "   --no-summary" >&2;
       echo "   --bootconfig" >&2;
       echo "   --bootdir=dir" >&2;
+      echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
       echo "   --configureinfo=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -1115,7 +1116,7 @@ done
 if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
     echo "*** ERROR: packrat library requires srfi1."
     echo "Either disable packrat or enable srfi1."
-    echo 
+    echo
     echo "Enabled apis: $apis"
     exit 1
 fi
@@ -1123,7 +1124,7 @@ fi
 if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
     echo "*** ERROR: pkglib library requires sqlite."
     echo "Either disable pkglib or enable sqlite."
-    echo 
+    echo
     echo "Enabled apis: $apis"
     exit 1
 fi
@@ -1131,7 +1132,7 @@ fi
 if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
     echo "*** ERROR: fthread library requires pthread."
     echo "Either disable fthread or enable pthread."
-    echo 
+    echo
     echo "Enabled apis: $apis"
     exit 1
 fi
@@ -1179,11 +1180,11 @@ if [ "$cc " = " " ]; then
      if [ "$cc " != " " ]; then break; fi
   done
 
-  if [ "$cc " = " " ]; then 
+  if [ "$cc " = " " ]; then
     echo "Can't configure C compiler. Aborting (see configure.log)" >&2;
     exit 1;
   fi
-else  
+else
   ncc=`$autoconf cctest --cc="$cc"` || exit 1
   if [ "$ncc " != "$cc " ]; then
     echo "C compiler \"$cc\" broken. Aborting (see configure.log)" >&2;
@@ -1273,7 +1274,7 @@ done
 if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   # ld
   if [ "$ld " = " " ]; then ld=$cc; fi
-  
+
   # as
   if [ ! $as ]; then as="as"; fi
   as=`$autoconf ascpp --as="$as" --name=$name` || exit 1
@@ -1301,7 +1302,7 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
 
   if [ ! $strip ]; then strip="strip"; fi
   strip=`$autoconf strip --strip=$strip` || exit 1
-fi  
+fi
 
 #*---------------------------------------------------------------------*/
 #*    charset                                                          */
@@ -1440,14 +1441,14 @@ case $hostos in
         echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
       fi
       cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
-  
+
       zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
       zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
       zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
       zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
       syszipdir=$zipdir
       syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
-  
+
       dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
       dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
       dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
@@ -1463,7 +1464,7 @@ case $hostos in
 
     if [ "$cygwindosjvm" = "yes" ]; then
       jshell="msdos"
-    fi 
+    fi
     if [ "$cygwindosdotnet" = "yes" ]; then
       dotnetshell="msdos"
     fi
@@ -1475,7 +1476,7 @@ case $hostos in
     ld="gcc"
     ldlibs=""
     ldcomplibs=""
-    ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"  
+    ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"
     ldopt=-shared
     havedlopen=1
     dlopen=""
@@ -1513,7 +1514,7 @@ case $hostos in
           echo "common parent directory. Please re-configure accordingly";
           exit 1;
         fi
-    
+
         ldinstallname="-install_name";
         ldinstallnamedirroot="Frameworks";
         sharedsuffix="dylib";
@@ -1571,8 +1572,8 @@ echo >> $configurelog
 #*---------------------------------------------------------------------*/
 echo "+ .NET specific configuration ($dotnetldstyle)..." >> $configurelog
 case $dotnetldstyle in
-  pnet|mono) 
-    ;;      
+  pnet|mono)
+    ;;
   *)
     echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
     exit 3;;
@@ -1705,13 +1706,13 @@ if [ "$mode" = "benchmark" ]; then
         coflags="$coflags -march=$hardtune -mcpu=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
       fi
       gcspecial=-DDONT_ADD_BYTE_AT_END;;
-        
+
     pentium3|pentium4)
       if [ "$ccprefix" = "gcc" ]; then
         coflags="$coflags -march=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
-      fi 
+      fi
       gcspecial="-DUSE_I686_PREFETCH -DDONT_ADD_BYTE_AT_END";;
-        
+
     athlon|athlon-mp|athlon-tbird|athlon-xp)
       if [ "$ccprefix" = "gcc" ]; then
         coflags="$coflags -march=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
@@ -1786,7 +1787,7 @@ if [ "$dubs_is_enabled " = "yes " ]; then
   if [ "$dbuslibs " != " " ]; then
     dbusld=`echo $dbuslibs | awk -F "@" '{ print $1 }'`
     dbusincl=`echo $dbuslibs | awk -F "@" '{ print $2 }'`
-  else 
+  else
     dbusld=""
     dbusincl=""
   fi
@@ -1944,7 +1945,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     extralibs="-lbigloogmp-$release $extralibs"
   elif [ "$gmpversion " = " " ]; then
     gmpversion=`$autoconf gmp` || exit 1
-  
+
     if [ $gmpversion = "no" ]; then
       havegmp=0;
       if [ $gmpforce = "yes" ]; then
@@ -1984,7 +1985,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Where to find the socket api
   socketlibs=`$autoconf socket --lib="$socketlibs"` || exit 1
   socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
- 
+
   if [ "$socketlibs " != " " ]; then
      extralibs="$socketlibs $extralibs"
   fi
@@ -2019,7 +2020,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does this system implement pipe?
   pipe=`$autoconf pipe` || exit 1
 
-  # Does this compiler implement labs? 
+  # Does this compiler implement labs?
   # llabs=`$autoconfdir/labs --user=$user --tmp=$buildtmp --cc="$cc"`
   # SE: fix, 27 oct 2006
   labs=`$autoconf labs` || exit 1
@@ -2080,22 +2081,22 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Is sigchld available for us
   sigchld=`$autoconf sigchld` || exit 1
-  
+
   # Is sigaction available
   sigaction=`$autoconf sigaction` || exit 1
-  
+
   # Is select available
   select=`$autoconf select` || exit 1
-  
+
   # Is fcntl available
   fcntl=`$autoconf fcntl` || exit 1
-  
+
   # Is termio available
   termio=`$autoconf termio` || exit 1
-  
+
   # Is termio available
   termios=`$autoconf termios` || exit 1
-  
+
   # Does the system support posix-file-ops
   posixfileops=`$autoconf posixfileops` || exit 1
 
@@ -2145,7 +2146,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # shared link additional soname option
   if [ "$ldsoname" = "blank" ]; then
     ldsoname=""
-  else  
+  else
     ldsoname=`$autoconf ldsoname $libdir --ld="$ld" --soname="$ldsoname"` || exit 1
   fi
 
@@ -2323,14 +2324,14 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       pathseparator=";"
       fileseparator="/"
       ostmp="$buildtmp"
-      staticlibsuf="a"    
+      staticlibsuf="a"
       ucs2displayable=0;;
 
     unknown)
       ostmp="/tmp"
       fileseparator="/"
       pathseparator=":"
-      staticlibsuf="a"    
+      staticlibsuf="a"
       ucs2displayable=0;;
 
     *)
@@ -2338,7 +2339,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       pathseparator=":"
       fileseparator="/"
       ostmp="$buildtmp"
-      staticlibsuf="a"    
+      staticlibsuf="a"
       ucs2displayable=0;;
   esac
 
@@ -2537,7 +2538,7 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   else
     emacsversion=`$autoconf emacsbrand --emacs=$emacs` || exit 1
   fi
-  
+
   if [ "$emacsversion" != "false" ]; then
     if [ "$lispdir " = " " ]; then
       emacslisppath=`$autoconf emacslisppath --emacs=$emacs` || exit 1
@@ -2560,7 +2561,7 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   echo "(defvar bmacs-docdir \"$docdir\")" >> $bigloo_config_el
   echo "(defvar bmacs-lispdir \"$emacslisppath\")" >> $bigloo_config_el
 fi
-  
+
 
 #*---------------------------------------------------------------------*/
 #*    texinfo                                                          */
@@ -2843,12 +2844,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # Patch the code of the thread when using non custom GC
   if [ "$pthreadlibs" != "no" ]; then
     # the default gc on mingw is built with thread support.
-    # there is no need to link with a special version of gc library  
+    # there is no need to link with a special version of gc library
     if [ $isgccustom = "0" ]; then
       gclibth=$stdgclib
     else
       if [ "$hostos " = "mingw " ]; then
-        gclibth=bigloogc	
+        gclibth=bigloogc
       else
         gclibth=bigloogc_fth
       fi
@@ -2883,7 +2884,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     cat api/ssl/src/Misc/ssl.init.in \
         | sed -e "s|@OPENSSLLIBS@|$openssllibs|g" \
         >>  lib/$release/ssl.init
- 
+
     dtls=1
     if [ "$openssldtls" = "no" ]; then
       dtls=0;
@@ -2916,7 +2917,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     sqlitesrfi=sqlite;
     echo "SQLITESRFI=sqlite" >> $makefile_cfg
   fi
-    
+
   echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
   cat api/sqlite/src/Misc/sqlite.init.in \
       | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
@@ -2961,7 +2962,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GSTREAMERLIBS=" >> $makefile_cfg
     echo "GSTREAMERFLAGS=" >> $makefile_cfg
   fi
-  
+
   # DBUS
   if [ "$dbusld " != " " ]; then
     echo ";; automatically generated. Don't edit" >  lib/$release/dbus.init
@@ -2983,7 +2984,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     done
     apis=$napis;
   fi
-  
+
   # SCMPKG
   configure=api/pkgcomp/src/Llib/configure.scm
   rm -f $configure
@@ -3338,10 +3339,10 @@ echo "configuration completed" > config.status
 #*    Ok, we are done now                                              */
 #*---------------------------------------------------------------------*/
 if [ "$summary" = "yes" ]; then
-  echo 
-  echo 
+  echo
+  echo
   echo "** Configuration summary **"
-  echo 
+  echo
   echo "Release features:"
   echo "  release number.............. $release"
   echo "  supported backends.......... $bcke"
@@ -3372,7 +3373,7 @@ if [ "$summary" = "yes" ]; then
   echo "  bee support................. $bee"
   echo "  emacs....................... $emacs"
   echo "  emacs brand................. $emacsversion"
-  echo 
+  echo
   echo "Implementation details:"
   echo "  tuning...................... $mode $tuning"
   echo "  cc.......................... $cc"

@@ -50,23 +50,23 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= block-ciphers ciphers aes cast128 des idea pad \
+_BGL_OBJECTS	= block_ciphers ciphers aes cast128 des idea pad \
                   util string2key \
                   dsa rsa elgamal DER pem
 
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
-EOBJECTS	= objs/make-lib.o
+EOBJECTS	= objs/make_lib.o
 
 _CLASSES	= $(_BGL_OBJECTS)
 BGL_CLASSES	= $(_CLASSES:%=$(CLASS_DIR)/%.class)
-BGL_ECLASSES	= $(CLASS_EDIR)/make-lib.class
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 
 _OBJS		= $(_BGL_OBJECTS)
 BGL_DOTNET_OBJ	= $(_OBJS:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make-lib.obj
+BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
@@ -78,7 +78,7 @@ SOURCES		= $(_BGL_SOURCES)
 POPULATION	= $(SOURCES) \
                   $(BIGLOO_SRC_DIR)/idea-round.png \
                   $(BIGLOO_SRC_DIR)/bits32.sch \
-                  $(MISC_SRC_DIR)/make-lib.scm \
+                  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(TARGETNAME).init \
                   Makefile
 
@@ -147,15 +147,15 @@ heap: heap-c heap-jvm
 heap-c: $(HEAP_FILE)
 heap-jvm: $(HEAPJVM_FILE)
 
-$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAP_FILE)
-	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAP_FILE)
+	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAP_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
-$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAPJVM_FILE)
-	@ $(BIGLOO) -jvm $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAPJVM_FILE)
+	@ $(BIGLOO) -jvm $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAPJVM_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -306,7 +306,7 @@ ude:
 	@ $(JFILE) -o .jfile \
                    -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
                    -pbase $(PBASE) \
-                   $(_BGL_OBJECTS:%=%.scm) make-lib.scm
+                   $(_BGL_OBJECTS:%=%.scm) make_lib.scm
 
 .etags: $(SOURCES)
 	@ $(BTAGS) -o .etags $(_BGL_SOURCES)

@@ -18,5 +18,5 @@
 		  :module-init '__pkglib_database
 		  :module-eval '__pkglib_makelib
 		  :class-init "bigloo.pkglib.database"
-		  :class-eval "bigloo.pkglib.make-lib")
+		  :class-eval "bigloo.pkglib.make_lib")
 

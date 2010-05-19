@@ -43,7 +43,7 @@ UNSAFE_OBJECT	= olib_u/scm-point.o olib_u/point.o
 
 # Population
 POPULATION	= Makefile \
-                  point.init make-lib.scm \
+                  point.init make_lib.scm \
                   point.h point.c \
                   scm-point.scm \
                   example.scm
@@ -53,7 +53,7 @@ all: heap lib example
 heap: point.heap
 
 point.heap: point.sch scm-point.scm
-	$(BIGLOO) $(BHEAPFLAGS) make-lib.scm -addheap point.heap
+	$(BIGLOO) $(BHEAPFLAGS) make_lib.scm -addheap point.heap
 
 lib: lib_u lib.a
 

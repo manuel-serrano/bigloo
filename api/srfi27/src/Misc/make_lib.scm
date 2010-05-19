@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Misc/make-lib.scm       */
+;*    serrano/prgm/project/bigloo/api/srfi27/src/Misc/make_lib.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sat Dec 13 17:42:37 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Mon Apr 20 10:40:34 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file and the _e library        */
 ;*=====================================================================*/
@@ -12,19 +12,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __mail_makelib
+(module __srfi27_makelib
    
-   (import __mail_mailbox
-	   __mail_maildir
-	   __mail_imap
-	   __mail_rfc2045
-	   __mail_rfc2047
-	   __mail_rfc2822
-	   __mail_vcard)
+   (import __srfi27)
    
-   (eval   (export-all)
+   (eval   (export-all)))
 
-	   (class mailbox)
-	   (class maildir)
-	   (class imap)
-	   (class vcard)))

@@ -67,17 +67,17 @@ _DOTNET_OBJ	=
 _OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
-EOBJECTS	= objs/make-lib.o
+EOBJECTS	= objs/make_lib.o
 
 BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
-BGL_ECLASSES	= $(CLASS_EDIR)/make-lib.class
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
 BGL_DOTNET_OBJ	= $(_BGL_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
 DOTNET_OBJ	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make-lib.obj
+BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
 DOTNET_OBJ_SRC	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.cs)
 
@@ -99,7 +99,7 @@ INCLUDES	= $(BIGLOO_SRC_DIR)/sqlite.sch
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
-		  $(MISC_SRC_DIR)/make-lib.scm \
+		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(TARGETNAME).init.in \
                   Makefile
 
@@ -174,15 +174,15 @@ heap: heap-c heap-jvm
 heap-c: $(HEAP_FILE)
 heap-jvm: $(HEAPJVM_FILE)
 
-$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAP_FILE)
-	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAP_FILE)
+	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAP_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
-$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make-lib.scm
+$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(HEAPJVM_FILE)
-	@ $(BIGLOO) -jvm  $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make-lib.scm -addheap $(HEAPJVM_FILE)
+	@ $(BIGLOO) -jvm  $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAPJVM_FILE)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -340,7 +340,7 @@ ude:
 .jfile: $(_BGL_SOURCES)
 	@ $(JFILE) -o .jfile \
                    -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
-                   -pbase $(PBASE) $(_BGL_OBJECTS:%=%.scm) make-lib.scm
+                   -pbase $(PBASE) $(_BGL_OBJECTS:%=%.scm) make_lib.scm
 
 .etags: $(_BGL_SOURCES)
 	@ $(BTAGS) -o .etags $(_BGL_SOURCES)

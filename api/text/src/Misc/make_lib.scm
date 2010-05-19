@@ -1,26 +1,21 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/pkglib/src/Misc/make-lib.scm     */
+;*    serrano/prgm/project/bigloo/api/text/src/Misc/make_lib.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Apr 20 20:00:14 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Tue Sep 29 15:29:11 2009 (serrano)                */
+;*    Copyright   :  2001-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file.                          */
+;*    The module used to build the heap file and the _e library        */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __pkglib_makelib
+(module __text_makelib
    
-   (library sqlite)
+   (import __text_bibtex
+	   __text_gb2312)
    
-   (import __pkglib_param
-	   __pkglib_database
-	   __pkglib_repo
-	   __pkglib_interface
-	   __pkglib_package
-	   __pkglib_misc)
-   
-   (eval    (export-all)))
+   (eval   (export-all)))
+

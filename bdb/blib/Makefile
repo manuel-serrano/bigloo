@@ -68,7 +68,7 @@ INCLUDES	=
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) $(INCLUDES) Makefile make-lib.scm
+POPULATION	= $(SOURCES) $(INCLUDES) Makefile make_lib.scm
 
 #*---------------------------------------------------------------------*/
 #*    all & jvm                                                        */
@@ -105,15 +105,15 @@ heap: heap-c heap-jvm
 heap-c: $(HEAP_FILE)
 heap-jvm: $(HEAPJVM_FILE)
 
-$(HEAP_FILE): .afile make-lib.scm
+$(HEAP_FILE): .afile make_lib.scm
 	@ $(RM) -f $(HEAP_FILE)
-	@ $(BIGLOO) $(BHEAPFLAGS) make-lib.scm -addheap $(HEAP_FILE)
+	@ $(BIGLOO) $(BHEAPFLAGS) make_lib.scm -addheap $(HEAP_FILE)
 	@ echo "$(HEAP_FILE) Done..."
 	@ echo "-------------------------------"
 
-$(HEAPJVM_FILE): .jfile .afile make-lib.scm
+$(HEAPJVM_FILE): .jfile .afile make_lib.scm
 	@ $(RM) -f $(HEAPJVM_FILE)
-	@ $(BIGLOO) -jvm $(BHEAPFLAGS) make-lib.scm -addheap $(HEAPJVM_FILE)
+	@ $(BIGLOO) -jvm $(BHEAPFLAGS) make_lib.scm -addheap $(HEAPJVM_FILE)
 	@ echo "$(HEAPJVM_FILE) Done..."
 	@ echo "-------------------------------"
 

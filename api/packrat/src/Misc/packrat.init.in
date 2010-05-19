@@ -18,7 +18,7 @@
 		  :module-init '__packrat_bibtex
 		  :module-eval '__packrat_makelib
 		  :class-init "bigloo.packrat.bibtex"
-		  :class-eval "bigloo.packrat.make-lib")
+		  :class-eval "bigloo.packrat.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

@@ -37,7 +37,7 @@ EFLAGS		=
 #*    Les sources                                                      */
 #*---------------------------------------------------------------------*/
 #*--- init ------------------------------------------------------------*/
-INIT_FILE	= main setrc parse-args
+INIT_FILE	= main setrc parse_args
 
 INIT_OBJ	= $(INIT_FILE:%=Init/%.o)
 

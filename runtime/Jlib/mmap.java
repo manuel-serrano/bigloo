@@ -21,7 +21,7 @@ public class mmap extends obj {
    public mmap( String resource ) {
       try {
 	 map = null;
-	 in = java.lang.ClassLoader.getSystemResourceAsStream( resource.replace( '\\', '/' ) );
+         in = foreign.class.getClassLoader().getResourceAsStream( resource.replace( '\\', '/' ) );
 	 name = resource.getBytes();
 	 rp = 0; wp = 0;
 	 len = in.available();
@@ -100,7 +100,7 @@ public class mmap extends obj {
 		  in.skip( rp - i );
 	       } else {
 		  in.close();
-		  in = java.lang.ClassLoader.getSystemResourceAsStream( new String( name ) );
+                  in = foreign.class.getClassLoader().getResourceAsStream( new String( name ) );
 		  in.skip( i );
 	       }
 	    }

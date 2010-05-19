@@ -6,7 +6,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
  am__DEPENDENCIES_1 =
 -am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c checksums.c \
-+am__libgc_la_SOURCES_DIST = allchblk.c alloc.c inline-alloc.c blacklst.c checksums.c \
++am__libgc_la_SOURCES_DIST = allchblk.c alloc.c inline_alloc.c blacklst.c checksums.c \
  	dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c \
  	headers.c malloc.c mallocx.c mark.c mark_rts.c misc.c \
  	new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c \
@@ -15,7 +15,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  @DARWIN_THREADS_TRUE@am__objects_2 = darwin_stop_world.lo
  @WIN32_THREADS_TRUE@am__objects_3 = win32_threads.lo
 -am_libgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
-+am_libgc_la_OBJECTS = allchblk.lo alloc.lo inline-alloc.lo blacklst.lo checksums.lo \
++am_libgc_la_OBJECTS = allchblk.lo alloc.lo inline_alloc.lo blacklst.lo checksums.lo \
  	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
  	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
  	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
@@ -24,7 +24,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  pkgconfigdir = $(libdir)/pkgconfig
  pkgconfig_DATA = bdw-gc.pc
 -libgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-+libgc_la_SOURCES = allchblk.c alloc.c inline-alloc.c blacklst.c checksums.c dbg_mlc.c \
++libgc_la_SOURCES = allchblk.c alloc.c inline_alloc.c blacklst.c checksums.c dbg_mlc.c \
  	dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c malloc.c \
  	mallocx.c mark.c mark_rts.c misc.c new_hblk.c obj_map.c \
  	os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
@@ -32,7 +32,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
-+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline-alloc.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline_alloc.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_mach_dep.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@
