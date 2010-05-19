@@ -46,9 +46,6 @@ SCMCLASSSUFFIX	= %.class
 SCMDOTNETSUFFIX = %.obj
 # The module association file
 AFILE		= .afile
-# this doesn't work when bootstrapping: BGLBUILDBINDIR points to $BUILD/bin
-# but bglafile is not compiled yet!
-# run make -C runtime .afile BGLBUILDBINDIR=$HOME/local/bin
 AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
 # The package association file
 JFILE		= .jfile
