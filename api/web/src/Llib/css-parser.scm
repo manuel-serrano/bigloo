@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Sun Aug  9 18:17:49 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Thu May 20 08:12:54 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
 ;*=====================================================================*/
@@ -38,7 +38,7 @@
 	   PERCENTAGE NUMBREC URI FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
 	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-CLO
-	   SLASH * + > - DOT = EXTENSION)
+	   SLASH * + > - DOT = EXTENSION VALUE)
       
       (stylesheet
        ((charset? comment* import*)
@@ -99,6 +99,7 @@
        ((rule comment*) (list rule comment*)))
       
       (rule
+       ((VALUE) '())
        ((ruleset) ruleset)
        ((media) media)
        ((page) page)
@@ -332,6 +333,7 @@
        ((unary_operator function) (make-unary unary_operator function))
        ((unary_operator EXTENSION) (make-unary unary_operator (car EXTENSION)))
        ((STRING) (car STRING))
+       ((VALUE) (car VALUE))
        ((IDENT) (car IDENT))
        ((URI) (instantiate::css-uri (value (car URI))))
        ((RGB) (car RGB))

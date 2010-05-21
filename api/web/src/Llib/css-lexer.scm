@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Sat Apr 11 06:39:08 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Thu May 20 08:06:34 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/
@@ -220,11 +220,6 @@
 		    ((string? e)
 		     (return 'EXTENSION e))
 		    (else
-		     (let ((e2 (eof c (the-port))))
-			(if e2
-			    beof
-			    (css-parse-error "Illegal character"
-					     (format "{~a}" c)
-					     (the-port))))))))))))
+		     (return 'VALUE e)))))))))
 
 

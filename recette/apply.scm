@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:58:26 1992                          */
-;*    Last change :  Mon Nov 13 22:08:08 2006 (serrano)                */
+;*    Last change :  Fri May 21 11:28:02 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test differentes sortes d'apply                               */
 ;*---------------------------------------------------------------------*/

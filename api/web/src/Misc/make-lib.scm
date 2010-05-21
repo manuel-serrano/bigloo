@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed May 19 16:35:23 2010 (serrano)                */
+;*    Last change :  Thu May 20 09:13:13 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -39,6 +39,7 @@
 	   (class css-selector-class)
 	   (class css-selector-hash)
 	   (class css-selector-attr)
+	   (class css-selector-name)
 	   (class css-selector-pseudo)
 	   (class css-declaration)
 	   (class css-function)
