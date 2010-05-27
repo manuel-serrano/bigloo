@@ -1216,8 +1216,8 @@ else
   if [ "$hostos " = "android " ]; then
     echo "*** ERROR: Android."
     echo
-    echo "We detected an Android hostos, but we cannot determine the Android type"
-    echo "or the emulator is not running."
+    echo "We detected an Android hostos, but the Android release is not correct"
+    echo "or we could not contact an Android device."
     exit 1
   fi
 fi
