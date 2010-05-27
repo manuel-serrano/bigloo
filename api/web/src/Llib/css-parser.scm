@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Thu May 20 08:12:54 2010 (serrano)                */
+;*    Last change :  Thu May 27 08:14:34 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -37,8 +37,8 @@
 	   ATKEYWORD IMPORTANT_SYM EMS EXS LENGTH ANGLE TIME FREQ DIMEN
 	   PERCENTAGE NUMBREC URI FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
-	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-CLO
-	   SLASH * + > - DOT = EXTENSION VALUE)
+	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
+	   SLASH * + > - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE)
       
       (stylesheet
        ((charset? comment* import*)
@@ -130,11 +130,40 @@
       (medium+
        ((medium) (list medium))
        ((medium+ COMMA medium) `(,@medium+ ,medium)))
-      
+
       (medium
+       ((ONLY_SYM media_type media_expression*)
+	(instantiate::css-media-query
+	   (operator "only ")
+	   (type media_type)
+	   (expr* media_expression*)))
+       ((NOT_SYM media_type media_expression*)
+	(instantiate::css-media-query
+	   (operator "not ")
+	   (type media_type)
+	   (expr* media_expression*)))
+       ((media_type media_expression*)
+	(instantiate::css-media-query
+	   (operator "")
+	   (type media_type)
+	   (expr* media_expression*))))
+
+      (media_type
        ((IDENT) (car IDENT))
        ((EXTENSION) (instantiate::css-ext (value (car EXTENSION)))))
-      
+
+      (media_expression*
+       (()
+	'())
+       ((AND_SYM media_expression media_expression*)
+	(cons media_expression media_expression*)))
+
+      (media_expression
+       ((PAR-OPEN IDENT PAR-CLO)
+	(cons (car IDENT) #f))
+       ((PAR-OPEN IDENT COLON expr PAR-CLO)
+	(cons (car IDENT) expr)))
+	
       (ident?
        (() #f)
        ((IDENT) IDENT)

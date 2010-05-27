@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Thu May 20 08:06:34 2010 (serrano)                */
+;*    Last change :  Thu May 27 08:05:05 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -107,6 +107,15 @@
       (string
        (return 'STRING))
       
+      ("and"
+       (return 'AND_SYM))
+      
+      ("not"
+       (return 'NOT_SYM))
+      
+      ("only"
+       (return 'ONLY_SYM))
+      
       (ident
        (return 'IDENT))
       
@@ -173,6 +182,8 @@
       (#\,
        (return 'COMMA))
       
+      (#\(
+       (return 'PAR-OPEN))
       (#\)
        (return 'PAR-CLO))
       
