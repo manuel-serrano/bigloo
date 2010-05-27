@@ -14,7 +14,7 @@ export ANDSRC=$ANDROIDROOT/eclair-git
 export ANDSDK=$ANDROIDROOT/android-sdk-linux
 
 # we can't fire a emulator automatically, so just do it yourself by hand
-export ANDROID_SERIAL="emulator-5554"
+# export ANDROID_SERIAL="emulator-5554"
 
 # droid-wrapper
 # http://github.com/tmurakam/droid-wrapper/
