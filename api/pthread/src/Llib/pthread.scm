@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Sun Feb 14 10:01:45 2010 (serrano)                */
+;*    Last change :  Thu May 27 17:44:42 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -82,7 +82,7 @@
 			    ($push-trace id)
 			    ($set-uncaught-exception-handler!
 			     (lambda (val)
-				(error (format "unwind-until!:~a" o)
+				(error (format "unwind-until!, ~a" o)
 				       "exit out of thread dynamic scope"
 				       val)))
 			    (with-handler
@@ -95,7 +95,11 @@
 			       (cond-expand
 				  (bigloo-c
 				   (bind-exit (exit)
-				      (signal $pthread-term-sig (lambda (s) (exit #f)))
+				      (signal $pthread-term-sig
+					      (lambda (s)
+						 ($set-uncaught-exception-handler!
+						  (lambda (val) val))
+						 (exit #f)))
 				      (set! end-result (body))))
 				  (else
 				   (set! end-result (body))))))))))
