@@ -1208,7 +1208,7 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
 # detect if we are compilling for android
 android=`$autoconf android` || exit 1
 if [ "$android " = "yes " ]; then
-  cflags="$cflags -DPLATFORM_ANDROID"
+  cflags="$cflags -DLINUX -DPLATFORM_ANDROID"
   hostos="android"
   hostcpu="arm"
   gcneedstackbase=1
