@@ -32,7 +32,7 @@ while : ; do
 done
 
 case $HOSTOS in
-   linux)
+   linux|android)
      if [ "$HOSTCPU " = "ppc " ]; then
        echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS $cflags";
      else
@@ -53,7 +53,7 @@ case $HOSTOS in
 
    freebsd)
      echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
- 
+
    darwin)
       echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
 
