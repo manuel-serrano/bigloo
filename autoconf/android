@@ -9,8 +9,6 @@
 #*    Detect if we are compiling for Android                           */
 #*=====================================================================*/
 
-set -x
-
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
 #*---------------------------------------------------------------------*/
@@ -28,14 +26,16 @@ done
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
 #*    -------------------------------------------------------------    */
-#*    We assume that we are under android (QEMU)                       */
+#*    We assume that we are under Android                              */
 #*---------------------------------------------------------------------*/
+
+
 if [ "$HOSTCPU " = "arm " ]; then
-  build_id=`$HOSTSH getprop ro.build.id`
-  if [ "$build_id " = "CUPCAKE " -o "$build_id " = "ECLAIR " ]; then
+  build_id=`$HOSTSH getprop ro.build.version.release`
+  if [ "$build_id " = "2.0.1 " -o "$build_id " = "ECLAIR " ]; then
     echo "yes"
   else
-    echo "no"
+    echo "wrong version"
   fi
 else
   echo "no"
