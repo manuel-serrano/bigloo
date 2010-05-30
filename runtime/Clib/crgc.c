@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Thu Sep  3 15:34:03 2009 (serrano)                */
+/*    Last change :  Sun May 30 16:50:29 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -56,6 +56,8 @@ extern obj_t bigloo_case_sensitive;
 extern obj_t string_to_keyword( char * );
 extern obj_t make_string_sans_fill( int );
 extern int bgl_debug();
+extern obj_t bgl_escape_C_string( unsigned char *, long, long );
+extern obj_t bgl_escape_scheme_string( unsigned char *, long, long );
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -285,7 +287,7 @@ BGL_RUNTIME_DEF
 obj_t
 rgc_buffer_substring( obj_t ip, long offset, long end ) {
    long start = INPUT_PORT( ip ).matchstart;
-   long len   = end - offset;
+   long len = end - offset;
 
 #if defined( RGC_DEBUG )
    if( bgl_debug() >= 1 ) {
@@ -300,12 +302,28 @@ rgc_buffer_substring( obj_t ip, long offset, long end ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    rgc_buffer_escape_substring ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+rgc_buffer_escape_substring( obj_t ip, long offset, long end, bool_t strict ) {
+   long start = INPUT_PORT( ip ).matchstart;
+   char *s = (char *)&RGC_BUFFER_REF( ip, start );
+   
+   if( strict )
+      return bgl_escape_scheme_string( s, offset, end );
+   else 
+      return bgl_escape_C_string( s, offset, end );
+}
+
+/*---------------------------------------------------------------------*/
 /*    CHEAT_BUFFER_AT                                                  */
 /*---------------------------------------------------------------------*/
 #define CHEAT_BUFFER_AT( s ) \
    long stop  = s; \
    char bck; \
-   bck = RGC_BUFFER_REF( ip, stop );		\
+   bck = RGC_BUFFER_REF( ip, stop ); \
    RGC_BUFFER_SET( ip, stop, '\0' );
 
 /*---------------------------------------------------------------------*/

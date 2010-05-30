@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Jun 10 09:11:07 2008 (serrano)                */
-;*    Copyright   :  2005-08 Chris Veness                              */
+;*    Last change :  Sun May 30 07:58:01 2010 (serrano)                */
+;*    Copyright   :  2005-10 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -49,7 +49,8 @@
 	   __srfi4)
    
    (import __sha1
-	   __date)
+	   __date
+	   __param)
    
    (export (aes-ctr-encrypt::bstring ::obj ::bstring
 				     #!optional (nbits 128))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue May 11 16:21:16 2010 (serrano)                */
+;*    Last change :  Sun May 30 15:06:26 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -17,7 +17,8 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_strings_6_7
    
-   (import  __error)
+   (import  __error
+	    __param)
    
    (use     __type
 	    __bigloo
@@ -64,8 +65,10 @@
 	    (c-string-append-3::bstring (::bstring ::bstring ::bstring)
 					"string_append_3")
 	    
-	    (escape-C-string::bstring (::string) "escape_C_string")
-	    (escape-scheme-string::bstring (::string) "escape_scheme_string")
+	    ($escape-C-string::bstring (::string ::long ::long)
+				       "bgl_escape_C_string")
+	    ($escape-scheme-string::bstring (::string ::long ::long)
+					    "bgl_escape_scheme_string")
 	    (c-constant-string-to-string::bstring (::string)
 						  "c_constant_string_to_string")
 	    
@@ -130,10 +133,10 @@
 	       (method static c-string-append-3::bstring (::bstring ::bstring ::bstring)
 		       "string_append_3")
 	       
-	       (method static escape-C-string::bstring (::string)
-		       "escape_C_string")
-	       (method static escape-scheme-string::bstring (::string)
-		       "escape_scheme_string")
+	       (method static $escape-C-string::bstring (::string ::long ::long)
+		       "bgl_escape_C_string")
+	       (method static $escape-scheme-string::bstring (::string ::long ::long)
+		       "bgl_escape_scheme_string")
 	       (method static c-constant-string-to-string::bstring (::string)
 		       "c_constant_string_to_string")
 	       
@@ -190,6 +193,7 @@
 	    (string-capitalize!::bstring ::bstring)
 	    (string-capitalize::bstring ::bstring)
 	    (inline string-for-read::bstring ::bstring)
+	    (inline string-as-read::bstring ::bstring)
 	    (inline blit-string-ur! ::bstring ::long ::bstring ::long ::long)
 	    (blit-string! ::bstring ::long ::bstring ::long ::long)
 	    (inline string-shrink! ::bstring ::long)
@@ -679,6 +683,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (string-for-read string)
    (c-string-for-read string))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn string-as-read@ ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (string-as-read str)
+   ($escape-C-string str 0 (string-length str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn blit-string-ur!@ ...                                      */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 10 13:43:22 2006                          */
-;*    Last change :  Tue Mar 11 15:54:59 2008 (serrano)                */
-;*    Copyright   :  2006-08 Manuel Serrano                            */
+;*    Last change :  Sun May 30 07:57:30 2010 (serrano)                */
+;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Knuth, Morris, and Pratt" search algorithm implementation.      */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __kmp
 
-   (import __error)
+   (import __error
+	   __param)
    
    (use    __mmap
 	   __type

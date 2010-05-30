@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 21 10:09:50 1992                          */
-;*    Last change :  Tue Mar 11 15:57:01 2008 (serrano)                */
+;*    Last change :  Sun May 30 08:00:24 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.6 Characters (page 24, r4)                                     */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*---------------------------------------------------------------------*/
 (module __r4_characters_6_6
    
-   (import  __error)
+   (import  __error
+	    __param)
    
    (use     __type
 	    __bigloo

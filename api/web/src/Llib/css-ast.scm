@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Thu May 27 08:16:02 2010 (serrano)                */
+;*    Last change :  Sat May 29 10:06:48 2010 (serrano)                */
 ;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
@@ -44,8 +44,8 @@
 	      (ruleset*::pair-nil read-only))
 
 	   (class css-media-query
-	      (operator::bstring read-only)
-	      (type read-only)
+	      (operator::obj read-only)
+	      (type::bstring read-only)
 	      (expr*::pair-nil read-only))
 
 	   (class css-page
@@ -60,6 +60,8 @@
 	      (ident read-only))
 
 	   (class css-ruleset
+	      (stamp::int (default -1))
+	      (specificity::obj (default #f))
 	      (selector+::pair read-only)
 	      (declaration*::pair-nil read-only))
 
@@ -129,9 +131,10 @@
       ((or (null? o) (not o))
        #unspecified)
       (else
-       (error 'css-write
-	      (format "Illegal CSS value (~a)" (find-runtime-type o))
-	      o))))
+       (warning 'css-write
+		(format " -- Illegal CSS value (~a): " (find-runtime-type o))
+		o)
+       (display "error" p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-uri ...                                          */
@@ -208,7 +211,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (css-write o::css-media-query p::output-port)
    (with-access::css-media-query o (operator type expr*)
-      (display operator p)
+      (when operator
+	 (display operator p)
+	 (display " " p))
       (css-write type p)
       (for-each (lambda (expr)
 		   (display " and (" p)

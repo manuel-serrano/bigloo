@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Thu May 20 09:13:13 2010 (serrano)                */
+;*    Last change :  Fri May 28 10:41:52 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -31,6 +31,7 @@
 	   (class css-comment)
 	   (class css-import)
 	   (class css-media)
+	   (class css-media-query)
 	   (class css-page)
 	   (class css-fontface)
 	   (class css-pseudopage)

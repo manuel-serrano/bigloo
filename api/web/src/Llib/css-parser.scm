@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Thu May 27 08:14:34 2010 (serrano)                */
+;*    Last change :  Sat May 29 08:34:41 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -51,7 +51,7 @@
 	   (charset charset?)
 	   (comment* comment*)
 	   (import* import*)
-	   (rule* rule+))))
+	   (rule* (css-stamp-rules! rule+)))))
       
       (charset?
        (() #f)
@@ -134,17 +134,17 @@
       (medium
        ((ONLY_SYM media_type media_expression*)
 	(instantiate::css-media-query
-	   (operator "only ")
+	   (operator 'only)
 	   (type media_type)
 	   (expr* media_expression*)))
        ((NOT_SYM media_type media_expression*)
 	(instantiate::css-media-query
-	   (operator "not ")
+	   (operator 'not)
 	   (type media_type)
 	   (expr* media_expression*)))
        ((media_type media_expression*)
 	(instantiate::css-media-query
-	   (operator "")
+	   (operator #f)
 	   (type media_type)
 	   (expr* media_expression*))))
 
@@ -377,6 +377,39 @@
       
       (hexcolor
        ((HASH) (instantiate::css-hash-color (value (car HASH)))))))
+
+;*---------------------------------------------------------------------*/
+;*    css-mutex ...                                                    */
+;*---------------------------------------------------------------------*/
+(define css-mutex (make-mutex))
+
+;*---------------------------------------------------------------------*/
+;*    css-stamp ...                                                    */
+;*---------------------------------------------------------------------*/
+(define css-stamp 0)
+
+;*---------------------------------------------------------------------*/
+;*    css-stamp-rules! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Stamps are used by the CSS priority algorithm.                   */
+;*---------------------------------------------------------------------*/
+(define (css-stamp-rules! os)
+   (mutex-lock! css-mutex)
+   (let loop ((l os))
+      (if (null? l)
+	  (begin
+	     (mutex-unlock! css-mutex)
+	     os)
+	  (let ((o (car l)))
+	     (cond
+		((pair? o)
+		 (loop o))
+		((css-ruleset? o)
+		 (css-ruleset-stamp-set! o css-stamp)
+		 (set! css-stamp (+fx 1 css-stamp)))
+		((css-media? o)
+		 (loop (css-media-ruleset* o))))
+	     (loop (cdr l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-unary ...                                                   */

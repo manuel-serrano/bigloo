@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Tue May 11 16:40:26 2010 (serrano)                */
+;*    Last change :  Sun May 30 17:03:46 2010 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -556,7 +556,7 @@
    (test "string-natural-compare3-ci.4"
 	 (string-natural-compare3-ci "foo1" "FOO0") 1)
    (test "string-natural-compare3-ci.5"
-	 (string-natural-compare3-ci "FOO1" "foo0") 1)
+	 (string-natural-compare3-ci "FOO1" "foo0") 1) substring
    (test "number->string.1" (number->string 10) "10")
    (test "number->string.2" (number->string 10 16) "a")
    (test "number->string.3" (number->string 10 2) "1010")
@@ -572,4 +572,8 @@
    (test "string-contains-ci.1" (string-contains-ci "FOO BAR" "bar" 1) 4)
    (test "string-contains-ci.2" (string-contains-ci "FOO BAR" "bar" 1) 4)
    (test "string-contains-ci.3" (string-contains-ci "foo bar" "bar" 10) #f)
-   (test "string-contains-ci.4" (string-contains-ci "foo bar" "bar" -1) 4))
+   (test "string-contains-ci.4" (string-contains-ci "foo bar" "bar" -1) 4)
+   (test "string-as-read" (string-as-read (string #\\ #\n #\o #\\ #\t))
+	 (string #\newline #\o #\tab))
+   (test "string-for-read" (string-for-read (string #\newline #\o #\tab))
+	 (string #\\ #\n #\o #\\ #\t)))
