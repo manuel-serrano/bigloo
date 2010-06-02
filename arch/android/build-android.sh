@@ -1,14 +1,24 @@
 #! /bin/bash
 
-# TODO: make ANDROIDROOT and BS_BIGLOO parameters
-
 if [ "$(basename $0)" == "build-android.sh" ]; then
    set -e
 fi
 
-# root for all things android
-ANDROIDROOT=$HOME/src/works/inria/android
-# ANDROIDROOT=/misc/virtual/android
+arch_dir=$(dirname $0)
+conf_file=$arch_dir/config.sh
+
+# import settings
+if [ -f $conf_file ]; then
+   source $conf_file
+else
+   echo "config file '$conf_file' not found, bailing out."
+   exit 1
+fi
+
+if ! [ -d "$ANDROIDROOT" -a -d "$BS_BIGLOO" ]; then
+   echo "config seems wrong. check config file $conf_file"
+   exit 1
+fi
 
 export ANDSRC=$ANDROIDROOT/eclair-git
 export ANDSDK=$ANDROIDROOT/android-sdk-linux
@@ -20,8 +30,7 @@ export DROID_ROOT=$ANDSRC
 # 5 for eclair
 export DROID_TARGET=5
 
-# bigloo/gcc
-export BS_BIGLOO=$HOME/local
+# gcc
 export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BS_BIGLOO/lib
