@@ -1,0 +1,4 @@
+Q: Why doesn't Bigloo have threads support under android?
+A: Long story short, the gcc used to compile it declares 'Thread model:
+   single'. Boehm's GC considers it as anon-thread-supporting platform,
+   so it compiles without threads.
