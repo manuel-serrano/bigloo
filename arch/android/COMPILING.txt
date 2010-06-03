@@ -51,7 +51,7 @@ If evrything's ok, then you can compile:
 
    ./arch/android/build-android.sh build
 
-If evrything's ok, then you can install:
+If evrything's ok, then you can install[6]:
 
    make install
 
@@ -66,3 +66,5 @@ If evrything's ok, then you can install:
 
 [5] 'adb' runs as a daemon and somehow is not affected by e.g. permission
     changes.
+
+[6] but currently it doesn't make much sense.
