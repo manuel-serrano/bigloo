@@ -1,4 +1,7 @@
-source config-local.sh
+arch_dir=$(dirname $0)
+conf_file=$arch_dir/config-local.sh
+
+source $conf_file
 
 if ! [ -d "$ANDROIDROOT" -a -d "$BS_BIGLOO" ]; then
    echo "config seems wrong. check config file $conf_file"
