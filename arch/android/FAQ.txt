@@ -2,3 +2,12 @@ Q: Why doesn't Bigloo have threads support under android?
 A: Long story short, the gcc used to compile it declares 'Thread model:
    single'. Boehm's GC considers it as anon-thread-supporting platform,
    so it compiles without threads.
+
+Q: How do I enable USB Debugging in my Android phone?
+A: Home-> Menu-> Settings-> Applications-> Development-> USB Debugging.
+   We also recommend 'Stay awake'.
+
+Q: I plugged in my phone with USB Debugging on, but when I try to
+   configure Bigloo it says that it could not contact the Android device.
+A: It could be that you don't have enough permissions on the USB devices.
+   You could try to set a udev rule to give you enough permissions.
