@@ -11,3 +11,6 @@ Q: I plugged in my phone with USB Debugging on, but when I try to
    configure Bigloo it says that it could not contact the Android device.
 A: It could be that you don't have enough permissions on the USB devices.
    You could try to set a udev rule to give you enough permissions.
+
+Q: Where's my .apk file?
+A: Coming soon.
