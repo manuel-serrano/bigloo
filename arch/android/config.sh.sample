@@ -7,3 +7,7 @@ ANDROIDROOT=$HOME/src/works/inria/android
 
 # host bigloo
 export BS_BIGLOO=$HOME/local
+
+# where we will install Bigloo
+# we recommend a path in your home dir.
+export INSTALL_PREFIX=$HOME/local/soft/$(basename $(pwd))-android

@@ -37,7 +37,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BS_BIGLOO/lib
 
 if [ "$1" == "configure" ]; then
    ./configure \
-      --prefix=$HOME/local/soft/$(basename $(pwd))-android \
+      --prefix=$INSTALL_PREFIX \
       --stack-check=no \
       --disable-srfi27 \
       --gccustomversion=gc-7.2alpha4 \
