@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 24 12:01:49 2010                          */
-;*    Last change :  Wed Mar 24 12:09:55 2010 (serrano)                */
+;*    Last change :  Sun May 30 07:59:16 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate a UUID according to rfc4122 Version 4.                  */
@@ -41,7 +41,8 @@
 	   __error
 	   __evenv
 	   __os
-	   __date)
+	   __date
+	   __param)
    
    (export (genuuid)))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Fri Dec 19 16:54:04 2008 (serrano)                */
-;*    Copyright   :  2006-08 Marc Feeley                               */
+;*    Last change :  Sun May 30 07:57:48 2010 (serrano)                */
+;*    Copyright   :  2006-10 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -46,7 +46,8 @@
 
    (import  __error
 	    __object
-	    __thread)
+	    __thread
+	    __param)
    
    (use     __type
 	    __bigloo

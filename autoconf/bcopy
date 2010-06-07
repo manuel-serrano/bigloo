@@ -38,6 +38,7 @@ aout=$TMP/Xactest$USER
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
 compile="$CC $cflags $file.c -o $aout >/dev/null"
+echo "$compile" >&2
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -50,10 +51,10 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-#include <strings.h>
-#if( !defined( PLATFORM_ANDROID ) )
+#if( defined( PLATFORM_ANDROID ) )
 #  include <stddef.h>
 #endif
+#include <strings.h>
 
 main( argc, argv )
 int   argc;

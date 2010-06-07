@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/rgc-trap.scm                 */
+;*    serrano/prgm/project/bigloo/recette/rgc_trap.scm                 */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 14:24:02 1992                          */
-;*    Last change :  Mon Sep 21 14:14:27 1998 (serrano)                */
+;*    Last change :  Mon Jun  7 16:56:56 2010 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de grammaire qui trappe                                 */
 ;*---------------------------------------------------------------------*/
@@ -70,5 +70,5 @@
 ;*    test-rgc-trap ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (test-rgc-trap)
-   (test-module "rgc-trap" "rgc-trap.scm")
+   (test-module "rgc-trap" "rgc_trap.scm")
    (test "test" (rgc-test) '(3 3 3 3 1 66)))

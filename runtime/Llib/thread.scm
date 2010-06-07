@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Mon Jul 20 09:41:36 2009 (serrano)                */
-;*    Copyright   :  2004-09 Manuel Serrano                            */
+;*    Last change :  Wed May 19 11:30:59 2010 (serrano)                */
+;*    Copyright   :  2004-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -156,7 +156,9 @@
 	    (class nothread::thread
 	       (body::procedure read-only)
 	       (%specific::obj (default #unspecified))
-	       (%cleanup::obj (default #f)))
+	       (%cleanup::obj (default #f))
+	       (end-result::obj (default #unspecified))
+	       (end-exception::obj (default #unspecified)))
 	    
 	    ;; dynamic env (per thread env)
             (inline dynamic-env?::bool ::obj)
@@ -466,9 +468,13 @@
 (define-method (thread-start! th::nothread . scd)
    (let ((thread *nothread-current*))
       (unwind-protect
-	 (begin
+	 (with-access::nothread th (end-result end-exception)
 	    (set! *nothread-current* th)
-	    ((nothread-body th))
+	    (with-handler
+	       (lambda (e)
+		  (set! end-exception e)
+		  (raise e))
+	       (set! end-result ((nothread-body th))))
 	    th)
 	 (set! *nothread-current* thread))))
 
@@ -477,6 +483,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (thread-start-joinable! th::nothread)
    (thread-start! th))
+
+;*---------------------------------------------------------------------*/
+;*    thread-join! ::nothread ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (thread-join! th::nothread . timeout)
+   (with-access::nothread th (end-result end-exception)
+      (if (&exception? end-exception)
+	  (raise end-exception)
+	  end-result)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-terminate! ::nothread ...                                 */

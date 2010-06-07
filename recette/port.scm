@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Fri Dec  5 12:08:22 2008 (serrano)                */
+;*    Last change :  Mon Jun  7 17:00:07 2010 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -210,9 +210,9 @@
 ;*---------------------------------------------------------------------*/
 (define (test-binary3)
    (let ((name "recette.TMP3"))
-      (and (copy-file "big-file.scm" name)
+      (and (copy-file "big_file.scm" name)
 	   (unwind-protect
-	      (let ((p1 (open-input-binary-file "big-file.scm"))
+	      (let ((p1 (open-input-binary-file "big_file.scm"))
 		    (p2 (open-input-binary-file name)))
 		 (unwind-protect
 		    (let loop ((s1 (input-string p1 1024))

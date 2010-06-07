@@ -2190,20 +2190,13 @@ public final class foreign
 	 return r;
       }
 
-   public static byte[] escape_C_string(byte[]src)
+   public static byte[] bgl_escape_C_string(byte[]src, int start, int end)
       {
-	 // on supprime un caractere de cette chaine car elle est rendue par le
-	 // lecteur comme etant `"tototo'. Ceci est du au fait qu'on utilise
-	 // la fonction `the-small-string' qui supprime le premier et le
-	 // dernier caractere de la chaine lue. Comme les chaines etrangeres
-	 // commencent par 2 caracteres, on en supprime 1 autre maintenant.
-
-	 final int len = src.length;
 	 int size = 0;
 
-	 for (int i = 1; i < len; ++i, ++size) {
+	 for (int i = start; i < end; ++i, ++size) {
 	    if (src[i] == '\\') {
-	       if ((i + 3 < len)
+	       if ((i + 3 < end)
 		   && isdigit(src[i + 1])
 		   && isdigit(src[i + 2]) && isdigit(src[i + 3]))
 		  i += 3;
@@ -2216,7 +2209,7 @@ public final class foreign
 	 final byte[] result = new byte[size];
 	 int j = 0;
 
-	 for (int i = 1; i < len; ++i, ++j) {
+	 for (int i = start; i < end; ++i, ++j) {
 	    if (src[i] != '\\') {
 	       result[j] = src[i];
 	    } else {
@@ -2245,7 +2238,7 @@ public final class foreign
 		     result[j] = (byte) 11;
 		  break;
 		  default: {
-		     if (i + 2 < len) {
+		     if (i + 2 < end) {
 			final byte s0 = src[i];
 			final byte s1 = src[i + 1];
 			final byte s2 = src[i + 2];
@@ -2265,7 +2258,7 @@ public final class foreign
 			      result[j] = (byte) (n1 * 16 + n2);
 			      i += 2;
 			   } else {
-			      if (i + 4 < len) {
+			      if (i + 4 < end) {
 				 final byte s3 = src[i + 3];
 				 final byte s4 = src[i + 4];
 				 
@@ -2336,12 +2329,11 @@ public final class foreign
 	 return (byte)(10 + (b - (byte) 'A'));
    }
    
-   public static byte[] escape_scheme_string(byte[]src)
+   public static byte[] bgl_escape_scheme_string(byte[]src, int start, int end)
       {
-	 final int len = src.length;
 	 int w = 0;
 
-	 for (int i = 0; i < len; ++i)
+	 for (int i = start; i < end; ++i)
 	 {
 	    ++w;
 	    if (src[i] == (byte) '\\')
@@ -2351,7 +2343,7 @@ public final class foreign
 	 final byte[] dst = new byte[w];
 
 	 w = 0;
-	 for (int i = 0; i < len; ++i)
+	 for (int i = start; i < end; ++i)
 	 {
 	    final byte cn = src[i];
 
@@ -5269,6 +5261,15 @@ public final class foreign
    public static byte[] rgc_buffer_substring(input_port p, int o, int e)
       {
 	 return c_substring(p.buffer, p.matchstart + o, p.matchstart + e);
+      }
+
+   public static byte[] rgc_buffer_escape_substring(input_port p, int o, int e, boolean strict )
+      {
+	 if( strict ) {
+	    return bgl_escape_scheme_string(p.buffer, p.matchstart + o, p.matchstart + e);
+	 } else {
+	    return bgl_escape_C_string(p.buffer, p.matchstart + o, p.matchstart + e);
+	 }
       }
 
    public static byte RGC_BUFFER_CHARACTER(input_port p)

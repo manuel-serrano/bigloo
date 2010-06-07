@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Thu Sep  3 11:53:07 2009 (serrano)                */
+;*    Last change :  Sun May 30 07:17:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -73,6 +73,8 @@
 					     "rgc_buffer_insert_char")
 	    (_rgc-buffer-substring::bstring (::input-port ::long ::long)
 					    "rgc_buffer_substring")
+	    ($rgc-buffer-escape-substring::bstring (::input-port ::long ::long ::bool)
+					    "rgc_buffer_escape_substring")
 	    (_rgc-buffer-fixnum::long (::input-port)
 				      "rgc_buffer_fixnum")
 	    (_rgc-buffer-integer::obj (::input-port)
@@ -135,6 +137,8 @@
 		       "RGC_BUFFER_BYTE_REF")
 	       (method static _rgc-buffer-substring::bstring (::input-port ::long ::long)
 		       "rgc_buffer_substring")
+	       (method static $rgc-buffer-escape-substring::bstring (::input-port ::long ::long ::bool)
+		       "rgc_buffer_escape_substring")
 	       (method static _rgc-buffer-fixnum::long (::input-port)
 		       "rgc_buffer_fixnum")
 	       (method static _rgc-buffer-integer::obj (::input-port)
@@ -177,6 +181,7 @@
 	    (inline rgc-buffer-byte::int ::input-port)
 	    (inline rgc-buffer-byte-ref::int ::input-port ::int)
 	    (inline rgc-buffer-substring::bstring ::input-port ::long ::long)
+	    (inline rgc-buffer-escape-substring::bstring ::input-port ::long ::long ::bool)
 	    (inline rgc-buffer-length::long ::input-port)
 	    (inline rgc-buffer-fixnum::long ::input-port)
 	    (inline rgc-buffer-integer::obj ::input-port)
@@ -264,6 +269,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-substring input-port start stop)
    (_rgc-buffer-substring input-port start stop))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-escape-substring ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-escape-substring input-port start stop strict)
+   ($rgc-buffer-escape-substring input-port start stop strict))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-length ...                                            */

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/external-c.scm               */
+;*    serrano/prgm/project/bigloo/recette/external_c.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 19 15:38:42 1992                          */
-;*    Last change :  Sat Aug 11 06:00:34 2007 (serrano)                */
+;*    Last change :  Mon Jun  7 16:58:32 2010 (serrano)                */
 ;*                                                                     */
 ;*    Le fichier principale de test des foreign                        */
 ;*---------------------------------------------------------------------*/
@@ -13,7 +13,7 @@
 ;*---------------------------------------------------------------------*/
 (module external
    (include "test.sch") 
-   (import  (bis big-file "big-file.scm")
+   (import  (bis big-file "big_file.scm")
 	    (main "main.scm"))
    (export  (test-external))
    (extern  (macro sprn::int (::string ::string . ::long) "sprintf"))

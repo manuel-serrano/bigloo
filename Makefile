@@ -151,7 +151,14 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-build: boot
+build: checkconf boot
+
+checkconf:
+	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
+	  echo "you must configure before building!"; \
+	  exit 1; \
+	fi
+
 boot: checkgmake
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp boot; \

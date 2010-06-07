@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Tue Feb 10 14:25:59 2009 (serrano)                */
-/*    Copyright   :  2006-09 Manuel Serrano                            */
+/*    Last change :  Wed May 26 13:48:54 2010 (serrano)                */
+/*    Copyright   :  2006-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
 /*=====================================================================*/
@@ -450,10 +450,184 @@ obj_t apply( obj_t function, obj_t args_list ) {
 				   arg[33], arg[34], arg[35],
 				   arg[36], arg[37], arg[38], runner);
 
+	 case -41:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], runner);
+
+	 case -42:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], runner);
+
+	 case -43:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41], runner);
+
+	 case -44:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], runner);
+
+	 case -45:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], runner);
+
+	 case -46:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], arg[44],
+				   runner);
+
+	 case -47:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], arg[44],
+				   arg[45], runner);
+
+	 case -48:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], arg[44],
+				   arg[45], arg[46], runner);
+
+	 case -49:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], arg[44],
+				   arg[45], arg[46], arg[47],
+				   runner);
+
+	 case -50:
+	    return CALL(function) (function, arg[0], arg[1], arg[2],
+				   arg[3], arg[4], arg[5],
+				   arg[6], arg[7], arg[8],
+				   arg[9], arg[10], arg[11],
+				   arg[12], arg[13], arg[14],
+				   arg[15], arg[16], arg[17],
+				   arg[18], arg[19], arg[20],
+				   arg[21], arg[22], arg[23],
+				   arg[24], arg[25], arg[26],
+				   arg[27], arg[28], arg[29],
+				   arg[30], arg[31], arg[32],
+				   arg[33], arg[34], arg[35],
+				   arg[36], arg[37], arg[38],
+				   arg[39], arg[40], arg[41],
+				   arg[42], arg[43], arg[44],
+				   arg[45], arg[46], arg[47],
+				   arg[48], runner);
+
 	 default: {
 	    char msg[ 128 ];
 	    sprintf( msg,
-		     "too many arguments provided (%d) in apply (max 40)",
+		     "too many arguments provided (%d) in apply (max 50)",
 		     -arity );
 	    
 	    C_SYSTEM_FAILURE( BGL_ERROR, "apply", msg, function );
@@ -867,12 +1041,195 @@ obj_t apply( obj_t function, obj_t args_list ) {
 				    arg[28], arg[29], arg[30],
 				    arg[31], arg[32], arg[33],
 				    arg[34], arg[35], arg[36],
-				    arg[37], arg[38], arg[40]);
+				    arg[37], arg[38], arg[39]);
+	    
+         case 41:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40]);
+	    
+         case 42:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41]);
+	    
+         case 43:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42]);
+
+         case 44:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43]);
+
+         case 45:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44]);
+
+         case 46:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44], arg[45]);
+
+         case 47:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44], arg[45],
+	                            arg[46]);
+
+         case 48:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44], arg[45],
+	                            arg[46], arg[47]);
+
+         case 49:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44], arg[45],
+	                            arg[46], arg[47], arg[48]);
+
+         case 50:
+	    return APPLY(function) (function, arg[0],
+				    arg[1], arg[2], arg[3],
+				    arg[4], arg[5], arg[6],
+				    arg[7], arg[8], arg[9],
+				    arg[10], arg[11], arg[12],
+				    arg[13], arg[14], arg[15],
+				    arg[16], arg[17], arg[18],
+				    arg[19], arg[20], arg[21],
+				    arg[22], arg[23], arg[24],
+				    arg[25], arg[26], arg[27],
+				    arg[28], arg[29], arg[30],
+				    arg[31], arg[32], arg[33],
+				    arg[34], arg[35], arg[36],
+				    arg[37], arg[38], arg[39],
+				    arg[40], arg[41], arg[42],
+	                            arg[43], arg[44], arg[45],
+	                            arg[46], arg[47], arg[48],
+	                            arg[49]);
+
 
          default: {
 	    char msg[ 128 ];
 	    sprintf( msg,
-		     "too many arguments provided (%d) in apply (max 40)",
+		     "too many arguments provided (%d) in apply (max 50)",
 		     arity );
 	    
 	    C_SYSTEM_FAILURE( BGL_ERROR, "apply", msg, function );

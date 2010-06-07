@@ -43,6 +43,9 @@ case $HOSTOS in
     # THIS IS the RedHat pthread implementation
     pthreadlibs="-lpthreadGC2";;
 
+  android)
+    pthreadlibs="";;
+
   *)
     pthreadlibs="-lpthread";;
 esac

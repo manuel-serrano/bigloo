@@ -165,7 +165,7 @@ bglpth_thread_run( void *arg ) {
 
    bglpth_thread_init( self, (char *)&arg );
 
-#if( BGL_PTHREAD_TERM_SIG != 0 )
+#if defined( PTHREAD_CANCEL_ASYNCHRONOUS )
    pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, 0 );
 #endif
    

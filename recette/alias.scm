@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 15 13:30:45 1993                          */
-;*    Last change :  Wed Apr  1 14:05:16 1998 (serrano)                */
+;*    Last change :  Mon Jun  7 16:58:17 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test les alias                                                */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*---------------------------------------------------------------------*/
 (module alias
    (import  (main "main.scm")
-	    (alias-aux "alias-aux.scm"))
+	    (alias-aux "alias_aux.scm"))
    (include "test.sch")
    (export (test-alias)))
 

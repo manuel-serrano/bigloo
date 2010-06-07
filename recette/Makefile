@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Sep 10 11:33:10 2009 (serrano)                */
-#*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun  7 16:58:46 2010 (serrano)                */
+#*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -59,11 +59,11 @@ BDNETFLAGS	= $(BFLAGS) -afile .afile-dotnet -jfile .jfile-dotnet -g -dotnet-mana
 #*---------------------------------------------------------------------*/
 ICOMMON		= vital bps bool list vector srfi4 struct print \
                   string kwote case bexit vararity apply \
-                  globalis filtre rgc-trap rgc-jm rgc-insert port \
+                  globalis filtre rgc_trap rgc_jm rgc_insert port \
                   read tail sqic eval inline match letrec macro \
                   flonum number bignum bchar define error cse \
-                  kapture include 0cfa alias alias-aux main \
-                  rgc-eval rgc hash module import1 import2 \
+                  kapture include 0cfa alias alias_aux main \
+                  rgc_eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
                   mmap weakptr crypto crc
@@ -72,7 +72,7 @@ OCOMMON		= object object1 object2 object3 object4 object5
 
 COMMON		= $(ICOMMON) $(OCOMMON)
 
-C_SPECIFIC	= external-c big-file
+C_SPECIFIC	= external_c big_file
 C_OBJECTS	= $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
 OBJECT_C_FOREIGN= c-file.$(C_OBJ_EXTENSION)
 
