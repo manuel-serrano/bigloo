@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sat Dec 19 12:58:58 1998                          */
-#*    Last change :  Mon Apr 21 09:13:21 2008 (serrano)                */
-#*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun  7 17:28:52 2010 (serrano)                */
+#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the point library                          */
 #*=====================================================================*/
@@ -38,14 +38,14 @@ CSAFEFLAGS	= $(CCOMMONFLAGS)
 CUNSAFEFLAGS	= $(CCOMMONFLAGS) -O2
 
 # library objects
-SAFE_OBJECT	= olib/scm-point.o olib/point.o
-UNSAFE_OBJECT	= olib_u/scm-point.o olib_u/point.o
+SAFE_OBJECT	= olib/scm_point.o olib/point.o
+UNSAFE_OBJECT	= olib_u/scm_point.o olib_u/point.o
 
 # Population
 POPULATION	= Makefile \
                   point.init make_lib.scm \
                   point.h point.c \
-                  scm-point.scm \
+                  scm_point.scm \
                   example.scm
 
 all: heap lib example

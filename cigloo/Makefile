@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Fri Sep 11 10:33:10 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun  7 17:28:35 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -83,9 +83,9 @@ POPULATION	= $(SOURCE_FILES) \
                   Translate/function.sch \
                   Tools/union.sch \
                   Example/Makefile \
-	 	  Example/b-file.scm \
-	          Example/c-file.h \
-	          Example/c-file.c \
+	 	  Example/b_file.scm \
+	          Example/c_file.h \
+	          Example/c_file.c \
                   README \
                   $(AFILE)
 

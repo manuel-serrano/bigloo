@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Thu May  3 16:29:13 2007 (serrano)                */
-#*    Copyright   :  1998-2007 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun  7 17:23:49 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build pnet2ms.                                   */
 #*=====================================================================*/
@@ -39,7 +39,7 @@ BFLAGS=        -rm -afile $(AFILE) -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
 #*---------------------------------------------------------------------*/
-OBJECTS=       pnet2ms.o win32-base.o win32_registry.o win32_helpers.o
+OBJECTS=       pnet2ms.o win32_base.o win32_registry.o win32_helpers.o
 
 SOURCE_FILES=  $(OBJECTS:%.o=%.scm)
 

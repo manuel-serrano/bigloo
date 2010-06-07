@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Mon Aug  8 11:15:17 2005 (serrano)                */
-#*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jun  7 17:25:26 2010 (serrano)                */
+#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    An example of embedded bigloo program.                           */
 #*=====================================================================*/
@@ -33,13 +33,13 @@ DEST		= embedded
 #*    Objects and sources                                              */
 #*---------------------------------------------------------------------*/
 #*--- c ---------------------------------------------------------------*/
-C_FILE		= c-main
+C_FILE		= c_main
 
 C_OBJ		= $(C_FILE:%=%.o)
 C_SRC 		= $(C_OBJ:%.o=%.c)
 
 #*--- scm -------------------------------------------------------------*/
-SCM_FILE	= scm-main fib
+SCM_FILE	= scm_main fib
 
 SCM_OBJ		= $(SCM_FILE:%=%.o)
 SCM_SRC		= $(SCM_OBJ:%.o=%.scm)

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Sat Aug  9 14:20:32 2008 (serrano)                */
-#*    Copyright   :  2002-08 Manuel Serrano                            */
+#*    Last change :  Mon Jun  7 17:27:36 2010 (serrano)                */
+#*    Copyright   :  2002-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer examples                     */
 #*=====================================================================*/
@@ -23,8 +23,8 @@ BCFLAGS		=
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES		= typefind bgst-inspect bgst-launch bgst-play \
-                  bgst-repl bgst-mm bgst-png
+SOURCES		= typefind bgst_inspect bgst_launch bgst_play \
+                  bgst_repl bgst_mm bgst_png
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -39,22 +39,22 @@ all: $(SOURCES)
 typefind: typefind.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-inspect: bgst-inspect.o
+bgst_inspect: bgst_inspect.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-launch: bgst-launch.o
+bgst_launch: bgst_launch.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-play: bgst-play.o
+bgst_play: bgst_play.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-repl: bgst-repl.o
+bgst_repl: bgst_repl.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-mm: bgst-mm.o
+bgst_mm: bgst_mm.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
-bgst-png: bgst-png.o
+bgst_png: bgst_png.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:
