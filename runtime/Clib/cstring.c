@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Apr  8 08:26:57 2010 (serrano)                */
+/*    Last change :  Sun May 30 17:02:05 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1055,7 +1055,7 @@ string_cige( obj_t bst1, obj_t bst2 ) {
   (isdigit(s_) ? (s_ - '0') : 10 + ((s_ >= 'a') ?  (s_ - 'a') : (s_ - 'A')))
 
 /*---------------------------------------------------------------------*/
-/*    escape_C_string ...                                              */
+/*    bgl_escape_C_string ...                                          */
 /*    -------------------------------------------------------------    */
 /*    Cette fonction construit une chaine ou la representation des     */
 /*    caracteres de controles a ete remplacee par ces caracteres.      */
@@ -1068,16 +1068,11 @@ string_cige( obj_t bst1, obj_t bst2 ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-escape_C_string( unsigned char *src ) {
-   /* on supprime un caractere de cette chaine car elle est rendue par le */
-   /* lecteur comme etant `"tototo'. Ceci est du au fait qu'on utilise    */
-   /* la fonction `the-small-string' qui supprime le premier et le        */
-   /* dernier caractere de la chaine lu. Comme les chaines etrangeres     */
-   /* commencent par 2 caracteres, on en supprime 1 autre maintenant.     */
-
-   int len = (int)strlen( (const char *)(++src) );
+bgl_escape_C_string( unsigned char *src, long start, long end ) {
    unsigned char *dst;
    obj_t string;
+   long len = (end - start);
+   unsigned char *stop = src + end;
 
    string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
@@ -1086,8 +1081,9 @@ escape_C_string( unsigned char *src ) {
 #endif	
 
    dst = ((unsigned char *)(&string->string_t.char0));
-
-   while( *src ) {
+   src += start;
+   
+   while( src < stop ) {
       if( *src != '\\' )
          *dst++ = *src++;
       else {
@@ -1241,17 +1237,17 @@ escape_C_string( unsigned char *src ) {
 }
        
 /*---------------------------------------------------------------------*/
-/*    escape_scheme_string ...                                         */
+/*    bgl_escape_scheme_string ...                                     */
 /*    -------------------------------------------------------------    */
-/*    Cette fonction ressemble a la precedente mais elle filtre moins  */
-/*    de caracteres                                                    */
+/*    This function only consider R5RS escape sequences.               */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-escape_scheme_string( char *src ) {
-   int  len = (int)strlen( src );
+bgl_escape_scheme_string( unsigned char *src, long start, long end ) {
    char *dst;
    obj_t string;
+   long len = (end - start);
+   unsigned char *stop = src + end;
 
    string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
@@ -1260,8 +1256,9 @@ escape_scheme_string( char *src ) {
 #endif	
 
    dst = ((char *)(&(string->string_t.char0)));
-
-   while( *src ) {
+   src += start;
+  
+   while( src < stop ) {
       if( *src != '\\' )
          *dst++ = *src++;
       else {

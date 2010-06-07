@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu Nov 12 15:20:33 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Thu May 27 17:44:49 2010 (serrano)                */
+;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
 ;*=====================================================================*/
@@ -221,79 +221,83 @@
 ;*    thread-join3 ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-test thread-join3
-   (let ((t (thread-start-joinable!
-	     (instantiate::pthread
-		(body (lambda ()
-			 (with-error-to-port (open-output-string)
-			    (lambda ()
-			       (raise 123)))))
-		(name 'thread-join2.1))))
-	 (res 0))
-      (do-something-else)
-      (thread-join!
-       (thread-start-joinable!
-	(instantiate::pthread
-	   (body (lambda ()
-		    (with-exception-handler
-		       (lambda (exc)
-			  (if (uncaught-exception? exc)
-			      (* 10 (uncaught-exception-reason exc))
-			      99999))
-		       (lambda ()
-			  (set! res (+ 1 (thread-join! t)))))))
-	   (name 'thread-join2.2))))
-      res)
+   (with-error-to-port (open-output-string)
+      (lambda ()
+	 (let ((t (thread-start-joinable!
+		   (instantiate::pthread
+		      (body (lambda ()
+			       (raise 123)))
+		      (name 'thread-join2.1))))
+	       (res 0))
+	    (do-something-else)
+	    (thread-join!
+	     (thread-start-joinable!
+	      (instantiate::pthread
+		 (body (lambda ()
+			  (with-exception-handler
+			     (lambda (exc)
+				(if (uncaught-exception? exc)
+				    (* 10 (uncaught-exception-reason exc))
+				    99999))
+			     (lambda ()
+				(set! res (+ 1 (thread-join! t)))))))
+		 (name 'thread-join2.2))))
+	    res)))
    :result 1231)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-join4 ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-test thread-join4
-   (let ((res '()))
-      (define (wait-for-termination! thread)
-	 (let ((eh (current-exception-handler)))
-	    (with-exception-handler
-	       (lambda (exc)
-		  (if (not (or (terminated-thread-exception? exc)
-			       (uncaught-exception? exc)))
-		      (eh exc)))
-	       (lambda ()
-		  (thread-join! thread)
-		  #f))))
-      (let* ((t1 (thread-start-joinable!
-		  (instantiate::pthread
-		     (body (lambda () (sleep 5)))
-		     (name 'thread-join4.1))))
-	     (t2 (thread-start-joinable!
-		  (instantiate::pthread
-		     (body (lambda () (sleep 10)))
-		     (name 'thread-join4.2))))
-	     (t3 (thread-start-joinable!
-		  (instantiate::pthread
-		     (body (lambda () (sleep 3)
-				   (thread-terminate! t2)))
-		     (name 'thread-join4.3))))
-	     (t4 (thread-start-joinable!
-		  (instantiate::pthread
-		     (body (lambda ()
-			      (sleep 3)
-			      (with-error-to-port (open-output-string)
-				 (lambda ()
-				    (raise #t)))))
-		     (name 'thread-join4.4))))
-	     (t5 (thread-start-joinable!
-		  (instantiate::pthread
-		     (body
-		      (lambda ()
-			 (set! res (cons (wait-for-termination! t1)
-					 res))
-			 (set! res (cons (wait-for-termination! t3)
-					 res))
-			 (set! res (cons (wait-for-termination! t4)
-					 res))))
-		     (name 'thread-join4.5)))))
-	 (thread-join! t5)
-	 res))
+   (with-error-to-port (open-output-string)
+      (lambda ()
+	 (let ((res '()))
+	    (define (wait-for-termination! thread)
+	       (let ((eh (current-exception-handler)))
+		  (with-exception-handler
+		     (lambda (exc)
+			(tprint "EXC=" (find-runtime-type exc))
+			(if (not (or (terminated-thread-exception? exc)
+				     (uncaught-exception? exc)))
+			    (eh exc)))
+		     (lambda ()
+			(thread-join! thread)
+			#f))))
+	    (let* ((t1 (thread-start-joinable!
+			(instantiate::pthread
+			   (body (lambda ()
+				    (sleep 5)))
+			   (name 'thread-join4.1))))
+		   (t2 (thread-start-joinable!
+			(instantiate::pthread
+			   (body (lambda ()
+				    (sleep 10)))
+			   (name 'thread-join4.2))))
+		   (t3 (thread-start-joinable!
+			(instantiate::pthread
+			   (body (lambda ()
+				    (sleep 3)
+				    (thread-terminate! t2)))
+			   (name 'thread-join4.3))))
+		   (t4 (thread-start-joinable!
+			(instantiate::pthread
+			   (body (lambda ()
+				    (sleep 3)
+				    (raise #t)))
+			   (name 'thread-join4.4))))
+		   (t5 (thread-start-joinable!
+			(instantiate::pthread
+			   (body
+			    (lambda ()
+			       (set! res (cons (wait-for-termination! t1)
+					       res))
+			       (set! res (cons (wait-for-termination! t3)
+					       res))
+			       (set! res (cons (wait-for-termination! t4)
+					       res))))
+			   (name 'thread-join4.5)))))
+	       (thread-join! t5)
+	       res))))
    :result '(#f #f #f))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon May  3 16:19:14 2010 (serrano)                */
+;*    Last change :  Sun May 30 17:55:51 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -299,15 +299,12 @@
       
       ;; foreign strings of char
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (let ((str (the-substring 0 (-fx (the-length) 1))))
-	  (escape-C-string str)))
-      
+       (the-escape-substring 1 (-fx (the-length) 1) #f))
+
       ;; ucs2 strings
       ((: "u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (let ((str (the-substring 1 (-fx (the-length) 1))))
-  	  (utf8-string->ucs2-string
-	   (iso-latin->utf8 (escape-C-string str)))))
-      
+       (let ((str (the-substring 2 (-fx (the-length) 1))))
+  	  (utf8-string->ucs2-string str)))
       ;; fixnums
       ((: "b" (? (in "-+")) (+ (in ("01"))))
        (string->integer-obj (the-substring 1 (the-length)) 2))
@@ -443,12 +440,8 @@
       ;; the string, we have to count the number of newline
       ;; in order to increment the line-num variable strings
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (if (bigloo-strict-r5rs-strings)
-	   (let ((str (the-substring 1 (-fx (the-length) 1))))
-	      (escape-scheme-string str))
-	   (let ((str (the-substring 0 (-fx (the-length) 1))))
-	      (escape-C-string str))))
-      
+       (the-escape-substring 1 (-fx (the-length) 1) (bigloo-strict-r5rs-strings)))
+
       ;; fixnums
       ((: (? (in "+-")) (+ digit))
        (the-integer))
@@ -492,8 +485,7 @@
       ((: "|" (* (or (out #a000 #\\ #\|) (: #\\ all))) "|")
        (if (=fx (the-length) 2)
 	   (string->symbol "")
-	   (let ((str (the-substring 0 (-fx (the-length) 1))))
-	      (string->symbol (escape-C-string str)))))
+	   (string->symbol (the-escape-substring 1 (-fx (the-length) 1) #f))))
       
       ;; quotations 
       ("'"

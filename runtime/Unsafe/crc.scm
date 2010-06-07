@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  3 12:03:10 2009                          */
-;*    Last change :  Thu Sep  3 12:11:22 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Sun May 30 07:58:56 2010 (serrano)                */
+;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CRC                                                              */
 ;*=====================================================================*/
@@ -41,7 +41,8 @@
 	   __error
 	   __evenv
 	   __os
-	   __srfi4)
+	   __srfi4
+	   __param)
    
    (export (crc-polynomial name)
 	   (crc-names)

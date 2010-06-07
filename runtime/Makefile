@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Mar 24 12:06:26 2010 (serrano)                */
+#*    Last change :  Sun Jun  6 12:22:00 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -923,7 +923,7 @@ objs/obj_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(EFLAGS) -cgen $< -o $@
 
 objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CEFLAGS) -c $< -o $@
+	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */
@@ -937,7 +937,7 @@ sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s
 	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
 
 generic_mach_dep: Mlib/mach_dep.c
-	$(CC) $(CPICFLAGS) $(CEFLAGS) -c -o mach_dep.o $< && \
+	$(CC) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CEFLAGS) -c -o mach_dep.o $< && \
         mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
 
 #*---------------------------------------------------------------------*/

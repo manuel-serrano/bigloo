@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 15:23:18 1992                          */
-;*    Last change :  Mon Jul  2 02:54:48 2001 (serrano)                */
+;*    Last change :  Sun May 30 09:40:00 2010 (serrano)                */
 ;*                                                                     */
 ;*    Le reader de `Bigloo'                                            */
 ;*---------------------------------------------------------------------*/
@@ -65,11 +65,11 @@
 	       (integer->char 13))
 	      ((: #\" (* (or (out #\\ #\")     ;; Les chaines de caracteres
 			     (: #\\ all))) #\")
-	       (escape-scheme-string (the-substring 1 (-fx (the-length) 1))))
+	       ($escape-scheme-string (the-substring 1 (-fx (the-length) 1)) 0 0))
 	      ((: #\# #\"                  ;; Les chaines de caracteres foreign
 		      (* (or (out #\\ #\")  
 			     (: #\\ all))) #\")
-	       (escape-C-string (the-substring 1 (-fx (the-length) 1))))
+	       (string-as-read (the-substring 1 (-fx (the-length) 1))))
 	      ((: (or #\" (: #\# #\"))     ;; Les bouts de chaines non termines
 		  (* (or (out #\\ #\")  
 			 (: #\\ all))))
@@ -123,7 +123,7 @@
 		   (the-symbol)))
 	      ((: "|" (+ (or (out #a000 #\\ #\|) (: #\\ all))) "|")
 	       (let ((str (the-substring 0 (-fx (the-length) 1))))
-		  (string->symbol (escape-C-string str))))
+		  (string->symbol (string-as-read str))))
 	      (#\'                     ;; Les simples quotations
 	       (cons 'quote (cons (ignore) '())))
 	      (#\`                     ;; Les quasiquotes

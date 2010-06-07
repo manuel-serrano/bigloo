@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Mon May  4 08:41:59 2009 (serrano)                */
-;*    Copyright   :  2005-09 Chris Veness                              */
+;*    Last change :  Sun May 30 07:58:22 2010 (serrano)                */
+;*    Copyright   :  2005-10 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -44,7 +44,8 @@
 	   __error
 	   __evenv
 	   __os
-	   __srfi4)
+	   __srfi4
+	   __param)
 
    (export (make-rsa-key-pair #!key (size 1024) show-trace)
 	   (public-rsa-key rsa-key-pair)

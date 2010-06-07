@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Fri Jun 26 10:22:17 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Sat May 29 10:06:48 2010 (serrano)                */
+;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
 ;*=====================================================================*/
@@ -43,6 +43,11 @@
 	      (medium+::pair read-only)
 	      (ruleset*::pair-nil read-only))
 
+	   (class css-media-query
+	      (operator::obj read-only)
+	      (type::bstring read-only)
+	      (expr*::pair-nil read-only))
+
 	   (class css-page
 	      (ident read-only)
 	      (pseudopage read-only)
@@ -55,6 +60,8 @@
 	      (ident read-only))
 
 	   (class css-ruleset
+	      (stamp::int (default -1))
+	      (specificity::obj (default #f))
 	      (selector+::pair read-only)
 	      (declaration*::pair-nil read-only))
 
@@ -124,9 +131,10 @@
       ((or (null? o) (not o))
        #unspecified)
       (else
-       (error 'css-write
-	      (format "Illegal CSS value (~a)" (find-runtime-type o))
-	      o))))
+       (warning 'css-write
+		(format " -- Illegal CSS value (~a): " (find-runtime-type o))
+		o)
+       (display "error" p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-uri ...                                          */
@@ -197,6 +205,24 @@
       (display " { " p)
       (css-write* ruleset* p)
       (display " }\n" p)))
+
+;*---------------------------------------------------------------------*/
+;*    css-write ::css-media-query ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (css-write o::css-media-query p::output-port)
+   (with-access::css-media-query o (operator type expr*)
+      (when operator
+	 (display operator p)
+	 (display " " p))
+      (css-write type p)
+      (for-each (lambda (expr)
+		   (display " and (" p)
+		   (css-write (car expr) p)
+		   (when (cdr expr)
+		      (display ": " p)
+		      (css-write (cdr expr) p))
+		   (display ")" p))
+		expr*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-page ...                                         */
