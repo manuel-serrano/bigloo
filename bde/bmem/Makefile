@@ -75,8 +75,8 @@ $(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
 	$(BIGLOO) $(BMEMFLAGS) -o $@ $^
 
 #*--- lib -------------------------------------------------------------*/
-lib: bmem.$(SHAREDSUFFIX)
-bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+lib: $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX)
+$(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
 	(if [ "$(GCCUSTOM)" = "yes" ]; then \
             libbigloogc=$(LIBDIR)/libbigloogc-$(RELEASE).$(SHAREDSUFFIX); \
           else \
@@ -87,7 +87,7 @@ bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
                $$libbigloo_gc \
                $(EXTRALIBS) \
                -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))
-              
+
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
@@ -147,7 +147,7 @@ clean: cleanbmem cleanlib
 #*---------------------------------------------------------------------*/
 lib/%.o: lib/%.c $(LIBINCLUDE:%=lib/%)
 	$(CC) $(CPICFLAGS) $(CFLAGS) $(CMEMFLAGS) $(IFLAGS) $< -o $@ -c
-   
+
 bmem/%.o: bmem/%.scm $(INCLUDE:%=bmem/%)
 	$(BIGLOO) $(BMEMFLAGS) $< -o $@ -c
 
@@ -160,12 +160,12 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags
 
 .afile:
-	@ $(AFILE) -o .afile $(SRC:%=bmem/%) 
+	@ $(AFILE) -o .afile $(SRC:%=bmem/%)
 
-.etags: 
+.etags:
 	@ $(BTAGS) -o .etags $(SRC:%=bmem/%)
 
-dep: 
+dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
 	@ $(BDEPEND) -search-path . -fno-mco $(SRC:%=bmem/%) >> /tmp/Makefile.aux

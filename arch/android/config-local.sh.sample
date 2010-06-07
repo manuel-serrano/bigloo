@@ -1,0 +1,13 @@
+# example config file for Android.
+# copy to config.sh and modify accoding to your setup.
+
+# root for all things android
+ANDROIDROOT=$HOME/src/works/inria/android
+# ANDROIDROOT=/misc/virtual/android
+
+# host bigloo
+export BS_BIGLOO=$HOME/local
+
+# where we will install Bigloo
+# we recommend a path in your home dir.
+export INSTALL_PREFIX=$HOME/local/soft/$(basename $(pwd))-android

@@ -1,0 +1,70 @@
+NOTE: in this document we use the following definitions for cross compiling[1]:
+
+ * host: platform where everything will be compiled. usually
+   i386/i686/amd64/x86_64+Linux or Mac.
+ * target: platform which will run the resulting binary. arm+Android in this
+   case.
+
+Getting stuff:
+=============
+
+Compiling Bigloo for Android requires several things:
+
+ (Install all this as a subdierctory of the same directory. This will make
+ configuration simpler).
+
+ * Android SDK[2].
+ * Android's source code (Warning: it's a big download). Follow these[3]
+   instructions.
+ * Download droid-wrapper[4]. The command is:
+   'git clone git://github.com/tmurakam/droid-wrapper.git'. Then apply
+   version-linker.diff in this directory and install
+
+Also you will require:
+
+ * An already compiled and running version for the host platform.
+
+
+Configuring:
+===========
+
+Copy 'arch/android/config.sh.sample' into 'arch/android/config.sh' and edit it.
+Point ANDROIDROOT to the directory where you downloaded and decompressed all
+the Android tools, and BS_BIGLOO to the dir where the host bigloo resides.
+
+
+Compiling:
+=========
+
+You will need an Android 2.0 (ecalir) or newer device running. This can be a
+real phone with USB debugging turned on (you can turn it on when you plug in
+the USB cable; we at least know Motorola Droid/Milestone and HTC Desire can do
+it) or any device emulated in the SDK's emulator. You can test with SDK's
+'tools/adb logcat' wether you can connect to the device. If you can't,
+'killall adb'[5], fix whatever is wrong and try again.
+
+Then you can simply run:
+
+   ./arch/android/build-android.sh configure
+
+If evrything's ok, then you can compile:
+
+   ./arch/android/build-android.sh build
+
+If evrything's ok, then you can install[6]:
+
+   make install
+
+--
+[1] http://en.wikipedia.org/wiki/Cross_compile#GCC_and_cross_compilation
+
+[2] http://developer.android.com/sdk/index.html
+
+[3] http://source.android.com/source/download.html
+
+[4] http://github.com/tmurakam/droid-wrapper
+
+[5] 'adb' runs as a daemon and somehow is not affected by e.g. permission
+    changes.
+
+[6] but currently it doesn't make much sense.

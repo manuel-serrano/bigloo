@@ -111,7 +111,7 @@ install-c:
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/web.heap; \
         fi
 	$(MAKE) install-lib LIB=libbiglooweb_s-$(RELEASE);
-	$(MAKE) install-shared-lib LIB=libbiglooweb_e-$(RELEASE);
+	$(MAKE) install-lib LIB=libbiglooweb_e-$(RELEASE);
 	$(MAKE) install-lnlib LIB=libbiglooweb_s-$(RELEASE) LN=libbiglooweb_u-$(RELEASE);
 
 install-jvm:
