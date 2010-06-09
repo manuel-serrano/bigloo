@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/inline-alloc.c          */
+/*    serrano/prgm/project/bigloo/runtime/Clib/inline_alloc.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu Dec 18 16:33:41 2008 (serrano)                */
+/*    Last change :  Tue Jun  8 06:56:02 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */

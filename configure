@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Feb 21 09:01:27 2010 (serrano)                */
+#*    Last change :  Tue Jun  8 06:35:42 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2759,7 +2759,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
      echo "GCCUSTOM=no" >> $makefile_cfg
      echo "GCINCLUDE=-I$gcincdir" >> $makefile_cfg
      echo 'GCCLOSELIB=-l$(GCLIB)' >> $makefile_cfg
-     echo "GCSTDOBJ=Clib/non-inline-alloc.o" >> $makefile_cfg
+     echo "GCSTDOBJ=Clib/non_inline_alloc.o" >> $makefile_cfg
      echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
   fi
   echo >> $makefile_cfg

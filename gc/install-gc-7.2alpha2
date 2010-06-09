@@ -3,7 +3,7 @@
 #*    serrano/prgm/project/bigloo/gc/install-gc-7.2alpha2              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano, Florian Loitsch                   */
-#*    Copyright   :  2007-09 Manuel Serrano, Florian Loitsch           */
+#*    Copyright   :  2007-10 Manuel Serrano, Florian Loitsch           */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
@@ -57,6 +57,6 @@ done
 chmod a+rx $gc/configure
 chmod a+rx "$gc"_fth/configure
 
-# Copy the inline-alloc.c file
-cp ../runtime/Clib/inline-alloc.c $gc
-cp ../runtime/Clib/inline-alloc.c "$gc"_fth
+# Copy the inline_alloc.c file
+cp ../runtime/Clib/inline_alloc.c $gc
+cp ../runtime/Clib/inline_alloc.c "$gc"_fth

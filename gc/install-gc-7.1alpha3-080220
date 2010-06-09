@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Thu Feb 21 07:20:29 2008 (serrano)                */
-#*    Copyright   :  2007-08 Manuel Serrano                            */
+#*    Last change :  Tue Jun  8 06:40:48 2010 (serrano)                */
+#*    Copyright   :  2007-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
@@ -50,6 +50,6 @@ mv "$gc"_fth/Makefile.direct "$gc"_fth/Makefile
 chmod a+rx $gc/configure
 chmod a+rx "$gc"_fth/configure
 
-# Copy the inline-alloc.c file
-cp ../runtime/Clib/inline-alloc.c ../gc/$gc
-cp ../runtime/Clib/inline-alloc.c "../gc/$gc"_fth
+# Copy the inline_alloc.c file
+cp ../runtime/Clib/inline_alloc.c ../gc/$gc
+cp ../runtime/Clib/inline_alloc.c "../gc/$gc"_fth

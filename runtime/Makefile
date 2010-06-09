@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jun  7 17:29:52 2010 (serrano)                */
+#*    Last change :  Tue Jun  8 06:41:43 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -315,7 +315,7 @@ INCLUDE_FILE	= Include/bigloo.h
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
 #*    -------------------------------------------------------------    */
-#*    The file non-inline-alloc.c is added by configure when non       */
+#*    The file non-inline_alloc.c is added by configure when non       */
 #*    custom GC is selected.                                           */
 #*---------------------------------------------------------------------*/
 OBJECTS		= $(C_CLIB:%.c=objs/$(OBJDIR_SYS)/%.o) \
