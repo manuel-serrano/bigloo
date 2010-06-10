@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/css-lexer.scm       */
+;*    serrano/prgm/project/bigloo/api/web/src/Llib/css_lexer.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Thu May 27 08:05:05 2010 (serrano)                */
+;*    Last change :  Thu Jun 10 14:49:31 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -87,15 +87,15 @@
 		     eof)
       
       ((+ (in " \t\r\n\f"))
-       (ignore))
+       (return 'S #f))
       
       ((: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/")
        (ignore))
       
-      ((: "<!-" (+ #\-))
+      ((: "<!--" (+ #\-) "-->")
        (return 'CDO))
       
-      ((: (+ #\-) "->")
+      ((: (+ #\-) )
        (return 'CDC))
       
       ("~="

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/css-parser.scm      */
+;*    serrano/prgm/project/bigloo/api/web/src/Llib/css_parser.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Sat May 29 08:34:41 2010 (serrano)                */
+;*    Last change :  Thu Jun 10 14:54:23 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -38,27 +38,38 @@
 	   PERCENTAGE NUMBREC URI FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
 	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
-	   SLASH * + > - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE)
+	   SLASH * + > - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
       
       (stylesheet
-       ((charset? comment* import*)
+       ((S* charset? comment* import*)
 	(instantiate::css-stylesheet
 	   (charset charset?)
 	   (comment* comment*)
 	   (import* import*)))
-       ((charset? comment* import* rule+)
+       ((S* charset? comment* import* rule+)
 	(instantiate::css-stylesheet
 	   (charset charset?)
 	   (comment* comment*)
 	   (import* import*)
 	   (rule* (css-stamp-rules! rule+)))))
+
+      (S?
+       (() #f)
+       ((S) S))
+      
+      (S*
+       (() #f)
+       ((S S*) S))
+      
+      (S+
+       ((S S*) S))
       
       (charset?
        (() #f)
        ((charset) charset))
       
       (charset
-       ((CHARSET_SYM STRING SEMI-COLON)
+       ((CHARSET_SYM STRING S* SEMI-COLON)
 	(instantiate::css-charset
 	   (charset (car CHARSET_SYM))
 	   (spec (car STRING)))))
@@ -68,7 +79,7 @@
        ((comment* comment) `(,@comment* ,comment)))
       
       (comment
-       ((CDO STRING CDC)
+       ((CDO S* STRING S* CDC S?)
 	(instantiate::css-comment
 	   (cdo (car CDO))
 	   (cdc (car CDC))
@@ -82,11 +93,11 @@
        ((import comment*) `(,import ,@comment*)))
       
       (import
-       ((IMPORT_SYM STRING medium* SEMI-COLON)
+       ((IMPORT_SYM S* STRING S* medium* SEMI-COLON S*)
 	(instantiate::css-import
 	   (value (car STRING))
 	   (medium* medium*)))
-       ((IMPORT_SYM URI medium* SEMI-COLON)
+       ((IMPORT_SYM S* URI S* medium* SEMI-COLON S*)
 	(instantiate::css-import
 	   (value (instantiate::css-uri (value (car URI))))
 	   (medium* medium*))))
@@ -99,45 +110,45 @@
        ((rule comment*) (list rule comment*)))
       
       (rule
-       ((VALUE) '())
+       ((VALUE S*) '())
        ((ruleset) ruleset)
        ((media) media)
        ((page) page)
        ((font_face) font_face))
       
       (media
-       ((MEDIA_SYM medium+ BRA-OPEN ruleset* BRA-CLO)
+       ((MEDIA_SYM S* medium+ BRA-OPEN S* ruleset* BRA-CLO S*)
 	(instantiate::css-media
 	   (medium+ medium+)
 	   (ruleset* ruleset*))))
       
       (page
-       ((PAGE_SYM ident? pseudo_page? BRA-OPEN declaration* BRA-CLO)
+       ((PAGE_SYM S* ident? pseudo_page? BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-page
 	   (ident ident?)
 	   (pseudopage pseudo_page?)
 	   (declaration* declaration*))))
       
       (font_face
-       ((FONT_FACE_SYM BRA-OPEN declaration* BRA-CLO)
+       ((FONT_FACE_SYM S* BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-fontface
 	   (declaration* declaration*))))
       
       (medium*
        (() '())
-       ((medium* COMMA medium) `(,@medium* ,medium)))
+       ((medium* COMMA S* medium) `(,@medium* ,medium)))
       
       (medium+
        ((medium) (list medium))
-       ((medium+ COMMA medium) `(,@medium+ ,medium)))
+       ((medium+ COMMA S* medium) `(,@medium+ ,medium)))
 
       (medium
-       ((ONLY_SYM media_type media_expression*)
+       ((ONLY_SYM S* media_type media_expression*)
 	(instantiate::css-media-query
 	   (operator 'only)
 	   (type media_type)
 	   (expr* media_expression*)))
-       ((NOT_SYM media_type media_expression*)
+       ((NOT_SYM S* media_type media_expression*)
 	(instantiate::css-media-query
 	   (operator 'not)
 	   (type media_type)
@@ -149,19 +160,19 @@
 	   (expr* media_expression*))))
 
       (media_type
-       ((IDENT) (car IDENT))
-       ((EXTENSION) (instantiate::css-ext (value (car EXTENSION)))))
+       ((IDENT S*) (car IDENT))
+       ((EXTENSION S*) (instantiate::css-ext (value (car EXTENSION)))))
 
       (media_expression*
        (()
 	'())
-       ((AND_SYM media_expression media_expression*)
+       ((AND_SYM S* media_expression media_expression*)
 	(cons media_expression media_expression*)))
 
       (media_expression
-       ((PAR-OPEN IDENT PAR-CLO)
+       ((PAR-OPEN S* IDENT S* PAR-CLO S*)
 	(cons (car IDENT) #f))
-       ((PAR-OPEN IDENT COLON expr PAR-CLO)
+       ((PAR-OPEN S* IDENT S* COLON S* expr PAR-CLO S*)
 	(cons (car IDENT) expr)))
 	
       (ident?
@@ -174,50 +185,49 @@
        ((pseudo_page) pseudo_page))
       
       (pseudo_page
-       ((COLON IDENT)
+       ((COLON IDENT S*)
 	(instantiate::css-pseudopage
 	   (ident (car IDENT))))
-       ((COLON EXTENSION)
+       ((COLON EXTENSION S*)
 	(instantiate::css-pseudopage
 	   (ident (instantiate::css-ext
 		     (value (car EXTENSION)))))))
       
       (property
-       ((IDENT) (car IDENT))
-       ((EXTENSION) (instantiate::css-ext (value (car EXTENSION)))))
+       ((IDENT S*) (car IDENT))
+       ((EXTENSION S*) (instantiate::css-ext (value (car EXTENSION)))))
       
       (ruleset*
        (() '())
        ((ruleset* ruleset) `(,@ruleset* ,ruleset)))
       
       (ruleset
-       ((selector+ BRA-OPEN declaration* BRA-CLO)
+       ((selector+ BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-ruleset
 	   (selector+ selector+)
 	   (declaration* declaration*))))
       
       (selector+
-       ((selector) (list selector))
-       ((selector+ COMMA selector) `(,@selector+ ,selector)))
+       ((selector)
+	(list selector))
+       ((selector+ COMMA S* selector)
+	`(,@selector+ ,selector)))
       
       (selector
-       ((simple_selector compound_selector*)
-	`(,simple_selector ,@compound_selector*))
-       ((simple_selector_attr+ compound_selector*)
-	(cons (instantiate::css-selector
-		 (attr* simple_selector_attr+))
-	      compound_selector*)))
-      
-      (compound_selector*
-       (()
-	'())
-       ((compound_selector* combinator simple_selector)
-	`(,@compound_selector* ,combinator ,simple_selector)))
+       ((simple_selector)
+	(list simple_selector))
+       ((simple_selector combinator selector)
+	(cons* simple_selector combinator selector))
+       ((simple_selector S+ combinator selector)
+	(cons* simple_selector combinator selector))
+       ((simple_selector S+ selector)
+	(cons* simple_selector '| | selector))
+       ((simple_selector S+)
+	(list simple_selector)))
       
       (combinator
-       ((+) '+)
-       ((>) '>)
-       (() '| |))
+       ((+ S*) '+)
+       ((> S*) '>))
       
       (simple_selector
        ((element_name)
@@ -226,6 +236,9 @@
        ((element_name simple_selector_attr+)
 	(instantiate::css-selector
 	   (element element_name)
+	   (attr* simple_selector_attr+)))
+       ((simple_selector_attr+)
+	(instantiate::css-selector
 	   (attr* simple_selector_attr+))))
       
       (simple_selector_attr+
@@ -260,18 +273,34 @@
 	   (name '*))))
       
       (attrib
-       ((ANGLE-OPEN IDENT ANGLE-CLO)
+       ((ANGLE-OPEN IDENT S* ANGLE-CLO)
 	(instantiate::css-selector-attr
 	   (ident (car IDENT))))
-       ((ANGLE-OPEN EXTENSION ANGLE-CLO)
+       ((ANGLE-OPEN S IDENT S* ANGLE-CLO)
+	(instantiate::css-selector-attr
+	   (ident (car IDENT))))
+       ((ANGLE-OPEN EXTENSION S* ANGLE-CLO)
 	(instantiate::css-selector-attr
 	   (ident (car EXTENSION))))
-       ((ANGLE-OPEN IDENT attrib-left attrib-right ANGLE-CLO)
+       ((ANGLE-OPEN S EXTENSION S* ANGLE-CLO)
+	(instantiate::css-selector-attr
+	   (ident (car EXTENSION))))
+       ((ANGLE-OPEN IDENT S* attrib-left S* attrib-right S* ANGLE-CLO)
 	(instantiate::css-selector-attr
 	   (ident (car IDENT))
 	   (op attrib-left)
 	   (arg attrib-right)))
-       ((ANGLE-OPEN EXTENSION attrib-left attrib-right ANGLE-CLO)
+       ((ANGLE-OPEN S IDENT S* attrib-left S* attrib-right S* ANGLE-CLO)
+	(instantiate::css-selector-attr
+	   (ident (car IDENT))
+	   (op attrib-left)
+	   (arg attrib-right)))
+       ((ANGLE-OPEN EXTENSION S* attrib-left S* attrib-right S* ANGLE-CLO)
+	(instantiate::css-selector-attr
+	   (ident (car EXTENSION))
+	   (op attrib-left)
+	   (arg attrib-right)))
+       ((ANGLE-OPEN S EXTENSION S* attrib-left S* attrib-right S* ANGLE-CLO)
 	(instantiate::css-selector-attr
 	   (ident (car EXTENSION))
 	   (op attrib-left)
@@ -294,47 +323,65 @@
        ((COLON EXTENSION)
 	(instantiate::css-selector-pseudo
 	   (expr (car EXTENSION))))
-       ((COLON FUNCTION IDENT PAR-CLO)
+       ((COLON FUNCTION IDENT S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car IDENT))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION EXTENSION PAR-CLO)
+       ((COLON FUNCTION S IDENT S* PAR-CLO)
+	(instantiate::css-selector-pseudo
+	   (expr (car IDENT))
+	   (fun (car FUNCTION))))
+       ((COLON FUNCTION EXTENSION S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car EXTENSION))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION STRING PAR-CLO)
+       ((COLON FUNCTION S EXTENSION S* PAR-CLO)
+	(instantiate::css-selector-pseudo
+	   (expr (car EXTENSION))
+	   (fun (car FUNCTION))))
+       ((COLON FUNCTION STRING S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car STRING))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION URI PAR-CLO)
+       ((COLON FUNCTION S STRING S* PAR-CLO)
+	(instantiate::css-selector-pseudo
+	   (expr (car STRING))
+	   (fun (car FUNCTION))))
+       ((COLON FUNCTION URI S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (instantiate::css-uri (value (car URI))))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION unary_operator NUMBER PAR-CLO)
+       ((COLON FUNCTION S URI S* PAR-CLO)
+	(instantiate::css-selector-pseudo
+	   (expr (instantiate::css-uri (value (car URI))))
+	   (fun (car FUNCTION))))
+       ((COLON FUNCTION unary_operator NUMBER S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (make-unary unary_operator (car NUMBER)))
 	   (fun (car FUNCTION)))))
       
       (declaration*
-       (()
+       ((S*)
 	'())
-       ((declaration* declaration)
-	`(,@declaration* ,declaration)))
+       ((S* declaration)
+	(list declaration))
+       ((S* declaration SEMI-COLON declaration*)
+	(cons declaration declaration*)))
       
       (declaration
-       ((property COLON expr SEMI-COLON)
+       ((property COLON S* expr)
 	(instantiate::css-declaration
 	   (property property)
 	   (expr expr)
 	   (prio "")))
-       ((property COLON expr prio SEMI-COLON)
+       ((property COLON S* expr prio)
 	(instantiate::css-declaration
 	   (property property)
 	   (expr expr)
 	   (prio prio))))
       
       (prio
-       ((IMPORTANT_SYM) (car IMPORTANT_SYM)))
+       ((IMPORTANT_SYM S*) (car IMPORTANT_SYM)))
       
       (expr
        ((term) (list term))
@@ -342,8 +389,8 @@
        ((expr operator term) `(,@expr ,operator ,term)))
 
       (operator
-       ((SLASH) "/")
-       ((COMMA) ","))
+       ((SLASH S*) "/")
+       ((COMMA S*) ","))
       
       (unary_operator
        (() #f)
@@ -351,32 +398,32 @@
        ((+) "+"))
       
       (term
-       ((unary_operator NUMBER) (make-unary unary_operator (car NUMBER)))
-       ((unary_operator PERCENTAGE) (make-unary unary_operator (car PERCENTAGE)))
-       ((unary_operator LENGTH) (make-unary unary_operator (car LENGTH)))
-       ((unary_operator EMS) (make-unary unary_operator (car EMS)))
-       ((unary_operator EXS) (make-unary unary_operator (car EXS)))
-       ((unary_operator ANGLE) (make-unary unary_operator (car ANGLE)))
-       ((unary_operator TIME) (make-unary unary_operator (car TIME)))
-       ((unary_operator FREQ) (make-unary unary_operator (car FREQ)))
-       ((unary_operator function) (make-unary unary_operator function))
-       ((unary_operator EXTENSION) (make-unary unary_operator (car EXTENSION)))
-       ((STRING) (car STRING))
-       ((VALUE) (car VALUE))
-       ((IDENT) (car IDENT))
-       ((URI) (instantiate::css-uri (value (car URI))))
-       ((RGB) (car RGB))
-       ((UNICODERANGE) (car UNICODERANGE))
-       ((hexcolor) hexcolor))
+       ((unary_operator NUMBER S*) (make-unary unary_operator (car NUMBER)))
+       ((unary_operator PERCENTAGE S*) (make-unary unary_operator (car PERCENTAGE)))
+       ((unary_operator LENGTH S*) (make-unary unary_operator (car LENGTH)))
+       ((unary_operator EMS S*) (make-unary unary_operator (car EMS)))
+       ((unary_operator EXS S*) (make-unary unary_operator (car EXS)))
+       ((unary_operator ANGLE S*) (make-unary unary_operator (car ANGLE)))
+       ((unary_operator TIME S*) (make-unary unary_operator (car TIME)))
+       ((unary_operator FREQ S*) (make-unary unary_operator (car FREQ)))
+       ((unary_operator EXTENSION S*) (make-unary unary_operator (car EXTENSION)))
+       ((STRING S*) (car STRING))
+       ((VALUE S*) (car VALUE))
+       ((IDENT S*) (car IDENT))
+       ((URI S*) (instantiate::css-uri (value (car URI))))
+       ((RGB S*) (car RGB))
+       ((UNICODERANGE S*) (car UNICODERANGE))
+       ((hexcolor) hexcolor)
+       ((function) function))
       
       (function
-       ((FUNCTION expr PAR-CLO)
+       ((FUNCTION S* expr PAR-CLO S*)
 	(instantiate::css-function
 	   (fun (car FUNCTION))
 	   (expr expr))))
       
       (hexcolor
-       ((HASH) (instantiate::css-hash-color (value (car HASH)))))))
+       ((HASH S*) (instantiate::css-hash-color (value (car HASH)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-mutex ...                                                    */
