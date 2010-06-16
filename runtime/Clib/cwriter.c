@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Thu Apr  9 15:36:11 2009 (serrano)                */
+/*    Last change :  Wed Jun 16 11:47:24 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -87,7 +87,7 @@ static char *char_name[] = {
       OUTPUT_PORT( op ).ptr += n;			    \
       OUTPUT_PORT( op ).cnt -= n;			    \
    } else {						    \
-      char _new( __buf, sz );				    \
+      char _new( __buf, sz  );				    \
       int n = sprintf( __buf, fmt, arg0 );		    \
       bgl_output_flush( op, __buf, n );			    \
    }
@@ -99,7 +99,7 @@ static char *char_name[] = {
       OUTPUT_PORT( op ).cnt -= n;					\
    } else {								\
       char _new( __buf, sz );						\
-      int n = sprintf( __buf, fmt, arg0, arg1 );			\
+      int n = sprintf( __buf, fmt, arg0, arg1 );                  	\
       bgl_output_flush( op, __buf, n );					\
    }
 
@@ -335,7 +335,7 @@ bgl_write_opaque( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_cnst( obj_t o, obj_t op ) {
-   PRINTF1( op, 7, "#<%04x>", (int)CCNST( o ) );
+   PRINTF1( op, 8, "#<%04x>", (int)CCNST( o ) );
 
    return op;
 }

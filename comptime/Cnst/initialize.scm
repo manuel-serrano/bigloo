@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Sun Jan 25 15:27:41 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 16 11:48:20 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/

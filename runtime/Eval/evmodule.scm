@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Tue Mar  9 12:17:42 2010 (serrano)                */
+;*    Last change :  Wed Jun 16 07:55:18 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -135,7 +135,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-evmodule ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (make-evmodule id path)
+(define (make-evmodule id path loc)
    (mutex-lock! *modules-mutex*)
    (let* ((env (make-hashtable 100 #unspecified eq?))
 	  (mactable (make-hashtable 64))
@@ -150,9 +150,11 @@
 		    (hashtable-update! *modules-table* id (lambda (v) mod) mod)
 		    (let ((msg (string-append "Module redefinition `"
 					      (symbol->string id)
-					      "', file \""
-					      (%evmodule-path old) "\"")))
-		       (evmeaning-warning #f msg)))
+					      "'. Previous \""
+					      (%evmodule-path old)
+					      "\", new (ignored) \""
+					      path "\"")))
+		       (warning/loc loc msg)))
 		 (hashtable-put! *modules-table* id mod))))
       (mutex-unlock! *modules-mutex*)
       mod))
@@ -611,7 +613,7 @@
 	  (if (not (list? clauses))
 	      (evcompile-error loc 'eval "Illegal module clauses" clauses)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
-		     (mod (make-evmodule name path)))
+		     (mod (make-evmodule name path loc)))
 		 (unwind-protect
 		    (begin
 		       (evmodule-module mod clauses loc)

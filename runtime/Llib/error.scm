@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Apr 29 18:18:18 2010 (serrano)                */
+;*    Last change :  Sun Jun 13 08:20:36 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -194,6 +194,7 @@
 	    
 	    (warning . args)
 	    (warning/location::obj ::obj ::obj . obj)
+	    (warning/loc::obj ::obj . obj)
 	    (warning/c-location::obj ::string ::long . obj)
 
 	    (&try ::procedure ::procedure)
@@ -428,6 +429,16 @@
    (warning-notify (make-&warning fname loc (get-trace-stack) args)))
 
 ;*---------------------------------------------------------------------*/
+;*    warning/loc ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (warning/loc loc . args)
+   (match-case loc
+      ((at ?fname ?loc)
+       (apply warning/location fname loc args))
+      (else
+       (apply warning args))))
+   
+;*---------------------------------------------------------------------*/
 ;*    warning/c-location ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    This function implements a cast for its first two arguments.     */
@@ -564,7 +575,6 @@
 (define (warning-notify e)
    (define (simple-warning e)
       (flush-output-port (current-output-port))
-      (newline (current-error-port))
       (display "*** WARNING:bigloo:" (current-error-port))
       (let ((args (&warning-args e)))
 	 (if (not (null? args))
