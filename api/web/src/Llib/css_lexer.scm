@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Thu Jun 10 14:49:31 2010 (serrano)                */
+;*    Last change :  Wed Jun 16 20:08:26 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -77,6 +77,7 @@
 		     (name (+ nmchar))
 		     (num (or (+ (in ("09")))
 			      (: (* (in ("09"))) #\. (+ (in ("09"))))))
+		     (+/-num (: (? (in "+-")) num))
 		     (url (+ (or (in "/:!#$%&*-~.") nonascii escape
 				 digit alpha)))
 		     (w (* (in " \t\r\n\f")))
@@ -138,23 +139,23 @@
       ((: #\! w "important")
        (return 'IMPORTANT_SYM))
       
-      ((: num "em")
+      ((: +/-num "em")
        (return 'EMS))
-      ((: num "ex")
+      ((: +/-num "ex")
        (return 'EXS))
-      ((: num (or "px" "cm" "mm" "in" "pt" "pc"))
+      ((: +/-num (or "px" "cm" "mm" "in" "pt" "pc"))
        (return 'LENGTH))
-      ((: num (or "deg" "rad" "grad"))
+      ((: +/-num (or "deg" "rad" "grad"))
        (return 'ANGLE))
-      ((: num (or "ms" "s"))
+      ((: +/-num (or "ms" "s"))
        (return 'TIME))
-      ((: num (or (uncase "Hz") (uncase "hkz")))
+      ((: +/-num (or (uncase "Hz") (uncase "hkz")))
        (return 'FREQ))
-      ((: num ident)
+      ((: +/-num ident)
        (return 'DIMEN))
-      ((: num "%")
+      ((: +/-num "%")
        (return 'PERCENTAGE))
-      (num
+      (+/-num
        (return 'NUMBER))
       
       ((: "url(" w string w ")")

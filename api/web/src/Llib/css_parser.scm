@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Thu Jun 10 14:54:23 2010 (serrano)                */
+;*    Last change :  Wed Jun 16 20:47:53 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -53,10 +53,6 @@
 	   (import* import*)
 	   (rule* (css-stamp-rules! rule+)))))
 
-      (S?
-       (() #f)
-       ((S) S))
-      
       (S*
        (() #f)
        ((S S*) S))
@@ -79,7 +75,7 @@
        ((comment* comment) `(,@comment* ,comment)))
       
       (comment
-       ((CDO S* STRING S* CDC S?)
+       ((CDO S* STRING S* CDC S*)
 	(instantiate::css-comment
 	   (cdo (car CDO))
 	   (cdc (car CDC))
@@ -214,16 +210,14 @@
 	`(,@selector+ ,selector)))
       
       (selector
-       ((simple_selector)
+       ((simple_selector S*)
 	(list simple_selector))
        ((simple_selector combinator selector)
 	(cons* simple_selector combinator selector))
        ((simple_selector S+ combinator selector)
 	(cons* simple_selector combinator selector))
        ((simple_selector S+ selector)
-	(cons* simple_selector '| | selector))
-       ((simple_selector S+)
-	(list simple_selector)))
+	(cons* simple_selector '| | selector)))
       
       (combinator
        ((+ S*) '+)
@@ -323,41 +317,25 @@
        ((COLON EXTENSION)
 	(instantiate::css-selector-pseudo
 	   (expr (car EXTENSION))))
-       ((COLON FUNCTION IDENT S* PAR-CLO)
+       ((COLON FUNCTION S* IDENT S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car IDENT))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION S IDENT S* PAR-CLO)
-	(instantiate::css-selector-pseudo
-	   (expr (car IDENT))
-	   (fun (car FUNCTION))))
-       ((COLON FUNCTION EXTENSION S* PAR-CLO)
+       ((COLON FUNCTION S* EXTENSION S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car EXTENSION))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION S EXTENSION S* PAR-CLO)
-	(instantiate::css-selector-pseudo
-	   (expr (car EXTENSION))
-	   (fun (car FUNCTION))))
-       ((COLON FUNCTION STRING S* PAR-CLO)
+       ((COLON FUNCTION S* STRING S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car STRING))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION S STRING S* PAR-CLO)
-	(instantiate::css-selector-pseudo
-	   (expr (car STRING))
-	   (fun (car FUNCTION))))
-       ((COLON FUNCTION URI S* PAR-CLO)
+       ((COLON FUNCTION S* URI S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (instantiate::css-uri (value (car URI))))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION S URI S* PAR-CLO)
+       ((COLON FUNCTION NUMBER S* PAR-CLO)
 	(instantiate::css-selector-pseudo
-	   (expr (instantiate::css-uri (value (car URI))))
-	   (fun (car FUNCTION))))
-       ((COLON FUNCTION unary_operator NUMBER S* PAR-CLO)
-	(instantiate::css-selector-pseudo
-	   (expr (make-unary unary_operator (car NUMBER)))
+	   (expr (car NUMBER))
 	   (fun (car FUNCTION)))))
       
       (declaration*
@@ -392,21 +370,15 @@
        ((SLASH S*) "/")
        ((COMMA S*) ","))
       
-      (unary_operator
-       (() #f)
-       ((-) "-")
-       ((+) "+"))
-      
       (term
-       ((unary_operator NUMBER S*) (make-unary unary_operator (car NUMBER)))
-       ((unary_operator PERCENTAGE S*) (make-unary unary_operator (car PERCENTAGE)))
-       ((unary_operator LENGTH S*) (make-unary unary_operator (car LENGTH)))
-       ((unary_operator EMS S*) (make-unary unary_operator (car EMS)))
-       ((unary_operator EXS S*) (make-unary unary_operator (car EXS)))
-       ((unary_operator ANGLE S*) (make-unary unary_operator (car ANGLE)))
-       ((unary_operator TIME S*) (make-unary unary_operator (car TIME)))
-       ((unary_operator FREQ S*) (make-unary unary_operator (car FREQ)))
-       ((unary_operator EXTENSION S*) (make-unary unary_operator (car EXTENSION)))
+       ((NUMBER S*) (car NUMBER))
+       ((PERCENTAGE S*) (car PERCENTAGE))
+       ((LENGTH S*) (car LENGTH))
+       ((EMS S*) (car EMS))
+       ((EXS S*) (car EXS))
+       ((ANGLE S*) (car ANGLE))
+       ((TIME S*) (car TIME))
+       ((FREQ S*) (car FREQ))
        ((STRING S*) (car STRING))
        ((VALUE S*) (car VALUE))
        ((IDENT S*) (car IDENT))
