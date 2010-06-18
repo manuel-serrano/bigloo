@@ -18,5 +18,5 @@
 		  :module-init '__text_bibtex
 		  :module-eval '__text_makelib
 		  :class-init "bigloo.text.bibtex"
-		  :class-eval "bigloo.text.make-lib")
+		  :class-eval "bigloo.text.make_lib")
    

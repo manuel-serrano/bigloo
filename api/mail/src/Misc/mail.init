@@ -18,5 +18,5 @@
 		  :module-init '__mail_mailbox
 		  :module-eval '__mail_makelib
 		  :class-init "bigloo.mail.mailbox"
-		  :class-eval "bigloo.mail.make-lib")
+		  :class-eval "bigloo.mail.make_lib")
    

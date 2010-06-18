@@ -18,6 +18,6 @@
 		  :module-init '__srfi1
 		  :module-eval '__srfi1_makelib
 		  :class-init "bigloo.srfi1.srfi1"
-		  :class-eval "bigloo.srfi1.make-lib")
+		  :class-eval "bigloo.srfi1.make_lib")
 
 

@@ -18,7 +18,7 @@
 		  :module-init '__web_xml
 		  :module-eval '__web_makelib
 		  :class-init "bigloo.web.xml"
-		  :class-eval "bigloo.web.make-lib")
+		  :class-eval "bigloo.web.make_lib")
 
    
 

@@ -18,5 +18,5 @@
 		  :module-init '__calendar_types
 		  :module-eval '__calendar_makelib
 		  :class-init "bigloo.calendar.types"
-		  :class-eval "bigloo.calendar.make-lib")
+		  :class-eval "bigloo.calendar.make_lib")
 
