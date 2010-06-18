@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sun Dec  6 14:46:35 2009 (serrano)                */
-#*    Copyright   :  2003-09 Manuel Serrano                            */
+#*    Last change :  Fri Jun 18 07:31:13 2010 (serrano)                */
+#*    Copyright   :  2003-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -86,6 +86,7 @@ $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
                -L$(BOOTLIBDIR) -lbigloo_s-$(RELEASE) \
                $$libbigloo_gc \
                $(EXTRALIBS) \
+               $(LDFLAGS) \
                -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))
 
 
