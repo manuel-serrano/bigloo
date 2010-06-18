@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Wed Jun 16 20:47:53 2010 (serrano)                */
+;*    Last change :  Fri Jun 18 11:36:05 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -400,7 +400,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    css-mutex ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define css-mutex (make-mutex))
+(define css-mutex (make-mutex "css"))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-stamp ...                                                    */
@@ -413,12 +413,10 @@
 ;*    Stamps are used by the CSS priority algorithm.                   */
 ;*---------------------------------------------------------------------*/
 (define (css-stamp-rules! os)
-   (mutex-lock! css-mutex)
-   (let loop ((l os))
+   
+   (define (loop l)
       (if (null? l)
-	  (begin
-	     (mutex-unlock! css-mutex)
-	     os)
+	  os
 	  (let ((o (car l)))
 	     (cond
 		((pair? o)
@@ -428,7 +426,12 @@
 		 (set! css-stamp (+fx 1 css-stamp)))
 		((css-media? o)
 		 (loop (css-media-ruleset* o))))
-	     (loop (cdr l))))))
+	     (loop (cdr l)))))
+   
+   (mutex-lock! css-mutex)
+   (loop os)
+   (mutex-unlock! css-mutex)
+   os)
 
 ;*---------------------------------------------------------------------*/
 ;*    make-unary ...                                                   */

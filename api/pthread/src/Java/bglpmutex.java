@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Thu Jul  2 10:42:47 2009 (serrano)                */
-/*    Copyright   :  2005-09 Manuel Serrano                            */
+/*    Last change :  Fri Jun 18 11:34:45 2010 (serrano)                */
+/*    Copyright   :  2005-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -101,10 +101,11 @@ public class bglpmutex extends bigloo.mutex {
 	 bglpthread.debug( "relase_lock m=" + this + " thread=" + thread + " th=" + bglpthread.current_thread() );
 
 	 /* assertion */
-	 if( thread != th )
+	 if( thread != th ) {
 	    foreign.fail( "mutex-unlock!",
 			  "mutex not owned by current thread",
 			  this );
+	 }
 	 thread = null;
 	 state = "not-abandoned";
 	 notify();
