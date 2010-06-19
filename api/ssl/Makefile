@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Sep  7 16:20:00 2008 (serrano)                */
-#*    Copyright   :  2001-08 Manuel Serrano                            */
+#*    Last change :  Sat Jun 19 07:33:21 2010 (serrano)                */
+#*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -116,7 +116,7 @@ install-c:
 	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/ssl.heap; \
           fi; \
 	  $(MAKE) install-lib LIB=libbigloossl_s-$(RELEASE); \
-	  $(MAKE) install-shared-lib LIB=libbigloossl_e-$(RELEASE); \
+	  $(MAKE) install-lib LIB=libbigloossl_e-$(RELEASE); \
 	  $(MAKE) install-lnlib LIB=libbigloossl_s-$(RELEASE) LN=libbigloossl_u-$(RELEASE); \
         fi
 

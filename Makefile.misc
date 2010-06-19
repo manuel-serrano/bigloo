@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Sep  7 09:13:47 2009 (serrano)                */
-#*    Copyright   :  2002-09 Manuel Serrano                            */
+#*    Last change :  Sat Jun 19 07:40:50 2010 (serrano)                */
+#*    Copyright   :  2002-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
 #*=====================================================================*/
@@ -22,6 +22,15 @@ INSTALL	= cp
 #*---------------------------------------------------------------------*/
 #*    Producing shared libraries                                       */
 #*---------------------------------------------------------------------*/
+shared-ln-lib:
+	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
+	  $(MAKE) shared-lib; \
+	else \
+	  cd `dirname $(LIBDEST)` && \
+	  $(RM) -f `basename $(LIBDEST)` && \
+          $(LN_S) `basename $(LIBSRC)` `basename $(LIBDEST)`; \
+	fi
+
 shared-lib:
 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
             if [ "$(LD)" = "true" ]; then \
@@ -120,11 +129,18 @@ shared-soname:
 #*---------------------------------------------------------------------*/
 #*    Installing/uninstalling a Bigloo library                         */
 #*---------------------------------------------------------------------*/
-install-lib: install-static-lib install-shared-lib
+install-lib:
+	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
+	   $(MAKE) install-shared-lib;  \
+	fi
+	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a ]; then \
+	   $(MAKE) install-static-lib; \
+	fi
 
 install-static-lib:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a \
+             $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
           $(RANLIB) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
         fi
@@ -149,29 +165,20 @@ install-shared-lib:
             fi \
           fi \
         fi;
-	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
-	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	    $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
-               $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
-          fi \
-        fi
 
 install-lnlib:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
            $(RM) -f $(LN).a && \
-           $(LN_S) $(LIB).a $(LN).a && $(RANLIB) $(LN).a) && \
-	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
-           if [ -f $(LIB).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(LN).$(SHAREDSUFFIX) && \
-             $(LN_S) $(LIB).$(SHAREDSUFFIX) $(LN).$(SHAREDSUFFIX) && \
-	     if [ -f $(LIB).$(SHAREDSUFFIX).a ]; then \
-	        $(RM) -f $(LN).$(SHAREDSUFFIX).a && \
-	        $(LN_S) $(LIB).$(SHAREDSUFFIX).a $(LN).$(SHAREDSUFFIX).a; \
-	     fi \
-           fi) \
+           $(LN_S) $(LIB).a $(LN).a && $(RANLIB) $(LN).a) \
         fi
+	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
+          $(MAKE) install-shared-lib; \
+        else \
+          $(MAKE) install-shared-ln-lib; \
+        fi
+
+install-shared-ln-lib:
 	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
 	  $(RM) -f $(LIBDIR)/$(LN).$(SHAREDSUFFIX) && \
 	  (cd $(LIBDIR) && \
@@ -188,6 +195,5 @@ install-lnlib:
 uninstall-lib:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a
 	$(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX)
 

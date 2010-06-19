@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 10 11:31:36 2009 (serrano)                */
+#*    Last change :  Sat Jun 19 07:45:20 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -59,7 +59,8 @@ JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(LIB)/$(SSL_ZIP)
 _BGL_OBJECTS	= ssl
 
 _C_OBJECTS	= bglssl
-_JAVA_CLASSES	= ssl_client_socket ssl_server_socket certificate private_key
+_JAVA_CLASSES	= certificate private_key
+_JAVA_ECLASSES	= ssl_client_socket ssl_server_socket 
 _DOTNET_OBJ	= # bglssl
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
@@ -70,7 +71,8 @@ EOBJECTS	= objs/make_lib.o
 BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
-JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
+JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class) \
+                  $(_JAVA_ECLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
 BGL_DOTNET_OBJ	= $(_BGL_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
@@ -228,10 +230,13 @@ lib-c.$(SHAREDSUFFIX):
           $(MAKE) $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX)
 
 $(LIB)/lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX): $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX)
-	@ cd $(LIB) && \
-        $(RM) -f lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX) && \
-        $(LN_S) lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-              lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX)
+	 $(MAKE) shared-ln-lib \
+             FORCELD=true \
+             LIBDEST=$@ \
+             LIBSRC=$(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
+             SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
+             EXTRALIBS="$(OPENSSLLIBS)" \
+             CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
@@ -406,9 +411,9 @@ $(JAVA_SRC_DIR)/ssl_server_socket.java: \
 #*---------------------------------------------------------------------*/
 stdclean:
 	$(RM) -f $(OBJECTS) $(_BGL_OBJECTS:%=%.c)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_s.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_u.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_e.$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_s-$(RELEASE).zip
 	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_u-$(RELEASE).zip
 	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_e-$(RELEASE).zip

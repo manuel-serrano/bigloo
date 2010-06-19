@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun  8 06:35:42 2010 (serrano)                */
+#*    Last change :  Sat Jun 19 07:42:57 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1510,11 +1510,11 @@ case $hostos in
           if [ "$threadsupport " = "yes " ]; then
             customgclib=bigloogc_fth;
             extralibs="$extralibs $pthreadlibs";
-            ldcomplibs="-lc \$(GCCLOSELIB) $pthreadlibs -lc";
+            ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
           else
             threadsupport=no;
             pthreadlibs=no;
-            ldcomplibs="-lc \$(GCCLOSELIB) -lc";
+            ldcomplibs="\$(GCCLOSELIB) -lc";
           fi
         fi
         if [ `dirname $bindir` != `dirname $libdir` ]; then
@@ -1526,7 +1526,7 @@ case $hostos in
         ldinstallname="-install_name";
         ldinstallnamedirroot="Frameworks";
         sharedsuffix="dylib";
-        ldlibs="$ldlibs -lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
+        ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
         sharedcompiler=yes;
         sharedbde=yes;
         ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
