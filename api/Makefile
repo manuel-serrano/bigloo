@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Sun Jun 20 12:32:31 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 15:21:00 2010 (serrano)                */
 #*    Copyright   :  2005-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -118,7 +118,7 @@ pop:
                 echo api/$$f; \
              done; \
           done;
-	@ echo api/Makefile api/README
+	@ echo api/Makefile api/Makefile.api api/README
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
