@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Fri Sep 11 08:32:47 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 20 14:04:53 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -77,7 +77,8 @@
 		   *shared-cnst?*)
 	       (location? loc))
 	  `(begin
-	      ((@ bigloo-type-error/location __error) ',(current-function)
+	      ((@ bigloo-type-error/location __error) ,(symbol->string
+							(current-function))
 						      ,(symbol->string ti)
 						      ,id
 						      ,(location-full-fname loc)
@@ -87,7 +88,8 @@
 	      ;; some type mismatch).
 	      (failure #f #f #f))
 	  `(begin
-	      ((@ bigloo-type-error __error) ',(current-function)
+	      ((@ bigloo-type-error __error) ,(symbol->string
+					       (current-function))
 					     ,(symbol->string ti)
 					     ,id)
 	      (failure #f #f #f))))
