@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sun Jun 20 16:17:40 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 18:02:10 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -212,10 +212,16 @@ $(LIB)/$(API).jheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 api.zip: $(LIB)/bigloo$(API)_s-$(RELEASE).zip \
          $(LIB)/bigloo$(API)_es-$(RELEASE).zip \
 
-$(LIB)/bigloo$(API)_s-$(RELEASE).zip: .afile .jfile $(BGL_CLASSES)
+$(LIB)/bigloo$(API)_s-$(RELEASE).zip: .afile .jfile $(BGL_CLASSES) javac_s
 	@ $(RM) -f $@
 	@ (cd objs/class_s && \
 	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_DIR:objs/class_s/%=%)/*.class)
+
+javac_s: $(JAVA_CLASSES_SRC)
+	if [ "$(JAVA_CLASSES_SRC:objs/class_s/%=%) " != " " ]; then \
+	  (cd objs/class_s && \
+             $(JAVAC) $(CYGWINJVMPATH) -classpath $(JVMAPIBOOTPATH) $(JAVA_CLASSES_SRC:objs/class_s/%=%)); \
+        fi
 
 $(LIB)/bigloo$(API)_es-$(RELEASE).zip: .afile .jfile $(BGL_ECLASSES)
 	@ $(RM) -f $@
