@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 16:23:44 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 16:25:00 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -44,7 +44,6 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 SPIFLAGS	= 
 EAFLAGS		= --suffix spi --module-keyword interface
 EJFLAGS		= --suffix spi --module-keyword interface
-#BLFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 # Flags to build a heap
 BHEAPFLAGS	= $(SPIFLAGS) -unsafe -q \
                   -mkaddheap -mkaddlib -L $(LIB) -I Llib \
@@ -137,35 +136,35 @@ include ../../Makefile.api
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
-	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BLFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
-	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BLFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
-	$(BIGLOO) -suffix stk $(EFLAGS) $(BLFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+	$(BIGLOO) -suffix stk $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
 
 $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
-	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BLFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BLFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
-	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BLFLAGS) -c -jvm-purify $^ -o $@
+	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
 
 $(DOTNET_OBJ_DIR)/%.obj: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
 	$(BIGLOO) $(SPIFLAGS) -dotnet \
             -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BLFLAGS) -c -dotnet-managed $< -o $@
+             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
 
 $(DOTNET_OBJ_DIR)/%.obj: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
 	$(BIGLOO) $(SPIFLAGS) -dotnet \
             -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BLFLAGS) -c -dotnet-managed $< -o $@
+             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
 
 $(DOTNET_OBJ_DIR)/%.obj: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
 	$(BIGLOO) -suffix stk -dotnet \
             -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BLFLAGS) -c -dotnet-managed $^ -o $@
+             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $^ -o $@
 
