@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Wed Dec  9 09:59:42 2009 (serrano)                */
-/*    Copyright   :  2004-09 Manuel Serrano                            */
+/*    Last change :  Sun Jun 20 09:56:03 2010 (serrano)                */
+/*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -42,7 +42,7 @@ bglpth_setup_gc() {
    extern void *GC_do_blocking();
 #endif
    
-   bgl_gc_do_blocking = &GC_do_blocking;
+   bgl_gc_do_blocking = (void *(*)())&GC_do_blocking;
 #endif
 
    GC_init();

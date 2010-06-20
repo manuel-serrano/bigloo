@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Oct  6 07:29:05 2009 (serrano)                */
-;*    Copyright   :  2000-09 Manuel Serrano                            */
+;*    Last change :  Sat Jun 19 18:08:14 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -163,11 +163,21 @@
 	      (bigloo-configuration-add-entry! ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
+;*    library-safety ...                                               */
+;*---------------------------------------------------------------------*/
+(define (library-safety)
+   (cond-expand
+      (bigloo-unsafe 'unsafe)
+      (bigloo-safe 'safe)
+      (else (error "library-safety" "not safety specified" #unspecified))))
+
+;*---------------------------------------------------------------------*/
 ;*    *bigloo-configuration* ...                                       */
 ;*---------------------------------------------------------------------*/
 (define *bigloo-configuration*
    `((release-number . ,$configure-release-number)
      (specific-version . ,$configure-specific-version)
+     (library-safety . ,(library-safety))
      (homeurl . ,$configure-homeurl)
      (shell . ,$configure-shell)
      (c-compiler-style . ,$configure-c-compiler-style)

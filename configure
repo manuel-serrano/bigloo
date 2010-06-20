@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jun 19 07:42:57 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 11:36:31 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2866,11 +2866,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     cat api/fthread/src/Misc/fthread.init.in \
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
-        >  lib/$release/fthread.init
+        >  api/fthread/src/Misc/fthread.init
     cat api/pthread/src/Misc/pthread.init.in \
         | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
-        >  lib/$release/pthread.init
+        >  api/pthread/src/Misc/pthread.init
   else
     napis=;
     for a in $apis; do
@@ -2888,10 +2888,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # SSL
   if [ "$openssllibs" != "no" ]; then
     echo "OPENSSLLIBS=$openssllibs" >> $makefile_cfg
-    echo ";; automatically generated. Don't edit" >  lib/$release/ssl.init
+    echo ";; automatically generated. Don't edit" > api/ssl/src/Misc/ssl.init
     cat api/ssl/src/Misc/ssl.init.in \
         | sed -e "s|@OPENSSLLIBS@|$openssllibs|g" \
-        >>  lib/$release/ssl.init
+        >>  api/ssl/src/Misc/ssl.init
 
     dtls=1
     if [ "$openssldtls" = "no" ]; then
@@ -2926,11 +2926,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "SQLITESRFI=sqlite" >> $makefile_cfg
   fi
 
-  echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
+  echo ";; automatically generated. Don't edit" > api/sqlite/src/Misc/sqlite.init
   cat api/sqlite/src/Misc/sqlite.init.in \
       | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
       | sed -e "s|@SQLITESRFI@|$sqlitesrfi|g" \
-      >>  lib/$release/sqlite.init
+      >>  api/sqlite/src/Misc/sqlite.init
 
   # GSTREAMER
   if [ "$gstreamer " != " " ]; then
@@ -2939,12 +2939,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GSTREAMERCFLAGS=$gstreamercflags" >> $makefile_cfg
 
     # Patch the code of the GSTREAMER init file
-    echo ";; automatically generated. Don't edit" >  lib/$release/gstreamer.init
+    echo ";; automatically generated. Don't edit" >  api/gstreamer/src/Misc/gstreamer.init
     cat api/gstreamer/src/Misc/gstreamer.init.in \
       | sed -e "s|@GSTREAMERLIBS@|$gstreamerlibs|g" \
             -e "s|@GSTREAMERCFLAGS@|$gstreamercflags|g" \
             -e "s|@GSTREAMERAUDIO@|$gstaudio|g" \
-      >  lib/$release/gstreamer.init
+      >>  api/gstreamer/src/Misc/gstreamer.init
 
     # Produce the bglgst_config.h file
     cat api/gstreamer/src/Clib/bglgst_config.h.in \
@@ -2977,7 +2977,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     cat api/dbus/src/Misc/dbus.init.in \
         | sed -e "s|@DBUSLIBS@|$dbusld|g" \
               -e "s|@DBUSCFLAGS@|$dbusincl|g" \
-        >>  lib/$release/dbus.init
+        >>  api/dbus/src/Misc/dbus.init
     echo "CDBUSFLAGS=$dbusincl" >> $makefile_cfg
   else
     napis=;
@@ -3003,8 +3003,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   chmod a-w $configure
 
   # pkgcomp.init
-  pkgcomp_init=lib/$release/pkgcomp.init
-  rm -f $pkgcomp_init
+  pkgcomp_init=api/pkgcomp/src/Misc/pkgcomp.init
   echo ";; automatically generated. Don't edit" >  $pkgcomp_init
   cat api/pkgcomp/src/Misc/pkgcomp.init.in \
       | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 10 11:30:25 2009 (serrano)                */
+#*    Last change :  Sun Jun 20 10:17:33 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -18,23 +18,19 @@ include ../../../Makefile.misc
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the library name
-TARGETNAME	= gstreamer
-LIBNAME		= bigloo$(TARGETNAME)
+API	= gstreamer
 # Directories
 LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 C_SRC_DIR 	= Clib
 PLUGIN_SRC_DIR 	= Plugin
 MISC_SRC_DIR 	= Misc
-# The heap file
-HEAP_FILE	= $(LIB)/$(TARGETNAME).heap
-HEAPJVM_FILE	= $(LIB)/$(TARGETNAME).jheap
 # Where to store the library class files
-PBASE		= bigloo.$(TARGETNAME)
-CLASS_DIR	= objs/class_s/bigloo/$(TARGETNAME)
-CLASS_EDIR	= objs/class_e/bigloo/$(TARGETNAME)
+PBASE		= bigloo.$(API)
+CLASS_DIR	= objs/class_s/bigloo/$(API)
+CLASS_EDIR	= objs/class_es/bigloo/$(API)
 DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_e
+DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -44,15 +40,24 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BGSTFLAGS	= $(BFLAGS) \
+BAPIFLAGS	= $(BFLAGS) \
                   -I Llib -lib-dir $(BOOTLIBDIR) \
-                  -srfi $(TARGETNAME) \
+                  -srfi $(API) \
                   -unsafe -safee
+# C flags
+CAPIFLAGS       = $(GSTREAMERCFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
-                  -heap-library $(TARGETNAME) -srfi $(TARGETNAME)
+                  -heap-library $(API) -srfi $(API)
 # C flags
 CEFLAGS		= $(GSTREAMERCFLAGS)
+
+# Additional pthread lib for C
+ifeq "$(GSTREAMERLIBS) " " "
+EXTRALIBS	= 
+else
+EXTRALIBS	= $(GSTREAMERLIBS)
+endif
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -117,32 +122,29 @@ POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
 		  $(PLUGIN_SRC_DIR)/gstbigloo.h \
 		  $(PLUGIN_SRC_DIR)/bglgst_port.h \
 		  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(TARGETNAME).init.in \
+                  $(MISC_SRC_DIR)/$(API).init.in \
                   Makefile
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet
+.PHONY: c jvm dotnet build-c build-jvm build-dotnet
 
-all: c
-#* 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \                       */
-#*              $(MAKE) jvm; \                                         */
-#* 	  fi                                                           */
-#* 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \                    */
-#*              $(MAKE) dotnet;  \                                     */
-#* 	  fi                                                           */
+all: 
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+             $(MAKE) build-c; \
+	  fi
 
-c: init heap-c lib-c
-jvm: init heap-jvm lib-jvm
-dotnet: init heap-jvm lib-dotnet
+c: build-c
+build-c: api-c
 
-#*---------------------------------------------------------------------*/
-#*    Init ...                                                         */
-#*---------------------------------------------------------------------*/
-init: $(LIB)/$(TARGETNAME).init
+jvm: build-jvm
+build-jvm:
 
-$(LIB)/$(TARGETNAME).init: $(MISC_SRC_DIR)/$(TARGETNAME).init.in
+dotnet: build-dotnet
+build-dotnet:
+
+$(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"
 	@ echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""
 	@ exit 1
@@ -156,284 +158,6 @@ $(C_SRC_DIR)/bglgst_config.h.in: $(C_SRC_DIR)/bglgst_config.h
 	@ exit 1
 
 #*---------------------------------------------------------------------*/
-#*    Suffixes                                                         */
-#*---------------------------------------------------------------------*/
-.SUFFIXES:
-.SUFFIXES: .scm .class .java .o .cs .obj
-
-#*---------------------------------------------------------------------*/
-#*    The implicit rules                                               */
-#*---------------------------------------------------------------------*/
-objs/%.o: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) $(EFLAGS) $(BGSTFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -c
-
-objs/%.o: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) $(EFLAGS) $(BGSTFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -c
-
-objs/%.o: $(C_SRC_DIR)/%.c
-	$(CC) $(CEFLAGS) $(CFLAGS) $(CPICFLAGS) $(CGCTHREADFLAGS) -I. -I $(LIB) $(GCINCLUDE) -I $(C_SRC_DIR) $< -o $@ -c
-
-objs/%.o: $(PLUGIN_SRC_DIR)/%.c
-	$(CC) $(CEFLAGS) $(CFLAGS) $(CPICFLAGS) $(CGCTHREADFLAGS) -I. -I $(LIB) $(GCINCLUDE) -I $(PLUGIN_SRC_DIR) -I $(C_SRC_DIR) $< -o $@ -c
-
-$(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BGSTFLAGS) -c -jvm-purify $< -o $@
-
-$(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
-	$(LN_S) -f $< $@
-
-$(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BGSTFLAGS) -c -jvm-purify $< -o $@
-
-$(DOTNET_OBJ_DIR)/%.cs: $(DOTNET_SRC_DIR)/%.cs
-	$(LN_S) -f $< $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BGSTFLAGS) -c -dotnet-managed $< -o $@
-
-$(DOTNET_OBJ_EDIR)/%.obj: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BGSTFLAGS) -c -dotnet-managed $< -o $@
-
-#*---------------------------------------------------------------------*/
-#*    The heap construction                                            */
-#*---------------------------------------------------------------------*/
-.PHONY: heap heap-c heap-jvm
-
-heap: heap-c heap-jvm
-heap-c: $(HEAP_FILE)
-heap-jvm: $(HEAPJVM_FILE)
-
-$(HEAP_FILE): .afile $(MISC_SRC_DIR)/make_lib.scm $(_BGL_SOURCES)
-	@ $(RM) -f $(HEAP_FILE)
-	@ $(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAP_FILE)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-$(HEAPJVM_FILE): .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
-	@ $(RM) -f $(HEAPJVM_FILE)
-	@ $(BIGLOO) -jvm  $(EFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(HEAPJVM_FILE)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-#*---------------------------------------------------------------------*/
-#*    lib                                                              */
-#*---------------------------------------------------------------------*/
-.PHONY: lib lib-c lib-jvm lib-dotnet
-
-lib: lib-c lib-jvm lib-dotnet
-
-#*--- lib-c -----------------------------------------------------------*/
-lib-c: $(TAGS) .afile objs
-	@ $(MAKE) lib-c-static && \
-          $(MAKE) lib-c-shared
-
-objs:
-	mkdir -p $@
-
-lib-c-static: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a \
-              $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a
-
-lib-c-shared:
-	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
-           $(MAKE) lib-c.$(SHAREDSUFFIX); \
-        fi
-
-lib-c.$(SHAREDSUFFIX):
-	@ $(MAKE) $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) && \
-	  $(MAKE) $(LIB)/lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX) && \
-          $(MAKE) $(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX)
-
-$(LIB)/lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX): $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX)
-	@ cd $(LIB) && \
-        $(RM) -f lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX) && \
-        $(LN_S) lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-              lib$(LIBNAME)_u-$(RELEASE).$(SHAREDSUFFIX)
-
-ifeq "$(GSTREAMERLIBS) " " "
-ELIBS= 
-else
-ELIBS= $(GSTREAMERLIBS)
-endif
-
-$(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
-	@ $(MAKE) shared-lib \
-             FORCELD=true \
-             LIBDEST=$@ \
-             SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
-             EXTRALIBS="$(ELIBS)" \
-             CLOSELIBS="-lbigloo_s-$(RELEASE)"
-
-$(LIB)/lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
-	@ $(MAKE) shared-lib \
-             OBJECTS=$(EOBJECTS) \
-             FORCELD=true \
-             LIBDEST=$@ \
-             SONAME=lib$(LIBNAME)_e-$(RELEASE).$(SHAREDSUFFIX) \
-             EXTRALIBS="$(ELIBS)" \
-             LDLIBS="-l$(LIBNAME)_s-$(RELEASE) $(LDLIBS)" \
-             CLOSELIBS="-l$(LIBNAME)_s-$(RELEASE) -lbigloo_s-$(RELEASE)"
-
-$(LIB)/lib$(LIBNAME)_u-$(RELEASE).a: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
-	@ cd $(LIB) && \
-        $(RM) -f lib$(LIBNAME)_u-$(RELEASE).a && \
-        $(LN_S) lib$(LIBNAME)_s-$(RELEASE).a lib$(LIBNAME)_u-$(RELEASE).a
-
-$(LIB)/lib$(LIBNAME)_s-$(RELEASE).a: .afile $(OBJECTS)
-	@ $(RM) -f $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
-	@ $(AR) $(ARFLAGS) $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a $(OBJECTS)
-	@ $(RANLIB) $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-#*--- lib-jvm ---------------------------------------------------------*/
-lib-jvm: .jfile $(TAGS) $(CLASS_DIR) $(CLASS_EDIR)
-	@ $(MAKE) lib.zip
-
-$(CLASS_DIR): 
-	mkdir -p $(CLASS_DIR)
-
-$(CLASS_EDIR): 
-	mkdir -p $(CLASS_EDIR)
-
-lib.zip: $(LIB)/bigloo$(TARGETNAME)_s-$(RELEASE).zip \
-         $(LIB)/bigloo$(TARGETNAME)_e-$(RELEASE).zip
-
-$(LIB)/bigloo$(TARGETNAME)_s-$(RELEASE).zip: .afile .jfile $(BGL_CLASSES)
-	@ $(RM) -f $@
-	@ (cd objs/class_s && \
-	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_DIR:objs/class_s/%=%)/*.class)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-$(LIB)/bigloo$(TARGETNAME)_e-$(RELEASE).zip: .afile .jfile $(BGL_ECLASSES)
-	@ $(RM) -f $@
-	@ (cd objs/class_e && \
-	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_EDIR:objs/class_e/%=%)/*.class)
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-#*--- lib-dotnet ---------------------------------------------------------*/
-lib-dotnet: $(TAGS) $(DOTNET_OBJ_DIR) $(DOTNET_OBJ_EDIR)
-	@ $(MAKE) lib.dll
-
-$(DOTNET_OBJ_DIR):
-	mkdir -p $(DOTNET_OBJ_DIR)
-
-$(DOTNET_OBJ_EDIR):
-	mkdir -p $(DOTNET_OBJ_EDIR)
-
-lib.dll: 
-	@ $(MAKE) $(LIB)/$(LIBNAME)_u-$(RELEASE).dll
-	@ $(MAKE) $(LIB)/$(LIBNAME)_e-$(RELEASE).dll
-
-$(LIB)/$(LIBNAME)_u-$(RELEASE).dll: .afile $(BGL_DOTNET_OBJ) $(DOTNET_OBJ_SRC)
-	@ $(RM) -f $(LIB)/$(LIBNAME)_s-$(RELEASE).dll
-	@ $(RM) -f $(LIB)/$(LIBNAME)_u-$(RELEASE).dll
-	@ (cd $(DOTNET_OBJ_DIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-                -shared -o $(LIB)/$(LIBNAME)_s-$(RELEASE).dll \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-	@ echo "$@ done..."
-	 (cd objs/dotnet_s && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-                -shared -o $(LIB)/$(LIBNAME)_u-$(RELEASE).dll \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-$(LIB)/$(LIBNAME)_e-$(RELEASE).dll: .afile $(BGL_DOTNET_EOBJ)
-	@ $(RM) -f $(LIB)/$(LIBNAME)_e-$(RELEASE).dll
-	@ (cd $(DOTNET_OBJ_EDIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-                 -shared -o $(LIB)/$(LIBNAME)_e-$(RELEASE).dll \
-                            $(LIB)/$(LIBNAME)_u-$(RELEASE).dll \
-		$(BGL_DOTNET_EOBJ:$(DOTNET_OBJ_EDIR)/%=%))
-	@ echo "$@ done..."
-	@ echo "-------------------------------"
-
-#*---------------------------------------------------------------------*/
-#*    ude                                                              */
-#*---------------------------------------------------------------------*/
-.PHONY: ude
-ude:
-	@ $(MAKE) -f Makefile .afile .etags .jfile
-
-.afile: $(_BGL_SOURCES)
-	@ $(AFILE) -o .afile $(_BGL_SOURCES) 
-
-.jfile: $(_BGL_SOURCES)
-	@ $(JFILE) -o .jfile \
-                   -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
-                   -pbase $(PBASE) $(_BGL_OBJECTS:%=%.scm) make_lib.scm
-
-.etags: $(_BGL_SOURCES)
-	@ $(BTAGS) -o .etags $(_BGL_SOURCES)
-
-#*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=gstreamer/src/%)
-
-#*---------------------------------------------------------------------*/
-#*    dep                                                              */
-#*---------------------------------------------------------------------*/
-.PHONY: dep
-dep: 
-	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
-          head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	@ $(DEPEND) -fno-mco \
-                    -search-path $(BIGLOO_SRC_DIR) \
-                    -strict-obj-dir objs \
-                    $(_BGL_SOURCES) >> /tmp/Makefile.aux
-	@ mv /tmp/Makefile.aux Makefile
-
-#*---------------------------------------------------------------------*/
-#*    stdclean                                                         */
-#*---------------------------------------------------------------------*/
-stdclean:
-	$(RM) -f $(OBJECTS) $(_BGL_OBJECTS:%=%.c)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_s.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_u.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/lib$(LIBNAME)_e.$(SHAREDSUFFIX)
-	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_s-$(RELEASE).zip
-	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_u-$(RELEASE).zip
-	$(RM) -f $(LIB)/bigloo$(TARGETNAME)_e-$(RELEASE).zip
-	$(RM) -f $(LIB)/$(LIBNAME)_s-$(RELEASE).dll
-	$(RM) -f $(LIB)/$(LIBNAME)_u-$(RELEASE).dll
-	$(RM) -f $(LIB)/$(LIBNAME)_e-$(RELEASE).dll
-	$(RM) -f $(LIB)/$(TARGETNAME).jheap $(LIB)/$(TARGETNAME).heap
-	$(RM) -rf $(CLASS_DIR)
-	$(RM) -rf $(DOTNET_OBJ_DIR)
-	$(RM) -f *~
-	$(RM) -f *.mco
-	$(RM) -f *.ast
-
-udeclean:
-	$(RM) -f .afile .etags .jfile
-
-cleanall: stdclean
-	$(RM) -f $(LIB)/$(TARGETNAME).init
-	$(RM) -f $(C_SRC_DIR)/bglgst_config.h
-
-#*---------------------------------------------------------------------*/
-#*    clean                                                            */
-#*---------------------------------------------------------------------*/
-clean: stdclean
-	$(RM) -rf objs
-
-distclean: cleanall
-
-#*---------------------------------------------------------------------*/
 #*    Manual dependencies                                              */
 #*---------------------------------------------------------------------*/
 $(BIGLOO_SRC_DIR)/gstreamer.sch: $(C_SRC_DIR)/bglgst.h
@@ -444,7 +168,33 @@ $(BIGLOO_SRC_DIR)/gstreamer.sch: $(C_SRC_DIR)/bglgst.h
 #*    Debugging stuff (not used anywhere)                              */
 #*---------------------------------------------------------------------*/
 gstobject.h: Llib/gstobject.scm
-	$(BIGLOO) $(EFLAGS) $(BGSTFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+#*---------------------------------------------------------------------*/
+#*    pop ...                                                          */
+#*---------------------------------------------------------------------*/
+pop:
+	@ echo $(POPULATION:%=$(API)/src/%)
+
+#*---------------------------------------------------------------------*/
+#*    clean                                                            */
+#*---------------------------------------------------------------------*/
+clean: api-clean
+
+cleanall: api-cleanall
+
+distclean: cleanall
+
+#*---------------------------------------------------------------------*/
+#*    Common API rules                                                 */
+#*---------------------------------------------------------------------*/
+include ../../Makefile.api
+
+#*---------------------------------------------------------------------*/
+#*    The implicit rules                                               */
+#*---------------------------------------------------------------------*/
+objs/%.o: $(PLUGIN_SRC_DIR)/%.c
+	$(CC) $(CEFLAGS) $(CAPIFLAGS) $(CFLAGS) $(CPICFLAGS) $(CGCTHREADFLAGS) -I. -I $(LIB) $(GCINCLUDE) -I $(PLUGIN_SRC_DIR) -I $(C_SRC_DIR) $< -o $@ -c
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Thu Sep  3 11:36:54 2009 (serrano)                */
-#*    Copyright   :  2005-09 Manuel Serrano                            */
+#*    Last change :  Sun Jun 20 12:32:31 2010 (serrano)                */
+#*    Copyright   :  2005-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -93,53 +93,21 @@ distclean:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-init install-c install-jvm install-dotnet uninstall
+.PHONY: install
 
-install: install-init
-	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	     $(MAKE) install-c; \
-          fi
-	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
-             $(MAKE) install-jvm; \
-          fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) install-dotnet; \
-          fi
-
-install-init:
-	@ if [ "$(APIS) " != " " ]; then \
-            for d in $(APIS) ; do \
-              $(MAKE) -C $$d install-init || exit 1; \
-            done \
-          fi
-
-install-c:
-	@ if [ "$(APIS) " != " " ]; then \
-            for d in $(APIS) ; do \
-              $(MAKE) -C $$d install-c || exit 1; \
-            done \
-          fi
-
-install-jvm:
-	@ if [ "$(APIS) " != " " ]; then \
-            for d in $(APIS) ; do \
-              $(MAKE) -C $$d install-jvm || exit 1; \
-            done \
-          fi
-
-install-dotnet:
-	@ if [ "$(APIS) " != " " ]; then \
-            for d in $(APIS) ; do \
-              $(MAKE) -C $$d install-dotnet || exit 1; \
-            done \
-          fi
+install:
+	if [ "$(APIS) " != " " ]; then \
+          for d in $(APIS) ; do \
+            $(MAKE) -C $$d install || exit 1; \
+          done \
+        fi
 
 uninstall:
-	@ if [ "$(APIS) " != " " ]; then \
-            for d in $(APIS) ; do \
-              $(MAKE) -C $$d uninstall; \
-            done \
-          fi
+	if [ "$(APIS) " != " " ]; then \
+          for d in $(APIS) ; do \
+            $(MAKE) -C $$d uninstall; \
+          done \
+        fi
 
 #*---------------------------------------------------------------------*/
 #*    Populating the APIs                                              */

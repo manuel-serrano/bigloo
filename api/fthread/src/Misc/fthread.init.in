@@ -13,7 +13,7 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'fthread
-		  :basename "bigloofth"
+		  :basename "bigloofthread"
                   :module-init '__ft_thread
 		  :srfi '(fthread)
 		  :module-eval '__fthread_makelib)

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Oct 24 22:29:02 2007 (serrano)                */
-#*    Copyright   :  2001-07 Manuel Serrano                            */
+#*    Last change :  Sun Jun 20 12:38:04 2010 (serrano)                */
+#*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -13,47 +13,49 @@
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
+#*    The name of the API (used by Makefile.api).                      */
+#*---------------------------------------------------------------------*/
+API = srfi1
+
+#*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-SRFI		= 1
-POPDIR		= src recette
-
-POPULATION	= Makefile README
+SRFI = 1
+POPDIR = src recette
+POPULATION = Makefile README
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: boot
-boot:
-	@ $(MAKE) boot-c && \
-          $(MAKE) boot-jvm && \
-          $(MAKE) boot-dotnet
-jvm: boot-jvm
-dotnet: boot-dotnet
+all: boot build
 
-boot-c:
+boot: build
+build:
+	@ $(MAKE) build-c && \
+	  $(MAKE) build-jvm && \
+	  $(MAKE) build-dotnet
+
+c: build-c
+jvm: build-jvm
+dotnet: build-dotnet
+
+build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
             echo "[0m[1;32m>>> C[0m"; \
-	    (cd src && $(MAKE) c); \
+	    (cd src && $(MAKE) build-c); \
           fi
 
-boot-jvm:
+build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m";  \
-	    (cd src && $(MAKE) jvm); \
+	    (cd src && $(MAKE) build-jvm); \
           fi
 
-boot-dotnet:
+build-dotnet:
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) dotnet); \
+	    (cd src && $(MAKE) build-dotnet); \
           fi
-
-#*---------------------------------------------------------------------*/
-#*    ude                                                              */
-#*---------------------------------------------------------------------*/
-ude:
-	(cd src && $(MAKE) ude)
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -63,7 +65,7 @@ ude:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=srfi$(SRFI)/%)
+	@ echo $(POPULATION:%=$(API)/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;
@@ -73,89 +75,46 @@ pop:
 #*---------------------------------------------------------------------*/
 clean:
 	(cd src && $(MAKE) clean)
+	(cd recette && $(MAKE) clean)
 
 distclean: clean
 	(cd src && $(MAKE) distclean)
+	(cd recette && $(MAKE) distclean)
 
 cleanall: distclean
 	(cd src && $(MAKE) cleanall)
-	$(RM) -f lib/*srfi$(SRFI)* >/dev/null 2>&1
+	$(RM) -f lib/*multimedia* >/dev/null 2>&1
 	$(RM) -f *~ >/dev/null 2>&1
 
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-c install-jvm uninstall
+.PHONY: install
 
-include ../../Makefile.misc
-
-install: install-init
+install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	    $(MAKE) install-c; \
+	    $(MAKE) api-install-c; \
           fi
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
-            $(MAKE) install-jvm; \
+            $(MAKE) api-install-jvm; \
           fi
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) install-dotnet; \
+            $(MAKE) api-install-dotnet; \
           fi
 
-install-init:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/srfi$(SRFI).init $(LIBDIR)/$(FILDIR)/srfi$(SRFI).init && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/srfi$(SRFI).init; \
-        fi
-
-install-c:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/srfi$(SRFI).heap $(LIBDIR)/$(FILDIR)/srfi$(SRFI).heap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/srfi$(SRFI).heap; \
-        fi
-	$(MAKE) install-lib LIB=libbigloosrfi$(SRFI)_s-$(RELEASE);
-	$(MAKE) install-shared-lib LIB=libbigloosrfi$(SRFI)_e-$(RELEASE);
-	$(MAKE) install-lnlib LIB=libbigloosrfi$(SRFI)_s-$(RELEASE) LN=libbigloosrfi$(SRFI)_u-$(RELEASE);
-
-install-jvm:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/srfi$(SRFI).jheap $(LIBDIR)/$(FILDIR)/srfi$(SRFI).jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/srfi$(SRFI).jheap && \
-	  cp $(BOOTLIBDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).zip $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).zip && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).zip && \
-	  cp $(BOOTLIBDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).zip $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).zip && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).zip && \
-	  (cd $(LIBDIR)/$(FILDIR) && \
-           $(RM) -f bigloosrfi$(SRFI)_u-$(RELEASE).zip && \
-           $(LN_S) bigloosrfi$(SRFI)_s-$(RELEASE).zip bigloosrfi$(SRFI)_u-$(RELEASE).zip); \
-        fi
-
-install-dotnet:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/srfi$(SRFI).jheap $(LIBDIR)/$(FILDIR)/srfi$(SRFI).jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/srfi$(SRFI).jheap && \
-	  cp $(BOOTLIBDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloosrfi$(SRFI)_u-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_u-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_u-$(RELEASE).dll ; \
-        fi
-
-uninstall:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/srfi$(SRFI).init
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/srfi$(SRFI).heap
-	-$(MAKE) uninstall-lib LIB=libbigloosrfi$(SRFI)_s-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloosrfi$(SRFI)_e-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloosrfi$(SRFI)_u-$(RELEASE)
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/srfi$(SRFI).jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_u-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_s-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_e-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloosrfi$(SRFI)_u-$(RELEASE).dll
+uninstall: api-uninstall-init \
+           api-uninstall-c \
+           api-uninstall-jvm \
+           api-uninstall-dotnet
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
 	(cd src && $(MAKE) ude)
+
+#*---------------------------------------------------------------------*/
+#*    Common rules                                                     */
+#*---------------------------------------------------------------------*/
+include ../../Makefile.misc
+include ../Makefile.api

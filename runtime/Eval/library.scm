@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Wed Apr 14 18:08:59 2010 (serrano)                */
+;*    Last change :  Sat Jun 19 19:46:28 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -91,6 +91,20 @@
 (define *libraries* '())
 
 ;*---------------------------------------------------------------------*/
+;*    *eval-library-suffix* ...                                        */
+;*---------------------------------------------------------------------*/
+(define *eval-library-suffix* #f)
+
+;*---------------------------------------------------------------------*/
+;*    eval-library-suffix ...                                          */
+;*---------------------------------------------------------------------*/
+(define (eval-library-suffix)
+   (unless *eval-library-suffix*
+      (set! *eval-library-suffix*
+	    (if (eq? (bigloo-config 'library-safety) 'unsafe) "u" "s")))
+   *eval-library-suffix*)
+
+;*---------------------------------------------------------------------*/
 ;*    declare-library! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (declare-library! id
@@ -108,8 +122,14 @@
       (set! *libraries*
 	    (cons (cons id
 			(libinfo id basename version
-				 (when dlopen-init (format "~a_s" dlopen-init))
-				 (when dlopen-init (format "~a_e" dlopen-init))
+				 (when dlopen-init
+				    (format "~a_~a"
+					    dlopen-init
+					    (eval-library-suffix)))
+				 (when dlopen-init
+				    (format "~a_e~a"
+					    dlopen-init
+					    (eval-library-suffix)))
 				 module-init module-eval
 				 class-init class-eval
 				 init eval srfi))
@@ -163,9 +183,13 @@
 	    (cons (cons name
 			(libinfo name translation version
 				 (when dlopen-init
-				    (string-append (mangle dlopen-init) "_s"))
+				    (string-append (mangle dlopen-init)
+						   "_"
+						   (eval-library-suffix)))
 				 (when dlopen-init
-				    (string-append (mangle dlopen-init) "_e"))
+				    (string-append (mangle dlopen-init)
+						   "_e"
+						   (eval-library-suffix)))
 				 #f #f
 				 #f #f
 				 #f #f #f))
@@ -255,9 +279,13 @@
 		       (n (make-shared-lib-name
 			   (library-file-name lib "" be) be))
 		       (ns (make-shared-lib-name
-			    (library-file-name lib "_s" be) be))
+			    (library-file-name
+			     lib (string-append "_" (eval-library-suffix)) be)
+			    be))
 		       (ne (make-shared-lib-name
-			    (library-file-name lib "_e" be) be))
+			    (library-file-name
+			     lib (string-append "_e" (eval-library-suffix)) be)
+			    be))
 		       (rsc (let ((p (string-append "/resource/bigloo/"
 						    (symbol->string lib)
 						    "/make_lib.class")))
@@ -336,11 +364,16 @@
 		(when init (loadq init))
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name
-			   (library-file-name lib "" be) be))
+			   (library-file-name lib "" be)
+			   be))
 		       (ns (make-shared-lib-name
-			    (library-file-name lib "_s" be) be))
+			    (library-file-name
+			     lib (string-append "_" (eval-library-suffix)) be)
+			    be))
 		       (ne (make-shared-lib-name
-			    (library-file-name lib "_e" be) be))
+			    (library-file-name
+			     lib (string-append "_e" (eval-library-suffix)) be)
+			    be))
 		       (rsc (let ((p (string-append "/resource/bigloo/"
 						    (symbol->string lib)
 						    "/make_lib.class")))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Mon Oct 30 14:56:54 2006 (serrano)                */
-;*    Copyright   :  2000-06 Manuel Serrano                            */
+;*    Last change :  Sun Jun 20 11:09:34 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
 ;*    the application).                                                */
@@ -101,14 +101,19 @@
 				    "_u" "_s")
 				be))
 	  (f (find-file/path (make-shared-lib-name n be) dir))
-	  (ne (make-shared-lib-name (library-file-name lib "_e" be) be))
+	  (ne (make-shared-lib-name
+	       (library-file-name
+		lib (if (and *unsafe-library* (not *purify*)) "_eu" "_es") be)
+	       be))
 	  (fe (find-file/path ne dir)))
       (cond
 	 ((and (string? f) (string? fe))
 	  (list f fe))
 	 ((string? f)
 	  (warning "ld:"
-		   (format "Can't find _e zip file (~a) for library -- " ne)
+		   (format "Can't find ~a zip file (~a) for library -- "
+			   (if (and *unsafe-library* (not *purify*)) "_eu" "_es")
+			   ne)
 		   lib)
 	  (list f))
 	 (else

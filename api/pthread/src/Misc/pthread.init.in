@@ -13,7 +13,7 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'pthread
-		  :basename "bigloopth"
+		  :basename "bigloopthread"
 		  :srfi '(pthread srfi-18)
 		  :module-init '__pth_thread
 		  :module-eval '__pth_makelib

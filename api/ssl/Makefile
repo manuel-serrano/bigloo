@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sat Jun 19 07:33:21 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 11:27:38 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -12,52 +12,56 @@
 #*=====================================================================*/
 include ../../Makefile.config
 
-SSLZIP          = lib/commons-ssl.zip
+#*---------------------------------------------------------------------*/
+#*    The name of the API (used by Makefile.api).                      */
+#*---------------------------------------------------------------------*/
+API = ssl
+
+SSLZIP = lib/commons-ssl.zip
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-POPDIR		= src
-
-POPULATION	= Makefile README $(SSLZIP)
+POPDIR = src
+POPULATION = Makefile README $(SSLZIP)
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: boot
-boot:
-	@ $(MAKE) boot-c && \
-          $(MAKE) boot-jvm && \
-          $(MAKE) boot-dotnet
-jvm: boot-jvm
-dotnet: boot-dotnet
+.PHONY: build build build-c build-jvm build-dotnet
 
-boot-c:
+all: build
+boot: build
+
+build:
+	@ $(MAKE) build-c && \
+          $(MAKE) build-jvm && \
+          $(MAKE) build-dotnet
+
+c: build-c
+jvm: build-jvm
+dotnet: build-dotnet
+
+build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
             if [ "$(OPENSSLIBS)" != "no" ]; then \
 	      echo "[0m[1;32m>>> C[0m"; \
-	      (cd src && $(MAKE) c); \
+	      (cd src && $(MAKE) build-c); \
             fi \
           fi
 
-boot-jvm:
+build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
-	    (cd src && $(MAKE) jvm); \
+	    (cd src && $(MAKE) build-jvm); \
           fi
 
-boot-dotnet:
-boot-dotnet_unimplemented:
+build-dotnet:
+build-dotnet_unimplemented:
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) dotnet); \
+	    (cd src && $(MAKE) build-dotnet); \
           fi
-
-#*---------------------------------------------------------------------*/
-#*    ude                                                              */
-#*---------------------------------------------------------------------*/
-ude:
-	(cd src && $(MAKE) ude)
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -67,7 +71,7 @@ ude:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=ssl/%)
+	@ echo $(POPULATION:%=$(API)/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;
@@ -90,9 +94,7 @@ cleanall: distclean
 #*---------------------------------------------------------------------*/
 .PHONY: install install-c install-jvm uninstall
 
-include ../../Makefile.misc
-
-install: install-init
+install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    $(MAKE) install-c; \
           fi
@@ -100,71 +102,35 @@ install: install-init
             $(MAKE) install-jvm; \
           fi
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) install-dotnet; \
+            $(MAKE) api-install-dotnet; \
           fi
-
-install-init:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/ssl.init $(LIBDIR)/$(FILDIR)/ssl.init && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/ssl.init; \
-        fi
 
 install-c:
 	if [ "$(OPENSSLIBS)" != "no" ]; then \
-	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	    cp $(BOOTLIBDIR)/ssl.heap $(LIBDIR)/$(FILDIR)/ssl.heap && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/ssl.heap; \
-          fi; \
-	  $(MAKE) install-lib LIB=libbigloossl_s-$(RELEASE); \
-	  $(MAKE) install-lib LIB=libbigloossl_e-$(RELEASE); \
-	  $(MAKE) install-lnlib LIB=libbigloossl_s-$(RELEASE) LN=libbigloossl_u-$(RELEASE); \
+	  $(MAKE) api-install-c; \
         fi
 
-install-jvm:
+install-jvm: api-install-jvm
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/ssl.jheap $(LIBDIR)/$(FILDIR)/ssl.jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/ssl.jheap && \
-	  cp $(BOOTLIBDIR)/bigloossl_s-$(RELEASE).zip $(LIBDIR)/$(FILDIR) && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloossl_s-$(RELEASE).zip && \
-	  cp $(BOOTLIBDIR)/bigloossl_e-$(RELEASE).zip $(LIBDIR)/$(FILDIR) && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloossl_e-$(RELEASE).zip; \
 	  cp $(BOOTLIBDIR)/commons-ssl.zip $(LIBDIR)/$(FILDIR) && \
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
         fi
-	(cd $(LIBDIR)/$(FILDIR) && \
-           $(RM) -f bigloossl_u-$(RELEASE).zip && \
-           $(LN_S) bigloossl_s-$(RELEASE).zip bigloossl_u-$(RELEASE).zip)
 
-install-dotnet:
-install-dotnet_unimplemented:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/ssl.jheap $(LIBDIR)/$(FILDIR)/ssl.jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/ssl.jheap && \
-	  cp $(BOOTLIBDIR)/bigloossl_s-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloossl_s-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloossl_s-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloossl_e-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloossl_e-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloossl_e-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloossl_u-$(RELEASE).dll $(LIBDIR)/$(FILDIR)/bigloossl_u-$(RELEASE).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloossl_u-$(RELEASE).dll ; \
-        fi
-
-uninstall:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/ssl.init
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/ssl.heap
+uninstall: api-uninstall-init \
+           api-uninstall-c \
+           api-uninstall-jvm \
+           api-uninstall-dotnet
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/commons-ssl.zip
-	-$(MAKE) uninstall-lib LIB=libbigloossl_s-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloossl_u-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloossl_e-$(RELEASE)
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/ssl.jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_s-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_u-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_e-$(RELEASE).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_s-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_u-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloossl_e-$(RELEASE).dll
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
 	(cd src && $(MAKE) ude)
+
+#*---------------------------------------------------------------------*/
+#*    Common rules                                                     */
+#*---------------------------------------------------------------------*/
+include ../../Makefile.misc
+include ../Makefile.api
+

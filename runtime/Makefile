@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jun  8 06:41:43 2010 (serrano)                */
+#*    Last change :  Sat Jun 19 18:04:28 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -64,7 +64,7 @@ BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
 #*--- Bigloo, common --------------------------------------------------*/
 BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
 #*--- Bigloo, safe ----------------------------------------------------*/
-BSAFEFLAGS	= $(BCOMMONFLAGS) \
+BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
                   -q -unsafev -eval '(set! *indent* 4)' \
                   -copt $(CPICFLAGS)
@@ -76,12 +76,12 @@ BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
 BDOTNETFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-mono-workaround -dotnet-pnet-workaround
 BDOTNETSFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-managed
 #*--- Bigloo, safe, debug ---------------------------------------------*/
-BGSAFEFLAGS	= $(BSAFEFLAGS) -g
+BGSAFEFLAGS	= $(BSAFEFLAGS) -g 
 #*--- Bigloo, unsafe, optimize ----------------------------------------*/
 BUNSAFEO0FLAGS	= $(BCOMMONFLAGS) \
                   -mklib -cc $(CC) -fsharing -q -no-hello \
                   -copt $(CPICFLAGS) -unsafe -safee
-BUNSAFEFLAGS	= $(BUNSAFEO0FLAGS) -O4
+BUNSAFEFLAGS	= -srfi bigloo-unsafe $(BUNSAFEO0FLAGS) -O4
 CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
