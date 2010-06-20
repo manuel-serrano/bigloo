@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 11:24:27 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 16:33:57 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the library.                               */
 #*=====================================================================*/
@@ -23,6 +23,7 @@ API		= pkgcomp
 LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
+C_SRC_DIR	= C
 JAVA_SRC_DIR 	= Java
 MISC_SRC_DIR 	= Misc
 # Where to store the library class files
@@ -124,32 +125,6 @@ distclean: cleanall
 #*    Common API rules                                                 */
 #*---------------------------------------------------------------------*/
 include ../../Makefile.api
-
-#*---------------------------------------------------------------------*/
-#*    The implicit rules                                               */
-#*---------------------------------------------------------------------*/
-objs/%.o: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) $(EFLAGS) $(BMISCFLAGS) $(BAPIFLAGS) $(PKGCOMPFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
-
-$(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm  $(EFLAGS) $(BMISCFLAGS) $(BAPIFLAGS) $(PKGCOMPFLAGS) $(BJVMFLAGS) -c -jvm-purify $< -o $@
-
-$(DOTNET_OBJ_EDIR)/%.obj: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-            $(EFLAGS) $(BMISCFLAGS) $(BAPIFLAGS) $(PKGCOMPFLAGS) $(BDOTNETFLAGS) -c -dotnet-managed $< -o $@
-
-objs/_pkgcomp.o: $(BIGLOO_SRC_DIR)/_pkgcomp.scm
-	$(BIGLOO) $(BAPIFLAGS) $(PKGCOMPFLAGS) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
-
-$(CLASS_DIR)/_pkgcomp.class: $(BIGLOO_SRC_DIR)/_pkgcomp.scm
-	$(BIGLOO) -jvm $(BAPIFLAGS) $(PKGCOMPFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
-
-$(DOTNET_OBJ_DIR)/_pkgcomp.obj: $(BIGLOO_SRC_DIR)/_pkgcomp.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-            $(BAPIFLAGS) $(PKGCOMPFLAGS) \
-            $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

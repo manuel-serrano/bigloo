@@ -22,7 +22,6 @@ BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
-UNIX_SRC_DIR 	= Unix
 MISC_SRC_DIR 	= Misc
 # The heap file
 HEAP_FILE	= $(LIB)/$(API).heap

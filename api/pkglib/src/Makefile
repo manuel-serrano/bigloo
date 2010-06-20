@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 11:41:22 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 16:34:52 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the library.                               */
 #*=====================================================================*/
@@ -25,6 +25,7 @@ BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 MISC_SRC_DIR 	= Misc
+C_SRC_DIR 	= C
 # Where to store the library class files
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
