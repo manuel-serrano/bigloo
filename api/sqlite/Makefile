@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jun 20 12:37:21 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 17:06:12 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -11,6 +11,11 @@
 #*    The Makefile for sqlite                                          */
 #*=====================================================================*/
 include ../../Makefile.config
+
+#*---------------------------------------------------------------------*/
+#*    The name of the API (used by Makefile.api).                      */
+#*---------------------------------------------------------------------*/
+API = sqlite
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
