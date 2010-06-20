@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 10:17:33 2010 (serrano)                */
+#*    Last change :  Sun Jun 20 16:49:15 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -43,9 +43,9 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 BAPIFLAGS	= $(BFLAGS) \
                   -I Llib -lib-dir $(BOOTLIBDIR) \
                   -srfi $(API) \
-                  -unsafe -safee
-# C flags
-CAPIFLAGS       = $(GSTREAMERCFLAGS)
+                  -unsafe -safee \
+                  -copt "$(GSTREAMERCFLAGS)"
+CAPIFLAGS       = $(GSTREAMERCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
                   -heap-library $(API) -srfi $(API)
