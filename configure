@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jun 20 11:36:31 2010 (serrano)                */
+#*    Last change :  Mon Jun 21 21:34:05 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1990,6 +1990,28 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=0;
   fi
 
+  # srfi27 post check
+  if [ "$srfi27_is_enabled " = "yes " -a $alignment -ge 3 ]; then
+    if [ "$srfi27force " = "yes " ]; then
+      echo "*** WARNING:configure: SRFI-27 is known not to work on non-32 bits"
+      echo "architure. Use it cautiously on this platform."
+    else
+      echo "*** WARNING:configure: SRFI-27 requires a 32bits platform."
+      echo "Disabling SRFI27."
+      napis=;
+      for a in $apis; do
+         if [ $a != "srfi27" ]; then
+           if [ "$napis " = " " ]; then
+             napis="$a";
+           else
+             napis="$napis $a";
+           fi
+         fi
+      done
+      apis=$napis;
+    fi
+  fi
+
   # Where to find the socket api
   socketlibs=`$autoconf socket --lib="$socketlibs"` || exit 1
   socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
@@ -3004,6 +3026,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # pkgcomp.init
   pkgcomp_init=api/pkgcomp/src/Misc/pkgcomp.init
+  rm -f $pkgcomp_init
   echo ";; automatically generated. Don't edit" >  $pkgcomp_init
   cat api/pkgcomp/src/Misc/pkgcomp.init.in \
       | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
@@ -3018,7 +3041,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # pkgcomp startup
   echo "(cond-expand ((not bigloo-@expanders) (@install-expanders!)))" \
      >> $pkgcomp_init
-
   chmod a-w $pkgcomp_init
 
   # bglpkg
