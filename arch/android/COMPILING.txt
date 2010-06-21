@@ -47,7 +47,7 @@ Then you can simply run:
 
    ./arch/android/build-android.sh configure
 
-If evrything's ok, then you can compile:
+If everything's ok, then you can compile:
 
    ./arch/android/build-android.sh build
 
