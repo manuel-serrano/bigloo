@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sun Jun 20 18:02:10 2010 (serrano)                */
+#*    Last change :  Mon Jun 21 15:19:09 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -53,7 +53,7 @@ api-install-jvm:
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(API).jheap && \
 	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip $(LIBDIR)/$(FILDIR) && \
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).zip && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).zip $(LIBDIR)/$(FILDIR) && \
+	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip $(LIBDIR)/$(FILDIR) && \
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip; \
         fi
 	(cd $(LIBDIR)/$(FILDIR) && \
@@ -61,7 +61,7 @@ api-install-jvm:
            $(LN_S) bigloo$(API)_s-$(RELEASE).zip bigloo$(API)_u-$(RELEASE).zip)
 	(cd $(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(API)_eu-$(RELEASE).zip && \
-           $(LN_S) bigloo$(API)_s-$(RELEASE).zip bigloo$(API)_eu-$(RELEASE).zip)
+           $(LN_S) bigloo$(API)_es-$(RELEASE).zip bigloo$(API)_eu-$(RELEASE).zip)
 
 # JVM uninstallation
 api-uninstall-jvm:

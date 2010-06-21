@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jun  1 07:25:55 2010 (serrano)                */
+;*    Last change :  Mon Jun 21 14:46:34 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -201,6 +201,7 @@
 	    (string-replace ::bstring ::char ::char)
 	    (string-replace! ::bstring ::char ::char)
 	    (string-split::pair-nil ::bstring . opt)
+	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
 				     #!optional (start (-fx (string-length s) 1)))
@@ -254,6 +255,7 @@
 	    (string-ci>=? side-effect-free nesting)
 	    (empty-string? side-effect-free nesting)
 	    (string-split side-effect-free nesting no-cfa-top)
+	    (string-cut side-effect-free nesting no-cfa-top)
 	    (string-prefix-length side-effect-free nesting)
 	    (string-suffix-length side-effect-free nesting)
 	    (string-prefix-length-ci side-effect-free nesting)
@@ -753,35 +755,47 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    @deffn string-split!@ ...                                        */
+;*    delim? ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (delim? delims char)
+   (let ((len (string-length delims)))
+      (let loop ((i 0))
+	 (cond
+	    ((=fx i len)
+	     #f)
+	    ((char=? char (string-ref-ur delims i))
+	     #t)
+	    (else
+	     (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    skip-separator ...                                               */
+;*---------------------------------------------------------------------*/
+(define (skip-separator delims string len i)
+   (cond
+      ((=fx i len)
+       len)
+      ((delim? delims (string-ref-ur string i))
+       (skip-separator delims string len (+fx i 1)))
+      (else
+       i)))
+
+;*---------------------------------------------------------------------*/
+;*    skip-non-separator ...                                           */
+;*---------------------------------------------------------------------*/
+(define (skip-non-separator delims string len i)
+   (cond
+      ((=fx i len)
+       len)
+      ((delim? delims (string-ref-ur string i))
+       i)
+      (else
+       (skip-non-separator delims string len (+fx i 1)))))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn string-split@ ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (string-split string . delimiters)
-   (define (delim? delims char)
-      (let ((len (string-length delims)))
-	 (let loop ((i 0))
-	    (cond
-	       ((=fx i len)
-		#f)
-	       ((char=? char (string-ref-ur delims i))
-		#t)
-	       (else
-		(loop (+fx i 1)))))))
-   (define (skip-separator delims string len i)
-      (cond
-	 ((=fx i len)
-	  len)
-	 ((delim? delims (string-ref-ur string i))
-	  (skip-separator delims string len (+fx i 1)))
-	 (else
-	  i)))
-   (define (skip-non-separator delims string len i)
-      (cond
-	 ((=fx i len)
-	  len)
-	 ((delim? delims (string-ref-ur string i))
-	  i)
-	 (else
-	  (skip-non-separator delims string len (+fx i 1)))))
    (let* ((d (if (pair? delimiters)
 		 (car delimiters)
 		 " \t\n"))
@@ -797,7 +811,26 @@
 		    (reverse! nres)
 		    (loop (skip-separator d string len (+fx e 1))
 			  nres)))))))
-     
+
+;*---------------------------------------------------------------------*/
+;*    @deffn string-cut@ ...                                           */
+;*---------------------------------------------------------------------*/
+(define (string-cut string . delimiters)
+   (let* ((d (if (pair? delimiters)
+		 (car delimiters)
+		 " \t\n"))
+	  (len (string-length string)))
+      (let loop ((i 0)
+		 (res '()))
+	 (if (>=fx i len)
+	     (reverse! (cons "" res))
+	     (let* ((e (skip-non-separator d string len i))
+		    (s (substring string i e))
+		    (nr (cons s res)))
+		(if (=fx e len)
+		    (reverse! nr)
+		    (loop (+fx e 1) nr)))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    string-index ...                                                 */
 ;*---------------------------------------------------------------------*/
