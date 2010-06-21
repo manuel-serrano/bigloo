@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Mar  5 18:51:02 2010 (serrano)                */
+;*    Last change :  Mon Jun 21 17:42:11 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -353,19 +353,24 @@
 	       (apply (evcode-ref code 0) eargs)))
 	   ((31)
 	    ;; funcall 0
-	    (evmeaning-funcall-0 code stack denv))
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (evmeaning-funcall-0 code stack denv fun)))
 	   ((32)
 	    ;; funcall 1
-	    (evmeaning-funcall-1 code stack denv))
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (evmeaning-funcall-1 code stack denv fun)))
 	   ((33)
 	    ;; funcall 2
-	    (evmeaning-funcall-2 code stack denv))
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (evmeaning-funcall-2 code stack denv fun)))
 	   ((34)
 	    ;; funcall 3
-	    (evmeaning-funcall-3 code stack denv))
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (evmeaning-funcall-3 code stack denv fun)))
 	   ((35)
 	    ;; funcall 4
-	    (evmeaning-funcall-4 code stack denv))
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (evmeaning-funcall-4 code stack denv fun)))
 	   ((bounce (code stack denv) (36))
 	    ;; funcall >4
 	    (let* ((name (evcode-ref code 0))
@@ -750,95 +755,95 @@
 		   (evmeaning-arity-error handler "with-handler" 1 ehandler)))))
 	   ((131)
 	    ;; tailcall 0
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-0-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-0-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-0 code stack denv))))
+		   (evmeaning-funcall-0 code stack denv fun))))
 	   ((161)
 	    ;; traced tailcall 0
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-0-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-0-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-0 code stack denv))))
+		   (evmeaning-funcall-0 code stack denv fun))))
 	   ((132)
 	    ;; tailcall 1
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-1-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-1-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-1 code stack denv))))
+		   (evmeaning-funcall-1 code stack denv fun))))
 	   ((162)
 	    ;; traced tailcall 1
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-1-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-1-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-1 code stack denv))))
+		   (evmeaning-funcall-1 code stack denv fun))))
 	   ((133)
 	    ;; tailcall 2
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-2-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-2-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-2 code stack denv))))
+		   (evmeaning-funcall-2 code stack denv fun))))
 	   ((163)
 	    ;; traced tailcall 2
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-2-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-2-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-2 code stack denv))))
+		   (evmeaning-funcall-2 code stack denv fun))))
 	   ((134)
 	    ;; tailcall 3
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-3-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-3-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-3 code stack denv))))
+		   (evmeaning-funcall-3 code stack denv fun))))
 	   ((164)
 	    ;; trace tailcall 3
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
- 	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-3-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+ 	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-3-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-3 code stack denv))))
+		   (evmeaning-funcall-3 code stack denv fun))))
 	   ((135)
 	    ;; tailcall 4
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-4-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-4-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-4 code stack denv))))
+		   (evmeaning-funcall-4 code stack denv fun))))
 	   ((165)
 	    ;; tailcall 4
-	    (let ((f (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? f)
-		   (evmeaning (evmeaning-procedure-bcode f)
-			      (evmeaning-tailcall-4-stack code stack denv f)
+	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
+	       (if (evmeaning-procedure? fun)
+		   (evmeaning (evmeaning-procedure-bcode fun)
+			      (evmeaning-tailcall-4-stack code stack denv fun)
 			      denv)
-		   (evmeaning-funcall-4 code stack denv))))
+		   (evmeaning-funcall-4 code stack denv fun))))
 	   ((136)
 	    ;; tailcall >4
 	    (let* ((name (evcode-ref code 0))
-		   (f (evmeaning (evcode-ref code 1) stack denv)))
+		   (fun (evmeaning (evcode-ref code 1) stack denv)))
 	       (let loop ((args (evcode-ref code 2))
 			  (new '())
 			  (len 0))
 		  (if (null? args)
-		      (if (evmeaning-procedure? f)
-			  (let* ((fmls (evmeaning-procedure-args f))
-				 (stack (evmeaning-procedure-stack f))
+		      (if (evmeaning-procedure? fun)
+			  (let* ((fmls (evmeaning-procedure-args fun))
+				 (stack (evmeaning-procedure-stack fun))
 				 (wen (reverse! new))
 				 (e2 (if (>=fx fmls 0)
 					 (evmeaning-push-fxargs name
@@ -851,12 +856,12 @@
 								wen
 								fmls
 								stack))))
-			     (evmeaning (evmeaning-procedure-bcode f)
+			     (evmeaning (evmeaning-procedure-bcode fun)
 					e2
 					denv))
 			  (begin
 			     ($evmeaning-byte-code-set! denv code)
-			     (eval-apply code name f len (reverse! new))))
+			     (eval-apply code name fun len (reverse! new))))
 		      (loop (cdr args)
 			    (cons (evmeaning (car args) stack denv) new)
 			    (+fx 1 len))))))
@@ -1000,9 +1005,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-0 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-0 code stack denv)
-   (let* ((name (evcode-ref code 0))
-	  (fun (evmeaning (evcode-ref code 1) stack denv)))
+(define (evmeaning-funcall-0 code stack denv fun::procedure)
+   (let ((name (evcode-ref code 0)))
       ($evmeaning-byte-code-set! denv code)
       (cond
 	 ((not (procedure? fun))
@@ -1015,9 +1019,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-1 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-1 code stack denv)
+(define (evmeaning-funcall-1 code stack denv fun::procedure)
    (let* ((name (evcode-ref code 0))
-	  (fun (evmeaning (evcode-ref code 1) stack denv))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (cond
@@ -1031,9 +1034,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-2 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-2 code stack denv)
+(define (evmeaning-funcall-2 code stack denv fun::procedure)
    (let* ((name (evcode-ref code 0))
-	  (fun (evmeaning (evcode-ref code 1) stack denv))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
@@ -1048,9 +1050,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-3 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-3 code stack denv)
+(define (evmeaning-funcall-3 code stack denv fun::procedure)
    (let* ((name (evcode-ref code 0))
-	  (fun (evmeaning (evcode-ref code 1) stack denv))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
@@ -1066,9 +1067,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-4 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-4 code stack denv)
+(define (evmeaning-funcall-4 code stack denv fun::procedure)
    (let* ((name (evcode-ref code 0))
-	  (fun (evmeaning (evcode-ref code 1) stack denv))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
@@ -1085,7 +1085,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-0-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-0-stack code stack denv fun)
+(define (evmeaning-tailcall-0-stack code stack denv fun::procedure)
    ($evmeaning-byte-code-set! denv code)
    (let* ((envd (evmeaning-procedure-stack fun))
 	  (arity (evmeaning-procedure-args fun)))
@@ -1101,7 +1101,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-1-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-1-stack code stack denv fun)
+(define (evmeaning-tailcall-1-stack code stack denv fun::procedure)
    (let ((a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
@@ -1120,7 +1120,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-2-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-2-stack code stack denv fun)
+(define (evmeaning-tailcall-2-stack code stack denv fun::procedure)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
@@ -1142,7 +1142,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-3-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-3-stack code stack denv fun)
+(define (evmeaning-tailcall-3-stack code stack denv fun::procedure)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
@@ -1167,7 +1167,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-4-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-4-stack code stack denv fun)
+(define (evmeaning-tailcall-4-stack code stack denv fun::procedure)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
