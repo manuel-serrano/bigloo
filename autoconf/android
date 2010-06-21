@@ -32,7 +32,7 @@ done
 
 if [ "$HOSTCPU " = "arm " ]; then
   build_id=`$HOSTSH getprop ro.build.version.release`
-  if [ "$build_id " = "2.0.1 " -o "$build_id " = "ECLAIR " ]; then
+  if [ "$build_id " = "2.0 " -o "$build_id " = "2.0.1 " -o "$build_id " = "ECLAIR " ]; then
     echo "yes"
   else
     echo "wrong version"
