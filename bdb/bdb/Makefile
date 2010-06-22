@@ -565,14 +565,14 @@ Tools/speek.mco: Tools/speek.scm
 Tools/speek_p.mco: Tools/speek.scm
 	$(MCO) $(MCOFLAGS) Tools/speek.scm -o Tools/speek_p.mco
 
-Command/all-cmd.o: Command/all-cmd.scm
-	$(BIGLOO) $(BFLAGS) -c Command/all-cmd.scm -o Command/all-cmd.o
-Command/all-cmd_p.o: Command/all-cmd.scm
-	$(BIGLOO) $(BFLAGS_P) -c Command/all-cmd.scm -o Command/all-cmd_p.o
-Command/all-cmd.mco: Command/all-cmd.scm
-	$(MCO) $(MCOFLAGS) Command/all-cmd.scm -o Command/all-cmd.mco
-Command/all-cmd_p.mco: Command/all-cmd.scm
-	$(MCO) $(MCOFLAGS) Command/all-cmd.scm -o Command/all-cmd_p.mco
+Command/all_cmd.o: Command/all_cmd.scm
+	$(BIGLOO) $(BFLAGS) -c Command/all_cmd.scm -o Command/all_cmd.o
+Command/all_cmd_p.o: Command/all_cmd.scm
+	$(BIGLOO) $(BFLAGS_P) -c Command/all_cmd.scm -o Command/all_cmd_p.o
+Command/all_cmd.mco: Command/all_cmd.scm
+	$(MCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd.mco
+Command/all_cmd_p.mco: Command/all_cmd.scm
+	$(MCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd_p.mco
 
 Tools/date.o: Tools/date.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/date.scm -o Tools/date.o
@@ -583,14 +583,14 @@ Tools/date.mco: Tools/date.scm
 Tools/date_p.mco: Tools/date.scm
 	$(MCO) $(MCOFLAGS) Tools/date.scm -o Tools/date_p.mco
 
-Init/parse-args.o: Init/parse-args.scm
-	$(BIGLOO) $(BFLAGS) -c Init/parse-args.scm -o Init/parse-args.o
-Init/parse-args_p.o: Init/parse-args.scm
-	$(BIGLOO) $(BFLAGS_P) -c Init/parse-args.scm -o Init/parse-args_p.o
-Init/parse-args.mco: Init/parse-args.scm
-	$(MCO) $(MCOFLAGS) Init/parse-args.scm -o Init/parse-args.mco
-Init/parse-args_p.mco: Init/parse-args.scm
-	$(MCO) $(MCOFLAGS) Init/parse-args.scm -o Init/parse-args_p.mco
+Init/parse_args.o: Init/parse_args.scm
+	$(BIGLOO) $(BFLAGS) -c Init/parse_args.scm -o Init/parse_args.o
+Init/parse_args_p.o: Init/parse_args.scm
+	$(BIGLOO) $(BFLAGS_P) -c Init/parse_args.scm -o Init/parse_args_p.o
+Init/parse_args.mco: Init/parse_args.scm
+	$(MCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args.mco
+Init/parse_args_p.mco: Init/parse_args.scm
+	$(MCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args_p.mco
 
 Tools/io.o: Tools/io.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/io.scm -o Tools/io.o
@@ -750,7 +750,7 @@ Tools/tty_p.o: Tools/tty.c
 #*---------------------------------------------------------------------*/
 #*    Dependencies ...                                                 */
 #*---------------------------------------------------------------------*/
-./Command/all-cmd.o ./Command/all-cmd.class: ./Command/set.mco           \
+./Command/all_cmd.o ./Command/all_cmd.class: ./Command/set.mco           \
       ./Command/whatis.mco ./Command/explore.mco ./Command/display.mco   \
       ./Command/print.mco ./Command/backtrace.mco ./Command/info.mco     \
       ./Command/mangle.mco ./Command/break.mco ./Command/file.mco        \
@@ -770,7 +770,7 @@ Command/command.o Command/command.class: ./Command/parse.mco
       ./Gdb/tools.mco ./Patient/value.mco ./Patient/pinvoke.mco          \
       ./Patient/mangling.mco ./Tools/io.mco ./Tools/tools.mco            \
       ./Tools/error.mco ./Command/expr.mco 
-./Init/parse-args.o ./Init/parse-args.class: ./Tools/version.mco         \
+./Init/parse_args.o ./Init/parse_args.class: ./Tools/version.mco         \
       ./Engine/param.mco 
 Command/explore.o Command/explore.class: ./Command/command.mco           \
       ./Engine/param.mco ./Gdb/annotate.mco ./Gdb/ginvoke.mco            \
@@ -878,7 +878,7 @@ Command/run.o Command/run.class: ./Gdb/ginvoke.mco ./Patient/server.mco  \
       ./Command/parse.mco ./Command/command.mco ./Engine/hooks.sch 
 Patient/server.o Patient/server.class: ./Gdb/ginvoke.mco                 \
       ./Tools/speek.mco ./Tools/error.mco 
-Command/all-cmd.o Command/all-cmd.class: ./Command/set.mco               \
+Command/all_cmd.o Command/all_cmd.class: ./Command/set.mco               \
       ./Command/whatis.mco ./Command/explore.mco ./Command/display.mco   \
       ./Command/print.mco ./Command/backtrace.mco ./Command/info.mco     \
       ./Command/mangle.mco ./Command/break.mco ./Command/file.mco        \
@@ -901,7 +901,7 @@ Tools/speek.o Tools/speek.class: ./Engine/param.mco
       ./Tools/error.mco 
 ./Init/setrc.o ./Init/setrc.class: ./Engine/param.mco 
 Tools/io.o Tools/io.class: ./Engine/param.mco 
-Init/parse-args.o Init/parse-args.class: ./Tools/version.mco             \
+Init/parse_args.o Init/parse_args.class: ./Tools/version.mco             \
       ./Engine/param.mco 
 Command/help.o Command/help.class: ./Tools/io.mco ./Engine/param.mco     \
       ./Gdb/ginvoke.mco ./Command/command.mco 
@@ -984,7 +984,7 @@ Command/quit.o Command/quit.class: ./Gdb/annotate.mco ./Gdb/ginvoke.mco  \
       ./Command/parse.mco ./Command/command.mco 
 Bee/binvoke.o Bee/binvoke.class: ./Engine/param.mco 
 Init/main.o Init/main.class: ./Engine/repl.mco ./Engine/engine.mco       \
-      ./Command/all-cmd.mco ./Init/parse-args.mco ./Init/setrc.mco 
+      ./Command/all_cmd.mco ./Init/parse_args.mco ./Init/setrc.mco 
 ./Tools/error.o ./Tools/error.class: ./Tools/io.mco ./Engine/repl.mco    \
       ./Engine/param.mco 
 
