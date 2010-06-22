@@ -125,7 +125,9 @@ $(LIB)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
              $(MISC_SRC_DIR)/make_lib.scm -addheap $(LIB)/$(API).heap
 
 api-c-static: $(LIB)/libbigloo$(API)_s-$(RELEASE).a \
-              $(LIB)/libbigloo$(API)_u-$(RELEASE).a
+              $(LIB)/libbigloo$(API)_u-$(RELEASE).a \
+              $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+#               $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
 
 $(LIB)/libbigloo$(API)_s-$(RELEASE).a: .afile $(OBJECTS)
 	$(RM) -f $(LIB)/libbigloo$(API)_s-$(RELEASE).a
@@ -136,6 +138,12 @@ $(LIB)/libbigloo$(API)_u-$(RELEASE).a: $(LIB)/libbigloo$(API)_s-$(RELEASE).a
 	cd $(LIB) && \
         $(RM) -f libbigloo$(API)_u-$(RELEASE).a && \
         $(LN_S) libbigloo$(API)_s-$(RELEASE).a libbigloo$(API)_u-$(RELEASE).a
+
+$(LIB)/libbigloo$(API)_es-$(RELEASE).a: .afile $(EOBJECTS)
+	@ $(RM) -f $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+	@ $(AR) $(ARFLAGS) $(LIB)/libbigloo$(API)_es-$(RELEASE).a $(EOBJECTS)
+	@ $(RANLIB) $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+
 
 api-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
@@ -185,6 +193,7 @@ $(LIB)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
            LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \
            CLOSELIBS="-lbigloo$(API)_u-$(RELEASE) -lbigloo_u-$(RELEASE)"
 
+
 api-clean-c:
 	$(RM) -rf objs
 	$(RM) -f $(LIB)/$(API).heap
@@ -192,6 +201,10 @@ api-clean-c:
 	$(RM) -f $(LIB)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(LIB)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(LIB)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX)
+	$(RM) -f $(LIB)/libbigloo$(API)_s-$(RELEASE).a
+	$(RM) -f $(LIB)/libbigloo$(API)_u-$(RELEASE).a
+	$(RM) -f $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+	$(RM) -f $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
 
 #*---------------------------------------------------------------------*/
 #*    JVM build                                                        */
@@ -346,7 +359,7 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags .jfile
 
 .afile: $(_BGL_SOURCES)
-	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES) 
+	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES)
 
 .jfile: $(_BGL_SOURCES)
 	$(JFILE) -o .jfile $(EAFLAGS) \
@@ -361,7 +374,7 @@ ude:
 udeclean:
 	$(RM) -f .afile .etags .jfile
 
-dep: 
+dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
 	@ $(DEPEND) -fno-mco \
