@@ -48,7 +48,7 @@ dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> JVM[0m"; \
+	    echo "[0m[1;32m>>> C[0m"; \
 	    (cd src && $(MAKE) build-c) \
           fi
 
