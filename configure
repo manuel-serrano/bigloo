@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jun 21 21:34:05 2010 (serrano)                */
+#*    Last change :  Tue Jun 22 07:47:58 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3041,7 +3041,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # pkgcomp startup
   echo "(cond-expand ((not bigloo-@expanders) (@install-expanders!)))" \
      >> $pkgcomp_init
-  chmod a-w $pkgcomp_init
 
   # bglpkg
   configure=bglpkg/configure.scm

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Tue Mar 11 15:46:33 2008 (serrano)                */
+;*    Last change :  Tue Jun 22 05:53:33 2010 (serrano)                */
 ;*                                                                     */
 ;*    On macro-expanse ce satane-case                                  */
 ;*---------------------------------------------------------------------*/
@@ -69,8 +69,7 @@
 		     (()
 		      #unspecified)
 		     ((else . ?body)
-		      (if (or (not (null? (cdr clauses)))
-			      (null? body))
+		      (if (or (not (null? (cdr clauses))) (null? body))
 			  (error "case" "Illegal `case' form" x)
 			  (expand-progn body)))
 		     (((and ?datums (?- . (?- ???-))) . ?body)
@@ -84,7 +83,9 @@
 			  (error "case" "Illegal `case' form" x)
 			  `(if (eqv? case-value ',datums)
 			       ,(expand-progn body)
-			       ,(loop (cdr clauses)))))))))
+			       ,(loop (cdr clauses)))))
+		     (else
+		      (error "case" "Illegal `case' form" x))))))
       e))
 
 

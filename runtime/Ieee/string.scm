@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Jun 21 14:46:34 2010 (serrano)                */
+;*    Last change :  Tue Jun 22 08:25:47 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -194,6 +194,7 @@
 	    (string-capitalize::bstring ::bstring)
 	    (inline string-for-read::bstring ::bstring)
 	    (inline string-as-read::bstring ::bstring)
+	    (inline escape-scheme-string::bstring ::bstring)
 	    (inline escape-C-string::bstring ::bstring)
 	    (inline blit-string-ur! ::bstring ::long ::bstring ::long ::long)
 	    (blit-string! ::bstring ::long ::bstring ::long ::long)
@@ -694,6 +695,14 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (escape-C-string str)
    (string-as-read (substring str 1)))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn escape-scheme-string@ ...                                 */
+;*    -------------------------------------------------------------    */
+;*    Backward compatibility                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (escape-scheme-string str)
+   ($escape-scheme-string str 0 (string-length str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-as-read@ ...                                       */

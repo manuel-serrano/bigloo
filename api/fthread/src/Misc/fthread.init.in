@@ -28,7 +28,7 @@
     (set! *multi-threaded-gc?* #t)
     ;; required libraries for fthread
     (set! *additional-bigloo-libraries*
-	  (cons* 'bigloopth *additional-bigloo-libraries*))
+	  (cons* 'bigloopthread *additional-bigloo-libraries*))
     ;; pthread setup
     (set! *bigloo-libraries-c-setup*
 	  (cons "bglpth_setup" *bigloo-libraries-c-setup*))
