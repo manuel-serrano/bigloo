@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Fri Jun 18 11:36:05 2010 (serrano)                */
+;*    Last change :  Thu Jun 24 06:09:58 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -38,7 +38,7 @@
 	   PERCENTAGE NUMBREC URI FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
 	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
-	   SLASH * + > - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
+	   SLASH * + > ~ - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
       
       (stylesheet
        ((S* charset? comment* import*)
@@ -221,7 +221,8 @@
       
       (combinator
        ((+ S*) '+)
-       ((> S*) '>))
+       ((> S*) '>)
+       ((~ S*) '~))
       
       (simple_selector
        ((element_name)

@@ -1361,6 +1361,19 @@ string containing a space, a tabulation and a newline characters.
 @end smalllisp
 @end deffn
 
+@deffn {bigloo procedure} string-cut string
+@deffnx {bigloo procedure} string-cut string delimiters
+The function @code{string-cut} behaves as @code{string-split} but it 
+introduces empty strings for consecutive occurrences of delimiters.
+
+@smalllisp
+(string-cut "/usr//local/bin" "/") @result{} ("usr" "" "local" "bin")
+(string-cut "once   upon a time") @result{} ("once" "" "" "" "upon" "a" "time")
+@end smalllisp
+@end deffn
+
+
+
 @deffn {SRFI-13 procedure} string-prefix-length s1 s2 [start1 end1 start2 end2] 
 @deffnx {SRFI-13 procedure} string-suffix-length s1 s2 [start1 end1 start2 end2] 
 @deffnx {SRFI-13 procedure} string-prefix-length-ci s1 s2 [start1 end1 start2 end2] 
