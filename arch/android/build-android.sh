@@ -26,7 +26,14 @@ if [ "$1" == "configure" ]; then
    shift
 fi
 
+version=$(awk -F '=' '/^RELEASE/ { print $2 }' Makefile.config)
+
 if [ "$1" == "build" ]; then
    nice -n 19 make
+   # "install" the makefiles. needed by hop
+   ( cd lib/$version
+      ln -s ../../Makefile.config .
+      ln -s ../../Makefile.misc .
+   )
    shift
 fi
