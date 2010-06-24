@@ -1,0 +1,28 @@
+;; automatically generated, don't edit
+;; /users/serrano/prgm/project/bigloo/cigloo
+;; Thu Jun 24 18:52:53 2010
+
+(
+  (engine_engine "Engine/engine.scm")
+  (engine_param "Engine/param.scm")
+  (engine_translate "Engine/translate.scm")
+  (init_cigloo "Init/main.scm")
+  (init_parse-args "Init/parse_args.scm")
+  (init_setrc "Init/setrc.scm")
+  (parser_cpp "Parser/cpp.scm")
+  (parser_lexer "Parser/lexer.scm")
+  (parser_parser "Parser/parser.scm")
+  (parser_tools "Parser/tools.scm")
+  (tools_error "Tools/error.scm")
+  (tools_speek "Tools/speek.scm")
+  (translate_decl "Translate/decl.scm")
+  (translate_declaration "Translate/declaration.scm")
+  (translate_eval "Translate/eval.scm")
+  (translate_expr "Translate/expr.scm")
+  (translate_function "Translate/function.scm")
+  (translate_ident "Translate/ident.scm")
+  (translate_tspec "Translate/tspec.scm")
+  (translate_type "Translate/type.scm")
+  (write_version "Write/version.scm")
+)
+
