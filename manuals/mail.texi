@@ -415,8 +415,9 @@ Returns the message @var{uid} in the current folder.
 Returns the full path name of the message @var{uid}.
 @end deffn
 
-@deffn {Bigloo Mail procedure} mailbox-message-body mailbox uid
-Returns the body of the message @var{uid}.
+@deffn {Bigloo Mail procedure} mailbox-message-body mailbox uid [len]
+Returns the body of the message @var{uid}. If @var{len} is provided, only
+returns the first @var{len} characters of the body.
 @end deffn
 
 @deffn {Bigloo Mail procedure} mailbox-message-header mailbox uid
