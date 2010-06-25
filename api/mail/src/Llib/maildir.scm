@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Sun Oct 18 07:29:59 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Fri Jun 25 08:09:36 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -576,7 +576,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-message-body ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (mailbox-message-body m::maildir i::int)
+(define-method (mailbox-message-body m::maildir i::int . len)
    (let* ((path (get-message-path '|mailbox-message-body ::maildir| m i))
 	  (ip (open-input-file path))
 	  (gram (regular-grammar ()
@@ -585,7 +585,9 @@
 		   ((or "\n" "\r\n")
 		    (ignore))
 		   ((or "\n\n" "\r\n\r\n")
-		    (read-string (the-port)))
+		    (if (and (pair? len) (integer? (car len)))
+			(read-chars (car len) (the-port))
+			(read-string (the-port))))
 		   (else
 		    ""))))
       (if (input-port? ip)

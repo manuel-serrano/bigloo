@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Apr 23 21:35:43 2010 (serrano)                */
+;*    Last change :  Fri Jun 25 08:11:38 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */

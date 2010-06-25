@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Sun Apr 26 04:20:36 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Fri Jun 25 08:08:51 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
 ;*    Gallesio's IMAP Scheme library                                   */
@@ -362,7 +362,11 @@
 (define-imap-method mailbox-folder-header-fields::pair-nil m::imap s::bstring)
 
 (define-imap-method mailbox-message m::imap i::int)
-(define-imap-method mailbox-message-body m::imap i::int)
+(define-method (mailbox-message-body m::imap i::int . len)
+   (with-access::imap m (socket)
+      (if (pair? len)
+	  (imap-message-body socket i (car len))
+	  (imap-message-body socket i))))
 (define-imap-method mailbox-message-flags m::imap i::int)
 (define-imap-method mailbox-message-header::bstring m::imap i::int)
 (define-imap-method mailbox-message-header-list::pair-nil m::imap i::int)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:36:04 2007                          */
-;*    Last change :  Tue Jan 20 19:10:25 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Fri Jun 25 08:06:56 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The generic OO api for mailboxes (e.g., imap or maildir).        */
 ;*=====================================================================*/
@@ -57,7 +57,7 @@
 	   
 	   (generic mailbox-message ::mailbox ::int)
 	   (generic mailbox-message-path ::mailbox ::int)
-	   (generic mailbox-message-body::bstring ::mailbox ::int)
+	   (generic mailbox-message-body::bstring ::mailbox ::int . len)
 	   (generic mailbox-message-header::bstring ::mailbox ::int)
 	   (generic mailbox-message-header-list::pair-nil ::mailbox ::int)
 	   (generic mailbox-message-header-field::bstring ::mailbox ::int ::bstring)
@@ -182,7 +182,7 @@
    #unspecified)
 (define-generic (mailbox-message-path m::mailbox i::int)
    #f)
-(define-generic (mailbox-message-body::bstring m::mailbox i::int)
+(define-generic (mailbox-message-body::bstring m::mailbox i::int . len)
    "")
 (define-generic (mailbox-message-header::bstring m::mailbox i::int)
    "")

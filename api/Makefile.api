@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Jun 21 15:19:09 2010 (serrano)                */
+#*    Last change :  Fri Jun 25 14:00:38 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -24,7 +24,7 @@ api-install-init:
 
 api-uninstall-init:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  $(RM) -f $(LIBDIR)/$(FILDIR)/$(API).init \
+	  $(RM) -f $(LIBDIR)/$(FILDIR)/$(API).init; \
         fi
 
 # C installation
