@@ -24,7 +24,7 @@ DIRECTORIES	= bdb blib
 #*---------------------------------------------------------------------*/
 boot:
 	@ (cd blib; $(MAKE) all)
-	@ (cd bdb; $(MAKE) final)
+	@ (cd bdb; $(MAKE) MODE=final mode)
 
 #*---------------------------------------------------------------------*/
 #*    Populating bdb                                                   */
