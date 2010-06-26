@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Jun 17 10:44:04 2010 (serrano)                */
+;*    Last change :  Fri Jun 25 14:23:46 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -90,6 +90,7 @@
  	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
 	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
 	    ($open-input-string::obj (::bstring ::int) "bgl_open_input_string")
+	    ($open-input-string!::obj (::bstring) "bgl_open_input_string_bang")
 	    ($open-input-procedure::obj (::procedure ::bstring) "bgl_open_input_procedure")
 	    ($input-port-timeout-set!::bool (::input-port ::long) "bgl_input_port_timeout_set")
 	    ($output-port-timeout-set!::bool (::output-port ::long) "bgl_output_port_timeout_set")
@@ -221,6 +222,8 @@
 		       "bgl_reopen_input_c_string")
 	       (method static $open-input-string::obj (::bstring ::int)
 		       "bgl_open_input_string")
+	       (method static $open-input-string!::obj (::bstring)
+		       "bgl_open_input_string_bang")
 	       (method static $open-input-procedure::obj (::procedure ::bstring)
 		       "bgl_open_input_procedure")
 	       (method static $input-port-timeout-set!::bool (::input-port ::long)
@@ -370,6 +373,7 @@
 	    
 	    (open-input-file ::bstring #!optional (bufinfo #t))
 	    (open-input-string ::bstring #!optional (start 0))
+	    (inline open-input-string! ::bstring)
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
 	    
@@ -932,6 +936,12 @@
        (error 'open-input-string "Start offset out of bounds" start))
       (else
        ($open-input-string string start))))
+
+;*---------------------------------------------------------------------*/
+;*    open-input-string! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (open-input-string! string)
+   ($open-input-string! string))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-procedure ...                                         */

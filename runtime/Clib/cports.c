@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Mar 18 07:08:58 2010 (serrano)                */
+/*    Last change :  Fri Jun 25 14:22:58 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1235,6 +1235,28 @@ bgl_open_input_string( obj_t string, int start ) {
 
    
    memcpy( &STRING_REF( buffer, 0 ), &(STRING_REF( string, start )), bufsiz );
+   port = bgl_make_input_port( string_to_bstring( "[string]" ),
+			       0L,
+			       KINDOF_STRING,
+			       buffer );
+
+   CREF( port )->input_port_t.eof = 1;
+   CREF( port )->input_port_t.bufpos = bufsiz + 1;
+   CREF( port )->input_port_t.length = bufsiz;
+
+   return port;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_open_input_string_bang ...                                   */
+/*    -------------------------------------------------------------    */
+/*    The start index is in bounds.                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_open_input_string_bang( obj_t buffer ) {
+   obj_t port;
+   long bufsiz = STRING_LENGTH( buffer );
+   
    port = bgl_make_input_port( string_to_bstring( "[string]" ),
 			       0L,
 			       KINDOF_STRING,

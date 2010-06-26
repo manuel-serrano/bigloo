@@ -4906,7 +4906,12 @@ public final class foreign
 	 return new input_string_port(s, start);
       }
 
-   public static Object bgl_open_input_procedure(procedure p, byte[] b )
+   public static Object bgl_open_input_string_bang(byte[]s)
+      {
+	 return new input_string_port(s, 0);
+      }
+
+   public static Object bgl_open_input_procedure(procedure p, byte[] b)
       {
 	 return new input_procedure_port( p, b );
       }

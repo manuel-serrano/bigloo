@@ -303,9 +303,13 @@ the @var{pi} port.
 @end deffn
  
 @deffn {bigloo procedure} open-input-string string [start 0]
+@deffnx {bigloo procedure} open-input-string! string
 @cindex SRFI-6
 Returns an @code{input-port} able to deliver characters from
 @var{string}.
+
+The function @code{open-input-string!} acts as @code{open-input-string}
+but it might modify the string it receives as parameter.
 @end deffn
 
 @deffn {bigloo procedure} open-input-c-string string

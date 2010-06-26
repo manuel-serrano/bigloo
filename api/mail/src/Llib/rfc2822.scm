@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Sep 23 00:49:49 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Sat Jun 26 07:29:58 2010 (serrano)                */
+;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */
@@ -43,7 +43,7 @@
 	     (if (eof-object? c)
 		 '()
 		 (raise (instantiate::&io-parse-error
-			   (proc 'header->list)
+			   (proc "header->list")
 			   (msg "Illegal value character")
 			   (obj (string-append (string #\{ c #\})
 					       (read-line (the-port)))))))))))
@@ -86,33 +86,25 @@
 			(ignore))
 		       ((eof-object? line)
 			(raise (instantiate::&io-parse-error
-				  (proc 'header->list:field-grammar)
+				  (proc "header->list:field-grammar")
 				  (msg "Illegal field character")
 				  (obj c))))
 		       (else
 			(raise (instantiate::&io-parse-error
-				  (proc 'header->list:field-grammar)
+				  (proc "header->list:field-grammar")
 				  (msg "Illegal field character")
 				  (obj (string-append (string #\{ c #\})
 						      line))))))))))))
 
-   (bind-exit (return)
-      (with-exception-handler
-	 (lambda (e)
-	    (exception-notify e)
-	    (return '()))
-	 (lambda ()
-	    (cond
-	       ((string? header)
-		(with-input-from-string header
-		   (lambda ()
-		      (read/rp field-grammar (current-input-port)))))
-	       ((input-port? header)
-		(read/rp field-grammar header))
-	       (else
-		(bigloo-type-error 'mail-header->list
-				   "string or input-port"
-				   header)))))))
+   (cond
+      ((string? header)
+       (with-input-from-string header
+	  (lambda ()
+	     (read/rp field-grammar (current-input-port)))))
+      ((input-port? header)
+       (read/rp field-grammar header))
+      (else
+       (bigloo-type-error "mail-header->list" "string or input-port" header))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    email-normalize ...                                              */
