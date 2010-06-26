@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Sep  8 07:34:05 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Sat Jun 26 08:51:28 2010 (serrano)                */
+/*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -747,8 +747,8 @@ WRAPPER( make_string_sans_fill, STRING_TYPE_NUM, (int l), (l) )
 WRAPPER( string_append, STRING_TYPE_NUM, (void *s1, void *s2), (s1, s2) )
 WRAPPER( string_append_3, STRING_TYPE_NUM, (void *s1, void *s2, void *s3), (s1, s2, s3) )
 WRAPPER( c_substring, STRING_TYPE_NUM, (void *s, int l1, int l2), (s, l1, l2) )
-WRAPPER( escape_C_string, STRING_TYPE_NUM, (char *s), (s) )
-WRAPPER( escape_scheme_string, STRING_TYPE_NUM, (char *s), (s) )
+WRAPPER( bgl_escape_C_string, STRING_TYPE_NUM, (char *s), (s) )
+WRAPPER( bgl_escape_scheme_string, STRING_TYPE_NUM, (char *s), (s) )
 WRAPPER( string_to_keyword, KEYWORD_TYPE_NUM, (char *s), (s) )
 WRAPPER( bstring_to_keyword, KEYWORD_TYPE_NUM, (void *s), (s) )
 

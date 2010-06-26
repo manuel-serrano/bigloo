@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Thu Nov  6 17:14:45 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Sat Jun 26 08:51:57 2010 (serrano)                */
+/*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -55,8 +55,8 @@ void *(*____make_string_sans_fill)( int ) = 0;
 void *(*____string_append)( void *, void * ) = 0;
 void *(*____string_append_3)( void *, void *, void * ) = 0;
 void *(*____c_substring)( void *, int, int ) = 0;
-void *(*____escape_C_string)( char * ) = 0;
-void *(*____escape_scheme_string)( char * ) = 0;
+void *(*____bgl_escape_C_string)( char * ) = 0;
+void *(*____bgl_escape_scheme_string)( char * ) = 0;
 void *(*____string_to_keyword)( char * ) = 0;
 void *(*____bstring_to_keyword)( void * ) = 0;
 
@@ -346,8 +346,8 @@ bmem_init_inner() {
    ____string_append = get_function( hdl, "string_append" );
    ____string_append_3 = get_function( hdl, "string_append_3" );
    ____c_substring = get_function( hdl, "c_substring" );
-   ____escape_C_string = get_function( hdl, "escape_C_string" );
-   ____escape_scheme_string = get_function( hdl, "escape_scheme_string" );
+   ____bgl_escape_C_string = get_function( hdl, "bgl_escape_C_string" );
+   ____bgl_escape_scheme_string = get_function( hdl, "bgl_escape_scheme_string" );
    ____string_to_keyword = get_function( hdl, "string_to_keyword" );
    ____bstring_to_keyword = get_function( hdl, "bstring_to_keyword" );
    /* vector */

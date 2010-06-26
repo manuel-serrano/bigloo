@@ -28,7 +28,7 @@
 @set edition @value{bigloovers}
 @set update-month @value{bigloodate}
 @set update-date @value{update-month}
-@set bigloo-url http://www.inria.fr/mimosa/fp/Bigloo
+@set bigloo-url http://www.inria.fr/indes/fp/Bigloo
 @set bigloo-mail bigloo@@sophia.inria.fr
 
 @footnotestyle separate

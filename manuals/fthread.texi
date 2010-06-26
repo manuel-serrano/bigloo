@@ -55,7 +55,7 @@ suitable for a high level programming language such as Scheme:
 
 This whole chapter has been written in collaboration with @b{Frédéric
 Boussinot}. It uses materials on Fair threads that can be found at
-@url{http://www-sop.inria.fr/mimosa/rp/FairThreads/html/FairThreads.html}.
+@url{http://www-sop.inria.fr/indes/rp/FairThreads/html/FairThreads.html}.
 
 @c -- Introduction --------------------------------------------------- @c
 @node Introduction, Fair Threads Api, , Fair Threads

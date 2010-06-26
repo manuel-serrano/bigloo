@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sun Sep  7 18:01:51 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Sat Jun 26 08:51:43 2010 (serrano)                */
+/*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -100,8 +100,8 @@ extern void *(*____make_string_sans_fill)( int );
 extern void *(*____string_append)( void *, void * );
 extern void *(*____string_append_3)( void *, void *, void * );
 extern void *(*____c_substring)( void *, int, int );
-extern void *(*____escape_C_string)( char * );
-extern void *(*____escape_scheme_string)( char * );
+extern void *(*____bgl_escape_C_string)( char * );
+extern void *(*____bgl_escape_scheme_string)( char * );
 extern void *(*____string_to_keyword)( char * );
 extern void *(*____bstring_to_keyword)( void * );
 extern void *(*____string_to_llong)( char * );

@@ -50,11 +50,11 @@ The argument @var{url} can either be a string or an input-port. The function
 Example
 @smalllisp
 (multiple-value-bind (protocol uinfo host port abspath)
-   (url-parse "http://www.inria.fr/sophia/teams/mimosa/index.html")
+   (url-parse "http://www.inria.fr/sophia/teams/indes/index.html")
    (list protocol uinfo host port abspath))
-      @result{} ("http" #f "www.inria.fr" 80 "/sophia/teams/mimosa/index.html'')
+      @result{} ("http" #f "www.inria.fr" 80 "/sophia/teams/indes/index.html'')
 (multiple-value-bind (protocol uinfo host port abspath)
-   (url-parse "https://foo:bar@@www.inria.fr/sophia/teams/mimosa/index.html")
+   (url-parse "https://foo:bar@@www.inria.fr/sophia/teams/indes/index.html")
    (list protocol uinfo))
       @result{} ("https" "foo@@bar")
 @end smalllisp
