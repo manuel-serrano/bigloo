@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jun 28 11:03:13 2010 (serrano)                */
+/*    Last change :  Mon Jun 28 11:16:12 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -503,6 +503,7 @@ typedef union scmobj {
       long          rp;          /* read position                      */
       long          wp;          /* write position                     */
       unsigned char *map;        /* memory mapped                      */
+#if !HAVE_MMAP      
       int           afd;         /* alternate file descriptor          */
       long          ar;          /* alternate read position            */
       long          aw;          /* alternate write position           */

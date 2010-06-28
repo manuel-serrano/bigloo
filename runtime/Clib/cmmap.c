@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Wed Apr 21 14:50:06 2010 (serrano)                */
+/*    Last change :  Mon Jun 28 11:17:46 2010 (serrano)                */
 /*    Copyright   :  2005-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
@@ -181,7 +181,7 @@ bgl_close_mmap( obj_t mm ) {
       return BTRUE;
 }
 
-#if! HAVE_MMAP   
+#if !HAVE_MMAP   
 /*---------------------------------------------------------------------*/
 /*    unsigned char                                                    */
 /*    bgl_mmap_nommap_ref ...                                          */
@@ -189,6 +189,10 @@ bgl_close_mmap( obj_t mm ) {
 BGL_RUNTIME_DEF
 unsigned char
 bgl_mmap_nommap_ref( obj_t mm, long i ) {
+   if( BGL_MMAP( mm ).mmap ) {
+      /* a C string used as an mmap */
+      return BGL_MMAP( mm ).mmap[ i ];
+   }
    if( !BGL_MMAP( mm ).fd ) {
       C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "mmap-ref", "write only mmap", mm );
    } else {
@@ -216,6 +220,10 @@ bgl_mmap_nommap_ref( obj_t mm, long i ) {
 BGL_RUNTIME_DEF
 obj_t
 bgl_mmap_nommap_set( obj_t mm, long i, unsigned char c ) {
+   if( BGL_MMAP( mm ).mmap ) {
+      /* a C string used as an mmap */
+      return BGL_MMAP( mm ).mmap[ i ];
+   }
    if( !BGL_MMAP( mm ).fd ) {
       C_SYSTEM_FAILURE( BGL_IO_WRITE_ERROR,
 			"mmap-write!",
