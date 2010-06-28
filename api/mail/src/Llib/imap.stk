@@ -237,6 +237,9 @@
 			   (%imap-read-error "{} not at end-of-line: " s))
 			  (else
 			   (let ((s (read-n-chars (string->number (cadr m)) port)))
+			      ;; read the CRLF
+			      (read-char port)
+			      (read-char port)	
 			      (loop ""
 				    (cons s aux)
 				    eol-k
@@ -298,7 +301,7 @@
 	   (loop (read-line in)))
 	(else
 	   (fprintf (current-error-port)
-		   "%imap-send: Warning: unexpected response ~S" line)
+		   "%imap-send: Warning: unexpected response ~S\n" line)
 	   (loop (read-line in)))))))
 
 

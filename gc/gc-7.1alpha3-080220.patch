@@ -6,7 +6,7 @@ diff -Naur gc-7.1alpha3.orig/Makefile.am gc-7.1alpha3/Makefile.am
  lib_LTLIBRARIES += libgc.la
  libgc_la_SOURCES = \
 -	allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-+	allchblk.c alloc.c inline_alloc.c blacklst.c checksums.c dbg_mlc.c \
++	allchblk.c alloc.c inline-alloc.c blacklst.c checksums.c dbg_mlc.c \
  	dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
  	malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
  	obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
@@ -66,7 +66,7 @@ diff -Naur gc-7.1alpha3.orig/Makefile.direct gc-7.1alpha3/Makefile.direct
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo start                                                     */
 +#*---------------------------------------------------------------------*/
-+INLOBJS= inline_alloc.o
++INLOBJS= inline-alloc.o
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo stop                                                      */
 +#*---------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ diff -Naur gc-7.1alpha3.orig/Makefile.direct gc-7.1alpha3/Makefile.direct
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo start                                                     */
 +#*---------------------------------------------------------------------*/
-+inline_alloc.o: ../../runtime/Clib/inline_alloc.c
++inline-alloc.o: ../../runtime/Clib/inline-alloc.c
 +	$(CC) $(CFLAGS) $< -c
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo stop                                                      */
@@ -981,7 +981,7 @@ diff -Naur gc-7.1alpha3.orig/Makefile.direct~ gc-7.1alpha3/Makefile.direct~
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo start                                                     */
 +#*---------------------------------------------------------------------*/
-+inline_alloc.o: ../../runtime/Clib/inline_alloc.c
++inline-alloc.o: ../../runtime/Clib/inline-alloc.c
 +	$(CC) $(CFLAGS) $< -c
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo stop                                                      */
