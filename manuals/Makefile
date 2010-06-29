@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Mon Nov 23 17:11:04 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jun 29 12:06:54 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
 #*=====================================================================*/
@@ -182,7 +182,7 @@ $(DOCUMENTNAME).tar.gz.uu: $(DOCUMENTNAME).tar.gz
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
-distrib: option.texi version.texi bigloo.sui r5rs.sui bigloo.html r5rs.html bigloo.info bdb.html bdb.info
+distrib: option.texi version.texi bigloo.html r5rs.html bigloo.info bdb.html bdb.info
 
 #*---------------------------------------------------------------------*/
 #*    option.texi                                                      */
