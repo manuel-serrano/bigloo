@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Jun 28 19:03:17 2010 (serrano)                */
+#*    Last change :  Tue Jun 29 12:18:42 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -126,8 +126,8 @@ $(LIB)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 
 api-c-static: $(LIB)/libbigloo$(API)_s-$(RELEASE).a \
               $(LIB)/libbigloo$(API)_u-$(RELEASE).a \
-              $(LIB)/libbigloo$(API)_es-$(RELEASE).a
-#               $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
+              $(LIB)/libbigloo$(API)_eu-$(RELEASE).a \
+              $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
 
 $(LIB)/libbigloo$(API)_s-$(RELEASE).a: .afile $(OBJECTS)
 	$(RM) -f $(LIB)/libbigloo$(API)_s-$(RELEASE).a
@@ -140,10 +140,14 @@ $(LIB)/libbigloo$(API)_u-$(RELEASE).a: $(LIB)/libbigloo$(API)_s-$(RELEASE).a
         $(LN_S) libbigloo$(API)_s-$(RELEASE).a libbigloo$(API)_u-$(RELEASE).a
 
 $(LIB)/libbigloo$(API)_es-$(RELEASE).a: .afile $(EOBJECTS)
-	@ $(RM) -f $(LIB)/libbigloo$(API)_es-$(RELEASE).a
-	@ $(AR) $(ARFLAGS) $(LIB)/libbigloo$(API)_es-$(RELEASE).a $(EOBJECTS)
-	@ $(RANLIB) $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+	$(RM) -f $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+	$(AR) $(ARFLAGS) $(LIB)/libbigloo$(API)_es-$(RELEASE).a $(EOBJECTS)
+	$(RANLIB) $(LIB)/libbigloo$(API)_es-$(RELEASE).a
 
+$(LIB)/libbigloo$(API)_eu-$(RELEASE).a: $(LIB)/libbigloo$(API)_es-$(RELEASE).a
+	cd $(LIB) && \
+        $(RM) -f libbigloo$(API)_eu-$(RELEASE).a && \
+        $(LN_S) libbigloo$(API)_es-$(RELEASE).a libbigloo$(API)_eu-$(RELEASE).a
 
 api-c-shared:
 	if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
