@@ -24,7 +24,7 @@ case "$basename" in
       ;;
    # we cannot run script in the emulator. f.i., there's no sed or test
    "config.guess")
-      echo "arm-linux-gnulibc"
+      echo "arm-linux-gnulibc" # yes, I know, is not glibc...
       ;;
    *)
       # if is not a simple command, copy over the emulator
