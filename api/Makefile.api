@@ -126,7 +126,7 @@ $(LIB)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 
 api-c-static: $(LIB)/libbigloo$(API)_s-$(RELEASE).a \
               $(LIB)/libbigloo$(API)_u-$(RELEASE).a \
-              $(LIB)/libbigloo$(API)_eu-$(RELEASE).a \
+              $(LIB)/libbigloo$(API)_es-$(RELEASE).a \
               $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
 
 $(LIB)/libbigloo$(API)_s-$(RELEASE).a: .afile $(OBJECTS)

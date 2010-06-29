@@ -30,7 +30,6 @@ case "$basename" in
       # if is not a simple command, copy over the emulator
       if [ -f "$binary_local_path" ]; then
          binary_remote_path="/data/tmp/$basename"
-         # echo "pushing $binary_local_path-> $binary_remote_path" >&2
          $adb push "$binary_local_path" "$binary_remote_path"
          $adb shell chmod 755 "$binary_remote_path"
       fi
@@ -38,7 +37,6 @@ case "$basename" in
       # remove the executable from the list of parameters
       shift
       # execute and exit with its exit status
-      # echo "exec'ing $binary_remote_path" >&2
       $adb shell "$binary_remote_path" $* | sed -e 's/\r//g'
 
       if [ -f "$binary_local_path" ]; then
