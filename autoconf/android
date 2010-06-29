@@ -34,10 +34,13 @@ if [ "$HOSTCPU " = "arm " ]; then
   build_id=`$HOSTSH getprop ro.build.version.release`
   if [ "$build_id " = "2.0 " -o "$build_id " = "2.0.1 " -o "$build_id " = "ECLAIR " ]; then
     # sometimes the emulator images boot without /tmp. we use /data/tmp instead
-    $HOSTSH ls /data/tmp 2> /dev/null || $HOSTSH mkdir /data/tmp
+    # the adb tool for sending commands to the device 'eats' the error codes
+    # so we blindly create the dir instead of testing first
+    # $HOSTSH ls /data/tmp 2> /dev/null || $HOSTSH mkdir /data/tmp
+    $HOSTSH mkdir /data/tmp > /dev/null
     echo "yes"
   else
-    echo "wrong version"
+    echo "wrong version: $build_id"
   fi
 else
   echo "no"
