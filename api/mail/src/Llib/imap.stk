@@ -237,7 +237,7 @@
 			   (%imap-read-error "{} not at end-of-line: " s))
 			  (else
 			   (let ((s (read-n-chars (string->number (cadr m)) port)))
-			      (loop ""
+			      (loop (read-line port)
 				    (cons s aux)
 				    eol-k
 				    eop-k))))))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Fri Jun 25 14:00:38 2010 (serrano)                */
+#*    Last change :  Mon Jun 28 19:03:17 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -107,7 +107,7 @@ $(LIB)/$(API).init: $(MISC_SRC_DIR)/$(API).init
 	cp $^ $@
 
 clean-init:
-	$(RM) $(LIB)/$(API).init
+	$(RM) -f $(LIB)/$(API).init
 
 #*---------------------------------------------------------------------*/
 #*    C build                                                          */

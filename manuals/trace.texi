@@ -19,7 +19,10 @@
 
 Bigloo provides a trace facility whose is intended for simple
 debugging tasks. It is a replacement for user @code{display}s that
-clutters the source code. Here is a typical example using it:
+clutters the source code. Traces are enabled on compiled code when
+a @code{-g} compiler option is specified 
+(see @ref{Compiler Description}).
+Here is a typical example using it:
 
 @smalllisp
 (define (foo x)
