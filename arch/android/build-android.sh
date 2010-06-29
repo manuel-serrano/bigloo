@@ -6,6 +6,7 @@ fi
 
 arch_dir=$(dirname $0)
 conf_file=$arch_dir/config.sh
+hostsh=$arch_dir/android-target.sh
 
 # import settings
 if [ -f $conf_file ]; then
@@ -16,13 +17,24 @@ else
 fi
 
 if [ "$1" == "configure" ]; then
+   # try to detect which tmp dir to use
+   if ! $hostsh noconf ls /tmp | grep 'No such' > /dev/null; then
+      echo "tmp_dir=/tmp" > $arch_dir/config-phone.sh
+   elif ! $hostsh noconf mkdir /sdcard/tmp | grep 'Permission denied' > /dev/null; then
+      echo "tmp_dir=/sdcard/tmp" > $arch_dir/config-phone.sh
+   else
+      echo "Could not find a suitable tmp dir in the device." >&2
+      exit 1
+   fi
+
    ./configure \
       --prefix=$INSTALL_PREFIX \
       --stack-check=no \
       --disable-srfi27 \
       --gccustomversion=gc-7.2alpha4 \
       --build-bindir=$BS_BIGLOO/bin \
-      --hostsh=arch/android/android-target.sh
+      --hostsh=$hostsh
+
    shift
 fi
 
