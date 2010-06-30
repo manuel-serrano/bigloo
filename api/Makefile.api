@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Tue Jun 29 12:18:42 2010 (serrano)                */
+#*    Last change :  Wed Jun 30 15:30:13 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -369,8 +369,11 @@ ude:
 	$(JFILE) -o .jfile $(EAFLAGS) \
             -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
             -pbase bigloo.$(API) \
-            $(_BGL_OBJECTS:%=%.scm) make_lib.scm \
-            $(_STK_OBJECTS:%=%.bgl) $(_PKG_OBJECTS:%=%.spi)
+            make_lib.scm \
+            $(_BGL_OBJECTS:%=%.scm) \
+            $(_STK_OBJECTS:%=%.bgl) \
+            $(_PKG_OBJECTS:%=%.spi) \
+            $(_SRFI_OBJECTS:%=%.bgl)
 
 .etags: $(_BGL_SOURCES)
 	$(BTAGS) -o .etags $(_BGL_SOURCES)
