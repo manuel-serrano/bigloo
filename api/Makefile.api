@@ -126,7 +126,7 @@ $(LIB)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 
 api-c-static: $(LIB)/libbigloo$(API)_s-$(RELEASE).a \
               $(LIB)/libbigloo$(API)_u-$(RELEASE).a \
-              $(LIB)/libbigloo$(API)_eu-$(RELEASE).a \
+              $(LIB)/libbigloo$(API)_es-$(RELEASE).a \
               $(LIB)/libbigloo$(API)_eu-$(RELEASE).a
 
 $(LIB)/libbigloo$(API)_s-$(RELEASE).a: .afile $(OBJECTS)
@@ -196,6 +196,7 @@ $(LIB)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
            LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \
            CLOSELIBS="-lbigloo$(API)_u-$(RELEASE) -lbigloo_u-$(RELEASE)"
+
 
 api-clean-c:
 	$(RM) -rf objs
@@ -362,7 +363,7 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags .jfile
 
 .afile: $(_BGL_SOURCES)
-	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES) 
+	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES)
 
 .jfile: $(_BGL_SOURCES)
 	$(JFILE) -o .jfile $(EAFLAGS) \
@@ -377,7 +378,7 @@ ude:
 udeclean:
 	$(RM) -f .afile .etags .jfile
 
-dep: 
+dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
 	@ $(DEPEND) -fno-mco \
