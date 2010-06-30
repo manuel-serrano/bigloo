@@ -4642,7 +4642,7 @@ public final class foreign
    //////
    public static byte[] bgl_host( byte[] hostname ) {
       try {
-	 return java.net.InetAddress.getByName( new String( hostname ) ).getAddress();
+	 return java.net.InetAddress.getByName( new String( hostname ) ).getHostAddress().getBytes();
       }
       catch( Exception _ ) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
