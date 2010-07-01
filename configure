@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  1 13:59:08 2010 (serrano)                */
+#*    Last change :  Thu Jul  1 14:01:37 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -152,7 +152,7 @@ threadsupport=
 pthreadlibs=
 pthreadtimedlock=1
 pthreadtermsig=15
-pthreadlocalstorage=
+pthreadlocalstorage=no
 
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
@@ -337,7 +337,7 @@ while : ; do
       java=java;
       javac=javac;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
       bootflags="$bootflags -cg";
       jvmbackend="force";
       dotnetbackend="force";
@@ -807,6 +807,9 @@ while : ; do
     --disable-thread-local-storage)
       pthreadlocalstorage=no;;
 
+    --thread-local-storage=auto)
+      pthreadlocalstorage=;;
+
     --enable-gstreamer-thread)
       gstusethread=1;;
 
@@ -983,6 +986,7 @@ while : ; do
       echo "   --stack-check=no" >&2;
       echo "   --enable-thread-local-storage" >&2;
       echo "   --disable-thread-local-storage" >&2;
+      echo "   --thread-local-storage=auto (auto detect)" >&2;
       echo "   --enable-gstreamer-thread" >&2;
       echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
