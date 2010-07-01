@@ -5457,7 +5457,22 @@ public final class foreign
    public static Object open_input_binary_file(byte[]file)
       throws FileNotFoundException
       {
-	 return new binary_port(new FileInputStream(new String(file)));
+	 String s = new String( file );
+	 if( s.startsWith( "/resource/" ) ) {
+	    String r = s.substring( 10 ).replace( '\\', '/' );
+	    InputStream in = foreign.class.getClassLoader().getResourceAsStream( r );
+	    if( in == null ) {
+	       return BFALSE;
+	    } else {
+	       return new binary_port( in );
+	    }
+	 } else {
+	    try {
+	       return new binary_port(new FileInputStream(new String(file)));
+	    } catch( Exception _ ) {
+	       return BFALSE;
+	    }
+	 }
       }
 
    public static Object close_binary_port(binary_port p)
@@ -5517,13 +5532,13 @@ public final class foreign
    public static int bgl_input_fill_string(binary_port p, byte[] buf)
       throws IOException
       {
-	 return ((FileInputStream) p.stream).read(buf);
+	 return ((InputStream) p.stream).read(buf);
       }
 
    public static int bgl_output_string(binary_port p, byte[] buf)
       throws IOException
       {
-	 ((FileOutputStream) p.stream).write(buf);
+	 ((OutputStream) p.stream).write(buf);
 	 return buf.length;
       }
 

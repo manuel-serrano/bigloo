@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    /users2GB/serrano2/bigloo/runtime/Jlib/binary_port.java          */
+/*    serrano/prgm/project/bigloo/runtime/Jlib/binary_port.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec  3 11:33:29 2000                          */
-/*    Last change :  Thu Feb  1 19:35:44 2007 (serrano)                */
-/*    Copyright   :  2000-07 Manuel Serrano                            */
+/*    Last change :  Thu Jul  1 11:04:11 2010 (serrano)                */
+/*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The binary port JVM connection                                   */
 /*=====================================================================*/
@@ -19,27 +19,27 @@ public class binary_port extends obj {
    private static final byte[] MAGIC_WORD= "1966".getBytes();
    public final Object stream;
 
-   public binary_port( final FileInputStream stream ) {
+   public binary_port( final InputStream stream ) {
       this.stream = stream;
    }
 
-   public binary_port( final FileOutputStream stream ) {
+   public binary_port( final OutputStream stream ) {
       this.stream = stream;
    }
 
    public binary_port close() throws IOException  {
-      if( stream instanceof FileInputStream )
-	 ((FileInputStream)stream).close();
+      if( stream instanceof InputStream )
+	 ((InputStream)stream).close();
       else
-	 if( stream instanceof FileOutputStream )
-	    ((FileOutputStream)stream).close();
+	 if( stream instanceof OutputStream )
+	    ((OutputStream)stream).close();
 
       return this;
    }
 
    public obj flush() throws IOException {
-      if( stream instanceof FileOutputStream )
-	 ((FileOutputStream)stream).flush();
+      if( stream instanceof OutputStream )
+	 ((OutputStream)stream).flush();
 
       return this;
    }
@@ -47,7 +47,7 @@ public class binary_port extends obj {
    public void write( final output_port p ) {
       p.write( "#<binary:" );
 
-      if( stream instanceof FileInputStream )
+      if( stream instanceof InputStream )
 	 p.write( "input_port:" );
       else
 	 p.write( "output_port:" );
@@ -57,7 +57,7 @@ public class binary_port extends obj {
    }
 
    public obj output_obj( final Object obj ) throws IOException {
-      final FileOutputStream file = (FileOutputStream)stream;
+      final OutputStream file = (OutputStream)stream;
 
       /* the magic key */
       final byte[] string = bigloo.runtime.Unsafe.intext.obj_to_string( obj );
@@ -82,7 +82,7 @@ public class binary_port extends obj {
    }
 
    public Object input_obj() throws IOException {
-	 final FileInputStream file = (FileInputStream)stream;
+	 final InputStream file = (InputStream)stream;
 
 	 /* magic key */
 	 final byte[] magic = new byte[4];
