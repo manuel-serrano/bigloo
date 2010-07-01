@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Sun Jun 20 18:13:36 2010 (serrano)                */
+#*    Last change :  Thu Jul  1 13:38:37 2010 (serrano)                */
 #*    Copyright   :  2005-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -96,6 +96,8 @@ distclean:
 .PHONY: install
 
 install:
+	(cp Makefile.api $(LIBDIR)/$(FILDIR)/Makefile.api && \
+         chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.api)
 	if [ "$(APIS) " != " " ]; then \
           for d in $(APIS) ; do \
             $(MAKE) -C $$d install || exit 1; \
@@ -103,6 +105,7 @@ install:
         fi
 
 uninstall:
+	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api
 	if [ "$(APIS) " != " " ]; then \
           for d in $(APIS) ; do \
             $(MAKE) -C $$d uninstall; \

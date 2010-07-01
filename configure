@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 29 08:59:43 2010 (serrano)                */
+#*    Last change :  Thu Jul  1 13:59:08 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -152,7 +152,7 @@ threadsupport=
 pthreadlibs=
 pthreadtimedlock=1
 pthreadtermsig=15
-pthreadlocalstorage=no
+pthreadlocalstorage=
 
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
@@ -337,9 +337,8 @@ while : ; do
       java=java;
       javac=javac;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs";
       bootflags="$bootflags -cg";
-      cpicflags="no";
       jvmbackend="force";
       dotnetbackend="force";
       dotnetclr=mono;

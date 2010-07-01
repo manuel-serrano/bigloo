@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jun 29 12:08:53 2010 (serrano)                */
+#*    Last change :  Thu Jul  1 13:38:58 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -730,6 +730,7 @@ uninstall: uninstall-bee
 	-$(MAKE) -C manuals uninstall
 	$(MAKE) -C api uninstall
 	$(RM) -f $(LIBDIR)/Makefile.config
+	$(RM) -f $(LIBDIR)/Makefile.misc
 	$(MAKE) -C bglpkg uninstall
 
 uninstall-bee0:
