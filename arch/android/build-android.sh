@@ -7,6 +7,7 @@ fi
 arch_dir=$(dirname $0)
 conf_file=$arch_dir/config.sh
 hostsh=$arch_dir/android-target.sh
+INSTALL_PREFIX=$(pwd)/arch/android/usr
 
 # import settings
 if [ -f $conf_file ]; then
@@ -41,11 +42,7 @@ fi
 version=$(awk -F '=' '/^RELEASE/ { print $2 }' Makefile.config)
 
 if [ "$1" == "build" ]; then
-   nice -n 19 make
-   # "install" the makefiles. needed by hop
-   ( cd lib/$version
-      ln -s ../../Makefile.config .
-      ln -s ../../Makefile.misc .
-   )
+   make
+   make install
    shift
 fi

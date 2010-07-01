@@ -10,7 +10,7 @@
 if [ "$1 " = "noconf " ]; then # == is a bashism!
    shift
 else
-   . $(dirname $0)/config-phone.sh # source is anothe bashism
+   . $(dirname $0)/config-phone.sh # source is another bashism
 fi
 
 binary_local_path="$1"
