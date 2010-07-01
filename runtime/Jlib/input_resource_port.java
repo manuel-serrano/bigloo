@@ -9,8 +9,8 @@ public class input_resource_port extends input_port {
 
    public input_resource_port( String resource, final byte[] buf )
       throws IOException {
-      super( resource, buf );
-      in = foreign.class.getClassLoader().getResourceAsStream( name.replace( '\\', '/' ) );
+      super( "/resource/" + resource, buf );
+      in = foreign.class.getClassLoader().getResourceAsStream( resource.replace( '\\', '/' ) );
    }
 
    public static boolean exists( String name ) {
