@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Jun 25 14:23:46 2010 (serrano)                */
+;*    Last change :  Thu Jul  1 12:04:16 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -107,7 +107,7 @@
 		   "INPUT_PORT_FILLBARRIER")
 	    (macro $input-port-fill-barrier-set!::void (::input-port ::long)
 		   "INPUT_PORT_FILLBARRIER_SET")
-	    (macro $input-port-size::long (::input-port)
+	    (macro $input-port-size::elong (::input-port)
 		   "BGL_INPUT_PORT_LENGTH")
 	    (macro $input-port-length-set!::void (::input-port ::elong)
 		   "BGL_INPUT_PORT_LENGTH_SET")
