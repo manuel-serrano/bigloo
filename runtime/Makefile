@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Jun 19 18:04:28 2010 (serrano)                */
+#*    Last change :  Fri Jul  2 10:01:09 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -234,7 +234,7 @@ EVAL		= eval expand expanders expdlet expdbool expddefine \
                   expdcase expddo expdtry expdstruct evmeaning everror \
                   evcompile evenv progn macro expdquote evprimop \
                   expdsrfi0 expdrecord expdargs expdtrace library \
-                  evobject evmodule
+                  evobject evmodule evaluate
 
 SCM_EVAL	= $(EVAL:%=Eval/%.scm)
 C_SCM_EVAL	= $(EVAL:%=Eval/%.c)
