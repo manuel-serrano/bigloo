@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  1 19:59:01 2010 (serrano)                */
+#*    Last change :  Fri Jul  2 13:53:35 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -192,7 +192,8 @@ unistdint=
 indent="indent -npro -bap -bad -nbc -bl -ncdb -nce -nfc1 -ip0 -nlp -npcs -nsc -nsob -cli0.5 -di0 -l80 -d1 -c0 -ts2 -st"
 
 #*--- mask of Bigloo intalled files -----------------------------------*/
-bmask=755
+#bmask=755 (changed 2 Jul 2010)
+bmask=644
 
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
