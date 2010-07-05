@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 27 10:41:34 1998                          */
-;*    Last change :  Mon Nov 20 14:32:02 2006 (serrano)                */
+;*    Last change :  Mon Jul  5 12:01:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ude compilation                                              */
 ;*=====================================================================*/
@@ -12,7 +12,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (provide 'ude-compile)
-(require 'compile)
+(require (if (featurep 'xemacs) 'font-lock 'compile))
 (require 'ude-autoload)
 (require 'ude-custom)
 (require 'ude-icon)
@@ -55,11 +55,10 @@
       (progn
 	(setq ude-compile-initialized-p t)
 	;; we set the goto-error funtion
-	(if (eq bmacs-emacs-version 22)
-	    (fset 'compilation-goto-locus
-		  'ude-compilation-goto-locus-gnu-emacs22)
-	    (fset 'compilation-goto-locus
-		  'ude-compilation-goto-locus))
+	(fset 'compilation-goto-locus
+	      (if (featurep 'xemacs)
+		  'ude-compilation-goto-locus
+		'ude-compilation-goto-locus-gnu-emacs))
 	;; we prepare the hook for toolbar setting
 	(add-hook 'compilation-mode-hook 'ude-compilation-init-toolbar)
 	(add-hook 'compilation-mode-hook 'ude-set-compilation-modeline)
@@ -326,7 +325,8 @@ Executed hooks are removed from that list before being executed.")
 	(setq font-lock-defaults '(compilation-font-lock-keywords-tmp t))
 	(font-lock-fontify-buffer)
 	(setq ude-last-compile-buffer buffer)
-	(compile-error-at-point)
+	;; MS: 5 jul 2010, commented out
+	;; (compile-error-at-point)
 	(if (string-match "abnormally" msg)
 	    ;; an error has occured
 	    (ude-compilation-abort buffer msg)
@@ -463,7 +463,7 @@ If such a buffer does not exists, raise an error."
 ;*---------------------------------------------------------------------*/
 ;*    ude-compilation-goto-locus ...    .                              */
 ;*    -------------------------------------------------------------    */
-;*    Emacs lisp code is always so well written. Really sometime I     */
+;*    Emacs lisp code is always so well written. Really sometimes I    */
 ;*    don't understand. I'm not able to find a way to pop up an        */
 ;*    error buffer from compile without modification the source        */
 ;*    code of compile.el!                                              */
@@ -504,9 +504,9 @@ Selects a window with point at SOURCE, with another window displaying ERROR."
 	  (goto-char (cdr next-error))))))
 
 ;*---------------------------------------------------------------------*/
-;*    ude-compilation-goto-locus-gnu-emacs22 ...                       */
+;*    ude-compilation-goto-locus-gnu-emacs ...                         */
 ;*---------------------------------------------------------------------*/
-(defun ude-compilation-goto-locus-gnu-emacs22 (msg mk end-mk)
+(defun ude-compilation-goto-locus-gnu-emacs (msg mk end-mk)
   "Jump to an error locus returned by `compilation-next-error-locus'.
 Takes one argument, a cons (ERROR . SOURCE) of two markers.
 Selects a window with point at SOURCE, with another window displaying ERROR."
