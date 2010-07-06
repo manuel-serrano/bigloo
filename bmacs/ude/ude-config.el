@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  8 07:29:03 1998                          */
-;*    Last change :  Fri Feb  7 08:48:18 2003 (serrano)                */
+;*    Last change :  Mon Jul  5 07:56:32 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `Unix Development Environment' configuration. This file      */
 ;*    contains nearly all variables that are mode local.               */
@@ -14,7 +14,6 @@
 ;*---------------------------------------------------------------------*/
 (provide 'ude-config)
 (require 'ude-autoload)
-(require 'compile)
 
 ;; ude version
 (defconst ude-version "0.4"
