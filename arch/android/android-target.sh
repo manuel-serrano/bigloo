@@ -4,7 +4,7 @@
 # ANDROID_SDK= path to android sdk
 # ANDROID_SERIAL= serial of an already runing android emulator -- not anymore, uses the first device found
 
-# set -e
+set -e
 
 # load the tmp_dir from the phone config
 if [ "$1 " = "noconf " ]; then # == is a bashism!
