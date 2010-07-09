@@ -9,6 +9,44 @@ conf_file=$arch_dir/config.sh
 hostsh=$arch_dir/android-target.sh
 INSTALL_PREFIX=$(pwd)/arch/android/usr
 
+function test_tmp_dir {
+   dir=$1
+   ok=0
+
+   # test the dir exists
+   if $adb shell ls $dir | grep -i 'no such'; then
+      # no; try to create it
+      if $adb shell mkdir $dir | egrep -i '(permission denied|read-only)'; then
+         ok=1
+      # else
+      #    ok=0
+      fi
+   # else
+   #    ok=0
+   fi
+
+   if [ $ok -eq 0 ]; then
+      # the directory exists
+      # try to create an exec
+      if $adb shell "echo 'echo yes' > $dir/foo" | grep -i 'read-only'; then
+         # read only
+         ok=1
+      else
+         # set it executable and run it
+         $adb shell chmod 755 $dir/foo
+         if $adb shell $dir/foo | grep -i 'permission denied'; then
+            # can't execute
+            ok=1
+         fi
+
+         # cleanup
+         $adb shell rm $dir/foo
+      fi
+   fi
+
+   return $ok
+}
+
 # import settings
 if [ -f $conf_file ]; then
    source $conf_file
@@ -16,14 +54,19 @@ else
    echo "config file '$conf_file' not found, bailing out."
    exit 1
 fi
+adb="$ANDSDK/tools/adb"
 
 if [ "$1" == "configure" ]; then
    # try to detect which tmp dir to use
-   if ! $hostsh noconf ls /tmp | grep 'No such' > /dev/null; then
-      echo "tmp_dir=/tmp" > $arch_dir/config-phone.sh
-   elif ! $hostsh noconf mkdir /sdcard/tmp | grep 'Permission denied' > /dev/null; then
-      echo "tmp_dir=/sdcard/tmp" > $arch_dir/config-phone.sh
-   else
+   tmp_dir=""
+   for dir in /tmp /sdcard/tmp /data/local/tmp; do
+      if test_tmp_dir $dir; then
+         tmp_dir=$dir
+         break
+      fi
+   done
+
+   if [ -z "$dir" ]; then
       echo "Could not find a suitable tmp dir in the device." >&2
       exit 1
    fi
