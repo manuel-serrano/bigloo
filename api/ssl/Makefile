@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jun 20 11:27:38 2010 (serrano)                */
+#*    Last change :  Mon Jul  5 21:53:50 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -102,7 +102,7 @@ install: api-install-init
             $(MAKE) install-jvm; \
           fi
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) api-install-dotnet; \
+            $(MAKE) install-dotnet; \
           fi
 
 install-c:
@@ -115,6 +115,8 @@ install-jvm: api-install-jvm
 	  cp $(BOOTLIBDIR)/commons-ssl.zip $(LIBDIR)/$(FILDIR) && \
 	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
         fi
+
+install-dotnet: 
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
