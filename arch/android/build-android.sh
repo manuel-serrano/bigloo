@@ -14,9 +14,9 @@ function test_tmp_dir {
    ok=0
 
    # test the dir exists
-   if $adb shell ls $dir | grep -i 'no such'; then
+   if $adb shell ls $dir | grep -iq 'no such'; then
       # no; try to create it
-      if $adb shell mkdir $dir | egrep -i '(permission denied|read-only)'; then
+      if $adb shell mkdir $dir | egrep -iq '(permission denied|read-only)'; then
          ok=1
       # else
       #    ok=0
@@ -28,13 +28,13 @@ function test_tmp_dir {
    if [ $ok -eq 0 ]; then
       # the directory exists
       # try to create an exec
-      if $adb shell "echo 'echo yes' > $dir/foo" | grep -i 'read-only'; then
+      if $adb shell "echo 'echo yes' > $dir/foo" | grep -iq 'read-only'; then
          # read only
          ok=1
       else
          # set it executable and run it
          $adb shell chmod 755 $dir/foo
-         if $adb shell $dir/foo | grep -i 'permission denied'; then
+         if $adb shell $dir/foo | grep -iq 'permission denied'; then
             # can't execute
             ok=1
          fi
@@ -62,6 +62,7 @@ if [ "$1" == "configure" ]; then
    for dir in /tmp /sdcard/tmp /data/local/tmp; do
       if test_tmp_dir $dir; then
          tmp_dir=$dir
+         echo "tmp_dir=$dir" > $arch_dir/config-phone.sh
          break
       fi
    done
