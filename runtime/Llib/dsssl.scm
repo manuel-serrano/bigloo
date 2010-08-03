@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Tue Sep  8 08:12:10 2009 (serrano)                */
+;*    Last change :  Fri Jul 30 08:24:33 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -40,12 +40,22 @@
 	    
 	    __evenv)
    
-   (export  (make-dsssl-function-prelude     ::obj ::obj ::obj ::procedure)
-	    (dsssl-get-key-arg               ::obj ::keyword ::obj)
-	    (dsssl-get-key-rest-arg          ::obj)
-	    (dsssl-check-key-args!           ::obj ::obj)
-	    (dsssl-formals->scheme-formals   ::obj ::procedure)))
+   (export  (dsssl-named-constant?::bool ::obj)
+	    (make-dsssl-function-prelude ::obj ::obj ::obj ::procedure)
+	    (dsssl-get-key-arg ::obj ::keyword ::obj)
+	    (dsssl-get-key-rest-arg ::obj)
+	    (dsssl-check-key-args! ::obj ::obj)
+	    (dsssl-formals->scheme-formals ::obj ::procedure)))
 	    
+;*---------------------------------------------------------------------*/
+;*    dsssl-named-constant? ...                                        */
+;*    -------------------------------------------------------------    */
+;*    Is an object a dsssl named constant (#!optional, #!key or        */
+;*    #!rest) ?                                                        */
+;*---------------------------------------------------------------------*/
+(define (dsssl-named-constant? obj)
+   (and (cnst? obj) (memq obj '(#!rest #!optional #!key))))
+
 ;*---------------------------------------------------------------------*/
 ;*    make-dsssl-function-prelude ...                                  */
 ;*    -------------------------------------------------------------    */

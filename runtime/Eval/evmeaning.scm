@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Jul  2 10:08:50 2010 (serrano)                */
+;*    Last change :  Thu Jul 29 17:57:50 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -1005,7 +1005,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-0 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-0 code stack denv fun::procedure)
+(define (evmeaning-funcall-0 code stack denv fun)
    (let ((name (evcode-ref code 0)))
       ($evmeaning-byte-code-set! denv code)
       (cond
@@ -1019,7 +1019,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-1 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-1 code stack denv fun::procedure)
+(define (evmeaning-funcall-1 code stack denv fun)
    (let* ((name (evcode-ref code 0))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
@@ -1034,7 +1034,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-2 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-2 code stack denv fun::procedure)
+(define (evmeaning-funcall-2 code stack denv fun)
    (let* ((name (evcode-ref code 0))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
@@ -1050,7 +1050,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-3 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-3 code stack denv fun::procedure)
+(define (evmeaning-funcall-3 code stack denv fun)
    (let* ((name (evcode-ref code 0))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
@@ -1067,7 +1067,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-4 ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-funcall-4 code stack denv fun::procedure)
+(define (evmeaning-funcall-4 code stack denv fun)
    (let* ((name (evcode-ref code 0))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
@@ -1085,7 +1085,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-0-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-0-stack code stack denv fun::procedure)
+(define (evmeaning-tailcall-0-stack code stack denv fun)
    ($evmeaning-byte-code-set! denv code)
    (let* ((envd (evmeaning-procedure-stack fun))
 	  (arity (evmeaning-procedure-args fun)))
@@ -1101,7 +1101,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-1-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-1-stack code stack denv fun::procedure)
+(define (evmeaning-tailcall-1-stack code stack denv fun)
    (let ((a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
@@ -1120,7 +1120,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-2-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-2-stack code stack denv fun::procedure)
+(define (evmeaning-tailcall-2-stack code stack denv fun)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
@@ -1142,7 +1142,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-3-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-3-stack code stack denv fun::procedure)
+(define (evmeaning-tailcall-3-stack code stack denv fun)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
@@ -1167,7 +1167,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-4-stack ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-tailcall-4-stack code stack denv fun::procedure)
+(define (evmeaning-tailcall-4-stack code stack denv fun)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))

@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Apr  3 14:42:11 1997                          */
-;*    Last change :  Tue Dec 13 08:48:19 2005 (serrano)                */
-;*    Copyright   :  1997-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul 30 09:02:10 2010 (serrano)                */
+;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    Some dsssl goodies.                                              */
+;*    Some dsssl goodies (see also runtime/Llib/dsssl.scm).            */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -14,8 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module tools_dsssl
    (import tools_error)
-   (export (dsssl-named-constant?::bool ::obj)
-	   (dsssl-prototype?::bool ::obj)
+   (export (dsssl-prototype?::bool ::obj)
 	   (dsssl-optional-only-prototype?::bool ::obj)
 	   (dsssl-key-only-prototype?::bool ::obj)
 	   (dsssl-check-prototype?::bool ::obj)
@@ -29,15 +28,6 @@
 	   (dsssl-keys::pair-nil ::obj)
 	   (dsssl-key-args-sort::pair-nil ::pair-nil)
 	   (dsssl-before-dsssl ::obj)))
-
-;*---------------------------------------------------------------------*/
-;*    dsssl-named-constant? ...                                        */
-;*    -------------------------------------------------------------    */
-;*    Is an object a dsssl named constant (#!optional, #!key or        */
-;*    #!rest) ?                                                        */
-;*---------------------------------------------------------------------*/
-(define (dsssl-named-constant? obj)
-   (and (cnst? obj) (memq obj '(#!rest #!optional #!key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-prototype? ...                                             */

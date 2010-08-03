@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Sat Jun 26 07:29:58 2010 (serrano)                */
+;*    Last change :  Fri Jul  9 20:02:22 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
@@ -87,7 +87,7 @@
 		       ((eof-object? line)
 			(raise (instantiate::&io-parse-error
 				  (proc "header->list:field-grammar")
-				  (msg "Illegal field character")
+				  (msg "Premature end of file")
 				  (obj c))))
 		       (else
 			(raise (instantiate::&io-parse-error

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Jul  2 10:13:59 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:30:28 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -168,7 +168,7 @@
 ;*    eval/expander ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (eval/expander exp::obj env expand::procedure evaluate::procedure)
-   (let ((loc (find-loc exp #f))
+   (let ((loc (get-source-location exp))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (if (and loc (> (bigloo-debug) 0))
 	  (with-handler
@@ -192,7 +192,7 @@
 ;*    byte-code-compile ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-compile exp #!optional (env (default-environment)))
-   (let* ((loc (find-loc exp #f))
+   (let* ((loc (get-source-location exp))
 	  (sexp  (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (obj->string
        (evcompile (expand sexp) '() env 'nowhere #f #t loc #f #t))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Mar 11 15:56:53 2008 (serrano)                */
+;*    Last change :  Thu Jul  8 16:31:07 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -132,7 +132,7 @@
 ;*    symbol->string ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (symbol->string symbol)
-   (c-symbol->string symbol))
+   (string-copy (c-symbol->string symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol->string! ...                                              */
@@ -276,7 +276,7 @@
 ;*    keyword->string ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (keyword->string keyword)
-   (c-keyword->string keyword))
+   (string-copy (c-keyword->string keyword)))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->string! ...                                             */

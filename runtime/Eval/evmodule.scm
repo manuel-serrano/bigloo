@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Jun 16 07:55:18 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:34:57 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -417,7 +417,7 @@
    (define (import-error arg)
       (evcompile-error loc 'eval "Illegal `import' clause" arg))
    (define (import-clause s)
-      (let ((loc (find-loc s loc))
+      (let ((loc (or (get-source-location s) loc))
 	    (abase (module-abase)))
 	 (unwind-protect
 	    (cond
@@ -474,7 +474,7 @@
    (define (from-error arg)
       (evcompile-error loc 'eval "Illegal `from' clause" arg))
    (define (from-clause s)
-      (let ((loc (find-loc s loc))
+      (let ((loc (or (get-source-location s) loc))
 	    (abase (module-abase)))
 	 (unwind-protect
 	    (cond
@@ -502,7 +502,8 @@
 	     (lambda ()
 		(let ((e0 (read)))
 		   (if (and (pair? e0) (eq? (car e0) 'directives))
-		       (append (evmodule-module mod (cdr e0) (find-loc e0 loc))
+		       (append (evmodule-module mod (cdr e0)
+						(or (get-source-location e0) loc))
 			       (port->list read (current-input-port)))
 		       (cons e0 (port->list read (current-input-port)))))))
 	  (evcompile-error loc 'eval "Cannot find include file" file))))
@@ -536,7 +537,7 @@
 				       ((not (and (pair? c)
 						  (list? c)
 						  (symbol? (car c))))
-					(let ((loc (find-loc c loc)))
+					(let ((loc (or (get-source-location c) loc)))
 					   (evcompile-error
 					    loc 'eval
 					    "Illegal module clause" c0)))
@@ -551,7 +552,7 @@
       ;; step1
       (for-each (lambda (clause)
 		   ($eval-module-set! mod)
-		   (let ((loc (find-loc clause loc)))
+		   (let ((loc (or (get-source-location clause) loc)))
 		      (when loc (evmeaning-set-error-location! loc))
 		      (case (car clause)
 			 ((library)
@@ -566,7 +567,7 @@
       ;; step2
       (for-each (lambda (clause)
 		   ($eval-module-set! mod)
-		   (let ((loc (find-loc clause loc)))
+		   (let ((loc (or (get-source-location clause) loc)))
 		      (when loc (evmeaning-set-error-location! loc))
 		      (case (car clause)
 			 ((import use with)
@@ -577,7 +578,7 @@
       ;; step3, include
       (let ((incs (append-map (lambda (clause)
 				 ($eval-module-set! mod)
-				 (let ((loc (find-loc clause loc)))
+				 (let ((loc (or (get-source-location clause) loc)))
 				    (when loc
 				       (evmeaning-set-error-location! loc))
 				    (case (car clause)
@@ -589,7 +590,7 @@
 	 ;; step3, classes
 	 (for-each (lambda (clause)
 		      ($eval-module-set! mod)
-		      (let ((loc (find-loc clause loc)))
+		      (let ((loc (or (get-source-location clause) loc)))
 			 (when loc (evmeaning-set-error-location! loc))
 			 (case (car clause)
 			    ((static)
@@ -605,7 +606,7 @@
 ;*    Evaluate a module form                                           */
 ;*---------------------------------------------------------------------*/
 (define (evmodule exp loc)
-   (let* ((loc (find-loc exp loc))
+   (let* ((loc (or (get-source-location exp) loc))
 	  (hdl (bigloo-module-extension-handler)))
       (match-case exp
 	 ((module (and (? symbol?) ?name) . ?clauses)
@@ -636,4 +637,4 @@
 		      (evepairify `(static (final-class ,@rest)) x))
 		     ((define-abstract-class)
 		      (evepairify `(static (abstract-class ,@rest)) x)))))
-      (evmodule-static mod clause (find-loc x #f) #t)))
+      (evmodule-static mod clause (get-source-location x) #t)))

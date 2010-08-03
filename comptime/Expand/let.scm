@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Mon Aug 31 16:49:55 2009 (serrano)                */
-;*    Copyright   :  1992-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul 30 09:00:14 2010 (serrano)                */
+;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
 ;*=====================================================================*/
@@ -20,8 +20,7 @@
 	     tools_misc
 	     expand_lambda
 	     expand_eps
-	     (find-location tools_location)
-	     (dsssl-named-constant? tools_dsssl))
+	     (find-location tools_location))
    (export   (expand-let*   ::obj ::procedure)
 	     (expand-let    ::obj ::procedure)
 	     (expand-letrec ::obj ::procedure)

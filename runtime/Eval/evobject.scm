@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon May 31 15:23:10 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:34:05 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -28,6 +28,7 @@
 	    __object
 	    __thread
 	    __hash
+	    __reader
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -708,14 +709,14 @@
 	  (decompose-ident f)
 	  (list (slot id type #f (class-field-no-default-value) #f #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
-       (evcompile-error (find-loc f loc)
+       (evcompile-error (or (get-source-location f) loc)
 			'eval "Illegal slot declaration" f))
       ((and (eq? (car f) '*)
 	    (or (null? (cdr f))
 		(not (symbol? (cadr f)))
 		(assq 'get (cddr f))
 		(assq 'set (cddr f))))
-       (evcompile-error (find-loc f loc)
+       (evcompile-error (or (get-source-location f) loc)
 			'eval "Illegal indexed slot declaration" f))
       (else
        (let ((indexp #f)
@@ -757,17 +758,17 @@
 				     (set! def expr))
 				    (else
 				     (evcompile-error
-				      (find-loc f loc)
+				      (or (get-source-location f) loc)
 				      'eval "Illegal slot declaration" f))))))
 			  attrs)
 		(cond
 		   ((and get (not ronly) (not set))
 		    (evcompile-error
-		     (find-loc f loc)
+		     (or (get-source-location f) loc)
 		     'eval "Missing virtual set" f))
 		   ((and set (not get))
 		    (evcompile-error
-		     (find-loc f loc)
+		     (or (get-source-location f) loc)
 		     'eval "Missing virtual get" f))
 		   (else
 		    (let ((s (slot id type ronly def get set indexp info)))
@@ -791,12 +792,12 @@
 ;*    the new slots.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-parse-class loc clauses)
-   (let ((loc (find-loc clauses loc)))
+   (let ((loc (or (get-source-location clauses) loc)))
       (cond
 	 ((null? clauses)
 	  (values #f '()))
 	 ((not (list? clauses))
-	  (evcompile-error (find-loc clauses loc)
+	  (evcompile-error (or (get-source-location clauses) loc)
 			   'eval "Illegal class declaration" clauses))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
 	  ;; the constructor must be protected under a lambda because
@@ -832,14 +833,11 @@
 (define (eval-class id abstract clauses src)
    (multiple-value-bind (cid sid)
       (decompose-ident id)
-      (let ((loc (find-loc src #f))
+      (let ((loc (get-source-location src))
 	    (super (find-class (or sid 'object))))
 	 (cond
 	    ((not (class? super))
 	     (evcompile-error loc 'eval "Cannot find super class" sid))
-;* 	    (((class-abstract? super)                                  */
-;* 	     (evcompile-error loc 'eval                                */
-;* 			      (format "Eval class \"~a\" cannot inherit from abstract native classes" cid) sid)) */
 	    (else
 	     (multiple-value-bind (constructor slots)
 		(eval-parse-class loc clauses)

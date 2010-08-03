@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Apr 30 17:00:03 2010 (serrano)                */
+;*    Last change :  Mon Aug  2 20:43:49 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -42,7 +42,8 @@
 	    __evmodule
 
 	    __r5_macro_4_3_syntax
-	    __r5_macro_4_3_hygiene)
+	    ;__r5_macro_4_3_hygiene
+	    )
    
    (use     __type
 	    __bigloo
@@ -236,12 +237,12 @@
    (install-expander 'tprint expand-tprint)
    
    ;; and-let*
-   (install-expander 'and-let* (lambda (x e) (expand-and-let* x e)))
+   (install-expander 'and-let* expand-and-let*)
    
    ;; define-syntax
-   (install-expander 'define-syntax (lambda (x e) (expand-define-syntax x e)))
-   (install-expander 'letrec-syntax (lambda (x e) (expand-letrec-syntax x e)))
-   (install-expander 'let-syntax (lambda (x e) (expand-let-syntax x e)))
+   (install-expander 'define-syntax expand-define-syntax)
+   (install-expander 'letrec-syntax expand-letrec-syntax)
+   (install-expander 'let-syntax expand-let-syntax)
    
    ;; trace
    (install-expander 'when-trace expand-when-trace)

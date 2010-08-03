@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Thu Jun  9 15:05:53 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul 30 09:24:20 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
 ;*=====================================================================*/
@@ -57,9 +57,6 @@
 	  loc
 	  (match-case loc
 	     ((at ?fname ?pos)
-	      (location fname pos (pos->line fname pos)))
-	     ((at ?fname ?pos ?lnum)
-	      (warning "find-location" "obsolete `at' format -- " loc)
 	      (location fname pos (pos->line fname pos)))
 	     (else
 	      #f))))

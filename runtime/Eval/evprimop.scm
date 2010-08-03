@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Wed Mar 24 12:10:06 2010 (serrano)                */
+;*    Last change :  Mon Aug  2 20:43:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -111,7 +111,8 @@
 	    __r4_input_6_10_2
 	    __r4_output_6_10_3
 	    __r5_control_features_6_4
-	    __r5_macro_4_3_hygiene)
+	    ;__r5_macro_4_3_hygiene
+	    __r5_macro_4_3_syntax)
    
    (eval    (export-all)
 

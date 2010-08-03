@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Jun 13 08:20:36 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 08:17:43 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -171,6 +171,7 @@
 	    (error ::obj ::obj ::obj)
 	    (error/errno::magic ::int ::obj ::obj ::obj)
 	    (error/location::obj ::obj ::obj ::obj ::obj ::obj)
+	    (error/source-location::obj ::obj ::obj ::obj ::obj)
 	    (error/source::obj ::obj ::obj ::obj ::obj)
 	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
@@ -360,16 +361,22 @@
    (raise (make-&error fname loc (get-trace-stack) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
+;*    error/source-location ...                                        */
+;*---------------------------------------------------------------------*/
+(define (error/source-location proc msg obj loc)
+   (match-case loc
+      ((at ?fname ?loc)
+       (error/location proc msg obj fname loc))
+      (else
+       (error proc msg obj))))
+
+;*---------------------------------------------------------------------*/
 ;*    error/source ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (error/source proc msg obj source)
    (if (not (epair? source))
        (error proc msg obj)
-       (match-case (cer source)
-	  ((at ?fname ?loc)
-	   (error/location proc msg obj fname loc))
-	  (else
-	   (error proc msg obj)))))
+       (error/source-location proc msg obj (cer source))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/c-location ...                                             */
