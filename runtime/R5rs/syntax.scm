@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Tue Aug  3 08:46:07 2010 (serrano)                */
+;*    Last change :  Wed Aug  4 06:39:50 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
@@ -40,7 +40,7 @@
 	    __evenv
 	    __macro)
 
-   (use __r4_output_6_10_3 __r4_ports_6_10_1 __param __r4_numbers_6_5)
+;*    (use __r4_output_6_10_3 __r4_ports_6_10_1 __param __r4_numbers_6_5) */
 
    (export  (install-syntax-expander ::symbol ::procedure)
 	    (syntax-rules->expander ::symbol ::pair-nil ::pair-nil)
@@ -60,13 +60,13 @@
 (define syntax-mutex (make-mutex))
 (define syntax-expanders-mutex (make-mutex))
 
-;*---------------------------------------------------------------------*/
-;*    debug ...                                                        */
-;*---------------------------------------------------------------------*/
-(define (debug . args)
-   (when (>fx (bigloo-debug) 0)
-      (apply print args)))
-
+;* {*---------------------------------------------------------------------*} */
+;* {*    debug ...                                                        *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (debug . args)                                              */
+;*    (when (>fx (bigloo-debug) 0)                                     */
+;*       (apply print args)))                                          */
+;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    get-syntax-expander ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -282,7 +282,7 @@
 			   (else
 			    (error "let-syntax" "Illegal bindings" bs)))))))
 	  `(begin
-	      ,@(map (lambda (x) (e1 x e1)) body))))
+	      ,@(map (lambda (x) (e1 (hygienize x '()) e1)) body))))
       (else
        (error "letrec-syntax" "Illegal form" x))))
 
@@ -306,7 +306,7 @@
 			   (else
 			    (error "let-syntax" "Illegal bindings" bs)))))))
 	  `(begin
-	      ,@(map (lambda (x) (e1 x e1)) body))))
+	      ,@(map (lambda (x) (e1 (hygienize x '()) e1)) body))))
       (else
        (error "let-syntax" "Illegal form" x))))
 
@@ -325,12 +325,13 @@
 		       ((?pattern ?template)
 			(if (syntax-matches-pattern? keyword pattern x k)
 			    (begin
-			       (debug "** x=" x "\n     p=" pattern "\n     t=" template)
+;* 			       (debug "** x=" x "\n     p="            */
+;* 				      pattern "\n     t=" template)    */
 			       (let* ((fs (syntax-get-frames pattern x k))
 				      (t (syntax-expand-pattern template fs k))
 				      (te (syntax-expand t)))
-				  (debug "\n     te=" te)
-				  (debug "-- nx=" (hygienize te '()))
+;* 				  (debug "\n     te=" te)              */
+;* 				  (debug "-- nx=" (hygienize te '()))  */
 				  (e (hygienize te '()) e)))
 			    (loop (cdr rules))))
 		       (else
@@ -360,7 +361,7 @@
        (equal? p e))))
 
 ;*---------------------------------------------------------------------*/
-;*    syntax-get-frames ...                                             */
+;*    syntax-get-frames ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (syntax-get-frames p e k)
    (cond

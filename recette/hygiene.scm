@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 12:52:59 1998                          */
-;*    Last change :  Mon Aug  2 18:33:36 2010 (serrano)                */
+;*    Last change :  Wed Aug  4 06:44:44 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Hygienic macro tests                                             */
 ;*=====================================================================*/
@@ -357,21 +357,21 @@
 ;*---------------------------------------------------------------------*/
 (define (test-hygiene)
    (test-module "hygiene" "hygiene.scm")
-;*    (test "let-syntax.1"                                             */
-;* 	 (let-syntax ((when (syntax-rules ()                           */
-;* 			       ((when test stmt1 stmt2 ...)            */
-;* 				(if test                               */
-;* 				    (begin stmt1 stmt2 ...))))))       */
-;* 	    (let ((if #t))                                             */
-;* 	       (when if (set! if 'now))                                */
-;* 	       if))                                                    */
-;* 	 'now)                                                         */
-;*    (test "let-syntax.2"                                             */
-;* 	 (let ((x 'outer))                                             */
-;* 	    (let-syntax ((m (syntax-rules () ((m) x))))                */
-;* 	       (let ((x 'inner))                                       */
-;* 		  (m))))                                               */
-;* 	 'outer)                                                       */
+   (test "let-syntax.1"
+	 (let-syntax ((when (syntax-rules ()
+			       ((when test stmt1 stmt2 ...)
+				(if test
+				    (begin stmt1 stmt2 ...))))))
+	    (let ((if #t))
+	       (when if (set! if 'now))
+	       if))
+	 'now)
+   (test "let-syntax.2"
+	 (let ((x 'outer))
+	    (let-syntax ((m (syntax-rules () ((m) x))))
+	       (let ((x 'inner))
+		  (m))))
+	 'outer)
    (test "letrec-syntax"
 	 (letrec-syntax ((my-or (syntax-rules ()
 				   ((my-or) #f)
