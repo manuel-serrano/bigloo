@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Oct 13 12:11:27 2009 (serrano)                */
+;*    Last change :  Thu Aug  5 14:40:49 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -125,8 +125,9 @@
 		      (variable atom))))
 	      ((or (struct? atom)
 		   (vector? atom)
-		   (object? atom))
-	       (error-sexp->node "Illegal atom" exp loc))  
+		   (object? atom)
+		   (procedure? atom))
+	       (error-sexp->node "Illegal atom in s-expression" exp loc))  
 	      (else
  	       (instantiate::atom
 		  (loc loc)
