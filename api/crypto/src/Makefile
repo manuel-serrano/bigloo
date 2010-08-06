@@ -17,15 +17,11 @@ include ../../../Makefile.misc
 # the library name
 API		= crypto
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
-# The heap file
-HEAP_FILE	= $(LIB)/$(API).heap
-HEAPJVM_FILE	= $(LIB)/$(API).jheap
 # Where to store the library class files
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
@@ -42,7 +38,7 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 #BCMPFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 #*---------------------------------------------------------------------*/

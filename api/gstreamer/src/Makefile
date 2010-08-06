@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 16:49:15 2010 (serrano)                */
+#*    Last change :  Fri Aug  6 08:09:24 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../../Makefile.misc
 # the library name
 API	= gstreamer
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 C_SRC_DIR 	= Clib
 PLUGIN_SRC_DIR 	= Plugin
@@ -47,7 +46,7 @@ BAPIFLAGS	= $(BFLAGS) \
                   -copt "$(GSTREAMERCFLAGS)"
 CAPIFLAGS       = $(GSTREAMERCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
 # C flags
 CEFLAGS		= $(GSTREAMERCFLAGS)
@@ -194,7 +193,7 @@ include ../../Makefile.api
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/%.o: $(PLUGIN_SRC_DIR)/%.c
-	$(CC) $(CEFLAGS) $(CAPIFLAGS) $(CFLAGS) $(CPICFLAGS) $(CGCTHREADFLAGS) -I. -I $(LIB) $(GCINCLUDE) -I $(PLUGIN_SRC_DIR) -I $(C_SRC_DIR) $< -o $@ -c
+	$(CC) $(CEFLAGS) $(CAPIFLAGS) $(CFLAGS) $(CPICFLAGS) $(CGCTHREADFLAGS) -I. -I $(BOOTLIBDIR) $(GCINCLUDE) -I $(PLUGIN_SRC_DIR) -I $(C_SRC_DIR) $< -o $@ -c
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

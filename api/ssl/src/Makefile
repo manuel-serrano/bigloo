@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 09:28:03 2010 (serrano)                */
+#*    Last change :  Fri Aug  6 08:11:24 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../../Makefile.misc
 # the library name
 API		= ssl
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
@@ -41,7 +40,7 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                    -heap-library $(API)
 BJVMFLAGS       := $(BJVMFLAGS)
 
@@ -49,7 +48,7 @@ BJVMFLAGS       := $(BJVMFLAGS)
 EXTRALIBS	= $(OPENSSLLIBS)
 # Additional SSL lib for java
 SSL_ZIP		= commons-ssl.zip
-JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(LIB)/$(SSL_ZIP)
+JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -151,15 +150,15 @@ $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 
 lib-jvm: $(JAVA_SRC_DIR)/ssl_client_socket.java \
          $(JAVA_SRC_DIR)/ssl_server_socket.java \
-         $(LIB)/$(SSL_ZIP)
+         $(BOOTLIBDIR)/$(SSL_ZIP)
 	@ $(MAKE) api-jvm
 	@ $(MAKE) jvm-extra
 
-$(LIB)/$(SSL_ZIP): ../lib/$(SSL_ZIP)
+$(BOOTLIBDIR)/$(SSL_ZIP): ../lib/$(SSL_ZIP)
 	@ echo Copying $(SSL_ZIP)
 	@ cp $< $@
 
-jvm-extra: $(JAVA_CLASSES_SRC) $(LIB)/$(SSL_ZIP)
+jvm-extra: $(JAVA_CLASSES_SRC) $(BOOTLIBDIR)/$(SSL_ZIP)
 	(cd objs/class_s && \
           $(JAVAC) $(CYGWINJVMPATH) -classpath $(JVMAPIBOOTPATH) $(JAVA_CLASSES_SRC:objs/class_s/%=%))
 
@@ -202,7 +201,7 @@ clean: api-clean
 	$(RM) -f $(JAVA_SRC_DIR)/ssl_server_socket.java
 
 cleanall: api-cleanall
-	$(RM) $(LIB)/$(SSL_ZIP)
+	$(RM) $(BOOTLIBDIR)/$(SSL_ZIP)
 
 distclean: cleanall
 
