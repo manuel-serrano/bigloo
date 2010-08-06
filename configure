@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jul  2 13:53:35 2010 (serrano)                */
+#*    Last change :  Fri Aug  6 17:52:35 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -192,7 +192,7 @@ unistdint=
 indent="indent -npro -bap -bad -nbc -bl -ncdb -nce -nfc1 -ip0 -nlp -npcs -nsc -nsob -cli0.5 -di0 -l80 -d1 -c0 -ts2 -st"
 
 #*--- mask of Bigloo intalled files -----------------------------------*/
-#bmask=755 (changed 2 Jul 2010)
+bmaskexe=755
 bmask=644
 
 #*--- ld shared library option ----------------------------------------*/
@@ -3070,6 +3070,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # bmask
   echo "BMASK=$bmask" >> $makefile_cfg
   echo >> $makefile_cfg
+  echo "BMASKEXE=$bmaskexe" >> $makefile_cfg
+  echo >> $makefile_cfg
 
   # The info version
   if [ "$configureinfo" = "yes" ]; then
@@ -3348,6 +3350,7 @@ fi
 echo >> $configurelog
 echo "Misc configuration:" >> $configurelog
 echo "  mask for installed files.............. $bmask" >> $configurelog
+echo "  mask for installed executable......... $bmaskexe" >> $configurelog
 echo  >> $configurelog
 echo "System configuration:" >> $configurelog
 echo "  hardware tuning....................... $hardtune" >> $configurelog
