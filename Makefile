@@ -634,6 +634,7 @@ c-test:
             echo "*** $$p ********** "; \
             (cd api/$$p/recette && \
              $(MAKE) c EFLAGS="-static-all-bigloo" && \
+	     test -x ./recette && \
              ./recette $(RECETTEFLAGS)) \
           fi; \
         done
@@ -657,6 +658,7 @@ jvm-test:
              echo "*** $$p ********** "; \
              (cd api/$$p/recette && \
               $(MAKE) EFLAGS="-jvm-bigloo-classpath $(BOOTLIBDIR)" jvm && \
+	      test -x ./recette-jvm$(SCRIPTEXTENSION) && \
               ./recette-jvm$(SCRIPTEXTENSION) $(RECETTEFLAGS)) \
            fi; \
         done
