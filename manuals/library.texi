@@ -661,7 +661,7 @@ UNSAFE_OBJECT   = olib_u/spoint.o olib_u/cpoint.o
 all: .afile heap lib example
 
 .afile: spoint.scm makelib.scm
-	bglafile $^ > $@
+	bglafile $^ > $@@
 
 heap: point.heap
 
@@ -689,7 +689,7 @@ olib_u/cpoint.o olib/cpoint.o: cpoint.c
 	$(CC) $(CSAFEFLAGS) $(<F) -o $*.o -c
 
 spoint.sch: cpoint.h cpoint.c
-	cigloo $^ > $@
+	cigloo $^ > $@@
 
 example: heap lib
 	$(BIGLOO) -v2 -L . -library point \
