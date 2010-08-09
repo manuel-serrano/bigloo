@@ -12,9 +12,9 @@
 @c ------------------------------------------------------------------- @c
 @c    Mail ...                                                         @c
 @c ------------------------------------------------------------------- @c
-@node Mail library, Eval, Multimedia library, Top
+@node Mail, Eval, Multimedia, Top
 @comment  node-name,  next,  previous,  up
-@chapter Mail library
+@chapter Mail
 @cindex mail
 @cindex mime
 
@@ -35,7 +35,7 @@ mail servers with two implementations: @code{imap} and @code{maildir}.
 @c ------------------------------------------------------------------- @c
 @c    RFC 2045 ...                                                     @c
 @c ------------------------------------------------------------------- @c
-@node RFC 2045, RFC 2047, , Mail library
+@node RFC 2045, RFC 2047, , Mail
 @comment  node-name,  next,  previous, up
 @section RFC 2045 -- MIME, Part one
 @cindex RFC 2045
@@ -117,7 +117,7 @@ These two functions parse respectively a @code{string} and an
 @c ------------------------------------------------------------------- @c
 @c    RFC 2047 ...                                                     @c
 @c ------------------------------------------------------------------- @c
-@node RFC 2047, RFC 2426, RFC 2045, Mail library
+@node RFC 2047, RFC 2426, RFC 2045, Mail
 @comment  node-name,  next,  previous, up
 @section RFC 2047 -- MIME, Part three
 @cindex RFC 2426
@@ -152,7 +152,7 @@ Example:
 @c ------------------------------------------------------------------- @c
 @c    RFC 2426 ...                                                     @c
 @c ------------------------------------------------------------------- @c
-@node RFC 2426, RFC 2822, RFC 2047, Mail library
+@node RFC 2426, RFC 2822, RFC 2047, Mail
 @comment  node-name,  next,  previous, up
 @section RFC 2426 -- MIME, Part three
 @cindex RFC 2426
@@ -213,7 +213,7 @@ on-the-fly the strings found in the vcard in a difference encoding.
 @c ------------------------------------------------------------------- @c
 @c    RFC 2822 ...                                                     @c
 @c ------------------------------------------------------------------- @c
-@node RFC 2822, Mail servers, RFC 2426, Mail library
+@node RFC 2822, Mail servers, RFC 2426, Mail
 @comment  node-name,  next,  previous, up
 @section RFC 2822 -- Internet Message Format
 @cindex RFC 2822
@@ -263,7 +263,7 @@ Example:
 @c ------------------------------------------------------------------- @c
 @c    Mail servers ...                                                 @c
 @c ------------------------------------------------------------------- @c
-@node Mail servers, , RFC 2822, Mail library
+@node Mail servers, , RFC 2822, Mail
 @comment  node-name,  next,  previous, up
 @section Mail servers -- imap and maildir
 @cindex imap 

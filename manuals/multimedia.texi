@@ -12,9 +12,9 @@
 @c ------------------------------------------------------------------- @c
 @c    Multimedia ...                                                   @c
 @c ------------------------------------------------------------------- @c
-@node Multimedia library, Mail library, Database library, Top
+@node Multimedia, Mail, Database, Top
 @comment  node-name,  next,  previous,  up
-@chapter Multimedia library
+@chapter Multimedia
 @cindex multimedia
 
 Bigloo provides various facilities for programming multimedia
@@ -46,7 +46,7 @@ library:
 @c ------------------------------------------------------------------- @c
 @c    Photography ...                                                  @c
 @c ------------------------------------------------------------------- @c
-@node Photography, Music, , Multimedia library
+@node Photography, Music, , Multimedia
 @comment  node-name,  next,  previous, up
 @section Photography
 @cindex Photography
@@ -129,7 +129,7 @@ expression:
 @c ------------------------------------------------------------------- @c
 @c    Music ...                                                        @c
 @c ------------------------------------------------------------------- @c
-@node Music, Color, Photography, Multimedia library
+@node Music, Color, Photography, Multimedia
 @comment  node-name,  next,  previous, up
 @section Music
 @cindex Music
@@ -608,7 +608,7 @@ music files.
 @c ------------------------------------------------------------------- @c
 @c    Music ...                                                        @c
 @c ------------------------------------------------------------------- @c
-@node Color,, Music, Multimedia library
+@node Color,, Music, Multimedia
 @comment  node-name,  next,  previous, up
 @section Color
 @cindex Color

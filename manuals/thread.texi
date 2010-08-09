@@ -11,7 +11,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Bigloo's threads                                                 @c
 @c ------------------------------------------------------------------- @c
-@node Threads, Database library, Errors Assertions and Traces, Top
+@node Threads, Database, Errors Assertions and Traces, Top
 @comment  node-name,  next,  previous,  up
 @chapter Threads
 @cindex Threads

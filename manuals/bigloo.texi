@@ -189,9 +189,9 @@ MA 02111-1307, USA.
 * Cryptography::                   Cryptography 
 * Errors Assertions and Traces::   Bigloo error handling and Bigloo assertions
 * Threads::                        Bigloo multi-threading
-* Database library::               Database access
-* Multimedia library::             Multimedia programming
-* Mail library::                   Mail related technologies
+* Database::                       Database access
+* Multimedia::                     Multimedia programming
+* Mail::                           Mail related technologies
 * Eval::                           Use of the interpreter
 * Macro Expansion::                The two available macro schemes
 * Parameters::                     Controlling the global programs behaviors

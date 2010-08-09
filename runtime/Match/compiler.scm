@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Jean-Marie Geffroy                                */
 ;*    Creation    :  Thu Jan 14 10:29:50 1993                          */
-;*    Last change :  Mon Aug  9 11:22:23 2010 (serrano)                */
+;*    Last change :  Mon Aug  9 13:39:51 2010 (serrano)                */
 ;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    A hand-written pattern "compiler"                                */
@@ -180,7 +180,6 @@
    (and (pair? e)
 	(let ((pr (car e)))
 	   (and (symbol? pr)
-		(tprint "OPTIM HERE...")
 		(let ((s (symbol->string pr)))
 		   (and (>fx (string-length s) 3)
 			(let ((s (substring s 0 3)))

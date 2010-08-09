@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 16:05:29 1994                          */
-;*    Last change :  Sat Feb 24 07:41:52 2007 (serrano)                */
-;*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug  9 12:39:17 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The O-expander creation.                                         */
 ;*=====================================================================*/
@@ -137,12 +137,17 @@
 		(match-case (cdr m)
 		   ((syntax ?id)
 		    (unless (get-compiler-expander id)
-		       (error 'expand
+		       (error "expand"
+			      "Can't find syntax definition"
+			      id)))
+		   ((expander ?id)
+		    (unless (get-compiler-expander id)
+		       (error "expand"
 			      "Can't find syntax definition"
 			      id)))
 		   (else
 		    (unless (get-compiler-expander (car m))
-		       (error 'expand
+		       (error "expand"
 			      "Can't find macro definition"
 			      (cdr m))))))
 	     *to-be-macros*))
