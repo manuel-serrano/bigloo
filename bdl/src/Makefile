@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sat Feb  7 07:10:52 2009 (serrano)                */
+#*    Last change :  Mon Aug  9 15:22:32 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -131,7 +131,9 @@ $(HEAPJVM_FILE): .jfile .afile make_lib.scm
 lib: lib-c lib-jvm
 
 #*--- lib-c -----------------------------------------------------------*/
-lib-c: $(TAGS) .afile $(CLASS_DIR) lib-c-static lib-c-shared
+lib-c: $(TAGS) .afile $(CLASS_DIR) 
+	$(MAKE) lib-c-static 
+	$(MAKE) lib-c-shared
 
 lib-c-static: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a \
               $(LIB)/lib$(LIBNAME)_u-$(RELEASE).a
