@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Aug 11 10:58:34 2010 (serrano)                */
+/*    Last change :  Wed Aug 11 11:47:27 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -307,7 +307,7 @@ mark_rest_functions( void *id, void *isize ) {
 obj_t
 make_pair( obj_t car, obj_t cdr ) {
    obj_t pair;
-   
+
    set_alloc_type( PAIR_TYPE_NUM );
 
    gc_alloc_size_add( PAIR_SIZE );

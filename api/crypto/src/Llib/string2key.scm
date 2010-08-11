@@ -66,9 +66,13 @@
 	     res
 	     (let* ((cnt count)
 		    (hashed-completely? #f)
+		    (preloaded? #f)
 		    (f (lambda ()
 			  ;; salt+str must be hashed completely at least once.
 			  (cond
+			     ((and (not preloaded?) (not (zero? i)))
+			      (set! preloaded? #t)
+			      (make-string i #a000))
 			     ((not hashed-completely?)
 			      (set! hashed-completely? #t)
 			      (set! cnt (-fx cnt salt+str-len))

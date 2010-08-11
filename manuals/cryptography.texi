@@ -33,7 +33,7 @@ Here is an example of a module that uses this library:
    (main main))
 
 (define (main argv)
-   (when (pair? (cdr argv) (cddr argv))
+   (when (and (pair? (cdr argv)) (pair? (cddr argv)))
       (let ((encrypt? (string=? "-e" (cadr argv)))
             (passwd (caddr argv))
             (input (read-string)))
@@ -45,6 +45,7 @@ Here is an example of a module that uses this library:
 @menu
 * Symmetric Block Ciphers::
 * Public Key Cryptography::
+* OpenPGP::
 @end menu
 
 
@@ -94,6 +95,10 @@ The symbol @var{cipher} can be one of:
 DES3 works on blocks of 64 bits. DES3 requires keys of
 length 128 or 192 (bits), but only 112/168 of these bits are actually used. Bigloo's
 implementation therefore accepts the smaller keys too.
+
+Bigloo's DES3 implementation has been changed with release TODO_FILL_RELEASE. Earlier
+versions did not use the full key for en/decryption.
+
 @item @code{des-np}: Same as @code{des}, but the initial and final permutations are not performed.
 @item @code{des3-np}: Same as @code{des3}, but the initial and final permutations are not performed.
 @item @code{aes}: Advanced Encryption Standard (AES). AES works on blocks of 128 bits. AES requires
@@ -288,12 +293,16 @@ Similar to @code{string->key-simple} but the input string is first prefixed with
 @deffn {Bigloo Cryptography procedure} string->key-iterated-salted str len hash-fun salt count
 This function implements the iterated salted s2k algorithm of OpenPGP (RFC 2440).
 The variable @var{count} must be a long. This algorithm is an extension of
-@code{string->key-salted} where the hash function is applied repeatedly.
+@code{string->key-salted} where the hash function is applied
+repeatedly.
+
+This function has changed with release TODO_FILL_RELEASE. Earlier
+versions could be incompatible with RFC 2440.
 
 @end deffn
 
 
-@node Public Key Cryptography,,Symmetric Block Ciphers,Cryptography
+@node Public Key Cryptography,OpenPGP,Symmetric Block Ciphers,Cryptography
 @comment  node-name,  next,  previous,  up
 @section Public Key Cryptography
 @cindex Public Key Cryptography
@@ -366,6 +375,10 @@ Returns the private partial key of the given complete key.
 @deffn {Bigloo Cryptography procedure} rsa-key=? key1 key2
 Returns true if the two keys have the same modulus and public exponent.
 The exponent of a partial key is considered to be public.
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} rsa-key-length key
+Returns the key length in bytes.
 @end deffn
 
 @subsubsection RSA basic operations
@@ -499,8 +512,7 @@ We can now decrypt the previously received message:
 
 @subsubsection RSA RFC 3447
 
-The following functions have been defined in RFC 3447. We discourage
-its usage unless you need to implement parts (or all) of it.
+The following functions have been defined in RFC 3447.
 
 @deffn {Bigloo Cryptography procedure} RSAEP k m
 @deffnx {Bigloo Cryptography procedure} RSADP k c
@@ -515,6 +527,12 @@ In fact @code{rsa-verify} is implemented as follows:
 (define (rsa-verify k m s)
   (=bx m (RSAVP1 k s)))
 @end display
+@end deffn
+
+@deffn {Bigloo Cryptography procedure} PKCS1-v1.5-pad m-str key-len mode
+@deffnx {Bigloo Cryptography procedure} PKCS1-v1.5-unpad em-str mode
+Pads (resp. unpads) the given string using PKCS1-v1.5 specifications.
+Mode must be 0, 1 or 2.
 @end deffn
 
 @deffn {Bigloo Cryptography procedure}  RSAES-PKCS1-v1.5-encrypt key m-str
@@ -629,6 +647,10 @@ Decrypts an ElGamal encrypted message (consisting of the two bignums
 @var{c1} and @var{c2}) with the given private key.
 @end deffn
 
+@deffn {Bigloo Cryptography procedure} elgamal-key-length key
+Returns the key length in bytes.
+@end deffn
+
 ElGamal works very similar to RSA. Have a look at RSA's example section.
 
 @node PEM,,ElGamal, Public Key Cryptography
@@ -650,7 +672,7 @@ $ openssl gendsa /tmp/dsaparam
 @deffnx {Bigloo Cryptography procedure} read-pem-key-file filename
 @deffnx {Bigloo Cryptography procedure} read-pem-key-string str
 These functions will read a PEM encoded key. The encoded file may contain
-a private or public RSA key, as well as a private or public DSA key.
+a private or public RSA key, or a private or public DSA key.
 
 The procedure @code{read-pem-key} accepts input-ports and strings. In the case
 of a string it will invoke @code{read-pem-key-file}
@@ -668,3 +690,478 @@ The procedure @code{write-pem-key} accepts output-ports and strings as
 @var{out} parameter. If @var{out} is a string it will delegate to
 @code{write-pem-key-file}.
 @end deffn
+
+@node OpenPGP,,Public Key Cryptography,Cryptography
+@comment  node-name,  next,  previous,  up
+@section OpenPGP
+@cindex OpenPGP
+
+@menu
+* Examples::
+* Development::
+@end menu
+
+
+Bigloo implements parts of OpenPGP (RFC 2440, RFC 4880). All OpenPGP
+functions are accessible via the @code{openpgp} library.
+
+Here is an example of a module that uses this library:
+
+@smalllisp
+;; Encrypt a string using openpgp default encryption.
+(module pgp-encrypt
+   (library openpgp)
+   (main main))
+
+(define (main argv)
+   (when (and (pair? (cdr argv)) (pair? (cddr argv)))
+      (let ((encrypt? (string=? "-e" (cadr argv)))
+            (passwd (caddr argv))
+            (input (read-string)))
+         (if encrypt?
+             (display (pgp-write-string (pgp-encrypt input
+                                                     '()  ;; no public keys
+                                                     (list passwd))))
+             (let ((composition (pgp-read-string input)))
+               (display (pgp-decrypt composition
+                                     :passkey-provider (lambda () passwd))))))))
+@end smalllisp
+
+@deffn {Bigloo OpenPGP procedure} pgp-read-string str
+@deffnx {Bigloo OpenPGP procedure} pgp-read-port iport
+@deffnx {Bigloo OpenPGP procedure} pgp-read-file file-name
+These functions read and decode PGP data. OpenPGP allows several keys
+to be stored in the same message. Therefore @code{pgp-read} will
+return keys always in a list (even if the message only contains one
+key).
+
+The return value is either a list of PGP-compositions (PGP-Keys), or a
+single PGP-composition.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-write-string composition [:format 'armored]
+@deffnx {Bigloo OpenPGP procedure} pgp-write-port oport composition [:format 'armored]
+@deffnx {Bigloo OpenPGP procedure} pgp-write-file file-name composition [:format 'armored]
+The counter-part of @code{pgp-read}. These functions encode
+PGP-compositions. By default the result is armored (i.e. encoded with
+ASCII characters). If the optional @code{:format} parameter is
+different than the symbol @code{armored}, then the composition is
+encoded in binary.
+
+Note that there is no means to encode a list of PGP-keys.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-encrypt msg-string keys passwords [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
+Encrypts the given string. The returned composition can be decrypted
+by the owners of the keys, or with one of the passwords.
+
+In the following example Alice and Bob may use their private key to
+decrypt the secret message. Users knowing the one of the passwords
+(``foo'' and ``bar'') will also be able to decrypt the message.
+@smalllisp
+(pgp-write-file "encrypted.pgp"
+   (pgp-encrypt "my secret message"
+                (list alice-key bob-key)
+                '("foo" "bar")))
+@end smalllisp
+The given keys should be subkeys of a PGP-key, but if a PGP-key is
+given Bigloo will do its best to pick the correct subkey for
+encryption.
+@itemize
+@item If only one subkey exists (the main-key) then this subkey is
+used.
+@item If two subkeys exist, and the non-main key is suitable for
+encryption, then the non-main key is used.
+@item If only one of many subkeys (including the main-key) is suitable
+for encryption, then this subkey is used.
+@item Else Bigloo raises an error.
+@end itemize
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-password-encrypt msg-string password [:hash-algo 'sha-1] [:symmetric-algo 'cast5] [:mdc #t]
+Deprecated.
+Encrypts @code{msg-string} with the given password. The returned
+PGP-composition does not contain any information which hash-algorithm
+and symmetric encryption algorithm has been used. RFC 4880 specifies
+that IDEA and MD5 should be used. However GnuPG uses SHA-1 and
+CAST5. Therefore Bigloo defaults to the latter algorithms.
+
+Even though the usage of this PGP message is deprecated it yields the
+smallest encrypted data. It may be of interest when compatibility with
+other tools is not a requirement (but why use OpenPGP then).
+
+The optional @code{mdc} flag triggers the usage of a modification
+detection code. It is more secure against tampering but requires more
+space and might not be recognized by old openpgp implementations.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-decrypt encrypted [:passkey-provider (lambda () #f)] [:password-provider (lambda (key) #f)] [:key-manager (lambda (key-id) '())] [:hash-algo 'sha-1] [:symmetric-algo 'cast5]
+Decrypts a PGP-composition that has been generated by
+@code{pgp-encrypt} or by @code{pgp-password-encrypt}.
+The function returns the decrypted message (a string) or @code{#f} if
+decryption was not possible.
+
+If the message can be decrypted with a private key, then Bigloo will
+call the @code{key-manager} and request a list of PGP-subkeys that
+match the given key-id.
+
+If a subkey (returned by the key-manager) is not yet decrypted, Bigloo
+will invoke the @code{password-provider} with the subkey, and request
+a password to decrypt the private part of the subkey.
+
+If the message can be decrypted with a password Bigloo will then
+request a passkey by invoking the @code{passkey-provider}.
+
+The optional arguments @code{hash-algo} and @code{symmetric-algo} are
+only used for messages that have been encrypted with
+@code{pgp-password-encrypt}.
+
+Note that Bigloo's OpenPGP implementation cannot uncompress data that
+has been compressed with the @code{ZLIB} algorithm. By default
+@code{gpg} uses @code{ZLIB}. This is a common reason for failure when
+decrypting messages.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-sign msg-string key password-provider [:detached-signature? #t] [:one-pass? #f] [:hash-algo 'sha-1]
+Signs @code{msg-string} with the given key. Ideally the key should be
+a subkey, but if a complete PGP-Key is given, Bigloo will use the
+main-key instead. If the main-key is not suitable for signing, then an
+error is raised.
+
+If the private part of the key has not yet been decrypted then Bigloo
+will call the passwort-provider (a procedure) with the subkey to get a
+password (a string).
+
+The function returns a PGP-composition.
+
+If the optional @code{detached-signature?} parameter is set to
+@code{#f} then the msg-string is not included in the returned
+composition.
+
+The @code{one-pass?} and @code{hash-algo} parameters are usually left
+at its default values.
+
+Example:
+@smalllisp
+(let ((my-key (car (pgp-read-file "my-key.pgp"))))
+  (pgp-write-file "msg.sig"
+     (pgp-sign "my signed message"
+               my-key
+               (lambda (key) "my-password")
+               :detached-signature? #f)))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-verify signature key-manager [:msg #f]
+Verifies a signature.
+
+The key-manager is a function that takes a substring identifier and
+returns a list of keys matching this id. Since a signature composition
+may contain several signatures this function may be invoked several
+times.
+
+The result is a list of subkeys that signed the message. If the
+key-manager doesn't have any of the signature-keys then the result is
+the empty list.
+
+A message (string) needs only be given if the signature is
+detached. Otherwise the original message is encoded in the
+signature-composition.
+
+
+Example:
+@smalllisp
+(let ((sig (pgp-read-file "msg.sig")))
+  (let ((signers (pgp-verify sig my-key-manager)))
+   (for-each (lambda (subkey)
+               (print (subkey->string subkey) " signed the message"))
+             signers)))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-signature-message signature
+Returns the signature's message, or @code{#f} if the signature is a
+detached signature.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-key? key
+@deffnx {Bigloo OpenPGP procedure} pgp-subkey? key
+Predicates for PGP-Key and PGP-Subkey.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-subkeys key
+Returns a list of PGP-Subkeys of the PGP-Key. The first key in the
+list is the @emph{main-key}. The main-key is used as default for
+signatures.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-key->string key
+@deffnx {Bigloo OpenPGP procedure} pgp->subkey->string key
+Returns a string representation of the key (resp. subkey).
+
+Example outputs:
+@smalllisp
+(pgp-key->string key)
+@result{} John Doe john.doe@@gmail.com
+@result{} bd4df3b2ddef790c RSA (Encrypt or Sign)
+@result{} 424610a65032c42e RSA (Encrypt or Sign)
+
+(pgp-subkey->string (car (pgp-subkeys key)))
+@result{} John Doe john.doe@@gmail.com
+@result{} bd4df3b2ddef790c RSA (Encrypt or Sign)
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-key-id subkey
+@deffnx {Bigloo OpenPGP procedure} pgp-key-fingerprint subkey
+Returns the id (resp. fingerprint) of a subkey.
+
+A subkey-id is a 8-character binary string.
+
+A fingerprint is a 20-character binary string.
+@end deffn
+
+@deffn {Bigloo OpenPGP procedure} pgp-make-key-db
+@deffnx {Bigloo OpenPGP procedure} pgp-add-key-to-db db key
+@deffnx {Bigloo OpenPGP procedure} pgp-add-keys-to-db db keys
+@deffnx {Bigloo OpenPGP procedure} pgp-resolve-key db id
+@deffnx {Bigloo OpenPGP procedure} pgp-db-print-keys db
+A simple key-manager implementation based on lists.
+@end deffn
+
+@node Examples,Development,, OpenPGP
+@comment  node-name,  next,  previous,  up
+@subsection Examples
+
+@menu
+* Signatures::
+* Encryption::
+@end menu
+
+
+@node Signatures,Encryption,,Examples
+@comment  node-name,  next,  previous,  up
+@subsection Signatures
+
+Unless you already have a gpg key create a new PGP key with gpg. Note
+that DSA with a keysize greater than 1024 does not work with
+SHA-1. SHA-224,256,384,512 would work, but are not yet implemented
+in Bigloo.
+
+@display
+$ gpg --gen-key
+...
+pub   1024D/A2DA694E 2010-08-07 [expires: 2010-08-27]
+      Key fingerprint = DFAF 5894 9003 8640 D45B  6199 07CA 0495 A2DA 694E
+uid                  Bigloo Example
+sub   1024g/0B8985E5 2010-08-07 [expires: 2010-08-27]
+@end display
+
+We export both the public and the private key.
+@display
+$ gpg  -a -o A8453FAB_Bigloo_Example_User.pkey --export A8453FAB
+$ gpg  -a -o A8453FAB_Bigloo_Example_User.skey --export-secret-keys A8453FAB
+@end display
+
+This small program will simply read the key and print a human-readable
+representation.
+@smalllisp
+;; contents of print-key.scm
+(module print-key
+   (library openpgp)
+   (main my-main))
+
+(define (my-main args)
+   (let ((public-key (car (pgp-read-file "A2DA694E_Bigloo_Example.pkey")))
+         (secret-key (car (pgp-read-file "A2DA694E_Bigloo_Example.skey"))))
+      (display (pgp-key->string public-key))
+      (display (pgp-key->string secret-key))))
+@end smalllisp
+
+The compilation is straight-forward and does not require any special flags:
+@display
+$ bigloo print-key.scm -o print-key
+$ ./print-key
+Bigloo Example
+07ca0495a2da694e DSA (Digital Signature Standard)
+5fa4e8c90b8985e5 ElGamal (Encrypt-Only)
+Bigloo Example
+07ca0495a2da694e DSA (Digital Signature Standard)
+5fa4e8c90b8985e5 ElGamal (Encrypt-Only)
+@end display
+
+As can be seen, the @code{pgp-key->string} routine does not
+differentiate between public and private keys.
+
+We can also sign a message:
+@smalllisp
+(let ((my-key (car (pgp-read-file "A2DA694E_Bigloo_Example.skey"))))
+  (pgp-write-file "msg.sig"
+     (pgp-sign (read-string)
+               my-key
+               (lambda (key) "<Bigloo Example Password>")
+               :detached-signature? #f)))
+@end smalllisp
+
+Signatures from Bigloo follow RFC 4880 and can therefore be verified
+by @code{gpg}.
+@display
+$ echo "Gpg can verify Bigloo's signature" | ./sign
+$ gpg --verify msg.sig
+gpg: Signature made Sat 07 Aug 2010 10:12:21 PM CEST using DSA key ID A2DA694E
+gpg: Good signature from "Bigloo Example"
+@end display
+
+Inversely Bigloo can verify @code{pgp}'s signature. Here we first
+generate a signature with @code{gpg}.
+
+@display
+$ echo "Bigloo can verify gpg's signatures." | \
+ gpg -o msg_gpg.sig -a \
+     --default-key "Bigloo Example" \
+     --passphrase <Bigloo Example Password> \
+     --sign 
+
+You need a passphrase to unlock the secret key for
+user: "Bigloo Example"
+1024-bit DSA key, ID A2DA694E, created 2010-08-07
+@end display
+
+The following program reads OpenPGP signatures and verifies them. For
+simplicity the key database will only contain one key, but it could
+contain any number of keys.
+@smalllisp
+(let ((my-key (car (pgp-read-file "A2DA694E_Bigloo_Example.pkey")))
+      (sig (pgp-read-file "msg_gpg.sig"))
+      (db (pgp-make-key-db)))
+   (pgp-add-key-to-db db my-key)
+   (print "Signature message: " (pgp-signature-message sig))
+   (let ((signers (pgp-verify sig (lambda (id) (pgp-resolve-key db id)))))
+      (for-each (lambda (subkey)
+                   (display (pgp-subkey->string subkey)))
+                signers)))
+@end smalllisp
+
+As expected, the program verifies the correct signature.
+@display
+$ ./verify
+Signature message: Bigloo can verify gpg's signatures.
+
+Bigloo Example
+07ca0495a2da694e DSA (Digital Signature Standard)
+@end display
+
+@subsubsection Email Usage
+Usage of OpenPGP within mails is described in RFC 3156.
+
+Encrypted parts and signatures are encoded with their
+separate content-types. Signatures are done over a canonicalized
+version of the message. They also hash over the content-type headers.
+
+OpenPGP's recette program has an example for a signature from kmail,
+that can be succesfully verified with Bigloo.
+
+@node Encryption,,Signatures,Examples
+@comment  node-name,  next,  previous,  up
+@subsection Encryption
+
+OpenPGP allows messages to be encrypted with passwords (in this
+context ``passkey'') or public keys. It is also possible to encrypt a
+message for more than one recipient. In such a case the data will be
+encrypted by a session-key which in turn is encrypted separately for
+each recipient. Since the session-key is not very big (compared to the
+data) the size overhead is usually insignificant.
+
+Let's start by encrypting a message with a simple passkey.
+@smalllisp
+(let* ((secret-data "My secret data\n")
+       (composition (pgp-encrypt secret-data '() '("My secret passkey"))))
+  (pgp-write-file "secret.pgp" composition))
+@end smalllisp
+
+As usual the pgp message is compatible with @code{gpg}:
+@display
+$ gpg secret.pgp
+gpg: CAST5 encrypted data
+Enter passphrase: <My secret passkey>
+gpg: encrypted with 1 passphrase
+$ cat secret
+My secret data
+@end display
+
+As expected, Bigloo can decrypt password protected files that have
+been generated by gpg:
+@display
+$ echo "A secret message encrypted with gpg." | \
+  gpg -o encrypted.pgp --symmetric \
+      --passphrase "secret key"
+@end display
+
+The Bigloo code to decrypt the message is very simple:
+@smalllisp
+(print (pgp-decrypt (pgp-read-file "encrypted.pgp")
+                    :passkey-provider (lambda () "secret key"))))
+@end smalllisp
+
+In a similar vein it is possible to use public key encryption.
+The following example tests the encryption and decryption part of
+Bigloo.
+@smalllisp
+(let* ((my-key (car (pgp-read-file "A2DA694E_Bigloo_Example.skey")))
+       (db (pgp-make-key-db))
+       (secret-data "My secret message")
+       (encrypted (pgp-encrypt secret-data `(,my-key) '())))
+   (pgp-add-key-to-db db my-key)
+   (let* ((key-manager (lambda (id) (pgp-resolve-key db id)))
+          (password-provider (lambda (key) <Bigloo Example Password>))
+          (decrypted (pgp-decrypt encrypted
+                                 :key-manager key-manager
+                                 :password-provider password-provider)))
+     (if (not (string=? decrypted secret-data))
+         (error "decrypt-test"
+                "Something went horribly wrong"
+                decrypted))))
+@end smalllisp
+ 
+Note that a secret secret key has a part that is encrypted by a
+password. During decryption Bigloo needs access to this encrypted data
+and therefore invokes the password-provider so it can decrypt it. In
+many cases this will trigger an interactive callback with the
+user. Here, in this toy example, we know that the password that is
+needed is for the Bigloo Example key. In a more general case the
+password-provider will have to print the key to give more information
+to the user.
+
+In the following example we show how to encrypt data for 3 passwords and
+one key.
+
+@smalllisp
+(let* ((my-key (car (pgp-read-file "A2DA694E_Bigloo_Example.skey")))
+       (db (pgp-make-key-db))
+       (secret-data "My secret message")
+       (encrypted (pgp-encrypt secret-data `(,my-key)
+                                           '("pass1" "pass2" "pass3"))))
+   (pgp-write-file "multi_receiver.pgp" encrypted))
+@end smalllisp
+
+We believe that @code{gpg} has a bug and does not know how to handle
+such messages correctly. Bigloo, however, decrypts the message with
+any of the possible options.
+
+@node Development,,Examples, OpenPGP
+@comment  node-name,  next,  previous,  up
+@section Development
+Bigloo's OpenPGP implementation only exposes few library
+functions. As a consequence some features are not accessible. The
+key-management system is very rough, and there are no means to 
+inspect messages in more detail. It should be possible to expose or
+implement many of those missing features with little effort. The most
+time-consuming part is generally designing a clean API and the
+testing/debugging of new features: when something goes wrong it can
+take a huge amount of time to find the reason.
+
+Developers interested in improving Bigloo's OpenPGP library can print
+a huge amount of debugging information by enabling the debug-macro in
+@code{util.scm}. Bigloo's OpenPGP implementation is not designed for
+speed and takes no shortcuts. The debugging output can therefore be
+used to follow the specification of RFC 4880 (or 2440).

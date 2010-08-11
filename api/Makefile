@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Thu Jul  1 13:38:37 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 12:06:29 2010 (serrano)                */
 #*    Copyright   :  2005-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -18,7 +18,8 @@ include ../Makefile.config
 #*    DIRECTORIES                                                      */
 #*---------------------------------------------------------------------*/
 DIRECTORIES= pthread fthread mail ssl web multimedia sqlite calendar \
-             srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto
+             srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto \
+             openpgp
 
 #*---------------------------------------------------------------------*/
 #*    Booting on a bare system                                         */

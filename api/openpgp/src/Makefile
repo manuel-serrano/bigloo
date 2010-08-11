@@ -1,65 +1,80 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bdl/src/Makefile                     */
-#*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Aug 11 13:37:10 2010 (serrano)                */
+#*        adapted :  Florian Loitsch                                   */
 #*    -------------------------------------------------------------    */
-#*    The makefile to build the bdl library.                           */
+#*    The makefile to build the library.                               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    Standard Bdl configuration                                       */
+#*    Standard Makefile configuration                                  */
 #*---------------------------------------------------------------------*/
-include ../../Makefile.config
-include ../../Makefile.misc
+include ../../../Makefile.config
+include ../../../Makefile.misc
 
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the library name
-API		= bdl
+API		= openpgp
+# Directories
+BIGLOO_SRC_DIR 	= Llib
+DOTNET_SRC_DIR 	= DotNet
+JAVA_SRC_DIR 	= Java
+MISC_SRC_DIR 	= Misc
 # Where to store the library class files
-PBASE		= bigloo.bdl
-CLASS_DIR	= objs/class_s/bigloo/bdl
+PBASE		= bigloo.$(API)
+CLASS_DIR	= objs/class_s/bigloo/$(API)
+CLASS_EDIR	= objs/class_es/bigloo/$(API)
+DOTNET_OBJ_DIR	= objs/dotnet_s
+DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
-BIGLOO		= $(BOOTBINDIR)/bigloo
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
-JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
+BIGLOO		= $(BGLBUILDBIGLOO)
+AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
+JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
+DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
+BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+# Bigloo compilation options
+#BCMPFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
+BCMPFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
-BFLAGS		+= -lib-dir $(BOOTLIBDIR)
+# Additional crypto
+EXTRALIBS_S	= -lbigloocrypto_s-$(RELEASE)
+EXTRALIBS_U	= -lbigloocrypto_u-$(RELEASE)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= etags misc prgm types env
+_BGL_OBJECTS	= pgp_algo pgp_composition pgp_conversion \
+                  pgp_decode pgp_encode pgp_enums pgp_facade \
+                  pgp_human pgp_key_manager pgp_logic pgp_packets \
+                  pgp_s2k port_util util
 
-_C_OBJECTS	= 
-_JAVA_CLASSES	= 
-
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
+EOBJECTS	= objs/make_lib.o
 
-BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
-JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
-JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
-CLASSES		= $(_BGL_CLASSES) $(JAVA_CLASSES)
+_CLASSES	= $(_BGL_OBJECTS)
+BGL_CLASSES	= $(_CLASSES:%=$(CLASS_DIR)/%.class)
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
-_BGL_SOURCES	= $(_BGL_OBJECTS:%=%.scm) 
-_C_SOURCES	= $(_C_OBJECTS:%=%.c) 
-_JAVA_SOURCES	= $(_JAVA_CLASSES:%=%.java) 
 
-SOURCES		= $(_BGL_SOURCES) $(_C_SOURCES) $(_JAVA_SOURCES)
-INCLUDES	= 
+_OBJS		= $(_BGL_OBJECTS)
+BGL_DOTNET_OBJ	= $(_OBJS:%=$(DOTNET_OBJ_DIR)/%.obj)
+BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
+_BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
+
+SOURCES		= $(_BGL_SOURCES)
+ 
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) $(INCLUDES) Makefile bdl.init make_lib.scm
+POPULATION	= $(SOURCES) \
+                  $(MISC_SRC_DIR)/make_lib.scm \
+                  $(MISC_SRC_DIR)/$(API).init \
+                  Makefile
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
@@ -104,4 +119,4 @@ distclean: cleanall
 #*---------------------------------------------------------------------*/
 #*    Common API rules                                                 */
 #*---------------------------------------------------------------------*/
-include ../../api/Makefile.api
+include ../../Makefile.api

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Wed Aug 11 10:19:26 2010 (serrano)                */
+/*    Last change :  Wed Aug 11 11:23:32 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -71,7 +71,6 @@ GC_collect_hook( int heapsz, long livesz ) {
 /*---------------------------------------------------------------------*/
 void
 gc_alloc_size_add( int size ) {
-   if( size > 10000 ) fprintf( stderr, "GC_ALLOC_SIZE_ADD size=%d\n", size );
    if( bmem_thread ) pthread_mutex_lock( &bmem_mutex );
    gc_alloc_size += size;
    if( bmem_thread ) pthread_mutex_unlock( &bmem_mutex );

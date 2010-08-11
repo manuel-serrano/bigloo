@@ -17,7 +17,12 @@
    
    (export (elgamal-decrypt::bignum key::Complete-ElGamal-Key c1::bignum c2::bignum)
 	   (elgamal-encrypt key::ElGamal-Key m::bignum)
-	   (extract-public-elgamal-key::ElGamal-Key key::Complete-ElGamal-Key)))
+	   (extract-public-elgamal-key::ElGamal-Key key::Complete-ElGamal-Key)
+	   (elgamal-key-length::long key::ElGamal-Key)))
+
+(define (elgamal-key-length key)
+   (with-access::ElGamal-Key key (p)
+      (/ceilingfx (bignum-bit-length p) 8)))
 
 (define (extract-public-elgamal-key key)
    (with-access::ElGamal-Key key (p g y)

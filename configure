@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Aug 11 10:36:33 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 12:14:24 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -872,11 +872,9 @@ while : ; do
 
     -*)
       if [ "$1" != "-h" -a "$1" != "-help" -a "$1" != "--help" ]; then
-        echo "*** ERROR: Illegal option \"$1\""
-        echo ""
-        echo ""
-        echo "Usage: configure [options]" >&2;
-        echo "" >&2;
+        echo "*** ERROR: unknown option \"$1\""
+        echo "Run \"$0 --help\" for available options." >&2;
+        exit 1;
       fi
       # Existing apis
       eapis=
@@ -1103,6 +1101,8 @@ dbus_is_enabled=no
 fthread_is_enabled=no
 pthread_is_enabled=no
 srfi27_is_enabled=no
+crypto_is_enabled=no
+openpgp_is_enabled=no
 
 for a in $apis; do
   case $a in
@@ -1114,6 +1114,8 @@ for a in $apis; do
     dbus) dbus_is_enabled="yes";;
     pthread) pthread_is_enabled="yes";;
     fthread) fthread_is_enabled="yes";;
+    crypto) crypto_is_enabled="yes";;
+    openpgp) openpgp_is_enabled="yes";;
   esac
 done
 
@@ -1137,6 +1139,14 @@ if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
     echo "*** ERROR: fthread library requires pthread."
     echo "Either disable fthread or enable pthread."
     echo
+    echo "Enabled apis: $apis"
+    exit 1
+fi
+
+if [ $openpgp_is_enabled = "yes" -a $crypto_is_enabled = "no" ]; then
+    echo "*** ERROR: openpgp library requires crypto."
+    echo "Either disable openpgp, or enable crypto."
+    echo 
     echo "Enabled apis: $apis"
     exit 1
 fi
