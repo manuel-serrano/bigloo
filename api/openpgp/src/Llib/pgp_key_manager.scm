@@ -18,8 +18,7 @@
 	   (pgp-add-key-to-db db key)
 	   (pgp-add-keys-to-db db keys::pair-nil)
 	   (pgp-resolve-key::pair-nil db id::bstring)
-	   (pgp-db-print-keys db))
-   (eval (export-all)))
+	   (pgp-db-print-keys db)))
 
 (define (pgp-key? key) (PGP-Key? key))
 (define (pgp-subkey? subkey) (PGP-Subkey? subkey))

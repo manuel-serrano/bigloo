@@ -10,8 +10,7 @@
 	   (write-pem-key key out #!optional public-key-only?)
 	   (write-pem-key-port key out::output-port #!optional public-key-only?)
 	   (write-pem-key-file key out::bstring #!optional public-key-only?)
-	   (write-pem-key-string::bstring key #!optional public-key-only?))
-   (eval (export-all)))
+	   (write-pem-key-string::bstring key #!optional public-key-only?)))
 
 (define (any->bignum x)
    (cond

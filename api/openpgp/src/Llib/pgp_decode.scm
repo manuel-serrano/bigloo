@@ -9,8 +9,7 @@
 	   __openpgp-enums)
    (export (decode-packets::pair-nil p::input-port)
 	   (decode-s2k p::input-port)
-	   (decode-mpi::bignum p::input-port))
-   (eval (export-all)))
+	   (decode-mpi::bignum p::input-port)))
 
 ;; returns <length, partial-length?>
 (define (decode-packet-length-v4 p)

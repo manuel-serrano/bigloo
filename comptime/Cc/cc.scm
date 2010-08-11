@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Sun Nov 30 17:29:02 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug 11 14:59:37 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -74,12 +74,16 @@
 				 obj
 				 " -I. "
 				 (let loop ((path *lib-dir*))
-				    (if (null? path)
-					""
+				    (cond
+				       ((null? path)
+					"")
+				       ((directory? (car path))
 					(string-append "-I"
 						       (car path)
 						       " "
-						       (loop (cdr path)))))
+						       (loop (cdr path))))
+				       (else
+					(loop (cdr path)))))
 				 (if (or *c-debug* (>fx *bdb-debug* 0))
 				     (string-append " " *c-debug-option*)
 				     "")

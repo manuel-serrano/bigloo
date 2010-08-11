@@ -96,7 +96,7 @@ DES3 works on blocks of 64 bits. DES3 requires keys of
 length 128 or 192 (bits), but only 112/168 of these bits are actually used. Bigloo's
 implementation therefore accepts the smaller keys too.
 
-Bigloo's DES3 implementation has been changed with release TODO_FILL_RELEASE. Earlier
+Bigloo's DES3 implementation has been changed with release 3.4b. Earlier
 versions did not use the full key for en/decryption.
 
 @item @code{des-np}: Same as @code{des}, but the initial and final permutations are not performed.
@@ -296,7 +296,7 @@ The variable @var{count} must be a long. This algorithm is an extension of
 @code{string->key-salted} where the hash function is applied
 repeatedly.
 
-This function has changed with release TODO_FILL_RELEASE. Earlier
+This function has changed with release 3.4b. Earlier
 versions could be incompatible with RFC 2440.
 
 @end deffn
@@ -896,7 +896,7 @@ signatures.
 @end deffn
 
 @deffn {Bigloo OpenPGP procedure} pgp-key->string key
-@deffnx {Bigloo OpenPGP procedure} pgp->subkey->string key
+@deffnx {Bigloo OpenPGP procedure} pgp-subkey->string key
 Returns a string representation of the key (resp. subkey).
 
 Example outputs:
@@ -935,13 +935,14 @@ A simple key-manager implementation based on lists.
 
 @menu
 * Signatures::
+* Email Usage::
 * Encryption::
 @end menu
 
 
-@node Signatures,Encryption,,Examples
+@node Signatures,Email Usage,,Examples
 @comment  node-name,  next,  previous,  up
-@subsection Signatures
+@subsubsection Signatures
 
 Unless you already have a gpg key create a new PGP key with gpg. Note
 that DSA with a keysize greater than 1024 does not work with
@@ -1051,6 +1052,8 @@ Bigloo Example
 07ca0495a2da694e DSA (Digital Signature Standard)
 @end display
 
+@node Email Usage, Encryption,Signatures,Examples
+@comment  node-name,  next,  previous,  up
 @subsubsection Email Usage
 Usage of OpenPGP within mails is described in RFC 3156.
 
@@ -1061,9 +1064,9 @@ version of the message. They also hash over the content-type headers.
 OpenPGP's recette program has an example for a signature from kmail,
 that can be succesfully verified with Bigloo.
 
-@node Encryption,,Signatures,Examples
+@node Encryption,,Email Usage,Examples
 @comment  node-name,  next,  previous,  up
-@subsection Encryption
+@subsubsection Encryption
 
 OpenPGP allows messages to be encrypted with passwords (in this
 context ``passkey'') or public keys. It is also possible to encrypt a

@@ -1,9 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/openpgp/src/Misc/make-lib.scm        */
+;*    .../prgm/project/bigloo/api/openpgp/src/Misc/make_lib.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*        adapted :  Florian Loitsch                                   */
-;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
+;*    Creation    :  Florian Loitsch                                   */
+;*    Last change :  Wed Aug 11 14:36:42 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano, Florian Loitsch           */
 ;*    -------------------------------------------------------------    */
 ;*    The module is used to build the heap file.                       */
 ;*=====================================================================*/
@@ -16,12 +17,4 @@
    (import __openpgp-facade
 	   __openpgp-key-manager)
 
-   (eval   (export-all))
-
-   (export (%openpgp-eval)))
-
-;*---------------------------------------------------------------------*/
-;*    %openpgp-eval ...                                             */
-;*---------------------------------------------------------------------*/
-(define (%openpgp-eval)
-   #unspecified)
+   (eval   (export-all)))

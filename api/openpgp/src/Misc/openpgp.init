@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/crypto/src/Misc/crypto.init               */
+;*    .../project/bigloo/api/openpgp/src/Misc/openpgp.init             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*        adapted :  Florian Loitsch                                   */
@@ -13,7 +13,7 @@
 ;*---------------------------------------------------------------------*/
 (declare-library! 'openpgp
 		  :basename "biglooopenpgp"
-		  :module-init '__openpgp-makelib
+		  :module-init '__openpgp-facade
 		  :module-eval '__openpgp-makelib)
 
 ;*---------------------------------------------------------------------*/

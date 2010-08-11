@@ -13,8 +13,7 @@
 					signed-sub-packets::pair-nil)
 	   (encode-packet packet::PGP-Packet p::output-port)
 	   (encode-public-key-content packet::PGP-Key-Packet p::output-port)
-	   (encode-packets p::output-port . packets))
-   (eval (export-all)))
+	   (encode-packets p::output-port . packets)))
 
 (define (encode-packets p::output-port . packets)
    (for-each (lambda (packet) (encode-packet packet p)) packets))

@@ -1,9 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/crypto/src/Misc/make_lib.scm         */
+;*    serrano/prgm/project/bigloo/api/crypto/src/Misc/make_lib.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*        adapted :  Florian Loitsch                                   */
-;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
+;*    Creation    :  Florian Loitsch                                   */
+;*    Last change :  Wed Aug 11 14:36:49 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano, Florian Loitsch           */
 ;*    -------------------------------------------------------------    */
 ;*    The module is used to build the heap file.                       */
 ;*=====================================================================*/
@@ -30,13 +31,4 @@
 	   (class Rsa-Key)
 	   (class Complete-Rsa-Key)
 	   (class ElGamal-Key)
-	   (class Complete-ElGamal-Key)
-	   )
-
-   (export (%crypto-eval)))
-
-;*---------------------------------------------------------------------*/
-;*    %crypto-eval ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (%crypto-eval)
-   #unspecified)
+	   (class Complete-ElGamal-Key)))

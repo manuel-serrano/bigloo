@@ -40,8 +40,7 @@
     (final-class PGP-One-Pass-Signature::PGP-Signature
        one-pass-sigs::pair-nil) ;; each one in relation with the sigs.
     (final-class PGP-Literal::PGP-Message
-       literal::PGP-Literal-Packet))
-   (eval (export-all)))
+       literal::PGP-Literal-Packet)))
 
 ;; TODO: we only handle Compressed packets at the "toplevel", as a message
 ;; inside signatures and inside Literals.

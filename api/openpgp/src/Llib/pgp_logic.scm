@@ -50,8 +50,7 @@
     (create-public-key-session-key-packet
      public-subkey::PGP-Subkey
      session-key::bstring
-     data-symmetric-algo::symbol)) ;; used to encrypt the payload.
-   (eval (export-all)))
+     data-symmetric-algo::symbol))) ;; used to encrypt the payload.
 
 (define (PGP-main-key::PGP-Subkey key::PGP-Key)
    (car (PGP-Key-subkeys key)))

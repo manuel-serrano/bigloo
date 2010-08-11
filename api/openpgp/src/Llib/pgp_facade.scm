@@ -35,8 +35,7 @@
 		 (hash-algo 'sha-1)
 		 (symmetric-algo 'cast5))))
 
-;; TODO: remove hardcoded bigloo version.
-(define *bigloo-version* "3.2c")
+(define *bigloo-version* (bigloo-config 'release-number))
 
 (define (pgp-read-string str::bstring)
    (pgp-read-port (open-input-string str)))
