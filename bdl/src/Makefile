@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Aug 11 13:37:10 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 15:44:59 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -22,16 +22,22 @@ API		= bdl
 # Where to store the library class files
 PBASE		= bigloo.bdl
 CLASS_DIR	= objs/class_s/bigloo/bdl
-# The Bigloo compiler
+BIGLOO_SRC_DIR 	= .
+DOTNET_SRC_DIR 	= .
+JAVA_SRC_DIR 	= .
+C_SRC_DIR 	= .
+MISC_SRC_DIR 	= .
+# # The Bigloo compiler
 BIGLOO		= $(BOOTBINDIR)/bigloo
 AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
 JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
 DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
+# Bigloo compilation options
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) \
                   -heap-library $(API)
-BFLAGS		+= -lib-dir $(BOOTLIBDIR)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

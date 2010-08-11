@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Aug 11 12:14:24 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 15:51:28 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1079,76 +1079,78 @@ echo "Checking local configuration..."
 #*---------------------------------------------------------------------*/
 #*    Weeding out bad configurations                                   */
 #*---------------------------------------------------------------------*/
-# checking the correctness of selected apis
-err=
-for p in $apis; do
-  if [ ! -d api/$p ]; then
-    err="$err $p";
+if [ "$action" != "bigloo_config_el" ]; then
+  # checking the correctness of selected apis
+  err=
+  for p in $apis; do
+    if [ ! -d api/$p ]; then
+      err="$err $p";
+    fi
+  done
+
+  if [ "$err " != " " ]; then
+    echo "*** ERROR: unknown api(s):$err";
+    exit 1
   fi
-done
-
-if [ "$err " != " " ]; then
-  echo "*** ERROR: unknown api(s):$err";
-  exit 1
-fi
-
-# check apis cross dependencies
-srfi1_is_enabled=no
-packrat_is_enabled=no
-pkglib_is_enabled=no
-sqlite_is_enabled=no
-dbus_is_enabled=no
-fthread_is_enabled=no
-pthread_is_enabled=no
-srfi27_is_enabled=no
-crypto_is_enabled=no
-openpgp_is_enabled=no
-
-for a in $apis; do
-  case $a in
-    srfi1) srfi1_is_enabled="yes";;
-    srfi27) srfi27_is_enabled="yes";;
-    packrat) packrat_is_enabled="yes";;
-    sqlite) sqlite_is_enabled="yes";;
-    pkglib) pkglib_is_enabled="yes";;
-    dbus) dbus_is_enabled="yes";;
-    pthread) pthread_is_enabled="yes";;
-    fthread) fthread_is_enabled="yes";;
-    crypto) crypto_is_enabled="yes";;
-    openpgp) openpgp_is_enabled="yes";;
-  esac
-done
-
-if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
-    echo "*** ERROR: packrat library requires srfi1."
-    echo "Either disable packrat or enable srfi1."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
-fi
-
-if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
-    echo "*** ERROR: pkglib library requires sqlite."
-    echo "Either disable pkglib or enable sqlite."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
-fi
-
-if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
-    echo "*** ERROR: fthread library requires pthread."
-    echo "Either disable fthread or enable pthread."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
-fi
-
-if [ $openpgp_is_enabled = "yes" -a $crypto_is_enabled = "no" ]; then
-    echo "*** ERROR: openpgp library requires crypto."
-    echo "Either disable openpgp, or enable crypto."
-    echo 
-    echo "Enabled apis: $apis"
-    exit 1
+  
+  # check apis cross dependencies
+  srfi1_is_enabled=no
+  packrat_is_enabled=no
+  pkglib_is_enabled=no
+  sqlite_is_enabled=no
+  dbus_is_enabled=no
+  fthread_is_enabled=no
+  pthread_is_enabled=no
+  srfi27_is_enabled=no
+  crypto_is_enabled=no
+  openpgp_is_enabled=no
+  
+  for a in $apis; do
+    case $a in
+      srfi1) srfi1_is_enabled="yes";;
+      srfi27) srfi27_is_enabled="yes";;
+      packrat) packrat_is_enabled="yes";;
+      sqlite) sqlite_is_enabled="yes";;
+      pkglib) pkglib_is_enabled="yes";;
+      dbus) dbus_is_enabled="yes";;
+      pthread) pthread_is_enabled="yes";;
+      fthread) fthread_is_enabled="yes";;
+      crypto) crypto_is_enabled="yes";;
+      openpgp) openpgp_is_enabled="yes";;
+    esac
+  done
+  
+  if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
+      echo "*** ERROR: packrat library requires srfi1."
+      echo "Either disable packrat or enable srfi1."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
+      echo "*** ERROR: pkglib library requires sqlite."
+      echo "Either disable pkglib or enable sqlite."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
+      echo "*** ERROR: fthread library requires pthread."
+      echo "Either disable fthread or enable pthread."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $openpgp_is_enabled = "yes" -a $crypto_is_enabled = "no" ]; then
+      echo "*** ERROR: openpgp library requires crypto."
+      echo "Either disable openpgp, or enable crypto."
+      echo 
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1605,100 +1607,102 @@ echo >> $configurelog
 #*---------------------------------------------------------------------*/
 #*    GC configuration                                                 */
 #*---------------------------------------------------------------------*/
-echo "+ GC configuration ($customgc)..." >> $configurelog
-
-cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
-
-# We check the standard GC if we have to use one
-if [ "$customgc " = "no " ]; then
-  isgccustom=0
-  gclib=
-  if [ "$gclibdir " = " " ]; then
-    gclibdir=/usr/lib;
-  fi
-  if [ "$gcincdir " = " " ]; then
-    gcincdir=/usr/include/gc
-  fi
-  gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
-  if [ "$gclib " = " " ]; then
-     echo "*** ERROR:configure:Standard GC. Aborting";
-     echo "You are trying to configure Bigloo so that it uses an existing"
-     echo "GC library. The configuration script is enable to make this"
-     echo "library working properly."
-     echo "Try to configure Bigloo with \"--customgc=yes\"."
-     exit 1;
-  fi
-else
-  isgccustom=1
-  gclib=$customgclib;
-
-  gcincdir=$pwd/gc/$gccustom/include
-
-  # detect if we are using maemo for an ARM emulation
-  maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
-  if [ "$maemo " = "yes " ]; then
-    # This is required for compiling under QEMU (use to be the -DQEMU flag)
-    cgcflags="$cgcflags -DNO_PROC_STAT"
-    cflags="$cflags -DBGL_FORBID_GC_COLLECT"
-  fi
-
-  # configure directories
-  gcconfiguredir="--prefix=$pwd/gc/preinst"
-  # install the gc source code if needed
-
-  if [ ! -d gc/$gccustom ]; then
-    echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
-
-    (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
-  fi
-
-  if [ -f gc/configure-$gccustom ]; then
-    autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
-    gcconfigureopt="$autoopts $gcconfigureopt"
-    echo "+ Configuring custom GC..." && \
-    (. ./gc/configure-$gccustom) || exit 1
-  fi
-fi
-
-# Check the version of the collector
-if [ "$gcversion " = " " ]; then
-  gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
-
-  if [ "$gcversion" -le "000" ]; then
-    doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
-
-    if [ "$doblocking " = "yes " ]; then
-      gchavedoblocking=1
-      gcversion="700"
-    else
-      startblocking=`$autoconf gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags"` || exit 1
-      if [ "$startblocking " = "yes " ]; then
-        gchaveblocking=1
-      else
-        gcversion="680"
-      fi
+if [ "$action" != "bigloo_config_el" ]; then
+  echo "+ GC configuration ($customgc)..." >> $configurelog
+  
+  cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
+  
+  # We check the standard GC if we have to use one
+  if [ "$customgc " = "no " ]; then
+    isgccustom=0
+    gclib=
+    if [ "$gclibdir " = " " ]; then
+      gclibdir=/usr/lib;
+    fi
+    if [ "$gcincdir " = " " ]; then
+      gcincdir=/usr/include/gc
+    fi
+    gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
+    if [ "$gclib " = " " ]; then
+       echo "*** ERROR:configure:Standard GC. Aborting";
+       echo "You are trying to configure Bigloo so that it uses an existing"
+       echo "GC library. The configuration script is enable to make this"
+       echo "library working properly."
+       echo "Try to configure Bigloo with \"--customgc=yes\"."
+       exit 1;
     fi
   else
-    if [ "$hostos " != "win32" -a $hostos != "cygwin" ]; then
-      if [ "$gcversion" -lt "700" ]; then
-        gchaveblocking=1
-        gcversion="680"
-      fi
-      if [ "$gcversion" -ge "700" ]; then
+    isgccustom=1
+    gclib=$customgclib;
+  
+    gcincdir=$pwd/gc/$gccustom/include
+  
+    # detect if we are using maemo for an ARM emulation
+    maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
+    if [ "$maemo " = "yes " ]; then
+      # This is required for compiling under QEMU (use to be the -DQEMU flag)
+      cgcflags="$cgcflags -DNO_PROC_STAT"
+      cflags="$cflags -DBGL_FORBID_GC_COLLECT"
+    fi
+  
+    # configure directories
+    gcconfiguredir="--prefix=$pwd/gc/preinst"
+    # install the gc source code if needed
+  
+    if [ ! -d gc/$gccustom ]; then
+      echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
+  
+      (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
+    fi
+  
+    if [ -f gc/configure-$gccustom ]; then
+      autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+      gcconfigureopt="$autoopts $gcconfigureopt"
+      echo "+ Configuring custom GC..." && \
+      (. ./gc/configure-$gccustom) || exit 1
+    fi
+  fi
+  
+  # Check the version of the collector
+  if [ "$gcversion " = " " ]; then
+    gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
+  
+    if [ "$gcversion" -le "000" ]; then
+      doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
+  
+      if [ "$doblocking " = "yes " ]; then
         gchavedoblocking=1
+        gcversion="700"
+      else
+        startblocking=`$autoconf gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags"` || exit 1
+        if [ "$startblocking " = "yes " ]; then
+          gchaveblocking=1
+        else
+          gcversion="680"
+        fi
+      fi
+    else
+      if [ "$hostos " != "win32" -a $hostos != "cygwin" ]; then
+        if [ "$gcversion" -lt "700" ]; then
+          gchaveblocking=1
+          gcversion="680"
+        fi
+        if [ "$gcversion" -ge "700" ]; then
+          gchavedoblocking=1
+        fi
       fi
     fi
   fi
+  
+  # correct gchavedoblocking for win32
+  if [ $hostos = "cygwin" ]; then
+    gchaveblocking=0
+  elif [ $hostos = "mingw" ]; then
+     gchaveblocking=0
+     gchavedoblocking=0
+  fi
+  echo >> $configurelog
 fi
-
-# correct gchavedoblocking for win32
-if [ $hostos = "cygwin" ]; then
-  gchaveblocking=0
-elif [ $hostos = "mingw" ]; then
-   gchaveblocking=0
-   gchavedoblocking=0
-fi
-echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    GMP configuration                                                */
