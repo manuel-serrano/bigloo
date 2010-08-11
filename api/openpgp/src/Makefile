@@ -1,8 +1,12 @@
 #*=====================================================================*/
-#*    Author      :  Manuel Serrano                                    */
-#*        adapted :  Florian Loitsch                                   */
+#*    serrano/prgm/project/bigloo/api/openpgp/src/Makefile             */
 #*    -------------------------------------------------------------    */
-#*    The makefile to build the library.                               */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug 11 15:36:25 2010                          */
+#*    Last change :  Wed Aug 11 15:41:59 2010 (serrano)                */
+#*    Copyright   :  2010 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    The Makefile to build the OpenPGP Bigloo library.                */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -20,6 +24,7 @@ API		= openpgp
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
+C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
 # Where to store the library class files
 PBASE		= bigloo.$(API)
@@ -34,8 +39,7 @@ JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
-#BCMPFLAGS	= -unsafe $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
-BCMPFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
