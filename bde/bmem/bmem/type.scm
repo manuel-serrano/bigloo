@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
-;*    Last change :  Sat Jun 14 07:00:42 2003 (serrano)                */
-;*    Copyright   :  2003 Manuel Serrano                               */
+;*    Last change :  Wed Aug 11 14:27:43 2010 (serrano)                */
+;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
 ;*=====================================================================*/
@@ -108,13 +108,13 @@
 	      fun*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))
-				   (size% (/fx (*fx 100 size) allsize)))
-			       (>fx size% 0)))
+				   (size% (% size allsize)))
+			       (> size% 0)))
 			 type*))
 	  (cell* (map type->cell type*))
 	  (row* (map (lambda (ty cells)
 			(let* ((size (cadr ty))
-			       (size% (/fx (*fx 100 size) allsize))
+			       (size% (% size allsize))
 			       (tnum (integer->string (car ty)))
 			       (id (string-append "type" tnum))
 			       (tdl (html-color-item
@@ -173,13 +173,13 @@
 	      gc*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))
-				   (size% (/fx (*fx 100 size) allsize)))
-			       (>fx size% 0)))
+				   (size% (% size allsize)))
+			       (> size% 0)))
 			 type*))
 	  (cell* (map type->cell type*))
 	  (row* (map (lambda (ty cells)
 			(let* ((size (cadr ty))
-			       (size% (/fx (*fx 100 size) allsize))
+			       (size% (% size allsize))
 			       (tnum (integer->string (car ty)))
 			       (id (string-append "type" tnum))
 			       (tdl (html-color-item
@@ -214,6 +214,7 @@
 ;*    bmem-type ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bmem-type type css info gcmon funmon types)
+   (tprint "bmem-type : " (get-functions))
    (let* ((types (cdr types))
 	  (gc* (cdr gcmon))
 	  (fun* (get-functions))
