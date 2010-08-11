@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Tue Aug 10 14:31:02 2010 (serrano)                */
+;*    Last change :  Tue Aug 10 15:34:31 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -181,6 +181,17 @@
 	   (char=? (string-ref folder lenp) (maildir-%separator m)))))
 
 ;*---------------------------------------------------------------------*/
+;*    is-direct-subfolder? ...                                         */
+;*---------------------------------------------------------------------*/
+(define (is-direct-subfolder? m folder parent)
+   ;; this predicate returns #t iff folder is a direct subfolder of parent
+   (let ((lenf (string-length folder))
+	 (lenp (string-length parent)))
+      (and (>fx lenf lenp)
+	   (substring-at? folder parent 0)
+	   (=fx (string-index-right folder (maildir-%separator m)) lenp))))
+
+;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-delete! ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-delete! m::maildir s::bstring)
@@ -207,7 +218,7 @@
 	    (else
 	     ;; delete the subfolders
 	     (for-each (lambda (f)
-			  (when (is-subfolder? m f s)
+			  (when (is-direct-subfolder? m f s)
 			     (mailbox-folder-delete! m f)))
 		       (mailbox-folders m))
 	     ;; delete the files
@@ -228,32 +239,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-rename! m::maildir s1::bstring s2::bstring)
    (let ((opath (folder->directory "mailbox-folder-rename! ::maildir"
-				     m
-				     s1))
+				   m
+				   s1))
 	 (npath (folder->directory "mailbox-folder-rename! ::maildir"
-				     m
-				     s2)))
-      (let ((i (string-index-right s1 (maildir-%separator m))))
-	 (cond
-	    ((not i)
-	     (raise
-	      (instantiate::&maildir-error
-		 (proc "mailbox-folder-move! ::maildir")
-		 (msg (format "Illegal folder name ~s " s1))
-		 (obj m))))
-	    ((rename-file opath npath)
+				   m
+				   s2)))
+      (let ((l (string-length s1)))
+	 (if (not (rename-file opath npath))
 	     (raise
 	      (instantiate::&maildir-error
 		 (proc "mailbox-folder-rename! ::maildir")
 		 (msg (format "Folder ~s cannot be renamed into ~s" s1 s2))
 		 (obj m))))
-	    (else
-	     (for-each (lambda (f)
-			  (when (is-subfolder? m f s1)
-			     (let* ((base (substring f i (string-length f)))
-				    (dest (string-append s2 base)))
-				(mailbox-folder-rename! m f dest))))
-		       (mailbox-folders m)))))))
+	 (for-each (lambda (f)
+		      (when (is-direct-subfolder? m f s1)
+			 (let* ((base (substring f l (string-length f)))
+				(dest (string-append s2 base)))
+			    (mailbox-folder-rename! m f dest))))
+		   (mailbox-folders m)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-move! ::maildir ...                               */
