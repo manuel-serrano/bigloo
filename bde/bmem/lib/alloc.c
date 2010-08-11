@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sat Jun 26 08:51:28 2010 (serrano)                */
+/*    Last change :  Wed Aug 11 10:58:34 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -747,8 +747,9 @@ WRAPPER( make_string_sans_fill, STRING_TYPE_NUM, (int l), (l) )
 WRAPPER( string_append, STRING_TYPE_NUM, (void *s1, void *s2), (s1, s2) )
 WRAPPER( string_append_3, STRING_TYPE_NUM, (void *s1, void *s2, void *s3), (s1, s2, s3) )
 WRAPPER( c_substring, STRING_TYPE_NUM, (void *s, int l1, int l2), (s, l1, l2) )
-WRAPPER( bgl_escape_C_string, STRING_TYPE_NUM, (char *s), (s) )
-WRAPPER( bgl_escape_scheme_string, STRING_TYPE_NUM, (char *s), (s) )
+WRAPPER( bgl_escape_C_string, STRING_TYPE_NUM, (unsigned char *s, long l1, long l2), (s, l1, l2) )
+WRAPPER( bgl_escape_scheme_string, STRING_TYPE_NUM, (unsigned char *s, long l1, long l2), (s, l1, l2) )
+WRAPPER( create_string_for_read, STRING_TYPE_NUM, (void *o, int s), (o, s) )
 WRAPPER( string_to_keyword, KEYWORD_TYPE_NUM, (char *s), (s) )
 WRAPPER( bstring_to_keyword, KEYWORD_TYPE_NUM, (void *s), (s) )
 

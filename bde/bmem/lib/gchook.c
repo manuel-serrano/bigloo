@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Jun  5 14:52:59 2009 (serrano)                */
-/*    Copyright   :  2003-09 Manuel Serrano                            */
+/*    Last change :  Wed Aug 11 10:19:26 2010 (serrano)                */
+/*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
@@ -44,12 +44,21 @@ GC_collect_hook( int heapsz, long livesz ) {
    gc_info_t *info = make_gc_info( gc_number, gc_alloc_size, heapsz, livesz );
 
    gc_number++;
-   
-   fprintf( stderr, "gc %d...(alloc size=%dk, heap size=%dk, live size=%ldk)\n",
-	    gc_number,
-	    gc_alloc_size / 1024,
-	    heapsz / 1024,
-	    livesz / 1024 );
+
+   if( heapsz > (1024 * 1024) ) {
+      fprintf( stderr, "gc %3d: alloc size=%.2fMB, heap size=%.2fMB, live size=%.2fMB\n",
+	       gc_number,
+	       ((double)gc_alloc_size / (1024. * 1024.)),
+	       ((double)heapsz / (1024. * 1024.)),
+	       ((double)livesz / (1024. * 1024.)) );
+   } else {
+      fprintf( stderr, "gc %3d: alloc size=%dKB, heap size=%dKB, live size=%ldKB\n",
+	       gc_number,
+	       gc_alloc_size / 1024,
+	       heapsz / 1024,
+	       livesz / 1024 );
+   }
+      
    gc_alloc_size = 0;
    
    gcs_info = pa_cons( info, gcs_info );
@@ -62,6 +71,7 @@ GC_collect_hook( int heapsz, long livesz ) {
 /*---------------------------------------------------------------------*/
 void
 gc_alloc_size_add( int size ) {
+   if( size > 10000 ) fprintf( stderr, "GC_ALLOC_SIZE_ADD size=%d\n", size );
    if( bmem_thread ) pthread_mutex_lock( &bmem_mutex );
    gc_alloc_size += size;
    if( bmem_thread ) pthread_mutex_unlock( &bmem_mutex );

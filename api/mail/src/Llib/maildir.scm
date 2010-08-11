@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Fri Jun 25 08:09:36 2010 (serrano)                */
+;*    Last change :  Tue Aug 10 14:31:02 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -125,11 +125,11 @@
 		(with-access::folderinfo %selection-info (count recent)
 		   `((count . ,count) (recent . ,recent)))
 		(let ((path (folder->directory
-			     '|mailbox-folder-select ::maildir| m s)))
+			     "mailbox-folder-select ::maildir" m s)))
 		   (set! %selection path)
 		   (set! %selection-info (get-folder-info m path))
 		   (unless (folderinfo? %selection-info)
-		      (error 'mailbox-folder-select! "Illegal folder" path))
+		      (error "mailbox-folder-select!" "Illegal folder" path))
 		   (set! folder-selection s)
 		   (with-access::folderinfo %selection-info (count recent)
 		      `((count . ,count) (recent . ,recent)))))))))
@@ -149,12 +149,12 @@
 ;*    mailbox-folder-create! ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-create! m::maildir s::bstring)
-   (let ((path (folder->directory '|mailbox-folder-create! ::maildir| m s)))
+   (let ((path (folder->directory "mailbox-folder-create! ::maildir" m s)))
       (cond
 	 ((directory? path)
 	  (raise
 	   (instantiate::&maildir-error
-	      (proc '|mailbox-folder-create! ::maildir|)
+	      (proc "mailbox-folder-create! ::maildir")
 	      (msg (format "Folder ~s already exists" s))
 	      (obj m))))
 	 ((and (make-directory path)
@@ -165,16 +165,27 @@
 	 (else
 	  (raise
 	   (instantiate::&maildir-error
-	      (proc '|mailbox-folder-create! ::maildir|)
+	      (proc "mailbox-folder-create! ::maildir")
 	      (msg (format "Cannot create folder ~s" s))
 	      (obj m)))))))
+
+;*---------------------------------------------------------------------*/
+;*    is-subfolder? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (is-subfolder? m folder parent)
+   ;; this predicate returns #t iff folder is a subfolder of parent
+   (let ((lenf (string-length folder))
+	 (lenp (string-length parent)))
+      (and (>fx lenf lenp)
+	   (substring-at? folder parent 0)
+	   (char=? (string-ref folder lenp) (maildir-%separator m)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-delete! ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-delete! m::maildir s::bstring)
    (with-access::maildir m (path)
-      (let* ((path (folder->directory '|mailbox-folder-delete! ::maildir| m s))
+      (let* ((path (folder->directory "mailbox-folder-delete! ::maildir" m s))
 	     (cur (make-file-name path "cur"))
 	     (new (make-file-name path "new"))
 	     (tmp (make-file-name path "tmp")))
@@ -182,7 +193,7 @@
 	    ((not (directory? path))
 	     ;; folder does not exist
 	     (raise (instantiate::&maildir-error
-		       (proc '|mailbox-folder-delete! ::maildir|)
+		       (proc "mailbox-folder-delete! ::maildir")
 		       (msg (format "Folder ~s does not exist" s))
 		       (obj m))))
 	    ((or (pair? (directory->list cur))
@@ -190,11 +201,16 @@
 		 (pair? (directory->list tmp)))
 	     ;; one of cur, new, and tmp is not empty
 	     (raise (instantiate::&maildir-error
-		       (proc '|mailbox-folder-delete! ::maildir|)
+		       (proc "mailbox-folder-delete! ::maildir")
 		       (msg (format "Folder ~s not empty" s))
 		       (obj m))))
 	    (else
-	     ;; delete recursively
+	     ;; delete the subfolders
+	     (for-each (lambda (f)
+			  (when (is-subfolder? m f s)
+			     (mailbox-folder-delete! m f)))
+		       (mailbox-folders m))
+	     ;; delete the files
 	     (let loop ((path path))
 		(when (file-exists? path)
 		   (if (directory? path)
@@ -211,32 +227,38 @@
 ;*    mailbox-folder-rename! ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-rename! m::maildir s1::bstring s2::bstring)
-   (let ((opath (folder->directory '|mailbox-folder-rename! ::maildir|
+   (let ((opath (folder->directory "mailbox-folder-rename! ::maildir"
 				     m
 				     s1))
-	 (npath (folder->directory '|mailbox-folder-rename! ::maildir|
+	 (npath (folder->directory "mailbox-folder-rename! ::maildir"
 				     m
 				     s2)))
-      (unless (rename-file opath npath)
-	 (raise
-	  (instantiate::&maildir-error
-	     (proc '|mailbox-folder-rename! ::maildir|)
-	     (msg (format "Folder ~s cannot be renamed into ~s" s1 s2))
-	     (obj m))))))
+      (let ((i (string-index-right s1 (maildir-%separator m))))
+	 (cond
+	    ((not i)
+	     (raise
+	      (instantiate::&maildir-error
+		 (proc "mailbox-folder-move! ::maildir")
+		 (msg (format "Illegal folder name ~s " s1))
+		 (obj m))))
+	    ((rename-file opath npath)
+	     (raise
+	      (instantiate::&maildir-error
+		 (proc "mailbox-folder-rename! ::maildir")
+		 (msg (format "Folder ~s cannot be renamed into ~s" s1 s2))
+		 (obj m))))
+	    (else
+	     (for-each (lambda (f)
+			  (when (is-subfolder? m f s1)
+			     (let* ((base (substring f i (string-length f)))
+				    (dest (string-append s2 base)))
+				(mailbox-folder-rename! m f dest))))
+		       (mailbox-folders m)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-move! ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-move! m::maildir s1::bstring s2::bstring)
-   
-   (define (is-subfolder? folder parent)
-      ;; this predicate returns #t iff folder is a subfolder of parent
-      (let ((lenf (string-length folder))
-	    (lenp (string-length parent)))
-	 (and (>fx lenf lenp)
-	      (substring-at? folder parent 0)
-	      (char=? (string-ref folder lenp) (maildir-%separator m)))))
-   
    (let ((i (string-index-right s1 (maildir-%separator m))))
       (if i
 	  (let* ((len1 (string-length s1))
@@ -244,14 +266,14 @@
 		 (dest (string-append s2 base)))
 	     (mailbox-folder-rename! m s1 dest)
 	     (for-each (lambda (f)
-			  (when (is-subfolder? f s1)
+			  (when (is-subfolder? m f s1)
 			     (let* ((base (substring f i (string-length f)))
 				    (dest (string-append s2 base)))
 				(mailbox-folder-rename! m f dest))))
 		       (mailbox-folders m)))
 	  (raise
 	   (instantiate::&maildir-error
-	      (proc '|mailbox-folder-move! ::maildir|)
+	      (proc "mailbox-folder-move! ::maildir")
 	      (msg (format "Illegal folder name ~s " s1))
 	      (obj m))))))
 
@@ -271,7 +293,7 @@
 ;*    mailbox-folder-exists? ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-exists? m::maildir s::bstring)
-   (let ((path (folder->directory '|mailbox-folder-exists? ::maildir| m s)))
+   (let ((path (folder->directory "mailbox-folder-exists? ::maildir" m s)))
       (directory? path)))
 
 ;*---------------------------------------------------------------------*/
@@ -294,13 +316,13 @@
 					  (file-modification-time path)))
 			       (unless (folderinfo-valid? %selection-info)
 				  (let ((dir (folder->directory
-					      '|mailbox-folder-status ::maildir|
+					      "mailbox-folder-status ::maildir"
 						m s)))
 				     (set! %selection-info
 					   (get-folder-info m dir))))
 			       %selection-info)
 			    (let ((dir (folder->directory
-					'|mailbox-folder-status ::maildir|
+					"mailbox-folder-status ::maildir"
 					m s)))
 			       (get-folder-info m dir)))))
 	       (when (folderinfo? info)
@@ -457,7 +479,7 @@
 	 (lambda ()
 	    (unless (folderinfo? %selection-info)
 	       (raise (instantiate::&maildir-error
-			 (proc '|mailbox-folder-uids ::maildir|)
+			 (proc "mailbox-folder-uids ::maildir")
 			 (msg "No folder selected")
 			 (obj m))))
 	    (unless (folderinfo-valid? %selection-info)
@@ -485,7 +507,7 @@
 	 (lambda ()
 	    (unless (folderinfo? %selection-info)
 	       (raise (instantiate::&maildir-error
-			 (proc '|mailbox-folder-delete-messages ::maildir|)
+			 (proc "mailbox-folder-delete-messages ::maildir")
 			 (msg "No folder selected")
 			 (obj m))))
 	    (let ((cur (make-file-name %selection "cur")))
@@ -505,7 +527,7 @@
 	 (lambda ()
 	    (unless (folderinfo? %selection-info)
 	       (raise (instantiate::&maildir-error
-			 (proc '|mailbox-folder-header-fields ::maildir|)
+			 (proc "mailbox-folder-header-fields ::maildir")
 			 (msg "No folder selected")
 			 (obj m))))
 	    (with-access::folderinfo %selection-info (uids path)
@@ -563,7 +585,7 @@
 ;*    mailbox-message ::maildir ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message m::maildir i::int)
-   (with-input-from-file (get-message-path '|mailbox-message ::maildir| m i)
+   (with-input-from-file (get-message-path "mailbox-message ::maildir" m i)
       (lambda ()
 	 (read-string (current-input-port)))))
 
@@ -571,13 +593,13 @@
 ;*    mailbox-message-path ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-path m::maildir i::int)
-   (get-message-path '|mailbox-message-path ::maildir| m i))
+   (get-message-path "mailbox-message-path ::maildir" m i))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-message-body ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-body m::maildir i::int . len)
-   (let* ((path (get-message-path '|mailbox-message-body ::maildir| m i))
+   (let* ((path (get-message-path "mailbox-message-body ::maildir" m i))
 	  (ip (open-input-file path))
 	  (gram (regular-grammar ()
 		   ((+ (out "\n\r"))
@@ -600,7 +622,7 @@
 ;*    mailbox-message-header ::maildir ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-header m::maildir i::int)
-   (let* ((path (get-message-path '|mailbox-message-header ::maildir| m i))
+   (let* ((path (get-message-path "mailbox-message-header ::maildir" m i))
 	  (ip (open-input-file path))
 	  (gram (regular-grammar ()
 		   ((+ (out "\n\r"))
@@ -621,7 +643,7 @@
 ;*    mailbox-message-header-list ::maildir ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-header-list m::maildir i::int)
-   (let ((path (get-message-path '|mailbox-message-header-list ::maildir| m i)))
+   (let ((path (get-message-path "mailbox-message-header-list ::maildir" m i)))
       (with-input-from-file path
 	 (lambda ()
 	    (mail-header->list (current-input-port))))))
@@ -641,7 +663,7 @@
 ;*    mailbox-message-size ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-size m::maildir i::int)
-   (let ((path (get-message-path '|mailbox-message-size ::maildir| m i)))
+   (let ((path (get-message-path "mailbox-message-size ::maildir" m i)))
       (elong->fixnum (file-size path))))
 
 ;*---------------------------------------------------------------------*/
@@ -709,12 +731,12 @@
 	       (cond
 		  ((not (folderinfo? %selection-info))
 		   (raise (instantiate::&maildir-error
-			     (proc '|mailbox-message-flags-set! ::maildir|)
+			     (proc "mailbox-message-flags-set! ::maildir")
 			     (msg "No folder selected")
 			     (obj m))))
 		  ((not (rename-file msg name))
 		   (raise (instantiate::&maildir-error
-			     (proc '|mailbox-message-flags-set! ::maildir|)
+			     (proc "mailbox-message-flags-set! ::maildir")
 			     (msg (format "Cannot set message flags ~a" uid))
 			     (obj m))))
 		  (else
@@ -732,12 +754,12 @@
 	       (cond
 		  ((not (folderinfo? %selection-info))
 		   (raise (instantiate::&maildir-error
-			     (proc '|mailbox-message-delete! ::maildir|)
+			     (proc "mailbox-message-delete! ::maildir")
 			     (msg "No folder selected")
 			     (obj m))))
 		  ((not (delete-file path))
 		   (raise (instantiate::&maildir-error
-			     (proc '|mailbox-message-delete! ::maildir|)
+			     (proc "mailbox-message-delete! ::maildir")
 			     (msg (format "Cannot delete message ~a, path: ~a"
 					  uid path))
 			     (obj m))))
@@ -751,7 +773,7 @@
 (define-method (mailbox-message-move! m::maildir uid::int folder::bstring)
    (let* ((mpath (get-message-path 'mailbox-message-move! m uid))
 	  (file (basename mpath))
-	  (dir (folder->directory '|mailbox-message-move! ::maildir| m folder)))
+	  (dir (folder->directory "mailbox-message-move! ::maildir" m folder)))
       (with-access::maildir m (%selection %selection-info %mutex path)
 	 (with-lock %mutex
 	    (lambda ()
@@ -759,12 +781,12 @@
 		  (cond
 		     ((not (folderinfo? %selection-info))
 		      (raise (instantiate::&maildir-error
-				(proc '|mailbox-message-move! ::maildir|)
+				(proc "mailbox-message-move! ::maildir")
 				(msg "No folder selected")
 				(obj m))))
 		     ((not (rename-file mpath dest))
 		      (raise (instantiate::&maildir-error
-				(proc '|mailbox-message-move! ::maildir|)
+				(proc "mailbox-message-move! ::maildir")
 				(msg (format "Cannot move message ~a" uid))
 				(obj m))))
 		     (else
@@ -788,7 +810,7 @@
 ;*    mailbox-message-create! ::maildir ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-create! m::maildir folder::bstring txt::bstring)
-   (let ((dir (folder->directory '|mailbox-message-create! ::maildir|
+   (let ((dir (folder->directory "mailbox-message-create! ::maildir"
 				   m folder)))
       (with-access::maildir m (%mutex path message-base)
 	 (with-lock %mutex
@@ -797,7 +819,7 @@
 		  (unless dinfo
 		     (raise
 		      (instantiate::&maildir-error
-			 (proc '|mailbox-message-create! ::maildir|)
+			 (proc "mailbox-message-create! ::maildir")
 			 (msg (format "Folder ~s does not exist" dir))
 			 (obj m))))
 		  (let* ((uid (get-nextuid! dinfo))

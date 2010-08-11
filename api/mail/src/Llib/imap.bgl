@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Fri Jun 25 08:08:51 2010 (serrano)                */
+;*    Last change :  Tue Aug 10 14:40:37 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
@@ -340,7 +340,7 @@
 
 (define-imap-method mailbox-folders m::imap)
 (define-imap-method mailbox-folder-create! m::imap s::bstring)
-(define-imap-method mailbox-folder-delete! m::imap s::bstring)
+;(define-imap-method mailbox-folder-delete! m::imap s::bstring)
 (define-imap-method mailbox-folder-rename! m::imap s1::bstring s2::bstring)
 (define-imap-method mailbox-folder-subscribe! m::imap s::bstring)
 (define-imap-method mailbox-folder-unsubscribe! m::imap s::bstring)
@@ -437,6 +437,41 @@
    (with-access::imap m (socket)
       (map! rfc2822-date->date (imap-folder-internal-dates socket))))
 
+;*---------------------------------------------------------------------*/
+;*    is-subfolder? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (is-subfolder? m folder parent)
+   ;; this predicate returns #t iff folder is a subfolder of parent
+   (let ((lenf (string-length folder))
+	 (lenp (string-length parent))
+	 (sep (mailbox-separator m)))
+      (and (>fx lenf lenp)
+	   (substring-at? folder parent 0)
+	   (string? sep)
+	   (=fx (string-length sep) 1))
+	   (char=? (string-ref folder lenp) (string-ref sep 0))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-delete! ::imap ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-delete! m::imap s::bstring)
+   ;; delete the subfolders
+   (for-each (lambda (f)
+		(when (is-subfolder? m f s)
+		   (mailbox-folder-delete! m f)))
+	     (mailbox-folders m))
+   ;; delete the messages
+   (with-access::imap m (%mutex folder-selection socket)
+      (with-lock %mutex
+	 (lambda ()
+	    (let ((os folder-selection))
+	       (unwind-protect
+		  (begin
+		     (imap-folder-select socket s)
+		     (mailbox-folder-delete-messages! m)
+		     (imap-folder-delete! socket s))
+		  (imap-folder-select socket os)))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-delete-messages! ::imap ...                       */
 ;*---------------------------------------------------------------------*/
