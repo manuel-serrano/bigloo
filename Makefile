@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/Makefile                             */
+#*    /tmp/BIGLOO/bigloo3.4b/Makefile                                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jul  1 13:38:58 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 16:22:38 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -666,13 +666,14 @@ jvm-test:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-progs install-devel install-libs uninstall
+.PHONY: install install-progs install-devel install-libs install-runtime
+.PHONY: uninstall
 
 install: install-progs install-docs
 
 install-progs: install-devel install-libs
 
-install-devel:
+install-devel: install-runtime
 	$(MAKE) -C comptime install
 	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
          DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
@@ -681,8 +682,7 @@ install-devel:
 	 $(MAKE) -C bde install)
 	$(MAKE) -C bglpkg install
 
-install-libs:
-	$(MAKE) -C runtime install
+install-libs: install-runtime
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc install; \
         fi
@@ -701,6 +701,9 @@ install-libs:
 
 install-docs:
 	$(MAKE) -C manuals install
+
+install-runtime:
+	$(MAKE) -C runtime install
 
 install-bee0:
 	$(MAKE) -C cigloo install

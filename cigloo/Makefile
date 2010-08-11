@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Mon Jun  7 17:28:35 2010 (serrano)                */
+#*    Last change :  Wed Aug 11 16:07:52 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
@@ -120,7 +120,7 @@ install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
            mkdir -p $(DESTDIR)$(BINDIR) && \
 	   cp $(BOOTBINDIR)/cigloo$(EXE_SUFFIX) $(DESTDIR)$(BINDIR); \
-	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/cigloo$(EXE_SUFFIX); \
+	   chmod $(BMASKEXE) $(DESTDIR)$(BINDIR)/cigloo$(EXE_SUFFIX); \
         fi
 
 uninstall:
