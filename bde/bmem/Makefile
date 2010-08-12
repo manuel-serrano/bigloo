@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Thu Aug 12 11:39:31 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 12:15:41 2010 (serrano)                */
 #*    Copyright   :  2003-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -114,8 +114,8 @@ install:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  if [ ! -d $(LIBDIR)/$(FILDIR)/bmem ]; then \
             mkdir -p $(LIBDIR)/$(FILDIR)/bmem && \
-              chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/bmem \
-          fi
+              chmod $(MODDIR) $(LIBDIR)/$(FILDIR)/bmem; \
+          fi && \
 	  cp $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX) \
              $(LIBDIR)/$(FILDIR)/bmem/bmem.$(SHAREDSUFFIX) || exit 1; \
         fi

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 12 11:36:43 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 12:16:15 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -691,7 +691,7 @@ install-libs: install-dirs
 	  $(MAKE) -C gmp install; \
         fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
-         chmod $(MODFILEFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)
+         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)
 	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
            cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
