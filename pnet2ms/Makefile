@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Mon Jun  7 17:23:49 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:36:16 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build pnet2ms.                                   */
@@ -75,7 +75,7 @@ $(PNET2MS_DEST): $(OBJECTS)
 install:
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
 	   cp $(BOOTBINDIR)/bglpnet2ms$(EXE_SUFFIX) $(DESTDIR)$(BINDIR); \
-	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/bglpnet2ms$(EXE_SUFFIX); \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglpnet2ms$(EXE_SUFFIX); \
         fi
 
 uninstall:

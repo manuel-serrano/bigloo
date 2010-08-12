@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Apr 24 08:03:21 2009 (serrano)                */
-#*    Copyright   :  2001-09 Manuel Serrano                            */
+#*    Last change :  Thu Aug 12 11:34:50 2010 (serrano)                */
+#*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -79,30 +79,27 @@ include ../Makefile.misc
 
 install: install-c install-jvm
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR) && \
 	  cp $(BOOTLIBDIR)/bdl.init $(LIBDIR)/$(FILDIR)/bdl.init && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdl.init; \
+	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.init; \
         fi
 
 install-c:
 	@if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR) && \
 	  $(MAKE) install-lib LIB=libbigloobdl_s-$(RELEASE) && \
 	  $(MAKE) install-lnlib LIB=libbigloobdl_s-$(RELEASE) LN=libbigloobdl_u-$(RELEASE) && \
 	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	    cp $(BOOTLIBDIR)/bdl.heap $(LIBDIR)/$(FILDIR)/bdl.heap && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdl.heap; \
+	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.heap; \
           fi \
         fi
 
 install-jvm:
 	@if [ "$(JVMBACKEND)" = "yes" ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR) && \
 	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	    cp $(BOOTLIBDIR)/bdl.jheap $(LIBDIR)/$(FILDIR)/bdl.jheap && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdl.jheap && \
+	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.jheap && \
 	    cp $(BOOTLIBDIR)/bdl_s.zip $(LIBDIR)/$(FILDIR)/bdl_s.zip && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdl_s.zip && \
+	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl_s.zip && \
 	    (cd $(LIBDIR)/$(FILDIR) && \
              $(RM) -f bdl_u.zip && \
              ln bdl_s.zip bdl_u.zip); \

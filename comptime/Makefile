@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Aug  6 17:51:49 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:20:43 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -634,18 +634,12 @@ install: install-compiler
 
 install-compiler:
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	   if [ ! -d $(DESTDIR)$(BINDIR) ]; then \
-             mkdir -p $(DESTDIR)$(BINDIR); chmod a+rx $(DESTDIR)$(BINDIR) || exit 1; \
-           fi; \
 	   cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bigloo$(RELEASE)$(EXE_SUFFIX) && \
-	   chmod $(BMASKEXE) $(DESTDIR)$(BINDIR)/bigloo$(RELEASE)$(EXE_SUFFIX); \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bigloo$(RELEASE)$(EXE_SUFFIX); \
         fi
 
 alias-compiler:
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	   if [ ! -d $(DESTDIR)$(BINDIR) ]; then \
-             mkdir -p $(DESTDIR)$(BINDIR); chmod a+rx $(DESTDIR)$(BINDIR) || exit 1; \
-           fi; \
            (cd $(DESTDIR)$(BINDIR) && \
             $(RM) -f bigloo && \
             $(RM) -f bigloo$(EXE_SUFFIX) && \

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    /tmp/BIGLOO/bigloo3.4b/Makefile                                  */
+#*    serrano/prgm/project/bigloo/Makefile                             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Aug 11 16:22:38 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:36:43 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -673,7 +673,7 @@ install: install-progs install-docs
 
 install-progs: install-devel install-libs
 
-install-devel: install-runtime
+install-devel: install-dirs
 	$(MAKE) -C comptime install
 	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
          DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
@@ -682,7 +682,8 @@ install-devel: install-runtime
 	 $(MAKE) -C bde install)
 	$(MAKE) -C bglpkg install
 
-install-libs: install-runtime
+install-libs: install-dirs
+	$(MAKE) -C runtime install
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc install; \
         fi
@@ -690,22 +691,19 @@ install-libs: install-runtime
 	  $(MAKE) -C gmp install; \
         fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
-         chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.config)
+         chmod $(MODFILEFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)
 	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
            cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
          fi)
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
-         chmod $(BMASK) $(LIBDIR)/$(FILDIR)/Makefile.misc)
+         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.misc)
 	$(MAKE) -C api install
 
-install-docs:
+install-docs: install-dirs
 	$(MAKE) -C manuals install
 
-install-runtime:
-	$(MAKE) -C runtime install
-
-install-bee0:
+install-bee0: install-dirs
 	$(MAKE) -C cigloo install
 	$(MAKE) -C bdl install
 	@ if [ "$(JVMBACKEND) " = "yes " ]; then \
@@ -713,7 +711,7 @@ install-bee0:
           fi
 	-$(MAKE) -C bmacs install
 
-install-bee1:
+install-bee1: install-dirs
 	$(MAKE) -C bdb install
 	$(MAKE) -C runtime install-bee
 
@@ -721,6 +719,35 @@ install-bee: install-bee0
 	@ if [ "$(INSTALLBEE)" = "full" ]; then \
             $(MAKE) install-bee1; \
           fi
+
+install-dirs:
+	if [ ! -d $(DESTDIR)$(BINDIR) ]; then \
+	   mkdir -p $(DESTDIR)$(BINDIR) && \
+             chmod $(MODDIR) $(DESTDIR)$(BINDIR) || exit 1; \
+        fi;
+	(base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
+         bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
+         if [ ! -d $(LIBDIR) ]; then \
+            mkdir -p $(LIBDIR) && chmod $(MODDIR) $(LIBDIR); \
+         fi && \
+         if [ ! -d $$bbase ]; then \
+            mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \
+         fi && \
+         if [ ! -d $$base ]; then \
+            mkdir -p $$base && chmod $(MODDIR) $$base; \
+         fi)
+	if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
+          mkdir -p $(LIBDIR)/$(FILDIR) && chmod $(MODDIR) $(LIBDIR)/$(FILDIR); \
+        fi
+	if [ ! -d $(DOCDIR) ]; then \
+	  mkdir -p $(DOCDIR) && chmod $(MODDIR) $(DOCDIR); \
+        fi
+	if [ ! -d $(MANDIR) ]; then \
+	  mkdir -p $(MANDIR) && chmod $(MODIR) $(MANDIR); \
+        fi
+	if [ ! -d $(INFODIR) ]; then \
+	  mkdir -p $(INFODIR) && chmod $(MODDIR) $(INFODIR); \
+        fi
 
 uninstall: uninstall-bee
 	$(MAKE) -C bde uninstall

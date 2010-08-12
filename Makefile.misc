@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Wed Jun 30 09:49:29 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:33:08 2010 (serrano)                */
 #*    Copyright   :  2002-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -141,7 +141,7 @@ install-static-lib:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).a \
              $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
-          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
+          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a && \
           $(RANLIB) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a || exit 3; \
         fi
 
@@ -150,7 +150,7 @@ install-shared-lib:
           if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	    $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
-	    chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
+	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
           fi && \
           if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
             if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \

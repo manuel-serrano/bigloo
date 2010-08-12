@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jul 30 08:10:06 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:22:55 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -735,28 +735,14 @@ install:
 
 install-c:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-           (base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
-            bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
-            if [ ! -d $(LIBDIR) ]; then \
-               mkdir -p $(LIBDIR) && chmod a+rx $(LIBDIR); \
-            fi && \
-            if [ ! -d $$bbase ]; then \
-               (mkdir -p $$bbase && chmod a+rx $$bbase); \
-            fi && \
-            if [ ! -d $$base ]; then \
-               mkdir -p $$base && chmod a+rx $$base; \
-            fi) && \
-	   if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
-              (mkdir -p $(LIBDIR)/$(FILDIR) && chmod a+rx $(LIBDIR)/$(FILDIR)); \
-           fi && \
 	   cp $(BOOTLIBDIR)/bigloo.h $(LIBDIR)/$(FILDIR)/bigloo.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.h && \
 	   cp $(BOOTLIBDIR)/bigloo_gc.h $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
 	   cp $(BOOTLIBDIR)/bigloo_config.h $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
 	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
 	fi
 	$(MAKE) install-lib LIB=libbigloo_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_u-$(RELEASE)
@@ -764,21 +750,21 @@ install-c:
 install-jvm:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
 	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
 	  cp $(BOOTLIBDIR)/bigloo_s.zip $(ZIPDIR)/bigloo_s.zip && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_s.zip && \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_s.zip && \
 	  cp $(BOOTLIBDIR)/bigloo_u.zip $(ZIPDIR)/bigloo_u.zip && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_u.zip; \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_u.zip; \
         fi
 
 install-dotnet:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
 	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
 	  cp $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
 	  cp $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll $(ZIPDIR)/bigloo_u-$(RELEASE).dll && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_u-$(RELEASE).dll; \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_u-$(RELEASE).dll; \
         fi
 
 install-bee:

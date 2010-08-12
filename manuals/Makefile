@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Tue Jun 29 12:06:54 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:36:05 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
@@ -217,9 +217,6 @@ install: install-html install-man install-info
 
 install-html:
 	@if [ ! -d $(DOCDIR) ]; then \
-	  mkdir -p $(DOCDIR) && chmod a+rx $(DOCDIR); \
-        fi
-	@if [ ! -d $(DOCDIR) ]; then \
            echo ""; \
            echo "----------------------------------------------------------"; \
            echo "*** ERROR:Can't find directory -- $(DOCDIR)"; \
@@ -236,17 +233,14 @@ install-html:
 	    cp r5rs*html $(DOCDIR) && \
 	    cp bigloo.sui $(DOCDIR) && \
 	    cp r5rs.sui $(DOCDIR) && \
-            chmod $(BMASK) $(DOCDIR)/bigloo*.html && \
-            chmod $(BMASK) $(DOCDIR)/bigloo.sui && \
-            chmod $(BMASK) $(DOCDIR)/r5rs*.html && \
-            chmod $(BMASK) $(DOCDIR)/r5rs.sui; \
+            chmod $(MODFILE) $(DOCDIR)/bigloo*.html && \
+            chmod $(MODFILE) $(DOCDIR)/bigloo.sui && \
+            chmod $(MODFILE) $(DOCDIR)/r5rs*.html && \
+            chmod $(MODFILE) $(DOCDIR)/r5rs.sui; \
           fi \
         fi
 
 install-man:
-	@if [ ! -d $(MANDIR) ]; then \
-	  mkdir -p $(MANDIR) && chmod a+rx $(MANDIR); \
-        fi
 	@if [ ! -d $(MANDIR) ]; then \
            echo ""; \
            echo "----------------------------------------------------------"; \
@@ -259,16 +253,13 @@ install-man:
 	    cp bigloo.man $(MANDIR)/bigloo.1 && \
 	    echo "cp bigloo.man $(MANDIR)/bigloo.1" && \
 	    if [ -f $(MANDIR)/bigloo.1 ]; then \
-	       chmod $(BMASK) $(MANDIR)/bigloo.1 && \
-	       echo "chmod $(BMASK) $(MANDIR)/bigloo.1"; \
+	       chmod $(MODFILE) $(MANDIR)/bigloo.1 && \
+	       echo "chmod $(MODFILE) $(MANDIR)/bigloo.1"; \
             fi \
           fi \
         fi
 
 install-info:
-	@if [ ! -d $(INFODIR) ]; then \
-	  mkdir -p $(INFODIR) && chmod a+rx $(INFODIR); \
-        fi
 	@if [ ! -d $(INFODIR) ]; then \
            echo ""; \
            echo "----------------------------------------------------------"; \
@@ -282,8 +273,8 @@ install-info:
 	      cp bigloo.info* $(INFODIR) && \
 	      echo "cp bigloo.info* $(INFODIR)" && \
               if [ -f $(INFODIR)/bigloo.info ]; then \
-	         chmod $(BMASK) $(INFODIR)/bigloo.info* && \
-	         echo "chmod $(BMASK) $(INFODIR)/bigloo.info*"; \
+	         chmod $(MODFILE) $(INFODIR)/bigloo.info* && \
+	         echo "chmod $(MODFILE) $(INFODIR)/bigloo.info*"; \
               fi \
             fi && \
 	    if [ "$(INSTALLINFO) " = " " -o "$(INSTALLINFODIROPT) " = " " ]; then \
@@ -338,35 +329,35 @@ install-man-bee:
 do-install-man-bee:
 	cp bglafile.man $(MANDIR)/bglafile.1;
 	if [ -f $(MANDIR)/bglafile.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bglafile.1; \
+	     chmod $(MODFILE) $(MANDIR)/bglafile.1; \
           fi;
 	cp bgljfile.man $(MANDIR)/bgljfile.1;
 	if [ -f $(MANDIR)/bgljfile.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bgljfile.1; \
+	     chmod $(MODFILE) $(MANDIR)/bgljfile.1; \
           fi;
 	cp bgldepend.man $(MANDIR)/bgldepend.1;
 	if [ -f $(MANDIR)/bgldepend.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bgldepend.1; \
+	     chmod $(MODFILE) $(MANDIR)/bgldepend.1; \
           fi;
 	cp bglmake.man $(MANDIR)/bglmake.1;
 	if [ -f $(MANDIR)/bglmake.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bglmake.1; \
+	     chmod $(MODFILE) $(MANDIR)/bglmake.1; \
           fi;
 	cp bglmco.man $(MANDIR)/bglmco.1;
 	if [ -f $(MANDIR)/bglmco.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bglmco.1; \
+	     chmod $(MODFILE) $(MANDIR)/bglmco.1; \
           fi;
 	cp bglpp.man $(MANDIR)/bglpp.1;
 	if [ -f $(MANDIR)/bglpp.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bglpp.1; \
+	     chmod $(MODFILE) $(MANDIR)/bglpp.1; \
           fi;
 	cp bglprof.man $(MANDIR)/bglprof.1;
 	if [ -f $(MANDIR)/bglprof.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bglprof.1; \
+	     chmod $(MODFILE) $(MANDIR)/bglprof.1; \
           fi;
 	cp bgltags.man $(MANDIR)/bgltags.1;
 	if [ -f $(MANDIR)/bgltags.1 ]; then \
-	     chmod $(BMASK) $(MANDIR)/bgltags.1; \
+	     chmod $(MODFILE) $(MANDIR)/bgltags.1; \
           fi;
 
 install-info-bee:
@@ -385,7 +376,7 @@ do-install-info-bee:
 	- if [ -f bdb.info ]; then \
 	     cp bdb.info* $(INFODIR) && \
              if [ -f $(INFODIR)/bdb.info ]; then \
-	        chmod $(BMASK) $(INFODIR)/bdb.info*; \
+	        chmod $(MODFILE) $(INFODIR)/bdb.info*; \
              fi \
           fi
 	- if [ ! -f $(INFODIR)/dir ]; then \

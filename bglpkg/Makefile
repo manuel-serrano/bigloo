@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Thu Sep 10 11:32:14 2009 (serrano)                */
-#*    Copyright   :  2006-09 Manuel Serrano                            */
+#*    Last change :  Thu Aug 12 11:34:59 2010 (serrano)                */
+#*    Copyright   :  2006-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglpkg command.                 */
 #*=====================================================================*/
@@ -187,7 +187,7 @@ dep:
 install:
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
 	   cp $(BOOTBINDIR)/bglpkg$(EXE_SUFFIX) $(DESTDIR)$(BINDIR); \
-	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/bglpkg$(EXE_SUFFIX); \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglpkg$(EXE_SUFFIX); \
         fi
 
 uninstall:

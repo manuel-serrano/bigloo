@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Fri Apr 24 08:05:31 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 12 11:35:45 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Jigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -64,9 +64,8 @@ $(JIGLOO_DEST): $(O_OBJECTS)
 
 install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
-           mkdir -p $(DESTDIR)$(BINDIR) && \
 	   cp $(BOOTBINDIR)/jigloo.class $(DESTDIR)$(BINDIR); \
-	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/jigloo.class; \
+	   chmod $(MODFILE) $(DESTDIR)$(BINDIR)/jigloo.class; \
         fi
 
 uninstall:
