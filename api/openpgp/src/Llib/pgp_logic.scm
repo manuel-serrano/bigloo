@@ -1,3 +1,17 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/openpgp/src/Llib/pgp_logic.scm       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Florian Loitsch                                   */
+;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
+;*    Last change :  Fri Aug 13 08:29:13 2010 (serrano)                */
+;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano              */
+;*    -------------------------------------------------------------    */
+;*    OpenPGP logic                                                    */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
 (module __openpgp-logic
    (library crypto)
    (import __openpgp-util
@@ -62,10 +76,7 @@
 (define (construct-data-signature-msg str::bstring sig-type::symbol)
    (case sig-type
     ((binary) str)
-    ((canonical)
-     (error 'construct-data-signature-msg
-	    "Canonical signatures are not yet implemented"
-	    str))
+    ((canonical) (canonical-string str))
     ((standalone)
      (when (not (string-null? str))
 	(error 'construct-data-signature-msg
@@ -76,6 +87,46 @@
 	    "Signature type not yet implemented (or not a string-signature)"
 	    (cons sig-type (signature-type->human-readable sig-type))))))
 
+;*---------------------------------------------------------------------*/
+;*    canonical-string ...                                             */
+;*    -------------------------------------------------------------    */
+;*    canonicalize a string means replacing the newlines with CRLR     */
+;*    (see http://tools.ietf.org/html/rfc4880#section-5.2.4).          */
+;*---------------------------------------------------------------------*/
+(define (canonical-string str)
+   
+   (define (count-newline str)
+      (let loop ((i (string-index str #\Newline))
+		 (c 0))
+	 (if i
+	     ;; skip crlf
+	     (if (and (>fx i 0) (char=? (string-ref str (-fx i 1)) #\Return))
+		 (loop (string-index str #\Newline (+fx i 1)) c)
+		 (loop (string-index str #\Newline (+fx i 1)) (+fx c 1)))
+	     c)))
+
+   (let ((nstr (make-string (+fx (string-length str) (count-newline str)))))
+      (let loop ((r 0)
+		 (w 0))
+	 (let ((i (string-index str #\Newline r)))
+	    (cond
+	       ((not i)
+		;; done
+		(blit-string! str r nstr w (-fx (string-length str) r))
+		nstr)
+	       ((and (>fx i 0) (char=? (string-ref str (-fx i 1)) #\Return))
+		;; skip crlf
+		(let ((l (+fx 1 (-fx i r))))
+		   (blit-string! str r nstr w l)
+		   (loop (+fx i 1) (+fx w l))))
+	       (else
+		;; pur newline
+		(let ((l (-fx i r)))
+		   (blit-string! str r nstr w l)
+		   (string-set! nstr (+ w l) #\Return)
+		   (string-set! nstr (+ w (+fx l 1)) #\Newline)
+		   (loop (+fx i 1) (+fx w (+fx l 2))))))))))
+   
 ;; constructs the string that needs to be hashed to get the signature of an ID
 ;; (bound to a key).
 (define (construct-certification-signature-str id::bstring key::PGP-Key-Packet

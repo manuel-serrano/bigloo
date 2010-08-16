@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/parse-args.scm         */
+;*    serrano/prgm/project/bigloo/comptime/Init/parse_args.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Apr 23 08:04:41 2010 (serrano)                */
+;*    Last change :  Mon Aug 16 11:06:38 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1139,7 +1139,6 @@
 (define (parse-optim-args string)
    (define (-O2!)
       (set! *cc-options* (string-append *cc-options* " " *cflags-optim*))
-      (set! *optim-cfa-arithmetic?* #t)
       (set! *optim-jvm-inlining* 2)
       (set! *optim-jvm-branch* 3)
       (set! *optim-jvm-fasteq* #t)

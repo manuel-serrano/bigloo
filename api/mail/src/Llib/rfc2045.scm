@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Sat Jun 26 07:31:21 2010 (serrano)                */
+;*    Last change :  Thu Aug 12 15:18:09 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -393,8 +393,7 @@
 	 (if (is-boundary? buffer boundary)
 	     (let laap ((entries entries))
 		(let* ((header (with-handler
-				  ;; if the header is incorrect,
-				  ;; skip it silently
+				  ;; skip silently incorrect headers
 				  (lambda (e) '())
 				  (mail-header->list in)))
 		       (enc (let ((c (assq 'content-transfer-encoding header)))
@@ -444,7 +443,7 @@
 		      (else
 		       (multiple-value-bind (last content)
 			  (multipart-read-up-to-boundary buffer in boundary)
-			  (let ((entry (list ctype enc dispo content)))
+			  (let ((entry (list ctype enc dispo content header)))
 			     (if last
 				 (reverse! (cons entry entries))
 				 (laap (cons entry entries)))))))))

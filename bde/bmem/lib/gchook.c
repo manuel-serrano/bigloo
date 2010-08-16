@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Wed Aug 11 11:23:32 2010 (serrano)                */
+/*    Last change :  Thu Aug 12 06:00:30 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -33,7 +33,6 @@ make_gc_info( long num, long asize, long hsize, long lsize ) {
 
    return info;
 }
-   
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */

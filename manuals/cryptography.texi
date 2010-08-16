@@ -829,7 +829,7 @@ main-key instead. If the main-key is not suitable for signing, then an
 error is raised.
 
 If the private part of the key has not yet been decrypted then Bigloo
-will call the passwort-provider (a procedure) with the subkey to get a
+will call the password-provider (a procedure) with the subkey to get a
 password (a string).
 
 The function returns a PGP-composition.
