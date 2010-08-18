@@ -23,7 +23,7 @@ The section @ref{Files} describes functions for handling files.
 @menu
 * Library functions::
 * Memory mapped area::
-* Gzip::
+* Zip::
 * Tar::
 @end menu
 
@@ -300,6 +300,16 @@ the @var{pi} port.
       (close-input-port p2)
       (close-input-port p1)))
 @end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} open-input-zlib-file file-name [buffer #t]
+@deffnx {bigloo procedure} open-input-zlib-port input-port [buffer #t]
+@cindex zip
+@cindex gzip
+
+Open respectively a zlib file for input and a port on a zlib stream.
+Note that closing a zlib port opened from a port @var{pi} does not close
+the @var{pi} port.
 @end deffn
  
 @deffn {bigloo procedure} open-input-string string [start 0]
@@ -779,7 +789,7 @@ hits the ,(code "Enter") key.
 @c ------------------------------------------------------------------- @c
 @c    MMAP                                                             @c
 @c ------------------------------------------------------------------- @c
-@node Memory mapped area, Gzip, Library functions, Input and Output
+@node Memory mapped area, Zip, Library functions, Input and Output
 @comment  node-name,  next,  previous,  up
 @subsection mmap
 @cindex mmap
@@ -862,15 +872,18 @@ if the characters read (resp. writen) outbound the length of the memory mapped.
 @end deffn
 
 @c ------------------------------------------------------------------- @c
-@c    Gzip                                                             @c
+@c    Zip                                                              @c
 @c ------------------------------------------------------------------- @c
-@node Gzip, Tar, Memory mapped area, Input and Output
+@node Zip, Tar, Memory mapped area, Input and Output
 @comment  node-name,  next,  previous,  up
-@subsection Gzip
+@subsection Zip
 @cindex gzip
+@cindex zip
+@cindex zlib
 @cindex gunzip
 
 @deffn {bigloo procedure} port->gzip-port input-port [buffer #t]
+@deffnx {bigloo procedure} port->zlib-port input-port [buffer #t]
 @deffnx {bigloo procedure} port->inflate-port input-port [buffer #t]
 These functions take a regular port as input (@var{input-port}). They construct
 a new port that automatically @emph{unzip} the read characters.
@@ -878,27 +891,13 @@ The @code{inflate} version does not parse a gunzip-header before inflating the
 content.
 @end deffn
 
-@deffn {bigloo procedure} open-input-gzip-file path [buffer #t]
-@deffnx {bigloo procedure} open-input-inflate-file path [buffer #t]
+@deffn {bigloo procedure} open-input-inflate-file path [buffer #t]
 These function open a gzipped file for input. The file is automatically
 unzipped when the characters are read. It is equivalent to:
 
 @smalllisp
 (let ((p (open-input-port path)))
   (port->gzip-port p))
-@end smalllisp
-
-Gzipped files can also be using the @code{gzip:} prefix. That is:
-
-@smalllisp
-(open-input-gzip-file "a-path.gz")
-@end smalllisp
-
-
-is equivalent to:
-
-@smalllisp
-(open-input-file "gzip:a-path.gz")
 @end smalllisp
 
 The function @code{open-input-inflate-file} is similar to
@@ -924,7 +923,7 @@ the port is not gzipped.
 @c ------------------------------------------------------------------- @c
 @c    Tar                                                              @c
 @c ------------------------------------------------------------------- @c
-@node Tar, ,Gzip, Input and Output
+@node Tar, ,Zip, Input and Output
 @comment  node-name,  next,  previous,  up
 @subsection Tar
 @cindex tar

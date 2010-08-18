@@ -1,3 +1,20 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/openpgp/src/Llib/pgp_decode.scm      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Florian Loitsch                                   */
+;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
+;*    Last change :  Wed Aug 18 12:13:02 2010 (serrano)                */
+;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano.             */
+;*    -------------------------------------------------------------    */
+;*    OpenPGP decode                                                   */
+;*    -------------------------------------------------------------    */
+;*    See rfc4880 for technical details:                               */
+;*       http://tools.ietf.org/html/rfc4880                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
 (module __openpgp-decode
    (library crypto)
    (import __openpgp-util
@@ -90,7 +107,7 @@
       (when (zerofx? (bit-and #x80 packet-tag))
 	 (error "decode-packet" "bad packet" packet-tag))
 
-      (debug "Packet-tag: " packet-tag)
+      (debug "~~~~~~~~~~~~~~~~~ Packet-tag: " packet-tag)
       (receive (content-tag len partial?)
 	 (if (zerofx? (bit-and #x40 packet-tag))
 	     ;; old packet format
@@ -768,10 +785,18 @@
       (case algo
        ((uncompressed) (decode-packet cpp))
        ((ZIP)
-	(instantiate::PGP-Compressed-Packet
-	   (packets (decode-packets (port->inflate-port cpp)))))
+	(let ((pz (port->inflate-port cpp)))
+	   (unwind-protect
+	      (instantiate::PGP-Compressed-Packet
+		 (packets (decode-packets pz)))
+	      (close-input-port pz))))
        ;; TODO: fix compression
-       ;((ZLIB) (decode-packet (port->gzip-port cpp)))
+       ((ZLIB)
+	(let ((pz (port->zlib-port cpp)))
+	   (unwind-protect
+	      (instantiate::PGP-Compressed-Packet
+		 (packets (decode-packets pz)))
+	      (close-input-port pz))))
        (else (error "decode compressed"
 		    "Can't decompresse data"
 		    algo)))))

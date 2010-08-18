@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Fri Aug 13 08:29:13 2010 (serrano)                */
+;*    Last change :  Wed Aug 18 12:12:46 2010 (serrano)                */
 ;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano              */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
@@ -680,14 +680,20 @@
 	  key-packet)
 	 ((not password-provider)
 	  (debug "No password provider")
-	  (error 'decode-key
+	  (error "decode-key"
 		 "no password-provider has been given"
 		 #f))
+	 ((not (and (procedure? password-provider)
+		    (correct-arity? password-provider 1)))
+	  (debug "Illegal password provider")
+	  (error "decode-key"
+		 "Illegal password provider"
+		 password-provider))
 	 ((PGP-Key-Packet? key-packet)
 	  (let loop ((count 3))
 	     (when (=fx count 0)
 		(debug "No password attempt left")
-		(error 'decode-key
+		(error "decode-key"
 		       "no password attempt left"
 		       #f))
 	     (let ((pass (password-provider key)))
@@ -706,7 +712,7 @@
 		       (loop (-fx count 1)))))))
 	  key-packet)
 	 (else
-	  (error 'decode-key
+	  (error "decode-key"
 		 "Invalid key"
 		 key)))))
    

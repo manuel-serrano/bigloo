@@ -237,17 +237,19 @@
 	    (debug "public-key-session-key decription succeeded")
 	    (symmetric-decrypt encrypted key-string algo))))
 
-   (unless (null? pubkey-session-packets)
-      (let* ((pack (car pubkey-session-packets))
-	     (key-id (PGP-Public-Key-Encrypted-Session-Key-Packet-id pack))
-	     (subkeys (or (key-manager key-id) '())))
-	 (debug "Trying " (length subkeys) " keys:")
-	 (for-each (lambda (k)
-		      (debug (pgp-subkey->human-readable k)))
-		   subkeys)
-	 (or (any (lambda (subkey) (try-decrypt pack subkey)) subkeys)
-	     (pubkey-decrypt encrypted (cdr pubkey-session-packets)
-			     key-manager password-provider)))))
+   (if (and (procedure? key-manager) (correct-arity? key-manager 1))
+       (unless (null? pubkey-session-packets)
+	  (let* ((pack (car pubkey-session-packets))
+		 (key-id (PGP-Public-Key-Encrypted-Session-Key-Packet-id pack))
+		 (subkeys (or (key-manager key-id) '())))
+	     (debug "Trying " (length subkeys) " keys:")
+	     (for-each (lambda (k)
+			  (debug (pgp-subkey->human-readable k)))
+		       subkeys)
+	     (or (any (lambda (subkey) (try-decrypt pack subkey)) subkeys)
+		 (pubkey-decrypt encrypted (cdr pubkey-session-packets)
+				 key-manager password-provider))))
+       (error "decrypt" "Illegal key-manager" key-manager)))
 
 (define (pwd-decrypt encrypted::PGP-Symmetrically-Encrypted-Packet
 		     password-session-packets passkey-provider)
@@ -260,11 +262,13 @@
 	    (decrypt-symmetric-key-session-key session-packet passkey)
 	    (debug "symmetric-key-session-key decription succeeded")
 	    (symmetric-decrypt encrypted key-string algo))))
-   
-   (unless (null? password-session-packets)
-      (let ((passkey (passkey-provider)))
-	 (any (lambda (packet) (try-decrypt packet passkey))
-	      password-session-packets))))
+
+   (if (and (procedure? passkey-provider) (correct-arity? passkey-provider 0))
+       (unless (null? password-session-packets)
+	  (let ((passkey (passkey-provider)))
+	     (any (lambda (packet) (try-decrypt packet passkey))
+		  password-session-packets)))
+       (error "decrypt" "Illegal passkey-provider" passkey-provider)))
 
 (define (pgp-decrypt encrypted
 		     #!key

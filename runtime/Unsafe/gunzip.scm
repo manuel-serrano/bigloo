@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Thu Jun  4 15:30:48 2009 (serrano)                */
-;*    Copyright   :  2006-09 Manuel Serrano                            */
+;*    Last change :  Wed Aug 18 11:54:12 2010 (serrano)                */
+;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
 ;*    -------------------------------------------------------------    */
@@ -67,8 +67,10 @@
    (static (class huft e::long b::long v))
 
    (export (port->gzip-port::input-port ::input-port #!optional (bufinfo #t))
+	   (port->zlib-port::input-port ::input-port #!optional (bufinfo #t))
 	   (port->inflate-port::input-port ::input-port #!optional (bufinfo #t))
 	   (open-input-gzip-file ::bstring #!optional (bufinfo #t))
+	   (open-input-zlib-file ::bstring #!optional (bufinfo #t))
 	   (open-input-inflate-file ::bstring #!optional (bufinfo #t))
 	   (gunzip-sendchars ::input-port ::output-port)
 	   (inflate-sendchars ::input-port ::output-port)
@@ -314,10 +316,13 @@
    (define buffer (make-string 256))
    (define bufpos 256)
 
+
+   (define i 0)
+   
    (define (GETBYTE)
       (let ((grammar (regular-grammar ()
 			((in all #\Newline) (the-byte))
-			(else (gunzip-error 'inflate
+			(else (gunzip-error "inflate"
 					    "premature end of file"
 					    input-port)))))
 	 (read/rp grammar input-port)))
@@ -386,13 +391,13 @@
 			      (let ((y2 (-fx y (vector-ref c j))))
 				 (if (<fx y2 0)
 				     (gunzip-error
-				      'inflate
+				      "inflate"
 				      "bad input: more codes than bits"
 				      input-port)
 				     (loop (*fx y2 2) (+fx j 1))))))))
 		(set! final-y (-fx y0 (vector-ref c i)))
 		(when (<fx final-y 0)
-		   (gunzip-error 'inflate
+		   (gunzip-error "inflate"
 				 "bad input: mode codes than bits"
 				 input-port))
 		(vector-set! c i (+fx (vector-ref c i) final-y)))
@@ -545,7 +550,7 @@
 				  (not (and (not (=fx 0 final-y))
 					    (not (=fx g 1)))))))
 		      (unless okp 
-			 (gunzip-error 'inflate-entry
+			 (gunzip-error "inflate-entry"
 				       "incomplete table"
 				       input-port))
 		      (values t-result m-result okp)))))))
@@ -562,7 +567,7 @@
 	 (define (jump-to-next)
 	    (let loop ()
 	       (when (=fx e 99)
-		  (gunzip-error 'inflate-entry
+		  (gunzip-error "inflate-entry"
 				(format "bad inflate code `~a'" e)
 				input-port))
 	       (DUMPBITS (huft-b t))
@@ -682,7 +687,7 @@
 	 (DUMPBITS 16)
 	 (NEEDBITS 16)
 	 (unless (=fx n (bit-and (bit-not bb) #xffff))
-	    (gunzip-error 'inflate-entry
+	    (gunzip-error "inflate-entry"
 			  (format "error in compressed data `~a'" n)
 			  input-port))
 	 (DUMPBITS 16)
@@ -737,9 +742,9 @@
       
       (cond
 	 ((>fx nl 286)
-	  (gunzip-error 'inflate (format "bad lengths `~a'" nl) input-port))
+	  (gunzip-error "inflate" (format "bad lengths `~a'" nl) input-port))
 	 ((>fx nd 30)
-	  (gunzip-error 'inflate (format "bad lengths `~a'" nd) input-port))
+	  (gunzip-error "inflate" (format "bad lengths `~a'" nd) input-port))
 	 (else
 	  ;; read in bit-length-code lengths
 	  (step 0 nb
@@ -771,7 +776,7 @@
 				     (set-lit (lambda (j l)
 						 (when (>fx (+fx i j) n)
 						    (gunzip-error
-						     'inflate
+						     "inflate"
 						     (format "bad hop `~a'" n)
 						     input-port))
 						 (let loop ((j j))
@@ -808,13 +813,13 @@
 			(multiple-value-bind (tl bl ok?)
 			   (huft-build ll nl 257 (cplens) (cplext) (lbits) #f)
 			   (if (not ok?)
-			       (gunzip-error 'inflate
+			       (gunzip-error "inflate"
 					     "incomplete code set"
 					     input-port)
 			       (multiple-value-bind (td bd ok?)
 				  (huft-build (subvector ll nl) nd 0 (cpdist) (cpdext) (dbits) #f)
 				  (if (not ok?)
-				      (gunzip-error 'inflate
+				      (gunzip-error "inflate"
 						    "incomplete code set"
 						    input-port)
 				      ;; decompress until an end-of-block code
@@ -830,7 +835,7 @@
 		  ((2) (inflate-dynamic))
 		  ((0) (inflate-stored))
 		  ((1) (inflate-fixed))
-		  (else (gunzip-error 'inflate
+		  (else (gunzip-error "inflate"
 				      (format "unknown inflate type `~A'" t)
 				      input-port)))
 	       (let loop ((state state)
@@ -847,7 +852,7 @@
 				    (kont)
 				    (loop state2 val2 kont2)))))
 		     (else
-		      (gunzip-error 'inflate "Illegal state" state))))))))
+		      (gunzip-error "inflate" "Illegal state" state))))))))
    
    ;; initialize window, bit buffer
    (set! wp 0)
@@ -878,7 +883,7 @@
 				 (r)
 				 (laap state2 e2 r2)))))
 		  (else
-		   (gunzip-error 'inflate "Illegal state" state))))))))
+		   (gunzip-error "inflate" "Illegal state" state))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-small-endian2 ...                                           */
@@ -921,12 +926,12 @@
 		   (=fx (string-length header) 2)
 		   (=fx (char->integer (string-ref header 0)) #o37)
 		   (=fx (char->integer (string-ref header 1)) #o213))
-	 (gunzip-error 'gunzip
+	 (gunzip-error "gunzip"
 		       (format "bad header `~a'" header)
 		       in)))
    (let ((compression-type (read-char in)))
       (unless (eq? compression-type #\010)
-	 (gunzip-error 'gunzip
+	 (gunzip-error "gunzip"
 		       (format "unknown compression type `~a'"
 			       compression-type)
 		       in)))
@@ -938,9 +943,9 @@
 	  (has-comment? (positive? (bit-and flags #b10000)))
 	  (encrypted? (positive? (bit-and flags #b100000))))
       (when encrypted?
-	 (gunzip-error 'gunzip "cannot unzip encrypted file" in))
+	 (gunzip-error "gunzip" "cannot unzip encrypted file" in))
       (when continuation?
-	 (gunzip-error 'gunzip "cannot handle multi-part files" in))
+	 (gunzip-error "gunzip" "cannot handle multi-part files" in))
       (let* ((unix-mod-time (read-int4))
 	     (extra-flags (read-char in))
 	     (source-os (read-char in)))
@@ -1005,39 +1010,40 @@
 ;*---------------------------------------------------------------------*/
 ;*    subbuffer ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (subbuffer buffer len)
-   (if (=fx len (inflate-buffer-size))
+(define (subbuffer buffer len bufsize in)
+   (if (=fx len bufsize)
        buffer
        (substring buffer 0 len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    subbuffer! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (subbuffer! buffer len)
-   (if (=fx len (inflate-buffer-size))
+(define (subbuffer! buffer len bufsize in)
+   (if (=fx len bufsize)
        buffer
        (string-shrink! buffer len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    port->port ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (port->port::input-port in::input-port state bufinfo)
-   (let ((buffer (make-string (inflate-buffer-size)))
+(define (port->port::input-port in::input-port state bufinfo bufsize)
+   (let ((buffer (make-string bufsize))
 	 (state state)
 	 (kont #unspecified))
       ($open-input-gzip-port
        (lambda ()
 	  (let loop ((val 0))
+	     (tprint "PORT->PORT loop val=" val " state=" state)
 	     (case state
 		((eof)
 		 (set! buffer #f)
 		 #f)
 		((complete)
 		 (set! state 'eof)
-		 (subbuffer! buffer val))
+		 (subbuffer! buffer val bufsize in))
 		((step)
 		 (set! state 'resume)
-		 (subbuffer buffer val))
+		 (subbuffer buffer val bufsize in))
 		((resume)
 		 (multiple-value-bind (state2 val2 kont2)
 		    (kont)
@@ -1053,7 +1059,9 @@
 		    (inflate-entry in buffer)
 		    (set! state state0)
 		    (set! kont kont0)
-		    (loop val0))))))
+		    (loop val0)))
+		(else
+		 (error "port->port" "Illegal state" state)))))
        in
        (get-port-buffer state bufinfo c-default-io-bufsiz))))
 
@@ -1061,22 +1069,21 @@
 ;*    port->inflated-port ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (port->inflate-port::input-port in::input-port #!optional (bufinfo #t))
-   (port->port in 'port->inflate-port bufinfo))
+   (port->port in 'port->inflate-port bufinfo (inflate-buffer-size)))
    
 ;*---------------------------------------------------------------------*/
 ;*    port->gzip-port ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (port->gzip-port::input-port in::input-port #!optional (bufinfo #t))
-   (port->port in 'port->gzip-port bufinfo))
+   (port->port in 'port->gzip-port bufinfo (inflate-buffer-size)))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-file ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (open-input-gzip-file name #!optional (bufinfo #t))
-   (let ((p (open-input-file name bufinfo))
-	 (b (get-port-buffer 'open-input-gzip-file #t c-default-io-bufsiz)))
+   (let ((p (open-input-file name bufinfo)))
       (and (input-port? p)
-	   (let ((pi (port->gzip-port p b)))
+	   (let ((pi (port->gzip-port p #t)))
 	      (input-port-close-hook-set! pi (lambda (v) (close-input-port p)))
 	      pi))))
 
@@ -1090,4 +1097,32 @@
 	   (let ((pi (port->inflate-port p b)))
 	      (input-port-close-hook-set! pi (lambda (v) (close-input-port p)))
 	      pi))))
-
+ 
+;*---------------------------------------------------------------------*/
+;*    port->zlib-port ...                                              */
+;*---------------------------------------------------------------------*/
+(define (port->zlib-port::input-port in::input-port #!optional (bufinfo #t))
+   (let* ((cmf (read-byte in))
+	  (flg (read-byte in))
+	  (cm (bit-and cmf #b1111))
+	  (cinfo (bit-rsh cmf 4))
+	  (fcheck (bit-and flg #b1111))
+	  (fdict (bit-rsh (bit-and flg #b10000) 5))
+	  (flevel (bit-rsh flg 6)))
+      (cond
+	 ((not (=fx cm 8))
+	  (error "port->zlib-port" "Unsupported format" cm))
+	 ((not (=fx (remainder (+fx (*fx cmf 256) flg) 31) 0))
+	  (error "port->zlib-port" "Illegal fcheck" fcheck))
+	 (else
+	  (port->port in 'port->inflate-port #t (bit-lsh 1 (+fx 8 cinfo)))))))
+      
+;*---------------------------------------------------------------------*/
+;*    open-input-zlib-file ...                                         */
+;*---------------------------------------------------------------------*/
+(define (open-input-zlib-file name #!optional (bufinfo #t))
+   (let ((p (open-input-file name bufinfo)))
+      (and (input-port? p)
+	   (let ((pi (port->zlib-port p)))
+	      (input-port-close-hook-set! pi (lambda (v) (close-input-port p)))
+	      pi))))

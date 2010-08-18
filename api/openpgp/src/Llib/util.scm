@@ -27,8 +27,8 @@
 	   ))
 
 (define-macro (debug . str)
-;   `(tprint ,@str))
-   #f)
+   (when (>fx (bigloo-compiler-debug) 0)
+      `(tprint ,@str)))
 
 (define-macro (+fx+ x . L)
    (cond
