@@ -237,25 +237,22 @@ Example:
    @print{} Gee
 @end smalllisp
 
-@item @code{http:server/path}
+@item @code{http://server/path}
 
 Opens an @emph{http} connection on @code{server} and open an input file
 on file @code{path}.
 
-@item @code{http:server:port-number/path}
-
-Opens an @emph{http} connection on @code{server}, on port number
-@code{port} and open an input file on file @code{path}.
-
-@item @code{http:user:password@@server:port-number/path}
+@item @code{http://server:port-number/path}
+@item @code{http://user:password@@server:port-number/path}
 
 Opens an @emph{http} connection on @code{server}, on port number
 @code{port} with an authentication and open an input file on file @code{path}.
 
-@item @code{ftp:server/path}
+@item @code{ftp://server/path}
+@item @code{ftp://user:password@@server/path}
 
-Opens an @emph{http} connection on @code{server} and open an input file
-on file @code{path}.
+Opens an @emph{ftp} connection on @code{server} and open an input file
+on file @code{path}. Log in as anonymous.
 
 @item @code{ressource:}
 

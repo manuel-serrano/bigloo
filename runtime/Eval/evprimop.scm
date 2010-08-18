@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Mon Aug  2 20:43:42 2010 (serrano)                */
+;*    Last change :  Wed Aug 18 14:52:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -61,6 +61,7 @@
 ;* 	    __rsa                                                      */
 	    __url
 	    __http
+	    __ftp
 	    __uuid
 	    
 	    __reader
@@ -111,7 +112,6 @@
 	    __r4_input_6_10_2
 	    __r4_output_6_10_3
 	    __r5_control_features_6_4
-	    ;__r5_macro_4_3_hygiene
 	    __r5_macro_4_3_syntax)
    
    (eval    (export-all)
@@ -144,7 +144,11 @@
 	    (class &http-error)
 	    (class &http-redirection-error)
 	    (class &http-status-error)
-	    (class &http-redirection)))
+	    (class &http-redirection)
+
+	    (class ftp)
+	    (class &ftp-error)
+	    (class &ftp-parse-error)))
 
 
  

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Aug 18 12:24:47 2010 (serrano)                */
+;*    Last change :  Wed Aug 18 15:56:30 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -25,7 +25,8 @@
 	    __param
 	    __gunzip
 	    __url
-	    __http)
+	    __http
+	    __ftp)
    
    (use     __type
 	    __bigloo
@@ -766,7 +767,8 @@
      ("gzip:" . ,open-input-gzip-file)
      ("zlib:" . ,open-input-zlib-file)
      ("inflate:" . ,open-input-inflate-file)
-     ("/resource/" . ,%open-input-resource)))
+     ("/resource/" . ,%open-input-resource)
+     ("ftp://" . ,open-input-ftp-file)))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-protocols ...                                         */
