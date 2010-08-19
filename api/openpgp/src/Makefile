@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
-#*    Last change :  Tue Aug 17 11:52:55 2010 (serrano)                */
+#*    Last change :  Thu Aug 19 14:29:48 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */
@@ -39,7 +39,7 @@ JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) #-unsafe -safee
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)

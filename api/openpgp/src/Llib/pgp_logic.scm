@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Wed Aug 18 12:12:46 2010 (serrano)                */
+;*    Last change :  Thu Aug 19 13:51:56 2010 (serrano)                */
 ;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano              */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
@@ -207,12 +207,12 @@
 		(hash-fun (hash-algo->procedure hash-algo))
 		(hash (hash-fun signed-m))
 		(hash-prefix-ok? (string-prefix? left-hash hash)))
-	    (debug "signature-version: " version)
-	    (debug "hash-prefix: " (str->hex-string left-hash))
-	    (debug "hash:        " (str->hex-string hash))
+	    (trace-item "signature-version: " version)
+	    (trace-item "hash-prefix: " (str->hex-string left-hash))
+	    (trace-item "hash:        " (str->hex-string hash))
 	    (if (not hash-prefix-ok?)
 		(begin
-		   (debug "left-hash failed.")
+		   (trace-item "left-hash failed.")
 		   #f)
 		(case public-key-algo
 		   ((rsa-encrypt/sign rsa-sign)
@@ -242,9 +242,10 @@
 			      public-key-algo))
 		    #f))))))
 
-   (let* ((issuer (PGP-Signature-Packet-issuer sig))
-	  (possible-keys (key-resolver issuer)))
-      (verify-signature-for-keys msg sig possible-keys)))
+   (with-trace 4 "verify-signature"
+      (let* ((issuer (PGP-Signature-Packet-issuer sig))
+	     (possible-keys (key-resolver issuer)))
+	 (verify-signature-for-keys msg sig possible-keys))))
 
 (define (key-id::bstring k::PGP-Key-Packet)
    (with-access::PGP-Key-Packet k (version key id)
@@ -335,10 +336,10 @@
 	 (cond
 	    ((and (=fx i len) (=fx checksum sum))
 	     ;; everything is in order
-	     (debug "checksum succeeded")
+	     (trace-item "checksum succeeded")
 	     #t)
 	    ((=fx i len)
-	     (debug "checksum failed")
+	     (trace-item "checksum failed")
 	     #f)
 	    (else
 	     (loop (+fx i 1)
@@ -347,75 +348,78 @@
    (define (verify-sha1-chksum data::bstring checksum::bstring len::long)
       (if (string=? checksum (sha1sum-bin (substring data 0 len)))
 	  (begin
-	     (debug "checksum succeeded")
+	     (trace-item "checksum succeeded")
 	     #t)
 	  (begin
-	     (debug "checksum failed")
+	     (trace-item "checksum failed")
 	     #f)))
 
-   (when (string-null? secret)
-      (error 'decode-secret-key-password-protected
-	     "secret must not be empty"
-	     ""))
-   (let ((protection (char->integer (string-ref secret 0))))
-      (debug "Protection: " protection)
-      (case protection
-	 ((0) ;; not protected
-	  (let* ((sdata-len (string-length secret))
-		 (checksum (scalar->fixnum (substring secret
-						      (-fx sdata-len 2)
-						      sdata-len))))
-	     (when (not (verify-checksum secret checksum (-fx sdata-len 2)))
-		(error "verify checksum"
-		       "Checksum verification failed on non-encrypted content"
+   (with-trace 4 "decrypt-password-protected"
+      (when (string-null? secret)
+	 (error 'decode-secret-key-password-protected
+		"secret must not be empty"
+		""))
+      (let ((protection (char->integer (string-ref secret 0))))
+	 (trace-item "Protection: " protection)
+	 (case protection
+	    ((0) ;; not protected
+	     (let* ((sdata-len (string-length secret))
+		    (checksum (scalar->fixnum (substring secret
+							 (-fx sdata-len 2)
+							 sdata-len))))
+		(when (not (verify-checksum secret checksum (-fx sdata-len 2)))
+		   (error "verify checksum"
+			  "Checksum verification failed on non-encrypted content"
+			  #f))
+		(substring secret 1 (-fx sdata-len 2))))
+	    ((254 255) ;; password protected
+	     (when (=fx version 3)
+		(error "decode-secret-key-password"
+		       "version 3 decoding is not yet implemented."
 		       #f))
-	     (substring secret 1 (-fx sdata-len 2))))
-	 ((254 255) ;; password protected
-	  (when (=fx version 3)
-	     (error "decode-secret-key-password"
-		    "version 3 decoding is not yet implemented."
-		    #f))
-	  ;; 254 seems to be gnupg extension, where the checksum is actually
-	  ;; a SHA1 hash.
-	  (let* ((p (open-input-string secret))
-		 (protection (safe-read-octet p)) ;; again.
-		 (symmetric-algo-byte (safe-read-octet p))
-		 (symmetric-algo (byte->symmetric-key-algo
-				  symmetric-algo-byte))
-		 (key-len (symmetric-key-algo-key-byte-len symmetric-algo))
-		 (s2k (decode-s2k p))
-		 (symmetric-key (apply-s2k s2k password key-len))
-		 (IV (safe-read-octets 8 p))
-		 (secret-data (read-string p))
-		 (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
-		 (decoded (decrypter secret-data IV symmetric-key))
-		 (dec-len (string-length decoded))
-		 (chksum-len (if (=fx protection 254) 20 2))
-		 (dummy (when (not (>=fx dec-len chksum-len))
-			   (error "decode password-protected secret key"
-				  "not enough bytes for checksum"
-				  dec-len)))
-		 (chksum-str (substring decoded (-fx dec-len chksum-len)
-					dec-len)))
-	     (debug "password-protection: " symmetric-algo-byte " "
-		    (symmetric-key-algo->human-readable symmetric-algo))
-	     (debug "symmetric-key: " (str->hex-string symmetric-key))
-	     (debug "IV: " (str->hex-string IV))
-	     (debug "secret-data: " (str->hex-string secret-data))
-	     (debug "decoded: " (str->hex-string decoded))
-	     ;; in version 4 the secret-data contains the hash.
-	     ;; in version 3 its more difficult...
-	     (if (=fx protection 254) ;; gpg sha1sum
-		 (and (verify-sha1-chksum decoded chksum-str
+	     ;; 254 seems to be gnupg extension, where the checksum is actually
+	     ;; a SHA1 hash.
+	     (let* ((p (open-input-string secret))
+		    (protection (safe-read-octet p)) ;; again.
+		    (symmetric-algo-byte (safe-read-octet p))
+		    (symmetric-algo (byte->symmetric-key-algo
+				     symmetric-algo-byte))
+		    (key-len (symmetric-key-algo-key-byte-len symmetric-algo))
+		    (s2k (decode-s2k p))
+		    (symmetric-key (apply-s2k s2k password key-len))
+		    (IV (safe-read-octets 8 p))
+		    (secret-data (read-string p))
+		    (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
+		    (decoded (decrypter secret-data IV symmetric-key))
+		    (dec-len (string-length decoded))
+		    (chksum-len (if (=fx protection 254) 20 2))
+		    (dummy (when (not (>=fx dec-len chksum-len))
+			      (error "decode password-protected secret key"
+				     "not enough bytes for checksum"
+				     dec-len)))
+		    (chksum-str (substring decoded (-fx dec-len chksum-len)
+					   dec-len)))
+		(trace-item "password-protection: " symmetric-algo-byte " "
+		       (symmetric-key-algo->human-readable symmetric-algo))
+		(trace-item "symmetric-key: " (str->hex-string symmetric-key))
+		(trace-item "IV: " (str->hex-string IV))
+		(trace-item "secret-data: " (str->hex-string secret-data)
+			    " (len=" (string-length secret-data) ")")
+		(trace-item "decoded: " (str->hex-string decoded)
+			    " (len=" (string-length decoded) ")")
+		;; in version 4 the secret-data contains the hash.
+		;; in version 3 its more difficult...
+		(if (=fx protection 254) ;; gpg sha1sum
+		    (and (verify-sha1-chksum decoded chksum-str
+					     (-fx dec-len chksum-len))
+			 decoded)
+		    (and (verify-checksum decoded (scalar->fixnum chksum-str)
 					  (-fx dec-len chksum-len))
-		      decoded)
-		 (and (verify-checksum decoded (scalar->fixnum chksum-str)
-				       (-fx dec-len chksum-len))
-		      decoded))))
+			 decoded))))
 	    (else
 	     (error "decode-password-protected-secret-key"
 		    "bad magic byte"
-		    protection)))))
+		    protection))))))
 
 (define (create-secret-rsa-key public-key d)
    (instantiate::Rsa-Key
@@ -541,10 +545,10 @@
 
    (define (verify-user-id id::Signed-ID)
       (with-access::Signed-ID id (id sigs)
-	 (debug "Verifying user-id")
-	 (debug (PGP-ID-Packet-data id))
+	 (trace-item "Verifying user-id")
+	 (trace-item (PGP-ID-Packet-data id))
 	 (when (null? sigs)
-	    (debug "No signature for user-id"))
+	    (trace-item "No signature for user-id"))
 	 (for-each
 	  (lambda (sig)
 	     (with-access::PGP-Signature-Packet sig (version
@@ -556,12 +560,12 @@
 		       (signer (verify-signature str sig local-resolve)))
 		   (cond
 		      ((not signer)
-		       (debug "Unverified signature from: "
+		       (trace-item "Unverified signature from: "
 			      (signature->issuer-id sig)))
 		      ((eq? signer (car (PGP-Key-subkeys pgp-key)))
-		       (debug "Valid self signature"))
+		       (trace-item "Valid self signature"))
 		      (else
-		       (debug "Valid signature from: "
+		       (trace-item "Valid signature from: "
 			      (signature->issuer-id sig :key signer)))))))
 	  sigs)))
 
@@ -576,15 +580,15 @@
 		(signer (verify-signature str revoc-sig local-resolve)))
 	    (cond
 	       ((eq? pgp-key (PGP-Subkey-pgp-key signer))
-		(debug "REVOKED. valid self revocation signature"))
+		(trace-item "REVOKED. valid self revocation signature"))
 	       (signer
-		(debug "MAYBE REVOKED. Valid signature from: "
+		(trace-item "MAYBE REVOKED. Valid signature from: "
 		       (signature->issuer-id revoc-sig :key signer))
 		;; TODO find valid self-signature that confirms that this
 		;; person actually has the right to revoke our key.
 		)
 	       (else
-		(debug "Signature could not be verified."))))))
+		(trace-item "Signature could not be verified."))))))
 
    (define (verify-subkey-binding-sig sig subkey-pkt::PGP-Key-Packet)
       (with-access::PGP-Signature-Packet sig (signature-type)
@@ -599,30 +603,30 @@
 		;; binding signatures must be done by main-key.
 		(signer (verify-signature str sig (lambda (id) (main-key)))))
 	    (if (eq? signer (main-key)) ;; otherwise must be #f
-		(debug "Valid subkey-binding signature")
-		(debug "Signature could not be verified (BAD)")))))
+		(trace-item "Valid subkey-binding signature")
+		(trace-item "Signature could not be verified (BAD)")))))
 		     
    (define (verify-subkey subkey)
       (with-access::PGP-Subkey subkey (key-packet sigs revocation-sigs)
 	 (when (and (null? sigs) (not (eq? subkey (main-key))))
-	    (debug "BAD BAD subkey has no binding signature"))
+	    (trace-item "BAD BAD subkey has no binding signature"))
 
 	 (for-each (lambda (sig)
 		      (verify-subkey-binding-sig sig key-packet))
 		   sigs)
 	 (when (not (null? revocation-sigs))
-	    (debug "key has revocation signature(s)")
+	    (trace-item "key has revocation signature(s)")
 	    (for-each (lambda (sig)
 			 (verify-revocation-sig sig key-packet))
 		      revocation-sigs))))
 
-   
-   (debug "Verifying key")
-   (with-access::PGP-Key pgp-key (subkeys user-ids)
-      (for-each (lambda (user-id) (verify-user-id user-id))
-		user-ids)
-      (for-each (lambda (subkey)  (verify-subkey subkey))
-		subkeys)))
+
+   (with-trace 4 "verify-key"
+      (with-access::PGP-Key pgp-key (subkeys user-ids)
+	 (for-each (lambda (user-id) (verify-user-id user-id))
+		   user-ids)
+	 (for-each (lambda (subkey)  (verify-subkey subkey))
+		   subkeys))))
 	   
 ;; 1:=> (define testy-key (car (decode-armored-pgp-file "/home/flo/NOSAVE/tmp/crypto/rsa-testy.key")))
 ;; 1:=> (define ignored (decrypt-secret-key! testy-key "xyz"))
@@ -674,47 +678,48 @@
 	    (insecure-sub-packets '())))))
 
 (define (decoded-key-packet key::PGP-Subkey password-provider)
-   (with-access::PGP-Subkey key (key-packet)
-      (cond
-	 ((PGP-Secret-Key-Decoded-Packet? key-packet)
-	  key-packet)
-	 ((not password-provider)
-	  (debug "No password provider")
-	  (error "decode-key"
-		 "no password-provider has been given"
-		 #f))
-	 ((not (and (procedure? password-provider)
-		    (correct-arity? password-provider 1)))
-	  (debug "Illegal password provider")
-	  (error "decode-key"
-		 "Illegal password provider"
-		 password-provider))
-	 ((PGP-Key-Packet? key-packet)
-	  (let loop ((count 3))
-	     (when (=fx count 0)
-		(debug "No password attempt left")
-		(error "decode-key"
-		       "no password attempt left"
-		       #f))
-	     (let ((pass (password-provider key)))
-		(cond
-		   ((not pass)
-		    ;; user doesn't want to give us a password. Ignore.
-		    (loop (-fx count 1)))
-		   ((not (string? pass))
-		    (debug "password-provider returned no string")
-		    (error 'decode-key
-			   "bad password (not a string)"
-			   pass))
-		   (else
-		    (decrypt-secret-key! key-packet pass)
-		    (when (not (PGP-Secret-Key-Decoded-Packet? key-packet))
-		       (loop (-fx count 1)))))))
-	  key-packet)
-	 (else
-	  (error "decode-key"
-		 "Invalid key"
-		 key)))))
+   (with-trace 4 "decoded-key-packet"
+      (with-access::PGP-Subkey key (key-packet)
+	 (cond
+	    ((PGP-Secret-Key-Decoded-Packet? key-packet)
+	     key-packet)
+	    ((not password-provider)
+	     (trace-item "No password provider")
+	     (error "decode-key"
+		    "no password-provider has been given"
+		    #f))
+	    ((not (and (procedure? password-provider)
+		       (correct-arity? password-provider 1)))
+	     (trace-item "Illegal password provider")
+	     (error "decode-key"
+		    "Illegal password provider"
+		    password-provider))
+	    ((PGP-Key-Packet? key-packet)
+	     (let loop ((count 3))
+		(when (=fx count 0)
+		   (trace-item "No password attempt left")
+		   (error "decode-key"
+			  "no password attempt left"
+			  #f))
+		(let ((pass (password-provider key)))
+		   (cond
+		      ((not pass)
+		       ;; user doesn't want to give us a password. Ignore.
+		       (loop (-fx count 1)))
+		      ((not (string? pass))
+		       (trace-item "password-provider returned no string")
+		       (error 'decode-key
+			      "bad password (not a string)"
+			      pass))
+		      (else
+		       (decrypt-secret-key! key-packet pass)
+		       (when (not (PGP-Secret-Key-Decoded-Packet? key-packet))
+			  (loop (-fx count 1)))))))
+	     key-packet)
+	    (else
+	     (error "decode-key"
+		    "Invalid key"
+		    key))))))
    
 ;; key must a secret Subkey.
 ;; password-provider will be called with the key as parameter and must return
@@ -942,267 +947,276 @@
 	    (with-access::PGP-Key pgp-key (user-ids)
 	       (for-each (lambda (user-id)
 			    (let ((id-pkt (Signed-ID-id user-id)))
-			       (print (PGP-ID-Packet-data id-pkt))))
+			       (display (PGP-ID-Packet-data id-pkt))
+			       (display " ")))
 			 user-ids)
-	       (print (key-packet->human-readable key-packet)))))))
+	       (display (key-packet->human-readable key-packet)))))))
 
 (define (make-0-IV len) (make-string len #\null))
 
 (define (symmetric-encrypt::PGP-Symmetrically-Encrypted-Packet
 	 data::PGP-Packet key-string::bstring algo::symbol
 	 #!key (mdc #t))
-   (debug "Symmetric encrypt")
-   (debug "Key-string: " (str->hex-string key-string))
-   (debug "Algo: " (symmetric-key-algo->human-readable algo))
-   (debug "Use Modification Detection Code: " mdc)
-   (if mdc
-       (mdc-symmetric-encrypt data key-string algo)
-       (non-mdc-symmetric-encrypt data key-string algo)))
+   (with-trace 4 "symmetric-encrypt"
+      (trace-item "Key-string: " (str->hex-string key-string))
+      (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
+      (trace-item "Use Modification Detection Code: " mdc)
+      (if mdc
+	  (mdc-symmetric-encrypt data key-string algo)
+	  (non-mdc-symmetric-encrypt data key-string algo))))
 
 (define (non-mdc-symmetric-encrypt data key-string algo)
-   ;; RFC 5.7
-   (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
-	  (encrypter (symmetric-key-algo->procedure algo #t))
-	  (random-head (make-random-string 10)) ;; last two bytes will be changed.
-	  (packet-p (open-output-string))
-	  (encoded (encode-packets packet-p data))
-	  (literal-data (close-output-port packet-p)))
-      (string-set! random-head 8 (string-ref random-head 6))
-      (string-set! random-head 9 (string-ref random-head 7))
-      (debug "literal data: "
-	     (str->hex-string (substring literal-data
-					 0
-					 (min 50 (string-length literal-data)))))
-      (debug "random prefix: " (str->hex-string random-head))
-      (if (<= algo-block-len 8)
-	  ;; After encrypting the first 10 octets, the CFB state is
-	  ;; resynchronized if the cipher block size is 8 octets or less.  The
-	  ;; last 8 octets of ciphertext are passed through the cipher and the
-	  ;; block boundary is reset
-	  (let* ((head (encrypter random-head
-				  (make-0-IV algo-block-len)
-				  key-string))
-		 (encrypted-data (encrypter literal-data
-					    (substring head 2 10)
-					    key-string)))
-	     (debug "encrypted head: " (str->hex-string head))
-	     (instantiate::PGP-Symmetrically-Encrypted-Packet
-		(data (string-append head encrypted-data))))
-	  (let ((encrypted (encrypter (string-append random-head literal-data)
-				      (make-0-IV algo-block-len)
-				      key-string)))
-	     (debug "encrypted without resynchronization of IV")
-	     (instantiate::PGP-Symmetrically-Encrypted-Packet
-		(data encrypted))))))
+   (with-trace 5 "non-mdc-symmetric-encrypt"
+      ;; RFC 5.7
+      (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
+	     (encrypter (symmetric-key-algo->procedure algo #t))
+	     (random-head (make-random-string 10)) ;; last two bytes will be changed.
+	     (packet-p (open-output-string))
+	     (encoded (encode-packets packet-p data))
+	     (literal-data (close-output-port packet-p)))
+	 (string-set! random-head 8 (string-ref random-head 6))
+	 (string-set! random-head 9 (string-ref random-head 7))
+	 (trace-item "literal data: "
+		(str->hex-string (substring literal-data
+					    0
+					    (min 50 (string-length literal-data)))))
+	 (trace-item "random prefix: " (str->hex-string random-head))
+	 (if (<= algo-block-len 8)
+	     ;; After encrypting the first 10 octets, the CFB state is
+	     ;; resynchronized if the cipher block size is 8 octets or less.  The
+	     ;; last 8 octets of ciphertext are passed through the cipher and the
+	     ;; block boundary is reset
+	     (let* ((head (encrypter random-head
+				     (make-0-IV algo-block-len)
+				     key-string))
+		    (encrypted-data (encrypter literal-data
+					       (substring head 2 10)
+					       key-string)))
+		(trace-item "encrypted head: " (str->hex-string head))
+		(instantiate::PGP-Symmetrically-Encrypted-Packet
+		   (data (string-append head encrypted-data))))
+	     (let ((encrypted (encrypter (string-append random-head literal-data)
+					 (make-0-IV algo-block-len)
+					 key-string)))
+		(trace-item "encrypted without resynchronization of IV")
+		(instantiate::PGP-Symmetrically-Encrypted-Packet
+		   (data encrypted)))))))
 
 (define (mdc-symmetric-encrypt data key-string algo)
-   (debug "mdc-symmetric-encrypt.")
-   (debug "algo: " algo " "
-	  (symmetric-key-algo->human-readable algo))
-
-   ;; RFC 5.7
-   (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
-	  (encrypter (symmetric-key-algo->procedure algo #t))
-	  ;; last two bytes of random-head will will be changed.
-	  (random-head (make-random-string (+fx algo-block-len 2)))
-	  (packet-p (open-output-string)))
-      (debug "algo-block-len: " algo-block-len)
-      (encode-packets packet-p data)
-      ;; last two bytes of random-head must be the same as the preceding bytes.
-      (string-set! random-head algo-block-len
-		   (string-ref random-head (-fx algo-block-len 2)))
-      (string-set! random-head (+fx algo-block-len 1)
-		   (string-ref random-head (-fx algo-block-len 1)))
-      (debug "random head: " (str->hex-string random-head))
-      ;; Attach MDC-packet tag octets.
-      (display (integer->char-ur #xD3) packet-p)
-      (display (integer->char-ur #x14) packet-p)
-      (let* ((literal-data (close-output-port packet-p))
-	     (hash-string (string-append random-head literal-data))
-	     (hash (sha1sum-bin hash-string))
-	     (payload (string-append hash-string hash)))
-	 (debug "mdc hash: " (str->hex-string hash))
-	 (debug "literal data: "
-		(str->hex-string
-		 (substring literal-data
-			    0
-			    (min 50 (string-length literal-data)))))
-	 (let ((encrypted (encrypter payload
-				     (make-0-IV algo-block-len)
-				     key-string)))
-	    (instantiate::PGP-MDC-Symmetrically-Encrypted-Packet
-	       (version 1)
-	       (data encrypted))))))
+   (with-trace 5 "mdc-symmetric-encrypt"
+      (trace-item "algo: " algo " "
+	     (symmetric-key-algo->human-readable algo))
+      
+      ;; RFC 5.7
+      (let* ((algo-block-len (symmetric-key-algo-block-byte-len algo))
+	     (encrypter (symmetric-key-algo->procedure algo #t))
+	     ;; last two bytes of random-head will will be changed.
+	     (random-head (make-random-string (+fx algo-block-len 2)))
+	     (packet-p (open-output-string)))
+	 (trace-item "algo-block-len: " algo-block-len)
+	 (encode-packets packet-p data)
+	 ;; last two bytes of random-head must be the same as the preceding bytes.
+	 (string-set! random-head algo-block-len
+		      (string-ref random-head (-fx algo-block-len 2)))
+	 (string-set! random-head (+fx algo-block-len 1)
+		      (string-ref random-head (-fx algo-block-len 1)))
+	 (trace-item "random head: " (str->hex-string random-head))
+	 ;; Attach MDC-packet tag octets.
+	 (display (integer->char-ur #xD3) packet-p)
+	 (display (integer->char-ur #x14) packet-p)
+	 (let* ((literal-data (close-output-port packet-p))
+		(hash-string (string-append random-head literal-data))
+		(hash (sha1sum-bin hash-string))
+		(payload (string-append hash-string hash)))
+	    (trace-item "mdc hash: " (str->hex-string hash))
+	    (trace-item "literal data: "
+		   (str->hex-string
+		    (substring literal-data
+			       0
+			       (min 50 (string-length literal-data)))))
+	    (let ((encrypted (encrypter payload
+					(make-0-IV algo-block-len)
+					key-string)))
+	       (instantiate::PGP-MDC-Symmetrically-Encrypted-Packet
+		  (version 1)
+		  (data encrypted)))))))
 
 (define (symmetric-decrypt
 	 encrypted::PGP-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   (debug "Symmetric decrypt")
-   (debug "Key-string: " (str->hex-string key-string))
-   (debug "Algo: " (symmetric-key-algo->human-readable algo))
-   (let ((encrypted-str (PGP-Symmetrically-Encrypted-Packet-data encrypted)))
-      (debug "encrypted data: "
-	     (str->hex-string
-	      (substring encrypted-str
-			 0
-			 (min 50 (string-length encrypted-str))))))
-   (if (PGP-MDC-Symmetrically-Encrypted-Packet? encrypted)
-       (mdc-symmetric-decrypt encrypted key-string algo)
-       (non-mdc-symmetric-decrypt encrypted key-string algo)))
+   (with-trace 5 "symmetric-decrypt"
+      (trace-item "Key-string: " (str->hex-string key-string))
+      (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
+      (trace-item (let ((encrypted-str (PGP-Symmetrically-Encrypted-Packet-data encrypted)))
+		     (format "encrypted data: len=~a data=~a"
+			     (string-length encrypted-str)
+			     (str->hex-string
+			      (substring encrypted-str
+					 0
+					 (min 50 (string-length encrypted-str)))))))
+      (if (PGP-MDC-Symmetrically-Encrypted-Packet? encrypted)
+	  (mdc-symmetric-decrypt encrypted key-string algo)
+	  (non-mdc-symmetric-decrypt encrypted key-string algo))))
 
 (define (non-mdc-symmetric-decrypt
 	 encrypted::PGP-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   ;; RFC 5.7
-   (let* ((data (PGP-Symmetrically-Encrypted-Packet-data encrypted))
-	  (algo-block-len (symmetric-key-algo-block-byte-len algo))
-	  (decrypter (symmetric-key-algo->procedure algo #f)))
-      (cond
-	 ((not (>= (string-length data) 10))
-	  #f)
-	 ((<= algo-block-len 8)
-	  ;; After encrypting the first 10 octets, the CFB state is
-	  ;; resynchronized if the cipher block size is 8 octets or less.  The
-	  ;; last 8 octets of ciphertext are passed through the cipher and the
-	  ;; block boundary is reset
-	  (let* ((c-head (substring data 0 10))
-		 (d-head (decrypter c-head
-				    (make-0-IV algo-block-len)
-				    key-string)))
-	     (debug "decrypted head: " (str->hex-string d-head))
-	     (if (and (char=? (string-ref d-head 6) (string-ref d-head 8))
-		      (char=? (string-ref d-head 7) (string-ref d-head 9)))
-		 ;; good. password seemed to be fine.
-		 (let* ((resync-iv (substring data 2 10))
-			(c-rest (substring data 10 (string-length data)))
-			(d-rest (decrypter c-rest resync-iv key-string))
-			(packet-p (open-input-string d-rest)))
-		    (debug "Password seemed to be fine")
-		    (debug "Resynched IV: " (str->hex-string resync-iv))
-		    (decode-packets packet-p))
-		 (begin
-		    (debug "Password failed")
-		    #f))))
-	 (else
-	  (let* ((c-head (substring data 0 10))
-		 (d-head (decrypter c-head
-				    (make-0-IV algo-block-len)
-				    key-string)))
-	     (debug "decrypted head: " (str->hex-string d-head))
-	     (if (and (char=? (string-ref d-head 6) (string-ref d-head 8))
-		      (char=? (string-ref d-head 7) (string-ref d-head 9)))
-		 ;; good. password seemed to be fine.
-		 (let* ((d-all (decrypter data
-					  (make-0-IV algo-block-len)
-					  key-string))
-			(d-rest (substring d-all 10 (string-length d-all)))
-			(packet-p (open-input-string d-rest)))
-		    (debug "Password seemed to be fine")
-		    (decode-packets packet-p))
-		 (begin
-		    (debug "Password failed")
-		    #f)))))))
+   (with-trace 5 "non-mdc-symmetric-decrypt"
+      ;; RFC 5.7
+      (let* ((data (PGP-Symmetrically-Encrypted-Packet-data encrypted))
+	     (algo-block-len (symmetric-key-algo-block-byte-len algo))
+	     (decrypter (symmetric-key-algo->procedure algo #f)))
+	 (cond
+	    ((not (>= (string-length data) 10))
+	     #f)
+	    ((<= algo-block-len 8)
+	     ;; After encrypting the first 10 octets, the CFB state is
+	     ;; resynchronized if the cipher block size is 8 octets or less.  The
+	     ;; last 8 octets of ciphertext are passed through the cipher and the
+	     ;; block boundary is reset
+	     (let* ((c-head (substring data 0 10))
+		    (d-head (decrypter c-head
+				       (make-0-IV algo-block-len)
+				       key-string)))
+		(trace-item "decrypted head: " (str->hex-string d-head))
+		(if (and (char=? (string-ref d-head 6) (string-ref d-head 8))
+			 (char=? (string-ref d-head 7) (string-ref d-head 9)))
+		    ;; good. password seemed to be fine.
+		    (let* ((resync-iv (substring data 2 10))
+			   (c-rest (substring data 10 (string-length data)))
+			   (d-rest (decrypter c-rest resync-iv key-string))
+			   (packet-p (open-input-string d-rest)))
+		       (trace-item "Password seemed to be fine")
+		       (trace-item "Resynched IV: " (str->hex-string resync-iv))
+		       (decode-packets packet-p))
+		    (begin
+		       (trace-item "Password failed")
+		       #f))))
+	    (else
+	     (let* ((c-head (substring data 0 10))
+		    (d-head (decrypter c-head
+				       (make-0-IV algo-block-len)
+				       key-string)))
+		(trace-item "decrypted head: " (str->hex-string d-head))
+		(if (and (char=? (string-ref d-head 6) (string-ref d-head 8))
+			 (char=? (string-ref d-head 7) (string-ref d-head 9)))
+		    ;; good. password seemed to be fine.
+		    (let* ((d-all (decrypter data
+					     (make-0-IV algo-block-len)
+					     key-string))
+			   (d-rest (substring d-all 10 (string-length d-all)))
+			   (packet-p (open-input-string d-rest)))
+		       (trace-item "Password seemed to be fine")
+		       (decode-packets packet-p))
+		    (begin
+		       (trace-item "Password failed")
+		       #f))))))))
 
 ;; strips the decoded output from its MDC packet.
 (define (mdc-symmetric-decrypt
 	 encrypted::PGP-MDC-Symmetrically-Encrypted-Packet
 	 key-string::bstring algo::symbol)
-   ;; RFC 4880, 5.13
-   (let* ((version (PGP-MDC-Symmetrically-Encrypted-Packet-version encrypted))
-	  (data (PGP-MDC-Symmetrically-Encrypted-Packet-data encrypted))
-	  (algo-key-len (symmetric-key-algo-key-byte-len algo))
-	  (algo-block-len (symmetric-key-algo-block-byte-len algo))
-	  (decrypter (symmetric-key-algo->procedure algo #f)))
-      (when (not (=fx version 1))
-	 (warning "mdc-symmetric-decrypt: bad version. we will try "
-		  "(but probably fail)."))
-      (let* ((c-head (substring data 0 (+fx algo-block-len 2)))
-	     (d-head (decrypter c-head
-				(make-0-IV algo-block-len)
-				key-string)))
-	 (debug "decrypted head: " (str->hex-string d-head))
-	 (if (and (char=? (string-ref d-head (-fx algo-block-len 2))
-			  (string-ref d-head algo-block-len))
-		  (char=? (string-ref d-head (-fx algo-block-len 1))
-			  (string-ref d-head (+fx algo-block-len 1))))
-	     ;; good. password seemed to be fine.
-	     (let* ((dummy (debug "Password seemed to be fine"))
-		    (d-all (decrypter data
-				      (make-0-IV algo-block-len)
-				      key-string))
-		    (d-rest (substring d-all
-				       (+fx algo-block-len 2)
-				       (string-length d-all)))
-		    (dummyR (debug "encoded package " (str->hex-string d-rest)))
-		    (packet-p (open-input-string d-rest))
-		    (packets (decode-packets packet-p))
-		    (dummy-l (cons 'dummy packets)))
-		(let loop ((ps packets)
-			   (previous dummy-l))
-		   (cond
-		      ((or (null? ps)
-			   (and (null? (cdr ps))
-				(not (PGP-MDC-Packet? (car ps)))))
-		       (error 'mdc-symmetric-decrypt
-			      "No MDC packet found. (tampered data?)"
-			      #f))
-		      ((and (not (null? (cdr ps)))
-			    (PGP-MDC-Packet? (car ps)))
-		       (error 'mdc-symmetric-decrypt
-			      "MDC packet found at bad position. (tampered data?)"
-			      #f))
-		      ((not (null? (cdr ps)))
-		       (loop (cdr ps) ps))
-		      (else
-		       (let* ((mdc (car ps))
-			      (mdc-hash (PGP-MDC-Packet-hash mdc))
-			      (hashed-len (-fx (string-length d-all) 20))
-			      (hashed-str (substring d-all 0 hashed-len))
-			      (decrypted-hash (sha1sum-bin hashed-str)))
-			  (when (not (string=? decrypted-hash mdc-hash))
-			     (error 'mdc-symmetric-decrypt
-				    "Modification Detection detected invalid hash. (tampered data?)"
-				    #f))
-			  (set-cdr! previous '())
-			  (cdr dummy-l))))))
-	     (begin
-		(debug "Password failed")
-		#f)))))
+   (with-trace 5 "mdc-symmetric-decrypt"
+      ;; RFC 4880, 5.13
+      (let* ((version (PGP-MDC-Symmetrically-Encrypted-Packet-version encrypted))
+	     (data (PGP-MDC-Symmetrically-Encrypted-Packet-data encrypted))
+	     (algo-key-len (symmetric-key-algo-key-byte-len algo))
+	     (algo-block-len (symmetric-key-algo-block-byte-len algo))
+	     (decrypter (symmetric-key-algo->procedure algo #f)))
+	 (when (not (=fx version 1))
+	    (warning "mdc-symmetric-decrypt: bad version. we will try "
+		     "(but probably fail)."))
+	 (let* ((c-head (substring data 0 (+fx algo-block-len 2)))
+		(d-head (decrypter c-head
+				   (make-0-IV algo-block-len)
+				   key-string)))
+	    (trace-item "decrypted head: " (str->hex-string d-head))
+	    (if (and (char=? (string-ref d-head (-fx algo-block-len 2))
+			     (string-ref d-head algo-block-len))
+		     (char=? (string-ref d-head (-fx algo-block-len 1))
+			     (string-ref d-head (+fx algo-block-len 1))))
+		;; good. password seemed to be fine.
+		(let* ((dummy (trace-item "Password seemed to be fine (data len="
+				     (string-length data) ")"))
+		       (d-all (decrypter data
+					 (make-0-IV algo-block-len)
+					 key-string))
+		       (d-rest (substring d-all
+					  (+fx algo-block-len 2)
+					  (string-length d-all)))
+		       (dummyR (trace-item "encoded package (len="
+				      (string-length d-rest) ") "
+				      (str->hex-string d-rest)))
+		       (packet-p (open-input-string d-rest))
+		       (packets (decode-packets packet-p))
+		       (dummy-l (cons 'dummy packets)))
+		   (let loop ((ps packets)
+			      (previous dummy-l))
+		      (cond
+			 ((or (null? ps)
+			      (and (null? (cdr ps))
+				   (not (PGP-MDC-Packet? (car ps)))))
+			  (error 'mdc-symmetric-decrypt
+				 "No MDC packet found. (tampered data?)"
+				 #f))
+			 ((and (not (null? (cdr ps)))
+			       (PGP-MDC-Packet? (car ps)))
+			  (error 'mdc-symmetric-decrypt
+				 "MDC packet found at bad position. (tampered data?)"
+				 #f))
+			 ((not (null? (cdr ps)))
+			  (loop (cdr ps) ps))
+			 (else
+			  (let* ((mdc (car ps))
+				 (mdc-hash (PGP-MDC-Packet-hash mdc))
+				 (hashed-len (-fx (string-length d-all) 20))
+				 (hashed-str (substring d-all 0 hashed-len))
+				 (decrypted-hash (sha1sum-bin hashed-str)))
+			     (when (not (string=? decrypted-hash mdc-hash))
+				(error 'mdc-symmetric-decrypt
+				       "Modification Detection detected invalid hash. (tampered data?)"
+				       #f))
+			     (set-cdr! previous '())
+			     (cdr dummy-l))))))
+		(begin
+		   (trace-item "Password failed")
+		   #f))))))
 
 (define (decrypt-symmetric-key-session-key
 	 session-packet::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
 	 key-string::bstring)
-   (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet session-packet
-	 (algo s2k encrypted-session-key)
-      (let* ((block-len (symmetric-key-algo-block-byte-len algo))
-	     (key-len (symmetric-key-algo-key-byte-len algo))
-	     (symmetric-key (apply-s2k s2k key-string key-len)))
-	 (debug "session-packet with algo: "
-		(symmetric-key-algo->human-readable algo))
-	 (debug "symmetric key (result of s2k) used to decrypt session key: "
-		(str->hex-string symmetric-key))
-	 (if (not encrypted-session-key)
-	     (begin
-		(debug "no session-key-string. returning s2k result.")
-		(values algo symmetric-key))
-	     (let* ((decrypter (symmetric-key-algo->procedure algo #f))
-		    (decrypted (decrypter encrypted-session-key
-					  (make-0-IV block-len)
-					  symmetric-key)))
-		;key-string)))
-		(when (not (> (string-length decrypted) 1))
-		   (error 'decrypt-symmetric-key-session-key
-			  "bad decrypted session key (length <= 1)"
-			  (str->hex-string decrypted)))
-		(debug "encrypted secret-data: "
-		       (str->hex-string encrypted-session-key))
-		(debug "decrypted secret-data: " (str->hex-string decrypted))
-		(let* ((main-algo-byte (char->integer (string-ref decrypted 0)))
-		       (main-algo (byte->symmetric-key-algo main-algo-byte))
-		       (session-key (substring decrypted 1 (string-length decrypted))))
-		   (debug "algo: " (symmetric-key-algo->human-readable main-algo))
-		   (debug "key: " (str->hex-string session-key))
-		   (values main-algo session-key)))))))
+   (with-trace 5 "decrypt-symmetric-key-session-key"
+      (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet session-packet
+	    (algo s2k encrypted-session-key)
+	 (let* ((block-len (symmetric-key-algo-block-byte-len algo))
+		(key-len (symmetric-key-algo-key-byte-len algo))
+		(symmetric-key (apply-s2k s2k key-string key-len)))
+	    (trace-item "session-packet with algo: "
+		   (symmetric-key-algo->human-readable algo))
+	    (trace-item "symmetric key (result of s2k) used to decrypt session key: "
+		   (str->hex-string symmetric-key))
+	    (if (not encrypted-session-key)
+		(begin
+		   (trace-item "no session-key-string. returning s2k result.")
+		   (values algo symmetric-key))
+		(let* ((decrypter (symmetric-key-algo->procedure algo #f))
+		       (decrypted (decrypter encrypted-session-key
+					     (make-0-IV block-len)
+					     symmetric-key)))
+		   ;key-string)))
+		   (when (not (> (string-length decrypted) 1))
+		      (error 'decrypt-symmetric-key-session-key
+			     "bad decrypted session key (length <= 1)"
+			     (str->hex-string decrypted)))
+		   (trace-item "encrypted secret-data: "
+			  (str->hex-string encrypted-session-key))
+		   (trace-item "decrypted secret-data: " (str->hex-string decrypted))
+		   (let* ((main-algo-byte (char->integer (string-ref decrypted 0)))
+			  (main-algo (byte->symmetric-key-algo main-algo-byte))
+			  (session-key (substring decrypted 1 (string-length decrypted))))
+		      (trace-item "algo: " (symmetric-key-algo->human-readable main-algo))
+		      (trace-item "key: " (str->hex-string session-key))
+		      (values main-algo session-key))))))))
 
 (define (chksum-16-bit str::bstring)
    (define (byte-ref str i)
@@ -1226,7 +1240,7 @@
       (char->integer (string-ref str i)))
 
    (define (decompose-and-check decrypted)
-      (debug "decrypted str: " (str->hex-string decrypted))
+      (trace-item "decrypted str: " (str->hex-string decrypted))
       ;; The decrypted string might come from a bignum. In this case it doesn't
       ;; have any leading 0. However the unpadding requires it to start with an
       ;; '\0' character. Simply add it.
@@ -1241,7 +1255,7 @@
 		(error 'decrypt-public-key-session-key
 		       "Bad decrypted session-key"
 		       (str->hex-string unpadded)))
-	     (debug "Unpadded data: " (str->hex-string unpadded))
+	     (trace-item "Unpadded data: " (str->hex-string unpadded))
 	     (let* ((algo-byte (byte-ref unpadded 0))
 		    (algo (byte->symmetric-key-algo algo-byte))
 		    (session-key-str (substring unpadded 1 (-fx len 2)))
@@ -1251,45 +1265,46 @@
 		    (actual-chksum (chksum-16-bit session-key-str)))
 		;; check chksum.
 		(when (not (=fx actual-chksum expected-chksum))
-		   (debug "bad checksum." actual-chksum " != " expected-chksum)
+		   (trace-item "bad checksum." actual-chksum " != " expected-chksum)
 		   (error 'decrypt-public-key-session-key
 			  "Bad checksum"
 			  actual-chksum))
-		(debug "Decomposed symmetric algo: " algo-byte " "
+		(trace-item "Decomposed symmetric algo: " algo-byte " "
 		       (symmetric-key-algo->human-readable algo))
 		(values algo session-key-str)))))
 
-   (let ((secret-key-packet (decoded-key-packet subkey password-provider)))
-      (with-access::PGP-Secret-Key-Decoded-Packet secret-key-packet (secret-key)
-	 (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet session-packet
-	       (algo encrypted-session-key)
-	    (debug "have secret key")
-	    (debug "trying to decrypt session packet using the key")
-	    (case algo
-	       ((rsa-encrypt/sign rsa-encrypt)
-		(if (not (Rsa-Key? secret-key))
-		    (begin
-		       (debug "Expected Rsa key. (got something else)")
-		       #f)
-		    (let* ((decrypted (rsa-decrypt secret-key
-						   encrypted-session-key))
-			   (decrypted-str (bignum->bin-str decrypted)))
-		       (decompose-and-check decrypted-str))))
-	       ((elgamal-encrypt elgamal-encrypt/sign) ;; ElGamal
-		(if (not (ElGamal-Key? secret-key))
-		    (begin
-		       (debug "Expected ElGamal key. (got something else)")
-		       #f)
-		    (let* ((r (car encrypted-session-key))
-			   (s (cdr encrypted-session-key))
-			   (decrypted (elgamal-decrypt secret-key r s))
-			   (decrypted-str (bignum->bin-str decrypted)))
-		       (decompose-and-check decrypted-str))))
-	       (else
-		(warning "Decryption algorithm not yet implemented "
-			 algo " "
-			 (public-key-algo->human-readable algo))
-		#f))))))
+   (with-trace 3 "decrypt-public-key-session-key"
+      (let ((secret-key-packet (decoded-key-packet subkey password-provider)))
+	 (with-access::PGP-Secret-Key-Decoded-Packet secret-key-packet (secret-key)
+	    (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet session-packet
+		  (algo encrypted-session-key)
+	       (trace-item "have secret key")
+	       (trace-item "trying to decrypt session packet using the key")
+	       (case algo
+		  ((rsa-encrypt/sign rsa-encrypt)
+		   (if (not (Rsa-Key? secret-key))
+		       (begin
+			  (trace-item "Expected Rsa key. (got something else)")
+			  #f)
+		       (let* ((decrypted (rsa-decrypt secret-key
+						      encrypted-session-key))
+			      (decrypted-str (bignum->bin-str decrypted)))
+			  (decompose-and-check decrypted-str))))
+		  ((elgamal-encrypt elgamal-encrypt/sign) ;; ElGamal
+		   (if (not (ElGamal-Key? secret-key))
+		       (begin
+			  (trace-item "Expected ElGamal key. (got something else)")
+			  #f)
+		       (let* ((r (car encrypted-session-key))
+			      (s (cdr encrypted-session-key))
+			      (decrypted (elgamal-decrypt secret-key r s))
+			      (decrypted-str (bignum->bin-str decrypted)))
+			  (decompose-and-check decrypted-str))))
+		  (else
+		   (warning "Decryption algorithm not yet implemented "
+			    algo " "
+			    (public-key-algo->human-readable algo))
+		   #f)))))))
 
 ;; if session-key is #f then the s2k of the given password should be used as
 ;; session-key. In this case (values session-key packet) is returned.
@@ -1304,90 +1319,92 @@
 	 ;; The symmetric algo is used to encrypt the password (if any).
 	 (symmetric-algo 'cast5)
 	 (s2k-algo 'iterated))
-   (debug "Password session key packet")
-   (debug "Symmetric algo: "
-	  (symmetric-key-algo->human-readable symmetric-algo))
-   (debug "Hash algo: " (hash-algo->human-readable hash-algo))
-   (debug "s2k algo: " (s2k-algo->human-readable s2k-algo))
-   (let* ((salt (if (eq? s2k-algo 'simple)
-		    #f
-		    (make-random-string (s2k-salt-length))))
-	  ;; TODO: remove hardcoded constants.
-	  (count (if (eq? s2k-algo 'iterated)
-		     (round-iterated-salted-s2k-count (+ 65000
-							 (random 6500000)))
-		     #f))
-	  (s2k (make-s2k s2k-algo hash-algo salt count)))
-      (debug "S2k salt: " (and salt (str->hex-string salt)))
-      (debug "S2k count: " count)
-      (when (and (not session-key) (eq? s2k-algo 'simple))
-	 (error
-	  'create-password-session-key-packet
-	  "Without a session-key the S2k for a session-key must be salted."
-	  (s2k-algo->human-readable s2k-algo)))
-      (if (not session-key)
-	  (let ((len (symmetric-key-algo-key-byte-len data-symmetric-algo)))
-	     (debug "No Session key. "
-		    "The s2k result will serve as session key.")
-	     (let ((generated-session-key (apply-s2k s2k password len)))
-		(debug "Generated session key: "
-		       (str->hex-string generated-session-key))
-		(debug "Returning both the session key + the key packet.")
-		(values
-		 generated-session-key
-		 (instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
-		    (version 4)
-		    ;; data is encrypted using 
-		    (algo data-symmetric-algo)
-		    (s2k s2k)
-		    (encrypted-session-key #f)))))
-	  (let* ((key-len (symmetric-key-algo-key-byte-len symmetric-algo))
-		 (block-len (symmetric-key-algo-block-byte-len symmetric-algo))		 
-		 (encrypter (symmetric-key-algo->procedure symmetric-algo #t))
-		 (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
-		 (key-string (apply-s2k s2k password key-len))
-		 (data-symmetric-algo-string
-		  (string (integer->char (symmetric-key-algo->byte
-					  data-symmetric-algo))))
-		 ;; Prepend the data-algo in front of the key.
-		 (secret-data (string-append data-symmetric-algo-string
-					     session-key))
-		 (encrypted (encrypter secret-data
-				       (make-0-IV block-len)
-				       key-string)))
-	     (debug "Secret data (algo + session-key)"
-		    (str->hex-string secret-data))
-	     (debug "Key-string (result of s2k) used to encrypt the secret data: "
-		    (str->hex-string key-string))
-	     (debug "Encrypted algo + session key: "
-		    (str->hex-string encrypted))
-							      
-	     (instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
-		(version 4)
-		(algo symmetric-algo)
-		(s2k s2k)
-		(encrypted-session-key encrypted))))))
+   (with-trace 4 "create-password-session-key-packet"
+      (trace-item "Password session key packet")
+      (trace-item "Symmetric algo: "
+	     (symmetric-key-algo->human-readable symmetric-algo))
+      (trace-item "Hash algo: " (hash-algo->human-readable hash-algo))
+      (trace-item "s2k algo: " (s2k-algo->human-readable s2k-algo))
+      (let* ((salt (if (eq? s2k-algo 'simple)
+		       #f
+		       (make-random-string (s2k-salt-length))))
+	     ;; TODO: remove hardcoded constants.
+	     (count (if (eq? s2k-algo 'iterated)
+			(round-iterated-salted-s2k-count (+ 65000
+							    (random 6500000)))
+			#f))
+	     (s2k (make-s2k s2k-algo hash-algo salt count)))
+	 (trace-item "S2k salt: " (and salt (str->hex-string salt)))
+	 (trace-item "S2k count: " count)
+	 (when (and (not session-key) (eq? s2k-algo 'simple))
+	    (error
+	     'create-password-session-key-packet
+	     "Without a session-key the S2k for a session-key must be salted."
+	     (s2k-algo->human-readable s2k-algo)))
+	 (if (not session-key)
+	     (let ((len (symmetric-key-algo-key-byte-len data-symmetric-algo)))
+		(trace-item "No Session key. "
+		       "The s2k result will serve as session key.")
+		(let ((generated-session-key (apply-s2k s2k password len)))
+		   (trace-item "Generated session key: "
+			  (str->hex-string generated-session-key))
+		   (trace-item "Returning both the session key + the key packet.")
+		   (values
+		    generated-session-key
+		    (instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
+		       (version 4)
+		       ;; data is encrypted using 
+		       (algo data-symmetric-algo)
+		       (s2k s2k)
+		       (encrypted-session-key #f)))))
+	     (let* ((key-len (symmetric-key-algo-key-byte-len symmetric-algo))
+		    (block-len (symmetric-key-algo-block-byte-len symmetric-algo))		 
+		    (encrypter (symmetric-key-algo->procedure symmetric-algo #t))
+		    (decrypter (symmetric-key-algo->procedure symmetric-algo #f))
+		    (key-string (apply-s2k s2k password key-len))
+		    (data-symmetric-algo-string
+		     (string (integer->char (symmetric-key-algo->byte
+					     data-symmetric-algo))))
+		    ;; Prepend the data-algo in front of the key.
+		    (secret-data (string-append data-symmetric-algo-string
+						session-key))
+		    (encrypted (encrypter secret-data
+					  (make-0-IV block-len)
+					  key-string)))
+		(trace-item "Secret data (algo + session-key)"
+		       (str->hex-string secret-data))
+		(trace-item "Key-string (result of s2k) used to encrypt the secret data: "
+		       (str->hex-string key-string))
+		(trace-item "Encrypted algo + session key: "
+		       (str->hex-string encrypted))
+		
+		(instantiate::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
+		   (version 4)
+		   (algo symmetric-algo)
+		   (s2k s2k)
+		   (encrypted-session-key encrypted)))))))
 
 (define (create-public-key-session-key-packet
 	 public-subkey::PGP-Subkey
 	 session-key::bstring
 	 data-symmetric-algo) ;; Used to encrypt the payload.
+   
    (define (encrypt-unpadded unpadded key algo)
       (case algo
 	 ((rsa-encrypt/sign rsa-encrypt)
-	  (debug "Rsa key")
+	  (trace-item "Rsa key")
 	  (let* ((key-len (rsa-key-length key))
 		 (padded (PKCS1-v1.5-pad unpadded key-len 2)))
-	     (debug "key-len: " key-len)
-	     (debug "padded: " (str->hex-string padded))
+	     (trace-item "key-len: " key-len)
+	     (trace-item "padded: " (str->hex-string padded))
 	     (values 'rsa-encrypt
 		     (rsa-encrypt key (bin-str->bignum padded)))))
 	 ((elgamal-encrypt elgamal-encrypt/sign)
-	  (debug "ElGamal key")
+	  (trace-item "ElGamal key")
 	  (let* ((key-len (elgamal-key-length key))
 		 (padded (PKCS1-v1.5-pad unpadded key-len 2)))
-	     (debug "key-len: " key-len)
-	     (debug "padded: " (str->hex-string padded))
+	     (trace-item "key-len: " key-len)
+	     (trace-item "padded: " (str->hex-string padded))
 	     (receive (r s)
 		(elgamal-encrypt key (bin-str->bignum padded))
 		(values 'elgamal-encrypt
@@ -1396,25 +1413,25 @@
 	  (error "create-public-key-session-key-packet"
 		 "Bad public key algo"
 		 (public-key-algo->human-readable algo)))))
-	  
-   (debug "Public key session key packet")
-   (with-access::PGP-Subkey public-subkey (key-packet)
-      (with-access::PGP-Key-Packet key-packet (algo key)
-	 (let* ((chksum (chksum-16-bit session-key))
-		(char1 (integer->char (bit-rsh (bit-and chksum #xFF00) 8)))
-		(char2 (integer->char (bit-and chksum #xFF)))
-		(algo-byte (symmetric-key-algo->byte data-symmetric-algo))
-		(unpadded (string-append
-			   (string (integer->char algo-byte))
-			   session-key
-			   (string char1 char2))))
-	    (debug "chksum: " (format "~x" chksum))
-	    (debug "unpadded: " (str->hex-string unpadded))
-	    (receive (used-public-algo encrypted)
-	       (encrypt-unpadded unpadded key algo)
-	       (debug "encrypted: " encrypted)
-	       (instantiate::PGP-Public-Key-Encrypted-Session-Key-Packet
-		  (version 3)
-		  (id (key-id key-packet))
-		  (algo used-public-algo)
-		  (encrypted-session-key encrypted)))))))
+
+   (with-trace 4 "create-public-key-sessions-key-packet"
+      (with-access::PGP-Subkey public-subkey (key-packet)
+	 (with-access::PGP-Key-Packet key-packet (algo key)
+	    (let* ((chksum (chksum-16-bit session-key))
+		   (char1 (integer->char (bit-rsh (bit-and chksum #xFF00) 8)))
+		   (char2 (integer->char (bit-and chksum #xFF)))
+		   (algo-byte (symmetric-key-algo->byte data-symmetric-algo))
+		   (unpadded (string-append
+			      (string (integer->char algo-byte))
+			      session-key
+			      (string char1 char2))))
+	       (trace-item "chksum: " (format "~x" chksum))
+	       (trace-item "unpadded: " (str->hex-string unpadded))
+	       (receive (used-public-algo encrypted)
+		  (encrypt-unpadded unpadded key algo)
+		  (trace-item "encrypted: " encrypted)
+		  (instantiate::PGP-Public-Key-Encrypted-Session-Key-Packet
+		     (version 3)
+		     (id (key-id key-packet))
+		     (algo used-public-algo)
+		     (encrypted-session-key encrypted))))))))

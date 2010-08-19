@@ -325,6 +325,30 @@ C @var{string}. The buffer used by the input port is the exact
 same string as the argument. That is, no buffer is allocated.
 @end deffn
 
+@deffn {bigloo procedure} open-input-ftp-file file-name [buffer #t]
+Returns an @code{input-port} able to deliver characters from a
+remote file located on a FTP server.
+
+Example:
+
+@smalllisp
+(let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz'')))
+  (unwind-protect
+     (read-string p)
+     (close-input-port p)))
+@end smalllisp
+  
+The file name may contain user authentication such as:
+
+@smalllisp
+(let ((p (open-input-ftp-file "anonymous:foo@@ftp-sop.inria.fr/ls-lR.gz'')))
+  (unwind-protect
+     (read-string p)
+     (close-input-port p)))
+@end smalllisp
+
+@end deffn
+
 @deffn {bigloo procedure} open-input-procedure procedure [buffer #t]
 Returns an @code{input-port} able to deliver characters from
 @var{procedure}. Each time a character has to be read, the @var{procedure}

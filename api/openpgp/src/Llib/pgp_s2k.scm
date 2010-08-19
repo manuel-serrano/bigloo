@@ -101,29 +101,30 @@
 (define-struct S2K algo hash salt count)
 
 (define (apply-s2k s2k pwd::bstring len::long)
-   (when (not (S2K? s2k))
-      (error "apply-s2k"
-	     "S2K-struct expected"
-	     s2k))
-   (debug "Applying s2k " pwd " (" len ")")
-   (let ((algo (S2K-algo s2k))
-	 (hash-algo (S2K-hash s2k))
-	 (salt (S2K-salt s2k))
-	 (count (S2K-count s2k)))
-      (case algo
-	 ((simple) ;; simple-hash
-	  (debug "Simple S2K (no salt no iteration)")
-	  (simple-s2k pwd len (hash-algo->procedure hash-algo)))
-	 ((salted) ;; salted s2k
-	  (let ((salt (S2K-salt s2k)))
-	     (debug "Salted S2K: " (str->hex-string salt))
-	     (salted-s2k pwd len (hash-algo->procedure hash-algo) salt)))
-	 ((iterated) ;; iterated and salted s2k
-	  (let ((salt (S2K-salt s2k))
-		(count (S2K-count s2k)))
-	     (debug "Salted iterated S2K: " count " " (str->hex-string salt))
-	     (iterated-salted-s2k pwd len (hash-algo->procedure hash-algo) salt
-				  count)))
-	 (else (error "apply-s2k"
-		      "bad S2K struct"
-		      s2k)))))
+   (with-trace 5 "apply-s2k"
+      (when (not (S2K? s2k))
+	 (error "apply-s2k"
+		"S2K-struct expected"
+		s2k))
+      (trace-item "Applying s2k " pwd " (" len ")")
+      (let ((algo (S2K-algo s2k))
+	    (hash-algo (S2K-hash s2k))
+	    (salt (S2K-salt s2k))
+	    (count (S2K-count s2k)))
+	 (case algo
+	    ((simple) ;; simple-hash
+	     (trace-item "Simple S2K (no salt no iteration)")
+	     (simple-s2k pwd len (hash-algo->procedure hash-algo)))
+	    ((salted) ;; salted s2k
+	     (let ((salt (S2K-salt s2k)))
+		(trace-item "Salted S2K: " (str->hex-string salt))
+		(salted-s2k pwd len (hash-algo->procedure hash-algo) salt)))
+	    ((iterated) ;; iterated and salted s2k
+	     (let ((salt (S2K-salt s2k))
+		   (count (S2K-count s2k)))
+		(trace-item "Salted iterated S2K: " count " " (str->hex-string salt))
+		(iterated-salted-s2k pwd len (hash-algo->procedure hash-algo) salt
+				     count)))
+	    (else (error "apply-s2k"
+			 "bad S2K struct"
+			 s2k))))))

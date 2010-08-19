@@ -12,12 +12,13 @@
     ;; For instance the signed-packet-prefix contains the 'version',
     ;; etc. However the signed-packet-prefix and the version are not
     ;; necessarily in sync. Just be careful.
-    (class PGP-Signature-Packet::PGP-Packet
+    (class PGP-Sig-Packet::PGP-Packet
        version::long
        signature-type::symbol
        issuer ;::bstring or #f
        public-key-algo::symbol
-       hash-algo::symbol
+       hash-algo::symbol)
+    (class PGP-Signature-Packet::PGP-Sig-Packet
        creation-date::date
        signature  ;; m**d for RSA, (r . s) for DSA
        signed-packet-prefix::bstring
@@ -35,12 +36,7 @@
        ;; encrypted-session-key might be #f in which case the result of s2k is
        ;; the session key.
        encrypted-session-key)
-    (final-class PGP-One-Pass-Signature-Packet::PGP-Packet
-       version::long
-       signature-type::symbol
-       issuer::bstring
-       public-key-algo::symbol
-       hash-algo::symbol
+    (final-class PGP-One-Pass-Signature-Packet::PGP-Sig-Packet
        contains-nested-sig?::bool)
     (class PGP-Key-Packet::PGP-Packet
        (id (default #f)) ;; just to avoid recomputations.

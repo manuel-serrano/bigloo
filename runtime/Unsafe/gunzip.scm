@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Wed Aug 18 11:54:12 2010 (serrano)                */
+;*    Last change :  Thu Aug 19 13:36:00 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -1026,16 +1026,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->port ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (port->port::input-port in::input-port state bufinfo bufsize)
+(define (port->port::input-port in::input-port state bufinfo bufsize oncomplete)
    (let ((buffer (make-string bufsize))
 	 (state state)
 	 (kont #unspecified))
       ($open-input-gzip-port
        (lambda ()
 	  (let loop ((val 0))
-	     (tprint "PORT->PORT loop val=" val " state=" state)
 	     (case state
 		((eof)
+		 (when (procedure? oncomplete)
+		    (oncomplete in buffer))
 		 (set! buffer #f)
 		 #f)
 		((complete)
@@ -1069,13 +1070,13 @@
 ;*    port->inflated-port ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (port->inflate-port::input-port in::input-port #!optional (bufinfo #t))
-   (port->port in 'port->inflate-port bufinfo (inflate-buffer-size)))
+   (port->port in 'port->inflate-port bufinfo (inflate-buffer-size) #f))
    
 ;*---------------------------------------------------------------------*/
 ;*    port->gzip-port ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (port->gzip-port::input-port in::input-port #!optional (bufinfo #t))
-   (port->port in 'port->gzip-port bufinfo (inflate-buffer-size)))
+   (port->port in 'port->gzip-port bufinfo (inflate-buffer-size) #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-file ...                                         */
@@ -1114,8 +1115,12 @@
 	  (error "port->zlib-port" "Unsupported format" cm))
 	 ((not (=fx (remainder (+fx (*fx cmf 256) flg) 31) 0))
 	  (error "port->zlib-port" "Illegal fcheck" fcheck))
+	 ((=fx fdict 0)
+	  (port->port in 'port->inflate-port #t (bit-lsh 1 (+fx 8 cinfo))
+		      check-adler32))
 	 (else
-	  (port->port in 'port->inflate-port #t (bit-lsh 1 (+fx 8 cinfo)))))))
+	  (let ((dict (read-chars 4 in)))
+	     (port->port in 'port->inflate-port #t (bit-lsh 1 (+fx 8 cinfo)) #f))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    open-input-zlib-file ...                                         */
@@ -1126,3 +1131,16 @@
 	   (let ((pi (port->zlib-port p)))
 	      (input-port-close-hook-set! pi (lambda (v) (close-input-port p)))
 	      pi))))
+
+;*---------------------------------------------------------------------*/
+;*    check-adler32 ...                                                */
+;*    -------------------------------------------------------------    */
+;*    This procedure is not implemented yet. It should compute         */
+;*    the ADLER32 checksum of the buffer and test it against the       */
+;*    read long value.                                                 */
+;*---------------------------------------------------------------------*/
+(define (check-adler32 in::input-port buf::bstring)
+   (read-byte in)
+   (read-byte in)
+   (read-byte in)
+   (read-byte in))

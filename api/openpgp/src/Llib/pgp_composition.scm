@@ -47,49 +47,51 @@
 
 ;; either returns a PGP-Composition, or a list of PGP-Keys.
 (define (decode-pgp-content p::input-port)
-   (let ((packets (decode-packets p)))
-      (parse-packets packets)))
+   (with-trace 1 "decode-pgp-content"
+      (trace-item "p=" p)
+      (let ((packets (decode-packets p)))
+	 (parse-packets packets))))
 
 (define (parse-packets packets)
-   (debug "parsing packets")
-   (cond
-      ((null? packets)
-       (error 'parse-packets
-	      "no packet decoded"
-	      #f))
-      ((and (PGP-Key-Packet? (car packets))
-	    (not (PGP-Key-Packet-subkey? (car packets))))
-       (parse-keys packets))
-      ((or (PGP-Symmetrically-Encrypted-Packet? (car packets))
-	   (PGP-Session-Key-Packet? (car packets)))
-       (parse-encrypted-message packets))
-      ((PGP-Signature-Packet? (car packets))
-       (parse-signature packets))
-      ((PGP-One-Pass-Signature-Packet? (car packets))
-       (parse-one-pass-signature packets))
-      ((PGP-Literal-Packet? (car packets))
-       (parse-literal packets))
-      ((PGP-Compressed-Packet? (car packets))
-       (debug "parsing compressed packet")
-       (when (not (null? (cdr packets)))
-	  (warning "discarding packets"))
-       (parse-packets (PGP-Compressed-Packet-packets (car packets))))
-      (else
-       (error 'parse-packets
-	      "could not parse pgp-message"
-	      packets))))
+   (with-trace 2 "parse-packets"
+      (cond
+	 ((null? packets)
+	  (error 'parse-packets
+		 "no packet decoded"
+		 #f))
+	 ((and (PGP-Key-Packet? (car packets))
+	       (not (PGP-Key-Packet-subkey? (car packets))))
+	  (parse-keys packets))
+	 ((or (PGP-Symmetrically-Encrypted-Packet? (car packets))
+	      (PGP-Session-Key-Packet? (car packets)))
+	  (parse-encrypted-message packets))
+	 ((PGP-Signature-Packet? (car packets))
+	  (parse-signature packets))
+	 ((PGP-One-Pass-Signature-Packet? (car packets))
+	  (parse-one-pass-signature packets))
+	 ((PGP-Literal-Packet? (car packets))
+	  (parse-literal packets))
+	 ((PGP-Compressed-Packet? (car packets))
+	  (trace-item "parsing compressed packet")
+	  (when (not (null? (cdr packets)))
+	     (warning "discarding packets"))
+	  (parse-packets (PGP-Compressed-Packet-packets (car packets))))
+	 (else
+	  (error 'parse-packets
+		 "could not parse pgp-message"
+		 packets)))))
 
 ;; rfc 2440 allows several keys to be concatenated
 (define (parse-keys packets)
-   (debug "parsing public/private keys")
-   (let loop ((packets packets)
-	      (keys '()))
-      (if (null? packets)
-	  keys
-	  (receive (key remaining-packets)
-	     (parse-key packets)
-	     (loop remaining-packets
-		   (cons key keys))))))
+   (with-trace 3 "parse-keys"
+      (let loop ((packets packets)
+		 (keys '()))
+	 (if (null? packets)
+	     keys
+	     (receive (key remaining-packets)
+		(parse-key packets)
+		(loop remaining-packets
+		      (cons key keys)))))))
 
 (define (parse-key packets)
    (define (revocation-signature? pkt)
@@ -209,61 +211,61 @@
 		  (values res-key remaining-packets)))))))
 
 (define (parse-encrypted-message packets)
-   (debug "parsing encrypted message")
-   (let loop ((packets packets)
-	      (session-keys '()))
-      (cond
-	 ((null? packets)
-	  (error 'parse-encrypted-message
-		 "missing encrypted data packet"
-		 #f))
-	 ((PGP-Symmetrically-Encrypted-Packet? (car packets))
-	  (when (not (null? (cdr packets)))
-	     (warning "Packet after encrypted data discarded"))
-	  (instantiate::PGP-Encrypted
-	     (session-keys (reverse! session-keys))
-	     (encrypted-data (car packets))))
-	 ((PGP-MDC-Symmetrically-Encrypted-Packet? (car packets))
-	  (when (not (null? (cdr packets)))
-	     (warning "Packet after encrypted data discarded"))
-	  (instantiate::PGP-Encrypted
-	     (session-keys (reverse! session-keys))
-	     (encrypted-data (car packets))))
-	 ((PGP-Session-Key-Packet? (car packets))
-	  (loop (cdr packets)
-		(cons (car packets) session-keys)))
-	 (else
-	  (warning "unexpected packet encountered and discarded"
-		   (car packets))
-	  (loop (cdr packets) session-keys)))))
+   (with-trace 2 "parsing encrypted message"
+      (let loop ((packets packets)
+		 (session-keys '()))
+	 (cond
+	    ((null? packets)
+	     (error 'parse-encrypted-message
+		    "missing encrypted data packet"
+		    #f))
+	    ((PGP-Symmetrically-Encrypted-Packet? (car packets))
+	     (when (not (null? (cdr packets)))
+		(warning "Packet after encrypted data discarded"))
+	     (instantiate::PGP-Encrypted
+		(session-keys (reverse! session-keys))
+		(encrypted-data (car packets))))
+	    ((PGP-MDC-Symmetrically-Encrypted-Packet? (car packets))
+	     (when (not (null? (cdr packets)))
+		(warning "Packet after encrypted data discarded"))
+	     (instantiate::PGP-Encrypted
+		(session-keys (reverse! session-keys))
+		(encrypted-data (car packets))))
+	    ((PGP-Session-Key-Packet? (car packets))
+	     (loop (cdr packets)
+		   (cons (car packets) session-keys)))
+	    (else
+	     (warning "unexpected packet encountered and discarded"
+		      (car packets))
+	     (loop (cdr packets) session-keys))))))
 
 (define (parse-signature packets)
-   (debug "parsing signature")
-   (let loop ((packets packets)
-	      (sigs '()))
-      (cond
-	 ((null? packets)
-	  ;; detached signature
-	  (instantiate::PGP-Signature
-	     (msg #f)
-	     (sigs (reverse! sigs))))
-	 ((PGP-Compressed-Packet? (car packets))
-	  (loop (append (PGP-Compressed-Packet-packets (car packets))
-			packets)
-		sigs))
-	 ((PGP-Signature-Packet? (car packets))
-	  (loop (cdr packets)
-		(cons (car packets) sigs)))
-	 ((PGP-Literal-Packet? (car packets))
-	  (when (not (null? (cdr packets)))
-	     (warning "discarding packets after signature message"))
-	  (instantiate::PGP-Signature
-	     (msg (car packets))
-	     (sigs (reverse! sigs))))
-	 (else
-	  (warning "unexpected packet encountered and discarded"
-		   (car packets))
-	  (loop (cdr packets) sigs)))))
+   (with-trace 2 "parse-signature"
+      (let loop ((packets packets)
+		 (sigs '()))
+	 (cond
+	    ((null? packets)
+	     ;; detached signature
+	     (instantiate::PGP-Signature
+		(msg #f)
+		(sigs (reverse! sigs))))
+	    ((PGP-Compressed-Packet? (car packets))
+	     (loop (append (PGP-Compressed-Packet-packets (car packets))
+			   packets)
+		   sigs))
+	    ((PGP-Signature-Packet? (car packets))
+	     (loop (cdr packets)
+		   (cons (car packets) sigs)))
+	    ((PGP-Literal-Packet? (car packets))
+	     (when (not (null? (cdr packets)))
+		(warning "discarding packets after signature message"))
+	     (instantiate::PGP-Signature
+		(msg (car packets))
+		(sigs (reverse! sigs))))
+	    (else
+	     (warning "unexpected packet encountered and discarded"
+		      (car packets))
+	     (loop (cdr packets) sigs))))))
    
 (define (parse-one-pass-signature packets)
    (define (same-sig? op-pkt pkt)
@@ -276,71 +278,71 @@
 	   (eq? (PGP-One-Pass-Signature-Packet-signature-type op-pkt)
 		(PGP-Signature-Packet-signature-type pkt))))
 
-   (debug "parsing (one-pass) signature")
-   (let loop ((packets packets)
-	      (expect-one-pass? #t)
-	      (one-pass-sigs '())
-	      (msg #f)
-	      (sigs '()))
-      (cond
-	 ((null? packets)
-	  (let ((one-pass-sigs (reverse! one-pass-sigs)))
-	     (when (not (=fx (length one-pass-sigs)
-			     (length sigs)))
-		(error 'parse-signature
-		       "bad one-pass signature"
-		       #f))
-	     (for-each (lambda (op-pkt sig-pkt)
-			  (when (not (same-sig? op-pkt sig-pkt))
-			     (error 'parse-signature
-				    "bad one-pass-signature"
-				    #f)))
-		       one-pass-sigs
-		       sigs)
-	     (instantiate::PGP-One-Pass-Signature
-		(one-pass-sigs one-pass-sigs)
-		(msg msg)
-		(sigs sigs))))
-	 ((PGP-Compressed-Packet? (car packets))
-	  (loop (append (PGP-Compressed-Packet-packets (car packets))
-			packets)
-		expect-one-pass?
-		one-pass-sigs
-		msg
-		sigs))
-	 ((and expect-one-pass?
-	       (PGP-One-Pass-Signature-Packet? (car packets)))
-	  (loop (cdr packets)
-		(PGP-One-Pass-Signature-Packet-contains-nested-sig?
-		 (car packets))
-		(cons (car packets) one-pass-sigs)
-		msg
-		sigs))
-	 (expect-one-pass?
-	  (error 'parse-signature
-		 "bad one-pass signature"
-		 #f))
-	 ((and (not msg)
-	       (PGP-Literal-Packet? (car packets)))
-	  (loop (cdr packets)
-		#f
-		one-pass-sigs
-		(car packets)
-		sigs))
-	 ((not msg)
-	  (error 'parse-signature
-		 "bad one-pass signature"
-		 #f))
-	 ((PGP-Signature-Packet? (car packets))
-	  (loop (cdr packets)
-		#f
-		one-pass-sigs
-		msg
-		(cons (car packets) sigs)))
-	 (else
-	  (error 'parse-signature
-		 "bad one-pass signature"
-		 #f)))))
+   (with-trace 2 "parse-one-pass-signature"
+      (let loop ((packets packets)
+		 (expect-one-pass? #t)
+		 (one-pass-sigs '())
+		 (msg #f)
+		 (sigs '()))
+	 (cond
+	    ((null? packets)
+	     (let ((one-pass-sigs (reverse! one-pass-sigs)))
+		(when (not (=fx (length one-pass-sigs)
+				(length sigs)))
+		   (error 'parse-signature
+			  "bad one-pass signature"
+			  #f))
+		(for-each (lambda (op-pkt sig-pkt)
+			     (when (not (same-sig? op-pkt sig-pkt))
+				(error 'parse-signature
+				       "bad one-pass-signature"
+				       #f)))
+			  one-pass-sigs
+			  sigs)
+		(instantiate::PGP-One-Pass-Signature
+		   (one-pass-sigs one-pass-sigs)
+		   (msg msg)
+		   (sigs sigs))))
+	    ((PGP-Compressed-Packet? (car packets))
+	     (loop (append (PGP-Compressed-Packet-packets (car packets))
+			   packets)
+		   expect-one-pass?
+		   one-pass-sigs
+		   msg
+		   sigs))
+	    ((and expect-one-pass?
+		  (PGP-One-Pass-Signature-Packet? (car packets)))
+	     (loop (cdr packets)
+		   (PGP-One-Pass-Signature-Packet-contains-nested-sig?
+		    (car packets))
+		   (cons (car packets) one-pass-sigs)
+		   msg
+		   sigs))
+	    (expect-one-pass?
+	     (error 'parse-signature
+		    "bad one-pass signature"
+		    #f))
+	    ((and (not msg)
+		  (PGP-Literal-Packet? (car packets)))
+	     (loop (cdr packets)
+		   #f
+		   one-pass-sigs
+		   (car packets)
+		   sigs))
+	    ((not msg)
+	     (error 'parse-signature
+		    "bad one-pass signature"
+		    #f))
+	    ((PGP-Signature-Packet? (car packets))
+	     (loop (cdr packets)
+		   #f
+		   one-pass-sigs
+		   msg
+		   (cons (car packets) sigs)))
+	    (else
+	     (error 'parse-signature
+		    "bad one-pass signature"
+		    #f))))))
 
 (define (parse-literal packets)
    (when (not (null? (cdr packets)))
@@ -385,13 +387,13 @@
 	 (when (eof-object? l)
 	    (error "read-armored" "unexpected end of file" #f))
 	 l))
-
+   
    (define (decode-header l)
       (let ((pos (string-index l #\:)))
 	 (and pos
 	      (list (substring l 0 pos)
 		    (substring l (+fx pos 1) (string-length l))))))
-
+   
    (define (verify-checksum data p)
       (define (chksum-error)
 	 (error "read-armored" "bad checksum" #f))
@@ -401,52 +403,59 @@
 	    (chksum-error))
 	 (let ((line (read-line p))
 	       (expected (create-chksum64 data)))
-	    (debug "checksum line: " line)
-	    (debug "expected chksum: " expected)
+	    (trace-item "checksum line=" line)
+	    (trace-item "expected chksum=" expected)
 	    (when (eof-object? line) (chksum-error))
 	    (when (not (string=? line expected)) (chksum-error)))))
-
-   (let ((l (safe-read-line p)))
-      (when (not (and (string-prefix? "-----BEGIN" l)
-		      (string-suffix? "-----" l)))
-	 (error "read-armored" "not an armored file" l))
-      (debug "Armored file: " l)
-      (let ((main-header-info (substring l 11 (-fx (string-length l) 5))))
-	 (let loop ((headers '()))
-	    (let ((l (safe-read-line p)))
-	       (if (string-null? l)
-		   (values main-header-info headers
-			   (let* ((p64 (base64-decode-pipe-port p))
-				  (data (read-string p64)))
-			      (verify-checksum data p)
-			      (open-input-string data)))
-		   (let ((header (decode-header l)))
-		      (if header
-			  (loop (cons header headers))
-			  (loop headers)))))))))
+   
+   (with-trace 1 "armored-pipe-port"
+      (trace-item "p=" p)
+      (let ((l (safe-read-line p)))
+	 (when (not (and (string-prefix? "-----BEGIN" l)
+			 (string-suffix? "-----" l)))
+	    (error "read-armored" "not an armored file" l))
+	 (trace-item "l=\"" l "\"")
+	 (let ((main-header-info (substring l 11 (-fx (string-length l) 5))))
+	    (let loop ((headers '()))
+	       (let ((l (safe-read-line p)))
+		  (if (string-null? l)
+		      (values main-header-info headers
+			      (let* ((p64 (base64-decode-pipe-port p))
+				     (data (read-string p64)))
+				 (trace-item "data-length=" (string-length data))
+				 (verify-checksum data p)
+				 (open-input-string data)))
+		      (let ((header (decode-header l)))
+			 (if header
+			     (loop (cons header headers))
+			     (loop headers))))))))))
 
 (define (decode-pgp p::input-port)
-   (let ((first-chars (read-chars 10 p)))
-      ;; push-back the read-chars.
-      (unread-string! first-chars p)
-
-      (if (string=? "-----BEGIN" first-chars)
-	  (receive (main-header-info headers composition)
-	     (decode-armored-pgp p)
-	     ;; discard the headers. If the user wants them he has to call the
-	     ;; armored function directly.
-	     composition)
-	  (decode-native-pgp p))))
+   (with-trace 1 "decode-pgp"
+      (trace-item "p=" p)
+      (let ((first-chars (read-chars 10 p)))
+	 ;; push-back the read-chars.
+	 (unread-string! first-chars p)
+	 
+	 (if (string=? "-----BEGIN" first-chars)
+	     (receive (main-header-info headers composition)
+		(decode-armored-pgp p)
+		;; discard the headers. If the user wants them he has to call the
+		;; armored function directly.
+		composition)
+	     (decode-native-pgp p)))))
 		    
 (define (decode-armored-pgp p::input-port)
-   (receive (main-header-info headers pp)
-      (armored-pipe-port p)
-      (unwind-protect
-	 (values main-header-info headers (decode-pgp-content pp))
-	 (close-input-port pp))))
+   (with-trace 2 "decode-armored-pgp"
+      (receive (main-header-info headers pp)
+	 (armored-pipe-port p)
+	 (unwind-protect
+	    (values main-header-info headers (decode-pgp-content pp))
+	    (close-input-port pp)))))
 
 (define (decode-native-pgp p::input-port)
-   (decode-pgp-content p))
+   (with-trace 2 "decode-native-pgp"
+      (decode-pgp-content p)))
 
 (define-generic (encode-pgp this::PGP-Composition p::output-port)
    (error 'encode-pgp

@@ -127,32 +127,34 @@
       (display str p)))
 	 
 (define-generic (encode-content packet::PGP-Packet p::output-port)
-   (error 'encode-content
-	  "not yet implemented"
-	  (class-name (object-class packet))))
+   (with-trace 3 "encode-content (generic)"
+      (error 'encode-content
+	     "not yet implemented"
+	     (class-name (object-class packet)))))
 
 (define-method (encode-content
 		packet::PGP-Public-Key-Encrypted-Session-Key-Packet
 		p::output-port)
-   (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet packet
-	 (version id algo encrypted-session-key)
-      (encode-octet version p)
-      (encode-octets id 8 p)
-      (encode-octet (public-key-algo->byte algo) p)
-      (case algo
-	 ((rsa-encrypt/sign rsa-encrypt)
-	  (encode-mpi encrypted-session-key p))
-	 ((elgamal-encrypt elgamal-encrypt/sign)
-	  (when (not (pair? encrypted-session-key))
+   (with-trace 3 "encode-content ::PGP-Public-Key-Encrypted-Session-Key-Packet"
+      (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet packet
+	    (version id algo encrypted-session-key)
+	 (encode-octet version p)
+	 (encode-octets id 8 p)
+	 (encode-octet (public-key-algo->byte algo) p)
+	 (case algo
+	    ((rsa-encrypt/sign rsa-encrypt)
+	     (encode-mpi encrypted-session-key p))
+	    ((elgamal-encrypt elgamal-encrypt/sign)
+	     (when (not (pair? encrypted-session-key))
+		(error 'encode-Public-key-encrypted-session-key-packet
+		       "bad encrypted-session-key. ElGamal requires a pair"
+		       encrypted-session-key))
+	     (encode-mpi (car encrypted-session-key) p)
+	     (encode-mpi (cdr encrypted-session-key) p))
+	    (else
 	     (error 'encode-Public-key-encrypted-session-key-packet
-		    "bad encrypted-session-key. ElGamal requires a pair"
-		    encrypted-session-key))
-	  (encode-mpi (car encrypted-session-key) p)
-	  (encode-mpi (cdr encrypted-session-key) p))
-	 (else
-	  (error 'encode-Public-key-encrypted-session-key-packet
-		 "Not yet implemented"
-		 (public-key-algo->human-readable algo))))))
+		    "Not yet implemented"
+		    (public-key-algo->human-readable algo)))))))
 
 ;; we do not yet create Signature-v3 packets.
 
@@ -298,50 +300,51 @@
 					hash-algo::symbol
 					creation-date
 					signed-sub-packets::pair-nil)
-   (let ((str-p (open-output-string))
-	 (version 4)
-	 (creation-time-packet
-	  (any (lambda (p)
-		  (and (PGP-Signature-Sub-Creation-Time? p) p))
-	       signed-sub-packets))
-	 (public-key-algo-byte (public-key-algo->byte public-key-algo))
-	 (hash-algo-byte (hash-algo->byte hash-algo))
-	 (signature-type-byte (signature-type->byte signature-type)))
-      (debug "version: " version)
-      (debug "signature-type: " signature-type-byte " "
-	     (signature-type->human-readable signature-type))
-      (debug "public-key-algo: " public-key-algo-byte " "
-	     (public-key-algo->human-readable public-key-algo))
-      (debug "hash-algo: " hash-algo-byte " "
-	     (hash-algo->human-readable hash-algo))
-      (debug "encoding signed-sub-packets")
-      (encode-octet version str-p)
-      (encode-octet signature-type-byte str-p)
-      (encode-octet public-key-algo-byte str-p)
-      (encode-octet hash-algo-byte str-p)
-      (cond
-	 ((and (not (date? creation-date))
-	       (not creation-time-packet))
-	  (error 'create-signed-packet-prefix-v4
-		 "creation-date ist mandatory"
-		 #f))
-	 ((or (not (date? creation-date))
-	      ;; both dates are the same.
-	      (and creation-time-packet
-		   (date=? creation-date
-			   (PGP-Signature-Sub-Creation-Time-creation-date
-			    creation-time-packet))))
-	  (encode-sub-packets signed-sub-packets str-p))
-	 ((and (date? creation-date)
-	       creation-time-packet)
-	  (error 'create-signed-packet-prefix-v4
-		 "Conflicting creation-dates"
-		 creation-date))
-	 (else
-	  (let ((packet (make-PGP-Signature-Sub-Creation-Time #f
-							      creation-date)))
-	     (encode-sub-packets (cons packet signed-sub-packets) str-p))))
-      (close-output-port str-p)))
+   (with-trace 4 "create-signed-packet-prefix-v4"
+      (let ((str-p (open-output-string))
+	    (version 4)
+	    (creation-time-packet
+	     (any (lambda (p)
+		     (and (PGP-Signature-Sub-Creation-Time? p) p))
+		  signed-sub-packets))
+	    (public-key-algo-byte (public-key-algo->byte public-key-algo))
+	    (hash-algo-byte (hash-algo->byte hash-algo))
+	    (signature-type-byte (signature-type->byte signature-type)))
+	 (trace-item "version: " version)
+	 (trace-item "signature-type: " signature-type-byte " "
+		(signature-type->human-readable signature-type))
+	 (trace-item "public-key-algo: " public-key-algo-byte " "
+		(public-key-algo->human-readable public-key-algo))
+	 (trace-item "hash-algo: " hash-algo-byte " "
+		(hash-algo->human-readable hash-algo))
+	 (trace-item "encoding signed-sub-packets")
+	 (encode-octet version str-p)
+	 (encode-octet signature-type-byte str-p)
+	 (encode-octet public-key-algo-byte str-p)
+	 (encode-octet hash-algo-byte str-p)
+	 (cond
+	    ((and (not (date? creation-date))
+		  (not creation-time-packet))
+	     (error 'create-signed-packet-prefix-v4
+		    "creation-date ist mandatory"
+		    #f))
+	    ((or (not (date? creation-date))
+		 ;; both dates are the same.
+		 (and creation-time-packet
+		      (date=? creation-date
+			      (PGP-Signature-Sub-Creation-Time-creation-date
+			       creation-time-packet))))
+	     (encode-sub-packets signed-sub-packets str-p))
+	    ((and (date? creation-date)
+		  creation-time-packet)
+	     (error 'create-signed-packet-prefix-v4
+		    "Conflicting creation-dates"
+		    creation-date))
+	    (else
+	     (let ((packet (make-PGP-Signature-Sub-Creation-Time #f
+								 creation-date)))
+		(encode-sub-packets (cons packet signed-sub-packets) str-p))))
+	 (close-output-port str-p))))
 
 ;; the secure-packets are needed to see if the issuer is in there.
 (define (encode-insecure-sub-packets secure-packets
@@ -365,236 +368,250 @@
 (define-method (encode-content
 		packet::PGP-Signature-v4-Packet
 		p::output-port)
-   (with-access::PGP-Signature-v4-Packet packet
-	 (version issuer public-key-algo signature signed-packet-prefix
-		left-hash secure-sub-packets insecure-sub-packets)
-      (when (not signed-packet-prefix)
-	 (error 'encode-PGP-Signature-v4-Packet
-		"Signature Packet has not been preprocessed correctly"
-		#f))
-      ;; signed-packet-prefix contains (for v4 packets):
-      ;;   - signature-type
-      ;;   - public-key-algo
-      ;;   - hash-algo
-      ;;   - hashed subpackets (+ length)
-      (display signed-packet-prefix p)
-      (encode-insecure-sub-packets secure-sub-packets
-				   insecure-sub-packets issuer p)
-      (encode-octets left-hash 2 p)
-      (case public-key-algo
-	 ((rsa-encrypt/sign rsa-sign)
-	  (encode-mpi signature p))
-	 ((dsa) ;; DSA
-	  (when (not (pair? signature))
+   (with-trace 3 "encode-content ::PGP-Signature-v4-Packet"
+      (with-access::PGP-Signature-v4-Packet packet
+	    (version issuer public-key-algo signature signed-packet-prefix
+		     left-hash secure-sub-packets insecure-sub-packets)
+	 (when (not signed-packet-prefix)
+	    (error 'encode-PGP-Signature-v4-Packet
+		   "Signature Packet has not been preprocessed correctly"
+		   #f))
+	 ;; signed-packet-prefix contains (for v4 packets):
+	 ;;   - signature-type
+	 ;;   - public-key-algo
+	 ;;   - hash-algo
+	 ;;   - hashed subpackets (+ length)
+	 (display signed-packet-prefix p)
+	 (encode-insecure-sub-packets secure-sub-packets
+				      insecure-sub-packets issuer p)
+	 (encode-octets left-hash 2 p)
+	 (case public-key-algo
+	    ((rsa-encrypt/sign rsa-sign)
+	     (encode-mpi signature p))
+	    ((dsa) ;; DSA
+	     (when (not (pair? signature))
+		(error 'encode-PGP-Signature-v4-Packet
+		       "signature-data in DSA-mode must be a pair"
+		       signature))
+	     (encode-mpi (car signature) p)  ;; r
+	     (encode-mpi (cdr signature) p)) ;; s
+	    (else
 	     (error 'encode-PGP-Signature-v4-Packet
-		    "signature-data in DSA-mode must be a pair"
-		    signature))
-	  (encode-mpi (car signature) p)  ;; r
-	  (encode-mpi (cdr signature) p)) ;; s
-	 (else
-	  (error 'encode-PGP-Signature-v4-Packet
-		 "signature-encoding not yet implemented"
-		 (cons public-key-algo
-		       (public-key-algo->human-readable public-key-algo)))))))
+		    "signature-encoding not yet implemented"
+		    (cons public-key-algo
+			  (public-key-algo->human-readable public-key-algo))))))))
 
 (define (encode-s2k s2k p::output-port)
-   (let* ((algo (s2k-algo s2k))
-	  (algo-byte (s2k-algo->byte algo))
-	  (hash (s2k-hash s2k))
-	  (hash-byte (hash-algo->byte hash))
-	  (salt (s2k-salt s2k))
-	  (count (s2k-count s2k)))
-      (debug "s2k-algo: " algo-byte " " (s2k-algo->human-readable algo))
-      (debug "hash-algo: " hash-byte " "
-	     (hash-algo->human-readable hash))
-      (encode-octet algo-byte p)
-      (encode-octet hash-byte p)
-      (case algo
-       ((simple)
-	'nothing-to-do)
-       ((salted)
-	(when (not (string? salt))
-	   (error 'encode-s2k
-		  "expected string as salt"
-		  salt))
-	(debug "salt: " (str->hex-string salt))
-	(encode-octets salt (s2k-salt-length) p))
-       ((iterated) ;; iterated and salted s2k
-	(when (not (string? salt))
-	   (error 'encode-s2k
-		  "expected string as salt"
-		  salt))
-	(when (not (fixnum? count))
-	   (error 'encode-s2k
-		  "expected fixnum as count"
-		  count))
-	(let ((encoded-count (iterated-salted-s2k-count->octet count)))
-	   (debug "salt: " (str->hex-string salt))
-	   (debug "count: " count " (" encoded-count ")")
-	   (encode-octets salt (s2k-salt-length) p)
-	   (encode-octet encoded-count p)))
-       (else
-	(error "encode-s2k"
-	       "unknown s2k algorithm"
-	       algo)))))
+   (with-trace 5 "encode-s2k"
+      (let* ((algo (s2k-algo s2k))
+	     (algo-byte (s2k-algo->byte algo))
+	     (hash (s2k-hash s2k))
+	     (hash-byte (hash-algo->byte hash))
+	     (salt (s2k-salt s2k))
+	     (count (s2k-count s2k)))
+	 (trace-item "s2k-algo: " algo-byte " " (s2k-algo->human-readable algo))
+	 (trace-item "hash-algo: " hash-byte " "
+		(hash-algo->human-readable hash))
+	 (encode-octet algo-byte p)
+	 (encode-octet hash-byte p)
+	 (case algo
+	    ((simple)
+	     'nothing-to-do)
+	    ((salted)
+	     (when (not (string? salt))
+		(error 'encode-s2k
+		       "expected string as salt"
+		       salt))
+	     (trace-item "salt: " (str->hex-string salt))
+	     (encode-octets salt (s2k-salt-length) p))
+	    ((iterated) ;; iterated and salted s2k
+	     (when (not (string? salt))
+		(error 'encode-s2k
+		       "expected string as salt"
+		       salt))
+	     (when (not (fixnum? count))
+		(error 'encode-s2k
+		       "expected fixnum as count"
+		       count))
+	     (let ((encoded-count (iterated-salted-s2k-count->octet count)))
+		(trace-item "salt: " (str->hex-string salt))
+		(debug "count: " count " (" encoded-count ")")
+		(encode-octets salt (s2k-salt-length) p)
+		(encode-octet encoded-count p)))
+	    (else
+	     (error "encode-s2k"
+		    "unknown s2k algorithm"
+		    algo))))))
 
 (define-method (encode-content
 		packet::PGP-Symmetric-Key-Encrypted-Session-Key-Packet
 		p::output-port)
-   (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet packet
-	 (version algo s2k encrypted-session-key)
-      (when (not (=fx version 4))
-	 (error 'encode-Symmetric-Key-Encrypted-Session
-		"Only encoding packets of version 4"
-		version))
-      (debug "version: " version)
-      (debug "symmetric-algo: " algo " "
-	     (symmetric-key-algo->human-readable algo))
-      (encode-octet version p)
-      (encode-octet (symmetric-key-algo->byte algo) p)
-      (encode-s2k s2k p)
-      ;; When encrypted-session-key is false, then the session key is computed
-      ;; from the password.
-      (when encrypted-session-key
-	 (display encrypted-session-key p)
-	 (debug "encrypted session key: "
-		(str->hex-string encrypted-session-key)))))
+   (with-trace 3 "encode-content ::PGP-Symmetric-Key-Encrypted-Session-Key-Packet"
+      (with-access::PGP-Symmetric-Key-Encrypted-Session-Key-Packet packet
+	    (version algo s2k encrypted-session-key)
+	 (when (not (=fx version 4))
+	    (error 'encode-Symmetric-Key-Encrypted-Session
+		   "Only encoding packets of version 4"
+		   version))
+	 (trace-item "version: " version)
+	 (trace-item "symmetric-algo: " algo " "
+		(symmetric-key-algo->human-readable algo))
+	 (encode-octet version p)
+	 (encode-octet (symmetric-key-algo->byte algo) p)
+	 (encode-s2k s2k p)
+	 ;; When encrypted-session-key is false, then the session key is computed
+	 ;; from the password.
+	 (when encrypted-session-key
+	    (display encrypted-session-key p)
+	    (trace-item "encrypted session key: "
+		   (str->hex-string encrypted-session-key))))))
 
 (define-method (encode-content
 		packet::PGP-One-Pass-Signature-Packet
 		p::output-port)
-   (with-access::PGP-One-Pass-Signature-Packet packet
-	 (version signature-type issuer public-key-algo hash-algo
-		contains-nested-sig?)
-      (debug "version: " version)
-      (debug "signature-type: " signature-type
-	     " " (signature-type->human-readable signature-type))
-      (debug "issuer: " (str->hex-string issuer))
-      (debug "public-key-algo: " public-key-algo " "
-	     (public-key-algo->human-readable public-key-algo))
-      (debug "nested-sig?: " contains-nested-sig?)
-      (encode-octet version p)
-      (encode-octet (signature-type->byte signature-type) p)
-      (encode-octet (hash-algo->byte hash-algo) p)
-      (encode-octet (public-key-algo->byte public-key-algo) p)
-      (encode-octets issuer 8 p)
-      (encode-octet (if contains-nested-sig? 0 1) p)))
+   (with-trace 3 "encode-content ::PGP-One-Pass-Signature-Packet"
+      (with-access::PGP-One-Pass-Signature-Packet packet
+	    (version signature-type issuer public-key-algo hash-algo
+		     contains-nested-sig?)
+	 (trace-item "version: " version)
+	 (trace-item "signature-type: " signature-type
+		     " " (signature-type->human-readable signature-type))
+	 (trace-item "issuer: " (str->hex-string issuer))
+	 (trace-item "public-key-algo: " public-key-algo " "
+		     (public-key-algo->human-readable public-key-algo))
+	 (trace-item "nested-sig?: " contains-nested-sig?)
+	 (encode-octet version p)
+	 (encode-octet (signature-type->byte signature-type) p)
+	 (encode-octet (hash-algo->byte hash-algo) p)
+	 (encode-octet (public-key-algo->byte public-key-algo) p)
+	 (encode-octets issuer 8 p)
+	 (encode-octet (if contains-nested-sig? 0 1) p))))
 
 ;; despite the name actually only needs a PGP-Key-Packet. However, even when
 ;; given a PGP-Secret-Key-Packet this function will only encode the public
 ;; part.
 ;; This function is meant to be used for fingerprint calculation.
 (define (encode-public-key-content packet::PGP-Key-Packet p::output-port)
-   (with-access::PGP-Key-Packet packet (version algo creation-date valid-days
-						key)
-      (encode-octet version p)
-      (encode-time creation-date p)
-      (debug "Version: " version)
-      (debug "Creation-date: " creation-date)
-      (when (or (=fx version 2) (=fx version 3))
-	 (when (not (fixnum? valid-days))
-	    (error 'encode-public-key
-		   "v3 keys must have valid-days (as fixnum)"
-		   valid-days))
-	 (encode-scalar valid-days 2 p))
-      (encode-octet (public-key-algo->byte algo) p)
-      (when (or (=fx version 2) (=fx version 3))
+   (with-trace 4 "encode-public-key-content"
+      (with-access::PGP-Key-Packet packet (version algo creation-date valid-days
+						   key)
+	 (encode-octet version p)
+	 (encode-time creation-date p)
+	 (trace-item "Version: " version)
+	 (trace-item "Creation-date: " creation-date)
+	 (when (or (=fx version 2) (=fx version 3))
+	    (when (not (fixnum? valid-days))
+	       (error 'encode-public-key
+		      "v3 keys must have valid-days (as fixnum)"
+		      valid-days))
+	    (encode-scalar valid-days 2 p))
+	 (encode-octet (public-key-algo->byte algo) p)
+	 (when (or (=fx version 2) (=fx version 3))
+	    (case algo
+	       ((rsa-encrypt/sign rsa-encrypt rsa-sign) 'ok)
+	       (else (error 'encode-public-key
+			    "v3 keys must be RSA"
+			    (cons algo
+				  (public-key-algo->human-readable algo))))) )
 	 (case algo
-	    ((rsa-encrypt/sign rsa-encrypt rsa-sign) 'ok)
-	    (else (error 'encode-public-key
-			 "v3 keys must be RSA"
-			 (cons algo
-			       (public-key-algo->human-readable algo))))) )
-      (case algo
-	 ((rsa-encrypt/sign rsa-encrypt rsa-sign)
-	  (when (not (Rsa-Key? key))
+	    ((rsa-encrypt/sign rsa-encrypt rsa-sign)
+	     (when (not (Rsa-Key? key))
+		(error 'encode-key
+		       "invalid Rsa-Key"
+		       key))
+	     (encode-mpi (Rsa-Key-modulus key) p)
+	     (encode-mpi (Rsa-Key-exponent key) p))
+	    ((dsa) ;; DSA
+	     (when (not (Dsa-Key? key))
+		(error 'encode-key
+		       "invalid Dsa-Key"
+		       key))
+	     (with-access::Dsa-Key key (q g y)
+		(encode-mpi (Dsa-Key-p key) p)
+		(encode-mpi q p)
+		(encode-mpi g p)
+		(encode-mpi y p)))
+	    ((elgamal-encrypt elgamal-encrypt/sign)
+	     (when (not (ElGamal-Key? key))
+		(error 'encode-key
+		       "invalid ElGamal-key"
+		       key))
+	     (encode-mpi (ElGamal-Key-p key) p)
+	     (encode-mpi (ElGamal-Key-g key) p)
+	     (encode-mpi (ElGamal-Key-y key) p))
+	    (else
 	     (error 'encode-key
-		    "invalid Rsa-Key"
-		    key))
-	  (encode-mpi (Rsa-Key-modulus key) p)
-	  (encode-mpi (Rsa-Key-exponent key) p))
-	 ((dsa) ;; DSA
-	  (when (not (Dsa-Key? key))
-	     (error 'encode-key
-		    "invalid Dsa-Key"
-		    key))
-	  (with-access::Dsa-Key key (q g y)
-	     (encode-mpi (Dsa-Key-p key) p)
-	     (encode-mpi q p)
-	     (encode-mpi g p)
-	     (encode-mpi y p)))
-	 ((elgamal-encrypt elgamal-encrypt/sign)
-	  (when (not (ElGamal-Key? key))
-	     (error 'encode-key
-		    "invalid ElGamal-key"
-		    key))
-	  (encode-mpi (ElGamal-Key-p key) p)
-	  (encode-mpi (ElGamal-Key-g key) p)
-	  (encode-mpi (ElGamal-Key-y key) p))
-	 (else
-	  (error 'encode-key
-		 "unsupported public key algorithm"
-		 (cons algo
-		       (public-key-algo->human-readable algo)))))))
+		    "unsupported public key algorithm"
+		    (cons algo
+			  (public-key-algo->human-readable algo))))))))
 
 (define-method (encode-content packet::PGP-Secret-Key-Packet p::output-port)
-   (with-access::PGP-Secret-Key-Packet packet
-	 (password-protected-secret-key-data)
-      (encode-public-key-content packet p)
-      (display password-protected-secret-key-data p)))
+   (with-trace 3 "encode-content ::PGP-Secret-Key-Packet"
+      (with-access::PGP-Secret-Key-Packet packet
+	    (password-protected-secret-key-data)
+	 (encode-public-key-content packet p)
+	 (display password-protected-secret-key-data p))))
 
 (define-method (encode-content packet::PGP-Public-Key-Packet p::output-port)
-   (encode-public-key-content packet p))
+   (with-trace 3 "encode-content ::PGP-Public-Key-Packet"
+      (encode-public-key-content packet p)))
 
 (define-method (encode-content packet::PGP-Symmetrically-Encrypted-Packet
 			       p::output-port)
-   (display (PGP-Symmetrically-Encrypted-Packet-data packet) p))
+   (with-trace 3 "encode-content ::PGP-Symmetrically-Encrypted-Packet"
+      (display (PGP-Symmetrically-Encrypted-Packet-data packet) p)))
 
 (define-method (encode-content packet::PGP-Marker-Packet p::output-port)
-   'do-nothing)
+   (with-trace 3 "encode-content ::PGP-Marker-Packet"
+      'do-nothing))
 
 (define-method (encode-content packet::PGP-Literal-Packet p::output-port)
-   (with-access::PGP-Literal-Packet packet
-	 (format for-your-eyes-only? file-name creation-date data)
-      (when (and for-your-eyes-only? file-name)
-	 (error 'encode-content-literal
-		"'for-your-eyes-only' excludes filename"
-		file-name))
-      (let ((file (cond
-		     (for-your-eyes-only?
-		      "_CONSOLE")
-		     ((string? file-name)
-		      file-name)
-		     (else
-		      ""))))
-	 (when (>fx (string-length file) 255)
+   (with-trace 3 "encode-content ::PGP-Literal-Packet"
+      (with-access::PGP-Literal-Packet packet
+	    (format for-your-eyes-only? file-name creation-date data)
+	 (when (and for-your-eyes-only? file-name)
 	    (error 'encode-content-literal
-		   "Filename too long (>255)"
-		   file))
-	 (debug "format: " format " " (literal-format->human-readable format))
-	 (debug "file: " file)
-	 (debug "creation-date: " creation-date)
-	 (debug "data: \n-----------\n"  data "\n-----------\n")
-	 (encode-octet (literal-format->byte format) p)
-	 (encode-octet (string-length file) p)
-	 (display file p)
-	 (encode-time creation-date p)
-	 (display data p))))
+		   "'for-your-eyes-only' excludes filename"
+		   file-name))
+	 (let ((file (cond
+			(for-your-eyes-only?
+			 "_CONSOLE")
+			((string? file-name)
+			 file-name)
+			(else
+			 ""))))
+	    (when (>fx (string-length file) 255)
+	       (error 'encode-content-literal
+		      "Filename too long (>255)"
+		      file))
+	    (trace-item "format: " format " " (literal-format->human-readable format))
+	    (trace-item "file: " file)
+	    (trace-item "creation-date: " creation-date)
+	    (trace-item "data: \n-----------\n"  data "\n-----------\n")
+	    (encode-octet (literal-format->byte format) p)
+	    (encode-octet (string-length file) p)
+	    (display file p)
+	    (encode-time creation-date p)
+	    (display data p)))))
 
 (define-method (encode-content packet::PGP-Trust-Packet p::output-port)
-   (error 'encode-content-trust
-	  "Trust Packet encoding not yet implemented"
-	  #f))
+   (with-trace 3 "encode-content ::PGP-Trust-Packet"
+      (error 'encode-content-trust
+	     "Trust Packet encoding not yet implemented"
+	     #f)))
 
 (define-method (encode-content packet::PGP-ID-Packet p::output-port)
-   (with-access::PGP-ID-Packet packet (data)
-      (display data p)))
+   (with-trace 3 "encode-content ::PGP-ID-Packet"
+      (with-access::PGP-ID-Packet packet (data)
+	 (display data p))))
 
 (define-method (encode-content packet::PGP-MDC-Symmetrically-Encrypted-Packet p::output-port)
-   (with-access::PGP-MDC-Symmetrically-Encrypted-Packet packet (version data)
-      (encode-octet version p)
-      (display data p)))
+   (with-trace 3 "encode-content ::PGP-MDC-Symmetrically-Encrypted-Packet"
+      (with-access::PGP-MDC-Symmetrically-Encrypted-Packet packet (version data)
+	 (encode-octet version p)
+	 (display data p))))
 
 (define-method (encode-content packet::PGP-MDC-Packet p::output-port)
-   (with-access::PGP-MDC-Packet packet (hash)
-      (display hash p)))
+   (with-trace 3 "encode-content ::PGP-MDC-Packet"
+      (with-access::PGP-MDC-Packet packet (hash)
+	 (display hash p))))
