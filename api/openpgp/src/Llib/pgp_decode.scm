@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Thu Aug 19 14:00:25 2010 (serrano)                */
+;*    Last change :  Fri Aug 20 11:24:06 2010 (serrano)                */
 ;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano.             */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -82,7 +82,7 @@
 			(decode-packet-length-v4 p)
 			(set! partial? p?)
 			(set! pp (length-limited-pipe-port p len))
-			(read-chars pp 256)))
+			(read-chars 256 pp)))
 		    ((eof-object? str) #f)
 		    (else str)))))))))
 
@@ -890,6 +890,7 @@
 ;; ----------------------------------------------------------------------------
 (define (decode-mdc-sym-encrypted cpp)
    (with-trace 4 "decode-mdc-sym-encrypted"
+      (trace-item "cpp=" cpp)
       (let* ((version (safe-read-octet cpp))
 	     (data (read-string cpp)))
 	 (trace-item "version: " version)

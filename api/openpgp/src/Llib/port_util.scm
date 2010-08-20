@@ -2,9 +2,9 @@
    (export (inline safe-read-char::char p)
 	   (inline safe-read-octet::long p)
 	   (inline safe-read-octets::bstring len p)
-	   (base64-decode-pipe-port p)
+	   (base64-decode-pipe-port p::input-port)
 	   (length-limited-pipe-port::input-port p::input-port len::long)
-	   (concat-pipe-port::input-port p1 . Lps)))
+	   (concat-pipe-port::input-port p1::input-port . Lps)))
 
 
 (define-inline (safe-read-char::char p)
