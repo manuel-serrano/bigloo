@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sun May 30 17:02:05 2010 (serrano)                */
+/*    Last change :  Tue Aug 24 08:28:10 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -265,15 +265,17 @@ integer_to_string_padding( long x, long padding, long radix ) {
    obj_t aux;
    int bits = (x <= 0 ? 1 : 0);
    long ax = BGL_LABS( x );
-   long axx = ax;
+   ulong axx = (ulong)ax;
    char fmt[ 10 ];
-   
+
    switch( radix ) {
       case 2 :
       {
 	 char *s;
-	 
-	 while( axx > 0 ) bits++, axx /= 2;
+
+	 while( axx > 0 ) {
+	    bits++, axx /= 2;
+	 }
 	 
 	 aux = make_string( bits > padding ? bits : padding, '0' );
 

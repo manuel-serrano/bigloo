@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Thu Jun  5 08:37:54 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Aug 24 11:46:03 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -55,29 +55,6 @@
 	   (sha1sum-file::bstring ::bstring)
 
 	   (hmac-sha1sum-string::bstring ::bstring ::bstring)))
-
-;*---------------------------------------------------------------------*/
-;*    sha1sum ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (sha1sum obj)
-   (cond
-      ((mmap? obj)
-       (sha1sum-mmap obj))
-      ((string? obj)
-       (sha1sum-string obj))
-      ((input-port? obj)
-       (sha1sum-port obj))
-      (else
-       (error 'sha1sum "Illegal argument" obj))))
-
-;*---------------------------------------------------------------------*/
-;*    sha1sum-file ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (sha1sum-file fname)
-   (let ((mm (open-mmap fname :write #f)))
-      (unwind-protect
-	 (sha1sum-mmap mm)
-	 (close-mmap mm))))
 
 ;*---------------------------------------------------------------------*/
 ;*    for ...                                                          */
@@ -353,6 +330,34 @@
 			       (cons vec L))))))
 		   (sha1 nlen M))
 		(loop nlen (cons vec L)))))))
+
+;*---------------------------------------------------------------------*/
+;*    sha1sum-file ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (sha1sum-file fname)
+   (let ((mm (open-mmap fname :write #f)))
+      (if (mmap? mm)
+	  (unwind-protect
+	     (sha1sum-mmap mm)
+	     (close-mmap mm))
+	  (let ((p (open-input-file fname)))
+	     (unwind-protect
+		(sha1sum-port p)
+		(close-input-port p))))))
+
+;*---------------------------------------------------------------------*/
+;*    sha1sum ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (sha1sum obj)
+   (cond
+      ((mmap? obj)
+       (sha1sum-mmap obj))
+      ((string? obj)
+       (sha1sum-string obj))
+      ((input-port? obj)
+       (sha1sum-port obj))
+      (else
+       (error "sha1sum" "Illegal argument" obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hmac-sha1sum-string ...                                          */

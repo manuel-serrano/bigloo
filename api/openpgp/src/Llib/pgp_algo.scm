@@ -13,6 +13,7 @@
    (case algo
       ((md5) md5sum-bin)
       ((sha-1) sha1sum-bin)
+      ((sha-256) sha256sum-bin)
       (else (error "hash-algo->procedure"
 		   "algorithm not implemented"
 		   (hash-algo->human-readable algo)))))

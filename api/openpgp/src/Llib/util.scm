@@ -20,6 +20,7 @@
 	   (mod-inverse x b)
 	   (expt-modbx x y m)
 	   (sha1sum-bin::bstring in)
+	   (sha256sum-bin::bstring in)
 	   (md5sum-bin::bstring in)
 	   (bin-str->bignum::bignum str::bstring)
 	   (bignum->bin-str! buffer::bstring at::long x::bignum #!optional (len::long -1))
@@ -245,6 +246,9 @@
 
 (define (sha1sum-bin::bstring in)
    (hex-str->string! (sha1sum in)))
+
+(define (sha256sum-bin::bstring in)
+   (hex-str->string! (sha256sum in)))
 
 (define (md5sum-bin::bstring in)
    (hex-str->string! (md5sum in)))

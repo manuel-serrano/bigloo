@@ -64,7 +64,7 @@
 
 (define (pgp-write-port oport::output-port composition #!key (format 'armored))
    (when (not (PGP-Composition? composition))
-      (error 'pgp-write-port
+      (error "pgp-write-port"
 	     "Expected PGP Composition"
 	     composition))
    (if (eq? format 'armored)
@@ -176,9 +176,7 @@
 				    :hash-algo hash-algo
 				    :detached-signature? #f))))
 	 (else
-	  (error 'pgp-sign
-		 "Bad Key"
-		 key)))))
+	  (error "pgp-sign" "Bad Key" key)))))
 
 ;; key-manager must return a list of all subkeys that match a given key-id.
 ;; the optional msg parameter will only be used for detached signatures.
@@ -186,18 +184,14 @@
 (define (pgp-verify::pair-nil signature key-manager::procedure
 			      #!optional (msg #f))
    (when (not (PGP-Signature? signature))
-      (error 'pgp-verify
-	     "not a signature"
-	     signature))
+      (error "pgp-verify" "not a signature" signature))
    (verify-pgp-signature signature key-manager msg))
 
 
 ;; returns the signature's message, or #f if there is non in the composition.
 (define (pgp-signature-message signature)
    (when (not (PGP-Signature? signature))
-      (error 'pgp-verify
-	     "not a signature"
-	     signature))
+      (error "pgp-verify" "not a signature" signature))
    (let ((sig-msg (PGP-Signature-msg signature)))
       (and sig-msg
 	   (with-access::PGP-Literal-Packet sig-msg (data)
@@ -286,9 +280,7 @@
 		     (symmetric-algo 'cast5))
 
    (when (not (PGP-Encrypted? encrypted))
-      (error 'pgp-decrypt
-	     "Expected PGP-composition."
-	     encrypted))
+      (error "pgp-decrypt" "Expected PGP-composition." encrypted))
 
    (with-trace 2 "pgp-decrypt"
       (with-access::PGP-Encrypted encrypted (session-keys encrypted-data)
@@ -336,9 +328,7 @@
 		   #f)
 		  ((and (null? decrypted) (not (pair? decrypted)))
 		   (trace-item "no encrypted data.")
-		   (error 'pgp-decrypt
-			  "No or bad encrypted data"
-			  #f))
+		   (error "pgp-decrypt" "No or bad encrypted data" #f))
 		  ((PGP-Literal-Packet? (car decrypted))
 		   (when (not (null? (cdr decrypted)))
 		      (warning "ignoring trailing packet(s)"))
@@ -360,7 +350,7 @@
 		      (trace-item "creation-date: " creation-date)
 		      data))
 		  (else
-		   (error 'pgp-decrypt
+		   (error "pgp-decrypt"
 			  "Don't know what to do with decrypted data"
 			  #f))))))))
 

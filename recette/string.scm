@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Sun May 30 17:03:46 2010 (serrano)                */
+;*    Last change :  Tue Aug 24 14:13:53 2010 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -140,11 +140,27 @@
 ;*    test-sha1 ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (test-sha1 num str sum)
-   (test (string-append "sha1." (integer->string num)) (sha1sum str) sum)
-   (with-input-from-string str
-      (lambda ()
-	 (test (string-append "sha1." (integer->string (+fx num 1)))
-	       (sha1sum (current-input-port)) sum))))
+   (let ((n (* num 3)))
+      (test (string-append "sha1." (integer->string n)) (sha1sum str) sum)
+      (with-input-from-string str
+	 (lambda ()
+	    (test (string-append "sha1." (integer->string (+fx n 1)))
+		  (sha1sum (current-input-port)) sum)))
+      (test (string-append "sha1." (integer->string (+fx n 2)))
+	    (sha1sum (string->mmap str)) sum)))
+   
+;*---------------------------------------------------------------------*/
+;*    test-sha256 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (test-sha256 num str sum)
+   (let ((n (* num 3)))
+      (test (string-append "sha256." (integer->string n)) (sha256sum str) sum)
+      (with-input-from-string str
+	(lambda ()
+	   (test (string-append "sha256." (integer->string (+fx n 1)))
+		 (sha256sum (current-input-port)) sum)))
+      (test (string-append "sha256." (integer->string (+fx n 2)))
+	    (sha256sum (string->mmap str)) sum)))
    
 ;*---------------------------------------------------------------------*/
 ;*    test-string ...                                                  */
@@ -383,30 +399,60 @@
    (test-sha1 1
 	      "abc"
 	      "a9993e364706816aba3e25717850c26c9cd0d89d")
-   (test-sha1 3
+   (test-sha1 2
 	      "The quick brown fox jumps over the lazy dog"
 	      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12")
-   (test-sha1 5
+   (test-sha1 3
 	      "The quick brown fox jumps over the lazy cog"
 	      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3")
-   (test-sha1 7
+   (test-sha1 4
 	      (make-string 63 #\a)
 	      "03f09f5b158a7a8cdad920bddc29b81c18a551f5")
-   (test-sha1 9
+   (test-sha1 5
 	      (make-string 64 #\a)
 	      "0098ba824b5c16427bd7a1122a5a442a25ec644d")
-   (test-sha1 11
+   (test-sha1 6
 	      (make-string 65 #\a)
 	      "11655326c708d70319be2610e8a57d9a5b959d3b")
-   (test-sha1 13
+   (test-sha1 7
 	      (make-string 127 #\a)
 	      "89d95fa32ed44a7c610b7ee38517ddf57e0bb975")
-   (test-sha1 15
+   (test-sha1 8
 	      (make-string 128 #\a)
 	      "ad5b3fdbcb526778c2839d2f151ea753995e26a0")
-   (test-sha1 17
+   (test-sha1 9
 	      (make-string 129 #\a)
 	      "d96debf1bdcbc896e6c134ea76e8141f40d78536")
+   (test-sha256 1
+		"abc"
+		"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+   (test-sha256 2
+		"The quick brown fox jumps over the lazy dog"
+		"d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592")
+   (test-sha256 3
+		"The quick brown fox jumps over the lazy cog"
+		"e4c4d8f3bf76b692de791a173e05321150f7a345b46484fe427f6acc7ecc81be")
+   (test-sha256 4
+		(make-string 63 #\a)
+		"7d3e74a05d7db15bce4ad9ec0658ea98e3f06eeecf16b4c6fff2da457ddc2f34")
+   (test-sha256 5
+		(make-string 64 #\a)
+		"ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb")
+   (test-sha256 6
+		(make-string 65 #\a)
+		"635361c48bb9eab14198e76ea8ab7f1a41685d6ad62aa9146d301d4f17eb0ae0")
+   (test-sha256 7
+		(make-string 127 #\a)
+		"c57e9278af78fa3cab38667bef4ce29d783787a2f731d4e12200270f0c32320a")
+   (test-sha256 8
+		(make-string 128 #\a)
+		"6836cf13bac400e9105071cd6af47084dfacad4e5e302c94bfed24e013afb73e")
+   (test-sha256 9
+		(make-string 129 #\a)
+		"c12cb024a2e5551cca0e08fce8f1c5e314555cc3fef6329ee994a3db752166ae")
+   (test-sha256 10
+		(make-string 56 #\a)
+		"b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a")
    (test "string-prefix-length.1"
 	 (string-prefix-length "abcde" "abcdef") 5)
    (test "string-prefix-length.2"
@@ -523,7 +569,7 @@
    (test "string-skip-right.9" (string-skip-right "foobar-gee" "fobar-ge") #f)
    (test "string-natural-compare3.1" (string-natural-compare3 "foo" "foo") 0)
    (test "string-natural-compare3.2"
-   (string-natural-compare3 "foo0" "foo1") -1)
+	 (string-natural-compare3 "foo0" "foo1") -1)
    (test "string-natural-compare3.3" (string-natural-compare3 "foo1" "foo0") 1)
    (test "string-natural<?.1" (string-natural<? "rfc1.txt" "rfc822.txt") #t)
    (test "string-natural<?.1b" (string-natural<? "rfc822.txt" "rfc1.txt") #f)
