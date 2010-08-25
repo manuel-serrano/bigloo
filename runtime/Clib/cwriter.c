@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Wed Jun 16 11:47:24 2010 (serrano)                */
+/*    Last change :  Wed Aug 25 10:20:27 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -20,12 +20,12 @@ extern obj_t llong_to_string( BGL_LONGLONG_T x, long radix );
 extern obj_t bgl_bignum_to_string( obj_t x, long radix );
 extern obj_t bgl_write_obj( obj_t, obj_t );
 extern obj_t bgl_display_obj( obj_t, obj_t );
-extern obj_t bgl_write( obj_t, char *, size_t );
+extern obj_t bgl_write( obj_t, unsigned char *, size_t );
 
 /*---------------------------------------------------------------------*/
 /*    Les noms des caracateres                                         */
 /*---------------------------------------------------------------------*/
-static char *char_name[] = {
+static unsigned char *char_name[] = {
    "","","","","","","","",
    "",  "tab", "newline", "", "", "return", "", "",
    "", "","","","","","","",
@@ -240,7 +240,7 @@ bgl_write_char( obj_t o, obj_t op ) {
    void *ostream = PORT_STREAM( op );
    
    if( (c > 0) && (c < 128) && char_name[ c ][ 0 ] ) {
-      char *name = char_name[ c ];
+      unsigned char *name = char_name[ c ];
 	 
       PUTC( op, '#' );
       PUTC( op, '\\' );

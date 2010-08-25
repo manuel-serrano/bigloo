@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Wed Aug 25 10:14:30 2010 (serrano)                */
+;*    Last change :  Wed Aug 25 18:59:07 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -315,7 +315,7 @@
    (bit-xor* (rotr32 x 6) (rotr32 x 11) (rotr32 x 25)))
 
 ;*---------------------------------------------------------------------*/
-;*    sigma1-56 ...                                                    */
+;*    sigma1-256 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (sigma1-256::ulong x::ulong)
    (bit-xor* (rotr32 x 17) (rotr32 x 19) (bit-ursh x 10)))
@@ -383,7 +383,7 @@
 	      (j::long 0))
       (cond
 	 ((<fx j 16)
-	  (let* ((w (u32vector-ref buffer j))
+	  (let* ((w::ulong (u32vector-ref buffer j))
 		 (T1::ulong (compress e f g h w j))
 		 (T2::ulong (u32+ (Sigma0-256 a) (Maj a b c))))
 	     (loop (u32+ T1 T2) a b c (u32+ d T1) e f g (+ j 1))))
@@ -391,9 +391,9 @@
 	  (let* ((s0 (sigma0-256 (xf-ref buffer (+ j 1))))
 		 (s1 (sigma1-256 (xf-ref buffer (+ j 14))))
 		 (ndx (bit-and j #lxF))
-		 (w (u32+ (xf-ref buffer j) s1 (xf-ref buffer (+fx j 9)) s0))
-		 (T1 (compress e f g h w j))
-		 (T2 (u32+ (Sigma0-256 a) (Maj a b c))))
+		 (w::ulong (u32+ (xf-ref buffer j) s1 (xf-ref buffer (+fx j 9)) s0))
+		 (T1::ulong (compress e f g h w j))
+		 (T2::ulong (u32+ (Sigma0-256 a) (Maj a b c))))
 	     (u32vector-set! buffer ndx w)
 	     (loop (u32+ T1 T2) a b c (u32+ d T1) e f g (+ j 1))))
 	 (else
