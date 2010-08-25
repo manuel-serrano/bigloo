@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Wed Aug 25 10:08:41 2010 (serrano)                */
+;*    Last change :  Wed Aug 25 10:14:30 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -124,7 +124,7 @@
 (define (addu32::ulong n1::ulong n2::ulong)
    (let* ((h1::ulong (bit-ursh n1 16))
 	  (h2::ulong (bit-ursh n2 16))
-	  (h::ulong (+fx h1 h2))
+	  (h::ulong (bit-and #xffff (+fx h1 h2)))
 	  (l1::ulong (bit-and n1 #xffff))
 	  (l2::ulong (bit-and n2 #xffff))
 	  (l::ulong (+fx l1 l2))
