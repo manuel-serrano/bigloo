@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Aug 12 12:16:15 2010 (serrano)                */
+#*    Last change :  Thu Aug 26 12:16:57 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -743,7 +743,7 @@ install-dirs:
 	  mkdir -p $(DOCDIR) && chmod $(MODDIR) $(DOCDIR); \
         fi
 	if [ ! -d $(MANDIR) ]; then \
-	  mkdir -p $(MANDIR) && chmod $(MODIR) $(MANDIR); \
+	  mkdir -p $(MANDIR) && chmod $(MODDIR) $(MANDIR); \
         fi
 	if [ ! -d $(INFODIR) ]; then \
 	  mkdir -p $(INFODIR) && chmod $(MODDIR) $(INFODIR); \

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Wed Aug  4 06:39:50 2010 (serrano)                */
+;*    Last change :  Thu Aug 26 12:13:52 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
@@ -522,8 +522,8 @@
 	      (if (pair? o)
 		  (cdr o)
 		  var))))
-      (((kwote quote) . ?-)
-       x)
+      (((kwote quote) . ?rest)
+       (cons 'quote (hygienize* rest env)))
       ((lambda ?vars . ?body)
        (let* ((nvars (genvars vars))
 	      (nenv (append (map cons (flatten vars) (flatten nvars)) env)))

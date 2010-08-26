@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Aug 24 14:33:18 2010 (serrano)                */
+#*    Last change :  Thu Aug 26 12:17:29 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -211,7 +211,7 @@ C_SCM_IEEE	= $(IEEE:%=Ieee/%.c)
 #*---------------------------------------------------------------------*/
 #*    Scheme R5rs objects                                              */
 #*---------------------------------------------------------------------*/
-R5RS  		= syntax hygiene
+R5RS  		= syntax
 
 SCM_R5RS	= $(R5RS:%=R5rs/%.scm)
 C_SCM_R5RS	= $(R5RS:%=R5rs/%.c)
