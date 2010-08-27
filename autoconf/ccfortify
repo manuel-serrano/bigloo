@@ -1,0 +1,74 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ccfortify                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Cyprien Nicolas                                   */
+#*    Creation    :  Fri Aug 27 18:15:15 2010                          */
+#*    Last change :  Fri Aug 27 18:15:48 2010 (serrano)                */
+#*    Copyright   :  2010 Cyrprien Nicolas, Manuel Serrano             */
+#*    -------------------------------------------------------------    */
+#*    Check the C compiler fortify default value                       */
+#*=====================================================================*/
+
+cflags=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdlib.h>
+#include <stdio.h>
+
+#ifndef _FORTIFY_SOURCE
+#define _FORTIFY_SOURCE 0
+#endif
+
+int main (void)
+{
+  printf( "%d\n", _FORTIFY_SOURCE);
+  return EXIT_SUCCESS;
+}
+EOF
+
+if eval "$BUILDSH $compile"; then
+    \rm -f $file.*
+    eval "$HOSTSH $aout"
+    ret_code=$?
+    \rm -f $aout
+    exit $ret_code
+fi
+
+echo "0"
+exit 0

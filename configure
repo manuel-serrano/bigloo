@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Aug 12 11:19:06 2010 (serrano)                */
+#*    Last change :  Fri Aug 27 18:20:04 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -63,7 +63,7 @@ bootflags=""
 featureflags=
 coflags=-O3
 
-cstrip="-s"
+cstrip=""
 cpicflags="demanded" # Possible values for cpicflags are:
              #  - "no" not to use position independent code (recommended)
              #  - "demanded" auto configuration but with a preference to "no"
@@ -697,6 +697,10 @@ while : ; do
       extralibs="";
       cstrip="no";;
 
+    --strip=no)
+      cstrip="no";
+      strip="no";;
+
     --pnet)
       dotnetclrstyle=pnet;
       dotnetcsccstyle=pnet;
@@ -984,6 +988,7 @@ while : ; do
       echo "Misc:"  >&2;
       echo "   --finalization=yes|no [default no]" >&2;
       echo "   --benchmark=yes|no [default no] (must use --arch too)" >&2;
+      echo "   --strip=no (disable stripping during linking)" >&2;
       echo "   --debug[2] (configure for debugging)" >&2;
       echo "   --stack-check=no" >&2;
       echo "   --enable-thread-local-storage" >&2;
@@ -1327,8 +1332,25 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
     ranlib=true;
   fi
 
-  if [ ! $strip ]; then strip="strip"; fi
+  if [ "$strip " = " " ]; then strip="strip"; fi
   strip=`$autoconf strip --strip=$strip` || exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test for fortify/abort                                           */
+#*    gcc-4.5 -D_FORTIFY_SOURCE=2 makes bigloo to fail at runtime      */
+#*---------------------------------------------------------------------*/
+fortify=`$autoconf ccfortify --cflags="$cflags"`
+if [ $fortify = "2" ]; then
+    # We first filter out -D_FORTIFY_SOURCE=2 if it is in cflags
+    tmp_new_cflags="";
+    for flag in $cflags; do
+	if [ "$flag " != "-D_FORTIFY_SOURCE=2 " ]; then
+	    tmp_new_cflags="$tmp_new_cflags $flag"
+	fi
+    done
+    # Then add the new flag at the end
+    cflags="$tmp_new_cflags -D_FORTIFY_SOURCE=1"
 fi
 
 #*---------------------------------------------------------------------*/

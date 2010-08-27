@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Thu Apr 15 16:11:24 2010 (serrano)                */
+;*    Last change :  Fri Aug 27 18:10:13 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -45,7 +45,7 @@
    (when (>fx content-length 0)
       (set! content-length (+fx content-length (input-port-position port))))
    (let loop ((decoder (lambda (x) x)))
-      (let ((obj (read/rp xml-grammar port procedure specials strict decoder encoding)))
+      (let ((obj (read/rp xml-grammar port procedure procedure specials strict decoder encoding)))
 	 (when (and (fixnum? content-length) (>fx content-length 0))
 	    (input-port-fill-barrier-set! port -1))
 	 (cond
@@ -84,7 +84,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    special ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-struct special tag attributes body)
+(define-struct special tag attributes body owner)
 
 ;*---------------------------------------------------------------------*/
 ;*    collect-up-to ...                                                */
@@ -114,7 +114,9 @@
 				   (special-body item))))
 		   (if (memq (special-tag item) tags)
 		       (loop acc nitem)
-		       (list (make tag attributes (reverse! acc)) nitem))))
+		       (begin
+			  (tprint "PAS GLOP(" tag "): " nitem)
+			  (list (make tag attributes (reverse! acc)) nitem)))))
 	       ((eof-object? item)
 		(if strict
 		    (xml-parse-error
@@ -136,7 +138,10 @@
 	  (make tag attributes ((cdr spec) port)))
 	 ((pair? (cdr spec))
 	  (let ((ignore (lambda ()
-			   (read/rp xml-grammar port special specials strict decoder encoding)))) 
+			   (read/rp xml-grammar port
+				    (lambda (t a b) (special t a b tag))
+				    make
+				    specials strict decoder encoding)))) 
 	     (collect ignore (cdr spec))))
 	 (else
 	  (error 'xml-parse "Illegal special handler" spec)))))
@@ -283,6 +288,7 @@
 ;*---------------------------------------------------------------------*/
 (define xml-grammar
    (regular-grammar ((id (: (in ("azAZ") "!?") (* (in ("azAZ09") ":_-"))))
+		     next
 		     make
 		     specials
 		     strict
