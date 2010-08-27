@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue May 19 13:12:59 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Fri Aug 27 11:44:04 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -234,6 +234,12 @@
 	      e))
 	  (((library (and (? symbol?) ?lib)) . ?body)
 	   (e (evepairify (if (library-exists? lib)
+			      `(begin ,@body)
+			      `(cond-expand ,@else))
+			  x)
+	      e))
+	  (((config ?key ?value) . ?body)
+	   (e (evepairify (if (equal? (bigloo-config key) value)
 			      `(begin ,@body)
 			      `(cond-expand ,@else))
 			  x)

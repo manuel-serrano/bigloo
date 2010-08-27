@@ -87,6 +87,12 @@ The second example assumes that @code{bigloo} is an alias for the SRFI
 associated with the specification of Bigloo (i.e. the documentation for that
 Scheme system). 
 
+Since Bigloo 3.4b, @code{cond-expand} formula may use the new 
+@code{config} operator that checks the value of a configuration entry.
+Its syntax is: @code{(config endianeness little-endian)}. This
+feature relies on the @code{bigloo-config} function. See
+@ref{System Programming} for additional details.
+
 When writing portable code, the case used for the feature identifier
 should match the one in the SRFI registry. This is to ensure that the
 feature identifier will be correctly recognized whether or not the

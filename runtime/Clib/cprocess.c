@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Thu Jan  7 20:04:51 2010 (serrano)                */
+/*    Last change :  Thu Aug 26 13:20:01 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -536,14 +536,15 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    extern int bgl_envp_len;
 	    extern char **bgl_envp;
 	    int len = bgl_envp_len + bgl_list_length( benv );
-	    char **envp, **crunner, **init_envp;
+	    char **envp, **crunner;
+	    extern char **environ;
 
 	    crunner = envp = (char **)alloca( sizeof( char * ) * (len + 1) );
 
 	    if( bgl_envp ) {
-	       for( init_envp = bgl_envp;
-		    *init_envp;
-		    init_envp++, crunner++ ) {
+	       char **init_envp;
+	       
+	       for( init_envp = bgl_envp; *init_envp; init_envp++, crunner++ ) {
 		  *crunner = *init_envp;
 	       }
 	    }
@@ -555,13 +556,18 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    }
 	    *crunner = 0;
 
-	    execve( *argv, argv, envp );
+	    /* don't use execve because it requires as first argument  */
+	    /* a full path (not a file name). Instead, set environ var */
+	    environ = envp;
+	    execvp( *argv, argv );
 	 } else {
 	    execvp( *argv, argv );
 	 }
 
 	 /* Don't try to do anything here, no display, no nothing. Since we */
 	 /* are in the child raising or signalling an error would be bad    */
+	 fprintf( stderr, "*** ERROR: Cannot start process (%s:%d) -- %s\n%s\n",
+		  __FILE__, __LINE__, argv[ 0 ], strerror( errno ) );
 	 exit( 1 );
 
       default:
