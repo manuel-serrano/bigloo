@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Aug 26 12:17:29 2010 (serrano)                */
+#*    Last change :  Mon Aug 30 14:36:29 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -86,7 +86,7 @@ CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
                   -O4 -mklib -unsafe -safee -cc $(CC) -fsharing -q -no-hello \
-                  -p -copt $(CPICFLAGS)
+                  -p -copt $(CPICFLAGS) -srfi bigloo-profile
 CUNSAFEPFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS_P) $(CPICFLAGS) -DPROFILE
 #*--- Bigloo, safe, debug, heap ---------------------------------------*/
 BSAFEDBGFLAGS	= $(BSAFEFLAGS) -gheap -copt $(CPICFLAGS)

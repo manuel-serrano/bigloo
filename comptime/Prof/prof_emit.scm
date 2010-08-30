@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Prof/emit.scm               */
+;*    serrano/prgm/project/bigloo/comptime/Prof/prof_emit.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Mon Sep 12 05:34:53 2005 (serrano)                */
-;*    Copyright   :  1998-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug 30 14:34:09 2010 (serrano)                */
+;*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -38,16 +38,14 @@
 ;*    emit-prof-info ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (emit-prof-info globals port)
+   
    (define (emit-global! global)
-      (let* ((sfun     (global-value global))
-	     (clo      (sfun-the-closure sfun)))
+      (let ((sfun (global-value global)))
 	 (set-variable-name! global)
-	 (let ((id     (global-id global))
+	 (let ((id (global-id global))
 	       (c-name (global-name global))
-	       (alloc? (and (sfun? sfun)
-			    (memq 'allocator (sfun-property sfun))))
-	       (loc    (and (sfun? sfun)
-			    (sfun-loc sfun))))
+	       (is-alloc (and (sfun? sfun) (memq 'allocator (sfun-property sfun))))
+	       (loc    (and (sfun? sfun) (sfun-loc sfun))))
 	    (if (location? loc)
 		(fprint port
 			"      fputs( \"((\\\""
@@ -57,15 +55,16 @@
 			") \\\""
 			c-name
 			"\\\""
-			(if alloc? " allocator" "")
+			(if is-alloc " allocator" "")
 			")\\n\", (FILE *)bprof_port );")
 		(fprint port
 			"      fputs( \"(\\\""
 			id "\\\" \\\""
 			c-name
 			"\\\""
-			(if alloc? " allocator" "")
+			(if is-alloc " allocator" "")
 			")\\n\", (FILE *)bprof_port );")))))
+   
    ;; the declaration of the association table
    (newline port)
    (newline port)
@@ -78,15 +77,15 @@
    (fprint port "   if( bprof_port ) {")
    ;; the library functions dump
    (for-each-global! (lambda (g)
-			(if (and (or (>fx (global-occurrence g) 0)
-				     (eq? (global-module g) 'foreign))
-				 (global-library g)
-				 (global-user? g))
-			    (emit-global! g))))
+			(when (and (or (>fx (global-occurrence g) 0)
+				       (eq? (global-module g) 'foreign))
+				   (global-library g)
+				   (global-user? g))
+			   (emit-global! g))))
    ;; and then the non function global variables.
    (for-each (lambda (global)
-		(if (global-user? global)
-		    (emit-global! global)))
+		(when (global-user? global)
+		   (emit-global! global)))
 	     globals)
    ;; in addition we write that make_pair is CONS and some
    ;; other builtins

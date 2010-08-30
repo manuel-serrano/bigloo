@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sat Jun 19 18:08:14 2010 (serrano)                */
+;*    Last change :  Mon Aug 30 14:37:33 2010 (serrano)                */
 ;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -169,7 +169,8 @@
    (cond-expand
       (bigloo-unsafe 'unsafe)
       (bigloo-safe 'safe)
-      (else (error "library-safety" "not safety specified" #unspecified))))
+      (bigloo-profile 'profile)
+      (else (error "library-safety" "no safety specified" #unspecified))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *bigloo-configuration* ...                                       */
