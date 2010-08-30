@@ -65,6 +65,8 @@
     (final-class PGP-Trust-Packet::PGP-Packet)
     (final-class PGP-ID-Packet::PGP-Packet
        data::bstring)
+    (final-class PGP-Attribute-Packet::PGP-Packet
+       data::bstring)
     (final-class PGP-MDC-Symmetrically-Encrypted-Packet::PGP-Symmetrically-Encrypted-Packet
        version::long) ;; note: as of rfc4880 the only value is 1 (and not 4)
     (final-class PGP-MDC-Packet::PGP-Packet

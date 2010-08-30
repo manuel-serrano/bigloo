@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
-#*    Last change :  Thu Aug 19 14:29:48 2010 (serrano)                */
+#*    Last change :  Mon Aug 30 08:47:14 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */

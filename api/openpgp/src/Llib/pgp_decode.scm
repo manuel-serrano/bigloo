@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Fri Aug 20 11:24:06 2010 (serrano)                */
+;*    Last change :  Mon Aug 30 08:43:17 2010 (serrano)                */
 ;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano.             */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -881,9 +881,11 @@
 ;; 5.12 User ID Packet (Tag 17)
 ;; ----------------------------------------------------------------------------
 (define (decode-user-attribute cpp)
-   ;; TODO
-   (read-string cpp)
-   )
+   (with-trace 3 "decode-user-attribute"
+      (let ((user-attr (read-string cpp)))
+	 (trace-item "User ATTR: " (string-for-read user-attr))
+	 (instantiate::PGP-Attribute-Packet
+	    (data user-attr)))))
 
 ;; ----------------------------------------------------------------------------
 ;; 5.13 Sym. Encrypted Integrity Protected Data Packet (Tag 18)

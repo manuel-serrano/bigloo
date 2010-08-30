@@ -85,15 +85,18 @@
 (define (parse-keys packets)
    (with-trace 3 "parse-keys"
       (let loop ((packets packets)
-		 (keys '()))
+		 (keys '())
+		 (user-ids '()))
 	 (if (null? packets)
 	     keys
-	     (receive (key remaining-packets)
-		(parse-key packets)
+	     (receive (key remaining-packets nuser-ids)
+		(parse-key packets user-ids)
 		(loop remaining-packets
-		      (cons key keys)))))))
+		      (append key keys)
+		      (append nuser-ids user-ids)))))))
 
-(define (parse-key packets)
+(define (parse-key packets user-ids)
+   
    (define (revocation-signature? pkt)
       (and (PGP-Signature-Packet? pkt)
 	   (eq? (PGP-Signature-Packet-signature-type pkt)
@@ -130,21 +133,23 @@
 	     (values (reverse! sigs) packets)))))
 
    (define (parse-user-ids packets)
-      (let loop ((packets packets)
-		 (user-ids '()))
-	 (cond
-	    ((null? packets)
-	     (values (reverse! user-ids) '()))
-	    ((PGP-ID-Packet? (car packets))
-	     (receive (sigs remaining-packets)
-		(parse-user-id-sigs (cdr packets))
-		(loop remaining-packets
-		      (cons (instantiate::Signed-ID
-			       (id (car packets))
-			       (sigs sigs))
-			    user-ids))))
-	    (else
-	     (values (reverse! user-ids) packets)))))
+      (with-trace 3 "parse-user-ids"
+	 (let loop ((packets packets)
+		    (user-ids '()))
+	    (cond
+	       ((null? packets)
+		(values (reverse! user-ids) '()))
+	       ((PGP-ID-Packet? (car packets))
+		(trace-item "PGP-ID-Packet=" (find-runtime-type (car packets)))
+		(receive (sigs remaining-packets)
+		   (parse-user-id-sigs (cdr packets))
+		   (loop remaining-packets
+			 (cons (instantiate::Signed-ID
+				  (id (car packets))
+				  (sigs sigs))
+			       user-ids))))
+	       (else
+		(values (reverse! user-ids) packets))))))
 
    (define (parse-subkeys packets)
       (define (subkey-sig? pkt)
@@ -184,34 +189,38 @@
 	    (else
 	     (values (reverse! subkeys) packets)))))
 
-   (let ((main-key-packet (car packets)))
-      (receive (revocation-sigs remaining-packets)
-	 (parse-revocation-sigs (cdr packets))
-	 (receive (user-ids remaining-packets)
-	    (parse-user-ids remaining-packets)
-	    (when (null? user-ids)
-	       (error 'parse-key
-		      "At least one user ID is required"
-		      #f))
-	    (receive (subkeys remaining-packets)
-	       (parse-subkeys remaining-packets)
-	       (let* ((main-key (instantiate::PGP-Subkey
-				   (key-packet main-key-packet)
-				   (sigs '())
-				   (revocation-sigs revocation-sigs)
-				   (pgp-key (PGP-Key-nil))))
-		      (all-subkeys (cons main-key subkeys))
-		      (res-key (instantiate::PGP-Key
-				  (user-ids user-ids)
-				  (subkeys all-subkeys))))
-		  (for-each (lambda (skey)
-			       (with-access::PGP-Subkey skey (pgp-key)
-				  (set! pgp-key res-key)))
-			    all-subkeys)
-		  (values res-key remaining-packets)))))))
+   (with-trace 2 "parse-key"
+      (trace-item "packets=" (map find-runtime-type packets))
+      (let ((main-key-packet (car packets)))
+	 (receive (revocation-sigs remaining-packets)
+	    (parse-revocation-sigs (cdr packets))
+	    (receive (nuser-ids remaining-packets)
+	       (parse-user-ids remaining-packets)
+	       (when (and (null? nuser-ids) (null? user-ids))
+		  (error 'parse-key
+			 "At least one user ID is required"
+			 #f))
+	       (receive (subkeys remaining-packets)
+		  (parse-subkeys remaining-packets)
+		  (if (PGP-Key-Packet? main-key-packet)
+		      (let* ((main-key (instantiate::PGP-Subkey
+					  (key-packet main-key-packet)
+					  (sigs '())
+					  (revocation-sigs revocation-sigs)
+					  (pgp-key (PGP-Key-nil))))
+			     (all-subkeys (cons main-key subkeys))
+			     (res-key (instantiate::PGP-Key
+					 (user-ids (append nuser-ids user-ids))
+					 (subkeys all-subkeys))))
+			 (for-each (lambda (skey)
+				      (with-access::PGP-Subkey skey (pgp-key)
+					 (set! pgp-key res-key)))
+				   all-subkeys)
+			 (values (list res-key) remaining-packets nuser-ids))
+		      (values '() remaining-packets user-ids))))))))
 
 (define (parse-encrypted-message packets)
-   (with-trace 2 "parsing encrypted message"
+   (with-trace 2 "parse-encrypted-message"
       (let loop ((packets packets)
 		 (session-keys '()))
 	 (cond
