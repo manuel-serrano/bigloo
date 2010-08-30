@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi-1/recette/recette.scm       */
+;*    serrano/prgm/project/bigloo/api/srfi1/recette/recette.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dirk Lutzebaeck                                   */
 ;*    Creation    :  Wed Mar  4 09:27:04 1998                          */
-;*    Last change :  Wed Oct 24 13:56:06 2007 (serrano)                */
+;*    Last change :  Mon Aug 30 12:21:27 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Various format tests.                                            */
 ;*=====================================================================*/
@@ -37,6 +37,7 @@
 ;*---------------------------------------------------------------------*/
 (define (test-srfi-1 argv)
    (print "Testing srfi-1")
+   (eval '(library-load 'srfi1))
    (srfi-1-test (cond-expand
 		   (srfi-1 'srfi-1)
 		   (else 'no-srfi-1))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Sun Sep  6 20:49:41 2009 (serrano)                */
+#*    Last change :  Mon Aug 30 12:29:50 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler optimization option                      */
 #*=====================================================================*/
@@ -33,6 +33,10 @@ done
 
 file=$TMP/actest$USER
 aout=$TMP/Xactest$USER
+
+if [ "$cflags " = " " ]; then
+  cflags=-s;
+fi
 
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */

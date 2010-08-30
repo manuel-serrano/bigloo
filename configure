@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Aug 27 18:20:04 2010 (serrano)                */
+#*    Last change :  Mon Aug 30 14:04:24 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2769,6 +2769,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
       echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
   fi
+  # build bigloo
+  if [ "$bigloo " = " " ]; then
+    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
+  else
+    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
+  fi
   echo >> $makefile_cfg
 
   # Directories
@@ -2796,11 +2802,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The C compiler
-  if [ "$bigloo " = " " ]; then
-    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
-  else
-    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
-  fi
   echo "CC=$cc" >> $makefile_cfg
   echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
@@ -3230,6 +3231,11 @@ echo "" >> $makefile_cfg
 echo "BFLAGS=$bflags" >> $makefile_cfg
 echo "BOOTFLAGS=$bootflags" >> $makefile_cfg
 echo "BFEATUREFLAGS=$featureflags" >> $makefile_cfg
+if [ "$csflags " = " " ]; then
+  echo "LDSTRIPFLAGS=" >> $makefile_cfg
+else
+  echo "LDSTRIPFLAGS=-ldopt $csflags" >> $makefile_cfg
+fi
 
 # script extension
 echo "" >> $makefile_cfg

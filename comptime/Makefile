@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Aug 12 11:20:43 2010 (serrano)                */
+#*    Last change :  Mon Aug 30 12:32:05 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -66,7 +66,7 @@ BJVMFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
 # Distribution Dotnet flag
 BDOTNETFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
 # Link flag
-LDBOOTFLAGS     = -static-bigloo -ldopt $(CSTRIPFLAGS)
+LDBOOTFLAGS     = -static-bigloo $(LDSTRIPFLAGS)
 # C compiler flag
 CADDFLAGS	= -I$(BOOTLIBDIR)
 
