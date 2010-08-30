@@ -1,7 +1,17 @@
-;; We do not allow all messages (of RFC2440)
-;; Some just don't make sense, and some are too difficult to implement. (for
-;; now).
+;*=====================================================================*/
+;*    .../project/bigloo/api/openpgp/src/Llib/pgp_composition.scm      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Florian Loitsch                                   */
+;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
+;*    Last change :  Mon Aug 30 09:41:17 2010 (serrano)                */
+;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano              */
+;*    -------------------------------------------------------------    */
+;*    RFC2440 encoding/decoding                                        */
+;*=====================================================================*/
 
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
 (module __openpgp-composition
    (import __openpgp-util
 	   __openpgp-packets
@@ -33,7 +43,7 @@
     (final-class PGP-Encrypted::PGP-Message
        session-keys::pair-nil ;; of PGP-{Symmetric|Public}-Key-Encrypted-Session-Key-Packets
        encrypted-data::PGP-Symmetrically-Encrypted-Packet) ;; or PGP-MDC-Symm...
-
+    
     (class PGP-Signature::PGP-Message
        msg ;; could be #f in case of a detached signature. Otherwise Literal.
        sigs::pair-nil) ;; of PGP-Signature-Packet
@@ -42,16 +52,22 @@
     (final-class PGP-Literal::PGP-Message
        literal::PGP-Literal-Packet)))
 
-;; TODO: we only handle Compressed packets at the "toplevel", as a message
-;; inside signatures and inside Literals.
-
-;; either returns a PGP-Composition, or a list of PGP-Keys.
+;*---------------------------------------------------------------------*/
+;*    decode-pgp-content ...                                           */
+;*    -------------------------------------------------------------    */
+;*    either returns a PGP-Composition, or a list of PGP-Keys.         */
+;*---------------------------------------------------------------------*/
 (define (decode-pgp-content p::input-port)
+   ;; TODO: we only handle Compressed packets at the "toplevel", as a message
+   ;; inside signatures and inside Literals.
    (with-trace 1 "decode-pgp-content"
       (trace-item "p=" p)
       (let ((packets (decode-packets p)))
 	 (parse-packets packets))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-packets ...                                                */
+;*---------------------------------------------------------------------*/
 (define (parse-packets packets)
    (with-trace 2 "parse-packets"
       (cond
@@ -81,7 +97,11 @@
 		 "could not parse pgp-message"
 		 packets)))))
 
-;; rfc 2440 allows several keys to be concatenated
+;*---------------------------------------------------------------------*/
+;*    parse-keys ...                                                   */
+;*    -------------------------------------------------------------    */
+;*    rfc 2440 allows several keys to be concatenated                  */
+;*---------------------------------------------------------------------*/
 (define (parse-keys packets)
    (with-trace 3 "parse-keys"
       (let loop ((packets packets)
@@ -95,13 +115,16 @@
 		      (append key keys)
 		      (append nuser-ids user-ids)))))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-key ...                                                    */
+;*---------------------------------------------------------------------*/
 (define (parse-key packets user-ids)
    
    (define (revocation-signature? pkt)
       (and (PGP-Signature-Packet? pkt)
 	   (eq? (PGP-Signature-Packet-signature-type pkt)
 		'key-revocation)))
-
+   
    (define (parse-revocation-sigs packets)
       (let loop ((packets packets)
 		 (revocations '()))
@@ -113,7 +136,7 @@
 		   (cons (car packets) revocations)))
 	    (else
 	     (values (reverse! revocations) packets)))))
-
+   
    (define (parse-user-id-sigs packets)
       (define (user-id-sig? pkt)
 	 (and (PGP-Signature-Packet? pkt)
@@ -131,7 +154,7 @@
 		   (cons (car packets) sigs)))
 	    (else
 	     (values (reverse! sigs) packets)))))
-
+   
    (define (parse-user-ids packets)
       (with-trace 3 "parse-user-ids"
 	 (let loop ((packets packets)
@@ -150,7 +173,7 @@
 			       user-ids))))
 	       (else
 		(values (reverse! user-ids) packets))))))
-
+   
    (define (parse-subkeys packets)
       (define (subkey-sig? pkt)
 	 (and (PGP-Signature-Packet? pkt)
@@ -188,7 +211,7 @@
 			  (cons (car pkts) revoc-sigs))))))
 	    (else
 	     (values (reverse! subkeys) packets)))))
-
+   
    (with-trace 2 "parse-key"
       (trace-item "packets=" (map find-runtime-type packets))
       (let ((main-key-packet (car packets)))
@@ -219,6 +242,9 @@
 			 (values (list res-key) remaining-packets nuser-ids))
 		      (values '() remaining-packets user-ids))))))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-encrypted-message ...                                      */
+;*---------------------------------------------------------------------*/
 (define (parse-encrypted-message packets)
    (with-trace 2 "parse-encrypted-message"
       (let loop ((packets packets)
@@ -248,6 +274,9 @@
 		      (car packets))
 	     (loop (cdr packets) session-keys))))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-signature ...                                              */
+;*---------------------------------------------------------------------*/
 (define (parse-signature packets)
    (with-trace 2 "parse-signature"
       (let loop ((packets packets)
@@ -275,8 +304,12 @@
 	     (warning "unexpected packet encountered and discarded"
 		      (car packets))
 	     (loop (cdr packets) sigs))))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    parse-one-pass-signature ...                                     */
+;*---------------------------------------------------------------------*/
 (define (parse-one-pass-signature packets)
+   
    (define (same-sig? op-pkt pkt)
       (and (equal? (PGP-One-Pass-Signature-Packet-issuer op-pkt)
 		   (PGP-Signature-Packet-issuer pkt))
@@ -286,7 +319,7 @@
 		(PGP-Signature-Packet-hash-algo pkt))
 	   (eq? (PGP-One-Pass-Signature-Packet-signature-type op-pkt)
 		(PGP-Signature-Packet-signature-type pkt))))
-
+   
    (with-trace 2 "parse-one-pass-signature"
       (let loop ((packets packets)
 		 (expect-one-pass? #t)
@@ -353,6 +386,9 @@
 		    "bad one-pass signature"
 		    #f))))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-literal ...                                                */
+;*---------------------------------------------------------------------*/
 (define (parse-literal packets)
    (when (not (null? (cdr packets)))
       (warning "discarding packets"))
@@ -364,6 +400,9 @@
    (instantiate::PGP-Literal
       (literal (car packets))))
 
+;*---------------------------------------------------------------------*/
+;*    create-chksum64 ...                                              */
+;*---------------------------------------------------------------------*/
 (define (create-chksum64::bstring data)
    (let* ((computed-chksum (crc-string 'radix-64-24 data
 				       :init #xB704CE))
@@ -373,24 +412,28 @@
       (base64-encode (string (integer->char-ur b1)
 			     (integer->char-ur b2)
 			     (integer->char-ur b3)))))
-   
-;; Sample Armored file:
-;;
-; -----BEGIN PGP MESSAGE-----
-; Version: GnuPG v1.4.9 (GNU/Linux)
-;
-; kA0DAAIRVSc1kq6nngkBrA1iA3R0dEoIScVhYmNkiEYEABECAAYFAkoIScUACgkQ
-; VSc1kq6nngnB7wCbB8at7dhgxfUenOTojYVrSwGZVYAAoINkBGfMI2XNlkdzIgHj
-; 5oSsqZkr
-; =fpjg
-; -----END PGP MESSAGE-----
-;;
-;; will return values:
-;;   - "PGP MESSAGE"
-;;   - ("Version" "GnuPG v1.4.9 (GNU/Linux)")
-;;   - a pipe-port decoding the base64 encoded string.
-;;
+
+;*---------------------------------------------------------------------*/
+;*    armored-pipe-port ...                                            */
+;*---------------------------------------------------------------------*/
 (define (armored-pipe-port p)
+   
+   ;; Sample Armored file:
+   ;;
+   ;; -----BEGIN PGP MESSAGE-----
+   ;; Version: GnuPG v1.4.9 (GNU/Linux)
+   ;;
+   ;; kA0DAAIRVSc1kq6nngkBrA1iA3R0dEoIScVhYmNkiEYEABECAAYFAkoIScUACgkQ
+   ;; VSc1kq6nngnB7wCbB8at7dhgxfUenOTojYVrSwGZVYAAoINkBGfMI2XNlkdzIgHj
+   ;; 5oSsqZkr
+   ;; =fpjg
+   ;; -----END PGP MESSAGE-----
+   ;;
+   ;; will return values:
+   ;;   - "PGP MESSAGE"
+   ;;   - ("Version" "GnuPG v1.4.9 (GNU/Linux)")
+   ;;   - a pipe-port decoding the base64 encoded string.
+
    (define (safe-read-line p)
       (let ((l (read-line p)))
 	 (when (eof-object? l)
@@ -439,6 +482,9 @@
 			     (loop (cons header headers))
 			     (loop headers))))))))))
 
+;*---------------------------------------------------------------------*/
+;*    decode-pgp ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (decode-pgp p::input-port)
    (with-trace 1 "decode-pgp"
       (trace-item "p=" p)
@@ -453,7 +499,10 @@
 		;; armored function directly.
 		composition)
 	     (decode-native-pgp p)))))
-		    
+
+;*---------------------------------------------------------------------*/
+;*    decode-armored-pgp ...                                           */
+;*---------------------------------------------------------------------*/
 (define (decode-armored-pgp p::input-port)
    (with-trace 2 "decode-armored-pgp"
       (receive (main-header-info headers pp)
@@ -462,15 +511,24 @@
 	    (values main-header-info headers (decode-pgp-content pp))
 	    (close-input-port pp)))))
 
+;*---------------------------------------------------------------------*/
+;*    decode-native-pgp ...                                            */
+;*---------------------------------------------------------------------*/
 (define (decode-native-pgp p::input-port)
    (with-trace 2 "decode-native-pgp"
       (decode-pgp-content p)))
 
+;*---------------------------------------------------------------------*/
+;*    encode-pgp ::PGP-Composition ...                                 */
+;*---------------------------------------------------------------------*/
 (define-generic (encode-pgp this::PGP-Composition p::output-port)
    (error 'encode-pgp
 	  "Not yet implemented"
 	  this))
 
+;*---------------------------------------------------------------------*/
+;*    encode-pgp ::PGP-Key ...                                         */
+;*---------------------------------------------------------------------*/
 (define-method (encode-pgp this::PGP-Key p::output-port)
    (with-access::PGP-Key this (user-ids subkeys)
       (let* ((main-key (car subkeys))
@@ -498,6 +556,9 @@
 				      revocation-sigs)))
 		      other-subkeys)))))
 
+;*---------------------------------------------------------------------*/
+;*    encode-pgp ::PGP-One-Pass-Signature ...                          */
+;*---------------------------------------------------------------------*/
 (define-method (encode-pgp this::PGP-One-Pass-Signature p::output-port)
    (with-access::PGP-One-Pass-Signature this (msg sigs one-pass-sigs)
       (for-each (lambda (ops)
@@ -508,6 +569,9 @@
 		   (encode-packet sig p))
 		sigs)))
 
+;*---------------------------------------------------------------------*/
+;*    encode-pgp ::PGP-Signature ...                                   */
+;*---------------------------------------------------------------------*/
 (define-method (encode-pgp this::PGP-Signature p::output-port)
    (with-access::PGP-Signature this (msg sigs)
       (for-each (lambda (sig)
@@ -515,6 +579,9 @@
 		sigs)
       (when msg (encode-packet msg p))))
 
+;*---------------------------------------------------------------------*/
+;*    encode-pgp ::PGP-Encrypted ...                                   */
+;*---------------------------------------------------------------------*/
 (define-method (encode-pgp this::PGP-Encrypted p::output-port)
    (with-access::PGP-Encrypted this (session-keys encrypted-data)
       (for-each (lambda (session-key)
@@ -522,10 +589,17 @@
 		session-keys)
       (encode-packet encrypted-data p)))
 
+;*---------------------------------------------------------------------*/
+;*    encode-native-pgp ...                                            */
+;*---------------------------------------------------------------------*/
 (define (encode-native-pgp pgp-composition::PGP-Composition p::output-port)
    (encode-pgp pgp-composition p))
 
-;; Counter part to 'decode-armored-pgp'.
+;*---------------------------------------------------------------------*/
+;*    encode-armored-pgp ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Counter part to 'decode-armored-pgp'.                            */
+;*---------------------------------------------------------------------*/
 (define (encode-armored-pgp pgp-composition::PGP-Composition
 			    main-header-info::bstring
 			    headers::pair-nil
