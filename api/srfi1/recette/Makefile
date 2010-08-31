@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Oct 24 15:47:47 2007 (serrano)                */
-#*    Copyright   :  2002-07 Manuel Serrano                            */
+#*    Last change :  Tue Aug 31 08:15:03 2010 (serrano)                */
+#*    Copyright   :  2002-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ all: c jvm dotnet
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX) -L $(BOOTLIBDIR) -lbigloosrfi1_es-$(RELEASE)
 
 jvm: 
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Thu Aug 26 13:20:01 2010 (serrano)                */
+/*    Last change :  Tue Aug 31 08:56:28 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -13,12 +13,12 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 #if defined( _MINGW_VER )
 #   define _BGL_WIN32_VER
 #   include <io.h>
 #   include <process.h>
 #   include <windows.h>
-#   include <stdlib.h>
 typedef int intptr_t;
 #else
 #  if !defined( _MSC_VER )
@@ -537,8 +537,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    extern char **bgl_envp;
 	    int len = bgl_envp_len + bgl_list_length( benv );
 	    char **envp, **crunner;
-	    extern char **environ;
-
+	    
 	    crunner = envp = (char **)alloca( sizeof( char * ) * (len + 1) );
 
 	    if( bgl_envp ) {
@@ -556,10 +555,50 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    }
 	    *crunner = 0;
 
-	    /* don't use execve because it requires as first argument  */
-	    /* a full path (not a file name). Instead, set environ var */
-	    environ = envp;
-	    execvp( *argv, argv );
+#if( HAVE_ENVIRON )
+	    {
+	       /* don't use execve because it requires as first argument  */
+	       /* a full path (not a file name). Instead, set environ var */
+	       extern char **environ;
+	       environ = envp;
+	       execvp( *argv, argv );
+	    }
+#else
+	    {
+	       /* environ is not available, we have to use execve and */
+	       /* before, resolve the executable path.                */
+	       char *upath = getenv( "PATH" );
+	       if( upath ) {
+		  char *path = argv[ 1 ];
+		  char *s1 = upath, *s2;
+		  int l = strlen( path );
+		  char **env = &argv[ 2 ];
+
+		  while( s1 ) {
+		     int l2;
+		     char *p;
+
+		     s2 = strchr( s1, ':' );
+		     l2 = s2 ? (s2 - s1) : strlen( s1 );
+		     p = alloca( l2 + l + 2 );
+	 
+		     memcpy( p, s1, l2 );
+		     p[ l2 ] = '/';
+		     memcpy( &p[ l2 + 1 ], path, l );
+		     p[ l2 + l + 1 ] = 0;
+
+		     if( fexists( p ) ) {
+			execve( p, argv, env );
+		     } else {
+			s1 = s2 ? s2 + 1 : 0;
+		     }
+		  }
+	       }
+
+	       /* try to execve, if it fails get errno and print the error */
+	       execve( *path, argv, env );
+	    }
+#endif	    
 	 } else {
 	    execvp( *argv, argv );
 	 }
@@ -644,32 +683,32 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 #else 
 {
   /* Win32 code */
-  const int                  quote_command = (strchr( BSTRING_TO_STRING( bcommand ), '"' ) == NULL);
-  size_t                     command_line_length = strlen( BSTRING_TO_STRING( bcommand ) )
-                                                   + (quote_command ? 2 : 0);
-  char *                     command_line;
-  obj_t                      redirection[ 3 ];
-  HANDLE                     pipes[ 3 ][ 2 ];
-  char                       msg[ MSG_SIZE ];
-  obj_t                      proc;
-  SECURITY_ATTRIBUTES        inherited_sa= { sizeof( inherited_sa ), NULL, TRUE };
-  char *                     environment= NULL;
-  STARTUPINFO                startup_info;
-  PROCESS_INFORMATION        process_information;
-  BOOL                       process_created;
-  HANDLE *                   stream_handles[ 3 ]= { &startup_info.hStdInput,
-                                                    &startup_info.hStdOutput,
-                                                    &startup_info.hStdError };
-  obj_t                      runner;
-  int                        i;
+  const int quote_command = (strchr( BSTRING_TO_STRING( bcommand ), '"' ) == NULL);
+  size_t command_line_length = strlen( BSTRING_TO_STRING( bcommand ) )
+     + (quote_command ? 2 : 0);
+  char *command_line;
+  obj_t redirection[ 3 ];
+  HANDLE pipes[ 3 ][ 2 ];
+  char msg[ MSG_SIZE ];
+  obj_t proc;
+  SECURITY_ATTRIBUTES inherited_sa= { sizeof( inherited_sa ), NULL, TRUE };
+  char *environment= NULL;
+  STARTUPINFO startup_info;
+  PROCESS_INFORMATION process_information;
+  BOOL process_created;
+  HANDLE *stream_handles[ 3 ]= { &startup_info.hStdInput,
+				 &startup_info.hStdOutput,
+				 &startup_info.hStdError };
+  obj_t runner;
+  int i;
 
    /* converting "null:" keywords to null file names */
-   if (   KEYWORDP( boutput )
-        && (strcmp( BSTRING_TO_STRING( KEYWORD_TO_STRING( boutput ) ), "null:" ) == 0))
-      boutput= string_to_bstring( "NUL:" );
-   if (   KEYWORDP( berror )
-       && (strcmp( BSTRING_TO_STRING( KEYWORD_TO_STRING( berror ) ), "null:" ) == 0))
-      berror= string_to_bstring( "NUL:" );
+   if( KEYWORDP( boutput )
+        && (strcmp( BSTRING_TO_STRING( KEYWORD_TO_STRING( boutput ) ), "null:" ) == 0) )
+      boutput = string_to_bstring( "NUL:" );
+   if ( KEYWORDP( berror )
+	&& (strcmp( BSTRING_TO_STRING( KEYWORD_TO_STRING( berror ) ), "null:" ) == 0) )
+      berror = string_to_bstring( "NUL:" );
 
   /* redirection initializations */
   redirection[ 0 ] = binput;
@@ -682,20 +721,16 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
   /* This can arise by doing                                           */
   /*     output: "out" error: "out"       which is correct             */
   /*     output: "out" input: "out"       which is obviously incorrect */
-  for( i = 0; i < 3; i++ )
-  {
-    if( STRINGP( redirection[ i ] ) )
-    {
+  for( i = 0; i < 3; i++ ) {
+    if( STRINGP( redirection[ i ] ) ) {
       /* redirection to a file */
-      int                    j;
-      char                   *ri = BSTRING_TO_STRING( redirection[ i ] );
+      int j;
+      char *ri = BSTRING_TO_STRING( redirection[ i ] );
 
-      for( j = 0; j < i; j++ )
-      {
-        if( j != i && STRINGP( redirection[ j ] ) )
-        {
-          struct stat        stat_i, stat_j;
-          char               *rj = BSTRING_TO_STRING( redirection[ j ] );
+      for( j = 0; j < i; j++ ) {
+        if( j != i && STRINGP( redirection[ j ] ) ) {
+          struct stat stat_i, stat_j;
+          char *rj = BSTRING_TO_STRING( redirection[ j ] );
 
           /* Do a stat to see if we try to open the same file 2    */
           /* times. If stat == -1 this is probably because file    */
@@ -705,12 +740,9 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
           if( stat( rj, &stat_j ) == -1 )
             continue;
 
-          if(    (stat_i.st_dev==stat_j.st_dev)
-              && (stat_i.st_ino==stat_j.st_ino) )
-          {
+          if( (stat_i.st_dev==stat_j.st_dev) && (stat_i.st_ino==stat_j.st_ino) ) {
             /* Same file was cited 2 times */
-            if( i == 0 || j == 0 )
-            {
+            if( i == 0 || j == 0 ) {
               sprintf( msg, "read/write on the same file: %s", ri );
               cannot_run( pipes, bcommand, msg );
             }
@@ -722,8 +754,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
                                   &pipes[ i ][ 0 ],
                                   0,
                                   TRUE,
-                                  DUPLICATE_SAME_ACCESS ))
-            {
+                                  DUPLICATE_SAME_ACCESS )) {
               sprintf( msg,
                        "can't reopen file: %s",
                        bgl_get_last_error_message( "unknown error" ) );
@@ -738,8 +769,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
       /* Two cases are possible here:                                     */
       /* - we have stdout and stderr redirected on the same file (j != 3) */
       /* - we have not found current file in list of redirections (j == 3)*/
-      if( j == i )
-      {
+      if( j == i ) {
         pipes[ i ][ 0 ] = CreateFile( ri,
                                       ((i == 0) ? GENERIC_READ : GENERIC_WRITE),
                                       FILE_SHARE_READ,
@@ -749,8 +779,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
                                       NULL );
       }
 
-      if( pipes[ i ][ 0 ] == INVALID_HANDLE_VALUE )
-      {
+      if( pipes[ i ][ 0 ] == INVALID_HANDLE_VALUE ) {
         sprintf( msg,
                  "can't redirect standard %s to file %s: %s",
                  std_streams[ i ],
@@ -758,17 +787,13 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
                  bgl_get_last_error_message( "unknown error" ) );
         cannot_run( pipes, bcommand, msg );
       }
-    }
-    else
-    {
-      if( KEYWORDP( redirection[ i ] ) )
-      {
+    } else {
+      if( KEYWORDP( redirection[ i ] ) ) {
         /* redirection in a pipe */
         if (!CreatePipe( &pipes[ i ][ 0 ],
                          &pipes[ i ][ 1 ],
                          &inherited_sa,
-                         0 ))
-        {
+                         0 )) {
           sprintf( msg,
                    "can't create stream for standard %s: %s",
                    std_streams[ i ],
@@ -786,16 +811,14 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
                            + strlen( BSTRING_TO_STRING( bhost ) )
                            + 1;
 
-  for( runner = bargs ; PAIRP( runner ) ; runner= CDR( runner ) )
-  {
-    const char *             current_arg;
+  for( runner = bargs ; PAIRP( runner ) ; runner= CDR( runner ) ) {
+    const char * current_arg;
 
     command_line_length += 3; // space + 2*double-quote
 
-    for ( current_arg= BSTRING_TO_STRING( CAR( runner ) ) ;
-          *current_arg != '\0' ;
-          ++current_arg )
-    {
+    for ( current_arg= BSTRING_TO_STRING( CAR( runner ) );
+	  *current_arg != '\0' ;
+          ++current_arg ) {
       ++command_line_length;
       if (*current_arg == '"')
         ++command_line_length;
@@ -804,35 +827,28 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 
   command_line = (char*)alloca( command_line_length + 1 );
 
-  if( STRINGP( bhost ) )
-  {
+  if( STRINGP( bhost ) ) {
     strcpy( command_line, "rsh " );
     strcat( command_line, BSTRING_TO_STRING( bhost ) );
     strcat( command_line, " " );
-  }
-  else
+  } else {
     command_line[ 0 ]= '\0';
+  }
 
-  if( quote_command )
-    strcat( command_line, "\"" );
+  if( quote_command ) strcat( command_line, "\"" );
   strcat( command_line, BSTRING_TO_STRING( bcommand ) );
-  if( quote_command )
-    strcat( command_line, "\"" );
+  if( quote_command ) strcat( command_line, "\"" );
 
-  if (PAIRP( bargs ))
-  {
-    char *                   dest= command_line + strlen( command_line );
+  if (PAIRP( bargs )) {
+    char * dest= command_line + strlen( command_line );
 
-    for( runner= bargs ; PAIRP( runner ) ; runner= CDR( runner ) )
-    {
-      const char *           src;
+    for( runner= bargs ; PAIRP( runner ) ; runner= CDR( runner ) ) {
+      const char * src;
 
       *dest++= ' ';
       *dest++= '"';
-      for ( src= BSTRING_TO_STRING( CAR( runner ) ) ; *src != '\0' ; ++src )
-      {
-        if (*src == '"')
-          *dest++= '\\';
+      for( src= BSTRING_TO_STRING( CAR( runner ) ) ; *src != '\0' ; ++src ) {
+        if (*src == '"') *dest++= '\\';
         *dest++= *src;
       }
       *dest++= '"';
@@ -841,13 +857,12 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
     *dest= '\0';
   }
 
-  if( PAIRP( benv ) )
-  {
-    extern const char * const *   bgl_envp;
-    const char * const *          init_envp;
-    const char *                  src;
-    char *                        dest;
-    size_t                        env_len= 0;
+  if( PAIRP( benv ) ) {
+    extern const char * const * bgl_envp;
+    const char * const * init_envp;
+    const char * src;
+    char * dest;
+    size_t env_len= 0;
 
     if( bgl_envp )
       for( init_envp= bgl_envp ; *init_envp != '\0' ; ++init_envp )
@@ -857,17 +872,16 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 
     dest= environment= (char *)alloca( (env_len + 1) * sizeof( char ) );
 
-    if( bgl_envp )
-      for( init_envp= bgl_envp ; *init_envp != '\0' ; ++init_envp )
-      {
+    if( bgl_envp ) {
+       for( init_envp= bgl_envp ; *init_envp != '\0' ; ++init_envp ) {
         src= *init_envp;
         while (*src != '\0')
           *dest++= *src++;
         *dest++= '\0';
       }
+    }
 
-    for ( runner= benv ; PAIRP( runner ) ; runner= CDR( runner ) )
-    {
+    for( runner= benv ; PAIRP( runner ) ; runner= CDR( runner ) ) {
       src= BSTRING_TO_STRING( CAR( runner ) );
       while (*src != '\0')
         *dest++= *src++;
@@ -884,32 +898,28 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 
   ZeroMemory( &process_information, sizeof( process_information ) );
 
-  for( i= 0 ; i < 3 ; ++i )
-  {
-    if( STRINGP( redirection[ i ] ) )
-      /* redirection in a file */
-      *(stream_handles[ i ])= pipes[ i ][ 0 ];
-    else
-      if( KEYWORDP( redirection[ i ] ) )
-         *(stream_handles[ i ])= pipes[ i ][ i == 0 ? 0 : 1 ];
-      else
-        *(stream_handles[ i ])= GetStdHandle( (i == 0) ? STD_INPUT_HANDLE
-                                                       : (i == 1) ? STD_OUTPUT_HANDLE
-                                                                  : STD_ERROR_HANDLE );
+  for( i= 0 ; i < 3 ; ++i ) {
+     if( STRINGP( redirection[ i ] ) )
+	/* redirection in a file */
+	*(stream_handles[ i ])= pipes[ i ][ 0 ];
+     else
+	if( KEYWORDP( redirection[ i ] ) )
+	   *(stream_handles[ i ])= pipes[ i ][ i == 0 ? 0 : 1 ];
+	else
+	   *(stream_handles[ i ])= GetStdHandle( (i == 0) ? STD_INPUT_HANDLE
+						 : (i == 1) ? STD_OUTPUT_HANDLE
+						 : STD_ERROR_HANDLE );
   }
 
   process_created= CreateProcess( NULL, command_line, NULL, NULL, TRUE, 0, environment, NULL, &startup_info, &process_information );
 
-  if( !process_created )
-  {
+  if( !process_created ) {
     /* process creation failed */
     C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
           "run-process",
           bgl_get_last_error_message( "Could neither run the process nor get the error message." ),
           bcommand );
-  }
-  else
-  {
+  } else {
     /* creation succeeded */
     obj_t proc = make_process();
 
@@ -917,10 +927,8 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
     PROCESS( proc ).hProcess = process_information.hProcess;
     CloseHandle( process_information.hThread );
 
-    for( i= 0 ; i < 3 ; ++i )
-    {
-      if(KEYWORDP( redirection[ i ] ))
-      {
+    for( i= 0 ; i < 3 ; ++i ) {
+      if(KEYWORDP( redirection[ i ] )) {
         /* redirection in a pipe */
         int zb;
         FILE *f;
@@ -936,8 +944,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
         f = ((i == 0) ? fdopen( zb, "w" )
                       : fdopen( zb, "r"));
 
-        if( f == NULL )
-	{
+        if( f == NULL ) {
           cannot_run( pipes, bcommand, "cannot fdopen" );
         }
 
@@ -961,29 +968,24 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
       }
     }
 
-    if( CBOOL( bwaiting ) )
-    {
-      if( WaitForSingleObject( PROCESS( proc ).hProcess, INFINITE ) != WAIT_OBJECT_0 )
-      {
+    if( CBOOL( bwaiting ) ) {
+      if( WaitForSingleObject( PROCESS( proc ).hProcess, INFINITE ) != WAIT_OBJECT_0 ) {
         C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
                           "run-process",
                           bgl_get_last_error_message( "Could neither wait for process termination nor get the error message." ),
                           bcommand );
-      }
-      else
-      {
+      } else {
           /* process is now terminated */
           DWORD exit_code;
 
-          if( !GetExitCodeProcess( PROCESS( proc ).hProcess, &exit_code ) )
-          {
+          if( !GetExitCodeProcess( PROCESS( proc ).hProcess, &exit_code ) ) {
             C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
                               "run-process",
                               bgl_get_last_error_message( "Could neither determine process exit code nor get the error message." ),
                               BFALSE );
           }
 
-          PROCESS( proc ).exited      = 1;
+          PROCESS( proc ).exited = 1;
           PROCESS( proc ).exit_status = exit_code;
 
           CloseHandle( PROCESS( proc ).hProcess );
