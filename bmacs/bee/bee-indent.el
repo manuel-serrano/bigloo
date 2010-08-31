@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Mon Jan 11 12:12:39 2010 (serrano)                */
+;*    Last change :  Tue Aug 31 11:38:01 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -224,12 +224,12 @@ of the start of the containing expression."
              (goto-char indent-point)
              (skip-chars-forward " \t")
              (setq desired-indent (current-column)))
-	    ((bee-indent-brace-p state)
-	     (setq desired-indent 0))
 	    ((bee-indent-quote-p state)
 	     (save-excursion
 	       (goto-char (+ (car (nthcdr 1 state)) 1))
 	       (setq desired-indent (current-column))))
+	    ((bee-indent-brace-p state)
+	     (setq desired-indent 0))
             ((and (integerp bee-indent-offset) containing-sexp)
              ;; Indent by constant offset
              (goto-char containing-sexp)

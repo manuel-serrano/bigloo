@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Mail ...                                                         @c
 @c ------------------------------------------------------------------- @c
-@node Mail, Eval, Multimedia, Top
+@node Mail, Text, Multimedia, Top
 @comment  node-name,  next,  previous,  up
 @chapter Mail
 @cindex mail

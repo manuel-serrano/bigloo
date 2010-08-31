@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Thu Apr  9 10:03:33 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Tue Aug 31 10:17:20 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A BibTeX parser, produces a list of UTF-8 entries.               */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
       ((string? obj)
        (bibtex-file obj))
       (else
-       (error 'bibtex "Illegal argument" obj))))
+       (error "bibtex" "Illegal argument" obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bibtex-port ...                                                  */
