@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dirk Lutzebaeck                                   */
 ;*    Creation    :  Wed Mar  4 09:27:04 1998                          */
-;*    Last change :  Mon Aug 30 12:21:27 2010 (serrano)                */
+;*    Last change :  Wed Sep  1 11:13:06 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Various format tests.                                            */
 ;*=====================================================================*/
@@ -24,12 +24,6 @@
 		   "  expected: " ,res
 		   (if (equal? ,res val)
 		       " ok."
-		       " error.")))
-	 (let ((val (eval ',expr)))
-	    (print "eval   : provided: " val
-		   "  expected: " ,res
-		   (if (equal? ,res val)
-		       " ok."
 		       " error.")))))
  
 ;*---------------------------------------------------------------------*/
@@ -37,7 +31,6 @@
 ;*---------------------------------------------------------------------*/
 (define (test-srfi-1 argv)
    (print "Testing srfi-1")
-   (eval '(library-load 'srfi1))
    (srfi-1-test (cond-expand
 		   (srfi-1 'srfi-1)
 		   (else 'no-srfi-1))

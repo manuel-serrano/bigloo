@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Phil Bewig and Laurent Bloch                      */
 ;*    Creation    :  Tue Aug 31 10:15:44 2010                          */
-;*    Last change :  Wed Sep  1 08:20:11 2010 (serrano)                */
-;*    Copyright   :  2010 Phi Bewig, Laurent Bloch, Manuel Serrano     */
+;*    Last change :  Wed Sep  1 10:55:29 2010 (serrano)                */
+;*    Copyright   :  2010 Phil Bewig, Laurent Bloch, Manuel Serrano    */
 ;*    -------------------------------------------------------------    */
 ;*    This Bigloo module is intended to provide word hyphenation.      */
 ;*                                                                     */
