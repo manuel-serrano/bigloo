@@ -1,19 +1,18 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadlock                 */
+#*    serrano/prgm/project/bigloo/autoconf/setenv                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Sep  1 09:26:37 2010 (serrano)                */
+#*    Last change :  Wed Sep  1 10:21:52 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
-#*    Check for the host pthread timedlock library.                    */
+#*    Check if setenv exits. Return 0, 1.                             */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
-pthreadlibs="-lpthread"
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -26,15 +25,11 @@ while : ; do
     --cflags=*|-cflags=*)
       cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
-    --lib=*|-lib=*)
-      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
-
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
   esac
   shift
 done
-
 
 file=$TMP/actest$USER
 aout=$TMP/Xactest$USER
@@ -42,7 +37,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -55,36 +50,10 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-#include <pthread.h>
-#include <sched.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-main( argc, argv )
-int   argc;
-char *argv[];
-{
-   pthread_mutex_t mutex;
-   pthread_cond_t cv;
-   pthread_t thread;
-   pthread_key_t key;
-
-   pthread_key_create( &key, 0L );
-   pthread_mutex_init( &mutex, 0L );
-   pthread_cond_init( &cv, 0L );
-   pthread_create( &thread, 0L, 0L, 0L );
-   pthread_setspecific( key, (void *)1 );
-   printf( "%p\n", pthread_getspecific( key ) );
-
-   pthread_mutex_lock( &mutex );
-   pthread_cond_wait( &cv, &mutex );
-   pthread_mutex_unlock( &mutex );
-
-   pthread_mutex_timedlock( &mutex, 0 );
-   pthread_cond_signal( &cv );
-   pthread_mutex_unlock( &mutex );
-
-   sched_yield();
-   pthread_join( thread, 0L );
+main( int argc, char *argv[] ) {
+   return setenv( "PATH", "/usr/local/bin", 1 );
 }
 EOF
 
@@ -92,13 +61,12 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
-   echo "1"
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   echo 1
 else
-   echo "0"
+   echo 0
 fi
-
-\rm -f $file.*
-\rm -f $aout
-\rm -f $aout*
 
 exit 0

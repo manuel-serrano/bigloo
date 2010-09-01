@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Tue Aug 31 08:56:28 2010 (serrano)                */
+/*    Last change :  Wed Sep  1 10:20:00 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -533,36 +533,17 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 
 	 /* and now we do the exec */
 	 if( PAIRP( benv ) ) {
-	    extern int bgl_envp_len;
-	    extern char **bgl_envp;
-	    int len = bgl_envp_len + bgl_list_length( benv );
-	    char **envp, **crunner;
-	    
-	    crunner = envp = (char **)alloca( sizeof( char * ) * (len + 1) );
-
-	    if( bgl_envp ) {
-	       char **init_envp;
-	       
-	       for( init_envp = bgl_envp; *init_envp; init_envp++, crunner++ ) {
-		  *crunner = *init_envp;
+#if HAVE_SETENV
+	    for( runner = benv; PAIRP( runner ); runner = CDR( runner ) ) {
+	       char *s = BSTRING_TO_STRING( CAR( runner ) );
+	       char *i = strchr( s, '=' );
+	       if( i ) {
+		  *i = 0;
+		  setenv( s, i + 1, 1 );
 	       }
 	    }
-
-	    for( runner = benv;
-		 PAIRP( runner );
-		 crunner++, runner = CDR( runner ) ) {
-	       *crunner = BSTRING_TO_STRING( CAR( runner ) );
-	    }
-	    *crunner = 0;
-
-#if( HAVE_ENVIRON )
-	    {
-	       /* don't use execve because it requires as first argument  */
-	       /* a full path (not a file name). Instead, set environ var */
-	       extern char **environ;
-	       environ = envp;
-	       execvp( *argv, argv );
-	    }
+	    
+	    execvp( *argv, argv );
 #else
 	    {
 	       /* environ is not available, we have to use execve and */
