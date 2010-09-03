@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Aug 11 15:44:59 2010 (serrano)                */
+#*    Last change :  Fri Sep  3 18:44:31 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -27,6 +27,12 @@ DOTNET_SRC_DIR 	= .
 JAVA_SRC_DIR 	= .
 C_SRC_DIR 	= .
 MISC_SRC_DIR 	= .
+# Where to store the library class files
+PBASE		= bigloo.$(API)
+CLASS_DIR	= objs/class_s/bigloo/$(API)
+CLASS_EDIR	= objs/class_es/bigloo/$(API)
+DOTNET_OBJ_DIR	= objs/dotnet_s
+DOTNET_OBJ_EDIR	= objs/dotnet_es
 # # The Bigloo compiler
 BIGLOO		= $(BOOTBINDIR)/bigloo
 AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
@@ -44,23 +50,19 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= etags misc prgm types env
 
-_C_OBJECTS	= 
-_JAVA_CLASSES	= 
-
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
+EOBJECTS	= objs/make_lib.o
 
-BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
-JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
-JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
-CLASSES		= $(_BGL_CLASSES) $(JAVA_CLASSES)
+BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
-_BGL_SOURCES	= $(_BGL_OBJECTS:%=%.scm) 
-_C_SOURCES	= $(_C_OBJECTS:%=%.c) 
-_JAVA_SOURCES	= $(_JAVA_CLASSES:%=%.java) 
+BGL_DOTNET_OBJ	= $(_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
+BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
-SOURCES		= $(_BGL_SOURCES) $(_C_SOURCES) $(_JAVA_SOURCES)
-INCLUDES	= 
+_BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
+
+SOURCES		= $(_BGL_SOURCES)
 
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
