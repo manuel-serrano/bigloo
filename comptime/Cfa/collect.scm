@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Sun Sep 14 17:24:23 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 19:09:24 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
 ;*=====================================================================*/
@@ -161,7 +161,8 @@
 		    ;; some functions).
 		    (case (global-id v)
 		       ((c-eq?)
-			(if *optim-cfa-arithmetic?*
+			(if (or *optim-cfa-fixnum-arithmetic?*
+				*optim-cfa-flonum-arithmetic?*)
 			    (widen!::pre-arithmetic-app node
 			       (spec-types (arithmetic-spec-types v)))))
 		       ((make-fx-procedure)
@@ -195,7 +196,8 @@
 			   ((c-struct-set!)
 			    (widen!::pre-struct-set!-app node)))))
 		 ;; non C function 
-		 (if *optim-cfa-arithmetic?*
+		 (if (or *optim-cfa-fixnum-arithmetic?*
+			 *optim-cfa-flonum-arithmetic?*)
 		     (if (arithmetic-operator? v)
 			 (widen!::pre-arithmetic-app node
 			    (spec-types (arithmetic-spec-types v))))))))))

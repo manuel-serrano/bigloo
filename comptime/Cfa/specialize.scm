@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Thu Nov  9 15:39:25 2006 (serrano)                */
-;*    Copyright   :  1997-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  4 19:08:34 2010 (serrano)                */
+;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -82,9 +82,11 @@
 					"Null specification for"
 					(shape global))
 			types))
-		   ((eq? (cadr (car spec)) '__r4_numbers_6_5_fixnum)
+		   ((and *optim-cfa-fixnum-arithmetic?*
+			 (eq? (cadr (car spec)) '__r4_numbers_6_5_fixnum))
 		    (loop (cdr spec) (cons *long* types)))
-		   ((eq? (cadr (car spec)) '__r4_numbers_6_5_flonum)
+		   ((and *optim-cfa-flonum-arithmetic?*
+			 (eq? (cadr (car spec)) '__r4_numbers_6_5_flonum))
 		    (loop (cdr spec) (cons *real* types)))
 		   (else
 		    (loop (cdr spec) types))))))))

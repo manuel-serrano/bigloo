@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Aug 16 11:06:38 2010 (serrano)                */
+;*    Last change :  Sat Sep  4 19:17:35 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -394,10 +394,20 @@
       (("-O?opt" (help "-O[2..6]" "Optimization modes"))
        (parse-optim-args opt))
       ;; cfa arithmetic
-      (("-fcfa-arithmetic" (help "Enable arithmetic spec. (enabled from -O2)"))
-       (set! *optim-cfa-arithmetic?* #t))
+      (("-fcfa-arithmetic" (help "Enable arithmetic spec. (fixum and flonum)"))
+       (set! *optim-cfa-fixnum-arithmetic?* #t)
+       (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic" (help "Disable arithmetic spec."))
-       (set! *optim-cfa-arithmetic?* #f))
+       (set! *optim-cfa-fixnum-arithmetic?* #f)
+       (set! *optim-cfa-flonum-arithmetic?* #f))
+      (("-fcfa-arithmetic-fixnum" (help "Enable fixnum arithmetic spec."))
+       (set! *optim-cfa-fixnum-arithmetic?* #t))
+      (("-fno-cfa-arithmetic-fixnum" (help "Disable fixnum arithmetic spec."))
+       (set! *optim-cfa-fixnum-arithmetic?* #f))
+      (("-fcfa-arithmetic-flonum" (help "Enable flonum arithmetic spec. (enabled from -O2)"))
+       (set! *optim-cfa-flonum-arithmetic?* #t))
+      (("-fno-cfa-arithmetic-flonum" (help "Disable flonum arithmetic spec. "))
+       (set! *optim-cfa-flonum-arithmetic?* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))
@@ -412,11 +422,11 @@
       (("-fno-user-inlining" (help "Disable user inline optimization"))
        (set! *user-inlining?* #f))
       ;; data flow optimization
-      (("-fbeta-reduce" (help "Enable simple beta reduction (enable from -O2)"))
+      (("-fbeta-reduce" (help "Enable simple beta reduction (enabled from -O2)"))
        (set! *optim-reduce-beta?* #t))
       (("-fno-beta-reduce" (help "Disable simple beta reduction"))
        (set! *optim-reduce-beta?* #f))
-      (("-fdataflow" (help "Enable dataflow optimizations (enable from -O)"))
+      (("-fdataflow" (help "Enable dataflow optimizations (enabled from -O)"))
        (set! *optim-dataflow?* #t))
       (("-fno-dataflow" (help "Disable dataflow optimizations"))
        (set! *optim-dataflow?* #f))
@@ -1143,6 +1153,7 @@
       (set! *optim-jvm-branch* 3)
       (set! *optim-jvm-fasteq* #t)
       (set! *optim-reduce-beta?* #t)
+      (set! *optim-cfa-flonum-arithmetic?* #t)
       '(set! *rgc-optim* #t))
    (define (-O3!)
       (-O2!)
