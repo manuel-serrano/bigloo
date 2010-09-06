@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Sep  4 19:07:39 2010 (serrano)                */
+;*    Last change :  Mon Sep  6 13:29:29 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -893,7 +893,7 @@
 	      "Enable refined fixnum arithmetic specialization"
 	      #f)
 (param-define *optim-cfa-flonum-arithmetic?*
-	      "Enable refined fixnum arithmetic specialization"
+	      "Enable refined flonum arithmetic specialization"
 	      #f)
 (param-define *optim-integrate?*
 	      "Enable function integration (closure analysis)"

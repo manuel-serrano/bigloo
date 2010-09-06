@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Thu Aug 12 11:33:44 2010 (serrano)                */
+#*    Last change :  Mon Sep  6 17:55:58 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -127,7 +127,7 @@ api-c: api-init $(TAGS) .afile heap-c
 heap-c: $(BOOTLIBDIR)/$(API).heap
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
-	$(BIGLOO) $(EFLAGS) $(BHEAPFLAGS) \
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
              $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).heap
 
 api-c-static: $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a \
@@ -229,7 +229,7 @@ api-jvm: api-init $(TAGS) .jfile heap-jvm
 heap-jvm: $(BOOTLIBDIR)/$(API).jheap
 $(BOOTLIBDIR)/$(API).jheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap
-	@ $(BIGLOO) -jvm  $(EFLAGS) $(BHEAPFLAGS) \
+	@ $(BIGLOO) -jvm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).jheap
 
 api.zip: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip \
