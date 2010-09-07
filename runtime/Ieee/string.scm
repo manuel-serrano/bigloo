@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jun 22 08:25:47 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 05:42:28 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -140,7 +140,7 @@
 	       (method static c-constant-string-to-string::bstring (::string)
 		       "c_constant_string_to_string")
 	       
-	       (method static  string-bound-check?::bool (::long ::long)
+	       (method static string-bound-check?::bool (::long ::long)
 		       "BOUND_CHECK")
 	       (method static c-string-for-read::bstring (::bstring)
 		       "string_for_read")

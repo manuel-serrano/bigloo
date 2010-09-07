@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Mon Aug 31 16:14:59 2009 (serrano)                */
-;*    Copyright   :  2000-09 Manuel Serrano                            */
+;*    Last change :  Tue Sep  7 08:56:38 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -128,7 +128,7 @@
 	     (c-format c-fmt)
 	     (expr* (list (sexp->node exp stack loc site)))
 	     (effect (instantiate::feffect)))))
-      ((?- vref ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
+      ((?- (or vref vref-ur) ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
        (let ((ftype (use-type! ftype loc))
 	     (vtype (use-type! vtype loc))
 	     (otype (use-type! otype loc)))
@@ -140,9 +140,10 @@
 	     (vtype vtype)
 	     (c-format c-fmt)
 	     (expr* (sexp*->node rest stack loc site))
+	     (unsafe (eq? (cadr sexp) 'vref-ur))
 	     (effect (instantiate::feffect
 			(read (list (type-id ftype))))))))
-      ((?- vset! ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
+      ((?- (or vset! vset-ur!) ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
        (let ((ftype (use-type! ftype loc))
 	     (vtype (use-type! vtype loc))
 	     (otype (use-type! otype loc)))
@@ -154,6 +155,7 @@
 	     (vtype vtype)
 	     (c-format c-fmt)
 	     (expr* (sexp*->node rest stack loc site))
+	     (unsafe (eq? (cadr sexp) 'vset-ur!))
 	     (effect (instantiate::feffect
 			(write (list (type-id ftype))))))))
       ((?- valloc ?vtype ?ftype ?otype
@@ -186,5 +188,6 @@
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
    [assert (kind) (memq kind '(getfield setfield new cast cast-null isa
-		 			vlength vref vset! valloc))]
+			       vlength vref vset! valloc
+			       vref-ur vset-ur!))]
    (cons* *private-stamp* kind type-id objs))

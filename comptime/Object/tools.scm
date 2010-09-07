@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Mon Feb 28 17:06:24 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep  7 08:53:49 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
 ;*=====================================================================*/
@@ -136,7 +136,7 @@
 					  (type-id class-owner)
 					  name
 					  obj)))
-	    (make-private-sexp 'vref
+	    (make-private-sexp 'vref-ur
 			       ftype-id
 			       (type-id (slot-type slot))
 			       (type-id *int*)
@@ -221,7 +221,7 @@
 					(type-id (real-slot-class-owner slot))
 					(slot-name slot)
 					obj)))
-	 (make-private-sexp 'vset!
+	 (make-private-sexp 'vset-ur!
 			    ftype-id
 			    (type-id (slot-type slot))
 			    (type-id *int*)

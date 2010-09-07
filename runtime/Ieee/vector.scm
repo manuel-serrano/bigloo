@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sun May 30 08:01:55 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 08:24:27 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -129,25 +129,13 @@
 ;*    vector-ref ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-ref vector k)
-   (if (vector-bound-check? k (vector-length vector))
-       (c-vector-ref vector k)
-       (error 'vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (vector-length vector) 1))
-			     "]")
-	      k)))
+   (c-vector-ref vector k))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-set! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-set! vector k obj)
-   (if (vector-bound-check? k (vector-length vector))
-       (c-vector-set! vector k obj)
-       (error 'vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (vector-length vector) 1))
-			     "]")
-	      k)))
+   (c-vector-set! vector k obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-ref-ur ...                                                */

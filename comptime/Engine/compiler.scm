@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep  3 18:33:22 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 08:37:00 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -54,6 +54,7 @@
 	    effect_walk
 	    callcc_walk
 	    fail_walk
+	    abound_walk
 	    globalize_walk
 	    cfa_walk
 	    cfa_tvector
@@ -197,24 +198,24 @@
 
 	    ;; when compiling with warning enabled we perform a check
 	    ;; on global variable initialization
-	    (if (>fx (bigloo-warning) 0)
-		(check-global-initialization))
+	    (when (>fx (bigloo-warning) 0)
+	       (check-global-initialization))
 	    
 	    ;; we make a heap on `mkheap' mode
 	    (stop-on-pass 'make-heap (lambda () (make-heap)))
 	    
 	    ;; when compiling for bdb we turn all _ type into Bigloo obj type
-	    (if (and (>fx *bdb-debug* 0)
-		     (memq 'bdb (backend-debug-support (the-backend))))
-		(bdb-spread-obj! ast))
+	    (when (and (>fx *bdb-debug* 0)
+		       (memq 'bdb (backend-debug-support (the-backend))))
+	       (bdb-spread-obj! ast))
 	    (stop-on-pass 'bdb-spread-obj (lambda () (write-ast ast)))
 
 	    ;; when the compiler is invoked in -g2 mode, we install
 	    ;; traces before the inlining
-	    (if (and (or (>fx *compiler-debug-trace* 0)
-			 (>fx (bigloo-compiler-debug) 1))
-		     (backend-trace-support (the-backend)))
-		(set! ast (profile trace (trace-walk! ast))))
+	    (when (and (or (>fx *compiler-debug-trace* 0)
+			   (>fx (bigloo-compiler-debug) 1))
+		       (backend-trace-support (the-backend)))
+	       (set! ast (profile trace (trace-walk! ast))))
 	    (check-sharing "trace" ast)
 	    
 	    ;; when we are compiling with call/cc we have to
@@ -225,10 +226,9 @@
 	    (check-sharing "callcc" ast)
 	    
 	    ;; the effect property computation
-	    (if *optim-unroll-loop?*
-		(begin
-		   (set! ast (profile effect (effect-walk! ast #f)))
-		   (stop-on-pass 'effect (lambda () (write-ast ast)))))
+	    (when *optim-unroll-loop?*
+	       (set! ast (profile effect (effect-walk! ast #f))))
+	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    
 	    ;; we perform the inlining pass
@@ -251,20 +251,20 @@
 	    (check-sharing "beta" ast)
 	    
 	    ;; we introduce traces in `small debug mode'
-	    (if (and (>fx (bigloo-compiler-debug) 0)
-		     (<=fx (bigloo-compiler-debug) 1)
-		     (backend-trace-support (the-backend)))
-		(set! ast (profile trace (trace-walk! ast))))
+	    (when (and (>fx (bigloo-compiler-debug) 0)
+		       (<=fx (bigloo-compiler-debug) 1)
+		       (backend-trace-support (the-backend)))
+	       (set! ast (profile trace (trace-walk! ast))))
 	    (stop-on-pass 'trace (lambda () (write-ast ast)))
 	    (check-sharing "trace" ast)
 	    
 	    ;; we replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)
-	    (if (and (>fx (bigloo-compiler-debug) 0) *error-localization*)
-		(set! ast (profile fail (fail-walk! ast))))
+	    (when (and (>fx (bigloo-compiler-debug) 0) *error-localization*)
+	       (set! ast (profile fail (fail-walk! ast))))
 	    (stop-on-pass 'fail  (lambda () (write-ast ast)))
 	    (check-sharing "fail" ast)
-	    
+
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
 	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
@@ -293,10 +293,20 @@
 
 	    ;; the reduction transformation for improving error detections
 	    (when *optim-dataflow-for-errors?*
-	       (set! ast (profile reduce- (reduce-walk! ast #t)))
+	       (set! ast (profile reduce- (reduce-walk! ast "Reduce-" #t)))
 	       (check-sharing "reduce-" ast))
 	    (stop-on-pass 'reduce- (lambda () (write-ast ast)))
 
+	    ;; introduce array (vectors and strings) bound checking
+	    ;; this stage has to be executed after the heap has been
+	    ;; generated/restored, otherwise the compilation mode of the
+	    ;; heap is visible in the compilation of a client module, which
+	    ;; is wrong because the heap is shared by all versions of a lib
+	    (unless *unsafe-range*
+	       (set! ast (profile abound (abound-walk! ast))))
+	    (stop-on-pass 'abound (lambda () (write-ast ast)))
+	    (check-sharing "abound" ast)
+	    
 	    ;; we introduce type coercion and checking
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
@@ -304,23 +314,21 @@
 
 	    ;; we re-run the effect computations (for coercion and
 	    ;; type checks)
-	    (if (or (>=fx *optim* 1) (eq? *pass* 'egen))
-		(begin
-		   (set! ast (profile effect (effect-walk! ast #t)))
-		   (stop-on-pass 'effect (lambda () (write-ast ast)))
-		   (stop-on-pass 'egen (lambda () (write-effect ast)))))
+	    (when (or (>=fx *optim* 1) (eq? *pass* 'egen))
+	       (set! ast (profile effect (effect-walk! ast #t))))
+	    (stop-on-pass 'egen (lambda () (write-effect ast)))
 	    (check-sharing "effect" ast)
 
 	    ;; the reduction optimizations
-	    (if (>=fx *optim* 1)
-		(set! ast (profile reduce (reduce-walk! ast))))
+	    (when (>=fx *optim* 1)
+	       (set! ast (profile reduce (reduce-walk! ast "Reduce"))))
 	    (stop-on-pass 'reduce (lambda () (write-ast ast)))
 	    (check-sharing "reduce" ast)
 
 	    ;; the bdb initialization code
-	    (if (and (>fx *bdb-debug* 0)
-		     (memq 'bdb (backend-debug-support (the-backend))))
-		(set! ast (profile bdb (bdb-walk! ast))))
+	    (when (and (>fx *bdb-debug* 0)
+		       (memq 'bdb (backend-debug-support (the-backend))))
+	       (set! ast (profile bdb (bdb-walk! ast))))
 	    (stop-on-pass 'bdb (lambda () (write-ast ast)))
 
 	    ;; the constant computation
@@ -340,11 +348,10 @@
 	       (check-sharing "init" ast2)
 	       
 	       ;; the 2nd reduction optimizations
-	       (if (or (>=fx *optim* 2) (backend-effect+ (the-backend)))
-		   (begin
-		      (set! ast2 (profile effect (effect-walk! ast2 #t)))
-		      (stop-on-pass 'effect+ (lambda () (write-ast ast2)))
-		      (set! ast2 (profile reduce (reduce-walk! ast2)))))
+	       (when (or (>=fx *optim* 2) (backend-effect+ (the-backend)))
+		  (set! ast2 (profile effect (effect-walk! ast2 #t)))
+		  (stop-on-pass 'effect+ (lambda () (write-ast ast2)))
+		  (set! ast2 (profile reduce (reduce-walk! ast2 "Reduce+"))))
 	       (stop-on-pass 'reduce+ (lambda () (write-ast ast2)))
 	       (check-sharing "reduce+" ast2)
 	       

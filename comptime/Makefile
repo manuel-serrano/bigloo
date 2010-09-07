@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Aug 30 12:32:05 2010 (serrano)                */
+#*    Last change :  Tue Sep  7 05:10:40 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -305,6 +305,11 @@ PROF_FILE	= unit prof_emit
 
 PROF_OBJ	= $(PROF_FILE:%=Prof/%.o)
 
+#*--- bound -----------------------------------------------------------*/
+ABOUND_FILE	= walk
+
+ABOUND_OBJ	= $(ABOUND_FILE:%=Abound/%.o)
+
 #*--- user ------------------------------------------------------------*/
 USER_FILE	= user
 
@@ -322,7 +327,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) \
                   $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) \
                   $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) \
-                  $(JAS_OBJ) $(BACKEND_OBJ) \
+                  $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) \
                   $(SAW_OBJ) $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_MSIL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)

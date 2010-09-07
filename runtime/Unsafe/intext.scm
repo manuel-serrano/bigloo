@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Mar  2 09:12:48 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 08:26:22 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -762,7 +762,7 @@
 		(print-fixnum tag))
 	     (!print-markup #\[))
 	 (print-word len)
-	 (for i 0 len (print-item (vector-ref-ur item i)))))
+	 (for i 0 len (print-item (vector-ref item i)))))
    
    ;; print-hvector
    (define (print-hvector item mark)
@@ -959,7 +959,7 @@
    (define (mark-vector obj)
       (put-mark! table obj #f)
       (let ((len (vector-length obj)))
-	 (for i 0 len (mark (vector-ref-ur obj i)))))
+	 (for i 0 len (mark (vector-ref obj i)))))
    
    ;; mark-tvector
    (define (mark-tvector obj)

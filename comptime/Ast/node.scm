@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Fri Sep  4 08:29:50 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 08:44:54 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -129,7 +129,9 @@
 	      ;; the type of the offset
 	      (otype::type read-only)
 	      ;; the type of the vector
-	      (vtype::type read-only))
+	      (vtype::type read-only)
+	      ;; unsafe
+	      (unsafe::bool read-only (default #f)))
 
 	   ;; vector mutation
 	   (final-class vset!::extern
@@ -140,7 +142,9 @@
 	      ;; the type of the offset
 	      (otype::type read-only)
 	      ;; the type of the vector
-	      (vtype::type read-only))
+	      (vtype::type read-only)
+	      ;; unsafe
+	      (unsafe::bool read-only (default #f)))
 
 	   ;; vector length
 	   (final-class vlength::extern

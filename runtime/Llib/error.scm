@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jul 30 08:17:43 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 05:56:46 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -176,6 +176,7 @@
 	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
+	    (bigloo-index-out-of-bounds-error/location::obj ::obj ::obj ::obj ::obj ::obj)
 
 	    (module-init-error ::string ::string)
 
@@ -422,6 +423,17 @@
 	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
       (raise
        (make-&type-error fname loc (get-trace-stack) proc msg obj type))))
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-index-out-of-bounds-error/location ...                    */
+;*---------------------------------------------------------------------*/
+(define (bigloo-index-out-of-bounds-error/location proc len obj fname loc)
+   (let ((msg (string-append "index out of range [0.."
+			     (integer->string (-fx len 1))
+			     "]")))
+      (raise
+       (make-&index-out-of-bounds-error fname loc (get-trace-stack)
+					proc msg obj len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */
