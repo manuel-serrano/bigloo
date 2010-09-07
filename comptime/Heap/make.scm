@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:44:08 1995                          */
-;*    Last change :  Thu Apr 15 15:53:34 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 15:09:51 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of a library heap                                   */

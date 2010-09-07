@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Tue Sep  7 08:56:38 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 17:26:23 2010 (serrano)                */
 ;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -77,7 +77,7 @@
 	     (fname field-name)
 	     (ftype ftype)
 	     (side-effect? #t)
-	     (expr* (sexp*->node rest stack loc site))
+	     (expr* (sexp*->node rest stack loc 'value))
 	     (effect (instantiate::feffect
 			(write (list tid)))))))
       ((?- new ?type)
@@ -99,7 +99,7 @@
 	      (args-type (map (lambda (t) (use-type! t loc)) args-type))
 	      (expr* (if (null? rest)
 			 '()
-			 (sexp*->node rest stack loc site)))
+			 (sexp*->node rest stack loc 'value)))
 	      (side-effect? #t))))
       ((?- cast ?type ?exp)
        (instantiate::cast
@@ -126,7 +126,7 @@
 	     (type otype)
 	     (vtype vtype)
 	     (c-format c-fmt)
-	     (expr* (list (sexp->node exp stack loc site)))
+	     (expr* (list (sexp->node exp stack loc 'value)))
 	     (effect (instantiate::feffect)))))
       ((?- (or vref vref-ur) ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
        (let ((ftype (use-type! ftype loc))
@@ -139,7 +139,7 @@
 	     (otype otype)
 	     (vtype vtype)
 	     (c-format c-fmt)
-	     (expr* (sexp*->node rest stack loc site))
+	     (expr* (sexp*->node rest stack loc 'value))
 	     (unsafe (eq? (cadr sexp) 'vref-ur))
 	     (effect (instantiate::feffect
 			(read (list (type-id ftype))))))))
@@ -154,7 +154,7 @@
 	     (otype otype)
 	     (vtype vtype)
 	     (c-format c-fmt)
-	     (expr* (sexp*->node rest stack loc site))
+	     (expr* (sexp*->node rest stack loc 'value))
 	     (unsafe (eq? (cadr sexp) 'vset-ur!))
 	     (effect (instantiate::feffect
 			(write (list (type-id ftype))))))))
@@ -171,11 +171,13 @@
 	     (ftype ftype)
 	     (otype otype)
 	     (c-heap-format c-heap-fmt)
-	     (expr* (sexp*->node rest stack loc site)))))
+	     (expr* (sexp*->node rest stack loc 'value)))))
       (else
-       (if (pair? (cdr sexp))
-	   (error "private->node" "Illegal private kind" (cadr sexp))
-	   (error "private->node" "Illegal private kind" sexp)))))
+       (error "private->node"
+	      "Illegal private kind"
+	      (if (pair? (cdr sexp))
+		  (cadr sexp)
+		  sexp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-private-sexp ...                                            */

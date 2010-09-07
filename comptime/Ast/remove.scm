@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Fri Sep  4 08:23:58 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 15:24:57 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
