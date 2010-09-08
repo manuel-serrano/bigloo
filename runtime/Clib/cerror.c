@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Thu Apr 22 05:40:01 2010 (serrano)                */
+/*    Last change :  Wed Sep  8 09:10:20 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -56,36 +56,8 @@ c_error( char *mes1, char *mes2, int err_no ) {
 /*    runtime/Llib/error.scm                                           */
 /*---------------------------------------------------------------------*/
 char *
-bgl_typeof( obj_t obj ) {
-   if( INTEGERP( obj ) ) return "bint";
-   if( REALP( obj ) ) return "breal";
-   if( STRINGP( obj ) ) return "bstring";
-   if( SYMBOLP( obj ) ) return "symbol";
-   if( KEYWORDP( obj ) ) return "keyword";
-   if( CHARP( obj ) ) return "bchar";
-   if( BOOLEANP( obj ) ) return "bbool";
-   if( NULLP( obj ) ) return "bnil";
-   if( EXTENDED_PAIRP( obj ) ) return "epair";
-   if( PAIRP( obj ) ) return "pair";
-   if( VECTORP( obj ) ) return "vector";
-   if( TVECTORP( obj ) ) return "tvector";
-   if( STRUCTP( obj ) ) return "struct";
-   if( PROCEDUREP( obj ) ) return "procedure";
-   if( INPUT_PORTP( obj ) ) return "input-port";
-   if( OUTPUT_PORTP( obj ) ) return "output-port";
-   if( BINARY_PORTP( obj ) ) return "binary-port";
-   if( CELLP( obj ) ) return "cell";
-   if( CNSTP( obj ) ) return "bcnst";
-   if( SOCKETP( obj ) ) return "socket";
-   if( PROCESSP( obj ) ) return "process";
-   if( CUSTOMP( obj ) ) return "custom";
-   if( OPAQUEP( obj ) ) return "opaque";
-   if( UCS2_STRINGP( obj ) ) return "ucs2_string";
-   if( UCS2P( obj ) ) return "ucs2";
-   			   
-   if( BGL_OBJECTP( obj ) ) return "object";
-
-   return "_";
+bgl_debug_typeof( obj_t obj ) {
+   return BSTRING_TO_STRING( bgl_typeof( obj ) );
 }
 
 /*---------------------------------------------------------------------*/

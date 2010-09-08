@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Tue Sep  7 08:23:02 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:48:41 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
@@ -61,7 +61,7 @@
       (define (make-c-tv?)
 	 `(define-inline (,(symbol-append tv?-id '::bool) o::obj)
 	     (if (tvector? o)
-		 (eq? (tvector-descr o) ,descr-id)
+		 (eq? ($tvector-descr o) ,descr-id)
 		 #f)))
 
       (define (make-jvm-tv?)
@@ -138,7 +138,7 @@
 							 ", $1, $2 )")
 					  #f
 					  'len)))
-		(tvector-descr-set! v ,descr-id)
+		($tvector-descr-set! v ,descr-id)
 		v)))
 
       (define (make-alloc-tv)

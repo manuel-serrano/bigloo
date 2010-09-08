@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Sep  7 21:08:19 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:42:09 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -164,7 +164,7 @@
     (coerce obj u64vector      ($u64vector?)    ())
     (coerce obj f32vector      ($f32vector?)    ())
     (coerce obj f64vector      ($f64vector?)    ())
-    (coerce obj tvector        (c-tvector?)     ())
+    (coerce obj tvector        ($tvector?)      ())
     (coerce obj weakptr        (c-weakptr?)     ())
     (coerce obj dynamic-env    ($dynamic-env?)  ())
     (coerce obj procedure      (c-procedure?)   ())

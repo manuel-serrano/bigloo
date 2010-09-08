@@ -37,6 +37,9 @@ are implemented by the means of exceptions (see @code{with-exception-handler},
 @code{with-handler}, and @code{raise} forms). Assertions allow the checking
 of predicates at certain points in programs.  
 
+@deffn {bigloo procedure} typeof obj
+Returns a string which is the name of the dynamic type of @var{obj}.
+@end deffn
 
 @deffn {bigloo procedure} error proc msg obj
 This form signals an error by calling the current error handler with

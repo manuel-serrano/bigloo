@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Sep  8 08:11:05 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:46:11 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checking                                   */
@@ -161,7 +161,7 @@
 		  (let ((,(make-typed-ident l (type-id otype))
 			 ,(if (eq? vtype *vector*)
 			      `($vector-length ,v)
-			      `(c-tvector-length ,v))))
+			      `($tvector-length ,v))))
 		     (if ($vector-bound-check? ,i ,l)
 			 ,(duplicate::vref node
 			     (expr* (list v i)))
@@ -190,7 +190,7 @@
 		  (let ((,(make-typed-ident l (type-id otype))
 			 ,(if (eq? vtype *vector*)
 			      `($vector-length ,v)
-			      `(c-tvector-length ,v))))
+			      `($tvector-length ,v))))
 		     (if ($vector-bound-check? ,i ,l)
 			 ,(duplicate::vset! node
 			     (expr* (list v i (caddr expr*))))

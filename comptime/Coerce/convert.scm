@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed Sep  8 08:22:03 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 09:24:40 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -66,32 +66,17 @@
 ;*    runtime-type-error ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error loc ti value)
-   (trace coerce "runtime-type-error: " (shape ti) "  " (shape value)
-	  #\Newline)
+   (trace coerce "runtime-type-error: " (shape ti) "  " (shape value) #\Newline)
    (define (runtime-type-error/id id)
       (trace coerce "   runtime-type-error/id: " (shape id) #\Newline)
-      (if (and (or (and (>fx *bdb-debug* 0)
-			(memq 'bdb (backend-debug-support (the-backend))))
-		   (>fx *compiler-debug* 0)
-		   *shared-cnst?*)
-	       (location? loc))
-	  `(begin
-	      ((@ bigloo-type-error/location __error) ,(symbol->string
-							(current-function))
-						      ,(symbol->string ti)
-						      ,id
-						      ,(location-full-fname loc)
-						      ,(location-pos loc))
-	      ;; we introduce a dummy failure in order to allow
-	      ;; C to compile its source file (otherwise there is
-	      ;; some type mismatch).
-	      (failure #f #f #f))
-	  `(begin
-	      ((@ bigloo-type-error __error) ,(symbol->string
-					       (current-function))
-					     ,(symbol->string ti)
-					     ,id)
-	      (failure #f #f #f))))
+      (let ((fname (when (location? loc) (location-full-fname loc)))
+	    (pos (when (location? loc) (location-pos loc))))
+	 `(failure
+	   ((@ type-error __error) ,fname ,pos
+				   ,(symbol->string (current-function))
+				   ,(symbol->string ti)
+				   ,id)
+	   #f #f)))
    (define (runtime-type-error/node)
       (trace coerce "   runtime-type-error/node: " #\Newline)
       (let* ((aux (gensym 'aux))

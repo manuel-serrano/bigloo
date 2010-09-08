@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Sep  8 07:00:40 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 09:17:20 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -20,6 +20,7 @@
    (extern  (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
 	    (export find-runtime-type "bgl_find_runtime_type")
+	    (export typeof "bgl_typeof")
 	    (export c-debugging-show-type "bgl_show_type")
 	    
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
@@ -43,7 +44,7 @@
 	    (macro sigsegv::int "SIGSEGV")
 	    (macro sigpipe::int "SIGPIPE")
 	    
-	    (macro $find-runtime-type::string (::obj) "FOREIGN_TYPE_NAME")
+	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
 	    (macro $errno-io-error::int "BGL_IO_ERROR")
 	    (macro $errno-io-port-error::int "BGL_IO_PORT_ERROR")
@@ -76,7 +77,7 @@
 		       "BGL_ENV_SET_TRACE")
 	       (method static $env-pop-trace::obj (::dynamic-env)
 		       "BGL_ENV_POP_TRACE")
- 	       (method static $find-runtime-type::string (::obj)
+ 	       (method static $foreign-typeof::string (::obj)
 		       "FOREIGN_TYPE_NAME")
 	       
 	       (method static $get-error-handler::obj ()
@@ -176,7 +177,8 @@
 	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
-	    (bigloo-index-out-of-bounds-error/location::obj ::obj ::obj ::obj ::obj ::obj)
+
+	    (type-error fname loc proc type obj)
 	    (index-out-of-bounds-error fname loc proc len obj)
 
 	    (module-init-error ::string ::string)
@@ -192,6 +194,7 @@
 	    (dump-trace-stack port depth)
 	    
 	    (find-runtime-type::bstring  ::obj)
+	    (typeof::bstring  ::obj)
 	    (c-debugging-show-type::string ::obj)
 	    (bigloo-type-error-msg::bstring  ::bstring ::bstring ::bstring)
 	    
@@ -411,7 +414,7 @@
 		  (symbol->string type))
 		 (else
 		  "???")))
-	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
       (raise (make-&type-error #f #f (get-trace-stack) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
@@ -425,21 +428,20 @@
 		  (symbol->string type))
 		 (else
 		  "???")))
-	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
       (raise
        (make-&type-error fname loc (get-trace-stack) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
-;*    bigloo-index-out-of-bounds-error/location ...                    */
+;*    type-error ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-index-out-of-bounds-error/location proc len obj fname loc)
-   (let ((msg (string-append "index out of range [0.."
-			     (integer->string (-fx len 1))
-			     "]")))
-      (raise
-       (make-&index-out-of-bounds-error fname loc
-					(get-trace-stack)
-					proc msg obj len))))
+(define (type-error fname loc proc type obj)
+   (let* ((ty (cond
+		 ((string? type) type)
+		 ((symbol? type) (symbol->string type))
+		 (else "???")))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
+      (make-&type-error fname loc (get-trace-stack) proc msg obj type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    index-out-of-bounds-error ...                                    */
@@ -861,12 +863,12 @@
 		 (loop (+fx read 1) prev list)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-runtime-type ...                                            */
+;*    typeof ...                                                       */
 ;*    -------------------------------------------------------------    */
 ;*    This function tries to determine the type of an object in        */
 ;*    order to produce better type error messages.                     */
 ;*---------------------------------------------------------------------*/
-(define (find-runtime-type obj)
+(define (typeof obj)
    (cond
       ((fixnum? obj)
        "bint")
@@ -950,7 +952,13 @@
       ((bignum? obj)
        "bignum")
       (else
-       ($find-runtime-type obj))))
+       ($foreign-typeof obj))))
+
+;*---------------------------------------------------------------------*/
+;*    find-runtime-type ...                                            */
+;*---------------------------------------------------------------------*/
+(define (find-runtime-type o)
+   (typeof o))
 
 ;*---------------------------------------------------------------------*/
 ;*    c-debugging-show-type ...                                        */
@@ -958,7 +966,7 @@
 ;*    See also bgl_typeof (runtime/Clib/cerror.c).                     */
 ;*---------------------------------------------------------------------*/
 (define (c-debugging-show-type obj)
-   (let ((t (find-runtime-type obj)))
+   (let ((t (typeof obj)))
       (fprint (current-error-port) t)
       t))
 

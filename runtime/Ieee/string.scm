@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Sep  7 21:12:35 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:44:46 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -35,49 +35,6 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-string?::bool (::obj) "STRINGP")
-	    (c-make-string::bstring (::long ::uchar) "make_string")
-	    (c-make-string/wo-fill::bstring (::long) "make_string_sans_fill")
-	    
-	    (macro c-string-length::long (::bstring) "STRING_LENGTH")
-	    (macro c-string-ref::uchar (::bstring ::long) "STRING_REF")
-	    (macro c-string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
-	    
-	    (c-string=?::bool (::bstring ::bstring) "bigloo_strcmp")
-	    (c-substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
-	    (c-substring-ci=?::bool (::bstring ::bstring ::long) "bigloo_strncmp_ci")
-	    (c-prefix-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_at")
-	    (c-prefix-ci-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_ci_at")
-	    (c-substring-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_at")
-	    (c-substring-ci-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_ci_at")
-	    (strcicmp::bool (::bstring ::bstring) "strcicmp")
-	    (string_lt::bool (::bstring ::bstring) "string_lt")
-	    (string_le::bool (::bstring ::bstring) "string_le")
-	    (string_gt::bool (::bstring ::bstring) "string_gt")
-	    (string_ge::bool (::bstring ::bstring) "string_ge")
-	    (string_cilt::bool (::bstring ::bstring) "string_cilt")
-	    (string_cile::bool (::bstring ::bstring) "string_cile")
-	    (string_cigt::bool (::bstring ::bstring) "string_cigt")
-	    (string_cige::bool (::bstring ::bstring) "string_cige")
-	    
-	    (c-substring::bstring (::bstring ::long ::long) "c_substring")
-	    (c-string-append::bstring (::bstring ::bstring) "string_append")
-	    (c-string-append-3::bstring (::bstring ::bstring ::bstring)
-					"string_append_3")
-	    
-	    ($escape-C-string::bstring (::string ::long ::long)
-				       "bgl_escape_C_string")
-	    ($escape-scheme-string::bstring (::string ::long ::long)
-					    "bgl_escape_scheme_string")
-	    (c-constant-string-to-string::bstring (::string)
-						  "c_constant_string_to_string")
-	    
-	    (macro string-bound-check?::bool (::long ::long) "BOUND_CHECK")
-	    (c-string-for-read::bstring (::bstring) "string_for_read")
-	    (c-blit-string::obj (::bstring ::long ::bstring ::long ::long)
-				"blit_string")
-	    (macro c-string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
-
    (extern  (macro $string?::bool (::obj) "STRINGP")
 	    ($make-string::bstring (::long ::uchar) "make_string")
 	    ($make-string/wo-fill::bstring (::long) "make_string_sans_fill")
@@ -93,15 +50,15 @@
 	    ($prefix-ci-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_ci_at")
 	    ($substring-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_at")
 	    ($substring-ci-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_ci_at")
-	    (strcicmp::bool (::bstring ::bstring) "strcicmp")
-	    (string_lt::bool (::bstring ::bstring) "string_lt")
-	    (string_le::bool (::bstring ::bstring) "string_le")
-	    (string_gt::bool (::bstring ::bstring) "string_gt")
-	    (string_ge::bool (::bstring ::bstring) "string_ge")
-	    (string_cilt::bool (::bstring ::bstring) "string_cilt")
-	    (string_cile::bool (::bstring ::bstring) "string_cile")
-	    (string_cigt::bool (::bstring ::bstring) "string_cigt")
-	    (string_cige::bool (::bstring ::bstring) "string_cige")
+	    ($strcicmp::bool (::bstring ::bstring) "strcicmp")
+	    ($string_lt::bool (::bstring ::bstring) "string_lt")
+	    ($string_le::bool (::bstring ::bstring) "string_le")
+	    ($string_gt::bool (::bstring ::bstring) "string_gt")
+	    ($string_ge::bool (::bstring ::bstring) "string_ge")
+	    ($string_cilt::bool (::bstring ::bstring) "string_cilt")
+	    ($string_cile::bool (::bstring ::bstring) "string_cile")
+	    ($string_cigt::bool (::bstring ::bstring) "string_cigt")
+	    ($string_cige::bool (::bstring ::bstring) "string_cige")
 	    
 	    ($substring::bstring (::bstring ::long ::long) "c_substring")
 	    ($string-append::bstring (::bstring ::bstring) "string_append")
@@ -150,23 +107,23 @@
 	       (method static $substring-ci-at?::bool (::bstring ::bstring ::long ::long)
 		       "bigloo_strncmp_ci_at")
 	       
-	       (method static strcicmp::bool (::bstring ::bstring)
+	       (method static $strcicmp::bool (::bstring ::bstring)
 		       "strcicmp")
-	       (method static string_lt::bool (::bstring ::bstring)
+	       (method static $string_lt::bool (::bstring ::bstring)
 		       "string_lt")
-	       (method static string_le::bool (::bstring ::bstring)
+	       (method static $string_le::bool (::bstring ::bstring)
 		       "string_le")
-	       (method static string_gt::bool (::bstring ::bstring)
+	       (method static $string_gt::bool (::bstring ::bstring)
 		       "string_gt")
-	       (method static string_ge::bool (::bstring ::bstring)
+	       (method static $string_ge::bool (::bstring ::bstring)
 		       "string_ge")
-	       (method static string_cilt::bool (::bstring ::bstring)
+	       (method static $string_cilt::bool (::bstring ::bstring)
 		       "string_cilt")
-	       (method static string_cile::bool (::bstring ::bstring)
+	       (method static $string_cile::bool (::bstring ::bstring)
 		       "string_cile")
-	       (method static string_cigt::bool (::bstring ::bstring)
+	       (method static $string_cigt::bool (::bstring ::bstring)
 		       "string_cigt")
-	       (method static string_cige::bool (::bstring ::bstring)
+	       (method static $string_cige::bool (::bstring ::bstring)
 		       "string_cige")
 	       
 	       (method static $substring::bstring (::bstring ::long ::long)
@@ -409,55 +366,55 @@
 ;*    @deffn string-ci=?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ci=? string1 string2)
-   (strcicmp string1 string2))
+   ($strcicmp string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string<?@ ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (string<? string1 string2)
-   (string_lt string1 string2))
+   ($string_lt string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string>?@ ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (string>? string1 string2)
-   (string_gt string1 string2))
+   ($string_gt string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string<=?@ ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (string<=? string1 string2)
-   (string_le string1 string2))
+   ($string_le string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string>=?@ ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (string>=? string1 string2)
-   (string_ge string1 string2))
+   ($string_ge string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ci<?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ci<? string1 string2)
-   (string_cilt string1 string2))
+   ($string_cilt string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ci>?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ci>? string1 string2)
-   (string_cigt string1 string2))
+   ($string_cigt string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ci<=?@ ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ci<=? string1 string2)
-   (string_cile string1 string2))
+   ($string_cile string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ci>=?@ ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ci>=? string1 string2)
-   (string_cige string1 string2))
+   ($string_cige string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring@ ...                                            */

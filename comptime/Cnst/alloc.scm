@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sat Dec 13 16:48:57 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:48:04 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -839,7 +839,7 @@
 	    ;; we first need to compile the symbol holding the identifier
 	    ;; because this compilation modifies the *global-sexp*
 	    ;; variable.
-	    (add-cnst-sexp! `(tvector-descr-set!
+	    (add-cnst-sexp! `($tvector-descr-set!
 			      (@ ,(global-id var) ,(global-module var))
 			      (get-tvector-descriptor ,aid))))
 	 (instantiate::var
