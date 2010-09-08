@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Oct  5 14:38:29 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:23:34 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -252,12 +252,12 @@
       (node-typec*! args)
       (let* ((var   (var-variable fun))
 	     (typec (fun-predicate-of (variable-value var)))
-	     (type  (typeof node)))
+	     (type  (get-type node)))
 	 (if (and (pair? args)
 		  (null? (cdr args))
 		  (type? typec)
 		  (not (side-effect? (car args))))
-	     (let ((typea (typeof (car args))))
+	     (let ((typea (get-type (car args))))
 		(cond
 		   ((type-less-specific? typec typea)
 		    (set! *type-checks-removed*

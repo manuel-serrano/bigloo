@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Thu Dec  3 09:38:27 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:19:32 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -19,14 +19,14 @@
 	    ast_node
 	    ast_var
 	    tools_shape)
-   (export  (typeof-atom::type  <atom>)
-	    (typeof-kwote::type <kwote>)
-	    (generic typeof::type ::node)))
+   (export  (get-type-atom::type  <atom>)
+	    (get-type-kwote::type <kwote>)
+	    (generic get-type::type ::node)))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof-atom ...                                                  */
+;*    get-type-atom ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (typeof-atom atom)
+(define (get-type-atom atom)
    (cond
       ((null? atom)
        *bnil*)
@@ -54,9 +54,9 @@
        *obj*)))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof-kwote ...                                                 */
+;*    get-type-kwote ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (typeof-kwote kwote)
+(define (get-type-kwote kwote)
    (cond
       ((symbol? kwote)
        *symbol*)
@@ -74,99 +74,98 @@
        *obj*)))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ...                                                       */
+;*    get-type ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-generic (typeof::type node::node))
+(define-generic (get-type::type node::node))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ...                                                       */
+;*    get-type ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::atom)
+(define-method (get-type node::atom)
    (with-access::atom node (value)
-      (typeof-atom value)))
+      (get-type-atom value)))
  
 ;*---------------------------------------------------------------------*/
-;*    typeof ...                                                       */
+;*    get-type ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::kwote)
+(define-method (get-type node::kwote)
    (with-access::kwote node (value)
-      (typeof-kwote value)))
+      (get-type-kwote value)))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ...                                                       */
+;*    get-type ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::var)
+(define-method (get-type node::var)
    (with-access::var node (variable)
       (let ((value (variable-value variable)))
 	 (cond
 	    ((sfun? value)
 	     *procedure*)
 	    ((cfun? value)
-	     (error "typeof" "Not implemented yet" (shape node)))
+	     (error "get-type" "Not implemented yet" (shape node)))
 	    (else
 	     (variable-type variable))))))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::closure ...                                             */
+;*    get-type ::closure ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::closure)
+(define-method (get-type node::closure)
    *procedure*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::sequence ...                                            */
+;*    get-type ::sequence ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::sequence)
+(define-method (get-type node::sequence)
    (with-access::sequence node (nodes)
-      (typeof (car (last-pair nodes)))))
+      (get-type (car (last-pair nodes)))))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::extern ...                                              */
+;*    get-type ::extern ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::extern)
+(define-method (get-type node::extern)
    (with-access::extern node (type)
       type))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::cast ...                                                */
+;*    get-type ::cast ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::cast)
+(define-method (get-type node::cast)
    (with-access::cast node (type)
       type))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::setq ...                                                */
+;*    get-type ::setq ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::setq)
+(define-method (get-type node::setq)
    *unspec*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::conditional ...                                         */
+;*    get-type ::conditional ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::conditional)
+(define-method (get-type node::conditional)
    (with-access::conditional node (test true false)
-      (let ((ttrue (typeof true))
-	    (tfalse (typeof false)))
+      (let ((ttrue (get-type true))
+	    (tfalse (get-type false)))
 	 (cond ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
 	       ((eq? ttrue *magic*) tfalse)
 	       (else *obj*)))))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::fail ...                                                */
+;*    get-type ::fail ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::fail)
-   (with-access::fail node (proc msg obj)
-      *magic*))
+(define-method (get-type node::fail)
+   *magic*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::select ...                                              */
+;*    get-type ::select ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::select)
+(define-method (get-type node::select)
    (with-access::select node (clauses test)
       (let loop ((clauses (cdr clauses))
-		 (type    (typeof (cdr (car clauses)))))
+		 (type    (get-type (cdr (car clauses)))))
 	 (if (null? clauses)
 	     type
-	     (let ((ntype (typeof (cdr (car clauses)))))
+	     (let ((ntype (get-type (cdr (car clauses)))))
 		(cond
 		   ((eq? type *magic*)
 		    (loop (cdr clauses) ntype) )
@@ -175,64 +174,64 @@
 		   (else *obj*)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::let-fun ...                                             */
+;*    get-type ::let-fun ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::let-fun)
+(define-method (get-type node::let-fun)
    (with-access::let-fun node (body)
-      (typeof body)))
+      (get-type body)))
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::let-var ...                                             */
+;*    get-type ::let-var ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::let-var)
+(define-method (get-type node::let-var)
    (with-access::let-var node (body)
-      (typeof body)))
+      (get-type body)))
  
 ;*---------------------------------------------------------------------*/
-;*    typeof ::set-ex-it ...                                           */
+;*    get-type ::set-ex-it ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::set-ex-it)
+(define-method (get-type node::set-ex-it)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::jump-ex-it ...                                          */
+;*    get-type ::jump-ex-it ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::jump-ex-it)
+(define-method (get-type node::jump-ex-it)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::make-box ...                                            */
+;*    get-type ::make-box ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::make-box)
+(define-method (get-type node::make-box)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::box-ref ...                                             */
+;*    get-type ::box-ref ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::box-ref)
+(define-method (get-type node::box-ref)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::box-set! ...                                            */
+;*    get-type ::box-set! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::box-set!)
+(define-method (get-type node::box-set!)
    *unspec*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::app-ly ...                                              */
+;*    get-type ::app-ly ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::app-ly)
+(define-method (get-type node::app-ly)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::funcall ...                                             */
+;*    get-type ::funcall ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::funcall)
+(define-method (get-type node::funcall)
    *obj*)
 
 ;*---------------------------------------------------------------------*/
-;*    typeof ::app ...                                                 */
+;*    get-type ::app ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-method (typeof node::app)
+(define-method (get-type node::app)
    (with-access::app node (fun)
       (variable-type (var-variable fun))))

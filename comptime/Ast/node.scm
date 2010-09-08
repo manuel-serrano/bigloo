@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Sep  7 08:44:54 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:20:29 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -20,7 +20,7 @@
 	      ;; the location 
 	      (loc::obj read-only (default #f))
 	      ;; the type of the node (a special type stands for `no-type')
-	      ;; don't trust that value, instead, use the typeof function of
+	      ;; don't trust that value, instead, use the get-type function of
 	      ;; module type_typeof
 	      type::type)
 

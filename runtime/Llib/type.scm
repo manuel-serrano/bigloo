@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Aug 27 17:18:10 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:08:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -150,10 +150,10 @@
     (coerce obj bignum         ($bignum?)       ())
     (coerce obj symbol         (c-symbol?)      ())
     (coerce obj keyword        (c-keyword?)     ())
-    (coerce obj bstring        (c-string?)      ())
+    (coerce obj bstring        ($string?)       ())
     (coerce obj ucs2string     (c-ucs2-string?) ())
     (coerce obj real           (c-flonum?)      ())
-    (coerce obj vector         (c-vector?)      ())
+    (coerce obj vector         ($vector?)       ())
     (coerce obj s8vector       ($s8vector?)     ())
     (coerce obj u8vector       ($u8vector?)     ())
     (coerce obj s16vector      ($s16vector?)    ())

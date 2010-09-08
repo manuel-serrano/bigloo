@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sat Sep  4 19:08:34 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:21:24 2010 (serrano)                */
 ;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -498,8 +498,8 @@
 ;*    specialize-app! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (specialize-app!::app node::app)
-   (define (normalize-typeof val)
-      (let ((ty (typeof val)))
+   (define (normalize-get-type val)
+      (let ((ty (get-type val)))
 	 (if (eq? ty *int*)
 	     *long*
 	     ty)))
@@ -508,7 +508,7 @@
 	  node
 	  ;; we check if the type of all the arguments
 	  ;; is either fixnum or flonum
-	  (let* ((type (normalize-typeof (car args)))
+	  (let* ((type (normalize-get-type (car args)))
 		 (glo  (var-variable fun))
 		 (spec (assq type (specialized-global-fix glo))))
 	     (if (pair? spec)
@@ -519,7 +519,7 @@
 			(var-variable-set! fun (cdr spec))
 			(node-type-set! node type)
 			node)
-		       ((eq? (normalize-typeof (car args)) type)
+		       ((eq? (normalize-get-type (car args)) type)
 			(loop (cdr args)))
 		       (else
 			;; sorry, it fails
@@ -543,8 +543,8 @@
       (if (and (eq? (var-variable fun) *c-eq?*)
 	       (backend-typed-eq (the-backend)))
 	  ;; here we are...
-	  (let ((t1 (typeof (car args)))
-		(t2 (typeof (cadr args))))
+	  (let ((t1 (get-type (car args)))
+		(t2 (get-type (cadr args))))
 	     (cond
 		((and (eq? t1 *obj*) (eq? t2 *obj*))
 		 #unspecified)

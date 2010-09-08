@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sun Jun 20 14:04:53 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:22:03 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -27,7 +27,6 @@
 	    type_cache
 	    type_coercion
 	    type_env
-	    type_typeof
 	    ast_sexp
 	    ast_var
 	    ast_node

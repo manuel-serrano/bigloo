@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Sep  7 14:18:49 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:25:55 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -106,6 +106,12 @@
        (error-sexp->node "Illegal `()' expression" exp loc))
 ;*--- node ------------------------------------------------------------*/
       ((? node?)
+       (when (extern? exp)
+	  (with-access::extern exp (expr* loc)
+	     (map! (lambda (e) (sexp->node e stack loc 'value)) expr*)))
+       (when (app? exp)
+	  (with-access::app exp (args loc)
+	     (map! (lambda (e) (sexp->node e stack loc 'value)) args)))
        exp)
 ;*--- atom ------------------------------------------------------------*/
       ((atom ?atom)
@@ -131,7 +137,7 @@
 	      (else
  	       (instantiate::atom
 		  (loc loc)
-		  (type (typeof-atom atom))
+		  (type (get-type-atom atom))
 		  (value atom)))))
 	  ((lookup atom stack)
 	   (let* ((local (lookup atom stack))
@@ -487,7 +493,7 @@
 			(loc loc)
 			(type *_*)
 			(test test)
-			(item-type (typeof-atom (car (car (car clauses)))))
+			(item-type (get-type-atom (car (car (car clauses)))))
 			(clauses (reverse! nclauses)))
 		     (let* ((clause (car cls))
 			    (body   (sexp->node (normalize-progn (cdr clause))

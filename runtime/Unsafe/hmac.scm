@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  5 08:31:42 2008                          */
-;*    Last change :  Thu Jun  5 08:36:41 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Sep  7 21:11:03 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HMAC and CRAM                                                    */
 ;*=====================================================================*/
@@ -63,8 +63,8 @@
    
    ;; keyb is the key padded to 64 with 0
    (define keyb (make-string block-size #a000))
-   (define ixor (c-make-string/wo-fill block-size))
-   (define oxor (c-make-string/wo-fill block-size))
+   (define ixor ($make-string/wo-fill block-size))
+   (define oxor ($make-string/wo-fill block-size))
    
    (let ((key-length (string-length key)))
       (if (>fx key-length block-size)

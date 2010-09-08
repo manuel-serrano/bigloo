@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Tue Sep  7 08:26:22 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:10:31 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -261,7 +261,7 @@
    ;; read-vector
    (define (read-vector)
       (let* ((sz (read-size s))
- 	     (res (c-create-vector sz)))
+ 	     (res ($create-vector sz)))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
 	    (set! *defining* #f))
@@ -318,7 +318,7 @@
    (define (read-tagged-vector)
       (let* ((tag (read-item))
 	     (sz (read-size s))
-	     (res (c-create-vector sz)))
+	     (res ($create-vector sz)))
 	 (vector-tag-set! res tag)
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -576,7 +576,7 @@
 ;*---------------------------------------------------------------------*/
 (define (print-obj table nbref obj)
    
-   (define buffer (c-make-string/wo-fill 100))
+   (define buffer ($make-string/wo-fill 100))
    (define ptr 0)
    (define ref 0)
 

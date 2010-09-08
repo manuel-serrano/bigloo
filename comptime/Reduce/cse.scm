@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Dec  5 09:16:04 2002 (serrano)                */
-;*    Copyright   :  1995-2002 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:23:09 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -19,7 +19,6 @@
 	    tools_error
 	    type_type
 	    type_cache
-	    type_typeof
 	    coerce_coerce
 	    effect_effect
 	    ast_var

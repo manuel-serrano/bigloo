@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Sat Sep  4 19:09:24 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:20:52 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
@@ -18,7 +18,6 @@
 	    tools_error
 	    type_type
 	    type_cache
-	    type_typeof
 	    module_module
 	    backend_backend
 	    engine_param
@@ -78,10 +77,10 @@
 			     (backend-pragma-support-set! backend #t)
 			     tgt))
 		 (dummy (top-level-sexp->node
-			 `(c-make-vector ,(vector-length value)
-					 ,(if (monomorphic-vector? value)
-					      (vector-ref value 0)
-					      '(pragma::obj "")))
+			 `($make-vector ,(vector-length value)
+					,(if (monomorphic-vector? value)
+					     (vector-ref value 0)
+					     '(pragma::obj "")))
 			 #f)))
 	     (backend-pragma-support-set! backend pragma?)
 	     (bigloo-warning-set! warning)
@@ -177,15 +176,9 @@
 			(widen!::pre-procedure-set!-app node)))
 		    (if (vector-optim?)
 			(case (global-id v)
-			   ((c-make-vector)
+			   ((c-make-vector $make-vector)
 			    (use-alloc! node)
-			    (widen!::pre-make-vector-app node (owner owner)))
-			   ((c-vector-ref c-vector-set!
-					  c-vector-length
-					  c-create-vector)
-			    (internal-error "node-collect!"
-					    "Illegal foreign application"
-					    (global-id v)))))
+			    (widen!::pre-make-vector-app node (owner owner)))))
 		    (if (>=fx *optim* 2)
 			(case (global-id v)
 			   ((c-make-struct)

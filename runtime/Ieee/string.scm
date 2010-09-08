@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Sep  7 05:42:28 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:12:35 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -78,33 +78,76 @@
 				"blit_string")
 	    (macro c-string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
 
+   (extern  (macro $string?::bool (::obj) "STRINGP")
+	    ($make-string::bstring (::long ::uchar) "make_string")
+	    ($make-string/wo-fill::bstring (::long) "make_string_sans_fill")
+	    
+	    (macro $string-length::long (::bstring) "STRING_LENGTH")
+	    (macro $string-ref::uchar (::bstring ::long) "STRING_REF")
+	    (macro $string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
+	    
+	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
+	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
+	    ($substring-ci=?::bool (::bstring ::bstring ::long) "bigloo_strncmp_ci")
+	    ($prefix-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_at")
+	    ($prefix-ci-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_ci_at")
+	    ($substring-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_at")
+	    ($substring-ci-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_ci_at")
+	    (strcicmp::bool (::bstring ::bstring) "strcicmp")
+	    (string_lt::bool (::bstring ::bstring) "string_lt")
+	    (string_le::bool (::bstring ::bstring) "string_le")
+	    (string_gt::bool (::bstring ::bstring) "string_gt")
+	    (string_ge::bool (::bstring ::bstring) "string_ge")
+	    (string_cilt::bool (::bstring ::bstring) "string_cilt")
+	    (string_cile::bool (::bstring ::bstring) "string_cile")
+	    (string_cigt::bool (::bstring ::bstring) "string_cigt")
+	    (string_cige::bool (::bstring ::bstring) "string_cige")
+	    
+	    ($substring::bstring (::bstring ::long ::long) "c_substring")
+	    ($string-append::bstring (::bstring ::bstring) "string_append")
+	    ($string-append-3::bstring (::bstring ::bstring ::bstring)
+					"string_append_3")
+	    
+	    ($escape-C-string::bstring (::string ::long ::long)
+				       "bgl_escape_C_string")
+	    ($escape-scheme-string::bstring (::string ::long ::long)
+					    "bgl_escape_scheme_string")
+	    ($constant-string-to-string::bstring (::string)
+						  "c_constant_string_to_string")
+	    
+	    (macro $string-bound-check?::bool (::long ::long) "BOUND_CHECK")
+	    ($string-for-read::bstring (::bstring) "string_for_read")
+	    ($blit-string::obj (::bstring ::long ::bstring ::long ::long)
+				"blit_string")
+	    (macro $string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
+
    (java    (class foreign
-	       (method static c-string?::bool (::obj)
+	       (method static $string?::bool (::obj)
 		       "STRINGP")
-	       (method static c-make-string::bstring (::long ::uchar)
+	       (method static $make-string::bstring (::long ::uchar)
 		       "make_string")
 	       
-	       (method static c-string-length::long (::bstring)
+	       (method static $string-length::long (::bstring)
 		       "STRING_LENGTH")
 	       
-	       (method static c-string-ref::uchar (::bstring ::long)
+	       (method static $string-ref::uchar (::bstring ::long)
 		       "STRING_REF")
-	       (method static c-string-set!::obj (::bstring ::long ::uchar)
+	       (method static $string-set!::obj (::bstring ::long ::uchar)
 		       "STRING_SET")
 	       
-	       (method static c-string=?::bool (::bstring ::bstring)
+	       (method static $string=?::bool (::bstring ::bstring)
 		       "bigloo_strcmp")
-	       (method static c-substring=?::bool (::bstring ::bstring ::long)
+	       (method static $substring=?::bool (::bstring ::bstring ::long)
 		       "bigloo_strncmp")
-	       (method static c-substring-ci=?::bool (::bstring ::bstring ::long)
+	       (method static $substring-ci=?::bool (::bstring ::bstring ::long)
 		       "bigloo_strncmp_ci")
-	       (method static c-prefix-at?::bool (::bstring ::bstring ::long)
+	       (method static $prefix-at?::bool (::bstring ::bstring ::long)
 		       "bigloo_strcmp_at")
-	       (method static c-prefix-ci-at?::bool (::bstring ::bstring ::long)
+	       (method static $prefix-ci-at?::bool (::bstring ::bstring ::long)
 		       "bigloo_strcmp_ci_at")
-	       (method static c-substring-at?::bool (::bstring ::bstring ::long ::long)
+	       (method static $substring-at?::bool (::bstring ::bstring ::long ::long)
 		       "bigloo_strncmp_at")
-	       (method static c-substring-ci-at?::bool (::bstring ::bstring ::long ::long)
+	       (method static $substring-ci-at?::bool (::bstring ::bstring ::long ::long)
 		       "bigloo_strncmp_ci_at")
 	       
 	       (method static strcicmp::bool (::bstring ::bstring)
@@ -126,29 +169,29 @@
 	       (method static string_cige::bool (::bstring ::bstring)
 		       "string_cige")
 	       
-	       (method static c-substring::bstring (::bstring ::long ::long)
+	       (method static $substring::bstring (::bstring ::long ::long)
 		       "c_substring")
-	       (method static c-string-append::bstring (::bstring ::bstring)
+	       (method static $string-append::bstring (::bstring ::bstring)
 		       "string_append")
-	       (method static c-string-append-3::bstring (::bstring ::bstring ::bstring)
+	       (method static $string-append-3::bstring (::bstring ::bstring ::bstring)
 		       "string_append_3")
 	       
 	       (method static $escape-C-string::bstring (::string ::long ::long)
 		       "bgl_escape_C_string")
 	       (method static $escape-scheme-string::bstring (::string ::long ::long)
 		       "bgl_escape_scheme_string")
-	       (method static c-constant-string-to-string::bstring (::string)
+	       (method static $constant-string-to-string::bstring (::string)
 		       "c_constant_string_to_string")
 	       
-	       (method static string-bound-check?::bool (::long ::long)
+	       (method static $string-bound-check?::bool (::long ::long)
 		       "BOUND_CHECK")
-	       (method static c-string-for-read::bstring (::bstring)
+	       (method static $string-for-read::bstring (::bstring)
 		       "string_for_read")
-	       (method static c-blit-string::obj (::bstring ::long ::bstring ::long ::long)
+	       (method static $blit-string::obj (::bstring ::long ::bstring ::long ::long)
 		       "blit_string")
-	       (method static c-make-string/wo-fill::bstring (::long)
+	       (method static $make-string/wo-fill::bstring (::long)
 		       "make_string_sans_fill")
-	       (method static c-string-shrink!::bstring (::bstring ::long)
+	       (method static $string-shrink!::bstring (::bstring ::long)
 		       "bgl_string_shrink")))
    
    (export  (inline string?::bool ::obj)
@@ -231,15 +274,15 @@
 	    (string-hex-intern!::bstring ::bstring)
 	    (string-hex-extern::bstring ::bstring))
    
-   (pragma  (c-string? (predicate-of bstring) no-cfa-top nesting)
+   (pragma  ($string? (predicate-of bstring) no-cfa-top nesting)
 	    (string? side-effect-free no-cfa-top nesting)
 	    (string-null? side-effect-free no-cfa-top nesting)
-	    (c-string-ref side-effect-free no-cfa-top nesting args-safe)
+	    ($string-ref side-effect-free no-cfa-top nesting args-safe)
 	    (string-ref-ur side-effect-free no-cfa-top nesting)
 	    (string-ref side-effect-free no-cfa-top nesting)
-	    (c-string-length side-effect-free no-cfa-top nesting args-safe)
+	    ($string-length side-effect-free no-cfa-top nesting args-safe)
 	    (string-length side-effect-free no-cfa-top nesting)
-	    (string-bound-check? side-effect-free no-cfa-top nesting)
+	    ($string-bound-check? side-effect-free no-cfa-top nesting)
 	    (string=? side-effect-free nesting)
 	    (substring=? side-effect-free nesting)
 	    (substring-ci=? side-effect-free nesting)
@@ -270,7 +313,7 @@
 ;*    @deffn string?@ ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (string? obj)
-   (c-string? obj))
+   ($string? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-null? ...                                                 */
@@ -283,8 +326,8 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (make-string k . char)
    (if (null? char)
-       (c-make-string k #\space)
-       (c-make-string k (car char))))
+       ($make-string k #\space)
+       ($make-string k (car char))))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string@ ...                                               */
@@ -296,77 +339,65 @@
 ;*    @deffn string-length@ ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-length string)
-   (c-string-length string))
+   ($string-length string))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref@ ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ref string k)
-   (if (string-bound-check? k (string-length string))
-       (c-string-ref string k)
-       (error 'string-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (string-length string) 1))
-			     "]")
-	      k)))
+   ($string-ref string k))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-set!@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-set! string k char)
-   (if (string-bound-check? k (string-length string))
-       (c-string-set! string k char)
-       (error 'string-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (string-length string) 1))
-			     "]")
-	      k)))
+   ($string-set! string k char))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref-ur@ ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ref-ur string k)
-   (c-string-ref string k))
+   ($string-ref string k))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-set-ur!@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-set-ur! string k char)
-   (c-string-set! string k char))
+   ($string-set! string k char))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string=?@ ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (string=? string1 string2)
-   (c-string=? string1 string2))
+   ($string=? string1 string2))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring=? string1 string2 len)
-   (c-substring=? string1 string2 len))
+   ($substring=? string1 string2 len))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-at?@ ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-at? string1 string2 off #!optional (len -1))
    (if (=fx len -1)
-       (c-prefix-at? string1 string2 off)
-       (c-substring-at? string1 string2 off len)))
+       ($prefix-at? string1 string2 off)
+       ($substring-at? string1 string2 off len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ci=?@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-ci=? string1 string2 len)
-   (c-substring-ci=? string1 string2 len))
+   ($substring-ci=? string1 string2 len))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ci-at?@ ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-ci-at? string1 string2 off #!optional (len -1))
    (if (=fx len -1)
-       (c-prefix-ci-at? string1 string2 off)
-       (c-substring-ci-at? string1 string2 off len)))
+       ($prefix-ci-at? string1 string2 off)
+       ($substring-ci-at? string1 string2 off len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn empty-string?@ ...                                        */
@@ -439,19 +470,19 @@
 		 (string-append "Illegal start index \"" string "\"")
 		 start))
 	 ((<fx end 0)
-	  (c-substring string start len))
+	  ($substring string start len))
 	 ((or (<fx end start) (>fx end len))
 	  (error "substring"
 		 (string-append "Illegal end index \"" string "\"")
 		 end))
 	 (else
-	  (c-substring string start end)))))
+	  ($substring string start end)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ur@ ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-ur string start end)
-   (c-substring string start end))
+   ($substring string start end))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-contains ...                                              */
@@ -544,7 +575,7 @@
 			  (string-append (cdr list)
 					 (+fx res
 					      (string-length (car list)))))))
-	      (res (c-make-string/wo-fill len)))
+	      (res ($make-string/wo-fill len)))
 	  (let string-append ((list list)
 			      (w    0))
 	     (if (null? list)
@@ -559,7 +590,7 @@
 ;*---------------------------------------------------------------------*/
 (define (list->string list)
    (let* ((len    (length list))
-	  (string (c-make-string/wo-fill len)))
+	  (string ($make-string/wo-fill len)))
       (let loop ((i 0)
 		 (l list))
 	 (if (=fx i len)
@@ -585,7 +616,7 @@
 ;*---------------------------------------------------------------------*/
 (define (string-copy string)
    (let* ((len (string-length string))
-	  (new (c-make-string/wo-fill len)))
+	  (new ($make-string/wo-fill len)))
       (let loop ((i (-fx len 1)))
 	 (if (=fx i -1)
 	     new
@@ -610,7 +641,7 @@
 ;*---------------------------------------------------------------------*/
 (define (string-upcase string)
    (let* ((len (string-length string))
-	  (res (c-make-string/wo-fill len)))
+	  (res ($make-string/wo-fill len)))
       (let loop ((i 0))
 	 (if (=fx i len)
 	     res
@@ -623,7 +654,7 @@
 ;*---------------------------------------------------------------------*/
 (define (string-downcase string)
    (let* ((len (string-length string))
-	  (res (c-make-string/wo-fill len)))
+	  (res ($make-string/wo-fill len)))
       (let loop ((i 0))
 	 (if (=fx i len)
 	     res
@@ -686,7 +717,7 @@
 ;*    @deffn string-for-read@ ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-for-read string)
-   (c-string-for-read string))
+   ($string-for-read string))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn escape-C-string@ ...                                      */
@@ -714,15 +745,15 @@
 ;*    @deffn blit-string-ur!@ ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (blit-string-ur! s1 o1 s2 o2 l)
-   (c-blit-string s1 o1 s2 o2 l))
+   ($blit-string s1 o1 s2 o2 l))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn blit-string!@ ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (blit-string! s1 o1 s2 o2 l)
-   (if (and (string-bound-check? (+fx l o1) (+fx (string-length s1) 1))
-	    (string-bound-check? (+fx l o2) (+fx (string-length s2) 1)))
-       (c-blit-string s1 o1 s2 o2 l)
+   (if (and ($string-bound-check? (+fx l o1) (+fx (string-length s1) 1))
+	    ($string-bound-check? (+fx l o2) (+fx (string-length s2) 1)))
+       ($blit-string s1 o1 s2 o2 l)
        (error "blit-string!:Index and length out of range"
 	      (string-append "[src:" s1 "] [dest:" s2 "]")
 	      (list (string-length s1) o1 (string-length s2) o2 l))))
@@ -731,7 +762,7 @@
 ;*    @deffn string-shrink!@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-shrink! s l)
-   (c-string-shrink! s l))
+   ($string-shrink! s l))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-replace ...                                               */

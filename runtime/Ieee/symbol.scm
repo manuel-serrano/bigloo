@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Thu Jul  8 16:31:07 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:13:38 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -162,8 +162,8 @@
 	(let symbol-append ((list list))
 	   (if (null? (cdr list))
 	       (symbol->string (car list))
-	       (c-string-append (symbol->string (car list))
-				(symbol-append (cdr list))))))))
+	       ($string-append (symbol->string (car list))
+			       (symbol-append (cdr list))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gensym-counter* ...                                             */

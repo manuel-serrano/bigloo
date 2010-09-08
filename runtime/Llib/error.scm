@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Sep  7 05:56:46 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 07:00:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -177,6 +177,7 @@
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
 	    (bigloo-index-out-of-bounds-error/location::obj ::obj ::obj ::obj ::obj ::obj)
+	    (index-out-of-bounds-error fname loc proc len obj)
 
 	    (module-init-error ::string ::string)
 
@@ -225,7 +226,9 @@
 ;*    the_failure ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (the_failure proc msg obj)
-   (error proc msg obj))
+   (if (&exception? proc)
+       (raise proc)
+       (error proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/errno ...                                                  */
@@ -307,7 +310,9 @@
 				   (&error-fname val)
 				   (&error-location val)))
 		r))
-	  (default-exception-handler val))))
+	  (begin
+	     (default-exception-handler val)
+	     (the_failure "raise" "uncaught execption" val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ...                                             */
@@ -432,8 +437,20 @@
 			     (integer->string (-fx len 1))
 			     "]")))
       (raise
-       (make-&index-out-of-bounds-error fname loc (get-trace-stack)
+       (make-&index-out-of-bounds-error fname loc
+					(get-trace-stack)
 					proc msg obj len))))
+
+;*---------------------------------------------------------------------*/
+;*    index-out-of-bounds-error ...                                    */
+;*---------------------------------------------------------------------*/
+(define (index-out-of-bounds-error fname loc proc len obj)
+   (let ((msg (string-append "index out of range [0.."
+			     (integer->string (-fx len 1))
+			     "]")))
+      (make-&index-out-of-bounds-error fname loc
+				       (get-trace-stack)
+				       proc msg obj len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */

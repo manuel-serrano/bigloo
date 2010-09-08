@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Thu Dec  5 09:13:49 2002 (serrano)                */
+;*    Last change :  Wed Sep  8 08:26:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We type an node (straightforward typing used by Coerce and Cnst, */
 ;*    i.e. passes which occur after the Cfa). This pass only types     */
@@ -151,7 +151,7 @@
 		   (let ((var (car binding))
 			 (val (cdr binding)))
 		      (lvtype-node! val)
-		      (set-variable-type! var (typeof val))))
+		      (set-variable-type! var (get-type val))))
 		bindings)
       (lvtype-node! body)))
 

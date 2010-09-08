@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Wed Jun 16 11:48:20 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 18:08:40 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
@@ -165,7 +165,7 @@
 					  #unspecified
 					  (begin
 					     (cnst-table-set! i
-							      (c-vector-ref
+							      ($vector-ref-ur
 							       cnst-tmp
 							       i))
 					     (let ((aux::int (c--fx i 1)))

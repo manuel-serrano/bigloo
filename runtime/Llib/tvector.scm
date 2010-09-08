@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Tue Mar 11 15:52:40 2008 (serrano)                */
+;*    Last change :  Tue Sep  7 18:24:20 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -214,7 +214,7 @@
 		    "Unable to convert to such tvector"
 		    (tvector-id tv))
 	     (let* ((len  (tvector-length tv))
-		    (vec  (c-create-vector len)))
+		    (vec  ($create-vector len)))
 		(let loop ((i (-fx len 1)))
 		   (if (=fx i -1)
 		       vec

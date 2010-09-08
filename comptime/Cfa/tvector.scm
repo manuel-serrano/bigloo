@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Tue Sep  7 13:33:53 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 19:07:13 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -79,8 +79,13 @@
 				    ((sfun? fun)
 				     (local-type-set! (caddr (sfun-args fun))
 						      (get-default-type))))))))
-		    '(vector-set! c-vector-set! vector-set-ur!))
+		    '(vector-set! vector-set-ur! c-vector-set!
+		      $vector-set! $vector-set-ur!))
 	  (let ((g (find-global 'c-vector?)))
+	     (if (global? g)
+		 (let ((f (global-value g)))
+		    (set-car! (cfun-args-type f) (get-default-type)))))
+	  (let ((g (find-global '$vector?)))
 	     (if (global? g)
 		 (let ((f (global-value g)))
 		    (set-car! (cfun-args-type f) (get-default-type)))))
@@ -112,6 +117,10 @@
 						      *obj*)))))))
 		    '(vector-set! c-vector-set! vector-set-ur!))
 	  (let ((g (find-global 'c-vector?)))
+	     (if (global? g)
+		 (let ((f (global-value g)))
+		    (set-car! (cfun-args-type f) *obj*))))
+	  (let ((g (find-global '$vector?)))
 	     (if (global? g)
 		 (let ((f (global-value g)))
 		    (set-car! (cfun-args-type f) *obj*))))
@@ -476,6 +485,8 @@
 		 (case (global-id v)
 		    ((c-vector?)
 		     (patch-vector?! node))
+		    (($vector?)
+		     (patch-vector?! node))
 		    (else
 		     node))
 		 (if (and (eq? (global-id v) 'vector->list)
@@ -567,7 +578,6 @@
 					   '()
 					   loc
 					   'value)))
-		(node-type-set! new-node tv)
 		(inline-node new-node 1 '()))
 	     node))))
 	    
@@ -575,17 +585,18 @@
 ;*    patch! ::vref/Cinfo ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::vref/Cinfo)
-   (with-access::vref/Cinfo node (expr* loc tvector?)
+   (with-access::vref/Cinfo node (expr* loc tvector? unsafe)
       (patch*! expr*)
       (let* ((vec-approx (cfa! (car expr*)))
 	     (tv         (get-approx-type vec-approx)))
 	 (if (or tvector? (not (tvec? tv)))
 	     node
-	     (let* ((tv-ref   (symbol-append (type-id tv) '-ref))
+	     (let* ((tv-ref (symbol-append (type-id tv) '-ref))
 		    (new-node (sexp->node `(,tv-ref ,@expr*)
  					  '()
 					  loc
 					  'value)))
+		(node-type-set! new-node tv)
 		(inline-node new-node 1 '()))))))
 
 ;*---------------------------------------------------------------------*/

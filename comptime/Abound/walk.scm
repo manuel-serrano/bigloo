@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Sep  7 08:54:46 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:11:05 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checking                                   */
@@ -20,6 +20,7 @@
 	    tools_shape
 	    tools_location
 	    type_cache
+	    ast_ident
 	    ast_local
 	    ast_env
 	    ast_sexp
@@ -30,9 +31,33 @@
 ;*    abound-walk! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (abound-walk! globals)
-   (pass-prelude "Abound")
+   (pass-prelude "Abound" init-cache!)
    (for-each abound-fun! globals)
-   (pass-postlude globals))
+   (pass-postlude globals clear-cache!))
+
+;*---------------------------------------------------------------------*/
+;*    cache ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *string-ref* #unspecified)
+(define *string-set!* #unspecified)
+(define *struct-ref* #unspecified)
+(define *struct-set!* #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    init-cache! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (init-cache!)
+   (set! *string-ref* (find-global '$string-ref 'foreign))
+   (set! *string-set!* (find-global '$string-set! 'foreign))
+   (set! *struct-ref* (find-global '$struct-ref 'foreign))
+   (set! *struct-set!* (find-global '$struct-set! 'foreign))
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    clear-cache! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (clear-cache!)
+   (set! *string-ref* #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-fun! ...                                                  */
@@ -62,7 +87,33 @@
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::app)
    (abound-node*! (app-args node))
-   node)
+   ;; check if we are calling string-ref/set!, or struct-ref/set!
+   (with-access::app node (fun args loc)
+      (let ((v (var-variable fun)))
+	 (cond
+	    ((or (eq? v *string-ref*) (eq? v *string-set!*))
+	     (let* ((s (mark-symbol-non-user! (gensym 's)))
+		    (i (mark-symbol-non-user! (gensym 'i)))
+		    (l (mark-symbol-non-user! (gensym 'l)))
+		    (lname (when (location? loc) (location-full-fname loc)))
+		    (lpos (when (location? loc) (location-pos loc)))
+		    (name (if (eq? v *string-ref*) "string-ref" "string-set!"))
+		    (types (cfun-args-type (variable-value v))))
+		(top-level-sexp->node
+		 `(let ((,(make-typed-ident s (type-id (car types))) ,(car args))
+			(,(make-typed-ident i (type-id (cadr types))) ,(cadr args)))
+		     (let ((,(make-typed-ident l (type-id (cadr types)))
+			    ($string-length ,s)))
+			(if ($string-bound-check? ,i ,l)
+			    ,(duplicate::app node
+				(args (cons* s i (cddr args))))
+			    (failure
+			     ((@ index-out-of-bounds-error __error)
+			      ,lname ,lpos ,name ,i ,s)
+			     #f #f))))
+		 loc)))
+	    (else
+	     node)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::app-ly ...                                         */
@@ -93,51 +144,61 @@
 ;*    abound-node ::vref ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vref)
-   (abound-node*! (extern-expr* node))
+   (call-next-method)
    (with-access::vref node (expr* loc ftype otype vtype unsafe)
       (if unsafe
 	  node
-	  (top-level-sexp->node
-	   `(if (vector-bound-check?
-		 ,(cadr expr*)
-		 ,(make-private-sexp 'vlength (type-id vtype) (type-id ftype) 'int
-				     (if (eq? vtype *vector*)
-					 "VECTOR_LENGTH($1)"
-					 "TVECTOR_LENGTH($1)")
-				     (car expr*)))
-		,node
-		,(if (location? loc)
-		     `((@ bigloo-index-out-of-bounds-error/location __error)
-		       "vector-ref" ,(cadr expr*) ,(car expr*)
-		       ,(location-full-fname loc) ,(location-pos loc))
-		     `((@ bigloo-index-out-of-bounds-error/location __error)
-		       "vector-ref" ,(cadr expr*) ,(car expr*) #f #f)))
-	   loc))))
+	  (let ((v (mark-symbol-non-user! (gensym 'v)))
+		(i (mark-symbol-non-user! (gensym 'i)))
+		(l (mark-symbol-non-user! (gensym 'l)))
+		(lname (when (location? loc) (location-full-fname loc)))
+		(lpos (when (location? loc) (location-pos loc))))
+	     (top-level-sexp->node
+	      `(let ((,(make-typed-ident v (type-id vtype))
+		       ,(car expr*))
+		      (,(make-typed-ident i (type-id otype))
+		       ,(cadr expr*)))
+		  (let ((,(make-typed-ident l (type-id otype))
+			 ,(if (eq? vtype *vector*)
+			      `($vector-length ,v)
+			      `(c-tvector-length ,v))))
+		     (if ($vector-bound-check? ,i ,l)
+			 ,(duplicate::vref node
+			     (expr* (list v i)))
+			 (failure
+			  ((@ index-out-of-bounds-error __error)
+			   ,lname ,lpos "vector-ref" ,(cadr expr*) ,(car expr*))
+			  #f #f))))
+	      loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::vset! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vset!)
-   (abound-node*! (extern-expr* node))
+   (call-next-method)
    (with-access::vset! node (expr* loc ftype otype vtype unsafe)
       (if unsafe
 	  node
-	  (top-level-sexp->node
-	   `(if (vector-bound-check?
-		 ,(cadr expr*)
-		 ,(make-private-sexp 'vlength (type-id vtype) (type-id ftype) 'int
-				     (if (eq? vtype *vector*)
-					 "VECTOR_LENGTH($1)"
-					 "TVECTOR_LENGTH($1)")
-				     (car expr*)))
-		,node
-		,(if (location? loc)
-		     `((@ bigloo-index-out-of-bounds-error/location __error)
-		       "vector-sef!" ,(cadr expr*) ,(car expr*)
-		       ,(location-full-fname loc) ,(location-pos loc))
-		     `((@ bigloo-index-out-of-bounds-error/location __error)
-		       "vector-set!" ,(cadr expr*) ,(car expr*) #f #f)))
-	   loc))))
+	  (let ((v (mark-symbol-non-user! (gensym 'v)))
+		(i (mark-symbol-non-user! (gensym 'i)))
+		(l (mark-symbol-non-user! (gensym 'l)))
+		(lname (when (location? loc) (location-full-fname loc)))
+		(lpos (when (location? loc) (location-pos loc))))
+	     (top-level-sexp->node
+	      `(let ((,(make-typed-ident v (type-id vtype)) ,(car expr*))
+		     (,(make-typed-ident i (type-id otype)) ,(cadr expr*)))
+		  (let ((,(make-typed-ident l (type-id otype))
+			 ,(if (eq? vtype *vector*)
+			      `($vector-length ,v)
+			      `(c-tvector-length ,v))))
+		     (if ($vector-bound-check? ,i ,l)
+			 ,(duplicate::vset! node
+			     (expr* (list v i (caddr expr*))))
+			 (failure
+			  ((@ index-out-of-bounds-error __error)
+			   ,lname ,lpos "vector-ref" ,(cadr expr*) ,(car expr*))
+			  #f #f))))
+	      loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::cast ...                                           */

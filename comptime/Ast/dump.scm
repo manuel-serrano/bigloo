@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Apr  7 17:35:17 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:19:55 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -45,7 +45,7 @@
        (location-shape (node-loc node)
 		       (if *type-shape?*
 			   (vector (atom-value node)
-				   (shape (typeof node))
+				   (shape (get-type node))
 				   (shape (node-type node)))
 			   (atom-value node)))))
 
@@ -98,7 +98,7 @@
 			       (list
 				(vector 'side-effect: (side-effect? node)))
 			       '())
-			 ,(vector (shape (typeof node))
+			 ,(vector (shape (get-type node))
 				  (shape (variable-type
 					  (var-variable (app-fun node)))))
 			 ,@(map node->sexp (app-args node)))		       )
@@ -145,7 +145,7 @@
 				'pragma
 				'free-pragma)))
 		      `(,(if *type-shape?*
-			     (make-typed-ident p (type-id (typeof node)))
+			     (make-typed-ident p (type-id (get-type node)))
 			     p)
 			,(pragma-format node)
 			,@(map node->sexp (pragma-expr* node))))))
@@ -189,22 +189,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::vref)
    (node->sexp-hook node)
-   (with-access::vref node (expr* ftype)
-      (if *type-shape?*
-	  `(vref ,(vector (shape (typeof node)) (shape ftype))
+   (with-access::vref node (expr* ftype unsafe)
+      (let ((id (if unsafe 'vref-ur 'vref)))
+	 (if *type-shape?*
+	     `(,id ,(vector (shape (get-type node)) (shape ftype))
 		 ,@(map node->sexp expr*))
-	  `(vref ,@(map node->sexp expr*)))))
+	     `(,id ,@(map node->sexp expr*))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vset! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::vset!)
    (node->sexp-hook node)
-   (with-access::vset! node (expr* ftype)
-      (if *type-shape?*
-	  `(vset! ,(vector (shape (typeof node)) (shape ftype))
-		  ,@(map node->sexp expr*))
-	  `(vset! ,@(map node->sexp expr*)))))
+   (with-access::vset! node (expr* ftype unsafe)
+      (let ((id (if unsafe 'vset-ur! 'vset!)))
+	 (if *type-shape?*
+	     `(,id ,(vector (shape (get-type node)) (shape ftype))
+		     ,@(map node->sexp expr*))
+	     `(,id ,@(map node->sexp expr*))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::valloc ...                                          */

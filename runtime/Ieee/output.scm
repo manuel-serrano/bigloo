@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Jul 20 09:59:23 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 19:35:00 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -682,7 +682,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (display-substring obj start end port)
    (if (and (>=fx end start)
-	    (string-bound-check? end (+fx (string-length obj) 1))
+	    ($string-bound-check? end (+fx (string-length obj) 1))
 	    (>=fx start 0))
        ($display-substring obj start end port)
        (error 'display-substring

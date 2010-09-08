@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Tue Sep  7 15:14:52 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 19:15:13 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -522,10 +522,10 @@
 ;*---------------------------------------------------------------------*/
 (define (special-cfun? global)
    (memq (global-id global)
-	 '(c-vector-length %%vector-length
-			   c-vector-ref %%vector-ref
-			   c-vector-set! %%vector-set!
-			   c-create-vector %%create-vector)))
+	 '($vector-length
+	   $vector-ref $vector-ref-ur
+	   $vector-set! $vector-set-ur!
+	   $create-vector)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-special-app-node ...                                        */
@@ -537,32 +537,34 @@
    (let* ((var (var-variable variable))
 	  (gname (global-name var)))
       (case (global-id var)
-	 ((c-vector-length %%vector-length)
+	 (($vector-length)
 	  (instantiate::vlength
 	     (loc loc)
 	     (type (global-type var))
 	     (c-format (string-append gname "($1)"))
 	     (expr* args)
 	     (vtype (car (cfun-args-type (global-value var))))))
-	 ((c-vector-ref %%vector-ref)
+	 (($vector-ref $vector-ref-ur)
 	  (instantiate::vref
 	     (loc loc)
 	     (type (global-type var))
 	     (c-format (string-append gname "($1,$2)"))
 	     (expr* args)
+	     (unsafe (eq? (global-id var) '$vector-ref-ur))
 	     (vtype (car (cfun-args-type (global-value var))))
 	     (ftype (global-type var))
 	     (otype (cadr (cfun-args-type (global-value var))))))
-	 ((c-vector-set! %%vector-set!)
+	 (($vector-set! $vector-set-ur!)
 	  (instantiate::vset!
 	     (loc loc)
 	     (type (global-type var))
 	     (c-format (string-append gname "($1,$2,$3)"))
 	     (expr* args)
+	     (unsafe (eq? (global-id var) '$vector-set-ur!))
 	     (vtype (car (cfun-args-type (global-value var))))
 	     (otype (cadr (cfun-args-type (global-value var))))
 	     (ftype (caddr (cfun-args-type (global-value var))))))
-	 ((c-create-vector %%create-vector)
+	 (($create-vector)
 	  (let* ((stack-alloc (fun-stack-allocator (variable-value var)))
 		 (heap-format (string-append gname "($1)"))
 		 (stack-format (if (global? stack-alloc)

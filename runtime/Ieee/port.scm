@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Aug 18 15:56:30 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:13:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -810,15 +810,15 @@
 (define (get-port-buffer who bufinfo defsiz)
    (cond
       ((eq? bufinfo #t)
-       (c-make-string/wo-fill defsiz))
+       ($make-string/wo-fill defsiz))
       ((eq? bufinfo #f)
-       (c-make-string/wo-fill 2))
+       ($make-string/wo-fill 2))
       ((string? bufinfo)
        bufinfo)
       ((fixnum? bufinfo)
        (if (>fx bufinfo 0)
-	   (c-make-string/wo-fill bufinfo)
-	   (c-make-string/wo-fill 2)))
+	   ($make-string/wo-fill bufinfo)
+	   ($make-string/wo-fill 2)))
       (else
        (error who "Illegal buffer" bufinfo))))
 

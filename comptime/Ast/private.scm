@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Tue Sep  7 17:26:23 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 19:08:44 2010 (serrano)                */
 ;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -175,9 +175,7 @@
       (else
        (error "private->node"
 	      "Illegal private kind"
-	      (if (pair? (cdr sexp))
-		  (cadr sexp)
-		  sexp)))))
+	      (if (pair? (cdr sexp)) (cadr sexp) sexp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-private-sexp ...                                            */
