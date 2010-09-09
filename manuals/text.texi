@@ -123,12 +123,12 @@ The implementation of the table of hyphens created by @code{make-hyphens}
 follows closely Frank Liang's algorithm as published in his doctoral
 dissertation @emph{Word Hy-phen-a-tion By Com-pu-ter}
 available on the TeX Users Group site here:
-@indicateurl{http://www.tug.org/docs/liang/}. This table is a
-@emph{trie} (see @indicateurl{http://en.wikipedia.org/wiki/Trie} for
+@url{http://www.tug.org/docs/liang/}. This table is a
+@emph{trie} (see @url{http://en.wikipedia.org/wiki/Trie} for
 a definition and an explanation).
 
 Most of this implementation is borrowed from Phil Bewig's work available
-here: @indicateurl{http://sites.google.com/site/schemephil/}, along with
+here: @url{http://sites.google.com/site/schemephil/}, along with
 his paper describing the program from which the Bigloo implementation is
 largely borrowed.
 
