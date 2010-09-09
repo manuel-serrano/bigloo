@@ -59,7 +59,7 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Text function} bibtex-parse-autors string
+@deffn {Bigloo Text function} bibtex-parse-authors string
 This function parses the author field of a bibtex entry.
 
 Example:
@@ -92,12 +92,62 @@ Loads an hyphens table and returns a data structure suitable for
 @code{hyphenate}. The variable @var{obj} can either be a file name
 containing an hyphens table or a symbol denoting a pre-defined hyphens
 table. Currently, Bigloo supports two tables: @code{en} for an English
-table and @code{fr} for a French table.
+table and @code{fr} for a French table. The procedure @code{load-hyphens}
+invokes @code{make-hyphens} to build the hyphens table. 
 @end deffn
 
-@deffn {Bigloo Text function} make-hypens [:language] [:exceptions] [:patterns]
+Example:
+@smalllisp
+(define (hyphenate-text text lang)
+   (let ((table (with-handler 
+                   (lambda (e)               
+                      (unless (&io-file-not-found-error? e)
+                         (raise e)))
+                   (load-hyphens lang)))
+         (words (string-split text " ")))
+      (if table 
+          (append-map (lambda (w) (hyphenate w table)) words)
+           words)))
+@end smalllisp
+
+The procedure @code{hyphenate-text} hyphenates the words of the
+@code{text} according to the rules for the language denoted by
+its code @code{lang} if there is a file @var{lang}@code{-hyphens.sch}.
+If there is no such file, the text remains un-hyphenated.
+
+@deffn {Bigloo Text function} make-hyphens [:language] [:exceptions] [:patterns]
 Creates an hyphens table out of the arguments @var{exceptions} and 
 @var{patterns}.
+
+The implementation of the table of hyphens created by @code{make-hyphens}
+follows closely Frank Liang's algorithm as published in his doctoral
+dissertation @emph{Word Hy-phen-a-tion By Com-pu-ter}
+available on the TeX Users Group site here:
+@indicateurl{http://www.tug.org/docs/liang/}. This table is a
+@emph{trie} (see @indicateurl{http://en.wikipedia.org/wiki/Trie} for
+a definition and an explanation).
+
+Most of this implementation is borrowed from Phil Bewig's work available
+here: @indicateurl{http://sites.google.com/site/schemephil/}, along with
+his paper describing the program from which the Bigloo implementation is
+largely borrowed.
+
+@var{exceptions} must be a non-empty list of explicitly hyphenated
+words.
+
+Explicitly hyphenated words are like the following:
+@code{"as-so-ciate"}, @code{"as-so-ciates"}, @code{"dec-li-na-tion"},
+where the hyphens indicate the places where hyphenation is allowed.  The
+words in @var{exceptions} are used to generate hyphenation patterns,
+which are added to @var{patterns} (see next paragraph).
+
+@var{patterns} must be a non-empty list of hyphenation patterns.
+
+Hyphenation patterns are strings of the form @code{".anti5s"}, where a
+period denotes the beginning or the end of a word, an odd number denotes
+a place where hyphenation is allowed, and an even number a place where
+hyphenation is forbidden. This notation is part of Frank Liang's
+algorithm created for Donald Knuth's TeX typographic system.
 
 @end deffn
 

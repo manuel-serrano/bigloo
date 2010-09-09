@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep  1 10:20:35 2010 (serrano)                */
+#*    Last change :  Wed Sep  8 12:14:00 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -57,7 +57,7 @@ bigloo=$BIGLOO # used only for cross compiling
 if [ "$BFLAGS " != " " ]; then
   bflags=$BFLAGS;
 else
-  bflags="-O3 -q";
+  bflags="-O3 -fcfa-arithmetic -q";
 fi
 bootflags=""
 featureflags=

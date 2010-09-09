@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Sep  7 07:57:43 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 11:58:08 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1155,8 +1155,7 @@
       (set! *optim-jvm-branch* 3)
       (set! *optim-jvm-fasteq* #t)
       (set! *optim-reduce-beta?* #t)
-      (set! *optim-cfa-flonum-arithmetic?* #t)
-      '(set! *rgc-optim* #t))
+      (set! *optim-cfa-flonum-arithmetic?* #t))
    (define (-O3!)
       (-O2!)
       (set! *optim-jvm-inlining* 3)

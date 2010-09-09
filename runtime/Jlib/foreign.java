@@ -3761,6 +3761,7 @@ public final class foreign
    public static final int BGL_LOCATION_ERROR = 2;
    
    public static final int BGL_TYPE_ERROR = 10;
+   public static final int BGL_INDEX_OUT_OF_BOUND_ERROR = 11;
    
    public static final int BGL_IO_ERROR = 20;
    public static final int BGL_IO_PORT_ERROR = 21;
@@ -3789,6 +3790,10 @@ public final class foreign
 
       if( v instanceof SocketTimeoutException ) {
 	 return BGL_IO_TIMEOUT_ERROR;
+      }
+      
+      if( v instanceof ArrayIndexOutOfBoundsException ) {
+	 return BGL_INDEX_OUT_OF_BOUND_ERROR;
       }
       
       return BGL_ERROR;

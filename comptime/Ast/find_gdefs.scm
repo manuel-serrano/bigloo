@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/find-gdefs.scm          */
+;*    serrano/prgm/project/bigloo/comptime/Ast/find_gdefs.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Fri Dec  9 14:21:08 2005 (serrano)                */
+;*    Last change :  Thu Sep  9 15:13:41 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */
@@ -230,6 +230,8 @@
 			   (cond
 			      ((null? bindings)
 			       stack)
+			      ((not (pair? bindings))
+			       (user-error "let" "Illegal bindings" exp '()))
 			      ((not (pair? (car bindings)))
 			       (loop (cons (id-of-id (car bindings)
 						     (find-location exp))
@@ -241,13 +243,16 @@
 					   stack)
 				     (cdr bindings)))))))
 	  (find-mutations! body new-stack)
-	  (for-each (lambda (b) (find-mutations! (cdr b) stack)) bindings)))
+	  (when (pair? bindings)
+	     (for-each (lambda (b) (find-mutations! (cdr b) stack)) bindings))))
       ((letrec ?bindings . ?body)
-       (let ((new-stack (let loop ((stack    stack)
+       (let ((new-stack (let loop ((stack stack)
 				   (bindings bindings))
 			   (cond
 			      ((null? bindings)
 			       stack)
+			      ((not (pair? bindings))
+			       (user-error "letrec" "Illegal bindings" exp '()))
 			      ((not (pair? (car bindings)))
 			       (loop (cons (id-of-id (car bindings)
 						     (find-location exp))
@@ -259,16 +264,18 @@
 					   stack)
 				     (cdr bindings)))))))
 	  (find-mutations! body new-stack)
-	  (for-each (lambda (b) (find-mutations! (cdr b) new-stack))
-		    bindings)))
+	  (when (pair? bindings)
+	     (for-each (lambda (b) (find-mutations! (cdr b) new-stack))
+		       bindings))))
       ((labels ?bindings . ?body)
-       (let* ((loc       (find-location exp))
+       (let* ((loc (find-location exp))
 	      (new-stack (push-args (map car bindings) stack loc)))
 	  (find-mutations! body new-stack)
-	  (for-each (lambda (b)
-		       (find-mutations! (cddr b)
-					(push-args (cadr b) new-stack loc)))
-		    bindings)))
+	  (when (pair? bindings)
+	     (for-each (lambda (b)
+			  (find-mutations! (cddr b)
+					   (push-args (cadr b) new-stack loc)))
+		       bindings))))
       ((lambda ?args . ?body)
        (find-mutations! body (push-args args stack (find-location exp))))
       ((bind-exit ?exit . ?body)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Sep  8 09:17:20 2010 (serrano)                */
+;*    Last change :  Thu Sep  9 17:18:00 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -46,6 +46,8 @@
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
+	    (macro $errno-type-error::int "BGL_TYPE_ERROR")
+	    (macro $errno-index-out-of-bound-error::int "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	    (macro $errno-io-error::int "BGL_IO_ERROR")
 	    (macro $errno-io-port-error::int "BGL_IO_PORT_ERROR")
 	    (macro $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
@@ -103,19 +105,37 @@
 	       (field static sigsegv::int "SIGSEGV")
 	       (field static sigpipe::int "SIGPIPE")
 	       
-	       (field static $errno-io-error::int "BGL_IO_ERROR")
-	       (field static $errno-io-port-error::int "BGL_IO_PORT_ERROR")
-	       (field static $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
-	       (field static $errno-io-read-error::int "BGL_IO_READ_ERROR")
-	       (field static $errno-io-write-error::int "BGL_IO_WRITE_ERROR")
+	       (field static $errno-type-error::int
+		      "BGL_TYPE_ERROR")
+	       (field static $errno-index-out-of-bound-error::int
+		      "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	       
-	       (field static $errno-io-file-not-found-error::int "BGL_IO_FILE_NOT_FOUND_ERROR")
-	       (field static $errno-io-unknown-host-error::int "BGL_IO_UNKNOWN_HOST_ERROR")
-	       (field static $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
-	       (field static $errno-io-malformed-url-error::int "BGL_IO_MALFORMED_URL_ERROR")
-	       (field static $errno-io-sigpipe-error::int "BGL_IO_SIGPIPE_ERROR")
-	       (field static $errno-io-timeout-error::int "BGL_IO_TIMEOUT_ERROR")
-	       (field static $errno-process-exception::int "BGL_PROCESS_EXCEPTION")))
+	       (field static $errno-io-error::int
+		      "BGL_IO_ERROR")
+	       (field static $errno-io-port-error::int
+		      "BGL_IO_PORT_ERROR")
+	       (field static $errno-io-parse-error::int
+		      "BGL_IO_PARSE_ERROR")
+	       (field static $errno-io-read-error::int
+		      "BGL_IO_READ_ERROR")
+	       (field static $errno-io-write-error::int
+		      "BGL_IO_WRITE_ERROR")
+	       
+	       (field static $errno-io-file-not-found-error::int
+		      "BGL_IO_FILE_NOT_FOUND_ERROR")
+	       (field static $errno-io-unknown-host-error::int
+		      "BGL_IO_UNKNOWN_HOST_ERROR")
+	       (field static $errno-io-parse-error::int
+		      "BGL_IO_PARSE_ERROR")
+	       
+	       (field static $errno-io-malformed-url-error::int
+		      "BGL_IO_MALFORMED_URL_ERROR")
+	       (field static $errno-io-sigpipe-error::int
+		      "BGL_IO_SIGPIPE_ERROR")
+	       (field static $errno-io-timeout-error::int
+		      "BGL_IO_TIMEOUT_ERROR")
+	       (field static $errno-process-exception::int
+		      "BGL_PROCESS_EXCEPTION")))
    
    (import  __r4_input_6_10_2
 	    __object)
@@ -260,6 +280,10 @@
        (raise (make-&io-timeout-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-process-exception)
        (raise (make-&process-exception #f #f (get-trace-stack) proc msg obj)))
+      ((=fx sysno $errno-type-error)
+       (raise (type-error #f #f proc msg obj)))
+      ((=fx sysno $errno-index-out-of-bound-error)
+       (raise (index-out-of-bounds-error #f #f proc msg obj)))
       (else
        (error proc msg obj))))
 
@@ -447,9 +471,13 @@
 ;*    index-out-of-bounds-error ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (index-out-of-bounds-error fname loc proc len obj)
-   (let ((msg (string-append "index out of range [0.."
-			     (integer->string (-fx len 1))
-			     "]")))
+   (let* ((len (cond
+		  ((fixnum? len) len)
+		  ((string? len) (string->integer len))
+		  (else 0)))
+	  (msg (string-append "index out of range [0.."
+			      (integer->string (-fx len 1))
+			      "]")))
       (make-&index-out-of-bounds-error fname loc
 				       (get-trace-stack)
 				       proc msg obj len)))
