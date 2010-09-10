@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Sep 10 09:04:31 2010 (serrano)                */
+;*    Last change :  Fri Sep 10 17:42:04 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -47,6 +47,7 @@
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
 	    (macro $errno-type-error::int "BGL_TYPE_ERROR")
+	    (macro $errno-typename-error::int "BGL_TYPENAME_ERROR")
 	    (macro $errno-index-out-of-bound-error::int "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	    (macro $errno-io-error::int "BGL_IO_ERROR")
 	    (macro $errno-io-port-error::int "BGL_IO_PORT_ERROR")
@@ -107,6 +108,8 @@
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")
+	       (field static $errno-typename-error::int
+		      "BGL_TYPENAME_ERROR")
 	       (field static $errno-index-out-of-bound-error::int
 		      "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	       
@@ -282,6 +285,8 @@
        (raise (make-&process-exception #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-type-error)
        (raise (type-error #f #f proc msg obj)))
+      ((=fx sysno $errno-typename-error)
+       (raise (typename-error #f #f proc msg obj)))
       ((=fx sysno $errno-index-out-of-bound-error)
        (raise (index-out-of-bounds-error #f #f proc msg obj)))
       (else
@@ -466,6 +471,17 @@
 		 (else "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
       (make-&type-error fname loc (get-trace-stack) proc msg obj type)))
+
+;*---------------------------------------------------------------------*/
+;*    typename-error ...                                               */
+;*---------------------------------------------------------------------*/
+(define (typename-error fname loc proc type obj)
+   (let* ((ty (cond
+		 ((string? type) type)
+		 ((symbol? type) (symbol->string type))
+		 (else "???")))
+	  (msg (bigloo-type-error-msg "Type" ty obj)))
+      (make-&type-error fname loc (get-trace-stack) proc msg #unspecified type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    index-out-of-bounds-error ...                                    */
@@ -751,7 +767,7 @@
 	 (display num port)
 	 (display ")" port))
       (newline port))
-   
+
    (when (pair? stack)
       (let loop ((i 1)
 		 (stack (cdr stack))

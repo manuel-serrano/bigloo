@@ -5,6 +5,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.lang.Runtime;
 import java.net.*;
+import java.util.regex.*;
 
 public final class foreign
 {
@@ -3761,7 +3762,8 @@ public final class foreign
    public static final int BGL_LOCATION_ERROR = 2;
    
    public static final int BGL_TYPE_ERROR = 10;
-   public static final int BGL_INDEX_OUT_OF_BOUND_ERROR = 11;
+   public static final int BGL_TYPENAME_ERROR = 11;
+   public static final int BGL_INDEX_OUT_OF_BOUND_ERROR = 12;
    
    public static final int BGL_IO_ERROR = 20;
    public static final int BGL_IO_PORT_ERROR = 21;
@@ -4061,6 +4063,42 @@ public final class foreign
    }
 
    private static Boolean err_lock = new Boolean( true );
+
+   public static void notify_exception( Throwable e ) throws Throwable {
+      if( e instanceof ClassCastException ) {
+	 Pattern p = Pattern.compile( "bigloo.([_A-Za-z0-9]+) cannot be cast to bigloo.([_A-Za-z0-9]+)");
+	 Matcher m = p.matcher( e.getMessage() );
+
+	 if( m.matches() ) {
+	    String s1 = m.group( 1 );
+	    String s2 = m.group( 2 );
+
+	    bigloo.runtime.Llib.error.bgl_system_failure(
+	       BGL_TYPENAME_ERROR,
+	       stack_trace.get_top(),
+	       s2.getBytes(),
+	       s1.getBytes() );
+	 } else {
+	    bigloo.runtime.Llib.error.bgl_system_failure(
+	       BGL_TYPE_ERROR,
+	       stack_trace.get_top(),
+	       e.getMessage().getBytes(),
+	       JDK.getExceptionCause( e ) );
+	 }
+      } else if( e instanceof IndexOutOfBoundsException ) {
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    BGL_INDEX_OUT_OF_BOUND_ERROR,
+	    stack_trace.get_top(),
+	    e.getMessage().getBytes(),
+	    JDK.getExceptionCause( e ) );
+      } else {
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    throwable_errno( e ),
+	    symbol.make_symbol( e.getClass().getName().getBytes() ),
+	    e.getMessage().getBytes(),
+	    JDK.getExceptionCause( e ) );
+      }
+   }
    
    public static Object java_exception_handler(Throwable v, exit tag) {
       if( v instanceof java.lang.StackOverflowError ) {
@@ -4070,121 +4108,95 @@ public final class foreign
 	    v.printStackTrace( new stackwriter( System.err, true ) );
 	 }
       } else {
-	 // find the most suitable exception notifier
 	 try {
-	    if( v instanceof IndexOutOfBoundsException ) {
-
-	       bigloo.runtime.Llib.error.bgl_system_failure(
-		  throwable_errno( v ),
-		  stack_trace.get_top(),
-		  v.getMessage().getBytes(),
-		  v.getClass().getName().getBytes() );
-	    } else {
-	       synchronized( err_lock ) {
-		  System.err.println( "*** JVM " + v.getClass() + " error: " );
-		  v.printStackTrace( new stackwriter( System.err, true ) );
-	       }
-	    
-	       bigloo.runtime.Llib.error.bgl_system_failure(
-		  throwable_errno( v ),
-		  symbol.make_symbol( v.getClass().getName().getBytes() ),
-		  v.getMessage().getBytes(),
-		  JDK.getExceptionCause( v ) );
-	    }
+	    notify_exception( v );
 	 } catch( bexception be ) {
 	    return debug_handler( be, tag );
+	 } catch( Throwable _ ) {
+	    System.err.println( "Unexpect Java Exception: " +
+				v.getClass().getName().getBytes() );
 	 }
       }
       
       return unspecified.unspecified;
    }
 
-   public static RuntimeException fail(Object proc, Object msg, Object env)
-      {
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+   public static RuntimeException fail(Object proc, Object msg, Object env) {
+      bigloo.runtime.Llib.error.the_failure(proc, msg, env);
 
-	 final RuntimeException e = new RuntimeException("bigloo error...");
-	 final stackwriter sw = new stackwriter(System.err, true);
+      final RuntimeException e = new RuntimeException("bigloo error...");
+      final stackwriter sw = new stackwriter(System.err, true);
 
-	 e.printStackTrace(sw);
-	 sw.flush();
+      e.printStackTrace(sw);
+      sw.flush();
 
-	 bigloo_abort();
+      bigloo_abort();
       
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+      final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
+      if (v instanceof bint)
+	 System.exit(CINT((bint) v));
+      else
+	 System.exit(1);
 
-	 return e;
-      }
+      return e;
+   }
 
-   public static RuntimeException fail(Object proc, Throwable x, Object env)
-      {
-	 byte[] msg = (x.getMessage() != null)
-	    ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+   public static RuntimeException fail(Object proc, Throwable x, Object env) {
+      byte[] msg = (x.getMessage() != null)
+	 ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
+      bigloo.runtime.Llib.error.the_failure(proc, msg, env);
 
-	 final RuntimeException e = new RuntimeException("bigloo error...");
-	 final stackwriter sw = new stackwriter(System.err, true);
+      final RuntimeException e = new RuntimeException("bigloo error...");
+      final stackwriter sw = new stackwriter(System.err, true);
 
-	 e.printStackTrace(sw);
-	 sw.flush();
+      e.printStackTrace(sw);
+      sw.flush();
 
-	 bigloo_abort();
+      bigloo_abort();
       
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+      final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
+      if (v instanceof bint)
+	 System.exit(CINT((bint) v));
+      else
+	 System.exit(1);
 
-	 return e;
-      }
+      return e;
+   }
 
-   public static Throwable fail( Throwable e, Object proc, Object msg, Object env)
-      {
-	 final stackwriter sw = new stackwriter(System.err, true);
+   public static Throwable fail( Throwable e, Object proc, Object msg, Object env) {
+      final stackwriter sw = new stackwriter(System.err, true);
 
-	 e.printStackTrace(sw);
-	 sw.flush();
+      e.printStackTrace(sw);
+      sw.flush();
 
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
-	 bigloo_abort();
+      bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+      bigloo_abort();
       
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+      final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
+      if (v instanceof bint)
+	 System.exit(CINT((bint) v));
+      else
+	 System.exit(1);
       
-	 return e;
-      }
+      return e;
+   }
 
    public static void internalerror(Throwable e) throws Throwable {
       try {
-	 if( e instanceof IndexOutOfBoundsException ) {
-	    bigloo.runtime.Llib.error.bgl_system_failure(
-	       BGL_INDEX_OUT_OF_BOUND_ERROR,
-	       stack_trace.get_top(),
-	       e.getMessage().getBytes(),
-	       JDK.getExceptionCause( e ) );
-	 } else {
-	    System.err.println("Bigloo JVM: Internal error..." );
-	 }
+	 notify_exception( e );
       } catch( Throwable _ ) {
+      } finally {
+	 synchronized( err_lock ) {
+	    final stackwriter sw = new stackwriter( System.err, true );
+	    System.err.println();
+	    e.printStackTrace( sw );
+	    sw.flush();
+	 }
       }
-      
-
-      final stackwriter sw = new stackwriter( System.err, true );
-      System.err.println();
-      e.printStackTrace( sw );
-      sw.flush();
-
+	 
       bigloo_abort();
       System.exit(1);
    }
@@ -4479,36 +4491,25 @@ public final class foreign
 	    return s.getBytes();
       }
 
-   public static byte[] getenv(byte[]name)
-      {
-	 final String sname = new String(name);
+   public static byte[] getenv(byte[]name) {
+      final String sname = new String(name);
 
-	 if (sname.equals("HOME") || sname.equals("USERPROFILE") )
-	    return get_property("user.home", null);
-	 if (sname.equals("USER"))
-	    return get_property("user.name", null);
-	 if (sname.equals("CLASSPATH"))
-	    return get_property("java.library.path", null);
-	 if (sname.equals("TMPDIR"))
-	    return get_property("java.io.tmpdir", null);
-	 if (sname.equals("BIGLOOSTACKDEPTH") || sname.equals("BIGLOOLIVEPROCESS"))
-	    return get_property("bigloo." + new String(name), "0");
+      if (sname.equals("HOME") || sname.equals("USERPROFILE") )
+	 return get_property("user.home", null);
+      if (sname.equals("USER"))
+	 return get_property("user.name", null);
+      if (sname.equals("CLASSPATH"))
+	 return get_property("java.library.path", null);
+      if (sname.equals("TMPDIR"))
+	 return get_property("java.io.tmpdir", null);
+      if (sname.equals("BIGLOOSTACKDEPTH") || sname.equals("BIGLOOLIVEPROCESS"))
 	 return get_property("bigloo." + new String(name), null);
-      }
+      return get_property("bigloo." + new String(name), null);
+   }
 
-   public static boolean getenv_exists(byte[]name)
-      {
-	 final String sname = new String(name);
-
-	 return (sname.equals("HOME")
-		 || sname.equals("USERPROFILE")
-		 || sname.equals("USER")
-		 || sname.equals("CLASSPATH")
-		 || sname.equals("TMPDIR")
-		 || sname.equals("BIGLOOSTACKDEPTH")
-		 || sname.equals("BIGLOOLIVEPROCESS")
-		 || (get_property("bigloo." + sname, null) != null));
-      }
+   public static boolean getenv_exists(byte[]name) {
+      return (get_property("bigloo." + new String(name), null) != null);
+   }
 
    public static int bgl_setenv(byte[]name, byte[]val)
       {

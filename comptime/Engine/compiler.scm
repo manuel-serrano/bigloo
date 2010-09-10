@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep  7 15:18:35 2010 (serrano)                */
+;*    Last change :  Fri Sep 10 17:21:27 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -90,6 +90,13 @@
 
    ;; we build the ad-hoc backend
    (set-backend! *target-language*)
+
+   ;; adjust the compilation parameters according to the backend specificities
+   (unless (>fx (bigloo-compiler-debug) 0)
+      (unless (backend-bound-check (the-backend))
+	 (set! *unsafe-range* #t))
+      (unless (backend-type-check (the-backend))
+	 (set! *unsafe-type* #t)))
    
    ;; we read the source file
    (let ((src (*pre-processor* (profile read (read-src)))))

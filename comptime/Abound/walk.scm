@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Sep  8 08:46:11 2010 (serrano)                */
+;*    Last change :  Fri Sep 10 17:22:27 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checking                                   */
@@ -24,14 +24,18 @@
 	    ast_local
 	    ast_env
 	    ast_sexp
-	    ast_private)
+	    ast_private
+	    backend_backend)
    (export  (abound-walk! globals)))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-walk! ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    When the compiler is running in unsafe-range mode, this function */
+;*    is not even called.                                              */
 ;*---------------------------------------------------------------------*/
 (define (abound-walk! globals)
-   (pass-prelude "Abound" init-cache!)
+   (pass-prelude "Abound" init-cache!) 
    (for-each abound-fun! globals)
    (pass-postlude globals clear-cache!))
 

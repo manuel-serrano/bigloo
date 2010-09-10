@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Aug 30 14:36:29 2010 (serrano)                */
+#*    Last change :  Fri Sep 10 16:50:27 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -142,7 +142,7 @@ JLIB		= foreign buffer configure stackwriter\
 		  callcc keyword symbol \
 		  cobj cell magic \
 		  cnst nil \
-		  constant numeral \
+		  numeral \
 		  custom obj unspecified \
 		  eof object generic \
 		  exit optional \
@@ -177,7 +177,7 @@ CSLIB		= foreign buffer configure stackwriter\
 		  callcc keyword symbol \
 		  cobj cell magic \
 		  cnst nil \
-		  constant numeral \
+		  numeral \
 		  custom obj unspecified \
 		  eof object generic \
 		  exit optional \

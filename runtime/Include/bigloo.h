@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Sep  9 16:02:13 2010 (serrano)                */
+/*    Last change :  Fri Sep 10 17:39:21 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1462,7 +1462,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_LOCATION_ERROR            2
    
 #define BGL_TYPE_ERROR               10
-#define BGL_INDEX_OUT_OF_BOUND_ERROR 11
+#define BGL_TYPENAME_ERROR           11
+#define BGL_INDEX_OUT_OF_BOUND_ERROR 12
    
 #define BGL_IO_ERROR                 20   
 #define BGL_IO_PORT_ERROR            21
