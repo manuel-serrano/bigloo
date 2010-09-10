@@ -3792,7 +3792,7 @@ public final class foreign
 	 return BGL_IO_TIMEOUT_ERROR;
       }
       
-      if( v instanceof ArrayIndexOutOfBoundsException ) {
+      if( v instanceof IndexOutOfBoundsException ) {
 	 return BGL_INDEX_OUT_OF_BOUND_ERROR;
       }
       
@@ -3951,85 +3951,6 @@ public final class foreign
       ;
    }
    
-   public static RuntimeException fail(Object proc, Object msg, Object env)
-      {
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
-
-	 final RuntimeException e = new RuntimeException("bigloo error...");
-	 final stackwriter sw = new stackwriter(System.err, true);
-
-	 e.printStackTrace(sw);
-	 sw.flush();
-
-	 bigloo_abort();
-      
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
-
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
-
-	 return e;
-      }
-
-   public static RuntimeException fail(Object proc, Throwable x, Object env)
-      {
-	 byte[] msg = (x.getMessage() != null)
-	    ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
-
-	 final RuntimeException e = new RuntimeException("bigloo error...");
-	 final stackwriter sw = new stackwriter(System.err, true);
-
-	 e.printStackTrace(sw);
-	 sw.flush();
-
-	 bigloo_abort();
-      
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
-
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
-
-	 return e;
-      }
-
-   public static Throwable fail( Throwable e, Object proc, Object msg, Object env)
-      {
-	 final stackwriter sw = new stackwriter(System.err, true);
-
-	 e.printStackTrace(sw);
-	 sw.flush();
-
-	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
-	 bigloo_abort();
-      
-	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
-
-	 if (v instanceof bint)
-	    System.exit(CINT((bint) v));
-	 else
-	    System.exit(1);
-      
-	 return e;
-      }
-
-   public static void internalerror(Throwable e) throws Throwable {
-      final stackwriter sw = new stackwriter(System.err, true);
-
-      System.err.println("Bigloo JVM: Internal error..." );
-      
-      e.printStackTrace(sw);
-      sw.flush();
-
-      bigloo_abort();
-
-      System.exit(1);
-   }
-
    public static final byte[] nomsg = "null".getBytes();
 
    public static RuntimeException fail(String proc, String msg, Object env)
@@ -4151,22 +4072,121 @@ public final class foreign
       } else {
 	 // find the most suitable exception notifier
 	 try {
-	    synchronized( err_lock ) {
-	       System.err.println( "*** JVM " + v.getClass() + " error: " );
-	       v.printStackTrace( new stackwriter( System.err, true ) );
-	    }
+	    if( v instanceof IndexOutOfBoundsException ) {
+
+	       bigloo.runtime.Llib.error.bgl_system_failure(
+		  throwable_errno( v ),
+		  stack_trace.get_top(),
+		  v.getMessage().getBytes(),
+		  v.getClass().getName().getBytes() );
+	    } else {
+	       synchronized( err_lock ) {
+		  System.err.println( "*** JVM " + v.getClass() + " error: " );
+		  v.printStackTrace( new stackwriter( System.err, true ) );
+	       }
 	    
-	    bigloo.runtime.Llib.error.bgl_system_failure(
-	       throwable_errno( v ),
-	       symbol.make_symbol( v.getClass().getName().getBytes() ),
-	       v.getMessage().getBytes(),
-	       JDK.getExceptionCause( v ) );
+	       bigloo.runtime.Llib.error.bgl_system_failure(
+		  throwable_errno( v ),
+		  symbol.make_symbol( v.getClass().getName().getBytes() ),
+		  v.getMessage().getBytes(),
+		  JDK.getExceptionCause( v ) );
+	    }
 	 } catch( bexception be ) {
 	    return debug_handler( be, tag );
 	 }
       }
       
       return unspecified.unspecified;
+   }
+
+   public static RuntimeException fail(Object proc, Object msg, Object env)
+      {
+	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+
+	 final RuntimeException e = new RuntimeException("bigloo error...");
+	 final stackwriter sw = new stackwriter(System.err, true);
+
+	 e.printStackTrace(sw);
+	 sw.flush();
+
+	 bigloo_abort();
+      
+	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+
+	 if (v instanceof bint)
+	    System.exit(CINT((bint) v));
+	 else
+	    System.exit(1);
+
+	 return e;
+      }
+
+   public static RuntimeException fail(Object proc, Throwable x, Object env)
+      {
+	 byte[] msg = (x.getMessage() != null)
+	    ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
+	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+
+	 final RuntimeException e = new RuntimeException("bigloo error...");
+	 final stackwriter sw = new stackwriter(System.err, true);
+
+	 e.printStackTrace(sw);
+	 sw.flush();
+
+	 bigloo_abort();
+      
+	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+
+	 if (v instanceof bint)
+	    System.exit(CINT((bint) v));
+	 else
+	    System.exit(1);
+
+	 return e;
+      }
+
+   public static Throwable fail( Throwable e, Object proc, Object msg, Object env)
+      {
+	 final stackwriter sw = new stackwriter(System.err, true);
+
+	 e.printStackTrace(sw);
+	 sw.flush();
+
+	 bigloo.runtime.Llib.error.the_failure(proc, msg, env);
+	 bigloo_abort();
+      
+	 final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
+
+	 if (v instanceof bint)
+	    System.exit(CINT((bint) v));
+	 else
+	    System.exit(1);
+      
+	 return e;
+      }
+
+   public static void internalerror(Throwable e) throws Throwable {
+      try {
+	 if( e instanceof IndexOutOfBoundsException ) {
+	    bigloo.runtime.Llib.error.bgl_system_failure(
+	       BGL_INDEX_OUT_OF_BOUND_ERROR,
+	       stack_trace.get_top(),
+	       e.getMessage().getBytes(),
+	       JDK.getExceptionCause( e ) );
+	 } else {
+	    System.err.println("Bigloo JVM: Internal error..." );
+	 }
+      } catch( Throwable _ ) {
+      }
+      
+
+      final stackwriter sw = new stackwriter( System.err, true );
+      System.err.println();
+      e.printStackTrace( sw );
+      sw.flush();
+
+      bigloo_abort();
+      System.exit(1);
    }
 
    public static Object PUSH_EXIT(exit v, int protect) {

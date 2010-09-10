@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Tue Aug 24 14:33:35 2010 (serrano)                */
+;*    Last change :  Fri Sep 10 10:28:09 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -122,6 +122,7 @@
 	    
 	    (class &error)
 	    (class &type-error)
+	    (class &index-out-of-bounds-error)
 	    (class &io-error)
 	    (class &io-port-error)
 	    (class &io-read-error)
