@@ -4507,8 +4507,15 @@ public final class foreign
       return get_property("bigloo." + new String(name), null);
    }
 
-   public static boolean getenv_exists(byte[]name) {
-      return (get_property("bigloo." + new String(name), null) != null);
+   public static boolean getenv_exists( byte[]name ) {
+      final String sname = new String( name );
+      
+      return (sname.equals("HOME")
+	      || sname.equals("USERPROFILE")
+	      || sname.equals("USER")
+	      || sname.equals("CLASSPATH")
+	      || sname.equals("TMPDIR")
+	      || (get_property("bigloo." + sname, null) != null) );
    }
 
    public static int bgl_setenv(byte[]name, byte[]val)
