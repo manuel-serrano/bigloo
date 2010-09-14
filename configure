@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep  8 12:14:00 2010 (serrano)                */
+#*    Last change :  Tue Sep 14 14:16:56 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -282,6 +282,7 @@ buildsh=
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
 #*---------------------------------------------------------------------*/
 action=all
+actiongc=install
 branch="`echo $release | sed 's/[.a-z]*//g'`0";
 mode=standard
 tuning=
@@ -424,6 +425,9 @@ while : ; do
 
     --gccustomversion=*)
       gccustom="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --gccustominstall=*)
+      actiongc="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --fildir=*)
       fildir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -926,6 +930,7 @@ while : ; do
       echo "   --gclibdir=dir (non-custom gc library dir (/usr/lib)" >&2;
       echo "   --gcincdir=dir (non-custon gc include dir (/usr/include/gc)" >&2;
       echo "   --gccustomversion=version (custom gc version, e.g. \"gc-7.1\")" >&2;
+      echo "   --gccustominstall=[install|skip] (configure and install the gc))" >&2;
       echo "" >&2;
       echo "Tools and compilers:"  >&2;
       echo "   --bigloo=comp [default bigloo]" >&2;
@@ -1674,17 +1679,19 @@ if [ "$action" != "bigloo_config_el" ]; then
     gcconfiguredir="--prefix=$pwd/gc/preinst"
     # install the gc source code if needed
   
-    if [ ! -d gc/$gccustom ]; then
-      echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
+    if [ $actiongc = "install" ]; then
+      if [ ! -d gc/$gccustom ]; then
+        echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
   
-      (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
-    fi
+        (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
+      fi
   
-    if [ -f gc/configure-$gccustom ]; then
-      autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
-      gcconfigureopt="$autoopts $gcconfigureopt"
-      echo "+ Configuring custom GC..." && \
-      (. ./gc/configure-$gccustom) || exit 1
+      if [ -f gc/configure-$gccustom ]; then
+        autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+        gcconfigureopt="$autoopts $gcconfigureopt"
+        echo "+ Configuring custom GC..." && \
+        (. ./gc/configure-$gccustom) || exit 1
+      fi
     fi
   fi
   

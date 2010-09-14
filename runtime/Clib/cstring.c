@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Wed Aug 25 10:08:23 2010 (serrano)                */
+/*    Last change :  Tue Sep 14 14:40:50 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -31,7 +31,7 @@ string_to_bstring_len( char *c_string, int len ) {
 #endif	
    string->string_t.length = len;
 
-   dst = (char *)&(string->string_t.char0);
+   dst = BSTRING_TO_STRING( BSTRING( string ) );
    for( ; len > 0; len-- )
       *dst++ = *c_string++;
   
@@ -83,7 +83,7 @@ make_string( int len, unsigned char c ) {
       string->string_t.length = len;
 
       memset( &(string->string_t.char0), c, len );
-      (&(string->string_t.char0))[ len ] = '\0';
+      STRING_SET( BSTRING( string ), len, '\0' );
 		
       return BSTRING( string );
    }
@@ -105,7 +105,7 @@ make_string_sans_fill( int len ) {
 #endif	
    string->string_t.length = len;
 
-   (&(string->string_t.char0))[ len ] = '\0';
+   STRING_SET( BSTRING( string ), len, '\0' );
 		
    return BSTRING( string );
 }
@@ -183,7 +183,7 @@ c_substring( obj_t src_string, int min, int max ) {
    memcpy( &(dst_string->string_t.char0),
 	   &STRING_REF( src_string, min ),
             len );
-   (&(dst_string->string_t.char0))[ len ] = '\0';
+   STRING_SET( BSTRING( dst_string ), len, '\0' );
 
    return BSTRING( dst_string );
 }

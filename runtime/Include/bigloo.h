@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Sep 10 17:39:21 2010 (serrano)                */
+/*    Last change :  Tue Sep 14 14:28:33 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -273,7 +273,7 @@ typedef union scmobj {
       header_t        header;    /*  longueur, la chaine C suit.       */
 #endif		
       int             length;
-      unsigned char   char0;
+      unsigned char   char0[ 1 ];
    } string_t;
 
    struct ucs2_string {          /*  Ucs2 strings:                     */
@@ -511,16 +511,17 @@ typedef union scmobj {
    } mmap_t;
 
    struct bgl_hvector {
-      header_t        header;
-      unsigned int    length;
+      header_t header;
+      unsigned int length;
    } hvector_t;             
 
    struct bgl_weakptr {
-      header_t        header;
-      union scmobj   *data;
+      header_t header;
+      union scmobj *data;
    } weakptr_t;
 
-   struct bgl_dynamic_env {      /* Thread dynamic environment         */
+   /* Thread dynamic environment         */
+   struct bgl_dynamic_env {      
       header_t        header;
       /* global IO ports */
       union scmobj *current_output_port;
