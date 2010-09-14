@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep 14 14:16:56 2010 (serrano)                */
+#*    Last change :  Tue Sep 14 14:41:29 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1339,23 +1339,6 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
 
   if [ "$strip " = " " ]; then strip="strip"; fi
   strip=`$autoconf strip --strip=$strip` || exit 1
-fi
-
-#*---------------------------------------------------------------------*/
-#*    Test for fortify/abort                                           */
-#*    gcc-4.5 -D_FORTIFY_SOURCE=2 makes bigloo to fail at runtime      */
-#*---------------------------------------------------------------------*/
-fortify=`$autoconf ccfortify --cflags="$cflags"`
-if [ $fortify = "2" ]; then
-    # We first filter out -D_FORTIFY_SOURCE=2 if it is in cflags
-    tmp_new_cflags="";
-    for flag in $cflags; do
-	if [ "$flag " != "-D_FORTIFY_SOURCE=2 " ]; then
-	    tmp_new_cflags="$tmp_new_cflags $flag"
-	fi
-    done
-    # Then add the new flag at the end
-    cflags="$tmp_new_cflags -D_FORTIFY_SOURCE=1"
 fi
 
 #*---------------------------------------------------------------------*/
