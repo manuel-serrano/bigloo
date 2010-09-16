@@ -14,15 +14,38 @@ Compiling Bigloo for Android requires several things:
  configuration simpler).
 
  * Android SDK[2].
- * Android's source code (Warning: it's a big download). Follow these[3]
-   instructions.
  * Download droid-wrapper[4]. The command is:
    'git clone git://github.com/tmurakam/droid-wrapper.git'. Then apply
    version-linker.diff shipped in this directory and install.
+ * Get Android Eclair's source code, for which you'll need git. See instructions
+   below.
 
 Also you will require:
 
  * An already compiled and running bigloo version for the host platform.
+
+
+Android Code:
+============
+
+These instructions are based on [3].
+
+First, you might need to introduce yourself to git:
+
+   git config --global user.email "you@example.com"
+   git config --global user.name "Your Name"
+
+Download repo, a wrapper around git:
+
+   curl http://android.git.kernel.org/repo > ~/bin/repo
+   chmod a+x ~/bin/repo
+
+Get Eclair's definitions and source code:
+
+   mkdir eclair-git
+   cd eclair-git
+   repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
+   repo sync
 
 
 Configuring:
