@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Thu Nov  9 08:48:08 2006 (serrano)                */
-;*    Copyright   :  2003-06 Manuel Serrano                            */
+;*    Last change :  Fri Sep 10 16:04:30 2010 (serrano)                */
+;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -43,7 +43,9 @@
 	      (tvector-descr-support::bool (default #t))
 	      (require-tailc::bool (default #f))
 	      (registers::pair-nil (default '()))
-	      (pregisters::pair-nil (default '()))))
+	      (pregisters::pair-nil (default '()))
+	      (bound-check::bool (default #t))
+	      (type-check::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)

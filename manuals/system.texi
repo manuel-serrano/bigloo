@@ -31,6 +31,21 @@
 @subsection Operating System interface
 @cindex operating system interface
 
+@deffn {bigloo procedure} bigloo-config
+@deffnx {bigloo procedure} bigloo-config key
+The function @code{bigloo-config} returns an alist representing the
+configuration of the running Bigloo system. When used with one parameter,
+the function @code{bigloo-config} returns the value associated with the key.
+
+Examples:
+
+@smalllisp
+(bigloo-config) @result{} ((release-number . 3.4b) ... (endianess . little-endian))
+(bigloo-config 'endianess) @result{} little-endian
+@end smalllisp
+
+@end deffn
+
 @deffn {bigloo procedure} register-exit-function! proc
 Register @var{proc} as an exit functions. @var{Proc} is a procedure
 accepting of one argument. This argument is the numerical value which

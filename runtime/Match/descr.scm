@@ -478,9 +478,7 @@
 	       (env (lambda (x) 'unbound))
 	       (k (lambda (f e) f)) )
       (cond
-	 ((or (boolean? f) (symbol? f) (string? f) (fixnum? f) )
-	  (k f env))
-	 ((null? f)
+	 ((not (pair? f))
 	  (k f env))
 	 ((equal? (car f) 'quote)
 	  (k f env))

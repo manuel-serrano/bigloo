@@ -5,7 +5,6 @@
 	   ast_var	;; local/global
 	   ast_node	;; node
 	   ast_env
-	   type_typeof	;; typeof (tmp)
 	   type_env
 	   tools_shape
 	   saw_defs
@@ -45,7 +44,7 @@
 ;; Regs
 ;;
 (define (new-reg::rtl_reg e::node) ; ()
-   (instantiate::rtl_reg (type (typeof e)) (var #f) (name (gensym))) )
+   (instantiate::rtl_reg (type (get-type e)) (var #f) (name (gensym))) )
 
 (define (new-ureg::rtl_reg var::local) ; ()
    (instantiate::rtl_reg (type (local-type var)) (var var)) )
@@ -357,13 +356,13 @@
 ;;
 (define-method (node->rtl::area e::new) ; ()
    (with-access::new e (expr* args-type)
-      (call* e (instantiate::rtl_new (type (typeof e)) (constr args-type))
+      (call* e (instantiate::rtl_new (type (get-type e)) (constr args-type))
 	     expr* )))
 
 ;;
 (define-method (node->rtl::area e::valloc) ; ()
    (with-access::valloc e (expr* ftype)
-      (call* e (instantiate::rtl_valloc (type ftype) (vtype (typeof e)))
+      (call* e (instantiate::rtl_valloc (type ftype) (vtype (get-type e)))
 	     expr* )))
 
 ;;
@@ -391,7 +390,7 @@
 (define-method (node->rtl::area e::cast) ; ()
    (with-access::cast e (arg)
       ; CARE MANU pourquoi il y aurait des mauvais type!!
-      ; (call e (instantiate::rtl_cast (type (typeof e))) arg)
+      ; (call e (instantiate::rtl_cast (type (get-type e))) arg)
       (node->rtl arg) ))
 
 ;;

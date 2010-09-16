@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jun 29 11:37:16 2010 (serrano)                */
+#*    Last change :  Fri Aug  6 08:08:47 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../../Makefile.misc
 # the library name
 API		= fthread
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
@@ -43,7 +42,7 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 CAPIFLAGS	= $(CGCTHREADFLAGS)
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 # Additional pthread lib for C

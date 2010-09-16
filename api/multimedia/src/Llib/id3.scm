@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Thu Mar 18 09:58:02 2010 (serrano)                */
+;*    Last change :  Fri Aug 27 17:24:55 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -254,11 +254,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-size ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (id3v2-size mm o)
+(define (id3v2-size mm o::elong)
    (let ((n0 (char->integer (mmap-ref mm o)))
-	 (n1 (char->integer (mmap-ref mm (+ 1 o))))
-	 (n2 (char->integer (mmap-ref mm (+ 2 o))))
-	 (n3 (char->integer (mmap-ref mm (+ 3 o)))))
+	 (n1 (char->integer (mmap-ref mm (+elong #e1 o))))
+	 (n2 (char->integer (mmap-ref mm (+elong #e2 o))))
+	 (n3 (char->integer (mmap-ref mm (+elong #e3 o)))))
       (fixnum->elong
        (+fx (bit-lsh n0 (*fx 3 7))
 	    (+fx (bit-lsh n1 (*fx 2 7))
@@ -281,7 +281,7 @@
       (if (and (=fx n0 #xfe) (=fx n1 #xff))
 	  ;; big-endian
 	  (let loop ((i 0)
-		     (j (+ o 2)))
+		     (j::elong (+ o 2)))
 	     (if (= i len)
 		 res
 		 (let* ((u0 (char->integer (mmap-ref mm j)))
@@ -309,7 +309,7 @@
    (let* ((sz (/fx len 2))
 	  (res (make-ucs2-string (elong->fixnum sz))))
       (let loop ((i 0)
-		 (j o))
+		 (j::elong o))
 	 (if (= i len)
 	     res
 	     (let* ((u0 (char->integer (mmap-ref mm j)))
@@ -358,9 +358,9 @@
 ;*    id3v2.2-frames ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (id3v2.2-frames mm)
-   (let* ((size (id3v2-size mm 6))
+   (let* ((size (id3v2-size mm #e6))
 	  (end (+ #e11 size))
-	  (flags (mmap-ref mm 4)))
+	  (flags (mmap-ref mm #e4)))
       (let loop ((i #e10)
 		 (frames '()))
 	 (if (>=elong i end)
@@ -397,9 +397,9 @@
 ;*    id3v2.3-frames ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (id3v2.3-frames mm)
-   (let* ((size (id3v2-size mm 6))
+   (let* ((size (id3v2-size mm #e6))
 	  (end (+ 11 size))
-	  (flags (mmap-ref mm 4)))
+	  (flags (mmap-ref mm #e4)))
       (let loop ((i #e10)
 		 (frames '()))
 	 (if (>= i end)

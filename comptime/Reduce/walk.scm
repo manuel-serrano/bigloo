@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Wed Oct 26 08:41:04 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep  7 09:28:00 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Reduction optimizations                                      */
 ;*=====================================================================*/
@@ -28,19 +28,18 @@
 	    reduce_1occ
 	    reduce_beta
 	    ast_remove)
-   (export  (reduce-walk! globals . obj)))
+   (export  (reduce-walk! globals::pair-nil msg::bstring . obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    reduce-walk ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (reduce-walk! globals . type-unsafe)
+(define (reduce-walk! globals msg . type-unsafe)
+   (pass-prelude msg)
    (cond
       ((and (pair? type-unsafe) (car type-unsafe))
-       (pass-prelude "Reduction (trivial)")
        (reduce-1occ! globals)
        (pass-postlude (remove-var 'reduce globals)))
       (*optim-dataflow?*
-       (pass-prelude "Reduction")
        (reduce-copy! globals)
        (when (>=fx *optim* 2) (reduce-cse! globals))
        (reduce-type-check! globals)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Dec  3 05:44:35 2009 (serrano)                */
+;*    Last change :  Wed Sep  8 08:42:09 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -150,10 +150,10 @@
     (coerce obj bignum         ($bignum?)       ())
     (coerce obj symbol         (c-symbol?)      ())
     (coerce obj keyword        (c-keyword?)     ())
-    (coerce obj bstring        (c-string?)      ())
+    (coerce obj bstring        ($string?)       ())
     (coerce obj ucs2string     (c-ucs2-string?) ())
     (coerce obj real           (c-flonum?)      ())
-    (coerce obj vector         (c-vector?)      ())
+    (coerce obj vector         ($vector?)       ())
     (coerce obj s8vector       ($s8vector?)     ())
     (coerce obj u8vector       ($u8vector?)     ())
     (coerce obj s16vector      ($s16vector?)    ())
@@ -164,7 +164,7 @@
     (coerce obj u64vector      ($u64vector?)    ())
     (coerce obj f32vector      ($f32vector?)    ())
     (coerce obj f64vector      ($f64vector?)    ())
-    (coerce obj tvector        (c-tvector?)     ())
+    (coerce obj tvector        ($tvector?)      ())
     (coerce obj weakptr        (c-weakptr?)     ())
     (coerce obj dynamic-env    ($dynamic-env?)  ())
     (coerce obj procedure      (c-procedure?)   ())

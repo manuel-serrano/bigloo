@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Thu Apr 15 15:36:01 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:20:05 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -17,7 +17,6 @@
 (module ast_hrtype
    (import  type_type
 	    type_env
-	    type_typeof
 	    tools_shape
 	    tools_error
 	    module_module
@@ -75,7 +74,7 @@
 		 (global-bucket-position (global-id variable)
 					 (global-module variable)))
 	 (let ((n (find-global/module (global-id variable)
-					    (global-module variable))))
+				      (global-module variable))))
 	    (when (global? n)
 	       (set! variable n))))
       (if (type? type)

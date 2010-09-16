@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 21:27:38 1999                          */
-;*    Last change :  Thu Oct 25 11:38:51 2007 (serrano)                */
+;*    Last change :  Mon Jul  5 10:35:11 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo module clause for the srfi1 implementation            */
 ;*=====================================================================*/
@@ -111,12 +111,4 @@
 	   (lset-xor = . lists)
 	   (lset-xor! = . lists)
 	   (lset-diff+intersection = lis1 . lists)
-	   (lset-diff+intersection! = lis1 . lists))
-	   
-   (eval (export-all)))
-	   
-;*---------------------------------------------------------------------*/
-;*    Declare the srfi1                                                */
-;*---------------------------------------------------------------------*/
-(register-eval-srfi! 'srfi1)
-(register-eval-srfi! 'srfi-1)
+	   (lset-diff+intersection! = lis1 . lists)))

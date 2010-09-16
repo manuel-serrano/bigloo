@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Jun 19 18:04:28 2010 (serrano)                */
+#*    Last change :  Fri Sep 10 16:50:27 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -86,7 +86,7 @@ CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
                   -O4 -mklib -unsafe -safee -cc $(CC) -fsharing -q -no-hello \
-                  -p -copt $(CPICFLAGS)
+                  -p -copt $(CPICFLAGS) -srfi bigloo-profile
 CUNSAFEPFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS_P) $(CPICFLAGS) -DPROFILE
 #*--- Bigloo, safe, debug, heap ---------------------------------------*/
 BSAFEDBGFLAGS	= $(BSAFEFLAGS) -gheap -copt $(CPICFLAGS)
@@ -142,7 +142,7 @@ JLIB		= foreign buffer configure stackwriter\
 		  callcc keyword symbol \
 		  cobj cell magic \
 		  cnst nil \
-		  constant numeral \
+		  numeral \
 		  custom obj unspecified \
 		  eof object generic \
 		  exit optional \
@@ -177,7 +177,7 @@ CSLIB		= foreign buffer configure stackwriter\
 		  callcc keyword symbol \
 		  cobj cell magic \
 		  cnst nil \
-		  constant numeral \
+		  numeral \
 		  custom obj unspecified \
 		  eof object generic \
 		  exit optional \
@@ -211,7 +211,7 @@ C_SCM_IEEE	= $(IEEE:%=Ieee/%.c)
 #*---------------------------------------------------------------------*/
 #*    Scheme R5rs objects                                              */
 #*---------------------------------------------------------------------*/
-R5RS  		= syntax hygiene
+R5RS  		= syntax
 
 SCM_R5RS	= $(R5RS:%=R5rs/%.scm)
 C_SCM_R5RS	= $(R5RS:%=R5rs/%.c)
@@ -234,7 +234,7 @@ EVAL		= eval expand expanders expdlet expdbool expddefine \
                   expdcase expddo expdtry expdstruct evmeaning everror \
                   evcompile evenv progn macro expdquote evprimop \
                   expdsrfi0 expdrecord expdargs expdtrace library \
-                  evobject evmodule
+                  evobject evmodule evaluate evutils
 
 SCM_EVAL	= $(EVAL:%=Eval/%.scm)
 C_SCM_EVAL	= $(EVAL:%=Eval/%.c)
@@ -275,9 +275,9 @@ C_SCM_READ	= $(READ:%=Read/%.c)
 #*---------------------------------------------------------------------*/
 #*    The unsafe                                                       */
 #*---------------------------------------------------------------------*/
-UNSAFE		= intext hmac md5 crc16 sha1 gunzip tar kmp base64 bignumber \
-                  aes rsa url http crc uuid
-
+UNSAFE		= intext hmac md5 crc16 sha1 sha2 gunzip tar kmp \
+                  base64 bignumber aes rsa url http crc uuid ftp
+ 
 SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.scm)
 C_SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.c)
 
@@ -735,28 +735,14 @@ install:
 
 install-c:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-           (base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
-            bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
-            if [ ! -d $(LIBDIR) ]; then \
-               mkdir -p $(LIBDIR) && chmod a+rx $(LIBDIR); \
-            fi && \
-            if [ ! -d $$bbase ]; then \
-               (mkdir -p $$bbase && chmod a+rx $$bbase); \
-            fi && \
-            if [ ! -d $$base ]; then \
-               mkdir -p $$base && chmod a+rx $$base; \
-            fi) && \
-	   if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
-              (mkdir -p $(LIBDIR)/$(FILDIR) && chmod a+rx $(LIBDIR)/$(FILDIR)); \
-           fi && \
 	   cp $(BOOTLIBDIR)/bigloo.h $(LIBDIR)/$(FILDIR)/bigloo.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.h && \
 	   cp $(BOOTLIBDIR)/bigloo_gc.h $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
 	   cp $(BOOTLIBDIR)/bigloo_config.h $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
 	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
 	fi
 	$(MAKE) install-lib LIB=libbigloo_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_u-$(RELEASE)
@@ -764,21 +750,21 @@ install-c:
 install-jvm:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
 	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
 	  cp $(BOOTLIBDIR)/bigloo_s.zip $(ZIPDIR)/bigloo_s.zip && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_s.zip && \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_s.zip && \
 	  cp $(BOOTLIBDIR)/bigloo_u.zip $(ZIPDIR)/bigloo_u.zip && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_u.zip; \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_u.zip; \
         fi
 
 install-dotnet:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
 	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
+             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
 	  cp $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
 	  cp $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll $(ZIPDIR)/bigloo_u-$(RELEASE).dll && \
-             chmod $(BMASK) $(ZIPDIR)/bigloo_u-$(RELEASE).dll; \
+             chmod $(MODFILE) $(ZIPDIR)/bigloo_u-$(RELEASE).dll; \
         fi
 
 install-bee:

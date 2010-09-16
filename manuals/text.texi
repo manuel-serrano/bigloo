@@ -1,0 +1,162 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/text.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Manuel Serrano                                    @c
+@c    Creation    :  Tue Aug 31 13:16:21 2010                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2010 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Text manipulations                                               @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Text ...                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Text, Eval, Mail, Top
+@comment  node-name,  next,  previous,  up
+@chapter Text
+@cindex text
+
+This chapter describes the Bigloo API for processing texts.
+
+@menu
+* BibTeX::
+* Character strings::
+* Character encodings::
+@end menu
+
+@c ------------------------------------------------------------------- @c
+@c    BibTeX ...                                                       @c
+@c ------------------------------------------------------------------- @c
+@node BibTeX, Character strings, ,Text
+@section BibTeX
+
+@deffn {Bigloo Text function} bibtex obj
+@deffnx {Bigloo Text function} bibtex-port input-port
+@deffnx {Bigloo Text function} bibtex-file file-name
+@deffnx {Bigloo Text function} bibtex-string string
+These function parse BibTeX sources. The variable @var{obj} can either
+be an input-port or a string which denotes a file name. It returns a
+list of BibTeX entries.
+
+The functions @code{bibtex-port}, @code{bibtex-file}, and
+@code{bibtex-string} are mere wrappers that invoke @code{bibtex}.
+
+Example:
+@smalllisp
+(bibtex (open-input-string "@@book@{ as:sicp,
+  author 	= @{Abelson, H. and Sussman, G.@},
+  title 	= @{Structure and Interpretation of Computer Programs@},
+  year 		= 1985,
+  publisher 	= @{MIT Press@},
+  address 	= @{Cambridge, Mass., USA@},
+@}")) @result{} (("as:sicp" BOOK 
+                  (author ("Abelson" "H.") ("Sussman" "G."))
+                  (title . "Structure and Interpretation of Computer Programs")
+                  (year . "1985")
+                  (publisher . "MIT Press")
+                  (address . "Cambridge, Mass., USA")))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Text function} bibtex-parse-authors string
+This function parses the author field of a bibtex entry.
+
+Example:
+@smalllisp
+(bibtex-parse-authors "Abelson, H. and Sussman, G.")
+@result{} (("Abelson" "H.") ("Sussman" "G."))
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Character strings ...                                            @c
+@c ------------------------------------------------------------------- @c
+@node Character strings, Character encodings, BibTeX, Text
+@section Character strings
+
+@deffn {Bigloo Text function} hyphenate word hyphens
+The function @code{hyphenate} accepts as input a single word and
+returns as output a list of subwords. The argument @var{hyphens} is
+an opaque data structure obtained by calling the function @code{load-hyphens}
+or @code{make-hyphens}.
+
+Example:
+@smalllisp
+(hyphenate "software" (load-hyphens 'en)) @result{} ("soft" "ware")
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo Text function} load-hyphens obj
+Loads an hyphens table and returns a data structure suitable for
+@code{hyphenate}. The variable @var{obj} can either be a file name
+containing an hyphens table or a symbol denoting a pre-defined hyphens
+table. Currently, Bigloo supports two tables: @code{en} for an English
+table and @code{fr} for a French table. The procedure @code{load-hyphens}
+invokes @code{make-hyphens} to build the hyphens table. 
+@end deffn
+
+Example:
+@smalllisp
+(define (hyphenate-text text lang)
+   (let ((table (with-handler 
+                   (lambda (e)               
+                      (unless (&io-file-not-found-error? e)
+                         (raise e)))
+                   (load-hyphens lang)))
+         (words (string-split text " ")))
+      (if table 
+          (append-map (lambda (w) (hyphenate w table)) words)
+           words)))
+@end smalllisp
+
+The procedure @code{hyphenate-text} hyphenates the words of the
+@code{text} according to the rules for the language denoted by
+its code @code{lang} if there is a file @var{lang}@code{-hyphens.sch}.
+If there is no such file, the text remains un-hyphenated.
+
+@deffn {Bigloo Text function} make-hyphens [:language] [:exceptions] [:patterns]
+Creates an hyphens table out of the arguments @var{exceptions} and 
+@var{patterns}.
+
+The implementation of the table of hyphens created by @code{make-hyphens}
+follows closely Frank Liang's algorithm as published in his doctoral
+dissertation @emph{Word Hy-phen-a-tion By Com-pu-ter}
+available on the TeX Users Group site here:
+@url{http://www.tug.org/docs/liang/}. This table is a
+@emph{trie} (see @url{http://en.wikipedia.org/wiki/Trie} for
+a definition and an explanation).
+
+Most of this implementation is borrowed from Phil Bewig's work available
+here: @url{http://sites.google.com/site/schemephil/}, along with
+his paper describing the program from which the Bigloo implementation is
+largely borrowed.
+
+@var{exceptions} must be a non-empty list of explicitly hyphenated
+words.
+
+Explicitly hyphenated words are like the following:
+@code{"as-so-ciate"}, @code{"as-so-ciates"}, @code{"dec-li-na-tion"},
+where the hyphens indicate the places where hyphenation is allowed.  The
+words in @var{exceptions} are used to generate hyphenation patterns,
+which are added to @var{patterns} (see next paragraph).
+
+@var{patterns} must be a non-empty list of hyphenation patterns.
+
+Hyphenation patterns are strings of the form @code{".anti5s"}, where a
+period denotes the beginning or the end of a word, an odd number denotes
+a place where hyphenation is allowed, and an even number a place where
+hyphenation is forbidden. This notation is part of Frank Liang's
+algorithm created for Donald Knuth's TeX typographic system.
+
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Character encodings ...                                          @c
+@c ------------------------------------------------------------------- @c
+@node Character encodings, , Character strings, Text
+@section Character encodings
+
+@deffn {Bigloo Text function} gb2312->ucs2 string
+Converts a GB2312 (aka cp936) encoded 8bits string into an UCS2 string.
+@end deffn

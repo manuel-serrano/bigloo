@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Oct  7 06:17:49 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:22:34 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -315,7 +315,7 @@
 			       (eq? (local-access var) 'read)
 			       (not (side-effect? val))
 			       (type-less-specific? (local-type var)
-						    (typeof val)))
+						    (get-type val)))
 			  (trace (reduce 3)
 				 "***1occ: applying: "
 				 (shape var) " " (shape val) #\Newline)

@@ -165,10 +165,11 @@
 				(string-ref buffer (+fx buf-pos i))))
 	 (loop (+fx i 1)))))
 
-(define (copy-bits->des-buffer from::bstring from-pos::long
+(define (copy-bits->des-buffer from::bstring from-pos-bits::long
 			       to::bstring to-pos::long
 			       nb-bits::long)
-   (let ((nb-bytes (/fx nb-bits 8)))
+   (let ((nb-bytes (/fx nb-bits 8))
+	 (from-pos (/fx from-pos-bits 8)))
       ;; from is native bits
       ;; to is our byte-oriented representation.
       (let loop ((i 0))
@@ -182,9 +183,10 @@
 	    (loop (+fx i 1))))))
 
 (define (copy-des-buffer->bits from::bstring from-pos::long
-			       to::bstring to-pos::long
+			       to::bstring to-pos-bits::long
 			       nb-bits::long table)
-   (let ((nb-bytes (/fx nb-bits 8)))
+   (let ((nb-bytes (/fx nb-bits 8))
+	 (to-pos (/fx to-pos-bits 8)))
       ;; from is our byte-oriented representation.
       ;; to is native bits
       (let loop ((i 0))
@@ -426,7 +428,7 @@
    (let ((res (make-des-buffer (*fx *round-key-size* *des-rounds*)))
 	 (key-buffer (make-des-buffer (+fx 8 *key-size*)))) ;; one byte
       ;; copy the key temporarily into the res-buffer. Just for one instruction.
-      (copy-bits->des-buffer key (/fx at 8) res 0 len)
+      (copy-bits->des-buffer key at res 0 len)
       (case len
 	 ((56) ;; without parity-bits
 	  (permutation-copy res 0 key-buffer 0 *PC1-56*))
@@ -498,8 +500,8 @@
 	  (permutation-copy buffer64 0 L 0 *IP-L*)
 	  (permutation-copy buffer64 0 R 0 *IP-R*))
        (let ((bs/2 *block-size/2*))
-	  (copy-bits->des-buffer in-block 0 L 0 bs/2)
-	  (copy-bits->des-buffer in-block bs/2 R 0 bs/2))))
+	  (copy-bits->des-buffer in-block in-pos L 0 bs/2)
+	  (copy-bits->des-buffer in-block (+fx in-pos bs/2) R 0 bs/2))))
 
 (define (finalize out-block out-pos L R buffer64 permute?)
    (if permute?
@@ -513,7 +515,7 @@
 	  (copy-des-buffer->bits R 0
 				 out-block out-pos
 				 *block-size/2* *IP-id*)
-	  (copy-des-buffer->bits R 0
+	  (copy-des-buffer->bits L 0
 				 out-block (+fx out-pos *block-size/2*)
 				 *block-size/2* *IP-id*))))
    
@@ -540,6 +542,6 @@
 	    (permute? initial-permutation?))
 	 (init! in-block in-pos L R buffer64 permute?)
 	 (do-des-rounds! L R keys1 buffer64)
-	 (do-des-rounds! L R keys2 buffer64)
+	 (do-des-rounds! R L keys2 buffer64)
 	 (do-des-rounds! L R keys3 buffer64)
 	 (finalize out-block out-pos L R buffer64 permute?))))

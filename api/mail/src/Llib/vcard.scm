@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Tue Apr  6 16:01:39 2010 (serrano)                */
+;*    Last change :  Fri Aug 13 19:04:21 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
@@ -26,7 +26,8 @@
 	      (org (default #f))
 	      (emails::pair-nil (default '()))
 	      (phones::pair-nil (default '()))
-	      (addresses::pair-nil (default '())))
+	      (addresses::pair-nil (default '()))
+	      (notes::pair-nil (default '())))
 	   
 	   (port->vcard::vcard ::input-port #!key charset-encoder)
 	   (string->vcard::vcard ::bstring #!key charset-encoder)))

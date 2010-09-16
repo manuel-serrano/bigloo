@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Mar  2 09:12:48 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 21:10:31 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -261,7 +261,7 @@
    ;; read-vector
    (define (read-vector)
       (let* ((sz (read-size s))
- 	     (res (c-create-vector sz)))
+ 	     (res ($create-vector sz)))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
 	    (set! *defining* #f))
@@ -318,7 +318,7 @@
    (define (read-tagged-vector)
       (let* ((tag (read-item))
 	     (sz (read-size s))
-	     (res (c-create-vector sz)))
+	     (res ($create-vector sz)))
 	 (vector-tag-set! res tag)
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -576,7 +576,7 @@
 ;*---------------------------------------------------------------------*/
 (define (print-obj table nbref obj)
    
-   (define buffer (c-make-string/wo-fill 100))
+   (define buffer ($make-string/wo-fill 100))
    (define ptr 0)
    (define ref 0)
 
@@ -762,7 +762,7 @@
 		(print-fixnum tag))
 	     (!print-markup #\[))
 	 (print-word len)
-	 (for i 0 len (print-item (vector-ref-ur item i)))))
+	 (for i 0 len (print-item (vector-ref item i)))))
    
    ;; print-hvector
    (define (print-hvector item mark)
@@ -959,7 +959,7 @@
    (define (mark-vector obj)
       (put-mark! table obj #f)
       (let ((len (vector-length obj)))
-	 (for i 0 len (mark (vector-ref-ur obj i)))))
+	 (for i 0 len (mark (vector-ref obj i)))))
    
    ;; mark-tvector
    (define (mark-tvector obj)

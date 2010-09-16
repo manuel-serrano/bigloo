@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Tue May 11 16:06:36 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:13:56 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -331,7 +331,7 @@
 		  (msg "Illegal negative length")
 		  (obj len)))))
 	 (else
-	  (let* ((s (c-make-string/wo-fill len))
+	  (let* ((s ($make-string/wo-fill len))
 		 (n ($rgc-blit-string! ip s 0 len)))
 	     (cond
 		((=fx n 0)

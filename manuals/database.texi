@@ -12,9 +12,9 @@
 @c ------------------------------------------------------------------- @c
 @c    Database ...                                                     @c
 @c ------------------------------------------------------------------- @c
-@node Database library, Multimedia library, Threads, Top
+@node Database, Multimedia, Threads, Top
 @comment  node-name,  next,  previous,  up
-@chapter Database library
+@chapter Database
 @cindex database
 
 Bigloo supports database programming. The current version proposes

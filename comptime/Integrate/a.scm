@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Tue Oct  3 10:47:04 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:22:21 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
 ;*    -------------------------------------------------------------    */
@@ -201,7 +201,7 @@
 		 (liip (cdr nds)
 		       (node-A (car nds)
 			       host
-			       (cons (get-new-kont) (typeof (car nds)))
+			       (cons (get-new-kont) (get-type (car nds)))
 			       A)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -222,7 +222,7 @@
 		(liip (cdr args)
 		      (node-A (car args)
 			      host
-			      (cons (get-new-kont) (typeof (car args)))
+			      (cons (get-new-kont) (get-type (car args)))
 			      A)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -232,8 +232,8 @@
    (with-access::app-ly node (fun arg)
       (node-A fun
 	      host
-	      (cons (get-new-kont) (typeof fun))
-	      (node-A arg host (cons (get-new-kont) (typeof arg)) A))))
+	      (cons (get-new-kont) (get-type fun))
+	      (node-A arg host (cons (get-new-kont) (get-type arg)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::funcall ...                                             */
@@ -242,7 +242,7 @@
    (with-access::funcall node (fun args)
       (node-A fun
 	      host
-	      (cons (get-new-kont) (typeof fun))
+	      (cons (get-new-kont) (get-type fun))
 	      (let liip ((args args)
 			 (A    A))
 		 (if (null? args)
@@ -250,7 +250,7 @@
 		     (liip (cdr args)
 			   (node-A (car args)
 				   host
-				   (cons (get-new-kont) (typeof (car args)))
+				   (cons (get-new-kont) (get-type (car args)))
 				   A)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -265,7 +265,7 @@
 	     (liip (cdr asts)
 		   (node-A (car asts)
 			   host
-			   (cons (get-new-kont) (typeof (car asts)))
+			   (cons (get-new-kont) (get-type (car asts)))
 			   A))))))
 
 ;*---------------------------------------------------------------------*/
@@ -273,14 +273,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::cast host k A)
    (with-access::cast node (arg)
-      (node-A arg host (cons (get-new-kont) (typeof arg)) A)))
+      (node-A arg host (cons (get-new-kont) (get-type arg)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::setq ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::setq host k A)
    (with-access::setq node (value)
-      (node-A value host (cons (get-new-kont) (typeof value)) A)))
+      (node-A value host (cons (get-new-kont) (get-type value)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::conditional ...                                         */
@@ -300,10 +300,10 @@
 	      (cons (get-new-kont) proc)
 	      (node-A msg
 		      host
-		      (cons (get-new-kont) (typeof msg))
+		      (cons (get-new-kont) (get-type msg))
 		      (node-A obj
 			      host
-			      (cons (get-new-kont) (typeof obj))
+			      (cons (get-new-kont) (get-type obj))
 			      A)))))
 
 ;*---------------------------------------------------------------------*/
@@ -374,11 +374,11 @@
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
-	     (let ((call1 `(,hdlg ,hdlg ,(cons (get-new-kont) (typeof node))))
-		   (call2 `(,hdlg ,hdlg ,(cons (get-new-kont) (typeof node)))))
+	     (let ((call1 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node))))
+		   (call2 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node)))))
 		(node-A body
 			host
-			(cons (get-new-kont) (typeof body))
+			(cons (get-new-kont) (get-type body))
 			(cons call1 (cons call2 A))))
 	     A))))
 
@@ -389,22 +389,22 @@
    (with-access::jump-ex-it node (exit value)
       (node-A exit
 	      host
-	      (cons (get-new-kont) (typeof exit))
-	      (node-A value host (cons (get-new-kont) (typeof value)) A))))
+	      (cons (get-new-kont) (get-type exit))
+	      (node-A value host (cons (get-new-kont) (get-type value)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::make-box ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::make-box host k A)
    (with-access::make-box node (value)
-      (node-A value host (cons (get-new-kont) (typeof value)) A)))
+      (node-A value host (cons (get-new-kont) (get-type value)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-set! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::box-set! host k A)
    (with-access::box-set! node (var value)
-      (node-A value host (cons (get-new-kont) (typeof value)) A)))
+      (node-A value host (cons (get-new-kont) (get-type value)) A)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::box-ref ...                                             */

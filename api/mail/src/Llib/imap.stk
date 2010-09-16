@@ -63,7 +63,7 @@
 ;;		=> a list of message which have the keyword set
 ;;	(imap-folder-subscribe! s folder)
 ;;	(imap-folder-unsubscribe! s folder)
-;;	(imap-folder-uids s folder)
+;;	(imap-folder-uids s)
 ;;	        => a list of uid
 ;;      Shortcuts
 ;;	  (imap-folder-messages s) 	 <=>   (imap-message* s :all))

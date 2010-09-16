@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Mon Jul  5 21:53:50 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:33:57 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -113,7 +113,7 @@ install-c:
 install-jvm: api-install-jvm
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  cp $(BOOTLIBDIR)/commons-ssl.zip $(LIBDIR)/$(FILDIR) && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
+	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
         fi
 
 install-dotnet: 

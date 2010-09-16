@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 12:49:28 2000                          */
-/*    Last change :  Tue Apr 20 07:51:08 2010 (serrano)                */
+/*    Last change :  Fri Sep 10 16:59:48 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Stack trace JVM implementation                                   */
@@ -31,6 +31,10 @@ public class stack_trace {
       top_of_stack = this;
    }
 
+   public static Object get_top() {
+      return top_of_stack.symbol;
+   }
+   
    public static void set_trace( Object symbol ) {
       top_of_stack.symbol = symbol;
    }
@@ -42,17 +46,18 @@ public class stack_trace {
 
    public static Object get( int depth ) throws IOException {
       stack_trace runner = top_of_stack;
-      obj l = constant.nil;
+      obj l = nil.nil;
       int level= 0;
 
       while (((depth < 0) || (level < depth)) && (runner != null)) {
-	 if (bigloo.foreign.SYMBOLP( runner.symbol )) {
+	 if (bigloo.foreign.SYMBOLP( runner.symbol )
+	     && (((symbol)runner.symbol).string.length > 0)) {
 	    l = new pair(runner.symbol, l);
 	  
 	    level++;
 	 }
 
-	 runner= runner.link;
+	 runner = runner.link;
       }
 
       return l;

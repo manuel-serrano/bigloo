@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Wed Mar 17 18:54:02 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:15:17 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
@@ -220,7 +220,7 @@
       ((not ($mmap-bound-check? start (mmap-length mm)))
        (error 'mmap-substring "Illegal index" start))
       (else
-       (let ((r (c-make-string/wo-fill (elong->fixnum (-elong end start)))))
+       (let ((r ($make-string/wo-fill (elong->fixnum (-elong end start)))))
 	  (let loop ((i start)
 		     (j 0))
 	     (if (=elong i end)

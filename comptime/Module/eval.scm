@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Mar  3 14:53:56 2010 (serrano)                */
+;*    Last change :  Mon Jul  5 10:01:03 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -78,8 +78,10 @@
        (set! *eval-classes* (cons proto *eval-classes*)))
       ((import (and (? symbol?) ?var))
        (declare-global-svar! var 'eval 'eval clause #f))
+      ((library (and (? symbol?) ?lib))
+       (set! *eval-libraries* (cons lib *eval-libraries*)))
       (else
-       (user-error "Parse error" "Illegal `eval clause'" clause '()))))
+       (user-error "Parse error" "Illegal `eval' clause" clause '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *eval-exported* ...                                              */
@@ -103,6 +105,12 @@
    (set! *eval-exported* (cons (list var module loc) *eval-exported*)))
 
 ;*---------------------------------------------------------------------*/
+;*    remember-eval-libs ...                                           */
+;*---------------------------------------------------------------------*/
+(define (remember-eval-libs lib)
+   (set! *eval-libraries* (cons lib *eval-libraries*)))
+
+;*---------------------------------------------------------------------*/
 ;*    *all-eval?* ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define *all-eval?* #f)
@@ -123,6 +131,7 @@
 	   *all-eval?*
 	   *all-export-eval?*
 	   *all-module-eval?*
+	   (pair? *eval-libraries*)
 	   (pair? *eval-classes*))
        (list
 	(unit
@@ -299,7 +308,11 @@
 ;*    get-eval-srfi-libraries ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (get-eval-srfi-libraries)
-   (map (lambda (l) `(register-eval-srfi! ',l)) *eval-libraries*))
+   (map (lambda (l)
+	   `(begin
+	       (eval (library-load ',l))
+	       (register-eval-srfi! ',l)))
+	*eval-libraries*))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-bind-super-access ...                                       */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi-1/recette/recette.scm       */
+;*    serrano/prgm/project/bigloo/api/srfi1/recette/recette.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dirk Lutzebaeck                                   */
 ;*    Creation    :  Wed Mar  4 09:27:04 1998                          */
-;*    Last change :  Wed Oct 24 13:56:06 2007 (serrano)                */
+;*    Last change :  Wed Sep  1 11:13:06 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Various format tests.                                            */
 ;*=====================================================================*/
@@ -21,12 +21,6 @@
 (define-macro (srfi-1-test expr res)
    `(and (let ((val ,expr))
 	    (print "compile: provided: " val
-		   "  expected: " ,res
-		   (if (equal? ,res val)
-		       " ok."
-		       " error.")))
-	 (let ((val (eval ',expr)))
-	    (print "eval   : provided: " val
 		   "  expected: " ,res
 		   (if (equal? ,res val)
 		       " ok."

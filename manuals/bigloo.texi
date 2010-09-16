@@ -105,7 +105,7 @@ MA 02111-1307, USA.
 @titlepage
 @c use the new format for titles
 @title Bigloo
-@subtitle A ``practical Scheme compiler''
+@subtitle A practical Scheme compiler
 @subtitle User manual for version @value{edition}
 @subtitle @value{update-month}
 
@@ -189,9 +189,10 @@ MA 02111-1307, USA.
 * Cryptography::                   Cryptography 
 * Errors Assertions and Traces::   Bigloo error handling and Bigloo assertions
 * Threads::                        Bigloo multi-threading
-* Database library::               Database access
-* Multimedia library::             Multimedia programming
-* Mail library::                   Mail related technologies
+* Database::                       Database access
+* Multimedia::                     Multimedia programming
+* Mail::                           Mail related technologies
+* Text::                           Text processing facilities
 * Eval::                           Use of the interpreter
 * Macro Expansion::                The two available macro schemes
 * Parameters::                     Controlling the global programs behaviors
@@ -487,6 +488,11 @@ and keyword functions.
 @c    Mail                                                             @c
 @c ------------------------------------------------------------------- @c
 @include mail.texi
+ 
+@c ------------------------------------------------------------------- @c
+@c    Text                                                             @c
+@c ------------------------------------------------------------------- @c
+@include text.texi
  
 @c ------------------------------------------------------------------- @c
 @c    Eval                                                             @c

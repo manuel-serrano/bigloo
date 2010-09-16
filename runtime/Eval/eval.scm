@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Apr 29 18:01:15 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:30:28 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -67,6 +67,7 @@
 	    __expand
 	    __evcompile
 	    __evmeaning
+	    __evaluate
 	    __everror
 	    __evprimop
 	    __evenv
@@ -78,6 +79,7 @@
 
    (export  (eval ::obj #!optional (env (default-environment)))
 	    (eval! ::obj #!optional (env (default-environment)))
+	    (eval-evaluate-set! ::obj)
 	    (byte-code-compile::bstring ::obj #!optional (env (default-environment)))
 	    (byte-code-run::obj ::bstring)
 	    (scheme-report-environment <version>)
@@ -109,6 +111,32 @@
    (option  (set! *unsafe-type* #f)))
 
 ;*---------------------------------------------------------------------*/
+;*    byte-code-evaluate ...                                           */
+;*---------------------------------------------------------------------*/
+(define (byte-code-evaluate eexp env loc)
+   (let ((cexp (evcompile eexp '() env 'nowhere #f #t loc #t #t)))
+      (evmeaning cexp '() (current-dynamic-env))))
+
+;*---------------------------------------------------------------------*/
+;*    default-evaluate ...                                             */
+;*---------------------------------------------------------------------*/
+(define default-evaluate byte-code-evaluate)
+
+;*---------------------------------------------------------------------*/
+;*    eval-evaluate-set! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (eval-evaluate-set! comp)
+   (case comp
+      ((classic)
+       (set! default-evaluate byte-code-evaluate))
+      ((new)
+       (set! default-evaluate evaluate2))
+      (else
+       (if (procedure? comp)
+	   (set! default-evaluate comp)
+	   (error "eval-evaluate-set!" "Illegal compiler" comp)))))
+
+;*---------------------------------------------------------------------*/
 ;*    Expanders setup.                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders are initialized by the initialization of the       */
@@ -122,41 +150,32 @@
 ;*    eval ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (eval exp #!optional (env (default-environment)))
-   
-   (define (eval-inner sexp env loc)
-      (evmeaning
-       (evcompile (expand sexp) '() env 'nowhere #f #t loc #t #t)
-       '()
-       (current-dynamic-env)))
-   
-   (let ((loc (find-loc exp #f))
-	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
-      (if (and loc (> (bigloo-debug) 0))
-	  (with-handler
-	     (lambda (e)
-		(eval-exception-handler e loc))
-	     (eval-inner sexp env loc))
-	  (eval-inner sexp env loc))))
+   (let ((evaluate (if (procedure? default-evaluate)
+		       default-evaluate
+		       byte-code-evaluate)))
+      (eval/expander exp env expand evaluate)))
  
 ;*---------------------------------------------------------------------*/
 ;*    eval! ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (eval! exp #!optional (env (default-environment)))
-   
-   (define (eval-inner! sexp env loc)
-      (evmeaning
-       (evcompile (expand! sexp) '() env 'nowhere #f #t loc #t #t)
-       '()
-       (current-dynamic-env)))
+   (let ((evaluate (if (procedure? default-evaluate)
+		       default-evaluate
+		       byte-code-evaluate)))
+      (eval/expander exp env expand! evaluate)))
 
-   (let ((loc (find-loc exp #f))
+;*---------------------------------------------------------------------*/
+;*    eval/expander ...                                                */
+;*---------------------------------------------------------------------*/
+(define (eval/expander exp::obj env expand::procedure evaluate::procedure)
+   (let ((loc (get-source-location exp))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (if (and loc (> (bigloo-debug) 0))
 	  (with-handler
 	     (lambda (e)
 		(eval-exception-handler e loc))
-	     (eval-inner! sexp env loc))
-	  (eval-inner! sexp env loc))))
+	     (evaluate (expand sexp) env loc))
+	  (evaluate (expand sexp) env loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-exception-handler ...                                       */
@@ -173,7 +192,7 @@
 ;*    byte-code-compile ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-compile exp #!optional (env (default-environment)))
-   (let* ((loc (find-loc exp #f))
+   (let* ((loc (get-source-location exp))
 	  (sexp  (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (obj->string
        (evcompile (expand sexp) '() env 'nowhere #f #t loc #f #t))))

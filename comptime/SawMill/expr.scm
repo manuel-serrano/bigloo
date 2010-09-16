@@ -268,7 +268,7 @@
 (define-effect foreign make-fx-procedure () ())
 (define-effect foreign procedure-ref (procedure) ())
 (define-effect foreign procedure-set! () (procedure))
-(define-effect foreign tvector-descr-set! () (vector))
+(define-effect foreign $tvector-descr-set! () (vector))
 (define-effect foreign c-current-output-port (output-port) ())
 (define-effect foreign c-write-char () (output-port))
 

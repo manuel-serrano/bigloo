@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Thu Apr 29 17:33:36 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:32:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -50,10 +50,10 @@
 	    __eval
 	    __evobject
 	    __evmodule
-	    __expand)
+	    __expand
+	    __reader)
    
    (export  (untype-ident ident)
-	    (find-loc exp default)
 	    (evcompile-loc-filename loc)
 	    (evcompile exp env Genv ::symbol named? tail loc linkedp ::bool)
 	    (evcompile-error ::obj ::obj ::obj ::obj)))
@@ -78,14 +78,6 @@
 		 (loop (+fx walker 1))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-loc ...                                                     */
-;*---------------------------------------------------------------------*/
-(define (find-loc exp default)
-   (if (epair? exp)
-       (cer exp)
-       default))
-
-;*---------------------------------------------------------------------*/
 ;*    untype-ident* ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (untype-ident* idents)
@@ -96,6 +88,12 @@
        (cons (untype-ident (car idents)) (untype-ident* (cdr idents))))
       (else
        (untype-ident idents))))
+
+;*---------------------------------------------------------------------*/
+;*    get-location ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (get-location exp loc)
+   (or (get-source-location exp) loc))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile ...                                                    */
@@ -109,7 +107,7 @@
        (evcompile-error loc 'eval "Illegal expression" '()))
       ((module . ?-)
        (if toplevelp
-	   (evcompile (expand (evmodule exp (find-loc exp loc)))
+	   (evcompile (expand (evmodule exp (get-location exp loc)))
 		      env genv where named? #f loc lkp #t)
 	   (evcompile-error loc 'eval
 			    "Illegal non toplevel module declaration" exp)))
@@ -136,7 +134,7 @@
 	     (? (lambda (x) (not (dynamic? (variable loc x env genv)))))
 	     ?fun)
 	. ?args)
-       (let* ((loc (find-loc exp loc))
+       (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f #f loc lkp #f))
 			    args)))
@@ -150,29 +148,29 @@
        (let ((@var (@variable loc id env genv (eval-find-module mod))))
 	  (evcompile-ref @var loc lkp)))
       ((quote ?cnst)
-       (evcompile-cnst cnst (find-loc exp loc)))
+       (evcompile-cnst cnst (get-location exp loc)))
       ((if ?si ?alors ?sinon)
-       (let ((loc (find-loc exp loc)))
+       (let ((loc (get-location exp loc)))
 	  (evcompile-if (evcompile si env genv
 				   where #f #f
-				   (find-loc si loc)
+				   (get-location si loc)
 				   lkp #f)
 			(evcompile alors env genv
 				   where named? tail
-				   (find-loc alors loc)
+				   (get-location alors loc)
 				   lkp #f)
 			(evcompile sinon env genv
 				   where named? tail
-				   (find-loc sinon loc)
+				   (get-location sinon loc)
 				   lkp #f)
 			loc)))
       (((kwote or) . ?rest)
-       (evcompile-or rest env genv where named? (find-loc exp loc) lkp))
+       (evcompile-or rest env genv where named? (get-location exp loc) lkp))
       (((kwote and) . ?rest)
-       (evcompile-and rest env genv where named? (find-loc exp loc) lkp))
+       (evcompile-and rest env genv where named? (get-location exp loc) lkp))
       ((begin . ?rest)
        (evcompile-begin rest env genv where named? tail
-			(find-loc exp loc) lkp))
+			(get-location exp loc) lkp))
       ((or (define ?var (and (lambda . ?-) ?val))
 	   (define ?var (begin (and (lambda . ?-) ?val))))
        (if (and (eq? where 'nowhere)
@@ -182,11 +180,11 @@
 			    'eval
 			    "Illegal define form (sealed environment)"
 			    exp)
-	   (let ((loc (find-loc exp loc)))
+	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-lambda (untype-ident var)
 				       (evcompile val '()
 						  genv var #t #t
-						  (find-loc exp loc)
+						  (get-location exp loc)
 						  lkp #f)
 				       loc))))
       ((define ?var ?val)
@@ -197,57 +195,57 @@
 			    'eval
 			    "Illegal define form (sealed environment)"
 			    exp)
-	   (let ((loc (find-loc exp loc)))
+	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-value (untype-ident var)
 				      (evcompile val '()
 						 genv where named? #t
-						 (find-loc val loc)
+						 (get-location val loc)
 						 lkp #f)
 				      loc))))
       ((set! . ?-)
        (match-case exp
 	  ((?- (and (? symbol?) ?var) ?val)
-	   (let ((loc (find-loc exp loc)))
+	   (let ((loc (get-location exp loc)))
 	      (evcompile-set (variable loc var env genv)
 			     (evcompile val env
 					genv var #t #f
-					(find-loc val loc)
+					(get-location val loc)
 					lkp #f)
 			     loc)))
 	  (else
 	   (error "set!" "Illegal form" exp))))
       ((bind-exit ?escape ?body)
-       (let ((loc (find-loc exp loc)))
+       (let ((loc (get-location exp loc)))
 	  (evcompile-bind-exit (evcompile `(lambda ,escape ,body)
 					  env genv (car escape)
 					  #t #f
-					  (find-loc body loc)
+					  (get-location body loc)
 					  lkp #f)
 			       loc)))
       ((unwind-protect ?body . ?protect)
-       (let ((loc (find-loc exp loc)))
+       (let ((loc (get-location exp loc)))
 	  (evcompile-unwind-protect (evcompile body env
 					       genv where named? #f
-					       (find-loc body loc)
+					       (get-location body loc)
 					       lkp #f)
 				    (evcompile-begin protect env genv
 						     where named? #f
-						     (find-loc protect loc)
+						     (get-location protect loc)
 						     lkp)
 				    loc)))
       ((with-handler ?handler . ?body)
-       (let ((loc (find-loc exp loc)))
+       (let ((loc (get-location exp loc)))
 	  (evcompile-with-handler (evcompile handler env
 					     genv where named? #f
-					     (find-loc handler loc)
+					     (get-location handler loc)
 					     lkp #f)
 				  (evcompile-begin body env genv
 						   where named? #f
-						   (find-loc body loc)
+						   (get-location body loc)
 						   lkp)
 				  loc)))
      ((lambda ?formals ?body)
-       (let* ((loc (find-loc exp loc))
+       (let* ((loc (get-location exp loc))
 	      (scm-formals (dsssl-formals->scheme-formals
 			    formals
 			    (lambda (proc msg obj)
@@ -266,26 +264,26 @@
 				       (extend-env untyped-scm-formals env)
 				       genv
 				       where #f #t
-				       (find-loc body loc)
+				       (get-location body loc)
 				       lkp #f)
 			    where named? loc)))
       ((let ?bindings ?body)
        (evcompile-let bindings body env
 		      genv where named? tail
-		      (find-loc exp loc)
+		      (get-location exp loc)
 		      lkp))
       ((let* ?bindings ?body)
        (evcompile-let* bindings body env
 		       genv where named? tail
-		       (find-loc exp loc)
+		       (get-location exp loc)
 		       lkp))
       ((letrec ?bindings ?body)
        (evcompile-letrec bindings body env
 			 genv where named? tail
-			 (find-loc exp loc)
+			 (get-location exp loc)
 			 lkp))
       (((atom ?fun) . ?args)
-       (let* ((loc (find-loc exp loc))
+       (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f #f loc lkp #f))
 			    args)))
@@ -308,7 +306,7 @@
 	      (evcompile-error loc 'eval "Not a procedure" fun)
 	      (evcode -2 loc (list 'eval "Not a procedure" fun))))))
       (((@ (and (? symbol?) ?fun) (and (? symbol?) ?mod)) . ?args)
-       (let* ((loc (find-loc exp loc))
+       (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f #f loc lkp #f))
 			    args))
@@ -319,7 +317,7 @@
 				 tail
 				 loc)))
       ((?fun . ?args)
-       (let ((loc (find-loc exp loc))
+       (let ((loc (get-location exp loc))
 	     (actuals (map (lambda (a)
 			      (evcompile a env genv where #f #f loc lkp #f))
 			   args))
@@ -417,7 +415,7 @@
       ((null? (cdr body))
        (evcompile (car body) env genv
 		  where named? tail
-		  (find-loc (car body) loc)
+		  (get-location (car body) loc)
 		  lkp #f))
       (else
        (let ((cbody (let loop ((rest body))
@@ -427,12 +425,12 @@
 			  ((null? (cdr rest))
 			   (cons (evcompile (car rest) env
 					    genv where named? tail
-					    (find-loc (car rest) loc)
+					    (get-location (car rest) loc)
 					    lkp #f)
 				 '()))
 			  (else
 			   (cons (evcompile (car rest) env genv where #f #f
-					    (find-loc (car rest) loc)
+					    (get-location (car rest) loc)
 					    lkp #f)
 				 (loop (cdr rest))))))))
 	  (list->evcode 16 loc cbody)))))
@@ -680,7 +678,7 @@
 			    env))
 	  (b (evcompile body env2 genv where named? tail loc lkp #f))
 	  (as (map (lambda (a)
-		      (let ((loc (find-loc a loc))
+		      (let ((loc (get-location a loc))
 			    (n (if (eq? where 'nowhere)
 				   (car a)
 				   (symbol-append (car a) '@ where))))
@@ -703,7 +701,7 @@
 		 (bd (evcompile body env2 genv where named? tail loc lkp #f)))
 	     (evcode 66 loc bd (reverse! as)))
 	  (let* ((b (car bdgs))
-		 (loc (find-loc b loc))
+		 (loc (get-location b loc))
 		 (n (if (eq? where 'nowhere)
 			(car b)
 			(symbol-append (car b) '@ where)))
@@ -720,7 +718,7 @@
 			    env))
 	  (b (evcompile body env2 genv where named? tail loc lkp #f))
 	  (as (map (lambda (a)
-		      (let ((loc (find-loc a loc)))
+		      (let ((loc (get-location a loc)))
 			 (evcompile (cadr a) env2 genv (car a) #t #f loc lkp #f)))
 		   bindings))) 
       (evcode 70 loc b as)))

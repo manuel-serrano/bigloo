@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Jun 16 11:34:41 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 05:56:32 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -94,6 +94,8 @@
 	       (obj read-only))
 	    (class &type-error::&error
 	       (type read-only))
+	    (class &index-out-of-bounds-error::&error
+	       (index read-only))
 	    (class &io-error::&error)
 	    (class &io-port-error::&io-error)
 	    (class &io-read-error::&io-port-error)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sun May 30 17:55:51 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:29:49 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -69,6 +69,8 @@
    (export  *bigloo-interpreter*
 	    (bigloo-case-sensitivity::symbol)
 	    (bigloo-case-sensitivity-set! ::symbol)
+	    (make-source-location name pos)
+	    (get-source-location obj)
 	    (read #!optional (iport::input-port (current-input-port)) location)
 	    (bigloo-regular-grammar)
 	    (read/case case . port)
@@ -89,6 +91,27 @@
 ;*---------------------------------------------------------------------*/
 (define (bigloo-case-sensitivity-set! val)
    (bigloo-case-sensitive-set! val))
+
+;*---------------------------------------------------------------------*/
+;*    make-source-location ...                                         */
+;*---------------------------------------------------------------------*/
+(define (make-source-location name pos)
+   (list 'at name pos))
+
+;*---------------------------------------------------------------------*/
+;*    get-source-location ...                                          */
+;*---------------------------------------------------------------------*/
+(define (get-source-location obj)
+   (when (epair? obj)
+      (match-case (cer obj)
+	 ((at ?- ?-)
+	  (cer obj)))))
+
+;*---------------------------------------------------------------------*/
+;*    cons/loc ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (cons/loc a d name pos)
+   (econs a d (make-source-location name pos)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Control marks ...                                                */
@@ -236,14 +259,14 @@
       (if (eq? item *end-of-list*)
 	  '()
 	  (let loop ((acc (if posp
-			      (econs item '() (list 'at name po))
+			      (cons/loc item '() name po)
 			      (cons item '()))))
 	     (let ((item (ignore)))
 		(if (eq? item *end-of-list*)
 		    acc
 		    (loop (if posp
 			      (let ((po (input-port-last-token-position port)))
-				 (econs item acc (list 'at name po)))
+				 (cons/loc item acc name po))
 			      (cons item acc)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -255,9 +278,7 @@
 	      (obj (ignore)))
 	  (if (or (eof-object? obj) (eq? obj *end-of-list*))
 	      (read-error/loc pos "Illegal quotation" kwote port)
-	      (econs kwote
-		     (cons obj '())
-		     (list 'at (input-port-name port) pos))))
+	      (cons/loc kwote (cons obj '()) (input-port-name port) pos)))
        (let ((obj (ignore)))
 	  (if (or (eof-object? obj) (eq? obj *end-of-list*))
 	      (read-error "Illegal quotation" kwote port)

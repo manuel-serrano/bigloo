@@ -9,7 +9,7 @@ if ! [ -d "$ANDROIDROOT" -a -d "$BS_BIGLOO" ]; then
 fi
 
 export ANDSRC=$ANDROIDROOT/eclair-git
-export ANDSDK=$ANDROIDROOT/android-sdk-linux
+export ANDSDK=$ANDROIDROOT/android-sdk-linux_x86
 
 # droid-wrapper
 export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc

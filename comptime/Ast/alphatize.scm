@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Feb 17 14:11:59 2006 (serrano)                */
+;*    Last change :  Tue Sep  7 09:05:36 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -27,9 +27,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    alphatize ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    This function differs from substitute, because:                  */
+;*    This function differs from SUBSTITUTE, because:                  */
 ;*      - it operates only on variables                                */
-;*      - it allocated new nodes (i.e. it does not operates on place). */
+;*      - it allocates new nodes (i.e. it does not operate on place).  */
 ;*    -------------------------------------------------------------    */
 ;*    Alphatize can replace a variable by a variable                   */
 ;*    construction but nothing else.                                   */

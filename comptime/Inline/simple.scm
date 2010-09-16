@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Thu Oct  6 12:05:25 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep  7 17:25:31 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -120,7 +120,7 @@
 	    ;; if the result type of the inlined function is not *_* or
 	    ;; *obj* we use a local variable in order to ensure that the
 	    ;; type checking of the result will be implemented even after
-	    ;; inlining. This fix a bug a the release 1.9b
+	    ;; inlining. This fixes a bug of the release 1.9b
  	    (if (or (eq? type *_*)
 		    (eq? type *obj*)
 		    (eq? type (node-type alpha-body)))

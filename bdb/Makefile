@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Fri Apr 24 08:02:18 2009 (serrano)                */
-#*    Copyright   :  1999-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 12 11:34:12 2010 (serrano)                */
+#*    Copyright   :  1999-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
 #*=====================================================================*/
@@ -61,7 +61,7 @@ distclean:
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
 #*    -------------------------------------------------------------    */
-#*    Prepare Cigloo for a distribution                                */
+#*    Prepare bdb for a distribution                                   */
 #*---------------------------------------------------------------------*/
 distrib: 
 	@ if [ `pwd` = $(BOOTDIR)/bdb ]; then \
@@ -82,17 +82,14 @@ include ../Makefile.misc
 
 install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
-           mkdir -p $(DESTDIR)$(BINDIR) && \
 	   cp $(BOOTBINDIR)/bdb $(DESTDIR)$(BINDIR) && \
-	   chmod $(BMASK) $(DESTDIR)$(BINDIR)/bdb && \
-           mkdir -p $(LIBDIR)/$(FILDIR) && \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bdb && \
 	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
 	if [ $(FILDIR) != $(BOOTLIBDIR) ]; then \
-           mkdir -p $(LIBDIR)/$(FILDIR) && \
 	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
 	$(MAKE) install-lib LIB=libbigloobdb_s-$(RELEASE)
 

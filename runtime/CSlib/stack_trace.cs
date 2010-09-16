@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 12:49:28 2000                          */
-/*    Last change :  Tue Apr 20 12:35:53 2010 (serrano)                */
+/*    Last change :  Fri Sep 10 16:54:33 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Stack trace JVM implementation                                   */
@@ -47,7 +47,7 @@ namespace bigloo
     public static Object get( int depth )
     {
       stack_trace runner = top_of_stack;
-      obj l = constant.nil;
+      obj l = nil._nil;
       int level= 0;
 
       while (((depth < 0) || (level < depth)) && (runner != null))

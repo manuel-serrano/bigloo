@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 10:42:51 2010 (serrano)                */
+#*    Last change :  Fri Aug 27 18:21:31 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,13 +20,11 @@ include ../../../Makefile.misc
 # the library name
 API		= multimedia
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Unix
 MISC_SRC_DIR 	= Misc
-HEAPJVM_FILE	= $(LIB)/$(API).jheap
 # Where to store the library class files
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
@@ -42,7 +40,7 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
 BAPIFLAGS	= -unsafe -safee $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Sat Jun 14 06:58:49 2003 (serrano)                */
-;*    Copyright   :  2003 Manuel Serrano                               */
+;*    Last change :  Wed Aug 11 14:29:29 2010 (serrano)                */
+;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -166,7 +166,7 @@
 	  (row* (map (lambda (gc cells)
 			(let* ((size (cadr gc))
 			       (msize (caddr gc))
-			       (size% (/fx (*fx 100 size) maxhsize))
+			       (size% (% size maxhsize))
 			       (num (integer->string (+fx 1 (car gc))))
 			       (id (string-append "gc" num))
 			       (tdl (html-color-item id num))

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Thu Sep 10 11:31:59 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 12 11:34:24 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -168,23 +168,23 @@ $(BOOTBINDIR)/$(JAS_EXE): $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
 	  cp $(BOOTBINDIR)/$(AFILE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(JFILE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(BPROF_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(MCO_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(BPP_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/$(JAS_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX); \
-          chmod $(BMASK) $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX); \
 	  if [ "$(LDPRELOADSUPPORT)" = "yes" \
                -a "$(PTHREADLIBS)" != "no" ]; then \
 	    (cd bmem; $(MAKE) install) || exit 1; \

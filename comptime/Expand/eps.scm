@@ -3,11 +3,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Mon Mar 29 12:12:50 2010 (serrano)                */
+;*    Last change :  Fri Jul 30 09:26:14 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
-;*    << Expansion-Passing Style: Beyond Conventional Macro >>,        */
+;*    Expansion-Passing Style: Beyond Conventional Macro,              */
 ;*    Dybvig, Friedman & Haynes  -- ACM 1986 (LFP) page 143            */
 ;*=====================================================================*/
 
@@ -37,9 +37,7 @@
 	    (comptime-expand ::obj)
 	    (comptime-expand/error ::obj)
 	    (compile-expand ::obj)
-	    (expand-units ::obj)
-	    *initial-expander*)
-   (eval    (export *initial-expander*)))
+	    (expand-units ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    The user macro list.                                             */
@@ -179,7 +177,7 @@
 ;*    comptime-expand ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (comptime-expand x)
-   (*initial-expander* x *initial-expander*))
+   (initial-expander x initial-expander))
 
 ;*---------------------------------------------------------------------*/
 ;*    comptime-expand/error ...                                        */
@@ -201,54 +199,46 @@
 (define (compile-expand x)
    (if (or *optim-O-macro?*
 	   (and (number? *compiler-debug*) (>= *compiler-debug* 1)))
-       (*compile-expander* x *compile-expander* '())
+       (compile-expander x compile-expander '())
        x))
 
 ;*---------------------------------------------------------------------*/
-;*    *initial-expander* ...                                           */
+;*    initial-expander ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (*initial-expander* x e::procedure)
-   (trace expand "*initial-expander*: " x #\Newline)
+(define (initial-expander x e::procedure)
+   (trace expand "initial-expander: " x #\Newline)
    (let ((e1 (cond
                 ((symbol? x)
-                 *identifier-expander*)
+                 identifier-expander)
                 ((null? x)
                  (error #f "Illegal form" '()))
                 ((not (pair? x))
                  (lambda (x e) x))
                 ((symbol? (car x))
                  (let ((id (fast-id-of-id (car x) (find-location x))))
-                    (let (b)
-                       (cond
-			  ;; Changed on 15Dec2006, this test used
-			  ;; to be just before else, moving it makes
-			  ;; macros hidden by local variables
-                          ((pair? (assq id (lexical-stack)))
-                           *application-expander*)
-                          ((begin
-                              (set! b (get-compiler-expander id))
-                              b)
-                           b)
-                          ((begin
-                              (set! b (get-eval-expander id))
-                              b)
-                           b)
-                          (else
-                           *application-expander*)))))
+		    (cond
+		       ((pair? (assq id (lexical-stack)))
+			application-expander)
+		       ((get-compiler-expander id)
+			=>
+			(lambda (x) x))
+		       ((get-eval-expander id)
+			=>
+			(lambda (x) x))
+		       (else
+			application-expander))))
                 (else
-                 *application-expander*))))
+                 application-expander))))
       (let ((new (e1 x e)))
-         (if (and (pair? new)
-                  (not (epair? new))
-                  (epair? x))
+         (if (and (pair? new) (not (epair? new)) (epair? x))
              (econs (car new) (cdr new) (cer x))
              new))))
 
 ;*---------------------------------------------------------------------*/
-;*    *compile-expander* ...                                           */
+;*    compile-expander ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (*compile-expander* x e::procedure s::pair-nil)
-   (trace expand "*compiler-expander*: " x #\Newline)
+(define (compile-expander x e::procedure s::pair-nil)
+   (trace expand "compiler-expander: " x #\Newline)
 
    (define (id-of-id id)
       (fast-id-of-id id #f))
@@ -362,16 +352,16 @@
 					 (find-O-expander id))))
 			       (if b
 				   (let ((e (expander-expander b)))
-				      (e x *initial-expander*))
+				      (e x initial-expander))
 				   nx))))
 		     nx))))))
 
    (expand x s))
 
 ;*---------------------------------------------------------------------*/
-;*    *identifier-expander* ...                                        */
+;*    identifier-expander ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (*identifier-expander* id e)
+(define (identifier-expander id e)
    (if (pair? (assq id (lexical-stack)))
        id
        (let ((a (getprop id 'macro-alias-key)))
@@ -380,9 +370,9 @@
 	      id))))
 
 ;*---------------------------------------------------------------------*/
-;*    *application-expander* ...                                       */
+;*    application-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (*application-expander* x e)
+(define (application-expander x e)
    (let loop ((x* x))
       (cond
 	 ((pair? x*)

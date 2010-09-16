@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Wed Oct 14 05:24:08 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Fri Jul 30 09:33:16 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    __object
 	    __param
 	    __thread
+	    __reader
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -44,7 +45,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __evutils)
 
    (export  (eval-begin-expander ::procedure)
 	    (expand-eval-lambda ::obj ::procedure)
@@ -83,7 +85,7 @@
 		     #unspecified)
 		    ((begin . ?rest)
 		     (if (not (list? rest))
-			 (error 'begin "Illegal `begin' form" x)
+			 (error "begin" "Illegal `begin' form" x)
 			 (lambda-defines (map (lambda (x) (olde x e)) rest))))
 		    (else
 		     (let ((nx (olde x e)))
@@ -92,7 +94,7 @@
 			    #unspecified)
 			   ((begin . ?rest)
 			    (if (not (list? rest))
-				(error 'begin "Illegal `begin' form" x)
+				(error "begin" "Illegal `begin' form" x)
 				(lambda-defines rest)))
 			   (else
 			    nx)))))))
@@ -158,15 +160,17 @@
       ;; 1- a lambda definition
       ((or (?- (?name . ?args) . (and ?body (not ())))
 	   (?- ?name (lambda ?args . (and ?body (not ())))))
-       (let* ((eargs (expand-args args e))
-	      (res `(define ,(car (parse-formal-ident name))
+       (let* ((loc (get-source-location x))
+	      (eargs (expand-args args e))
+	      (res `(define ,(car (parse-formal-ident name loc))
 		       (lambda ,eargs
 			  ,(%with-lexical
 			    (args->list eargs) (expand-progn body) e #f)))))
 	  (evepairify res x)))
       ;; 2- a variable definition
       ((?- ?name . (?value . ()))
-       (let ((res `(define ,(car (parse-formal-ident name)) ,(e value e))))
+       (let* ((loc (get-source-location x))
+	      (res `(define ,(car (parse-formal-ident name loc)) ,(e value e))))
 	  (evepairify res x)))
       ;; 3- an illegal define form
       (else
@@ -181,7 +185,9 @@
 	      (vars     '())
 	      (sets     '()))
       (if (pair? oldforms)
-	  (let ((form (car oldforms)))
+	  (let* ((form (car oldforms))
+		 (loc (or (get-source-location form)
+			  (get-source-location oldforms))))
 	     (cond ((or (not (pair? form))
 			(not (eq? (car form) 'define)))
 		    (loop (cdr oldforms)
@@ -190,7 +196,7 @@
 		   (else
 		    (loop (cdr oldforms) newforms
 			  (cons (cadr form) vars)
-			  (cons `(set! ,(car (parse-formal-ident (cadr form)))
+			  (cons `(set! ,(car (parse-formal-ident (cadr form) loc))
 				       ,(caddr form))
 				sets)))))
 	  (if (not (null? vars))
@@ -204,7 +210,8 @@
 (define (expand-eval-define-inline x e)
    (match-case x
       ((?- (?fun . ?formals) . (and ?body (not ())))
-       (let* ((res `(define ,(car (parse-formal-ident fun))
+       (let* ((loc (get-source-location x))
+	      (res `(define ,(car (parse-formal-ident fun loc))
 		      ,(e `(lambda ,(expand-args formals e)
 			      ,(expand-progn body)) e))))
 	  (evepairify res x)))
@@ -240,9 +247,10 @@
 (define (expand-eval-define-generic x e)
    (match-case x
       ((?- (?fun ?f0 . ?formals) . ?body)
-       (let* ((pf (parse-formal-ident fun))
+       (let* ((loc (get-source-location x))
+	      (pf (parse-formal-ident fun loc))
 	      (id (car pf))
-	      (pa (map+ parse-formal-ident (cons f0 formals)))
+	      (pa (map+ (lambda (i) (parse-formal-ident i loc)) (cons f0 formals)))
 	      (def (gensym id))
 	      (epa (expand-args pa e))
 	      (va (and (not (null? formals))
@@ -280,38 +288,40 @@
 				   (lambda ,(cons f0 formals)
 				      ,(if (pair? body)
 					   `(begin ,@body)
-					   `(error ',(car pf)
+					   `(error ,(symbol->string (car pf))
 						   "No method for this object"
 						   ',(car (car pa)))))))
 		 e)
 	      (error fun "Illegal formal arguments for generic function" x))))
       (else
-       (error 'define-generic "Illegal form" x))))
+       (error "define-generic" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-eval-define-method ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-define-method x e)
-   (define (get-arg a)
-      (let ((r (parse-formal-ident a)))
+   (define (get-arg a loc)
+      (let ((r (parse-formal-ident a loc)))
 	 (if (pair? r)
 	     (car r)
 	     r)))
-   (define (get-args args)
+   (define (get-args args loc)
       (cond
 	 ((null? args)
 	  '())
 	 ((pair? args)
-	  (cons (get-arg (car args)) (get-args (cdr args))))
+	  (cons (get-arg (car args) (or (get-source-location args) loc))
+		(get-args (cdr args) loc)))
 	 (else
-	  (list (get-arg args)))))
+	  (list (get-arg args loc)))))
    (match-case x
       ((?- (?fun ?f0 . ?formals) . (and ?body (not ())))
-       (let ((p0 (parse-formal-ident f0))
-	     (rest (get-args formals))
-	     (va (and (not (null? formals))
-		      (or (not (pair? formals))
-			  (not (null? (cdr (last-pair formals))))))))
+       (let* ((loc (get-source-location x))
+	      (p0 (parse-formal-ident f0 loc))
+	      (rest (get-args formals loc))
+	      (va (and (not (null? formals))
+		       (or (not (pair? formals))
+			   (not (null? (cdr (last-pair formals))))))))
 	  (if (and (pair? p0) (symbol? (cdr p0)))
 	      (let* ((res `(add-eval-method!
 			    ,fun
@@ -332,6 +342,6 @@
 						       `(,fun ,(car p0) ,@rest))))))
 				    ,@body) e))))
 		 (evepairify res x))
-	      (error 'define-method "Illegal form" x))))
+	      (error "define-method" "Illegal form" x))))
       (else
-       (error 'define-method "Illegal form" x))))
+       (error "define-method" "Illegal form" x))))

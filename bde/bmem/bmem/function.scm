@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
-;*    Last change :  Sat May 17 07:39:49 2003 (serrano)                */
-;*    Copyright   :  2003 Manuel Serrano                               */
+;*    Last change :  Wed Aug 11 14:27:58 2010 (serrano)                */
+;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
 ;*=====================================================================*/
@@ -167,8 +167,8 @@
 				class::bstring caption::bstring)
    (let* ((fun* (filter (lambda (f)
 			   (let* ((size (funsize f))
-				  (size% (/fx (*fx 100 size) allsize)))
-			      (>fx size% 0)))
+				  (size% (% size allsize)))
+			      (> size% 0)))
 			fun*))
 	  (fun* (sort fun*
 		      (lambda (f1 f2)
@@ -194,7 +194,7 @@
 		      fun*))
 	  (row* (map (lambda (f cells)
 			(let* ((size (funsize f))
-			       (size% (/fx (*fx 100 size) allsize))
+			       (size% (% size allsize))
 			       (id (string-append "function"
 						  (integer->string
 						   (funinfo-num f))))

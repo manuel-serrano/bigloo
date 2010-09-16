@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Jul  1 12:04:16 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:13:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -25,7 +25,8 @@
 	    __param
 	    __gunzip
 	    __url
-	    __http)
+	    __http
+	    __ftp)
    
    (use     __type
 	    __bigloo
@@ -764,8 +765,10 @@
      ("pipe:" . ,%open-input-pipe)
      ("http://" . ,%open-input-http-socket)
      ("gzip:" . ,open-input-gzip-file)
+     ("zlib:" . ,open-input-zlib-file)
      ("inflate:" . ,open-input-inflate-file)
-     ("/resource/" . ,%open-input-resource)))
+     ("/resource/" . ,%open-input-resource)
+     ("ftp://" . ,open-input-ftp-file)))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-protocols ...                                         */
@@ -807,15 +810,15 @@
 (define (get-port-buffer who bufinfo defsiz)
    (cond
       ((eq? bufinfo #t)
-       (c-make-string/wo-fill defsiz))
+       ($make-string/wo-fill defsiz))
       ((eq? bufinfo #f)
-       (c-make-string/wo-fill 2))
+       ($make-string/wo-fill 2))
       ((string? bufinfo)
        bufinfo)
       ((fixnum? bufinfo)
        (if (>fx bufinfo 0)
-	   (c-make-string/wo-fill bufinfo)
-	   (c-make-string/wo-fill 2)))
+	   ($make-string/wo-fill bufinfo)
+	   ($make-string/wo-fill 2)))
       (else
        (error who "Illegal buffer" bufinfo))))
 

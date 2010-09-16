@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Wed Feb 28 09:56:15 2007 (serrano)                */
-#*    Copyright   :  1996-2007 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 12 11:35:27 2010 (serrano)                */
+#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build sqltiny                                   */
 #*=====================================================================*/
@@ -55,7 +55,7 @@ pop:
 
 install:
 	cp sqltiny$(EXE_SUFFIX) $(DESTDIR)$(BINDIR) && \
-	chmod $(BMASK) $(DESTDIR)$(BINDIR)/sqltiny$(EXE_SUFFIX);
+	chmod $(MODEXE) $(DESTDIR)$(BINDIR)/sqltiny$(EXE_SUFFIX);
 
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/sqltiny$(EXE_SUFFIX)

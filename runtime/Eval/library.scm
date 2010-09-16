@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sat Jun 19 19:46:28 2010 (serrano)                */
+;*    Last change :  Mon Aug 30 14:36:53 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -101,7 +101,10 @@
 (define (eval-library-suffix)
    (unless *eval-library-suffix*
       (set! *eval-library-suffix*
-	    (if (eq? (bigloo-config 'library-safety) 'unsafe) "u" "s")))
+	    (case (bigloo-config 'library-safety)
+	       ((unsafe) "u")
+	       ((safe) "s")
+	       ((profile) "p"))))
    *eval-library-suffix*)
 
 ;*---------------------------------------------------------------------*/

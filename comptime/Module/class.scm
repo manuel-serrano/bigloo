@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Jan 25 14:19:18 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Aug  2 20:50:10 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/

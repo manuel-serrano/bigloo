@@ -1,0 +1,29 @@
+;*=====================================================================*/
+;*    .../project/bigloo/api/openpgp/src/Misc/openpgp.init             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*        adapted :  Florian Loitsch                                   */
+;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
+;*    -------------------------------------------------------------    */
+;*    The openpgp init file                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'openpgp
+		  :basename "biglooopenpgp"
+		  :module-init '__openpgp-facade
+		  :module-eval '__openpgp-makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Link option                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; required libraries for openpgp
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloocrypto *additional-bigloo-libraries*)))
+   (bigloo-eval
+    #unspecified))
+

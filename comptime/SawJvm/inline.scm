@@ -422,7 +422,7 @@
 ;;;
 ;;; STRING
 ;;;
-(define-inline-call c-string? ; "STRINGP"
+(define-inline-call $string? ; "STRINGP"
    (code! me '(instanceof (vector byte))) )
 
 (define-inline-call $string->bstring ; "string_to_bstring"
@@ -431,19 +431,19 @@
 (define-inline-call $bstring->string ; "BSTRING_TO_STRING"
    'ok )
 
-(define-inline-call c-string-ref ; "STRING_REF"
+(define-inline-call $string-ref ; "STRING_REF"
    (code! me '(baload))
    (code! me '(sipush 255))
    (code! me '(iand)) )
 
-(define-inline-call c-string-set! ; "STRING_SET"
+(define-inline-call $string-set! ; "STRING_SET"
    (code! me '(bastore))
    'no-value )
 
-(define-inline-call c-string-length ; "STRING_LENGTH"
+(define-inline-call $string-length ; "STRING_LENGTH"
    (code! me '(arraylength)) )
 
-(define-inline-call c-make-string/wo-fill ; "make_string_sans_fill"
+(define-inline-call $make-string/wo-fill ; "make_string_sans_fill"
    (code! me '(newarray byte)) )
 
 ;;;
@@ -524,7 +524,7 @@
 ;;;
 ;;; VECTOR
 ;;;
-(define-inline-call c-vector? ; "VECTORP"
+(define-inline-call $vector? ; "VECTORP"
    (code! me '(instanceof (vector obj))) )
 
 ;;;

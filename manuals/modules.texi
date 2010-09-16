@@ -262,10 +262,11 @@ have to be @emph{exported}. Export clauses are in charge of this task and an
 <eclause> @expansion{} <ident>
             | (inline <ident> <ident> @dots{})
             | (generic <ident> <ident> <ident> @dots{})
-            | (macro <ident> <ident> @dots{})
-            | (syntax <ident> <ident> @dots{})
             | (<ident> <ident> @dots{})
             | <class>
+            | (macro <ident> <ident> @dots{})
+            | (expander <ident>)
+            | (syntax <ident>)
 @end smallexample
 
 The first form of @var{eclause} allows the variable @var{ident} be exported,

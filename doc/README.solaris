@@ -1,0 +1,16 @@
+To build Bigloo on Solaris, you must use the following GNU tools:
+
+  - "gtar" instead of "tar"
+  - "gpatch" instead of "patch"
+  - "gmake" instead of "make"
+
+To instruct Bigloo's configure script to use the first two, one may use:
+
+  $ export TAR=gtar
+  $ export PATH=gpatch
+  $ ./configure
+
+Then, invoke gmake with
+
+  $ gmake
+   

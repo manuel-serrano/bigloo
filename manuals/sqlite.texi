@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    SQLite ...                                                       @c
 @c ------------------------------------------------------------------- @c
-@node SQLite, , , Database library
+@node SQLite, , , Database
 @comment  node-name,  next,  previous,  up
 @section SQLite
 @cindex SQLITE

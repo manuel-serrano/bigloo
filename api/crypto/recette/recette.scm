@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/recette/recette.scm       */
+;*    serrano/prgm/project/bigloo/api/crypto/recette/recette.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
 ;*    Last change :  Mon Apr 20 07:13:38 2009 (serrano)                */
 ;*    Copyright   :  2002-09 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    A test module that deploys the examples of Sqlite.               */
+;*    A test module that deploys the examples of the Crypto-library.   */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -239,6 +239,135 @@
 			   (string-hex-extern input))))
 	  *des-tests*
 	  (iota (length *des-tests*)))
+
+
+(test-add! 'des-maintenance-test
+	   (lambda ()
+	      ;; DES maintenance test. copied from des.c of gnupg.
+	      (let ((input (string-hex-intern "FFFFFFFFFFFFFFFF"))
+		    (key (string-hex-intern "5555555555555555"))
+		    (result (string-hex-intern "246E9DB9C550381A")))
+		 (let loop ((i 0)
+			    (input input)
+			    (key key))
+		    (if (=fx i 64)
+			(string=? result key)
+			(let* ((temp1 (des-encrypt input key))
+			       (temp2 (des-encrypt temp1 key))
+			       (temp3 (des-decrypt temp1 temp2)))
+			   (loop (+fx i 1)
+				 temp1
+				 temp3))))))
+	   #t)
+
+(test-add! 'des-np
+	   (lambda ()
+	      (let* ((input (string-hex-intern "E648DC3184BE9685"))
+		     (key (string-hex-intern "7DAD129695BD3E2B"))
+		     (encrypted (encrypt 'des-np input key :mode 'ecb
+					 :string->key id))
+		     (decrypted (decrypt 'des-np encrypted key :mode 'ecb
+					 :string->key id)))
+		 (string=? input decrypted)))
+	   #t)
+
+;*---------------------------------------------------------------------*/
+;*    DES3 ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (des3-encrypt str key)
+   (encrypt 'des3 str key :mode 'ecb :string->key id))
+(define (des3-decrypt str key)
+   (decrypt 'des3 str key :mode 'ecb :string->key id))
+
+;; copied from des.c of gnupg.
+(define *des3-tests*
+   '(
+     ("95F8A5E5DD31D900"  ;; input
+      "010101010101010101010101010101010101010101010101"  ;; key
+      "8000000000000000")  ;; output
+     ("9D64555A9A10B852"  ;; input
+      "010101010101010101010101010101010101010101010101"  ;; key
+      "0000001000000000") ;; output
+     ("51454B582DDF440A"
+      "3849674C2602319E3849674C2602319E3849674C2602319E"
+      "7178876E01F19B2A")
+     ("42FD443059577FA2"
+      "04B915BA43FEB5B604B915BA43FEB5B604B915BA43FEB5B6"
+      "AF37FB421F8C4095")
+     ("736F6D6564617461"
+      "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"
+      "3D124FE2198BA318")
+     ("736F6D6564617461"
+      "0123456789ABCDEF55555555555555550123456789ABCDEF"
+      "FBABA1FF9D05E9B1")
+     ("736F6D6564617461"
+      "0123456789ABCDEF5555555555555555FEDCBA9876543210"
+      "18d748e563620572")
+     ("7371756967676C65"
+      "0352020767208217860287665908219864056ABDFEA93457"
+      "c07d2a0fa566fa30")
+     ("0000000000000000"
+      "010101010101010180010101010101010101010101010102"
+      "e6e6dd5b7e722974")
+     ("0000000000000000"
+      "10461034899880209107D0158919010119079210981A0101"
+      "e1ef62c332fe825b")
+     ))
+
+(for-each (lambda (t i)
+	     (let* ((input  (string-hex-intern (car t)))
+		    (key    (string-hex-intern (cadr t)))
+		    (output (string-hex-intern (caddr t))))
+		(test-add! (string->symbol (format "des3-encrypt-~a" i))
+			   (lambda ()
+			      (string-hex-extern (des3-encrypt input key)))
+			   (string-hex-extern output))
+		(test-add! (string->symbol (format "des3-decrypt-~a" i))
+			   (lambda ()
+			      (string-hex-extern (des3-decrypt output key)))
+			   (string-hex-extern input))))
+	  *des3-tests*
+	  (iota (length *des3-tests*)))
+
+
+(test-add! 'des3-maintenance-test
+	   (lambda ()
+	      ;; DES3 maintenance test. copied from des.c of gnupg.
+	      (let ((input (string-hex-intern "FEDCBA9876543210"))
+		    (key1 (string-hex-intern "123456789ABCDEF0"))
+		    (key2 (string-hex-intern "11223344FFAACCDD"))
+		    (result (string-hex-intern "7B383B23A27D26D3")))
+		 (let loop ((i 0)
+			    (input input)
+			    (key1 key1)
+			    (key2 key2))
+		    (if (=fx i 16)
+			(string=? input result)
+			(let* ((temp1 (des3-encrypt input
+						    (string-append key1 key2)))
+			       (temp2 (des3-decrypt input
+						    (string-append key1 key2)))
+			       (temp3 (des3-encrypt input
+						    (string-append temp1
+								   input
+								   temp2))))
+			   (loop (+fx i 1)
+				 temp3
+				 temp1
+				 temp2))))))
+	   #t)
+
+(test-add! 'des3-np
+	   (lambda ()
+	      (let* ((input (string-hex-intern "FEDCBA9876543210"))
+		     (key (string-hex-intern
+			   "123456789ABCDEF011223344FFAACCDD7B383B23A27D26D3"))
+		     (encrypted (encrypt 'des3-np input key :mode 'ecb
+					 :string->key id))
+		     (decrypted (decrypt 'des3-np encrypted key :mode 'ecb
+					 :string->key id)))
+		 (string=? input decrypted)))
+	   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    IDEA ...                                                         */

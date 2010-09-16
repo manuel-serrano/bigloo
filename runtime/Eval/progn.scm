@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:07:31 1994                          */
-;*    Last change :  Tue Mar 11 15:47:59 2008 (serrano)                */
+;*    Last change :  Thu Jul 29 17:22:25 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La normalisation des formes `begin'                              */
 ;*=====================================================================*/
@@ -112,7 +112,7 @@
 	    ((or (null? es) (null? (cdr es)))
 	     es)
 	    ((not (pair? es))
-	     (error 'begin "Illegal form" exps))
+	     (error "begin" "Illegal form" exps))
 	    ((not (pair? (car es)))
 	     (loop (cdr es)))
 	    ((eq? (caar es) 'begin)

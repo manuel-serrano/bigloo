@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jul  2 10:39:59 2010 (serrano)                */
+#*    Last change :  Tue Sep 14 14:41:29 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=3.4a
+release=3.4b
 version=
 bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
 
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -57,13 +57,13 @@ bigloo=$BIGLOO # used only for cross compiling
 if [ "$BFLAGS " != " " ]; then
   bflags=$BFLAGS;
 else
-  bflags="-O3 -q";
+  bflags="-O3 -fcfa-arithmetic -q";
 fi
 bootflags=""
 featureflags=
 coflags=-O3
 
-cstrip="-s"
+cstrip=""
 cpicflags="demanded" # Possible values for cpicflags are:
              #  - "no" not to use position independent code (recommended)
              #  - "demanded" auto configuration but with a preference to "no"
@@ -192,7 +192,11 @@ unistdint=
 indent="indent -npro -bap -bad -nbc -bl -ncdb -nce -nfc1 -ip0 -nlp -npcs -nsc -nsob -cli0.5 -di0 -l80 -d1 -c0 -ts2 -st"
 
 #*--- mask of Bigloo intalled files -----------------------------------*/
+# obsolete, don't use it, use modXXX instead
 bmask=755
+modexe=755
+moddir=755
+modfile=644
 
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
@@ -278,6 +282,7 @@ buildsh=
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
 #*---------------------------------------------------------------------*/
 action=all
+actiongc=install
 branch="`echo $release | sed 's/[.a-z]*//g'`0";
 mode=standard
 tuning=
@@ -420,6 +425,9 @@ while : ; do
 
     --gccustomversion=*)
       gccustom="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --gccustominstall=*)
+      actiongc="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --fildir=*)
       fildir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -693,6 +701,10 @@ while : ; do
       extralibs="";
       cstrip="no";;
 
+    --strip=no)
+      cstrip="no";
+      strip="no";;
+
     --pnet)
       dotnetclrstyle=pnet;
       dotnetcsccstyle=pnet;
@@ -871,11 +883,9 @@ while : ; do
 
     -*)
       if [ "$1" != "-h" -a "$1" != "-help" -a "$1" != "--help" ]; then
-        echo "*** ERROR: Illegal option \"$1\""
-        echo ""
-        echo ""
-        echo "Usage: configure [options]" >&2;
-        echo "" >&2;
+        echo "*** ERROR: unknown option \"$1\""
+        echo "Run \"$0 --help\" for available options." >&2;
+        exit 1;
       fi
       # Existing apis
       eapis=
@@ -920,6 +930,7 @@ while : ; do
       echo "   --gclibdir=dir (non-custom gc library dir (/usr/lib)" >&2;
       echo "   --gcincdir=dir (non-custon gc include dir (/usr/include/gc)" >&2;
       echo "   --gccustomversion=version (custom gc version, e.g. \"gc-7.1\")" >&2;
+      echo "   --gccustominstall=[install|skip] (configure and install the gc))" >&2;
       echo "" >&2;
       echo "Tools and compilers:"  >&2;
       echo "   --bigloo=comp [default bigloo]" >&2;
@@ -982,6 +993,7 @@ while : ; do
       echo "Misc:"  >&2;
       echo "   --finalization=yes|no [default no]" >&2;
       echo "   --benchmark=yes|no [default no] (must use --arch too)" >&2;
+      echo "   --strip=no (disable stripping during linking)" >&2;
       echo "   --debug[2] (configure for debugging)" >&2;
       echo "   --stack-check=no" >&2;
       echo "   --enable-thread-local-storage" >&2;
@@ -1080,64 +1092,78 @@ echo "Checking local configuration..."
 #*---------------------------------------------------------------------*/
 #*    Weeding out bad configurations                                   */
 #*---------------------------------------------------------------------*/
-# checking the correctness of selected apis
-err=
-for p in $apis; do
-  if [ ! -d api/$p ]; then
-    err="$err $p";
+if [ "$action" != "bigloo_config_el" ]; then
+  # checking the correctness of selected apis
+  err=
+  for p in $apis; do
+    if [ ! -d api/$p ]; then
+      err="$err $p";
+    fi
+  done
+
+  if [ "$err " != " " ]; then
+    echo "*** ERROR: unknown api(s):$err";
+    exit 1
   fi
-done
-
-if [ "$err " != " " ]; then
-  echo "*** ERROR: unknown api(s):$err";
-  exit 1
-fi
-
-# check apis cross dependencies
-srfi1_is_enabled=no
-packrat_is_enabled=no
-pkglib_is_enabled=no
-sqlite_is_enabled=no
-dbus_is_enabled=no
-fthread_is_enabled=no
-pthread_is_enabled=no
-srfi27_is_enabled=no
-
-for a in $apis; do
-  case $a in
-    srfi1) srfi1_is_enabled="yes";;
-    srfi27) srfi27_is_enabled="yes";;
-    packrat) packrat_is_enabled="yes";;
-    sqlite) sqlite_is_enabled="yes";;
-    pkglib) pkglib_is_enabled="yes";;
-    dbus) dbus_is_enabled="yes";;
-    pthread) pthread_is_enabled="yes";;
-    fthread) fthread_is_enabled="yes";;
-  esac
-done
-
-if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
-    echo "*** ERROR: packrat library requires srfi1."
-    echo "Either disable packrat or enable srfi1."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
-fi
-
-if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
-    echo "*** ERROR: pkglib library requires sqlite."
-    echo "Either disable pkglib or enable sqlite."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
-fi
-
-if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
-    echo "*** ERROR: fthread library requires pthread."
-    echo "Either disable fthread or enable pthread."
-    echo
-    echo "Enabled apis: $apis"
-    exit 1
+  
+  # check apis cross dependencies
+  srfi1_is_enabled=no
+  packrat_is_enabled=no
+  pkglib_is_enabled=no
+  sqlite_is_enabled=no
+  dbus_is_enabled=no
+  fthread_is_enabled=no
+  pthread_is_enabled=no
+  srfi27_is_enabled=no
+  crypto_is_enabled=no
+  openpgp_is_enabled=no
+  
+  for a in $apis; do
+    case $a in
+      srfi1) srfi1_is_enabled="yes";;
+      srfi27) srfi27_is_enabled="yes";;
+      packrat) packrat_is_enabled="yes";;
+      sqlite) sqlite_is_enabled="yes";;
+      pkglib) pkglib_is_enabled="yes";;
+      dbus) dbus_is_enabled="yes";;
+      pthread) pthread_is_enabled="yes";;
+      fthread) fthread_is_enabled="yes";;
+      crypto) crypto_is_enabled="yes";;
+      openpgp) openpgp_is_enabled="yes";;
+    esac
+  done
+  
+  if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
+      echo "*** ERROR: packrat library requires srfi1."
+      echo "Either disable packrat or enable srfi1."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
+      echo "*** ERROR: pkglib library requires sqlite."
+      echo "Either disable pkglib or enable sqlite."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
+      echo "*** ERROR: fthread library requires pthread."
+      echo "Either disable fthread or enable pthread."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $openpgp_is_enabled = "yes" -a $crypto_is_enabled = "no" ]; then
+      echo "*** ERROR: openpgp library requires crypto."
+      echo "Either disable openpgp, or enable crypto."
+      echo 
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1311,7 +1337,7 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
     ranlib=true;
   fi
 
-  if [ ! $strip ]; then strip="strip"; fi
+  if [ "$strip " = " " ]; then strip="strip"; fi
   strip=`$autoconf strip --strip=$strip` || exit 1
 fi
 
@@ -1594,100 +1620,104 @@ echo >> $configurelog
 #*---------------------------------------------------------------------*/
 #*    GC configuration                                                 */
 #*---------------------------------------------------------------------*/
-echo "+ GC configuration ($customgc)..." >> $configurelog
-
-cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
-
-# We check the standard GC if we have to use one
-if [ "$customgc " = "no " ]; then
-  isgccustom=0
-  gclib=
-  if [ "$gclibdir " = " " ]; then
-    gclibdir=/usr/lib;
-  fi
-  if [ "$gcincdir " = " " ]; then
-    gcincdir=/usr/include/gc
-  fi
-  gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
-  if [ "$gclib " = " " ]; then
-     echo "*** ERROR:configure:Standard GC. Aborting";
-     echo "You are trying to configure Bigloo so that it uses an existing"
-     echo "GC library. The configuration script is enable to make this"
-     echo "library working properly."
-     echo "Try to configure Bigloo with \"--customgc=yes\"."
-     exit 1;
-  fi
-else
-  isgccustom=1
-  gclib=$customgclib;
-
-  gcincdir=$pwd/gc/$gccustom/include
-
-  # detect if we are using maemo for an ARM emulation
-  maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
-  if [ "$maemo " = "yes " ]; then
-    # This is required for compiling under QEMU (use to be the -DQEMU flag)
-    cgcflags="$cgcflags -DNO_PROC_STAT"
-    cflags="$cflags -DBGL_FORBID_GC_COLLECT"
-  fi
-
-  # configure directories
-  gcconfiguredir="--prefix=$pwd/gc/preinst"
-  # install the gc source code if needed
-
-  if [ ! -d gc/$gccustom ]; then
-    echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
-
-    (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
-  fi
-
-  if [ -f gc/configure-$gccustom ]; then
-    autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
-    gcconfigureopt="$autoopts $gcconfigureopt"
-    echo "+ Configuring custom GC..." && \
-    (. ./gc/configure-$gccustom) || exit 1
-  fi
-fi
-
-# Check the version of the collector
-if [ "$gcversion " = " " ]; then
-  gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
-
-  if [ "$gcversion" -le "000" ]; then
-    doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
-
-    if [ "$doblocking " = "yes " ]; then
-      gchavedoblocking=1
-      gcversion="700"
-    else
-      startblocking=`$autoconf gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags"` || exit 1
-      if [ "$startblocking " = "yes " ]; then
-        gchaveblocking=1
-      else
-        gcversion="680"
-      fi
+if [ "$action" != "bigloo_config_el" ]; then
+  echo "+ GC configuration ($customgc)..." >> $configurelog
+  
+  cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
+  
+  # We check the standard GC if we have to use one
+  if [ "$customgc " = "no " ]; then
+    isgccustom=0
+    gclib=
+    if [ "$gclibdir " = " " ]; then
+      gclibdir=/usr/lib;
+    fi
+    if [ "$gcincdir " = " " ]; then
+      gcincdir=/usr/include/gc
+    fi
+    gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
+    if [ "$gclib " = " " ]; then
+       echo "*** ERROR:configure:Standard GC. Aborting";
+       echo "You are trying to configure Bigloo so that it uses an existing"
+       echo "GC library. The configuration script is enable to make this"
+       echo "library working properly."
+       echo "Try to configure Bigloo with \"--customgc=yes\"."
+       exit 1;
     fi
   else
-    if [ "$hostos " != "win32" -a $hostos != "cygwin" ]; then
-      if [ "$gcversion" -lt "700" ]; then
-        gchaveblocking=1
-        gcversion="680"
+    isgccustom=1
+    gclib=$customgclib;
+  
+    gcincdir=$pwd/gc/$gccustom/include
+  
+    # detect if we are using maemo for an ARM emulation
+    maemo=`$autoconf maemo.arm --cflags="$coflags"` || exit 1
+    if [ "$maemo " = "yes " ]; then
+      # This is required for compiling under QEMU (use to be the -DQEMU flag)
+      cgcflags="$cgcflags -DNO_PROC_STAT"
+      cflags="$cflags -DBGL_FORBID_GC_COLLECT"
+    fi
+  
+    # configure directories
+    gcconfiguredir="--prefix=$pwd/gc/preinst"
+    # install the gc source code if needed
+  
+    if [ $actiongc = "install" ]; then
+      if [ ! -d gc/$gccustom ]; then
+        echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
+  
+        (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
       fi
-      if [ "$gcversion" -ge "700" ]; then
-        gchavedoblocking=1
+  
+      if [ -f gc/configure-$gccustom ]; then
+        autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+        gcconfigureopt="$autoopts $gcconfigureopt"
+        echo "+ Configuring custom GC..." && \
+        (. ./gc/configure-$gccustom) || exit 1
       fi
     fi
   fi
+  
+  # Check the version of the collector
+  if [ "$gcversion " = " " ]; then
+    gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
+  
+    if [ "$gcversion" -le "000" ]; then
+      doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
+  
+      if [ "$doblocking " = "yes " ]; then
+        gchavedoblocking=1
+        gcversion="700"
+      else
+        startblocking=`$autoconf gchavestartblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags"` || exit 1
+        if [ "$startblocking " = "yes " ]; then
+          gchaveblocking=1
+        else
+          gcversion="680"
+        fi
+      fi
+    else
+      if [ "$hostos " != "win32" -a $hostos != "cygwin" ]; then
+        if [ "$gcversion" -lt "700" ]; then
+          gchaveblocking=1
+          gcversion="680"
+        fi
+        if [ "$gcversion" -ge "700" ]; then
+          gchavedoblocking=1
+        fi
+      fi
+    fi
+  fi
+  
+  # correct gchavedoblocking for win32
+  if [ $hostos = "cygwin" ]; then
+    gchaveblocking=0
+  elif [ $hostos = "mingw" ]; then
+     gchaveblocking=0
+     gchavedoblocking=0
+  fi
+  echo >> $configurelog
 fi
-
-# correct gchavedoblocking for win32
-if [ $hostos = "cygwin" ]; then
-  gchaveblocking=0
-elif [ $hostos = "mingw" ]; then
-   gchaveblocking=0
-   gchavedoblocking=0
-fi
-echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    GMP configuration                                                */
@@ -2118,6 +2148,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Is sigaction available
   sigaction=`$autoconf sigaction` || exit 1
 
+  # Is setenv available for us
+  setenv=`$autoconf setenv` || exit 1
+
   # Is select available
   select=`$autoconf select` || exit 1
 
@@ -2440,6 +2473,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_STRTOULL@|$strtoull|" \
               -e "s|@BGL_HAVE_GMP@|$havegmp|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
+              -e "s|@HAVE_SETENV@|$setenv|" \
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
               -e "s|@BGL_HAVE_SELECT@|$select|" \
               -e "s|@BGL_HAVE_FCNTL@|$fcntl|" \
@@ -2729,6 +2763,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
       echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
   fi
+  # build bigloo
+  if [ "$bigloo " = " " ]; then
+    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
+  else
+    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
+  fi
   echo >> $makefile_cfg
 
   # Directories
@@ -2756,11 +2796,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The C compiler
-  if [ "$bigloo " = " " ]; then
-    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
-  else
-    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
-  fi
   echo "CC=$cc" >> $makefile_cfg
   echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
@@ -3068,6 +3103,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # bmask
   echo "BMASK=$bmask" >> $makefile_cfg
+  echo "MODEXE=$modexe" >> $makefile_cfg
+  echo "MODFILE=$modfile" >> $makefile_cfg
+  echo "MODDIR=$moddir" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The info version
@@ -3187,6 +3225,11 @@ echo "" >> $makefile_cfg
 echo "BFLAGS=$bflags" >> $makefile_cfg
 echo "BOOTFLAGS=$bootflags" >> $makefile_cfg
 echo "BFEATUREFLAGS=$featureflags" >> $makefile_cfg
+if [ "$csflags " = " " ]; then
+  echo "LDSTRIPFLAGS=" >> $makefile_cfg
+else
+  echo "LDSTRIPFLAGS=-ldopt $csflags" >> $makefile_cfg
+fi
 
 # script extension
 echo "" >> $makefile_cfg
@@ -3346,7 +3389,9 @@ else
 fi
 echo >> $configurelog
 echo "Misc configuration:" >> $configurelog
-echo "  mask for installed files.............. $bmask" >> $configurelog
+echo "  mask for installed files.............. $modfile" >> $configurelog
+echo "  mask for installed executable......... $modexe" >> $configurelog
+echo "  mask for installed directories........ $moddir" >> $configurelog
 echo  >> $configurelog
 echo "System configuration:" >> $configurelog
 echo "  hardware tuning....................... $hardtune" >> $configurelog

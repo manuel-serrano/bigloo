@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 24 12:01:49 2010                          */
-;*    Last change :  Sun May 30 07:59:16 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 21:12:02 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate a UUID according to rfc4122 Version 4.                  */
@@ -51,7 +51,7 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (string128 . args)
    (let ((s (gensym)))
-      `(let ((,s (c-make-string/wo-fill 128)))
+      `(let ((,s ($make-string/wo-fill 128)))
 	  ,@(map (lambda (i v)
 		    `(string-set! ,s ,i ,v))
 		 (iota 36)

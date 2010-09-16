@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 16:25:00 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 09:29:01 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../../Makefile.misc
 # the library name
 API		= mail
 # Directories
-LIB         	= $(BOOTLIBDIR)
 PKG_SRC_DIR	= Pkgs
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
@@ -46,7 +45,7 @@ EAFLAGS		= --suffix spi --module-keyword interface
 EJFLAGS		= --suffix spi --module-keyword interface
 # Flags to build a heap
 BHEAPFLAGS	= $(SPIFLAGS) -unsafe -q \
-                  -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+                  -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 #*---------------------------------------------------------------------*/

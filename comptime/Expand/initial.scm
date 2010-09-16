@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue May  4 19:07:11 2010 (serrano)                */
+;*    Last change :  Tue Sep  7 20:45:34 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -484,8 +484,7 @@
        (let ((args (cdr x))
 	     (v    (mark-symbol-non-user!
 		    (gensym 'v))))
-	  (e `(let ((,v (c-create-vector
-			 ,(length args))))
+	  (e `(let ((,v ($create-vector ,(length args))))
 		 ,@(let loop ((i    0)
 			      (args args)
 			      (res  '()))
@@ -506,48 +505,13 @@
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?n)
-	   `(c-make-vector ,(e n e) ,(e '(unspecified) e)))
+	   `($make-vector ,(e n e) ,(e '(unspecified) e)))
 	  ((?- ?n ?init)
-	   `(c-make-vector ,(e n e) ,(e init e)))
+	   `($make-vector ,(e n e) ,(e init e)))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
-   ;; vector-set!
-   (install-O-comptime-expander
-    'vector-set!
-    (lambda (x::obj e::procedure)
-       (match-case x
-	  ((?- ?vec ?k ?obj)
-	   (let ((evec (e vec e))
-		 (ek   (e k e))
-		 (eobj (e obj e)))
-	      (if *unsafe-range*
-		  `(vector-set-ur! ,evec ,ek ,eobj)
-		  `(vector-set! ,evec ,ek ,eobj))))
-	  (else
-	   (error #f "Illegal `vector-set!' form" x)))))
-   (install-G-comptime-expander
-    'vector-set!
-    (lambda (x::obj e::procedure)
-       (bound-check x 'vector-length 'vector-bound-check? e)))
-   ;; vector-ref
-   (install-O-comptime-expander
-    'vector-ref
-    (lambda (x::obj e::procedure)
-       (match-case x
-	  ((?- ?vec ?k)
-	   (let ((evec (e vec e))
-		 (ek   (e k e)))
-	      (if *unsafe-range*
-		  `(vector-ref-ur ,evec ,ek)
-		  `(vector-ref ,evec ,ek))))
-	  (else
-	   (error #f "Illegal `vector-ref' form" x)))))
-   (install-G-comptime-expander
-    'vector-ref
-    (lambda (x::obj e::procedure)
-       (bound-check x 'vector-length 'vector-bound-check? e)))
 
-   ;; vector-ref
+   ;;typed vectors
    (let ((evref (lambda (x::obj e::procedure)
 		   (match-case x
 		      ((?op ?vec ?k)
@@ -598,9 +562,9 @@
 	  ((?- ?str1)
 	   (e str1 e))
 	  ((?- ?str1 ?str2)
-	   `(c-string-append ,(e str1 e) ,(e str2 e)))
+	   `($string-append ,(e str1 e) ,(e str2 e)))
 	  ((?- ?str1 ?str2 ?str3)
-	   `(c-string-append-3 ,(e str1 e) ,(e str2 e) ,(e str3 e)))
+	   `($string-append-3 ,(e str1 e) ,(e str2 e) ,(e str3 e)))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
    (install-G-comptime-expander
@@ -643,52 +607,15 @@
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
    
-   ;; string-set!
-   (install-O-comptime-expander
-    'string-set!
-    (lambda (x::obj e::procedure)
-       (match-case x
-	  ((?- ?vec ?k ?obj)
-	   (let ((evec (e vec e))
-		 (ek   (e k e))
-		 (eobj (e obj e)))
-	      (if *unsafe-range*
-		  `(string-set-ur! ,evec ,ek ,eobj)
-		  `(string-set! ,evec ,ek ,eobj))))
-	  (else
-	   (error #f "Illegal `string-set!' form" x)))))
-   (install-G-comptime-expander
-    'string-set!
-    (lambda (x::obj e::procedure)
-       (bound-check x 'string-length 'string-bound-check? e)))
-   
-   ;; string-ref
-   (install-O-comptime-expander
-    'string-ref
-    (lambda (x::obj e::procedure)
-       (match-case x
-	  ((?- ?vec ?k)
-	   (let ((evec (e vec e))
-		 (ek   (e k e)))
-	      (if *unsafe-range*
-		  `(string-ref-ur ,evec ,ek)
-		  `(string-ref ,evec ,ek))))
-	  (else
-	   (error #f "Illegal `string-ref' form" x)))))
-   (install-G-comptime-expander
-    'string-ref
-    (lambda (x::obj e::procedure)
-       (bound-check x 'string-length 'string-bound-check? e)))
-
    ;; substring-at?
    (install-O-comptime-expander
     'substring-at?
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?s1 ?s2 ?o)
-	   (e `(c-prefix-at? ,s1 ,s2 ,o) e))
+	   (e `($prefix-at? ,s1 ,s2 ,o) e))
 	  ((?- ?s1 ?s2 ?o ?l)
-	   (e `(c-substring-at? ,s1 ,s2 ,o ,l) e))
+	   (e `($substring-at? ,s1 ,s2 ,o ,l) e))
 	  (else
 	   (error #f "Illegal `substrint-at?' form" x)))))
    
@@ -698,9 +625,9 @@
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?s1 ?s2 ?o)
-	   (e `(c-prefix-ci-at? ,s1 ,s2 ,o) e))
+	   (e `($prefix-ci-at? ,s1 ,s2 ,o) e))
 	  ((?- ?s1 ?s2 ?o ?l)
-	   (e `(c-substring-ci-at? ,s1 ,s2 ,o ,l) e))
+	   (e `($substring-ci-at? ,s1 ,s2 ,o ,l) e))
 	  (else
 	   (error #f "Illegal `substring-ci-at?' form" x)))))
    
@@ -1010,7 +937,7 @@
    (install-G-comptime-expander
     'mmap-set!
     (lambda (x::obj e::procedure)
-       (bound-check x 'mmap-length 'string-bound-check? e)))
+       (bound-check x 'mmap-length '$string-bound-check? e)))
    
    ;; mmap-ref
    (install-O-comptime-expander
@@ -1028,7 +955,7 @@
    (install-G-comptime-expander
     'mmap-ref
     (lambda (x::obj e::procedure)
-       (bound-check x 'mmap-length 'string-bound-check? e)))
+       (bound-check x 'mmap-length '$string-bound-check? e)))
 
    ;; pregexp
    (let ((pregexp-expander (lambda (x::obj e::procedure)

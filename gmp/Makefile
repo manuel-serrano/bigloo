@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Jan  7 20:57:35 2010 (serrano)                */
+#*    Last change :  Thu Aug 12 11:35:38 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -95,7 +95,7 @@ install:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) install-lib LIB=libbigloogmp-$(RELEASE); \
           cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
-          chmod $(BMASK) $(LIBDIR)/$(FILDIR)/gmp.h; \
+          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h; \
 	fi
 
 #*---------------------------------------------------------------------*/

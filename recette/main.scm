@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Thu Sep  3 12:29:13 2009 (serrano)                */
+;*    Last change :  Mon Aug  2 01:31:45 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -315,7 +315,7 @@
 	  (if-module 'object test-object)
 	  (if-module 'object4 test-object4)
 	  (if-module 'object5 test-object5)
-	  (if-module 'hygien test-hygien)
+	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)
 	  (if-module 'unicode test-unicode)
 	  (if-module 'optim test-optim)

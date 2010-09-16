@@ -30,7 +30,10 @@
       (heap-suffix "jheap")
       (srfi0 'bigloo-jvm)
       (foreign-clause-support '(java))
-      (debug-support '(jvm))))
+      (debug-support '(jvm))
+      (bound-check #f)
+      (type-check #f)))
+   
 
 (define-method (backend-compile me::jvm)
    ;; the jvm prelude (hello message and *DEST* update)

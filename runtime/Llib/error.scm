@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Jun 13 08:20:36 2010 (serrano)                */
+;*    Last change :  Fri Sep 10 17:42:04 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -20,6 +20,7 @@
    (extern  (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
 	    (export find-runtime-type "bgl_find_runtime_type")
+	    (export typeof "bgl_typeof")
 	    (export c-debugging-show-type "bgl_show_type")
 	    
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
@@ -43,8 +44,11 @@
 	    (macro sigsegv::int "SIGSEGV")
 	    (macro sigpipe::int "SIGPIPE")
 	    
-	    (macro $find-runtime-type::string (::obj) "FOREIGN_TYPE_NAME")
+	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
+	    (macro $errno-type-error::int "BGL_TYPE_ERROR")
+	    (macro $errno-typename-error::int "BGL_TYPENAME_ERROR")
+	    (macro $errno-index-out-of-bound-error::int "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	    (macro $errno-io-error::int "BGL_IO_ERROR")
 	    (macro $errno-io-port-error::int "BGL_IO_PORT_ERROR")
 	    (macro $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
@@ -76,7 +80,7 @@
 		       "BGL_ENV_SET_TRACE")
 	       (method static $env-pop-trace::obj (::dynamic-env)
 		       "BGL_ENV_POP_TRACE")
- 	       (method static $find-runtime-type::string (::obj)
+ 	       (method static $foreign-typeof::string (::obj)
 		       "FOREIGN_TYPE_NAME")
 	       
 	       (method static $get-error-handler::obj ()
@@ -102,19 +106,39 @@
 	       (field static sigsegv::int "SIGSEGV")
 	       (field static sigpipe::int "SIGPIPE")
 	       
-	       (field static $errno-io-error::int "BGL_IO_ERROR")
-	       (field static $errno-io-port-error::int "BGL_IO_PORT_ERROR")
-	       (field static $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
-	       (field static $errno-io-read-error::int "BGL_IO_READ_ERROR")
-	       (field static $errno-io-write-error::int "BGL_IO_WRITE_ERROR")
+	       (field static $errno-type-error::int
+		      "BGL_TYPE_ERROR")
+	       (field static $errno-typename-error::int
+		      "BGL_TYPENAME_ERROR")
+	       (field static $errno-index-out-of-bound-error::int
+		      "BGL_INDEX_OUT_OF_BOUND_ERROR")
 	       
-	       (field static $errno-io-file-not-found-error::int "BGL_IO_FILE_NOT_FOUND_ERROR")
-	       (field static $errno-io-unknown-host-error::int "BGL_IO_UNKNOWN_HOST_ERROR")
-	       (field static $errno-io-parse-error::int "BGL_IO_PARSE_ERROR")
-	       (field static $errno-io-malformed-url-error::int "BGL_IO_MALFORMED_URL_ERROR")
-	       (field static $errno-io-sigpipe-error::int "BGL_IO_SIGPIPE_ERROR")
-	       (field static $errno-io-timeout-error::int "BGL_IO_TIMEOUT_ERROR")
-	       (field static $errno-process-exception::int "BGL_PROCESS_EXCEPTION")))
+	       (field static $errno-io-error::int
+		      "BGL_IO_ERROR")
+	       (field static $errno-io-port-error::int
+		      "BGL_IO_PORT_ERROR")
+	       (field static $errno-io-parse-error::int
+		      "BGL_IO_PARSE_ERROR")
+	       (field static $errno-io-read-error::int
+		      "BGL_IO_READ_ERROR")
+	       (field static $errno-io-write-error::int
+		      "BGL_IO_WRITE_ERROR")
+	       
+	       (field static $errno-io-file-not-found-error::int
+		      "BGL_IO_FILE_NOT_FOUND_ERROR")
+	       (field static $errno-io-unknown-host-error::int
+		      "BGL_IO_UNKNOWN_HOST_ERROR")
+	       (field static $errno-io-parse-error::int
+		      "BGL_IO_PARSE_ERROR")
+	       
+	       (field static $errno-io-malformed-url-error::int
+		      "BGL_IO_MALFORMED_URL_ERROR")
+	       (field static $errno-io-sigpipe-error::int
+		      "BGL_IO_SIGPIPE_ERROR")
+	       (field static $errno-io-timeout-error::int
+		      "BGL_IO_TIMEOUT_ERROR")
+	       (field static $errno-process-exception::int
+		      "BGL_PROCESS_EXCEPTION")))
    
    (import  __r4_input_6_10_2
 	    __object)
@@ -171,10 +195,14 @@
 	    (error ::obj ::obj ::obj)
 	    (error/errno::magic ::int ::obj ::obj ::obj)
 	    (error/location::obj ::obj ::obj ::obj ::obj ::obj)
+	    (error/source-location::obj ::obj ::obj ::obj ::obj)
 	    (error/source::obj ::obj ::obj ::obj ::obj)
 	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
+
+	    (type-error fname loc proc type obj)
+	    (index-out-of-bounds-error fname loc proc len obj)
 
 	    (module-init-error ::string ::string)
 
@@ -189,6 +217,7 @@
 	    (dump-trace-stack port depth)
 	    
 	    (find-runtime-type::bstring  ::obj)
+	    (typeof::bstring  ::obj)
 	    (c-debugging-show-type::string ::obj)
 	    (bigloo-type-error-msg::bstring  ::bstring ::bstring ::bstring)
 	    
@@ -223,7 +252,9 @@
 ;*    the_failure ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (the_failure proc msg obj)
-   (error proc msg obj))
+   (if (&exception? proc)
+       (raise proc)
+       (error proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/errno ...                                                  */
@@ -252,6 +283,12 @@
        (raise (make-&io-timeout-error #f #f (get-trace-stack) proc msg obj)))
       ((=fx sysno $errno-process-exception)
        (raise (make-&process-exception #f #f (get-trace-stack) proc msg obj)))
+      ((=fx sysno $errno-type-error)
+       (raise (type-error #f #f proc msg obj)))
+      ((=fx sysno $errno-typename-error)
+       (raise (typename-error #f #f proc msg obj)))
+      ((=fx sysno $errno-index-out-of-bound-error)
+       (raise (index-out-of-bounds-error #f #f proc msg obj)))
       (else
        (error proc msg obj))))
 
@@ -305,7 +342,9 @@
 				   (&error-fname val)
 				   (&error-location val)))
 		r))
-	  (default-exception-handler val))))
+	  (begin
+	     (default-exception-handler val)
+	     (the_failure "raise" "uncaught execption" val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ...                                             */
@@ -360,16 +399,22 @@
    (raise (make-&error fname loc (get-trace-stack) proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
+;*    error/source-location ...                                        */
+;*---------------------------------------------------------------------*/
+(define (error/source-location proc msg obj loc)
+   (match-case loc
+      ((at ?fname ?loc)
+       (error/location proc msg obj fname loc))
+      (else
+       (error proc msg obj))))
+
+;*---------------------------------------------------------------------*/
 ;*    error/source ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (error/source proc msg obj source)
    (if (not (epair? source))
        (error proc msg obj)
-       (match-case (cer source)
-	  ((at ?fname ?loc)
-	   (error/location proc msg obj fname loc))
-	  (else
-	   (error proc msg obj)))))
+       (error/source-location proc msg obj (cer source))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/c-location ...                                             */
@@ -398,7 +443,7 @@
 		  (symbol->string type))
 		 (else
 		  "???")))
-	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
       (raise (make-&type-error #f #f (get-trace-stack) proc msg obj type))))
 
 ;*---------------------------------------------------------------------*/
@@ -412,9 +457,46 @@
 		  (symbol->string type))
 		 (else
 		  "???")))
-	  (msg (bigloo-type-error-msg "Type" ty (find-runtime-type obj))))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
       (raise
        (make-&type-error fname loc (get-trace-stack) proc msg obj type))))
+
+;*---------------------------------------------------------------------*/
+;*    type-error ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (type-error fname loc proc type obj)
+   (let* ((ty (cond
+		 ((string? type) type)
+		 ((symbol? type) (symbol->string type))
+		 (else "???")))
+	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
+      (make-&type-error fname loc (get-trace-stack) proc msg obj type)))
+
+;*---------------------------------------------------------------------*/
+;*    typename-error ...                                               */
+;*---------------------------------------------------------------------*/
+(define (typename-error fname loc proc type obj)
+   (let* ((ty (cond
+		 ((string? type) type)
+		 ((symbol? type) (symbol->string type))
+		 (else "???")))
+	  (msg (bigloo-type-error-msg "Type" ty obj)))
+      (make-&type-error fname loc (get-trace-stack) proc msg #unspecified type)))
+
+;*---------------------------------------------------------------------*/
+;*    index-out-of-bounds-error ...                                    */
+;*---------------------------------------------------------------------*/
+(define (index-out-of-bounds-error fname loc proc len obj)
+   (let* ((len (cond
+		  ((fixnum? len) len)
+		  ((string? len) (string->integer len))
+		  (else 0)))
+	  (msg (string-append "index out of range [0.."
+			      (integer->string (-fx len 1))
+			      "]")))
+      (make-&index-out-of-bounds-error fname loc
+				       (get-trace-stack)
+				       proc msg obj len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */
@@ -685,7 +767,7 @@
 	 (display num port)
 	 (display ")" port))
       (newline port))
-   
+
    (when (pair? stack)
       (let loop ((i 1)
 		 (stack (cdr stack))
@@ -825,12 +907,12 @@
 		 (loop (+fx read 1) prev list)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-runtime-type ...                                            */
+;*    typeof ...                                                       */
 ;*    -------------------------------------------------------------    */
 ;*    This function tries to determine the type of an object in        */
 ;*    order to produce better type error messages.                     */
 ;*---------------------------------------------------------------------*/
-(define (find-runtime-type obj)
+(define (typeof obj)
    (cond
       ((fixnum? obj)
        "bint")
@@ -914,7 +996,13 @@
       ((bignum? obj)
        "bignum")
       (else
-       ($find-runtime-type obj))))
+       ($foreign-typeof obj))))
+
+;*---------------------------------------------------------------------*/
+;*    find-runtime-type ...                                            */
+;*---------------------------------------------------------------------*/
+(define (find-runtime-type o)
+   (typeof o))
 
 ;*---------------------------------------------------------------------*/
 ;*    c-debugging-show-type ...                                        */
@@ -922,7 +1010,7 @@
 ;*    See also bgl_typeof (runtime/Clib/cerror.c).                     */
 ;*---------------------------------------------------------------------*/
 (define (c-debugging-show-type obj)
-   (let ((t (find-runtime-type obj)))
+   (let ((t (typeof obj)))
       (fprint (current-error-port) t)
       t))
 

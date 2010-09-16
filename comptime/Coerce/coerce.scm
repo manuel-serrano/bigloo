@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Mon Jun 15 13:49:47 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:21:54 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -77,20 +77,20 @@
 ;*    coerce! ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::atom caller to safe)
-   (convert! node (typeof node) to safe))
+   (convert! node (get-type node) to safe))
  
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::kwote caller to safe)
-   (convert! node (typeof node) to safe))
+   (convert! node (get-type node) to safe))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::var caller to safe)
    (with-access::var node (variable)
-      (let ((type (typeof node)))
+      (let ((type (get-type node)))
 	 (convert! node type to safe))))
 
 ;*---------------------------------------------------------------------*/
@@ -114,7 +114,7 @@
 		;; the expression !
 		(set-car! hook (coerce! (car hook)
 					caller
-					(typeof (car hook))
+					(get-type (car hook))
 					safe))
 		(loop (cdr hook)))))))
 
@@ -125,11 +125,11 @@
    (with-access::extern node (expr*)
       (let loop ((values expr*))
 	 (if (null? values)
-	     (convert! node (typeof node) to safe)
+	     (convert! node (get-type node) to safe)
 	     (begin
 		(set-car! values (coerce! (car values)
 					  caller
-					  (typeof (car values))
+					  (get-type (car values))
 					  safe))
 		(loop (cdr values)))))))
 
@@ -164,7 +164,7 @@
 	     (begin
 		(set-car! l (coerce! (car l)
 				     caller
-				     (typeof (car l))
+				     (get-type (car l))
 				     safe))
 		(loop (cdr l)))))
       (convert! node type to safe)))
@@ -259,7 +259,7 @@
 	      (let* ((fun (app-fun node))
 		     (val (variable-value (var-variable fun)))
 		     (typec (fun-predicate-of val))
-		     (typev (typeof (car args))))
+		     (typev (get-type (car args))))
 		 (cond
 		    ((not (type? typec))
 		     ;; this is not a predicate
@@ -288,7 +288,7 @@
 		     (typec (fun-predicate-of val))
 		     (typep (variable-type (car (car bindings))))
 		     (typev (if (eq? typep *obj*)
-				(typeof (cdr (car bindings)))
+				(get-type (cdr (car bindings)))
 				typep)))
 		 (cond
 		    ((not (type? typec))
@@ -345,7 +345,7 @@
       (set! type to)
       (let ((clauses        clauses)
 	    (test-type      (select-item-type node))
-	    (test-node-type (typeof test)))
+	    (test-node-type (get-type test)))
 	 ;; select constructions are normalized: the test should have
 	 ;; been placed in a variable. That's why this test below should
 	 ;; work. This test may fails (in strange cases that I'm currently

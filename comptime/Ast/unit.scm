@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Fri Sep 11 08:09:35 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 18:05:53 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -475,21 +475,21 @@
 			     (fast-id-of-id (car o) loc))
 			  (sfun-optionals (global-value glo)))))
 	    `(,(let-sym) ,(map (lambda (v i)
-			   `(,v (c-vector-ref opt ,i)))
+			   `(,v ($vector-ref-ur opt ,i)))
 			(take (sfun-args-name (global-value glo)) arity)
 			(iota arity))
-		(case (c-vector-length opt)
+		(case ($vector-length opt)
 		   ,@(map (lambda (i)
 			     `((,(+fx arity i))
 			       (let* (,@(map (lambda (v j)
-						`(,v (c-vector-ref opt ,j)))
+						`(,v ($vector-ref-ur opt ,j)))
 					     (take (drop forms arity) i)
 					     (iota i arity))
 					,@(drop optionals i))
 				  (,glo
 				   ;; required unbound parameters
 				   ,@(map (lambda (j)
-					     `(c-vector-ref opt ,j))
+					     `($vector-ref-ur opt ,j))
 					  (iota arity))
 				   ;; optional parameters
 				   ,@opts))))
@@ -504,7 +504,7 @@
 			      (integer->string arity)
 			      ".." (integer->string (+ arity lopt))
 			      "] expected, provided")
-			    (c-vector-length opt))))))))
+			    ($vector-length opt))))))))
       (let* ((id (symbol-append '_ id))
 	     (opt (make-local-svar 'opt *vector*))
 	     (env (make-local-svar 'env *procedure*))
@@ -562,7 +562,7 @@
 	         (if (=fx i ,l)
 		     -1
 		     ,(if *unsafe-arity*
-			  `(,(let-sym) ((v (c-vector-ref ,iopt i)))
+			  `(,(let-sym) ((v ($vector-ref-ur ,iopt i)))
 			      (if (eq? v k1)
 				  (+fx i 1)
 				  (,search k1 (+fx i 2))))
@@ -574,13 +574,13 @@
 				  (integer->string arity)
 				  ".." (integer->string (+ arity lopt))
 				  "] expected, provided")
-				(c-vector-length ,iopt))
-			       (let ((v (c-vector-ref ,iopt i)))
+				($vector-length ,iopt))
+			       (let ((v ($vector-ref-ur ,iopt i)))
 				  (if (eq? v k1)
 				      (+fx i 1)
 				      (,search k1 (+fx i 2)))))))))
 		(let ,(map (lambda (v i)
-			      `(,v (c-vector-ref ,iopt ,i)))
+			      `(,v ($vector-ref-ur ,iopt ,i)))
 			   (take (sfun-args-name (global-value glo)) arity)
 			   (iota arity))
 		   (let* ,(map (lambda (p) (list (car p) (cadr p))) keys)
@@ -604,10 +604,10 @@
 				       (ind (gensym 'index)))
 				   `(,(let-sym) ((,ind (,search ,k1 ,arity)))
 				       (when (>=fx ,ind 0)
-					   (set! ,i (c-vector-ref ,iopt ,ind))))))
+					   (set! ,i ($vector-ref-ur ,iopt ,ind))))))
 			     keys)
 		      (,glo ,@(map (lambda (j)
-				      `(c-vector-ref ,iopt ,j))
+				      `($vector-ref-ur ,iopt ,j))
 				   (iota arity))
 			    ,@(append-map (lambda (p)
 					     (let ((id (fast-id-of-id

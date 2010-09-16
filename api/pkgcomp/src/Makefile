@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jun 20 16:33:57 2010 (serrano)                */
+#*    Last change :  Fri Aug  6 08:10:20 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the library.                               */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../../Makefile.misc
 # the library name
 API		= pkgcomp
 # Directories
-LIB         	= $(BOOTLIBDIR)
 BIGLOO_SRC_DIR 	= Llib
 DOTNET_SRC_DIR 	= DotNet
 C_SRC_DIR	= C
@@ -42,7 +41,7 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
-BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -I Llib \
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 # Bigloo pkgcomp compilation options
 PKGCOMPFLAGS	= -load $(BOOTLIBDIR)/pkgcomp.init

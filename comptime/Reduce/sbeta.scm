@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Wed Oct 15 12:05:36 2008 (serrano)                */
-;*    Copyright   :  2000-08 Manuel Serrano                            */
+;*    Last change :  Wed Sep  8 08:23:26 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -54,7 +54,7 @@
    ;; prepare the predicate beta reduction
    (set! *c-fixnum?* (find-global 'c-fixnum? 'foreign))
    (set! *c-flonum?* (find-global 'c-flonum? 'foreign))
-   (set! *c-string-length* (find-global 'c-string-length 'foreign))
+   (set! *c-string-length* (find-global '$string-length 'foreign))
    (set! *predicates* (list *c-fixnum?* *c-flonum?*))
    ;; start reducing
    (for-each (lambda (global)
@@ -451,7 +451,7 @@
 (define (node-beta-predicate! node)
    (with-access::app node (fun args loc type)
       (let ((vfun (var-variable fun))
-	    (atype (typeof (car args))))
+	    (atype (get-type (car args))))
 	 (cond
 	    ((eq? atype *obj*)
 	     node)

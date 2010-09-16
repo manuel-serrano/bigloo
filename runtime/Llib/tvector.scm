@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Tue Mar 11 15:52:40 2008 (serrano)                */
+;*    Last change :  Wed Sep  8 08:42:04 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -39,27 +39,27 @@
 	    __r4_control_features_6_9
 	    __evenv)
 
-   (extern (macro c-tvector?::bool (::obj)
+   (extern (macro $tvector?::bool (::obj)
 		  "TVECTORP")
-	   (macro c-tvector-length::int (::tvector)
+	   (macro $tvector-length::int (::tvector)
 		  "TVECTOR_LENGTH")
 	   
-	   (macro tvector-descr::obj (::tvector)
+	   (macro $tvector-descr::obj (::tvector)
 		  "TVECTOR_DESCR")
-	   (macro tvector-descr-set!::obj (::tvector ::obj)
+	   (macro $tvector-descr-set!::obj (::tvector ::obj)
 		  "TVECTOR_DESCR_SET")
 	   
 	   (export get-tvector-descriptor "get_tvector_descriptor"))
 
    (java   (class foreign
-	      (method static c-tvector?::bool (::obj)
+	      (method static $tvector?::bool (::obj)
 		      "TVECTORP")
-	      (method static c-tvector-length::int (::obj)
+	      (method static $tvector-length::int (::obj)
 		      "TVECTOR_LENGTH")
 	      
-	      (method static tvector-descr::obj (::obj)
+	      (method static $tvector-descr::obj (::obj)
 		      "TVECTOR_DESCR")
-	      (method static tvector-descr-set!::obj (::obj ::obj)
+	      (method static $tvector-descr-set!::obj (::obj ::obj)
 		      "TVECTOR_DESCR_SET")))
 
    (export  (inline tvector?::bool ::obj)
@@ -72,12 +72,12 @@
 	    (vector->tvector ::symbol ::vector)
 	    (tvector->vector ::tvector))
 
-   (pragma  (c-tvector? (predicate-of tvector) no-cfa-top nesting)
+   (pragma  ($tvector? (predicate-of tvector) no-cfa-top nesting)
 	    (tvector? side-effect-free no-cfa-top nesting)
-	    (c-tvector-length side-effect-free no-cfa-top nesting args-safe)
+	    ($tvector-length side-effect-free no-cfa-top nesting args-safe)
 	    (list->tvector no-cfa-top)
-	    (tvector-descr side-effect-free no-cfa-top nesting)
-	    (tvector-descr-set! nesting)
+	    ($tvector-descr side-effect-free no-cfa-top nesting)
+	    ($tvector-descr-set! nesting)
 	    (get-tvector-descriptor side-effect-free no-cfa-top)
 	    (tvector-ref side-effect-free no-cfa-top)
 	    (tvector-id side-effect-free no-cfa-top)
@@ -88,19 +88,19 @@
 ;*    tvector? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (tvector? obj)
-   (c-tvector? obj))
+   ($tvector? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    tvector-length ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (tvector-length obj)
-   (c-tvector-length obj))
+   ($tvector-length obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    tvector-id ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (tvector-id tvect)
-   (tvect-descr-id (tvector-descr tvect)))
+   (tvect-descr-id ($tvector-descr tvect)))
 
 ;*---------------------------------------------------------------------*/
 ;*    tvec-descr ...                                                   */
@@ -155,7 +155,7 @@
 ;*    tvector-ref ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (tvector-ref tvector)
-   (tvect-descr-ref (tvector-descr tvector)))
+   (tvect-descr-ref ($tvector-descr tvector)))
  
 ;*---------------------------------------------------------------------*/
 ;*    list->tvector ...                                                */
@@ -206,7 +206,7 @@
 ;*    tvector->vector ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (tvector->vector tv::tvector)
-   (let ((descr (tvector-descr tv)))
+   (let ((descr ($tvector-descr tv)))
       (let ((allocate (tvect-descr-allocate descr))
 	    (ref      (tvect-descr-ref descr)))
 	 (if (not (procedure? ref))
@@ -214,7 +214,7 @@
 		    "Unable to convert to such tvector"
 		    (tvector-id tv))
 	     (let* ((len  (tvector-length tv))
-		    (vec  (c-create-vector len)))
+		    (vec  ($create-vector len)))
 		(let loop ((i (-fx len 1)))
 		   (if (=fx i -1)
 		       vec

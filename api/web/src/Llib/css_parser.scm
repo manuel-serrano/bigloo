@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Thu Jun 24 06:09:58 2010 (serrano)                */
+;*    Last change :  Fri Sep  3 17:00:26 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -82,13 +82,20 @@
 	   (content (car STRING)))))
       
       (import*
-       (() '())
-       ((import* one-import) `(,@import* ,one-import)))
+       (()
+	'())
+       ((import* one-import)
+	(if (pair? one-import)
+	    `(,@import* ,one-import)
+	    import*)))
       
       (one-import
-       ((import comment*) `(,import ,@comment*)))
+       ((import comment*)
+	(when (css-import? import)
+	   `(,import ,@comment*))))
       
       (import
+       ((VALUE S*) #f)
        ((IMPORT_SYM S* STRING S* medium* SEMI-COLON S*)
 	(instantiate::css-import
 	   (value (car STRING))
@@ -99,18 +106,27 @@
 	   (medium* medium*))))
       
       (rule+
-       ((one-rule) (list one-rule))
-       ((rule+ one-rule) `(,@rule+ ,one-rule)))
+       ((one-rule rule*) (cons one-rule rule*)))
+      
+      (rule*
+       (() '())
+       ((rule* one-rule-value) `(,@rule* ,one-rule-value)))
       
       (one-rule
        ((rule comment*) (list rule comment*)))
       
       (rule
-       ((VALUE S*) '())
        ((ruleset) ruleset)
        ((media) media)
        ((page) page)
        ((font_face) font_face))
+
+      (one-rule-value
+       ((rule-value comment*) (list rule-value comment*)))
+      
+      (rule-value
+       ((rule) rule)
+       ((VALUE S*) '()))
       
       (media
        ((MEDIA_SYM S* medium+ BRA-OPEN S* ruleset* BRA-CLO S*)
@@ -132,7 +148,7 @@
       
       (medium*
        (() '())
-       ((medium* COMMA S* medium) `(,@medium* ,medium)))
+       ((medium+) medium+))
       
       (medium+
        ((medium) (list medium))

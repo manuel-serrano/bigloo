@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Fri Sep 12 10:03:08 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep  8 08:48:41 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
       (define (make-c-tv?)
 	 `(define-inline (,(symbol-append tv?-id '::bool) o::obj)
 	     (if (tvector? o)
-		 (eq? (tvector-descr o) ,descr-id)
+		 (eq? ($tvector-descr o) ,descr-id)
 		 #f)))
 
       (define (make-jvm-tv?)
@@ -80,12 +80,7 @@
 	    `(define-inline (,(make-typed-ident tv-ref-id item-id)
 			     ,(make-typed-ident 'tv tv-id)
 			     o::int)
-		,(if *unsafe-range*
-		     exp
-		     `(if (vector-bound-check? o (tvector-length tv))
-			  ,exp
-			  ((@ error __error)
-			   ,tv-ref-id "Index out of bounds" o))))))
+		,exp)))
       
       (define (make-tv-set!)
 	 (let* ((pfmt (string-append "TVECTOR_SET( " mitem-name ",$1,$2,$3 )"))
@@ -95,15 +90,7 @@
 			     ,(make-typed-ident 'tv tv-id)
 			     o::int
 			     ,(make-typed-ident 'v item-id))
-		,(if *unsafe-range*
-		     exp
-		     `(if (vector-bound-check? o (tvector-length tv))
-			  ,exp
-			  ((@ error __error)
-			   ,(string-append (symbol->string tv-id)
-					   "-set!")
-			   "Index out of bounds"
-			   o))))))
+		,exp)))
       
       (define (make-tv)
 	 `(define-inline (,(make-typed-ident tv-make-id tv-id)
@@ -151,7 +138,7 @@
 							 ", $1, $2 )")
 					  #f
 					  'len)))
-		(tvector-descr-set! v ,descr-id)
+		($tvector-descr-set! v ,descr-id)
 		v)))
 
       (define (make-alloc-tv)

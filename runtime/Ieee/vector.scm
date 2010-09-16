@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sun May 30 08:01:55 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 05:24:30 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -35,40 +35,46 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-vector?::bool (::obj) "VECTORP")
-	    (c-make-vector::vector (::int ::obj) "make_vector")
-	    (c-create-vector::vector (::int) "create_vector")
-	    (c-vector-fill!::obj (::vector ::int ::obj) "fill_vector")
-	    (macro c-vector-length::int (::vector) "VECTOR_LENGTH")
-	    (macro c-vector-ref::obj (::vector ::int) "VECTOR_REF")
-	    (macro c-vector-set!::obj (::vector ::int ::obj) "VECTOR_SET")
-	    (macro vector-bound-check?::bool (::int ::int) "BOUND_CHECK")
-	    (macro c-vector-tag-set!::obj (::vector ::int) "VECTOR_TAG_SET")
-	    (macro c-vector-tag::int (::vector) "VECTOR_TAG")
-	    (c-sort-vector::vector (::vector ::procedure) "sort_vector"))
+   (extern  (macro $vector?::bool (::obj) "VECTORP")
+	    ($make-vector::vector (::int ::obj) "make_vector")
+	    ($create-vector::vector (::int) "create_vector")
+	    ($vector-fill!::obj (::vector ::int ::obj) "fill_vector")
+	    (macro $vector-length::int (::vector) "VECTOR_LENGTH")
+	    (macro $vector-ref::obj (::vector ::int) "VECTOR_REF")
+	    (macro $vector-ref-ur::obj (::vector ::int) "VECTOR_REF")
+	    (macro $vector-set!::obj (::vector ::int ::obj) "VECTOR_SET")
+	    (macro $vector-set-ur!::obj (::vector ::int ::obj) "VECTOR_SET")
+	    (macro $vector-bound-check?::bool (::int ::int) "BOUND_CHECK")
+	    (macro $vector-tag-set!::obj (::vector ::int) "VECTOR_TAG_SET")
+	    (macro $vector-tag::int (::vector) "VECTOR_TAG")
+	    ($sort-vector::vector (::vector ::procedure) "sort_vector"))
    
    (java    (class foreign
-	       (method static c-vector?::bool (::obj)
+	       (method static $vector?::bool (::obj)
 		       "VECTORP")
-	       (method static c-make-vector::vector (::int ::obj)
+	       (method static $make-vector::vector (::int ::obj)
 		       "make_vector")
-	       (method static c-create-vector::vector (::int)
+	       (method static $create-vector::vector (::int)
 		       "create_vector")
-	       (method static c-vector-fill!::obj (::vector ::int ::obj)
+	       (method static $vector-fill!::obj (::vector ::int ::obj)
 		       "fill_vector")
-	       (method static c-vector-length::int (::vector)
+	       (method static $vector-length::int (::vector)
 		       "VECTOR_LENGTH")
-	       (method static c-vector-ref::obj (::vector ::int)
+	       (method static $vector-ref::obj (::vector ::int)
 		       "VECTOR_REF")
-	       (method static c-vector-set!::obj (::vector ::int ::obj)
+	       (method static $vector-ref-ur::obj (::vector ::int)
+		       "VECTOR_REF")
+	       (method static $vector-set!::obj (::vector ::int ::obj)
 		       "VECTOR_SET")
-	       (method static vector-bound-check?::bool (::int ::int)
+	       (method static $vector-set-ur!::obj (::vector ::int ::obj)
+		       "VECTOR_SET")
+	       (method static $vector-bound-check?::bool (::int ::int)
 		       "BOUND_CHECK")
-	       (method static c-vector-tag-set!::obj (::vector ::int)
+	       (method static $vector-tag-set!::obj (::vector ::int)
 		       "VECTOR_TAG_SET")
-	       (method static c-sort-vector::vector (::vector ::procedure)
+	       (method static $sort-vector::vector (::vector ::procedure)
 		       "sort_vector")
-	       (method static c-vector-tag::int (::vector)
+	       (method static $vector-tag::int (::vector)
 		       "VECTOR_TAG")))
    
    (export  (inline vector?::bool obj)
@@ -90,13 +96,14 @@
 	    (vector-append::vector ::vector . args)
 	    (sort ::obj ::obj))
    
-   (pragma  (c-make-vector no-cfa-top nesting)
-	    (c-create-vector no-cfa-top nesting)
-	    (c-vector? (predicate-of vector) no-cfa-top nesting)
+   (pragma  ($make-vector no-cfa-top nesting)
+	    ($create-vector no-cfa-top nesting)
+	    ($vector? (predicate-of vector) no-cfa-top nesting)
 	    (vector? (predicate-of vector) nesting)
-	    (c-vector-length side-effect-free no-cfa-top nesting args-safe)
+	    ($vector-length side-effect-free no-cfa-top nesting args-safe)
 	    (vector-length side-effect-free no-cfa-top nesting)
-	    (c-vector-ref side-effect-free no-cfa-top nesting args-safe)
+	    ($vector-ref side-effect-free no-cfa-top nesting args-safe)
+	    ($vector-ref-ur side-effect-free no-cfa-top nesting args-safe)
 	    (vector-ref side-effect-free nesting)
 	    (vector-ref-ur side-effect-free nesting)
 	    (vector-tag side-effect-free no-cfa-top)))
@@ -105,13 +112,13 @@
 ;*    vector? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector? obj)
-   (c-vector? obj))
+   ($vector? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-vector ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-vector int #!optional (fill #unspecified))
-   (c-make-vector int fill))
+   ($make-vector int fill))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector . args ...                                                */
@@ -123,43 +130,31 @@
 ;*    vector-length ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-length vector)
-   (c-vector-length vector))
+   ($vector-length vector))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-ref ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-ref vector k)
-   (if (vector-bound-check? k (vector-length vector))
-       (c-vector-ref vector k)
-       (error 'vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (vector-length vector) 1))
-			     "]")
-	      k)))
+   ($vector-ref vector k))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-set! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-set! vector k obj)
-   (if (vector-bound-check? k (vector-length vector))
-       (c-vector-set! vector k obj)
-       (error 'vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx (vector-length vector) 1))
-			     "]")
-	      k)))
+   ($vector-set! vector k obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-ref-ur ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-ref-ur vector k)
-   (c-vector-ref vector k))
+   ($vector-ref-ur vector k))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-set-ur! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-set-ur! vector k obj)
-   (c-vector-set! vector k obj))
+   ($vector-set-ur! vector k obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector->list ...                                                 */
@@ -179,7 +174,7 @@
 ;*---------------------------------------------------------------------*/
 (define (list->vector list)
    (let* ((len (length list))
-	  (vec (c-create-vector len)))
+	  (vec ($create-vector len)))
       (let loop ((i 0)
 		 (l list))
 	 (if (=fx i len)
@@ -192,19 +187,19 @@
 ;*    vector-fill! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (vector-fill! vector fill)
-   (c-vector-fill! vector (vector-length vector) fill))
+   ($vector-fill! vector (vector-length vector) fill))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-tag ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-tag vector)
-   (c-vector-tag vector))
+   ($vector-tag vector))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-tag-set! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-tag-set! vector tag)
-   (c-vector-tag-set! vector tag))
+   ($vector-tag-set! vector tag))
 
 ;*---------------------------------------------------------------------*/
 ;*    copy-vector ...                                                  */
@@ -318,7 +313,7 @@
 		      (error "sort"
 			     "Object must be a list or a vector"
 			     obj)))))
-	  (let ((res (c-sort-vector vec proc)))
+	  (let ((res ($sort-vector vec proc)))
 	     (if (pair? obj)
 		 (vector->list res)
 		 res))))))

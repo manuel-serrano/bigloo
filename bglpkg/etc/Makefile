@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Wed Nov 14 13:11:40 2007 (serrano)                */
-#*    Copyright   :  2007 Manuel Serrano                               */
+#*    Last change :  Thu Aug 12 11:00:28 2010 (serrano)                */
+#*    Copyright   :  2007-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
 #*    -------------------------------------------------------------    */
@@ -93,7 +93,7 @@ include $(BGLLIBDIR)/Makefile.config
 #*---------------------------------------------------------------------*/
 install-init:
 	cp $(LIBNAME).init $(LIBDIR)/$(FILDIR)/$(LIBNAME).init \
-          && chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
+          && chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
 
 uninstall-init:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
@@ -135,7 +135,7 @@ cleanall.native:
 
 install.native:
 	cp $(LIBNAME).heap $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap \
-          && chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap; \
+          && chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap; \
 	$(MAKE) install-lib LIB=libbigloo$(LIBNAME)_s-$(VERSION);
 	$(MAKE) install-shared-lib LIB=libbigloo$(LIBNAME)_e-$(VERSION);
 	$(MAKE) install-lnlib LIB=libbigloo$(LIBNAME)_s-$(VERSION) LN=libbigloo$(LIBNAME)_u-$(VERSION);
@@ -256,11 +256,11 @@ $(ODIR)/class_s/bigloo/$(LIBNAME)/%.class: %.scm
 install-jvm:
 	if [ $(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
 	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
 	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
 	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
 	  (cd $(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(LIBNAME)_u-$(VERSION).zip && \
            ln bigloo$(LIBNAME)_s-$(VERSION).zip bigloo$(LIBNAME)_u-$(VERSION).zip); \
@@ -269,13 +269,13 @@ install-jvm:
 install-dotnet:
 	if [ $(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
 	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
 	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
 	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
 	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll && \
-	  chmod $(BMASK) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll ; \
+	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll ; \
         fi
 
 uninstall:

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Thu Mar 11 09:39:42 2010 (serrano)                */
+;*    Last change :  Wed Sep  8 08:21:38 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -838,7 +838,7 @@
 		       auxs
 		       exps)
 		 (begin
-		    (local-type-set! aux (typeof (car old-actuals)))
+		    (local-type-set! aux (get-type (car old-actuals)))
 		    (loop (cdr old-actuals)
 			  (cons (instantiate::varc
 				   (variable aux)

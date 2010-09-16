@@ -70,9 +70,14 @@ Configuring BIGLOO
        `benchmark' mode with the following configure invocation:
           `./configure <your-other-options> --benchmark=yes'
 
-       You should also read the README.benchmark file and the doc/README.mingw
-       file. Using MingW the configure invokation usually looks like:
+       You should also read the README.benchmark file.
+
+       On MinGW the configure invokation usually looks like:
           `./configure --prefix=C:/msys/1.0/home/Administrator'
+       Read the file doc/README.mingw to learn more.
+
+       On OpenSolaris, use the GNU tools to build Bigloo. For additional
+       details read the file doc/README.solaris.
 
    1c. By default, the Bigloo installation process install a partial version
        of the development environment BEE. In order to enable a full support

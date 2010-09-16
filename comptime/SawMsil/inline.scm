@@ -262,16 +262,16 @@
    (isinst me (find-type 'bint))
    (if on? (brtrue me "L" lab) (brfalse me "L" lab)) )
 
-(define-inline-call string-bound-check?
+(define-inline-call $string-bound-check?
    (clt me) )
 
-(define-inline-predicate string-bound-check?
+(define-inline-predicate $string-bound-check?
    (if on? (blt me "L" lab) (bge me "L" lab)) )
 
-(define-inline-call vector-bound-check?
+(define-inline-call $vector-bound-check?
    (clt me) )
 
-(define-inline-predicate vector-bound-check?
+(define-inline-predicate $vector-bound-check?
    (if on? (blt me "L" lab) (bge me "L" lab)) )
 
 ;;;
@@ -320,7 +320,7 @@
 ;   (if on? (brtrue me "L" lab) (brfalse me "L" lab)) )
 
 ;; Still a bug in mono for VECTORP
-;(define-inline-predicate c-vector?
+;(define-inline-predicate $vector?
 ;   (isinst me (find-type 'vector))
 ;   (if on? (brtrue me "L" lab) (brfalse me "L" lab)) )
 
@@ -330,7 +330,7 @@
 ;;
 ;; CONFORM
 ;;
-(define-inline-call c-string-length
+(define-inline-call $string-length
    (load-vector-length me) )
 
 (define-inline-call c-symbol->string

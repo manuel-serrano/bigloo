@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Wed Mar 24 12:09:51 2010 (serrano)                */
+;*    Last change :  Tue Aug 24 14:33:30 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -45,6 +45,7 @@
 	    __crc
 	    __crc16
 	    __sha1
+	    __sha2
 	    __gunzip
 	    __tar
 	    __kmp
@@ -54,6 +55,7 @@
 ;* 	    __rsa                                                      */
 	    __url
 	    __http
+	    __ftp
 	    __uuid
 	    
 	    __reader
@@ -110,7 +112,8 @@
 	    __r4_output_6_10_3
 	    
 	    __r5_control_features_6_4
-	    __r5_macro_4_3_hygiene
+	    __r5_macro_4_3_syntax
+	    ;__r5_macro_4_3_hygiene
 	    
 	    __lalr_driver
 	    __lalr_expand))

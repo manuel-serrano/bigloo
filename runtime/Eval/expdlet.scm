@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Tue Sep 30 08:38:42 2008 (serrano)                */
-;*    Copyright   :  2004-08 Manuel Serrano                            */
+;*    Last change :  Fri Jul 30 08:10:31 2010 (serrano)                */
+;*    Copyright   :  2004-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -44,7 +44,8 @@
 
 	    __expander_define
 	    __evcompile
-	    __expand)
+	    __expand
+	    __evutils)
    
    (use     __type
 	    __evenv)

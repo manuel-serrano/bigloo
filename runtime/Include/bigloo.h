@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jun 28 11:16:12 2010 (serrano)                */
+/*    Last change :  Tue Sep 14 14:28:33 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -273,7 +273,7 @@ typedef union scmobj {
       header_t        header;    /*  longueur, la chaine C suit.       */
 #endif		
       int             length;
-      unsigned char   char0;
+      unsigned char   char0[ 1 ];
    } string_t;
 
    struct ucs2_string {          /*  Ucs2 strings:                     */
@@ -511,16 +511,17 @@ typedef union scmobj {
    } mmap_t;
 
    struct bgl_hvector {
-      header_t        header;
-      unsigned int    length;
+      header_t header;
+      unsigned int length;
    } hvector_t;             
 
    struct bgl_weakptr {
-      header_t        header;
-      union scmobj   *data;
+      header_t header;
+      union scmobj *data;
    } weakptr_t;
 
-   struct bgl_dynamic_env {      /* Thread dynamic environment         */
+   /* Thread dynamic environment         */
+   struct bgl_dynamic_env {      
       header_t        header;
       /* global IO ports */
       union scmobj *current_output_port;
@@ -1458,25 +1459,28 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define C_SYSTEM_FAILURE( sn, p, m, o ) \
    SYSTEM_FAILURE( sn, string_to_bstring( p ), string_to_bstring( m ), (o) )
 
-#define BGL_ERROR                    1
-#define BGL_LOCATION_ERROR           2
+#define BGL_ERROR                     1
+#define BGL_LOCATION_ERROR            2
    
-#define BGL_TYPE_ERROR              10
+#define BGL_TYPE_ERROR               10
+#define BGL_TYPENAME_ERROR           11
+#define BGL_INDEX_OUT_OF_BOUND_ERROR 12
    
-#define BGL_IO_ERROR                20   
-#define BGL_IO_PORT_ERROR           21
+#define BGL_IO_ERROR                 20   
+#define BGL_IO_PORT_ERROR            21
    
-#define BGL_IO_READ_ERROR           31
-#define BGL_IO_WRITE_ERROR          32
-#define BGL_IO_CLOSED_ERROR         33
-#define BGL_IO_FILE_NOT_FOUND_ERROR 34
-#define BGL_IO_UNKNOWN_HOST_ERROR   35
-#define BGL_IO_PARSE_ERROR          36
-#define BGL_IO_MALFORMED_URL_ERROR  37
-#define BGL_IO_SIGPIPE_ERROR        38
-#define BGL_IO_TIMEOUT_ERROR        39
+#define BGL_IO_READ_ERROR            31
+#define BGL_IO_WRITE_ERROR           32
+#define BGL_IO_CLOSED_ERROR          33
+#define BGL_IO_FILE_NOT_FOUND_ERROR  34
+#define BGL_IO_UNKNOWN_HOST_ERROR    35
+#define BGL_IO_PARSE_ERROR           36
+#define BGL_IO_MALFORMED_URL_ERROR   37
+#define BGL_IO_SIGPIPE_ERROR         38
+#define BGL_IO_TIMEOUT_ERROR         39
    
-#define BGL_PROCESS_EXCEPTION       50
+#define BGL_PROCESS_EXCEPTION        50
+   
    
 /*---------------------------------------------------------------------*/
 /*    Cells                                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:14:19 2005                          */
-;*    Last change :  Fri Feb 12 18:18:29 2010 (serrano)                */
+;*    Last change :  Mon Aug 30 11:59:15 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    iCalendar parser                                                 */
@@ -157,7 +157,7 @@
 	     (if (string-index description #\Newline)
 		 (write-line "DESCRIPTION"
 			     '(("ENCODING" "BASE64"))
-			     (base64-encode description)
+			     (base64-encode description #f)
 			     op)
 		 (write-line "DESCRIPTION" '() description op)))
 	  (when (string? uid)
@@ -226,6 +226,7 @@
 ;*    port->icalendar ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (port->icalendar iport #!optional calendar)
+   
    (define (evt b cal)
       (cond
 	 ((not (block? b))
@@ -238,6 +239,7 @@
 				 (calendar cal))))
 	 (else
 	  #f)))
+
    (let ((cal (if (calendar? calendar)
 		  calendar
 		  (instantiate::calendar
@@ -322,7 +324,9 @@
 ;*    line-show ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (line-show l)
-   (format "~a:~a" (line-name l) (line-val l)))
+   (if (eof-object? l)
+       l
+       (format "~a:~a" (line-name l) (line-val l))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-line? ...                                                     */
@@ -364,10 +368,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    lexer-error ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-macro (lexer-error msg . c)
-   `(parse-error ,msg
-		 (format "{~a}" ,(if (pair? c) (car c) '(the-failure)))
-		 (the-port)))
+(define-macro (lexer-error msg c)
+   (let ((tmp (gensym)))
+      `(let ((,tmp ,c))
+	  (parse-error ,msg
+		       (format "{~a}"
+			       (cond
+				  ((eof-object? ,tmp) ,tmp)
+				  ((char>=? ,tmp #\space) ,tmp)
+				  (else (format "#a~a" (char->integer ,tmp)))))
+		       (the-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *contentline-lexer* ...                                          */
@@ -409,7 +419,7 @@
 	      (vals (read/rp *param-values-lexer* (the-port))))
 	  (cons (cons name vals) (ignore))))
       (else
-       (lexer-error "Illegal character in parameter list"))))
+       (lexer-error "Illegal character in parameter list" (the-failure)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *param-name-lexer* ...                                           */
@@ -421,7 +431,7 @@
       ((: (or iana-token x-name) #\=)
        (the-substring 0 -1))
       (else
-       (lexer-error "Illegal character in parameter name"))))
+       (lexer-error "Illegal character in parameter name" (the-failure)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *param-values-lexer* ...                                         */
@@ -449,7 +459,7 @@
        (ignore))
       (else
        (let ((c (the-failure)))
-	  (if (char=? c #\:)
+	  (if (and (char? c) (char=? c #\:))
 	      (begin
 		 (rgc-buffer-unget-char (the-port) (char->integer #\:))
 		 '())
@@ -464,16 +474,17 @@
 		     (CR #a013)
 		     (LF #a010)
 		     (SPACE #a032)
+		     (TAB #\tab)
 		     (CRLF (: (? CR) LF)))
       ((+ VALUE-CHAR)
        (let ((val (the-string)))
 	  (cons val (ignore))))
       ((: CRLF)
        '())
-      ((: CRLF SPACE)
+      ((: CRLF (+ (or SPACE TAB)))
        (ignore))
       (else
-       (lexer-error "Illegal character in value line"))))
+       (lexer-error "Illegal character in value line" (the-failure)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *rrule-value-lexer* ...                                          */
@@ -692,7 +703,13 @@
 		      ((is-line-name? l 'DTSTART)
 		       (set! dtstart (icalendar-date->date (line-val l))))
 		      ((is-line-name? l 'DTEND)
-		       (set! dtend (icalendar-date->date (line-val l))))
+		       (let ((d (icalendar-date->date (line-val l))))
+			  (if (and (=fx (date-hour d) 0)
+				   (=fx (date-minute d) 0)
+				   (=fx (date-second d) 0))
+			      (set! dtend (seconds->date
+					   (-elong (date->seconds d) 1)))
+			      (set! dtend d))))
 		      ((is-line-name? l 'SUMMARY)
 		       (set! summary (line-val l)))
 		      ((is-line-name? l 'DESCRIPTION)

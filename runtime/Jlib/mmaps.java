@@ -21,18 +21,18 @@ public class mmaps extends mmap {
       return this;
    }
    
-   public int get( int i ) {
+   public int get( long i ) {
       if( read ) 
-	 return name[ i ];
+	 return name[ (int)i ];
       else {
 	 foreign.fail( "mmap", "write only mmap", this );
 	 return -1;
       }
    }
 
-   public void put( int i, byte c ) {
+   public void put( long i, byte c ) {
       if( write ) 
-	 name[ i ] = c;
+	 name[ (int)i ] = c;
       else
 	 foreign.fail( "mmap", "read only mmap", this );
    }

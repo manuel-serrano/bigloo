@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Jun 25 14:22:58 2010 (serrano)                */
+/*    Last change :  Wed Aug 25 10:20:15 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -623,7 +623,7 @@ bgl_output_flush( obj_t port, char *str, size_t slen ) {
 /*    bgl_write ...                                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_write( obj_t op, char *str, size_t sz ) {
+bgl_write( obj_t op, unsigned char *str, size_t sz ) {
    if( OUTPUT_PORT( op ).cnt > sz ) {
       if( OUTPUT_PORT( op ).bufmode == BGL_IOLBF ) {
 	 while( sz-- > 0 ) {
@@ -1848,7 +1848,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
       while( (n = sysread( ip, buf, default_io_bufsiz )) > 0 ) {
 	 o = 0;
 	 
-	 bgl_write( op, &buf[ o ], n );
+	 bgl_write( op, (unsigned char *)&buf[ o ], n );
 	 rsz += n;
       }
 
@@ -1876,7 +1876,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #endif
    loopr2:
       while( (sz > 0) && ((n = sysread( ip, buf, s )) > 0) ) {
-	 bgl_write( op, &buf[ 0 ], n );
+	 bgl_write( op, (unsigned char *)&buf[ 0 ], n );
 	 rsz += n;
 	 sz -= n;
 	 

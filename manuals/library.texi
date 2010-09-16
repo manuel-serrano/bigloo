@@ -23,8 +23,10 @@ library is not only a bundle of compiled codes and memory locations. A
 Bigloo library is split into several files:
 
 @itemize @bullet
-@item one @emph{heap} that describes the locations of the library.
-@item several host library files.
+@item one @emph{heap} that describes the variables and functions of the library.
+@item several host library files (safe and unsafe versions of the compilation
+and also @emph{eval libraries} that contain the code that binds the
+variables and functions to the evaluator).
 @item possibly, C header files.
 @item possibly, an initialization file.
 @end itemize
@@ -39,11 +41,12 @@ the following files:
 @item @code{bformat.heap}: the heap file.
 @item @code{bformat.init}: the initialization file.
 @item @code{libbformat_s-1.0.a}, @code{libbformat_s-1.0.so}, 
- @code{libbformat_u-1.0.a}, @code{libbformat_u-1.0.so}:
+ @code{libbformat_u-1.0.a}, @code{libbformat_u-1.0.so},
+ @code{libbformat_eu-1.0.so}, and @code{libbformat_es-1.0.so}::
 the Unix library files. The file names with a @code{_u} are libraries compiled 
 in @emph{unsafe} and @emph{optimized} mode. By convention the library using
 the @code{_s} suffix are @emph{safe} libraries, @code{_p} are profiling
-libraries, @code{_d} debug libraries, and @code{_e} eval libraries.
+libraries, @code{_d} debug libraries, @code{_es} and @code{_eu} eval libraries.
 @item @code{bformat.h}: an include file.
 @end itemize
 
@@ -64,7 +67,7 @@ must be @emph{lower case}. For instance:
 $ bigloo foo.scm -library bformat
 @end display
 
-@item Using the module clause @code{library}. This second solution prevent from
+@item Using the module clause @code{library}. This second solution prevents from
 using a special compilation option. For instance, this module will
 automatically compile and link with the @code{bformat} library:
 
@@ -79,14 +82,15 @@ automatically compile and link with the @code{bformat} library:
 
 When a Bigloo library @code{lib} is used, Bigloo automatically
 searches if a file called @code{lib.init} exists. If such a file
-exits, it is loaded at compile-time. For instance, that file may be
-used to specify compilation flags. The initialization file may affect
-any of the global parameters of the Bigloo compiler. A Bigloo user
-library might be needing additional system library. For instance, a
-Bigloo library supporting SSL connections is likely to be needing the
-a native library. Setting the compiler variable
-@code{*ld-port-options*} has this effect. For instance, one may define
-an initialization file such as:
+exits, it is loaded at @emph{compile-time}. For instance, that file
+may be used to specify compilation flags or to define macros used by
+the compiler. The initialization file may affect any of the global
+parameters of the Bigloo compiler. A Bigloo user library might be
+needing additional system library. For instance, a Bigloo library
+supporting SSL connections is likely to be needing the a native
+library. Setting the compiler variable @code{*ld-port-options*} has
+this effect. For instance, one may define an initialization file such
+as:
 
 @smalllisp
 (cond-expand
@@ -143,20 +147,22 @@ Examples:
 
 @itemize @bullet
 @item The following declares a library named @code{foo}. When loaded
-the Bigloo runtime system will seek file named @code{libfoo_s-3.1a.so}, 
-@code{libfoo_u-3.1a.so}, and @code{libfoo_e-3.1a.so}.
+the Bigloo runtime system will seek file named @code{libfoo_s-3.4a.so}, 
+@code{libfoo_u-3.4a.so}, @code{libfoo_es-3.4a.so}, and @code{libfoo_eu-3.4a.so}.
 @smalllisp
 (declare-library! 'foo) 
 @end smalllisp
 
 @item The following declares a library named @code{pthread}. When loaded
-the Bigloo runtime system will seek file named @code{libbigloopth_s-1.1a.so}, 
-@code{libbigloopth_u-1.1a.so}, and @code{libbigloopth_e-1.1a.so}. Once
-the library loaded, the SRFI-0 features @code{pthread} and @code{srfi-18}
-will be bound. When loading the library, the two modules @code{__pth_thread}
-and @code{__pth_makelib} will be initialized. In the JVM version these
-modules are compiled in the classes @code{"bigloo.pthread.pthread"}
-and @code{"bigloo.pthread.make_lib"}.
+the Bigloo runtime system will seek file named
+@code{libbigloopth_s-1.1a.so}, @code{libbigloopth_u-1.1a.so},
+@code{libbigloopth_es-1.1a.so}, @code{libbigloopth_eu-1.1a.so}. Once
+the library loaded, the SRFI-0 features @code{pthread} and
+@code{srfi-18} will be bound. When loading the library, the two
+modules @code{__pth_thread} and @code{__pth_makelib} will be
+initialized. In the JVM version these modules are compiled in the
+classes @code{"bigloo.pthread.pthread"} and
+@code{"bigloo.pthread.make_lib"}.
 
 @smalllisp
 (declare-library! 'pthread 
@@ -227,8 +233,8 @@ Instruments the compiler to look at a library named
 
 It is illegal for libraries to include inline functions that make use of
 new foreign types. By new foreign type, we mean foreign types that are
-defined inside the library. A library may contains inline functions but
-that inline functions must not even call function using foreign types in
+defined inside the library. A library may contain inline functions but
+these inline functions must not call function using foreign types in
 their prototypes. Including inline functions making use of foreign C
 type will make the compiler to fail when compiling user code. The
 compiler will fail prompting type errors. A library may contains non-inline
@@ -249,20 +255,29 @@ The regular Bigloo library paths are scanned unless optional @var{path}s
 are sent to the function.
 @end deffn
 
+@deffn {library procedure} bigloo-library-path
+@deffnx {library procedure} bigloo-library-path-set!
+These functions gets and sets the default path, a list of strings,
+for loading libraries. 
+@end deffn
 
 @deffn {library procedure} library-load ident . path
 Loads a library in the interpreter. In addition to dynamically loading
-the library, this function tries to the @code{_e} version of the library.
+the library, this function tries to the @code{_es} if it is linked
+against the safe Bigloo library version or it tries to load the
+@code{_eu} version of the library if it is linked against the unsafe
+version of the Bigloo library.
 
 Libraries are searched in regular Bigloo library paths
 unless optional @var{path}s are sent to the function.
 
 This version may be used for automatically exporting binding to the
-interpreter. In general, the @code{_e} library is a simple library
-that contains only one module, the module that is used to build the
-heap-file. For instance, let's consider an implementation of a library
-for SSL programming. This library is composed of a single implementation
-module @code{__ssl_ssl}. The library is build using a heap file:
+interpreter. In general, the @code{_es} and @code{_eu} libraries are
+simple libraries that contain only one module, the module that is used
+to build the heap-file. For instance, let's consider an implementation
+of a library for SSL programming. This library is composed of a single
+implementation module @code{__ssl_ssl}. The library is build using a
+heap file:
 
 @smalllisp
 (module __ssl_makelib
@@ -277,13 +292,13 @@ Changing this file for:
    (eval   (export-all)))
 @end smalllisp
 
-Enables the construction of a @code{_e} library.
+Enables the construction of the @code{_es} and @code{_eu} libraries.
 
 When the system loads a dynamic library, it @emph{initializes} it. 
 For that it expects to find @emph{initialization entry points} in the dynamic
 libraries that are named after the libraries name. More precisely, for
 the @code{LIB_s} library, the loader seeks the entry point named
-@code{"LIB_s"} and for the @code{LIB_e}, it seeks @code{"LIB_e"}.
+@code{"LIB_s"} and for the @code{LIB_es}, it seeks @code{"LIB_es"}.
 The name of the initialization entry of a library can be changed using
 the @code{declare-library!} function. If that named is changed,
 one module of the library must contain an @code{option} module clause
@@ -320,7 +335,7 @@ class declaration:
 @end smalllisp
 
 Then, the module @code{foo-eval} must be implemented in the 
-@code{libfoo_e} library.
+@code{libfoo_es} and @code{libfoo_eu} libraries.
 
 @smalllisp
 (module foo-eval
@@ -353,7 +368,20 @@ implements a "repl" with the @code{format} facility available:
 
 ;; a dummy reference to a facility of the format library
 (let ((dummy format))
-   (repl)
+   (repl))
+@end smalllisp
+
+
+Alternatively, libraries can be explicitly loaded using the 
+@code{library-load}@ function such as:
+
+@smalllisp
+(module format-repl)
+
+;; a dummy reference to a facility of the format library
+(let ((dummy format))
+   (eval '(library-load bformat))
+   (repl))
 @end smalllisp
 
 
@@ -363,7 +391,13 @@ implements a "repl" with the @code{format} facility available:
 @section Building a library
 @cindex Building a library
 
-Bigloo libraries require several steps before being completed. 
+Build Bigloo libraries require several steps that are explained in
+this section. This section shows how to create @emph{static} and
+@emph{dynamic} (or @emph{shared}) libraries. However not that creating
+a dynamic library highly dependent on the host operating system. Users
+willing to create dynamic libraries on other operating systems should
+use the @code{api} directory of the Bigloo source code tree as an
+example.
 
 @itemize @bullet
 @item The first step is to build a @emph{library heap}. This is achieved
@@ -373,17 +407,18 @@ Bigloo libraries require several steps before being completed.
  must be @emph{excluded} from the source files that will be used to build
  the host library.
 
-Suppose we have a unique source file for the @code{bformat} library. The module
-clause of this source file is:
+Suppose we have a unique source file, @code{bformat.scm} for our
+library. The module clause of this source file is:
 
 @smalllisp
 (module __bformat
-   (export (format . args)
-           format:version
-           ...
-   (eval   (export format)
-           (export format:version)
-           ...
+   (export (bformat fmt::bstring . args)
+           bformat:version))
+
+(define (bformat fmt . args)
+   (apply format (string-replace fmt #\% #\~) args))
+
+(define bformat:version 1.0)
 @end smalllisp
 
 Prior to compiling the library, we have to create the heap associated file
@@ -391,13 +426,14 @@ Prior to compiling the library, we have to create the heap associated file
 
 @smalllisp
 (module __make_lib
-   (import (__bformat "bformat.scm")))
+   (import (__bformat "bformat.scm"))
+   (eval (export-all)))
 @end smalllisp
 
 Building it is simple:
 
 @display
-bigloo -unsafe -q -mkaddheap -mkaddlib -heap-library bformat \
+bigloo -unsafe -safee -q -mkaddheap -mkaddlib -heap-library bformat \
      make_lib.scm -addheap bformat.heap
 @end display
 
@@ -413,7 +449,7 @@ compilation must be done using the @code{-mkaddlib} compilation mode.
 For example:
 
 @display
-bigloo -O3 -unsafe -mkaddlib              \
+bigloo -O3 -unsafe -safee -mkaddlib       \
    -cc gcc -fsharing -q -rm               \
    -unsafev bformat.scm -o bformat_u.o -c
 bigloo -O3 -mkaddlib -g -cg -cc gcc       \
@@ -428,200 +464,77 @@ produced the @emph{debugging} version.
 is no portable way to do this. This operation may looks like:
 
 @display
-ar qcv libbiglooformat_s.a bformat.o
-ranlib libbiglooformat_s.a
-ld -G -o libbiglooformat_s.so bformat.o -lm -lc
-ar qcv libbiglooformat_u.a bformat_u.o
-ranlib libbiglooformat_u.a
-ld -G -o libbiglooformat_u.so bformat_u.o -lm -lc
+ar qcv libbigloobformat_s-1.0.a bformat.o
+ranlib libbigloobformat_s-1.0.a
+ld -G -o libbigloobformat_s-1.0.so bformat.o -lm -lc
+ar qcv libbigloobformat_u-1.0.a bformat_u.o
+ranlib libbigloobformat_u-1.0.a
+ld -G -o libbigloobformat_u-1.0.so bformat_u.o -lm -lc
 @end display
-@end itemize
 
-The last step is to create an initialization file @code{bformat.init}:
-
-@smalllisp
-(declare-library! 'bformat :basename "bigloobformat" :version #f)
-@end smalllisp
-
-At this time, you are ready to use your library. The Bigloo distribution
-contains library exemplar. Considering these examples as a departure point
-for new libraries is probably a good idea.
-
-@c ------------------------------------------------------------------- @c
-@c    A complete library example                                       @c
-@c ------------------------------------------------------------------- @c
-@section A complete library example
-@cindex A complete library example
-
-For the means of an example let's suppose we want to design a Bigloo
-library for 2d points. That library is made of three implementation
-files: two C files, @code{point.h} and @code{point.c} and one Scheme
-file @code{scm-point.scm}. Here are defined the three files:
-
-@noindent @code{point.h}:
-@smalllisp
-struct point_2d @{
-   double x, y;
-@};
-@end smalllisp
-
-@noindent @code{point.c}:
-@smalllisp
-#include <stdio.h>
-#include "point.h"
-
-int print_point_2d( struct point_2d *pt ) @{
-   printf( "<point-2d: %g, %g>", pt->x, pt->y );
-@}
-@end smalllisp
-
-@noindent @code{scm-point.scm}:
-@smalllisp
-(module point
-   (include "point.sch")
-   (extern  (include "point.h"))
-   (export  (make-point::s-point_2d* ::double ::double)
-            (print-point             ::s-point_2d*)
-            (point?                  ::obj))
-   (eval    (export-all)))
-
-(define (make-point::s-point_2d* x::double y::double)
-   (s-point_2d* x y))
-
-(define (print-point p::s-point_2d*)
-   (print_point_2d p))
-
-(define (point? obj::obj)
-   (s-point_2d*? obj)
-   obj)
-@end smalllisp
-
-We want our library to be composed of the whole exported Scheme
-functions. Thus the file to build the heap library could look like:
-
-@noindent @code{make_lib.scm}:
-@smalllisp
-(module __make-point-lib
-   (import (point "scm-point.scm"))
-   (eval (export-all)))
-@end smalllisp
-
-Let's suppose that the @code{point} library requires the @code{libposix}
-library. This means that any file linked with the @code{point} library
-needs to be also linked with the @code{posix} library. Furthermore, 
-programs making use of the @code{point} library needs to include the
-@code{point.sch} file. That Scheme file needs in turn the C file 
-@code{point.h} otherwise the produced C files won't compile. The need
-for the @code{libposix} library and for the @code{point.h} file may be
-specified inside the @code{point.init} file. For our current library,
-the @code{point.init} file could look like:
-
-@smalllisp
-(declare-library! 'point 
-                  :basename "point" 
-                  :srfi '(point) 
-                  :eval-init '__make-point-lib)
-
-(set! *ld-options*
-      (string-append "-L/usr/lib " *ld-options*))
-
-(set! *bigloo-user-lib*
-      (cons "-lposix" *bigloo-user-lib*))
-
-(set! *additional-include-foreign*
-      (cons "point.h" *additional-include-foreign*))
-      
-(define-macro (point x y)
-   `(make-point ,x ,y))
-@end smalllisp
-
-This file updates some compilation variables (@code{*ld-options*},
-@code{*bigloo-user-lib*}, @code{*additional-include-foreign*}) and
-defines a macro: @code{point}. Because the @code{point.init} file will
-be loaded each time a compilation require the @code{point} library is
-spawned, user code are allowed to use the @code{point} macro. Here is an
-example file making use of the @code{point} library:
-
-@smalllisp
-(module example)
-
-(let ((p (point 2.9 3.5)))
-   (print "point?: " (point? p))
-   (print "point?: " (point? 4))
-   (print-point p)
-   (print (eval `(point? ,p)))
-   (eval `(print-point ,p))
-   (print "done..."))
-@end smalllisp
-
-To conclude that example here is the @code{Makefile} used to compile
-the @code{point} library, heap file and one example.
+@item The fourth step consist in creating the @code{bformat_es} and 
+@code{bformat_eu} libraries
+for eval. For the unsafe version we use:
 
 @display
-# bigloo flags
-BIGLOO          = bigloo
-RELEASE		= `$(BIGLOO) -eval '(begin (print *bigloo-version*) (exit 0))'`
-BHEAPFLAGS      = -unsafe -q -mkaddheap -mkaddlib -v2 -heap-library point
-BCOMMONFLAGGS   = -mkaddlib -fsharing -q $(VERBOSE)        \
-                  -copt '$(CCOMMONFLAGS)' -cc $(CC)
-BSAFEFLAGS      = $(BCOMMONFLAGGS) -cg -O3 -g -cg -unsafev \
-                  -eval '(set! *indent* 4)' -rm
-BUNSAFEFLAGS    = $(BCOMMONFLAGS) -O4 -unsafe
-
-# cigloo flags
-CIGLOO          = cigloo
-
-# cflags
-CC              = gcc
-CCOMMONFLAGS    = -I.
-CSAFEFLAGS      = $(CCOMMONFLAGS)
-CUNSAFEFLAGS    = $(CCOMMONFLAGS) -O2
-
-# library objects
-SAFE_OBJECT     = olib/scm-point.o olib/point.o
-UNSAFE_OBJECT   = olib_u/scm-point.o olib_u/point.o
-
-all: heap lib example
-
-heap: point.heap
-
-point.heap: point.sch scm-point.scm
-        $(BIGLOO) $(BHEAPFLAGS) make_lib.scm -addheap point.heap
-
-lib: lib_u lib.a
-
-lib.a: olib $(SAFE_OBJECT)
-        ar qcv libpoint_s-$(RELEASE).a $(SAFE_OBJECT) 
-
-lib_u: olib_u $(UNSAFE_OBJECT)
-        ar qcv libpoint_u-$(RELEASE).a $(UNSAFE_OBJECT) 
-
-olib:
-        mkdir olib
-
-olib_u:
-        mkdir olib_u
-
-olib_u/scm-point.o olib/scm-point.o: scm-point.scm
-        $(BIGLOO) $(BSAFEFLAGS) $(<F) -o $*.o -c
-
-olib_u/point.o olib/point.o: point.c
-        $(CC) $(CSAFEFLAGS) $(<F) -o $*.o -c
-
-point.sch: point.h point.c
-        cigloo $^ > point.sch
-
-example: heap lib
-        $(BIGLOO) -v2 -L . -library point \
-            -static-bigloo example.scm -o example
-
-clean:
-        -/bin/rm -f point.heap
-        -/bin/rm -f point.sch scm-point.c
-        -/bin/rm -fr olib olib_u
-        -/bin/rm -f example example.c example.o
-        -/bin/rm -f libpoint_s-$(RELEASE).a libpoint_u-$(RELEASE).a
+bigloo -O3 -unsafe -safee -mkaddlib       \
+   -cc gcc -fsharing -q -rm               \
+   -unsafev make_lib.scm -o make_lib.o -c
+ld -G -o libbigloobformat_eu-1.0.so make_lib.o -lm -lc
+ar qcv libbigloobformat_eu-1.0.a make_lib.o
+ranlib libbigloobformat_eu-1.0.a
 @end display
+
+For the safe version we do:
+
+@display
+bigloo -O3 -mkaddlib              \
+   -cc gcc -fsharing -q -rm               \
+   -unsafev make_lib.scm -o make_lib.o -c
+ld -G -o libbigloobformat_es-1.0.so make_lib.o -lm -lc
+ar qcv libbigloobformat_es-1.0.a make_lib.o
+ranlib libbigloobformat_es-1.0.a
+@end display
+
+
+@item The last step is to create an initialization file @code{bformat.init}:
+
+@smalllisp
+(declare-library! 'bformat 
+   :version "1.0"
+   :srfi '(bformat)
+   :basename "bigloobformat"
+   :module-init '__bformat
+   :module-eval '__make_lib
+   :class-init "bigloo.bformat.__bformat"
+   :class-eval "bigloo.bformat.__make_lib")
+@end smalllisp
+
+@end itemize
+
+At this time, you are ready to use your library. For that, let's assume
+the file @code{foo.scm}:
+
+@smalllisp
+(module foo
+   (library bformat))
+
+(bigloo-library-path-set! (cons (pwd) (bigloo-library-path)))
+(print (bformat "Library path: %a" (bigloo-library-path)))
+
+(eval '(library-load 'bformat))
+(repl)
+@end smalllisp
+
+It can be compiled and executed with:
+
+@display
+bigloo foo.scm -L . -copt -L.
+LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./a.out
+@end display
+
+The Bigloo distribution contains library exemplars that should probably
+considered as a departure point for new libraries.
 
 @c ------------------------------------------------------------------- @c
 @c    Library and modules                                              @c
@@ -649,6 +562,232 @@ situations where the initialization is mandatory and thus, the
 @code{import} must not be replaced with a @code{use} clause. The source
 code of the Bigloo library makes use of @code{import} and @code{use}
 clauses. The Bigloo standard library should be studied as an example.
+
+@c ------------------------------------------------------------------- @c
+@c    Library and macros                                               @c
+@c ------------------------------------------------------------------- @c
+@section Library and macros
+@cindex Library and macros
+
+Bigloo libraries can export macros, expanders, and syntaxes but these
+must be handled carefully. Macros (these also applies to expanders and
+syntaxes) exported by modules are not visible by client code. Exported
+macros have to be placed inside the initialization file. For instance,
+if we change the definition of @code{bformat.init} file for:
+
+@smalllisp
+(declare-library! 'bformat 
+   :version "1.0"
+   :srfi '(bformat)
+   :basename "bigloobformat"
+   :module-init '__bformat
+   :module-eval '__make_lib
+   :class-init "bigloo.bformat.__bformat"
+   :class-eval "bigloo.bformat.__make_lib")
+
+(define-expander BFORMAT
+   (lambda (x e)
+      (match-case x
+         ((?- (? (lambda (s) (and (string? s) (not (string-index s #\%))))) . ?a
+)
+          `(string-append ,@@(cdr x)))
+         (else
+          `(bformat ,@@(map (lambda (x) (e x e)) (cdr x)))))
+@end smalllisp
+
+At compile time the macro BFORMAT will be declared. Hence, we can change
+the definition of @code{foo.scm} for:
+
+@smalllisp
+(module foo
+   (library bformat))
+
+(bigloo-library-path-set! (cons (pwd) (bigloo-library-path)))
+(print (BFORMAT "library path: %a" (bigloo-library-path)))
+
+(eval '(library-load 'bformat))
+(repl)
+@end smalllisp
+
+@c ------------------------------------------------------------------- @c
+@c    A complete library example                                       @c
+@c ------------------------------------------------------------------- @c
+@section A complete library example
+@cindex A complete library example
+
+For the means of an example let's suppose we want to design a Bigloo
+library for 2d points. That library is made of three implementation
+files: two C files, @code{cpoint.h} and @code{cpoint.c} and one Scheme
+file @code{spoint.scm}. Here are defined the three files:
+
+@noindent @code{cpoint.h}:
+@smalllisp
+struct point_2d @{
+   double x, y;
+@};
+@end smalllisp
+
+@noindent @code{cpoint.c}:
+@smalllisp
+#include <stdio.h>
+#include "cpoint.h"
+
+int print_point_2d( struct point_2d *pt ) @{
+   printf( "<point-2d: %g, %g>", pt->x, pt->y );
+@}
+@end smalllisp
+
+@noindent @code{spoint.scm}:
+@smalllisp
+(module __point
+   (include "spoint.sch")
+   (extern  (include "cpoint.h"))
+   (export  (make-point::s-point_2d* ::double ::double)
+            (print-point ::s-point_2d*)
+            (point? ::obj)))
+
+(define (make-point::s-point_2d* x::double y::double)
+   (s-point_2d* x y))
+
+(define (print-point p::s-point_2d*)
+   (print_point_2d p))
+
+(define (point? obj::obj)
+   (s-point_2d*? obj)
+   obj)
+@end smalllisp
+
+@noindent @code{makelib.scm}:
+
+We want our library to be composed of the whole exported Scheme
+functions. Thus the file to build the heap library could look like:
+
+@smalllisp
+(module __point_makelib
+   (import __point)
+   (eval (export-all)))
+@end smalllisp
+
+
+@noindent @code{point.init}:
+Let's suppose that the @code{point} library requires the @code{libposix}
+library. This means that any file linked with the @code{point} library
+needs to be also linked with the @code{posix} library. Furthermore, 
+programs making use of the @code{point} library needs to include the
+@code{point.sch} file. That Scheme file needs in turn the C file 
+@code{point.h} otherwise the produced C files won't compile. The need
+for the @code{libposix} library and for the @code{point.h} file may be
+specified inside the @code{point.init} file. For our current library,
+the @code{point.init} file could look like:
+
+@smalllisp
+(declare-library! 'point 
+                  :basename "point" 
+                  :srfi '(point)
+                  :eval-init '__point_makelib)
+
+(set! *ld-options*
+      (string-append "-L/usr/lib " *ld-options*))
+
+(set! *bigloo-user-lib*
+      (cons "-lm" *bigloo-user-lib*))
+
+(set! *additional-include-foreign*
+      (cons "cpoint.h" *additional-include-foreign*))
+      
+(define-macro (point x y)
+   `(make-point ,x ,y))
+@end smalllisp
+
+This file updates some compilation variables (@code{*ld-options*},
+@code{*bigloo-user-lib*}, @code{*additional-include-foreign*}) and
+defines a macro: @code{point}. Because the @code{point.init} file will
+be loaded each time a compilation require the @code{point} library is
+spawned, user code are allowed to use the @code{point} macro. Here is an
+example file making use of the @code{point} library:
+
+@noindent @code{example.scm}
+@smalllisp
+(module example)
+
+(let ((p (point 2.9 3.5)))
+   (print "point?: " (point? p))
+   (print "point?: " (point? 4))
+   (print-point p)
+   (print "done..."))
+@end smalllisp
+
+To conclude that example here is the @code{Makefile} used to compile
+the @code{point} library, heap file and one example.
+
+@display
+# bigloo flags
+BIGLOO          = bigloo
+RELEASE		= `$(BIGLOO) -eval '(begin (print *bigloo-version*) (exit 0))'`
+BHEAPFLAGS      = -unsafe -q -mkaddheap -mkaddlib -v2 -heap-library point
+BCOMMONFLAGGS   = -mkaddlib -fsharing -q $(VERBOSE)        \
+                  -copt '$(CCOMMONFLAGS)' -cc $(CC)
+BSAFEFLAGS      = $(BCOMMONFLAGGS) -cg -O3 -g -cg -unsafev \
+                  -eval '(set! *indent* 4)' -rm
+BUNSAFEFLAGS    = $(BCOMMONFLAGS) -O4 -unsafe
+
+# cigloo flags
+CIGLOO          = cigloo
+
+# cflags
+CC              = gcc
+CCOMMONFLAGS    = -I.
+CSAFEFLAGS      = $(CCOMMONFLAGS)
+CUNSAFEFLAGS    = $(CCOMMONFLAGS) -O2
+
+# library objects
+SAFE_OBJECT     = olib/spoint.o olib/cpoint.o
+UNSAFE_OBJECT   = olib_u/spoint.o olib_u/cpoint.o
+
+all: .afile heap lib example
+
+.afile: spoint.scm makelib.scm
+	bglafile $^ > $@@
+
+heap: point.heap
+
+point.heap: spoint.sch spoint.scm
+	$(BIGLOO) $(BHEAPFLAGS) makelib.scm -addheap point.heap
+
+lib: lib_u lib.a
+
+lib.a: olib $(SAFE_OBJECT)
+	ar qcv libpoint_s-$(RELEASE).a $(SAFE_OBJECT) 
+
+lib_u: olib_u $(UNSAFE_OBJECT)
+	ar qcv libpoint_u-$(RELEASE).a $(UNSAFE_OBJECT) 
+
+olib:
+	mkdir olib
+
+olib_u:
+	mkdir olib_u
+
+olib_u/spoint.o olib/spoint.o: spoint.scm
+	$(BIGLOO) $(BSAFEFLAGS) $(<F) -o $*.o -c
+
+olib_u/cpoint.o olib/cpoint.o: cpoint.c
+	$(CC) $(CSAFEFLAGS) $(<F) -o $*.o -c
+
+spoint.sch: cpoint.h cpoint.c
+	cigloo $^ > $@@
+
+example: heap lib
+	$(BIGLOO) -v2 -L . -library point \
+            -static-bigloo example.scm -o example
+
+clean:
+	-/bin/rm -f point.heap
+	-/bin/rm -f spoint.sch spoint.c
+	-/bin/rm -fr olib olib_u
+	-/bin/rm -f example example.c example.o
+	-/bin/rm -f libpoint_s-$(RELEASE).a libpoint_u-$(RELEASE).a
+@end display
 
 
 

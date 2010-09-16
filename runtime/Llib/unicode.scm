@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Jul  6 11:43:24 2009 (serrano)                */
+;*    Last change :  Tue Sep  7 21:14:36 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -224,7 +224,7 @@
 ;*    ucs2-string-ref ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (ucs2-string-ref ucs2-string k)
-   (if (string-bound-check? k (ucs2-string-length ucs2-string))
+   (if ($string-bound-check? k (ucs2-string-length ucs2-string))
        (c-ucs2-string-ref ucs2-string k)
        (error 'ucs2-string-ref
 	      (string-append "index out of range [0.."
@@ -237,7 +237,7 @@
 ;*    ucs2-string-set! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (ucs2-string-set! ucs2-string k ucs2)
-   (if (string-bound-check? k (ucs2-string-length ucs2-string))
+   (if ($string-bound-check? k (ucs2-string-length ucs2-string))
        (c-ucs2-string-set! ucs2-string k ucs2)
        (error 'ucs2-string-set!
 	      (string-append "index out of range [0.."
@@ -324,10 +324,10 @@
 (define-inline (subucs2-string ucs2-string start end)
    ;; no macro on inline so we don't use `and'
    (if (if (>=fx end start)
-	   (if (string-bound-check? start
-				    (+fx (ucs2-string-length ucs2-string) 1))
-	       (string-bound-check? end
-				    (+fx (ucs2-string-length ucs2-string) 1))
+	   (if ($string-bound-check? start
+				     (+fx (ucs2-string-length ucs2-string) 1))
+	       ($string-bound-check? end
+				     (+fx (ucs2-string-length ucs2-string) 1))
 	       #f)
 	   #f)
        (c-subucs2-string ucs2-string start end)
@@ -821,7 +821,7 @@
 	  (nlen (8bits->utf8-length str len table)))
       (if (=fx len nlen)
 	  (string-copy str)
-	  (8bits->utf8-fill! (c-make-string/wo-fill nlen) str len table))))
+	  (8bits->utf8-fill! ($make-string/wo-fill nlen) str len table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    8bits->utf8! ...                                                 */
@@ -831,7 +831,7 @@
 	  (nlen (8bits->utf8-length str len table)))
       (if (=fx len nlen)
 	  str
-	  (8bits->utf8-fill! (c-make-string/wo-fill nlen) str len table))))
+	  (8bits->utf8-fill! ($make-string/wo-fill nlen) str len table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    iso-latin->utf8 ...                                              */

@@ -4085,6 +4085,8 @@ namespace bigloo
       public static readonly int BGL_LOCATION_ERROR = 2;
    
       public static readonly int BGL_TYPE_ERROR = 10;
+      public static readonly int BGL_TYPENAME_ERROR = 11;
+      public static readonly int BGL_INDEX_OUT_OF_BOUND_ERROR = 12;
    
       public static readonly int BGL_IO_ERROR = 20;
       public static readonly int BGL_IO_PORT_ERROR = 21;

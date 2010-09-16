@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Dec 15 14:02:02 2009 (serrano)                */
-#*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Aug 12 11:40:08 2010 (serrano)                */
+#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
 #*=====================================================================*/
@@ -198,17 +198,23 @@ doinstall: bmacs-config.el site-lisp
             echo "   ...$$f (can't find)"; \
           fi; \
         done
-	chmod $(BMASK) $(DESTDIR)$(EMACSDIR)/*.el*
-	@ mkdir -p $(DESTDIR)$(EMACSDIR)/etc && chmod a+rx $(DESTDIR)$(EMACSDIR)/etc
-	@ cp etc/bass-snap.au $(DESTDIR)$(EMACSDIR)/etc
+	chmod $(MODFILE) $(DESTDIR)$(EMACSDIR)/*.el*
+	if [ ! -d $(DESTDIR)$(EMACSDIR)/etc ]; then \
+          mkdir -p $(DESTDIR)$(EMACSDIR)/etc && \
+            chmod $(MODDIR) $(DESTDIR)$(EMACSDIR)/etc; \
+        fi
+	cp etc/bass-snap.au $(DESTDIR)$(EMACSDIR)/etc
 
 site-lisp:
 	if [ "$(EMACSDIR) " = " " ]; then \
           echo "*** ERROR: Emacs lisp dir not configured!"; \
           exit 1; \
         else \
-          mkdir -p $(DESTDIR)$(EMACSDIR) && chmod a+rx $(DESTDIR)$(EMACSDIR); \
-        fi \
+	  if [ ! -d $(DESTDIR)$(EMACSDIR) ]; then \
+            mkdir -p $(DESTDIR)$(EMACSDIR) && \
+              chmod $(MODDIR) $(DESTDIR)$(EMACSDIR); \
+          fi \
+        fi
 
 #*---------------------------------------------------------------------*/
 #*    touchall                                                         */

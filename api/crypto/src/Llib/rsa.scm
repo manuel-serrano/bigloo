@@ -31,11 +31,13 @@
 	      coeff::bignum) ;; (inverse of q) mod p
 	   )
    (export
-    ;; key-creation
+    ;; key-creation and management
     (generate-rsa-key::Complete-Rsa-Key #!key (size 1024) show-trace)
     (extract-public-rsa-key::Rsa-Key key::Complete-Rsa-Key)
     (extract-private-rsa-key::Rsa-Key key::Complete-Rsa-Key)
     (rsa-key=? key1::Rsa-Key key2::Rsa-Key)
+
+    (rsa-key-length::long key::Rsa-Key)
     
     ;; the basic operations.
     (rsa-encrypt::bignum k::Rsa-Key m::bignum)
@@ -52,6 +54,9 @@
     (RSAVP1::bignum k::Rsa-Key s::bignum) ;; verify (does not take m as param)
 
     ;; more or less deprecated functions
+    (PKCS1-v1.5-pad::bstring str::bstring key-len::long mode::long)
+    (PKCS1-v1.5-unpad::bstring str::bstring mode::long)
+
     (RSAES-PKCS1-v1.5-encrypt::bstring key::Rsa-Key m::bstring)
     (RSAES-PKCS1-v1.5-decrypt::bstring key::Rsa-Key c::bstring)
     (RSASSA-PKCS1-v1.5-sign::bstring key::Rsa-Key msg::bstring #!key (hash-algo::symbol 'sha-1))
@@ -307,47 +312,88 @@
 (define (rsa-verify::bool k::Rsa-Key m::bignum s::bignum)
    (=bx (RSAVP1 k s) m))
 
+(define (PKCS1-v1.5-pad m k mode)
+   ;; PS has only size (-fx- k m-len 3)
+   ;; but this way we avoid allocating even more.
+   (let* ((m-len (string-length m))
+	  (PS+pad-len (-fx k m-len))
+	  (PS+pad (case mode
+		     ((0) (make-string PS+pad-len #a000))
+		     ((1) (make-string PS+pad-len #a255))
+		     ((2) (make-random-string PS+pad-len))
+		     (else (error 'PKCS1-v1.5-pad
+				  "unknown padding mode"
+				  mode))))
+	  (em (string-append PS+pad m)))
+	 ;; PS must have non-zero octets in mode 2.
+      (when (=fx mode 2)
+	 (let loop ((i 2)) ;; skip the first two octets.
+	    (when (<fx i (-fx PS+pad-len 1))
+	       (when (zerofx? (char->integer (string-ref em i)))
+		  (string-set! em i (integer->char-ur (random 256))))
+	       (loop (+fx i 1)))))
+      (string-set! em 0 #a000)
+      (string-set! em 1 (integer->char mode))
+      (string-set! em (-fx PS+pad-len 1) #a000)
+      em))
+
+(define (PKCS1-v1.5-unpad em mode)
+   (define (pkcs1-error)
+      (error "PKCS1-v1.5-unpad" "decryption error" #f))
+
+   (let ((k (string-length em)))
+      (when (or (<fx mode 0) (>fx mode 2)
+		(not (char=? #a000 (string-ref em 0)))
+		(not (char=? (integer->char mode) (string-ref em 1))))
+	 (pkcs1-error))
+
+      (case mode
+	 ((0) ;; simply find first non-zero char.
+	  (let loop ((i 2))
+	     (cond
+		((>=fx i k) (pkcs1-error))
+		((char=? #a000 (string-ref em i)) (loop (+fx i 1)))
+		(else (substring em i k)))))
+	 ((1) ;; simply find first non-#xFF, which must be #x00 char.
+	  ;; return rest.
+	  (let loop ((i 2))
+	     (cond
+		((>=fx i k) (pkcs1-error))
+		((char=? #a255 (string-ref em i)) (loop (+fx i 1)))
+		((char=? #a000 (string-ref em i)) (substring em (+fx i 1) k))
+		(else (pkcs1-error)))))
+	 ((2) ;; find first #x00 char. return rest.
+	  (let loop ((i 2))
+	     (cond
+		((>=fx i k) (pkcs1-error))
+		((and (char=? #a000 (string-ref em i))
+		      (<fx i 10))
+		 (pkcs1-error))
+		((char=? #a000 (string-ref em i))
+		 (substring em (+fx i 1) k))
+		(else (loop (+fx i 1))))))
+	 (else (pkcs1-error))))) ;; to make Bigloo happy.
+
 (define (RSAES-PKCS1-v1.5-encrypt::bstring key::Rsa-Key m::bstring)
    (let ((k (rsa-key-length key))
 	 (m-len (string-length m)))
       (when (>fx m-len (-fx k 11))
 	 (error "rsa encrypt" "message too long" m))
-
-      ;; normally PS should only have size (-fx- k m-len 3)
-      ;; but this way we avoid allocating even more.
-      (let* ((PS+pad-len (-fx k m-len))
-	     (PS+pad (make-random-string PS+pad-len))
-	     (em (string-append PS+pad m)))
-	 ;; PS must have non-zero octets.
-	 (let loop ((i 2)) ;; skip the first two octets.
-	    (when (<fx i (-fx PS+pad-len 1))
-	       (when (zerofx? (char->integer (string-ref em i)))
-		  (string-set! em i (integer->char-ur (random 256))))
-	       (loop (+fx i 1))))
-	 (string-set! em 0 #a000)
-	 (string-set! em 1 #a002)
-	 (string-set! em (-fx PS+pad-len 1) #a000)
-	 (I2OSP (RSAEP key (OS2IP em)) k))))
+      (I2OSP (RSAEP key (OS2IP (PKCS1-v1.5-pad m k 2))) k)))
 
 (define (RSAES-PKCS1-v1.5-decrypt::bstring key::Rsa-Key c::bstring)
-   (let ((k (rsa-key-length key))
-	 (c-len (string-length c)))
-      (when (not (=fx k c-len))
-	 (error "rsa decrypt" "decryption error" #f))
-      (let* ((m (RSADP key (OS2IP c)))
-	     (em (I2OSP m k)))
-	 (when (or (not (char=? #a000 (string-ref em 0)))
-		   (not (char=? #a002 (string-ref em 1))))
+   (with-handler
+      (lambda (e)
+	 (error 'rsa-decrypt
+		"Decryption failed"
+		#f))
+      (let ((k (rsa-key-length key))
+	    (c-len (string-length c)))
+	 (when (not (=fx k c-len))
 	    (error "rsa decrypt" "decryption error" #f))
-	 (let loop ((i 2))
-	    (cond
-	       ((>=fx i k) (error "rsa decrypt" "decryption-error" #f))
-	       ((and (char=? #a000 (string-ref em i))
-		     (<fx i 10))
-		(error "rsa decrypt" "decryption-error" #f))
-	       ((char=? #a000 (string-ref em i))
-		(substring em (+fx i 1) k))
-	       (else (loop (+fx i 1))))))))
+	 (let* ((m (RSADP key (OS2IP c)))
+		(em (I2OSP m k)))
+	    (PKCS1-v1.5-unpad em 2)))))
 
 (define (RSAES-OAEP-encrypt::bstring key::Rsa-Key m::bstring
 				     #!key (label::bstring ""))
@@ -374,15 +420,20 @@
    ;; allow other hash-functions.
    (define hash-fun sha1sum-bin)
    (define h-len 20) ;; CARE: experimental number.
-   
-   (let ((k (rsa-key-length key)))
-      ;; TODO: no check against length of hash-fun.
-      (when (not (=fx k (string-length cypher)))
-	 (error "rsa decrypt" "decryption error" cypher))
-      (let* ((c (OS2IP cypher))
-	     (m (RSADP key c))
-	     (EM (I2OSP m k)))
-	 (EME-OAEP-decode k EM))))
+
+   (with-handler
+      (lambda (e)
+	 (error 'rsaes-oaep-decrypt
+		"Decryption failed"
+		#f))
+      (let ((k (rsa-key-length key)))
+	 ;; TODO: no check against length of hash-fun.
+	 (when (not (=fx k (string-length cypher)))
+	    (error "rsa decrypt" "decryption error" cypher))
+	 (let* ((c (OS2IP cypher))
+		(m (RSADP key c))
+		(EM (I2OSP m k)))
+	    (EME-OAEP-decode k EM)))))
 
 (define (RSASSA-PSS-sign::bstring key::Rsa-Key msg::bstring)
    (let* ((mod-bits (rsa-key-bit-length key))
@@ -473,46 +524,19 @@
 ;; the test is not complete.
 ;; returns the used hash-algorithm.
 (define (EMSA-PKCS1-v1.5-extract-hash-algo em::bstring)
-   (let ((len (string-length em)))
-      (let loop ((i 2))
-	 (cond
-	    ((or (>=fx i len)
-		 (not (or (char=? #a255 (string-ref em i))
-			  (char=? #a000 (string-ref em i)))))
-	     (error 'PKCS1-extract-hash
-		    "invalid PKCS1-string"
-		    em))
-	    ((char=? #a255 (string-ref em i))
-	     (loop (+fx i 1)))
-	    ((char=? #a000 (string-ref em i))
-	     (DER-prefix->hash-algo (substring em (+fx i 1) len)))
-	    (else (error 'PKCS1-extract-hash
-			 "internal error. should never happen."
-			 #f))))))
+   (DER-prefix->hash-algo (PKCS1-v1.5-unpad em 1)))
 
 (define (EMSA-PKCS1-v1.5-encode::bstring m::bstring em-len::long
 					 hash-algo::symbol)
    (let* ((hash-fun (hash-algo->procedure hash-algo))
 	  (H (hash-fun m))
-	  (h-len (string-length H))
 	  (digest-info-DER (hash-algo->DER-prefix hash-algo))
-	  (info-len (string-length digest-info-DER))
-	  (t-len (+fx info-len h-len)))
-      (when (<fx em-len (+fx t-len 11))
+	  (str (string-append digest-info-DER H))
+	  (str-len (string-length str)))
+      (when (<fx em-len (+fx str-len 11))
 	 (error "RSA encode" "intended encoded message length too short"
 		em-len))
-      (let* ((PS-len (-fx- em-len t-len 3))
-	     (em (make-string (+fx+ PS-len 3 t-len))))
-	 (string-set! em 0 #a000)
-	 (string-set! em 1 #a001)
-	 (let loop ((i 0))
-	    (when (<fx i PS-len)
-	       (string-set! em (+fx i 2) #a255)
-	       (loop (+fx i 1))))
-	 (string-set! em (+fx 2 PS-len) #a000)
-	 (blit-string! digest-info-DER 0 em (+fx 3 PS-len) info-len)
-	 (blit-string! H 0 em (+fx+ 3 PS-len info-len) h-len)
-	 em)))
+      (PKCS1-v1.5-pad str em-len 1)))
 
 (define (RSASSA-PKCS1-v1.5-sign key::Rsa-Key msg::bstring
 				#!key (hash-algo::symbol 'sha-1))
@@ -536,7 +560,7 @@
 	   (let ((s (OS2IP S)))
 	      (RSASSA-PKCS1-v1.5-verify-bignum key msg s)))))
 
-;; will return #f when the implementation is incomplet (ie when an
+;; will return #f when the implementation is incomplete (ie when an
 ;; non-implemented hash-algorithm is used).
 (define (RSASSA-PKCS1-v1.5-verify-bignum::bool key::Rsa-Key msg::bstring
 					       s::bignum)

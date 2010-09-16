@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Tue Jun  8 06:39:09 2010 (serrano)                */
+#*    Last change :  Mon Aug 16 12:28:24 2010 (serrano)                */
 #*    Copyright   :  2007-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
@@ -30,18 +30,18 @@ if [ "$patch " = " " ]; then
 fi
 
 # untar the two version of the GC
-tar xfz $src -C ../gc || (echo "tar xfz $src failed"; exit 1)
+$tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 mv ../gc/gc-7.1 "../gc/$gc"_fth || (echo "mv gc-7.1 failed"; exit 1)
 
-tar xfz $src  -C ../gc || (echo "tar xfz $src failed"; exit 1)
+$tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 
 # Patch the two versions
-(cd "../gc/$gc"_fth && patch -p1 < ../$gentoo.patch > /dev/null) || exit 1
-(cd "../gc/$gc"_fth && patch -p1 < ../$gentooulibc.patch > /dev/null) || exit 1
-(cd "../gc/$gc"_fth && patch -p1 < ../$gc.patch > /dev/null) || exit 1
-(cd ../gc/$gc && patch -p1 < ../$gentoo.patch > /dev/null) || exit 1
-(cd ../gc/$gc && patch -p1 < ../$gentooulibc.patch > /dev/null) || exit 1
-(cd ../gc/$gc && patch -p1 < ../$gc.patch > /dev/null) || exit 1
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gentoo.patch > /dev/null) || exit 1
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gentooulibc.patch > /dev/null) || exit 1
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gc.patch > /dev/null) || exit 1
+(cd ../gc/$gc && $patch -p1 < ../$gentoo.patch > /dev/null) || exit 1
+(cd ../gc/$gc && $patch -p1 < ../$gentooulibc.patch > /dev/null) || exit 1
+(cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null) || exit 1
 
 # Remove parasite IA64 object files
 (/bin/rm -f "../gc/$gc"_fth/libatomic_ops-1.2/src/*.a) || exit 1
