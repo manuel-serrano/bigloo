@@ -18,19 +18,20 @@ Compiling Bigloo for Android requires several things:
    instructions.
  * Download droid-wrapper[4]. The command is:
    'git clone git://github.com/tmurakam/droid-wrapper.git'. Then apply
-   version-linker.diff in this directory and install
+   version-linker.diff shipped in this directory and install.
 
 Also you will require:
 
- * An already compiled and running version for the host platform.
+ * An already compiled and running bigloo version for the host platform.
 
 
 Configuring:
 ===========
 
-Copy 'arch/android/config.sh.sample' into 'arch/android/config.sh' and edit it.
-Point ANDROIDROOT to the directory where you downloaded and decompressed all
-the Android tools, and BS_BIGLOO to the dir where the host bigloo resides.
+Copy 'arch/android/config-local.sh.sample' into 'arch/android/config-local.sh'
+and edit it. Point ANDROIDROOT to the directory where you downloaded and
+decompressed all the Android tools, and BS_BIGLOO to the dir where the host
+bigloo resides.
 
 
 Compiling:
@@ -51,9 +52,19 @@ If everything's ok, then you can compile:
 
    ./arch/android/build-android.sh build
 
-If evrything's ok, then you can install[6]:
+If everything's ok, then you can install[6]:
 
    make install
+
+
+Notes:
+=====
+
+The current version assumes you're using Android SDK r07, which decompresses in
+a directory called 'android-sdk-linux_x86'. If you're using another version and
+the path changes (in r04 it was 'android-sdk-linux' and in r06 it was
+'android-sdk-linux_86') , edit 'arch/android/config.sh' to reflect the change,
+and please let us know.
 
 --
 [1] http://en.wikipedia.org/wiki/Cross_compile#GCC_and_cross_compilation
