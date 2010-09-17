@@ -1,3 +1,15 @@
+diff --git a/Makefile b/Makefile
+index 710c45f..6ca4f3d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+ VERSION = 1.0.5
+ 
+-DESTDIR = /usr/local
++DESTDIR = $(shell pwd)
+ 
+ all:
+ 
 diff --git a/droid-gcc b/droid-gcc
 index 1ebd1b2..e94c81d 100755
 --- a/droid-gcc
