@@ -1,8 +1,8 @@
 diff --git a/droid-gcc b/droid-gcc
-index d3b185b..550b48e 100755
+index 1ebd1b2..e94c81d 100755
 --- a/droid-gcc
 +++ b/droid-gcc
-@@ -84,6 +84,7 @@ cflags =
+@@ -89,6 +89,7 @@ cflags =
       "-I#{droid_root}/bionic/libthread_db/include",
       "-I#{droid_root}/bionic/libm/arm",
       "-I#{droid_root}/bionic/libm",
@@ -10,39 +10,18 @@ index d3b185b..550b48e 100755
       "-I#{droid_root}/out/target/product/#{droid_target}/obj/SHARED_LIBRARIES/libm_intermediates"
      ]
  
-@@ -123,7 +124,7 @@ shlib_args =
- 
- ### check myself
- prog = nil
--if ($0 =~ /^.*-([^-]+)$/) 
-+if ($0 =~ /^.*-([^-]+)$/)
-     prog = "#{toolchain}/bin/arm-eabi-#{$1}"
- else
-     STDERR.puts "internal error: invalid command name."
-@@ -145,6 +146,10 @@ ARGV.each do |arg|
- 
-     when "-shared"
-         mode = "shlib"
+@@ -157,6 +158,10 @@ else
+         when "-shared"
+             mode = "shlib"
+         end
 +
-+    when "-v", "--version"
-+        mode = "version"
-+
++        when "-v", "--version"
++            mode = "version"
++        end
      end
  end
  
-@@ -154,9 +159,9 @@ argv = ARGV
- case mode
- when "compile"
-     argv = cflags + ARGV
--    
-+
- when "link"
--    if (!isLD) 
-+    if (!isLD)
-         argv = cflags + link_args + ARGV
-     else
-         argv = link_args + ARGV
-@@ -168,10 +173,14 @@ when "shlib"
+@@ -180,6 +185,10 @@ when "shlib"
      else
          argv = shlib_args + ARGV
      end
@@ -53,8 +32,3 @@ index d3b185b..550b48e 100755
  end
  
  # remove -Wl options for linker
--if (isLD) 
-+if (isLD)
-     argv2 = Array.new
- 
-     argv.each do |arg|
