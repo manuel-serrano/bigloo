@@ -18,6 +18,7 @@ export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
 export DROID_ROOT=$ANDSRC
 # 3 for cupcake
 # 5 for eclair
-export DROID_TARGET=5
+# generic is the new way
+export DROID_TARGET=generic
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BS_BIGLOO/lib
