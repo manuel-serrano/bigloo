@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Fri Aug 27 18:10:13 2010 (serrano)                */
+;*    Last change :  Mon Sep 20 13:51:41 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -296,7 +296,7 @@
 		     encoding)
       
       ((+ (in " \t\n\r"))
-       (ignore))
+       (the-string))
       ((: "<!--"
 	  (* (or (out "-") (: "-" (out "-")) (: "--" (out ">"))))
 	  "-->")
