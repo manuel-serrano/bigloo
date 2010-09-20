@@ -3,10 +3,10 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sun Feb 14 10:59:00 2010 (serrano)                */
+/*    Last change :  Thu Sep 16 07:29:40 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
-/*    C utilities for native Bigloo fair threads implementation.       */
+/*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
 #include <pthread.h>
 #include <sched.h>
@@ -44,7 +44,7 @@ static obj_t bglpth_single_thread_denv = 0L;
 /*    bglpth_thread_gc_conservative_mark_envs ...                      */
 /*    -------------------------------------------------------------    */
 /*    It is unclear if the Boehm's collector is able to track          */
-/*    objects pointed to by by thread-local-storage variables.         */
+/*    objects pointed to by thread-local-storage variables.            */
 /*    Since these variables are exclusively used in Bigloo to store    */
 /*    the thread-specific environments, these environments are         */
 /*    also backed up in a global static variables.                     */

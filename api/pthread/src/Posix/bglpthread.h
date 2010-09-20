@@ -3,10 +3,10 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Sun Feb 14 10:18:14 2010 (serrano)                */
+/*    Last change :  Thu Sep 16 07:28:32 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
-/*    The C headers for Bigloo fair threads.                           */
+/*    The C headers for Bigloo pthreads.                               */
 /*=====================================================================*/
 #include <pthread.h>
 #include <bigloo.h>

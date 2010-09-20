@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Tue Aug 10 15:34:31 2010 (serrano)                */
+;*    Last change :  Fri Sep 17 20:18:59 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -300,34 +300,28 @@
       (directory? path)))
 
 ;*---------------------------------------------------------------------*/
+;*    get-cached-folder-info ...                                       */
+;*---------------------------------------------------------------------*/
+(define (get-cached-folder-info m::maildir s errmsg)
+   (with-access::maildir m (%mutex folder-selection %selection-info)
+      (if (and (string? folder-selection) (string=? folder-selection s))
+	  (begin
+	     (unless (folderinfo-valid? %selection-info)
+		(let ((dir (folder->directory errmsg m s)))
+		   (set! %selection-info (get-folder-info m dir))))
+	     %selection-info)
+	  (let ((dir (folder->directory errmsg m s)))
+	     (get-folder-info m dir)))))
+
+;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-status ::maildir ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-status m::maildir s::bstring)
-   (with-access::maildir m (%mutex folder-selection %selection-info)
-      #;(tprint "mailbox-folder-status s=" s " fselection=" folder-selection)
+   (with-access::maildir m (%mutex)
       (with-lock %mutex
 	 (lambda ()
-	    (let ((info (if (and (string? folder-selection)
-				 (string=? folder-selection s))
-			    (begin
-			       #;(with-access::folderinfo %selection-info
-				     (time path)
-				  (tprint "folderinfo-valid="
-					  (folderinfo-valid? %selection-info)
-					  " time=" time
-					  " path=" path " modtime="
-					  (file-modification-time path)))
-			       (unless (folderinfo-valid? %selection-info)
-				  (let ((dir (folder->directory
-					      "mailbox-folder-status ::maildir"
-						m s)))
-				     (set! %selection-info
-					   (get-folder-info m dir))))
-			       %selection-info)
-			    (let ((dir (folder->directory
-					"mailbox-folder-status ::maildir"
-					m s)))
-			       (get-folder-info m dir)))))
+	    (let ((info (get-cached-folder-info
+			 m s "mailbox-folder-status ::maildir")))
 	       (when (folderinfo? info)
 		  (with-access::folderinfo info (uids uidvalidity nextuid)
 		     (let ((messages (hashtable-size uids))
@@ -520,6 +514,66 @@
 	       (invalidate-folderinfo! %selection-info)
 	       (set! %selection-info (get-folder-info m %selection))
 	       #unspecified)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-map ...                                           */
+;*---------------------------------------------------------------------*/
+(define (mailbox-folder-map m::maildir proc)
+   (with-access::maildir m (%mutex %selection %selection-info)
+      (with-lock %mutex
+	 (lambda ()
+	    (let ((info (get-folder-info m %selection)))
+	       (if (folderinfo? info)
+		   (with-access::folderinfo info (uids)
+		      (hashtable-map uids proc))
+		   '()))))))
+   
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-messages ::maildir ...                            */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-messages m::maildir)
+   (mailbox-folder-map m (lambda (k uid) (list k (mailbox-message m k)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-headers ::maildir ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-headers m::maildir)
+   (mailbox-folder-map m (lambda (k uid) (cons k (mailbox-message-header m k)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-bodies ::maildir ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-bodies m::maildir)
+   (mailbox-folder-map m (lambda (k uid) (cons k (mailbox-message-body m k)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-sizes ::maildir ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-sizes m::maildir)
+   (mailbox-folder-map m (lambda (k uid) (cons k (mailbox-message-size m k)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-flags ::maildir ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-flags m::maildir)
+   (mailbox-folder-map m (lambda (k uid) (cons k (mailbox-message-flags m k)))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-infos ::maildir ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-folder-infos m::maildir)
+   
+   (define (get-info m i)
+      (let* ((header (mailbox-message-header-list m i))
+	     (hid (assq 'message-id header))
+	     (hdate (assq 'date header)))
+	 (list i
+	       (cons 'message-id (if (pair? hid) (cdr hid) #f))
+	       (cons 'date (if (pair? hdate) (cdr hdate) #f))
+	       (cons 'size (mailbox-message-size m i))
+	       (cons 'flags (mailbox-message-flags m i)))))
+   
+   (mailbox-folder-map m (lambda (k uid) (get-info m k))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-header-fields ::maildir ...                       */
