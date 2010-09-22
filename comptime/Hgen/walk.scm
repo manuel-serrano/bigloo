@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Wed Sep 17 08:23:40 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 21 14:10:51 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
 	    object_class
 	    ast_var
 	    ast_node
+	    module_module
 	    backend_c_emit
 	    backend_c_prototype)
    (export  (hgen-walk)))
@@ -32,6 +33,10 @@
    ;; a very little comment 
    (emit-header)
    ;; we emit the generated type for the classes
-   (emit-class-types (get-class-list) *c-port*)
-   
+   (let ((clist (filter (lambda (c)
+			   (and (tclass? c)
+				(eq? (global-module (tclass-holder c))
+				     *module*)))
+			(get-class-list))))
+      (emit-class-types clist *c-port*))
    (stop-emission!))

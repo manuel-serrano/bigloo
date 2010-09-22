@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Sep 10 17:46:11 2010 (serrano)                */
+#*    Last change :  Tue Sep 21 11:15:31 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -686,6 +686,7 @@ install-devel: install-dirs
          export DYLD_LIBRARY_PATH; \
 	 $(MAKE) -C bde install)
 	$(MAKE) -C bglpkg install
+	$(MAKE) -C autoconf install
 
 install-libs: install-dirs
 	$(MAKE) -C runtime install
@@ -755,6 +756,7 @@ install-dirs:
         fi
 
 uninstall: uninstall-bee
+	$(MAKE) -C autoconf uninstall
 	$(MAKE) -C bde uninstall
 	$(MAKE) -C comptime uninstall
 	if [ "$(GCCUSTOM)" = "yes" ]; then \

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Fri Apr  9 09:19:08 2010 (serrano)                */
+/*    Last change :  Tue Sep 21 15:41:38 2010 (serrano)                */
 /*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -59,8 +59,8 @@ static obj_t bgl_gst_denv;
 /*    -------------------------------------------------------------    */
 /*    The callback machinery is used for one purpose. GStreamer        */
 /*    threads cannot invoke Bigloo code because the GC gets            */
-/*    confused when alloc and collection function are called from      */
-/*    non-Bigloo thread. The callbacks is used to register the         */
+/*    confused when alloc and collection functions are called from     */
+/*    non-Bigloo thread. The callback is used to register the          */
 /*    callbacks that are invoked by a dedicated Bigloo thread.         */
 /*---------------------------------------------------------------------*/
 typedef struct callback {

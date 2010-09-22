@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Sep  6 17:55:58 2010 (serrano)                */
+#*    Last change :  Tue Sep 21 13:49:24 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -371,6 +371,7 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags .jfile
 
 .afile: $(_BGL_SOURCES)
+	$(RM) -f .afile
 	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES)
 
 .jfile: $(_BGL_SOURCES)

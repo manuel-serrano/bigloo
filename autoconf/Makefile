@@ -3,11 +3,17 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Wed Sep  1 10:20:45 2010 (serrano)                */
+#*    Last change :  Tue Sep 21 11:18:42 2010 (serrano)                */
 #*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Default configuration                                            */
+#*---------------------------------------------------------------------*/
+include ../Makefile.config
+include ../Makefile.misc
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
@@ -80,3 +86,14 @@ distrib:
 	@ $(MAKE) clean
 	@ chmod a+rx $(POPULATION)
 
+#*---------------------------------------------------------------------*/
+#*    install                                                          */
+#*---------------------------------------------------------------------*/
+.PHONY: install uninstall
+
+install:
+	cp runtest $(LIBDIR)/$(FILDIR)/runtest && \
+          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/runtest; \
+
+uninstall:
+	$(RM) -f $(LIBDIR)/$(FILDIR)/runtest

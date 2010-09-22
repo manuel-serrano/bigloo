@@ -12,7 +12,10 @@ export ANDSRC=$ANDROIDROOT/eclair-git
 export ANDSDK=$ANDROIDROOT/android-sdk-linux_x86
 
 # droid-wrapper
-export CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
+if [ "$CC " = " " ]; then
+  CC=$ANDROIDROOT/droid-wrapper/bin/droid-gcc
+fi
+export CC
 # envvars needed by droid-wrapper
 # http://github.com/tmurakam/droid-wrapper/
 export DROID_ROOT=$ANDSRC

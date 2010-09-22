@@ -10,13 +10,13 @@ Getting stuff:
 
 Compiling Bigloo for Android requires several things:
 
- (Install all this as a subdierctory of the same directory. This will make
+ (Install all this as a subdirectory of the same directory. This will make
  configuration simpler).
 
  * Android SDK[2].
  * Download droid-wrapper[4]. The command is:
    'git clone git://github.com/tmurakam/droid-wrapper.git'. Then apply
-   version-linker.diff shipped in this directory and install.
+   droid-wrapper.diff shipped in this directory and install.
  * Get Android Eclair's source code, for which you'll need git. See instructions
    below.
 
@@ -47,6 +47,11 @@ Get Eclair's definitions and source code:
    repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
    repo sync
 
+// MS, Sep 20: Is it needed to *COMPILE* eclair? I presume it is otherwise
+   droid-gcc fails to find files such as 
+     eclair-git/out/target/product/generic/obj/lib/crtbegin_dynamic.o:
+   hence I have compiled eclair with a plain "make" in the git eclair-dir
+
 
 Configuring:
 ===========
@@ -56,11 +61,16 @@ and edit it. Point ANDROIDROOT to the directory where you downloaded and
 decompressed all the Android tools, and BS_BIGLOO to the dir where the host
 bigloo resides.
 
+// MS, Sep 20: what are the Android tools, the tools that come with the SDK?
+// MS, Sep 20: This is unclear what you mean by BS_BIGLOO to the dir where
+   the host bigloo resides. Do you mean the source code or do you mean the
+   Bigloo installation directory?
+
 
 Compiling:
 =========
 
-You will need an Android 2.0 (ecalir) or newer device running. This can be a
+You will need an Android 2.0 (eclair) or newer device running. This can be a
 real phone with USB debugging turned on (you can turn it on when you plug in
 the USB cable; we at least know Motorola Droid/Milestone and HTC Desire can do
 it) or any device emulated in the SDK's emulator. You can test with SDK's
@@ -70,6 +80,8 @@ it) or any device emulated in the SDK's emulator. You can test with SDK's
 Then you can simply run:
 
    ./arch/android/build-android.sh configure
+
+// MS, Sep 20: but if this fails, there is no error message to help!
 
 If everything's ok, then you can compile:
 
