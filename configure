@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 23 16:47:59 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 17:14:22 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1223,7 +1223,7 @@ if [ "$hostos " = "android " ]; then
       | sed -e "s|@DROID_ROOT@|$droidroot|" \
       | sed -e "s|@DROID_TARGET@|$droidtarget|" \
       | sed -e "s|@DROID_TMP@|$droidtmp|" \
-      > $cc.in && chmod u+x $cc
+      > $cc && chmod u+x $cc
   fi
 
   # Add the adhoc configure option for the collector

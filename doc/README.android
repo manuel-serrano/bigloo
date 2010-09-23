@@ -40,7 +40,7 @@ Download the Android SDK source code. Follow the instructions. Create
 a machine and start it. In the following, we assume that the shell variable
 DROIDROOT is bound to the path of the SDK.
 
-  $ export DROIDROOT=the-path-of-SDK
+  $ export DROIDSDKROOT=the-path-of-SDK
 
 
 1.2 Getting Android source code
@@ -72,11 +72,28 @@ Compile
 
   $ cd eclair-git && make 
 
+Let the shell variable DROIDROOT be the absolute path of the directory
+containing the Android source code distribution
+
+  $ export DROIDROOT=your-path/eclair-git
+
 
 2. Configure and compiling Bigloo
 =================================
 
-  $ ./configure --android-sdk-root=$DROIDROOT --os-android
+First, you need to install a plain Bigloo on your host. For that
+proceed as follow:
+
+  $ BGLROOT=/usr/local
+  $ ./configure --prefix=$BGLROOT && make && make install  
+
+Then, untar a fresh Bigloo and cross compile it:
+
+  $ ./configure \
+        --build-bindir=$BGLROOT/bin
+        --android-root=$DROIDROOT \
+        --android-sdk-root=$DROIDSDKROOT \
+        --os-android
   $ make
 
 
