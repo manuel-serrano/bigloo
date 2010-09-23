@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep 14 14:41:29 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 15:01:17 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -85,6 +85,7 @@ havelonglong=
 stringsplit="0"
 
 gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
+gcconfigurethreadsopt=--enable-thread
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -234,6 +235,10 @@ cygwindosdotnet="yes"
 #*--- mingw/macosx specific configuration ------------------------------------*/
 mingw="no"
 macosx=auto
+
+#*--- android specifics -----------------------------------------------*/
+droidsdkroot=$DROID_SDK_ROOT
+droidtmp=
 
 #*---------------------------------------------------------------------*/
 #*    Hacker variables                                                 */
@@ -608,31 +613,19 @@ while : ; do
       hostos="win32";;
 
     --os-macosx)
-      tuning="MacOS X";
-      ldlibs="-lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
-      ldcomplibs="-lc \$(GCCLOSELIB) -lc";
-      ldinstallname="-install_name";
-      ldinstallnamedirroot="Frameworks";
-      ld=gcc;
-      ldopt="";
-      sharedsuffix="dylib";
-      sharedcompiler=yes;
-      sharedbde=yes;
-      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
-      napis=;
-      for a in $apis; do
-         if [ $a != "fthread" -a $a != "pthread" ]; then
-           if [ "$napis " = " " ]; then
-             napis="$a";
-           else
-             napis="$napis $a";
-           fi
-         fi
-      done
-      apis=$napis;;
+      hostos="darwin";;
 
     --no-os-macosx)
       macosx=false;;
+
+    --os-android)
+      hostos="android";;
+
+    --android-sdk-root=*)
+      droidsdkroot="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --android-tmp=*)
+      droidtmp="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --cygwin-dos-path=*)
       cygwindospath="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -961,6 +954,9 @@ while : ; do
       echo "   --os-win32" >&2;
       echo "   --os-macosx (tune for MacOSX)"  >&2;
       echo "   --no-os-macosx (disable MacOSX auto configuration)"  >&2;
+      echo "   --os-android (configure for Android)"  >&2;
+      echo "   --android-sdk-root=path (Android SDK root direction)"  >&2;
+      echo "   --android-gcc=bin (Android gcc compiler)"  >&2;
       echo "   --cygwin-dos-path=[dos path]" >&2;
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
@@ -1167,17 +1163,69 @@ if [ "$action" != "bigloo_config_el" ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    OS Specific configuration                                        */
+#*---------------------------------------------------------------------*/
+if [ "$hostos " = "android " ]; then
+  if [ "$droidsdkroot " = " " ]; then
+    echo "" >&2
+    echo "*** ERROR: Bad Android configuration: DROID_SDK_ROOT missing." >&2
+    echo "You must either use the --android-sdk-root=path option "
+    echo "or define and export a DROID_SDK_ROOT shell variable." >&2
+    echo "" >&2
+    echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
+    echo "official Android SDK. It must at least contain the file \"tools/adb\"." >&2
+    exit 1
+  fi
+
+  # Find a proper tmp on the phone
+  if [ "$droidtmp " = " " ]; then
+    adb=$droidsdkroot/tools/adb
+
+    for dir in /tmp /sdcard/tmp /data/local/tmp; do
+      if $autoconfdir/androidmkdir $adb $dir; then
+         droidtmp=$dir
+         break
+      fi
+    done
+  fi
+
+  if [ "$droidtmp " = " " ]; then
+    echo "" >&2
+    echo "*** ERROR: Bad Android configuration: Cannot setup /tmp." >&2
+    echo "You must specify a write/execute path with the --android-tmp=path option " >&2
+   exit 1
+  fi
+
+  # Generate the adhoc shell wrapper
+  hostsh=$pwd/arch/android/androidsh;
+
+  cat $hostsh.in \
+    | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
+    | sed -e "s|@DROID_TMP@|$droidtmp|" \
+    > $hostsh && chmod u+x $hostsh; 
+
+  # Use droid-gcc is no CC specified
+  if [ "$cc " = " " ]; then
+    cc=$pwd/arch/android/droid-gcc
+  fi
+
+  # Add the adhoc configure option for the collector
+  gcconfigurethreadsopt="--enable-threads=posix";
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Configure bootstrap                                              */
 #*---------------------------------------------------------------------*/
 # COMMAND_MODE is required by bash to support echo -n (used by runtest.in)
 COMMAND_MODE=legacy; export COMMAND_MODE
 
-# First, generate an incomplete version of runtest that is used to grab HOST info
+# First, generate an incomplete version of runtest that is used to grab 
+# HOST info
 $autoconfdir/mkruntest $autoconfdir/runtest \
    --autoconfdir=$autoconfdir \
-   --hostsh="$hostsh" \
    --log=$configurelog \
-   --hostos="dummy" \
+   --hostsh="$hostsh" \
+   --hostos=$hostos \
    --user=""
 
 # Grab the hostos info
@@ -1234,23 +1282,6 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --user="$user" \
    --cc="$cc" \
    --cflags="$cflags"
-
-# detect if we are compilling for android
-android=`$autoconf android` || exit 1
-if [ "$android " = "yes " ]; then
-  cflags="$cflags -DPLATFORM_ANDROID"
-  hostos="android"
-  hostcpu="arm"
-  gcneedstackbase=1
-else
-  if [ "$hostos " = "android " ]; then
-    echo "*** ERROR: Android."
-    echo
-    echo "We detected an Android hostos, but the Android release is not correct"
-    echo "or we could not contact an Android device."
-    exit 1
-  fi
-fi
 
 #*---------------------------------------------------------------------*/
 #*    Cross Compilation                                                */
@@ -1342,13 +1373,6 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    charset                                                          */
-#*---------------------------------------------------------------------*/
-if [ "$oscharset " = " " ]; then
-  oscharset=`$autoconf oscharset` || exit 1
-fi
-
-#*---------------------------------------------------------------------*/
 #*    Executable names                                                 */
 #*---------------------------------------------------------------------*/
 echo "+ checking executable names..." >> $configurelog
@@ -1387,11 +1411,6 @@ if [ $action = "all" ]; then
      mkdir lib/$release || exit 3
   fi
 fi
-
-#*---------------------------------------------------------------------*/
-#*    Testing C compiler nan and infinity                              */
-#*---------------------------------------------------------------------*/
-ccdiv0=`$autoconf ccdiv0` || exit 1
 
 #*---------------------------------------------------------------------*/
 #*    Multi-threading                                                  */
@@ -1529,38 +1548,39 @@ case $hostos in
   darwin)
     # MS: up to now I have not been able to get 7.2 compiled and linked on mac
     gccustom=gc-7.1;
+
     sharedlibraryclosed=yes;
     if [ "$macosx " = "auto " ]; then
       macosx=`$autoconf macosx` || exit 1
+    fi
 
-      if [ "$macosx" = "yes" ]; then
-        echo "* MacOS X tuning enabled"; >&2;
-        if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
-          if [ "$threadsupport " = "yes " ]; then
-            customgclib=bigloogc_fth;
-            extralibs="$extralibs $pthreadlibs";
-            ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
-          else
-            threadsupport=no;
-            pthreadlibs=no;
-            ldcomplibs="\$(GCCLOSELIB) -lc";
-          fi
+    if [ "$macosx" = "yes" ]; then
+      echo "* MacOS X tuning enabled"; >&2;
+      if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
+        if [ "$threadsupport " = "yes " ]; then
+          customgclib=bigloogc_fth;
+          extralibs="$extralibs $pthreadlibs";
+          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
+        else
+          threadsupport=no;
+          pthreadlibs=no;
+          ldcomplibs="\$(GCCLOSELIB) -lc";
         fi
-        if [ `dirname $bindir` != `dirname $libdir` ]; then
-          echo "*** ERROR: on MacOS X, bindir and libdir must have a";
-          echo "common parent directory. Please re-configure accordingly";
-          exit 1;
-        fi
-
-        ldinstallname="-install_name";
-        ldinstallnamedirroot="Frameworks";
-        sharedsuffix="dylib";
-        ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
-        sharedcompiler=yes;
-        sharedbde=yes;
-        ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
-        tuning="MacOS X"
       fi
+      if [ `dirname $bindir` != `dirname $libdir` ]; then
+        echo "*** ERROR: on MacOS X, bindir and libdir must have a";
+        echo "common parent directory. Please re-configure accordingly";
+        exit 1;
+      fi
+
+      ldinstallname="-install_name";
+      ldinstallnamedirroot="Frameworks";
+      sharedsuffix="dylib";
+      ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
+      sharedcompiler=yes;
+      sharedbde=yes;
+      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+      tuning="MacOS X"
     fi
 
     if [ "$tuning " = "MacOS X " ]; then
@@ -1672,8 +1692,9 @@ if [ "$action" != "bigloo_config_el" ]; then
       if [ -f gc/configure-$gccustom ]; then
         autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
         gcconfigureopt="$autoopts $gcconfigureopt"
+        gcconfigurethreadsopt="$gcconfigurethreadsopt"
         echo "+ Configuring custom GC..." && \
-        (. ./gc/configure-$gccustom) || exit 1
+        (. ./gc/configure-$gccustom $configuregcextraopt) || exit 1
       fi
     fi
   fi
@@ -1892,6 +1913,14 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # The -p C compiler options
   cpflags=`$autoconf ccprof` || exit 1
+
+  # C compiler nan and infinity
+  ccdiv0=`$autoconf ccdiv0` || exit 1
+
+  # oscharset
+  if [ "$oscharset " = " " ]; then
+    oscharset=`$autoconf oscharset` || exit 1
+  fi
 
   # The stack direction
   stackgrows=`$autoconf stackdown` || exit 1

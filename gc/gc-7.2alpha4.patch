@@ -123,13 +123,13 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
                               || defined(NETBSD) || defined(OPENBSD)))
  # include <stddef.h>
 -# if !defined(OPENBSD)
-+# if !defined(OPENBSD) && !defined(PLATFORM_ANDROID)
++# if !defined(OPENBSD) && !defined(BGL_ANDROID)
      /* FIXME: Why we exclude it for OpenBSD? */
 +    /* we exclude ANDROID because linker.h below includes its own version */
  #   include <elf.h>
  # endif
 -# include <link.h>
-+# if defined(PLATFORM_ANDROID)
++# if defined(BGL_ANDROID)
 +#   include <linker.h>
 +# else
 +#   include <link.h>
@@ -141,12 +141,12 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
  #  define PF_W         2
  #  endif
  #else
-+# if !defined(PLATFORM_ANDROID)
++# if !defined(BGL_ANDROID)
  #  include <elf.h>
 +# endif
  #endif
 -#include <link.h>
-+# if defined(PLATFORM_ANDROID)
++# if defined(BGL_ANDROID)
 +#   include <linker.h>
 +# else
 +#   include <link.h>

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Feb 16 17:39:56 2010                          */
-#*    Last change :  Tue Feb 16 17:52:37 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 13:41:09 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    gcconfigureopt                                                   */
@@ -26,6 +26,7 @@ while : ; do
   shift
 done
 
+chmod u+x $gcdir/config.guess
 build=`eval "$BUILDSH $gcdir/config.guess"`
 host=`eval "$HOSTSH $gcdir/config.guess"`
 

@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    /misc/virtual/android/BGL/bigloo3.3b/autoconf/gcversion          */
+#*    serrano/prgm/project/bigloo/autoconf/gcversion                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Feb  3 15:36:02 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 13:58:13 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -19,6 +19,7 @@ gcdir=gc-boehm
 #*    We parse the arguments                                           */
 #*---------------------------------------------------------------------*/
 while : ; do
+  echo "OPT=[$1]" >&2
   case $1 in
     "")
       break;;

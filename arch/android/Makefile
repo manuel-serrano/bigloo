@@ -1,37 +1,28 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/Makefile                        */
+#*    serrano/prgm/project/bigloo/arch/android/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Thu Sep 23 11:44:59 2010 (serrano)                */
+#*    Creation    :  Sun Feb  7 07:41:50 2010                          */
+#*    Last change :  Thu Sep 23 11:53:41 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile that handles arch specific parts.                   */
+#*    The Makefile that handles maemo specific files                   */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
-include ../Makefile.config
+include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    DIRECTORIES                                                      */
+#*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx maemo android
-
-#*---------------------------------------------------------------------*/
-#*    Populating the ARCHs                                             */
-#*---------------------------------------------------------------------*/
-pop: 
-	@ for d in $(DIRECTORIES) ; do \
-             for f in `cd $$d && $(MAKE) -s pop;`; do \
-                echo arch/$$f; \
-             done; \
-          done;
-	@ echo arch/Makefile
+POPULATION = Makefile androidsh.in droid-wrapper.diff
 
 
 #*---------------------------------------------------------------------*/
-#*    distrib                                                          */
+#*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
-distrib:
+pop:
+	@ echo $(POPULATION:%=android/%)
+

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Mon Mar 15 08:43:33 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 15:01:11 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
@@ -34,6 +34,6 @@ if [ "$threadsupport " != "no " ]; then
    export LDFLAGS=$lflags && \
    export SHELL=$sh && \
    echo "Configuring custom multi-threaded GC..." && \
-   ./configure $gcconfiguredir $gcconfigureopt --enable-thread >> configure.log || \
+   ./configure $gcconfiguredir $gcconfigureopt $gcconfigurethreadsopt >> configure.log || \
    (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
 fi
