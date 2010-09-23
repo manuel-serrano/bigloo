@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 23 15:31:51 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 16:47:59 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -237,7 +237,9 @@ mingw="no"
 macosx=auto
 
 #*--- android specifics -----------------------------------------------*/
+droidroot=$DROID_ROOT
 droidsdkroot=$DROID_SDK_ROOT
+droidtarget=generic
 droidtmp=
 
 #*---------------------------------------------------------------------*/
@@ -624,6 +626,12 @@ while : ; do
     --android-sdk-root=*)
       droidsdkroot="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --android-root=*)
+      droidroot="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --android-target=*)
+      droidtarget="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --android-tmp=*)
       droidtmp="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -955,8 +963,10 @@ while : ; do
       echo "   --os-macosx (tune for MacOSX)"  >&2;
       echo "   --no-os-macosx (disable MacOSX auto configuration)"  >&2;
       echo "   --os-android (configure for Android)"  >&2;
-      echo "   --android-sdk-root=path (Android SDK root direction)"  >&2;
-      echo "   --android-gcc=bin (Android gcc compiler)"  >&2;
+      echo "   --android-sdk-root=path (Android SDK root directory)"  >&2;
+      echo "   --android-root=path (Android root directory)"  >&2;
+      echo "   --android-target=target (defaults to \"generic\")"  >&2;
+      echo "   --android-tmp=path (tmp directory on the emulator)"  >&2;
       echo "   --cygwin-dos-path=[dos path]" >&2;
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
@@ -1207,6 +1217,13 @@ if [ "$hostos " = "android " ]; then
   # Use droid-gcc is no CC specified
   if [ "$cc " = " " ]; then
     cc=$pwd/arch/android/droid-gcc
+
+    cat $cc.in \
+      | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
+      | sed -e "s|@DROID_ROOT@|$droidroot|" \
+      | sed -e "s|@DROID_TARGET@|$droidtarget|" \
+      | sed -e "s|@DROID_TMP@|$droidtmp|" \
+      > $cc.in && chmod u+x $cc
   fi
 
   # Add the adhoc configure option for the collector
