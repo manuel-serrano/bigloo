@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Sep 14 14:28:33 2010 (serrano)                */
+/*    Last change :  Thu Sep 23 17:30:59 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1967,6 +1967,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #if defined( RGC_DEBUG )
 #   include <assert.h>
 #else
+#undef assert   
 #   define assert( exp ) ;
 #endif
 
