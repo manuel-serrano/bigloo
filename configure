@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 24 13:49:24 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 14:23:52 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1644,26 +1644,6 @@ else
 fi
 
 #*---------------------------------------------------------------------*/
-#*    multimedia                                                       */
-#*---------------------------------------------------------------------*/
-havemixer=1
-
-havemixer=`$autoconf mixer` || exit 1
-
-case $hostos in
-  android)
-    sharedlibraryclosed=yes;;
-
-  *)
-    syszipdir=$zipdir
-    syszipdirstr=$zipdir
-    sysdlldir=$dlldir
-    sysdlldirstr=$dlldir
-    ;;
-esac
-echo >> $configurelog
-
-#*---------------------------------------------------------------------*/
 #*    Java configuration                                               */
 #*---------------------------------------------------------------------*/
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
@@ -1930,6 +1910,11 @@ if [ "$gstreamer " != " " ]; then
     fi
   fi
 fi
+
+#*---------------------------------------------------------------------*/
+#*    Multimedia                                                       */
+#*---------------------------------------------------------------------*/
+havemixer=`$autoconf mixer` || exit 1
 
 #*---------------------------------------------------------------------*/
 #*    bigloo_config.h / configure.java / configure.cs / ...            */
