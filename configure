@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 24 08:15:57 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 08:32:55 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1187,9 +1187,26 @@ if [ "$hostos " = "android " ]; then
     exit 1
   fi
 
+  # check if we can connect to a device (physical or emulated)
+  adb=$droidsdkroot/tools/adb
+
+  echo -n "executing $adb shell ls -> " >&2
+
+  $adb shell ls 2> /dev/null > /dev/null
+
+  if [ $? = 0 ]; then
+    echo "ok" >&2
+  else
+    echo "no" >&2
+    echo "" >&2
+    echo "*** ERROR: Cannot contact any connected Android device!" >&2
+    echo "Connect a physical device to a USB port or spawn the emulator with" >&2
+    echo "  $ $droidsdkroot/tools/android" >&2
+    exit 1
+  fi
+
   # Find a proper tmp on the phone
   if [ "$droidtmp " = " " ]; then
-    adb=$droidsdkroot/tools/adb
 
     for dir in /tmp /sdcard/tmp /data/local/tmp; do
       if $autoconfdir/androidmkdir $adb $dir; then

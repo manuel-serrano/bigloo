@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Fri Sep 24 08:16:02 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 08:37:46 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
@@ -39,7 +39,7 @@ if [ "$threadsupport " != "no " ]; then
 fi
 
 # hostos Bigloo specific patch
-if [ "$hostos " != " " -a -f gc/configure-$gccustom-$hostos ]; then
-  (cd gc && gc/configure-$gccustom-$hostos)
+if [ "$hostos " != " " -a -x gc/configure-$gccustom-$hostos ]; then
+  (cd gc && . ./configure-$gccustom-$hostos) || exit 1
 fi
 

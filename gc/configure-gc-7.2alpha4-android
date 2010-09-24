@@ -4,10 +4,19 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep 24 08:16:31 2010                          */
-#*    Last change :  Fri Sep 24 08:17:01 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 09:02:11 2010 (serrano)                */
 #*    Copyright   :  2010 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Android specific patch for the collector                         */
 #*=====================================================================*/
 
 echo "Adapting the collector to Android"
+
+if [ "$threadsupport " != "no " ]; then
+  (cd "$gccustom"_fth && \
+   mv Makefile Makefile.orig && \
+   cat Makefile.orig | sed -e "s|-lpthread||" > Makefile) || exit 1
+  (cd "$gccustom"_fth && \
+   mv gcconfig.h gcconfig.h.orig && \
+   cat gcconfig.h.orig | sed -e "s|defined(GC_LINUX_THREADS) && !defined(LINUX)|defined(GC_LINUX_THREADS) && !defined(LINUX) && !defined(BGL_ANDROID)|" > Makefile) || exit 1
+fi
