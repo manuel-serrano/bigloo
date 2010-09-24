@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 24 15:02:36 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 15:04:52 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1384,9 +1384,6 @@ case $hostos in
 
     # Requires closed libraries
     sharedlibraryclosed=yes
-
-    # Currently, we don't support shared libraries (the GC does not handle them)
-    ldopt=no-share
     ;;
 
   *)

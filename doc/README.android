@@ -1,12 +1,25 @@
-NOTE: in this document we use the following definitions for cross compiling [1]:
+This document explains how to cross compile applications for Android. This
+instructions have only been tested with host running a Linux machine
+and a target using an Arm architecture. 
+
+Note: in this document we use the following definitions for cross compiling [1]:
 
  * host: platform where everything will be compiled. usually
    i386/i686/amd64/x86_64+Linux or Mac.
  * target: platform which will run the resulting binary. arm+Android in this
    case.
 
-1. Getting stuff
-================
+1. Status
+=========
+
+The current Bigloo port (as of 3.4b) on Android is complete but it does not
+support shared libraries yet with multi-threading. That is, for single
+threaded applications, shared libraries can be used. On the other hand
+multi-threaded applications have to be linked against static libraries.
+
+
+2. Requirements
+===============
 
 Compiling Bigloo for Android requires several things:
 
@@ -33,7 +46,7 @@ Also you will require:
  * An already compiled and running bigloo version for the host platform.
 
 
-1.1 Getting Android SDK source code
+2.1 Getting Android SDK source code
 -----------------------------------
 
 Download the Android SDK source code. Follow the instructions. Create
@@ -43,7 +56,7 @@ DROIDROOT is bound to the path of the SDK.
   $ export DROIDSDKROOT=the-path-of-SDK
 
 
-1.2 Getting Android source code
+2.2 Getting Android source code
 -------------------------------
 
 As of Sep 2010, one may either chose the Eclair or Froyo distribution. 
@@ -78,7 +91,7 @@ containing the Android source code distribution
   $ export DROIDROOT=your-path/eclair-git
 
 
-2. Configure and compiling Bigloo
+3. Configure and compiling Bigloo
 =================================
 
 First, you need to install a plain Bigloo on your host. For that
@@ -96,8 +109,14 @@ Then, untar a fresh Bigloo and cross compile it:
         --os-android
   $ make
 
+The Bigloo source tree is needed to cross compile Android applications
+hence, it must not be removed once the compilation completes. For the
+similar reason, contrary to a native Bigloo ports, "installing" Bigloo
+for Android makes no sense. Only cross compiled applications should
+be installed on the device.
 
-3. Testing Bigloo
+
+4. Testing Bigloo
 =================
 
 Let's assume the followin program:
@@ -121,7 +140,10 @@ The it can be exectued with
   $ $DROIDSDKROOT/tools/adb shell /data/tmp/foo
 
 
---
+
+5. External references
+======================
+
 [1] http://en.wikipedia.org/wiki/Cross_compile#GCC_and_cross_compilation
 
 [2] http://developer.android.com/sdk/index.html
