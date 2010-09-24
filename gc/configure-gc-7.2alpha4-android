@@ -1,0 +1,13 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../prgm/project/bigloo/gc/configure-gc-7.2alpha4-android        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Sep 24 08:16:31 2010                          */
+#*    Last change :  Fri Sep 24 08:17:01 2010 (serrano)                */
+#*    Copyright   :  2010 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Android specific patch for the collector                         */
+#*=====================================================================*/
+
+echo "Adapting the collector to Android"

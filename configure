@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 23 17:14:22 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 08:15:57 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1709,7 +1709,10 @@ if [ "$action" != "bigloo_config_el" ]; then
       if [ ! -d gc/$gccustom ]; then
         echo "+ Installing custom GC ($gccustom"".tar.gz) source code."
   
-        (cd gc && GC="$gccustom".tar.gz; export GC && . ./install-$gccustom) || exit 1
+        (cd gc \
+         && GC="$gccustom".tar.gz; export GC \
+         && HOSTOS="$hostos".tar.gz; export HOSTOS \
+         && . ./install-$gccustom) || exit 1
       fi
   
       if [ -f gc/configure-$gccustom ]; then
