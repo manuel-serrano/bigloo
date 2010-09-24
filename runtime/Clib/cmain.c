@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Thu Jan  7 19:36:12 2010 (serrano)                */
+/*    Last change :  Fri Sep 24 14:08:50 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -60,7 +60,7 @@ char **bgl_envp;
 int bgl_envp_len;
 
 #if( BGL_GC_NEED_STACKBASE )
-extern void * __stack_base__; /* see the initialization below */
+extern void *__stack_base__; /* see comptime/BackEnd/c_emit.scm */
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -129,11 +129,6 @@ _bigloo_main(int argc, char *argv[], char *en[], obj_t (*bigloo_main)(obj_t)) {
    obj_t cons;
    long  i;
 
-#if( BGL_GC_NEED_STACKBASE )
-   /* store the __stack_base__ address for the collector */
-    __stack_base__= (void *)&argc;
-#endif
-   
    /* we store the global environment */
    bgl_envp = en;
    bgl_envp_len = 0;

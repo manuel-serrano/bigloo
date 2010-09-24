@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c-emit.scm          */
+;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_emit.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Wed Dec 24 06:48:34 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Sep 24 14:11:20 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -199,12 +199,22 @@
 			      (integer->string *user-heap-size*)
 			      ";")
 	       ""))
+   ;; Store the __stack_base__ address for the collector
+   (fprint *c-port* "/* store the __stack_base__ address for the collector */")
+   (fprint *c-port* "#if( BGL_GC_NEED_STACKBASE )")
+   (fprint *c-port* "extern void *__stack_base__;")
+   (fprint *c-port* "__stack_base__ = (void *)&argc;")
+   (fprint *c-port* "#endif\n")
+
+   ;; initialize the libraries
    (when (pair? *bigloo-libraries-c-setup*)
       (fprint *c-port* "/* Libraries setup */")
       (for-each (lambda (f)
 		   (fprint *c-port* f "(argc, argv, env);"))
 		*bigloo-libraries-c-setup*)
       (newline *c-port*))
+
+   ;; start the application
    (fprint *c-port* "return _bigloo_main(argc, argv, env, &bigloo_main);}")
    (newline *c-port*))
 

@@ -97,71 +97,29 @@ Then, untar a fresh Bigloo and cross compile it:
   $ make
 
 
+3. Testing Bigloo
+=================
 
+Let's assume the followin program:
 
+  $ cat > foo.scm <<EOF
+(module foo (main main))
 
+(define (main x) (print "Hello Android: " x))
+EOF
 
+It can be compiled with:
 
+  $ $BGLROOT/bin/bigloo -lib-dir $BGLROOT/lib -static-all-bigloo foo.scm -o foo
 
+To run it, it has first to be pushed on the Android platform
 
+  $ $DROIDSDKROOT/tools/adb push foo /data/tmp
 
+The it can be exectued with
 
+  $ $DROIDSDKROOT/tools/adb shell /data/tmp/foo
 
-
-
-
-
-
-
-
-Configuring:
-===========
-
-Copy 'arch/android/config-local.sh.sample' into 'arch/android/config-local.sh'
-and edit it. Point ANDROIDROOT to the directory where you downloaded and
-decompressed all the Android tools, and BS_BIGLOO to the dir where the host
-bigloo resides.
-
-!! MS, Sep 20: what are the Android tools, the tools that come with the SDK?
-!! MS, Sep 20: This is unclear what you mean by BS_BIGLOO to the dir where
-   the host bigloo resides. Do you mean the source code or do you mean the
-   Bigloo installation directory?
-
-
-Compiling:
-=========
-
-You will need an Android 2.0 (eclair) or newer device running. This can be a
-real phone with USB debugging turned on (you can turn it on when you plug in
-the USB cable; we at least know Motorola Droid/Milestone and HTC Desire can do
-it) or any device emulated in the SDK's emulator. You can test with SDK's
-'tools/adb logcat' wether you can connect to the device. If you can't,
-'killall adb'[5], fix whatever is wrong and try again.
-
-Then you can simply run:
-
-   ./arch/android/build-android.sh configure
-
-!! Add here that the VM must be spawned before
-!! MS, Sep 20: but if this fails, there is no error message to help!
-
-If everything's ok, then you can compile:
-
-   ./arch/android/build-android.sh build
-
-If everything's ok, then you can install[6]:
-
-   make install
-
-
-Notes:
-=====
-
-The current version assumes you're using Android SDK r07, which decompresses in
-a directory called 'android-sdk-linux_x86'. If you're using another version and
-the path changes (in r04 it was 'android-sdk-linux' and in r06 it was
-'android-sdk-linux_86') , edit 'arch/android/config.sh' to reflect the change,
-and please let us know.
 
 --
 [1] http://en.wikipedia.org/wiki/Cross_compile#GCC_and_cross_compilation

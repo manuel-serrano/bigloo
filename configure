@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 24 08:32:55 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 13:49:24 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1173,85 +1173,224 @@ if [ "$action" != "bigloo_config_el" ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    OS Specific configuration                                        */
+#*    hostos specific configuration                                    */
 #*---------------------------------------------------------------------*/
-if [ "$hostos " = "android " ]; then
-  if [ "$droidsdkroot " = " " ]; then
-    echo "" >&2
-    echo "*** ERROR: Bad Android configuration: DROID_SDK_ROOT missing." >&2
-    echo "You must either use the --android-sdk-root=path option "
-    echo "or define and export a DROID_SDK_ROOT shell variable." >&2
-    echo "" >&2
-    echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
-    echo "official Android SDK. It must at least contain the file \"tools/adb\"." >&2
-    exit 1
-  fi
+echo "+ host specific configuration ($hostos)..." >> $configurelog
 
-  # check if we can connect to a device (physical or emulated)
-  adb=$droidsdkroot/tools/adb
+dirsep="/"
 
-  echo -n "executing $adb shell ls -> " >&2
+case $hostos in
+  cygwin)
+    exe=".exe";
+    jshell="msdos";
 
-  $adb shell ls 2> /dev/null > /dev/null
+    if [ "$cygwindospath " = " " ]; then
+      cygwindospath=`$autoconfdir/cygwindospath`
+    fi
 
-  if [ $? = 0 ]; then
-    echo "ok" >&2
-  else
-    echo "no" >&2
-    echo "" >&2
-    echo "*** ERROR: Cannot contact any connected Android device!" >&2
-    echo "Connect a physical device to a USB port or spawn the emulator with" >&2
-    echo "  $ $droidsdkroot/tools/android" >&2
-    exit 1
-  fi
-
-  # Find a proper tmp on the phone
-  if [ "$droidtmp " = " " ]; then
-
-    for dir in /tmp /sdcard/tmp /data/local/tmp; do
-      if $autoconfdir/androidmkdir $adb $dir; then
-         droidtmp=$dir
-         break
+    if [ "$cygwindospath " = " " ]; then
+      echo "*** ERROR:Can't find out where cygwin is installed."
+      echo "Run configure with the --cygwin-dos-path option."
+      exit 1
+    else
+      cygwindospath=`echo "$cygwindospath" | sed -e 's|/$||g'`
+      if [ ! -d $cygwindospath ]; then
+        echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
       fi
-    done
-  fi
+      cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
 
-  if [ "$droidtmp " = " " ]; then
-    echo "" >&2
-    echo "*** ERROR: Bad Android configuration: Cannot setup /tmp." >&2
-    echo "You must specify a write/execute path with the --android-tmp=path option " >&2
-   exit 1
-  fi
+      zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+      zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+      zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
+      zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+      syszipdir=$zipdir
+      syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
 
-  # Generate the adhoc shell wrapper
-  hostsh=$pwd/arch/android/androidsh;
+      dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+      dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+      dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
+      dlldir=`echo $dlldir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+      sysdlldir=$dlldir
+      sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
+    fi
 
-  cat $hostsh.in \
-    | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
-    | sed -e "s|@DROID_TMP@|$droidtmp|" \
-    > $hostsh && chmod u+x $hostsh; 
+    jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
+    jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
 
-  # Use droid-gcc is no CC specified
-  if [ "$cc " = " " ]; then
-    cc=$pwd/arch/android/droid-gcc
+    ldopt="no-share"
 
-    cat $cc.in \
+    if [ "$cygwindosjvm" = "yes" ]; then
+      jshell="msdos"
+    fi
+    if [ "$cygwindosdotnet" = "yes" ]; then
+      dotnetshell="msdos"
+    fi
+    ;;
+
+  mingw)
+    exe=".exe"
+    hostos="mingw"
+    ld="gcc"
+    ldlibs=""
+    ldcomplibs=""
+    ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"
+    ldopt=-shared
+    havedlopen=1
+    dlopen=""
+    threadsupport=no;
+    #cflags="$cflags -mthreads -D_MINGW_VER"
+    cflags="$cflags -D_MINGW_VER"
+    sharedsuffix="dll"
+    sharedlibraryclosed=yes
+    extralibs="$extralibs -Wl,--stack,8000000"
+    extragclibs=""
+    ;;
+
+  darwin)
+    # MS: up to now I have not been able to get 7.2 compiled and linked on mac
+    gccustom=gc-7.1;
+
+    sharedlibraryclosed=yes;
+    if [ "$macosx " = "auto " ]; then
+      macosx=`$autoconf macosx` || exit 1
+    fi
+
+    if [ "$macosx" = "yes" ]; then
+      echo "* MacOS X tuning enabled"; >&2;
+      if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
+        if [ "$threadsupport " = "yes " ]; then
+          customgclib=bigloogc_fth;
+          extralibs="$extralibs $pthreadlibs";
+          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
+        else
+          threadsupport=no;
+          pthreadlibs=no;
+          ldcomplibs="\$(GCCLOSELIB) -lc";
+        fi
+      fi
+      if [ `dirname $bindir` != `dirname $libdir` ]; then
+        echo "*** ERROR: on MacOS X, bindir and libdir must have a";
+        echo "common parent directory. Please re-configure accordingly";
+        exit 1;
+      fi
+
+      ldinstallname="-install_name";
+      ldinstallnamedirroot="Frameworks";
+      sharedsuffix="dylib";
+      ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
+      sharedcompiler=yes;
+      sharedbde=yes;
+      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+      tuning="MacOS X"
+    fi
+
+    if [ "$tuning " = "MacOS X " ]; then
+      if [ ! -d lib/bigloo ]; then
+        (cd lib && ln -s . bigloo) || exit 3
+        ln -s lib Frameworks || exit 3
+      fi
+    fi
+    ;;
+
+  win32)
+    dirsep="\\"
+    bindir=`echo $bindir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    libdir=`echo $libdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    fildir=`echo $fildir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    mandir=`echo $mandir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    infodir=`echo $infodir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    docdir=`echo $docdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+    ;;
+
+  android)
+    if [ "$droidsdkroot " = " " ]; then
+      echo "" >&2
+      echo "*** ERROR: Bad Android configuration: DROID_SDK_ROOT missing." >&2
+      echo "You must either use the --android-sdk-root=path option "
+      echo "or define and export a DROID_SDK_ROOT shell variable." >&2
+      echo "" >&2
+      echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
+      echo "official Android SDK. It must at least contain the file \"tools/adb\"." >&2
+      exit 1
+    fi
+  
+    # check if we can connect to a device (physical or emulated)
+    adb=$droidsdkroot/tools/adb
+  
+    echo -n "executing $adb shell ls -> " >&2
+  
+    $adb shell ls 2> /dev/null > /dev/null
+  
+    if [ $? = 0 ]; then
+      echo "ok" >&2
+    else
+      echo "no" >&2
+      echo "" >&2
+      echo "*** ERROR: Cannot contact any connected Android device!" >&2
+      echo "Connect a physical device to a USB port or spawn the emulator with" >&2
+      echo "  $ $droidsdkroot/tools/android" >&2
+      exit 1
+    fi
+  
+    # Find a proper tmp on the phone
+    if [ "$droidtmp " = " " ]; then
+  
+      for dir in /tmp /sdcard/tmp /data/local/tmp; do
+        if $autoconfdir/androidmkdir $adb $dir; then
+           droidtmp=$dir
+           break
+        fi
+      done
+    fi
+  
+    if [ "$droidtmp " = " " ]; then
+      echo "" >&2
+      echo "*** ERROR: Bad Android configuration: Cannot setup /tmp." >&2
+      echo "You must specify a write/execute path with the --android-tmp=path option " >&2
+     exit 1
+    fi
+  
+    # Generate the adhoc shell wrapper
+    hostsh=$pwd/arch/android/androidsh;
+  
+    cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
-      | sed -e "s|@DROID_ROOT@|$droidroot|" \
-      | sed -e "s|@DROID_TARGET@|$droidtarget|" \
       | sed -e "s|@DROID_TMP@|$droidtmp|" \
-      > $cc && chmod u+x $cc
-  fi
+      > $hostsh && chmod u+x $hostsh; 
+  
+    # Use droid-gcc is no CC specified
+    if [ "$cc " = " " ]; then
+      cc=$pwd/arch/android/droid-gcc
+  
+      cat $cc.in \
+        | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
+        | sed -e "s|@DROID_ROOT@|$droidroot|" \
+        | sed -e "s|@DROID_TARGET@|$droidtarget|" \
+        | sed -e "s|@DROID_TMP@|$droidtmp|" \
+        > $cc && chmod u+x $cc
+    fi
+  
+    # Add the adhoc configure option for the collector
+    gcconfigurethreadsopt="--enable-threads=posix";
+  
+    # Add the correct cflags option
+    cflags="$cflags -DBGL_ANDROID"
+  
+    # Add our own stack base variable for the GC
+    gcneedstackbase=1
+    ;;
 
-  # Add the adhoc configure option for the collector
-  gcconfigurethreadsopt="--enable-threads=posix";
-
-  # Add the correct cflags option
-  cflags="$cflags -DBGL_ANDROID"
-
-  # Add our own stack base variable for the GC
-  gcneedstackbase=1
-fi
+  *)
+    syszipdir=$zipdir
+    syszipdirstr=$zipdir
+    sysdlldir=$dlldir
+    sysdlldirstr=$dlldir
+    ;;
+esac
+echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
 #*    Configure bootstrap                                              */
@@ -1511,139 +1650,7 @@ havemixer=1
 
 havemixer=`$autoconf mixer` || exit 1
 
-#*---------------------------------------------------------------------*/
-#*    hostos specific configuration                                    */
-#*---------------------------------------------------------------------*/
-echo "+ host specific configuration ($hostos)..." >> $configurelog
-
-dirsep="/"
-
 case $hostos in
-  cygwin)
-    exe=".exe";
-    jshell="msdos";
-
-    if [ "$cygwindospath " = " " ]; then
-      cygwindospath=`$autoconfdir/cygwindospath`
-    fi
-
-    if [ "$cygwindospath " = " " ]; then
-      echo "*** ERROR:Can't find out where cygwin is installed."
-      echo "Run configure with the --cygwin-dos-path option."
-      exit 1
-    else
-      cygwindospath=`echo "$cygwindospath" | sed -e 's|/$||g'`
-      if [ ! -d $cygwindospath ]; then
-        echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
-      fi
-      cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
-
-      zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
-      zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
-      zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
-      zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
-      syszipdir=$zipdir
-      syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
-
-      dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
-      dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
-      dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
-      dlldir=`echo $dlldir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
-      sysdlldir=$dlldir
-      sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
-    fi
-
-    jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
-    jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
-
-    ldopt="no-share"
-
-    if [ "$cygwindosjvm" = "yes" ]; then
-      jshell="msdos"
-    fi
-    if [ "$cygwindosdotnet" = "yes" ]; then
-      dotnetshell="msdos"
-    fi
-    ;;
-
-  mingw)
-    exe=".exe"
-    hostos="mingw"
-    ld="gcc"
-    ldlibs=""
-    ldcomplibs=""
-    ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"
-    ldopt=-shared
-    havedlopen=1
-    dlopen=""
-    threadsupport=no;
-    #cflags="$cflags -mthreads -D_MINGW_VER"
-    cflags="$cflags -D_MINGW_VER"
-    sharedsuffix="dll"
-    sharedlibraryclosed=yes
-    extralibs="$extralibs -Wl,--stack,8000000"
-    extragclibs=""
-    ;;
-
-  darwin)
-    # MS: up to now I have not been able to get 7.2 compiled and linked on mac
-    gccustom=gc-7.1;
-
-    sharedlibraryclosed=yes;
-    if [ "$macosx " = "auto " ]; then
-      macosx=`$autoconf macosx` || exit 1
-    fi
-
-    if [ "$macosx" = "yes" ]; then
-      echo "* MacOS X tuning enabled"; >&2;
-      if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
-        if [ "$threadsupport " = "yes " ]; then
-          customgclib=bigloogc_fth;
-          extralibs="$extralibs $pthreadlibs";
-          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
-        else
-          threadsupport=no;
-          pthreadlibs=no;
-          ldcomplibs="\$(GCCLOSELIB) -lc";
-        fi
-      fi
-      if [ `dirname $bindir` != `dirname $libdir` ]; then
-        echo "*** ERROR: on MacOS X, bindir and libdir must have a";
-        echo "common parent directory. Please re-configure accordingly";
-        exit 1;
-      fi
-
-      ldinstallname="-install_name";
-      ldinstallnamedirroot="Frameworks";
-      sharedsuffix="dylib";
-      ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
-      sharedcompiler=yes;
-      sharedbde=yes;
-      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
-      tuning="MacOS X"
-    fi
-
-    if [ "$tuning " = "MacOS X " ]; then
-      if [ ! -d lib/bigloo ]; then
-        (cd lib && ln -s . bigloo) || exit 3
-        ln -s lib Frameworks || exit 3
-      fi
-    fi
-    ;;
-
-  win32)
-    dirsep="\\"
-    bindir=`echo $bindir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    libdir=`echo $libdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    fildir=`echo $fildir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    mandir=`echo $mandir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    infodir=`echo $infodir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    docdir=`echo $docdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
-    ;;
-
   android)
     sharedlibraryclosed=yes;;
 

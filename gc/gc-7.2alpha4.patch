@@ -1,6 +1,6 @@
 diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
 --- gc-7.2alpha4.orig/Makefile.in	2009-10-19 12:56:20.000000000 +0200
-+++ gc-7.2alpha4/Makefile.in	2010-09-24 12:17:03.000000000 +0200
++++ gc-7.2alpha4/Makefile.in	2010-09-24 14:14:12.000000000 +0200
 @@ -156,7 +156,7 @@
  	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -38,7 +38,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@
 diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
 --- gc-7.2alpha4.orig/alloc.c	2009-11-16 20:56:54.000000000 +0100
-+++ gc-7.2alpha4/alloc.c	2010-09-24 12:17:03.000000000 +0200
++++ gc-7.2alpha4/alloc.c	2010-09-24 14:14:12.000000000 +0200
 @@ -537,6 +537,40 @@
    GC_INNER void GC_add_current_malloc_heap(void);
  #endif
@@ -117,7 +117,7 @@ diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
        GC_is_full_gc = FALSE;
 diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 --- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/dyn_load.c	2010-09-24 12:17:03.000000000 +0200
++++ gc-7.2alpha4/dyn_load.c	2010-09-24 14:14:12.000000000 +0200
 @@ -85,11 +85,16 @@
      || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
                               || defined(NETBSD) || defined(OPENBSD)))
@@ -154,9 +154,22 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
  
  # endif
  
+diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
+--- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
++++ gc-7.2alpha4/include/private/gcconfig.h	2010-09-24 14:14:39.000000000 +0200
+@@ -1845,7 +1845,8 @@
+ #            define DYNAMIC_LOADING
+ #            include <features.h>
+ #            if defined(__GLIBC__) && __GLIBC__ >= 2 \
+-                || defined(PLATFORM_ANDROID)
++                || defined(PLATFORM_ANDROID) \
++                || defined(BGL_ANDROID)
+ #                define SEARCH_FOR_DATA_START
+ #            else
+                  extern char **__environ;
 diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
 --- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
-+++ gc-7.2alpha4/misc.c	2010-09-24 12:20:13.000000000 +0200
++++ gc-7.2alpha4/misc.c	2010-09-24 14:14:12.000000000 +0200
 @@ -1057,7 +1057,8 @@
  #endif
  
@@ -176,29 +189,3 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
    STATIC int GC_write(int fd, const char *buf, size_t len)
    {
      /* No writing.  */
-diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
---- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
-+++ gc-7.2alpha4/os_dep.c	2010-09-24 12:18:20.000000000 +0200
-@@ -974,13 +974,21 @@
-     }
- # endif
- 
--#if defined(ECOS) || defined(NOSYS)
-+#if defined(ECOS) || (defined(NOSYS) && !(defined(BGL_ANDROID)))
-   ptr_t GC_get_main_stack_base(void)
-   {
-     return STACKBOTTOM;
-   }
- #endif
- 
-+#if defined(BGL_ANDROID)
-+  ptr_t GC_get_main_stack_base(void)
-+  {
-+     void *dummy;
-+     return (ptr_t)&dummy;
-+  }
-+#endif
-+
- #ifdef HPUX_STACKBOTTOM
- 
- #include <sys/param.h>
