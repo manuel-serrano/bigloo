@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 24 14:23:52 2010 (serrano)                */
+#*    Last change :  Fri Sep 24 14:47:41 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1381,6 +1381,9 @@ case $hostos in
   
     # Add our own stack base variable for the GC
     gcneedstackbase=1
+
+    # Requires closed libraries
+    sharedlibraryclosed=yes
     ;;
 
   *)
