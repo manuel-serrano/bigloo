@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Mon Sep 27 08:25:36 2010 (serrano)                */
+/*    Last change :  Mon Sep 27 10:15:53 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -144,11 +144,11 @@ _bigloo_main( int argc,
    }
 
    /* on initialise le tas */
-/*    if( !(env_size = getenv( "BIGLOOHEAP" )) ) {                     */
-/*       mega_size = uheapsize ? uheapsize : DEFAULT_HEAP_SIZE;        */
-/*    } else {                                                         */
-/*       mega_size = atoi( env_size );                                 */
-/*    }                                                                */
+   if( !(env_size = getenv( "BIGLOOHEAP" )) ) {
+      mega_size = uheapsize ? uheapsize : DEFAULT_HEAP_SIZE;
+   } else {
+      mega_size = atoi( env_size );
+   }
    mega_size = DEFAULT_HEAP_SIZE;
 
 #if( BGL_GC == BGL_BOEHM_GC )
@@ -172,7 +172,7 @@ _bigloo_main( int argc,
 #endif
 
       /* initialize the libraries */
-/*       libinit( argc, argv, env );                                   */
+      libinit( argc, argv, env );
       
       /* store the executable name */
       executable_name = argv[ 0 ];
