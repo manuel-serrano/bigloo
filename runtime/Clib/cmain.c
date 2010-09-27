@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Fri Sep 24 14:08:50 2010 (serrano)                */
+/*    Last change :  Mon Sep 27 08:25:36 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -123,58 +123,76 @@ bigloo_backend() {
 /*---------------------------------------------------------------------*/
 BGL_EXPORTED_DEF
 int
-_bigloo_main(int argc, char *argv[], char *en[], obj_t (*bigloo_main)(obj_t)) {
+_bigloo_main( int argc,
+	      char *argv[],
+	      char *env[],
+	      obj_t (*bigloo_main)(obj_t),
+	      int (*libinit)(int, char *[], char *[]),
+   	      long uheapsize ) {
    long  mega_size;
    char *env_size;
    obj_t cons;
    long  i;
 
    /* we store the global environment */
-   bgl_envp = en;
+   bgl_envp = env;
    bgl_envp_len = 0;
 
-   if( en ) {
-      char **runner = en;
+   if( env ) {
+      char **runner = env;
       while( *runner ) bgl_envp_len++, runner++;
    }
 
    /* on initialise le tas */
-   if( !(env_size = getenv( "BIGLOOHEAP" )) )
-      mega_size = heap_size;
-   else
-      mega_size = atoi( env_size );
+/*    if( !(env_size = getenv( "BIGLOOHEAP" )) ) {                     */
+/*       mega_size = uheapsize ? uheapsize : DEFAULT_HEAP_SIZE;        */
+/*    } else {                                                         */
+/*       mega_size = atoi( env_size );                                 */
+/*    }                                                                */
+   mega_size = DEFAULT_HEAP_SIZE;
 
 #if( BGL_GC == BGL_BOEHM_GC )
    heap_size = MegToByte( mega_size );
 #endif
 
-   if( !INIT_ALLOCATION( heap_size ) ) {
+   if( !INIT_ALLOCATION( MegToByte( heap_size ) ) ) {
       char mes[ 600 ];
 
-      sprintf( mes, "%ld Meg wanted", heap_size / (1024 * 1024) );
+      sprintf( mes, "%ldMB wanted", heap_size );
       c_error( "Can't allocate heap", mes, -10 );
       return 1;
    } else {
-      /* on sauve le nom de l'executable */
+      /* For those configurations which need it, store the  */
+      /* stack bottom address in a GC global variable.      */
+#if( BGL_GC_NEED_STACKBASE )
+      {
+	 extern void *__stack_base__;
+	 __stack_base__ = (void *)&argc;
+      }
+#endif
+
+      /* initialize the libraries */
+/*       libinit( argc, argv, env );                                   */
+      
+      /* store the executable name */
       executable_name = argv[ 0 ];
 
-      /* on initialise les objects pre-alloues (les chars, bool, ...) */
+      /* setup preallocated objects (chars, bool, ...) */
       bgl_init_objects();
 
-      /* on memorise l'adresse du bas de la pile */
+      /* store the stack bottom address */
       BGL_ENV_STACK_BOTTOM_SET( BGL_CURRENT_DYNAMIC_ENV(), (char *)&argc );
-   
-      /* on initialise les constantes du fichier `Clib/eval.c' */
+
+      /* initialize constants */
       bgl_init_eval_cnst();
 
-      /* on construit la liste des argv */
+      /* build the Bigloo command line list */
       for( i = argc - 1, cons = BNIL; i >= 0; i-- )
          cons = MAKE_PAIR( c_constant_string_to_string( argv[ i ] ), cons );
 
-      /* on met a jour la variable `command-line' */
       command_line = cons;
 
-      /* initialize the random seed */
+      /* random seed */
       {
 	 time_t taux;
 	 struct tm *tm;
@@ -184,14 +202,14 @@ _bigloo_main(int argc, char *argv[], char *en[], obj_t (*bigloo_main)(obj_t)) {
 	 srand( (24 * (60 * tm->tm_sec + tm->tm_min)) + tm->tm_hour );
 
 #if( BGL_HAVE_GMP )
-	 /* initialize the bignum random number state */
+	 /* big numbers init */
 	 gmp_randinit_default( gmp_random_state );
 	 gmp_randseed_ui( gmp_random_state,
 			  (24 * (60 * tm->tm_sec + tm->tm_min)) + tm->tm_hour );
 #endif	 
       }
 
-      /* on appelle le main de l'utilisateur */
+      /* jump into the application main */
       bigloo_main( cons );
 
       return 0;

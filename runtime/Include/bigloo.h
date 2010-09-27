@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Sep 23 17:30:59 2010 (serrano)                */
+/*    Last change :  Mon Sep 27 08:21:00 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2849,7 +2849,7 @@ BGL_RUNTIME_DECL obj_t bgl_find_runtime_type( obj_t );
    
 BGL_RUNTIME_DECL obj_t cobj_to_foreign( obj_t, void * );
 BGL_RUNTIME_DECL long obj_to_cobj( obj_t );
-BGL_RUNTIME_DECL int _bigloo_main( int, char *[], char *[], obj_t (*)(obj_t) );
+BGL_RUNTIME_DECL int _bigloo_main( int, char *[], char *[], obj_t (*)(obj_t), int (*)(int, char *[], char *[]), long );
 #if BGL_HAVE_BIGLOO_ABORT
 extern long bigloo_abort( long );
 #endif

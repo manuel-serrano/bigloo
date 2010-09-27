@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Fri Sep 24 14:11:20 2010 (serrano)                */
+;*    Last change :  Mon Sep 27 08:29:48 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -184,6 +184,14 @@
 			   f "(int, char *[], char *[]);"))
 		*bigloo-libraries-c-setup*)
       (newline *c-port*))
+
+   ;; initialize the libraries
+   (fprint *c-port* "/* Libraries setup */")
+   (fprint *c-port* "static int bigloo_libinit( int argc, char *argv[], char *env[] ) {")
+   (for-each (lambda (f)
+		(fprint *c-port* f "(argc, argv, env);\n"))
+	     *bigloo-libraries-c-setup*)
+   (fprint *c-port* "return 0; }\n\n")
    ;; The bigloo_abort function is only used by the debugger
    ;; and the macro THE_FAILURE. It is used by the debugger as
    ;; a mark where to stop execution after an error. That function
@@ -191,31 +199,10 @@
    ;; to stop inside a shared library.
    (fprint *c-port* "long bigloo_abort(long n) { return n; }")
    (emit-bdb-loc #unspecified)
-   (fprint *c-port* "int BIGLOO_MAIN(int argc, char *argv[], char *env[])")
-   (fprint *c-port*
-	   "{"
-	   (if (number? *user-heap-size*)
-	       (string-append "extern long heap_size; heap_size = "
-			      (integer->string *user-heap-size*)
-			      ";")
-	       ""))
-   ;; Store the __stack_base__ address for the collector
-   (fprint *c-port* "/* store the __stack_base__ address for the collector */")
-   (fprint *c-port* "#if( BGL_GC_NEED_STACKBASE )")
-   (fprint *c-port* "extern void *__stack_base__;")
-   (fprint *c-port* "__stack_base__ = (void *)&argc;")
-   (fprint *c-port* "#endif\n")
-
-   ;; initialize the libraries
-   (when (pair? *bigloo-libraries-c-setup*)
-      (fprint *c-port* "/* Libraries setup */")
-      (for-each (lambda (f)
-		   (fprint *c-port* f "(argc, argv, env);"))
-		*bigloo-libraries-c-setup*)
-      (newline *c-port*))
-
+   (fprint *c-port* "int BIGLOO_MAIN(int argc, char *argv[], char *env[]) { ")
    ;; start the application
-   (fprint *c-port* "return _bigloo_main(argc, argv, env, &bigloo_main);}")
+   (fprintf *c-port* "return _bigloo_main(argc, argv, env, &bigloo_main, &bigloo_libinit, ~a);}"
+	    *user-heap-size*)
    (newline *c-port*))
 
 ;*---------------------------------------------------------------------*/
