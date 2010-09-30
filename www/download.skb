@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Wed Feb 17 10:50:03 2010 (serrano)                */
+;*    Last change :  Tue Sep 28 05:18:42 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -22,35 +22,37 @@ The current version has been compiled and tested on:
 		       (item (tt (car p)) " (" (cdr p) ")"))
 		     '(("x86/linux" . "Linux 2.6, JDK >= 1.4.1")
 		       ("x86-64/linux" . "Linux 2.6, JDK >= 1.4.1")
-		       ("x86/MacOS" . "10.5")
-		       ("x86-64/MacOS" . "10.5")
+		       ("arm/maemo" . "maemo >= 4")
+		       ("arm/android" . "Android >= 2.0")
+		       ("x86/MacOS" . ">= 10.5")
+		       ("x86-64/MacOS" . ">= 10.5")
 		       ("x86-win32" . "Windows 2000, XP")
 		       ("x86-FreeBSD" . "4.0")
 		       ("x86-NetBSD" . "1.6")
 		       ("x86-MinGW" "")
-		       ("PowerPC G4" . "MacOS X xnu-201.5, 10.2, 10.3, 10.4")
-		       ("PowerPC G3" . "Gentoo Linux")
-		       ("SPARC" . "Solaris 2.6 and 2.8, Sun JDK 1.3, Linux (Debian)")
-		       ("Compaq Alpha" . "Digital Unix 4.0f aka True64, JDK 1.3")
-		       ("Compaq Alpha" . "Linux 2.2 (Debian)")
-		       ("Arm" . "Linux (Debian)")
-		       ("IA64" . "Linux (Debian)")
-		       ("IBM P660" . "AIX RS-6000 4.3.3"))))
+		       ("powerpc G4" . "MacOS X xnu-201.5, 10.2, 10.3, 10.4")
+		       ("powerpc G3" . "Gentoo Linux")
+		       ("sparc" . "Solaris 2.6 and 2.8, Sun JDK 1.3, Linux (Debian)")
+		       ("alpha" . "Digital Unix 4.0f aka True64, JDK 1.3")
+		       ("alpha" . "Linux 2.2 (Debian)")
+		       ("arm" . "Linux (Debian)")
+		       ("ia64" . "Linux (Debian)")
+		       ("ibm p660" . "AIX RS-6000 4.3.3"))))
 		       
 
 Even if not tested, it should run correctly on:
 ,(apply itemize (map (lambda (p)
 		       (item (tt (car p)) " (" (cdr p) ")"))
-		     '(("SGI" . "IP32")
-		       ("Intel" . "NeXTStep")
- 		       ("IBM RS-6000" . "AIX")
-		       ("SGI" . "IP20 and IP22")
-		       ("MAC PPC" . "2.2.15pre20"))))
+		     '(("sgi" . "IP32")
+		       ("intel" . "NeXTStep")
+ 		       ("ibm rs-6000" . "AIX")
+		       ("sgi" . "IP20 and IP22")
+		       ("mac ppc" . "2.2.15pre20"))))
 
 Bigloo is known not to compile on:
 ,(apply itemize (map (lambda (p)
 			(item (tt (bold (color :fg "red" (car p) " (" (cdr p) ")")))))
-		     '(("Mac" "MacOS 9")
+		     '(("mac" "MacOS 9")
 		       ("m68k" . "Linux (Debian)")
 		       ("s390" . "Linux (Debian)"))))
 

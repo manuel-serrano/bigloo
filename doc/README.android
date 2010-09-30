@@ -1,0 +1,157 @@
+This document explains how to cross compile applications for Android. This
+instructions have only been tested with host running a Linux machine
+and a target using an Arm architecture. 
+
+Note: in this document we use the following definitions for cross compiling [1]:
+
+ * host: platform where everything will be compiled. usually
+   i386/i686/amd64/x86_64+Linux or Mac.
+ * target: platform which will run the resulting binary. arm+Android in this
+   case.
+
+1. Status
+=========
+
+The current Bigloo port (as of 3.4b) on Android is complete but it does not
+support shared libraries yet with multi-threading. That is, for single
+threaded applications, shared libraries can be used. On the other hand
+multi-threaded applications have to be linked against static libraries.
+
+
+2. Requirements
+===============
+
+Compiling Bigloo for Android requires several things:
+
+ (Install all this as a subdirectory of the same directory. This will make
+ configuration simpler).
+
+  * Android SDK which is available at:
+
+      http://developer.android.com/sdk/index.html
+
+  * Get Android source code (Elcair or Froyo), for which you'll need git. 
+    See instructions below (Section 1.1).
+
+  * Bigloo comes with its own version of droid-gcc, a wrapper that is in
+    charge of invoking correctly gcc. If a more recent version is
+    needed, it may be downloaded from the droid-wrapper web site [2] or 
+    extracted from the git repository with the command:
+    
+     $ git clone git://github.com/tmurakam/droid-wrapper.git
+
+    IMPORTANT: Once downloaded, apply droid-wrapper.diff shipped in this 
+    directory and install.
+
+Also you will require:
+
+ * An already compiled and running bigloo version for the host platform.
+
+
+2.1 Getting Android SDK source code
+-----------------------------------
+
+Download the Android SDK source code. Follow the instructions. Create
+a machine and start it. In the following, we assume that the shell variable
+DROIDROOT is bound to the path of the SDK.
+
+  $ export DROIDSDKROOT=the-path-of-SDK
+
+
+2.2 Getting Android source code
+-------------------------------
+
+As of Sep 2010, one may either chose the Eclair or Froyo distribution. 
+The instructions to get and build Android are based on [3].
+
+First, you might need to introduce yourself to git:
+
+  $ git config --global user.email "you@example.com"
+  $ git config --global user.name "Your Name"
+
+Download repo, a wrapper around git:
+
+  $ curl http://android.git.kernel.org/repo > ~/bin/repo
+  $ chmod a+x ~/bin/repo
+
+Get definitions and source code:
+
+  $ mkdir eclair-git
+  $ cd eclair-git
+  $ repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
+  $ repo sync
+  $ cd ..
+
+(Froyos can be obtained similarly by replacing "eclair" with "froyo".)
+
+Compile
+
+  $ cd eclair-git && make 
+
+Let the shell variable DROIDROOT be the absolute path of the directory
+containing the Android source code distribution
+
+  $ export DROIDROOT=your-path/eclair-git
+
+
+3. Configure and compiling Bigloo
+=================================
+
+First, you need to install a plain Bigloo on your host. For that
+proceed as follow:
+
+  $ BGLROOT=/usr/local
+  $ ./configure --prefix=$BGLROOT && make && make install  
+
+Then, untar a fresh Bigloo and cross compile it:
+
+  $ ./configure \
+        --prefix=/usr/local/android \
+        --build-bindir=$BGLROOT/bin \
+        --android-root=$DROIDROOT \
+        --android-sdk-root=$DROIDSDKROOT \
+        --os-android
+  $ make
+
+The Bigloo source tree is needed to cross compile Android applications
+hence, it must not be removed once the compilation completes. However,
+you still need to "install" Android Bigloo to complete the compilation.
+
+
+4. Testing Bigloo
+=================
+
+Let's assume the followin program:
+
+  $ cat > foo.scm <<EOF
+(module foo (main main))
+
+(define (main x) (print "Hello Android: " x))
+EOF
+
+It can be compiled with:
+
+  $ $BGLROOT/bin/bigloo -lib-dir $BGLROOT/lib -static-all-bigloo foo.scm -o foo
+
+To run it, it has first to be pushed on the Android platform
+
+  $ $DROIDSDKROOT/tools/adb push foo /data/tmp
+
+The it can be exectued with
+
+  $ $DROIDSDKROOT/tools/adb shell /data/tmp/foo
+
+
+
+5. External references
+======================
+
+[1] http://en.wikipedia.org/wiki/Cross_compile#GCC_and_cross_compilation
+
+[2] http://github.com/tmurakam/droid-wrapper
+
+[3] http://source.android.com/source/download.html
+
+[5] 'adb' runs as a daemon and somehow is not affected by e.g. permission
+    changes.
+

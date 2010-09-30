@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Sep  6 13:29:29 2010 (serrano)                */
+;*    Last change :  Mon Sep 27 08:05:22 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1008,7 +1008,7 @@
 ;*---------------------------------------------------------------------*/
 (param-define *user-heap-size*
 	      "Heap size (in MegaByte) or #f for default value"
-	      #f)
+	      0)
 
 ;*---------------------------------------------------------------------*/
 ;*    *reader* ...                                                     */

@@ -5,7 +5,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 11:48:49 2009                          */
-#*    Last change :  Thu Jan  7 19:29:46 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 14:06:47 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This file is in charge of spawning actual tests.                 */
@@ -82,6 +82,9 @@ while : ; do
     -v2)
       verbose=2;;
 
+    -v3)
+      verbose=3;;
+
     --help)
       echo "Usage: runtest [options] -- script arg0 arg1 ..." >&2;
       echo "" >&2;
@@ -110,16 +113,29 @@ shift
 test=$1
 shift
 
-while : ; do
-  case $1 in
-    "")
-      break;;
-
-    *)
-      opts="$opts \"$1\"";;
-  esac
-  shift
-done
+if [ $verbose != 3 ]; then
+  while : ; do
+    case $1 in
+      "")
+        break;;
+  
+      *)
+        opts="$opts \"$1\"";;
+    esac
+    shift
+  done
+else
+  while : ; do
+    case $1 in
+      "")
+        break;;
+  
+      *)
+        opts="$opts $1";;
+    esac
+    shift
+  done
+fi
 
 # log the call
 if [ ! -f $LOG ]; then touch $LOG; fi
@@ -158,9 +174,13 @@ fi
    echo -n "executing $AUTOCONFDIR/$test -> " >&2
  elif [ $verbose = 2 ]; then
    echo "executing $AUTOCONFDIR/$test$opts" >&2
+ elif [ $verbose = 3 ]; then
+   echo "executing $AUTOCONFDIR/$test$opts" >&2
  fi
 
- if [ $verbose = 2 ]; then
+ if [ $verbose = 3 ]; then
+   res=`sh -x $AUTOCONFDIR/$test$opts`
+ elif [ $verbose = 2 ]; then
    res=`eval $AUTOCONFDIR/$test$opts`
  else
    res=`eval $AUTOCONFDIR/$test$opts 2>> $LOG`

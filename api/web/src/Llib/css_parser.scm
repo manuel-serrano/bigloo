@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Fri Sep  3 17:00:26 2010 (serrano)                */
+;*    Last change :  Tue Sep 28 13:56:49 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -385,7 +385,8 @@
 
       (operator
        ((SLASH S*) "/")
-       ((COMMA S*) ","))
+       ((COMMA S*) ",")
+       ((= S*) "="))
       
       (term
        ((NUMBER S*) (car NUMBER))
@@ -404,11 +405,25 @@
        ((UNICODERANGE S*) (car UNICODERANGE))
        ((hexcolor) hexcolor)
        ((function) function))
+
+      (qualified
+       ((IDENT COLON qualified-ident)
+	(string-append (car IDENT) ":" qualified-ident)))
       
+      (qualified-ident
+       ((IDENT DOT)
+	(string-append (car IDENT) "."))
+       ((IDENT DOT qualified-ident)
+	(string-append (car IDENT) "." qualified-ident)))
+       
       (function
        ((FUNCTION S* expr PAR-CLO S*)
 	(instantiate::css-function
 	   (fun (car FUNCTION))
+	   (expr expr)))
+       ((qualified FUNCTION S* expr PAR-CLO S*)
+	(instantiate::css-function
+	   (fun (string-append qualified (car FUNCTION)))
 	   (expr expr))))
       
       (hexcolor

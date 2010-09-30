@@ -11,6 +11,7 @@
 #*=====================================================================*/
 
 src=$GC
+
 gc=`basename $src .tar.gz`
 bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
 
@@ -32,6 +33,7 @@ mv ../gc/$gc "../gc/$gc"_fth || (echo "mv gc-7.2 failed"; exit 1)
 
 $tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 
+# general Bigloo patch
 (cd "../gc/$gc"_fth && $patch -p1 < ../$gc.patch > /dev/null)
 if [ $? != "0" ]; then echo "patch1 failed"; exit 1; fi
 (cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null)

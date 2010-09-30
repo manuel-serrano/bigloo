@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Sep 21 11:18:42 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 14:32:18 2010 (serrano)                */
 #*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -50,7 +50,7 @@ POPULATION	= Makefile \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
                   gstreamer gstreameraudio dbus gmp limbs signbit \
                   getuid gecos getprotoent machdep arflags mixer \
-                  gcconfigureopt ccfortify environ setenv
+                  gcconfigureopt ccfortify environ setenv androidmkdir
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

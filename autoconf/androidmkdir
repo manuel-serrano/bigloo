@@ -1,0 +1,49 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/androidmkdir                */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Sep 23 14:28:53 2010                          */
+#*    Last change :  Thu Sep 23 14:29:37 2010 (serrano)                */
+#*    Copyright   :  2010 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Create a directory on the Android emulator                       */
+#*=====================================================================*/
+
+adb=$1
+dir=$2
+ok=0
+
+# test the dir exists
+if $adb shell ls $dir | grep -iq 'no such'; then
+   # no; try to create it
+   if $adb shell mkdir $dir | egrep -iq '(permission denied|read-only)'; then
+      ok=1
+   # else
+   #    ok=0
+   fi
+# else
+#    ok=0
+fi
+
+if [ $ok -eq 0 ]; then
+   # the directory exists
+   # try to create an exec
+   if $adb shell "echo 'echo yes' > $dir/foo" | grep -iq 'read-only'; then
+      # read only
+      ok=1
+   else
+      # set it executable and run it
+      $adb shell chmod 755 $dir/foo
+      if $adb shell $dir/foo | grep -iq 'permission denied'; then
+         # can't execute
+         ok=1
+      fi
+
+      # cleanup
+      $adb shell rm $dir/foo
+   fi
+fi
+
+exit $ok
+
