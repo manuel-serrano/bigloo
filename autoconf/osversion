@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct 22 11:07:08 1997                          */
-#*    Last change :  Mon Sep  7 15:50:16 2009 (serrano)                */
+#*    Last change :  Thu Sep 23 12:13:48 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the underlying OS (only for posix, e.g. Solaris, DEC OSF,  */
 #*    Linux, Cygwin, etc, oses).                                       */

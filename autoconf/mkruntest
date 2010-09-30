@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 13:50:03 2009                          */
-#*    Last change :  Thu Jan  7 20:42:58 2010 (serrano)                */
+#*    Last change :  Thu Sep 23 11:43:00 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generate the runtest file                                        */
@@ -17,7 +17,6 @@ hostsh=""
 hostos="unknown"
 hostosversion="unknown"
 hostcpu="unknown"
-
 buildsh=""
 
 autoconfdir="autoconf"

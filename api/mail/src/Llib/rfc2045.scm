@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Aug 12 15:18:09 2010 (serrano)                */
+;*    Last change :  Thu Sep 30 07:13:50 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -34,8 +34,10 @@
 	   (mime-content-disposition-decode-port::pair-nil ::input-port)
 	   (mime-content-disposition-decode::pair-nil ::bstring)
 
-	   (mime-multipart-decode-port::pair-nil ::input-port ::bstring)
-	   (mime-multipart-decode::pair-nil ::bstring ::bstring)))
+	   (mime-multipart-decode-port::pair-nil ::input-port ::bstring
+						 #!optional recursive)
+	   (mime-multipart-decode::pair-nil ::bstring ::bstring
+					    #!optional recursive)))
 
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-encode-port ...                                 */
@@ -386,7 +388,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    multipart-parse-entry ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (multipart-parse-entry buffer in boundary)
+(define (multipart-parse-entry buffer in boundary recursive)
    (let loop ((entries '()))
       (multiple-value-bind (len crlf eof)
 	 (fill-line! buffer in)
@@ -419,7 +421,7 @@
 				     (mime-content-disposition-decode (cdr c))
 				     '(inline)))))
 		   (cond
-		      ((eq? (car ctype) 'multipart)
+		      ((and recursive (eq? (car ctype) 'multipart))
 		       ;; a recursive multipart
 		       (let ((nboundary (assq 'boundary (caddr ctype))))
 			  (if (not nboundary)
@@ -455,15 +457,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode-port ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode-port in boundary)
+(define (mime-multipart-decode-port in boundary #!optional recursive)
    (let ((buffer (make-string (+fx (string-length boundary) 256))))
-      (multipart-parse-entry buffer in boundary)))
+      (multipart-parse-entry buffer in boundary recursive)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode str boundary)
+(define (mime-multipart-decode str boundary #!optional recursive)
    (let ((in (open-input-string str)))
       (unwind-protect
-	 (mime-multipart-decode-port in boundary)
+	 (mime-multipart-decode-port in boundary recursive)
 	 (close-input-port in))))

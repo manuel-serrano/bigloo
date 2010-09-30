@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Aug 11 10:58:12 2010 (serrano)                */
+/*    Last change :  Fri Sep 24 15:12:38 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -199,8 +199,8 @@ dump_statistics() {
 
    if( !n ) {
       if( ____executable_name && *____executable_name ) {
-	 char *s1 = rindex( *____executable_name, '/' );
-	 char *s2 = rindex( s1 ? s1 + 1: *____executable_name,  '.' );
+	 char *s1 = strrchr( *____executable_name, '/' );
+	 char *s2 = strrchr( s1 ? s1 + 1: *____executable_name,  '.' );
 	 char *s = s1 ? s1 + 1: *____executable_name;
 	 int l = strlen( s );
 	 char *r = malloc( l + 6 );

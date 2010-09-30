@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Jul 30 09:32:40 2010 (serrano)                */
+;*    Last change :  Thu Sep 30 07:04:34 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -183,7 +183,8 @@
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-lambda (untype-ident var)
 				       (evcompile val '()
-						  genv var #t #t
+						  genv var #t
+						  (<fx (bigloo-debug) 3)
 						  (get-location exp loc)
 						  lkp #f)
 				       loc))))
@@ -198,7 +199,8 @@
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-value (untype-ident var)
 				      (evcompile val '()
-						 genv where named? #t
+						 genv where named?
+						 (< (bigloo-debug) 3)
 						 (get-location val loc)
 						 lkp #f)
 				      loc))))
@@ -263,7 +265,8 @@
 							    obj)))
 				       (extend-env untyped-scm-formals env)
 				       genv
-				       where #f #t
+				       where #f
+				       (<fx (bigloo-debug) 3)
 				       (get-location body loc)
 				       lkp #f)
 			    where named? loc)))
