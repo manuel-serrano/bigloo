@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Fri Oct  1 10:49:58 2010 (serrano)                */
+/*    Last change :  Sat Oct  2 06:01:07 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -58,10 +58,6 @@ BGL_RUNTIME_DEF obj_t command_line = 0L;
 char *executable_name = 0L;
 char **bgl_envp;
 int bgl_envp_len;
-
-#if( BGL_GC_NEED_STACKBASE )
-extern void *__stack_base__; /* see comptime/BackEnd/c_emit.scm */
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -161,14 +157,14 @@ _bigloo_main( int argc,
       c_error( "Can't allocate heap", mes, -10 );
       return 1;
    } else {
-      /* For those configurations which need it, store the  */
-      /* stack bottom address in a GC global variable.      */
-#if( BGL_GC_NEED_STACKBASE )
-      {
-	 extern void *__stack_base__;
-	 __stack_base__ = (void *)&argc;
-      }
-#endif
+/*       {* For those configurations which need it, store the  *}      */
+/*       {* stack bottom address in a GC global variable.      *}      */
+/* #if( BGL_GC_NEED_STACKBASE )                                        */
+/*       {                                                             */
+/* 	 extern void *__stack_base__;                                  */
+/* 	 __stack_base__ = (void *)&argc;                               */
+/*       }                                                             */
+/* #endif                                                              */
 
       /* initialize the libraries */
       libinit( argc, argv, env );

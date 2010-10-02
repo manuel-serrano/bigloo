@@ -1,6 +1,6 @@
 diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
 --- gc-7.2alpha4.orig/Makefile.in	2009-10-19 12:56:20.000000000 +0200
-+++ gc-7.2alpha4/Makefile.in	2010-09-24 14:14:12.000000000 +0200
++++ gc-7.2alpha4/Makefile.in	2010-10-02 05:56:34.000000000 +0200
 @@ -156,7 +156,7 @@
  	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -38,7 +38,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@
 diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
 --- gc-7.2alpha4.orig/alloc.c	2009-11-16 20:56:54.000000000 +0100
-+++ gc-7.2alpha4/alloc.c	2010-09-24 14:14:12.000000000 +0200
++++ gc-7.2alpha4/alloc.c	2010-10-02 05:56:34.000000000 +0200
 @@ -537,6 +537,40 @@
    GC_INNER void GC_add_current_malloc_heap(void);
  #endif
@@ -117,7 +117,7 @@ diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
        GC_is_full_gc = FALSE;
 diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 --- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/dyn_load.c	2010-09-24 14:14:12.000000000 +0200
++++ gc-7.2alpha4/dyn_load.c	2010-10-02 05:56:34.000000000 +0200
 @@ -85,11 +85,16 @@
      || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
                               || defined(NETBSD) || defined(OPENBSD)))
@@ -156,7 +156,7 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
  
 diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
 --- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
-+++ gc-7.2alpha4/include/private/gcconfig.h	2010-09-24 14:14:39.000000000 +0200
++++ gc-7.2alpha4/include/private/gcconfig.h	2010-10-02 05:56:34.000000000 +0200
 @@ -1845,7 +1845,8 @@
  #            define DYNAMIC_LOADING
  #            include <features.h>
@@ -169,8 +169,30 @@ diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/pri
                   extern char **__environ;
 diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
 --- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
-+++ gc-7.2alpha4/misc.c	2010-09-24 14:14:12.000000000 +0200
-@@ -1057,7 +1057,8 @@
++++ gc-7.2alpha4/misc.c	2010-10-02 06:12:25.000000000 +0200
+@@ -532,6 +532,10 @@
+         word dummy;
+ #   endif
+ 
++#ifdef BGL_ANDROID
++	void *__stack_bottom;
++#endif
++	   
+ #   ifdef GC_INITIAL_HEAP_SIZE
+         word initial_heap_sz = divHBLKSZ(GC_INITIAL_HEAP_SIZE);
+ #   else
+@@ -541,6 +545,10 @@
+ 
+     if (GC_is_initialized) return;
+ 
++#ifdef BGL_ANDROID
++    __stack_base__ = GC_stackbottom ? GC_stackbottom : &__stack_bottom;
++#endif
++    
+     DISABLE_CANCEL(cancel_state);
+     /* Note that although we are nominally called with the */
+     /* allocation lock held, the allocation lock is now    */
+@@ -1057,7 +1065,8 @@
  #endif
  
  #if !defined(MSWIN32) && !defined(MSWINCE) && !defined(OS2) \
@@ -180,7 +202,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
  STATIC int GC_write(int fd, const char *buf, size_t len)
  {
       int bytes_written = 0;
-@@ -1092,7 +1093,7 @@
+@@ -1092,7 +1101,7 @@
    }
  #endif
  
@@ -189,3 +211,17 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
    STATIC int GC_write(int fd, const char *buf, size_t len)
    {
      /* No writing.  */
+diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
+--- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
++++ gc-7.2alpha4/os_dep.c	2010-10-02 06:04:36.000000000 +0200
+@@ -16,6 +16,10 @@
+ 
+ #include "private/gc_priv.h"
+ 
++#ifdef BGL_ANDROID
++void *__stack_base__ = 1; /* initialize by GC_init */
++#endif
++
+ #if defined(LINUX) && !defined(POWERPC)
+ # include <linux/version.h>
+ # if (LINUX_VERSION_CODE <= 0x10400)
