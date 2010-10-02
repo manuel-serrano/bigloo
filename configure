@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Oct  1 20:57:18 2010 (serrano)                */
+#*    Last change :  Sat Oct  2 06:56:17 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1081,7 +1081,10 @@ fi
 
 # Cleaning
 rm -f $configurelog
-touch $configurelog
+echo "# configure (" > $configurelog
+date >> $configurelog
+echo ")" >> $configurelog
+echo "$*" >> $configurelog
 
 # the mandir
 if [ -d "$mandir/man1" ]; then
@@ -1249,7 +1252,23 @@ case $hostos in
     cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
       | sed -e "s|@DROID_TMP@|$droidtmp|" \
-      > $hostsh && chmod u+x $hostsh; 
+      > $hostsh && chmod u+x $hostsh || exit 1
+
+    # Use droid-gcc if no CC specified
+    if [ "$cc " = " " ]; then
+      cc=$pwd/arch/android/droid-gcc
+  
+      cat $cc.in \
+        | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
+        | sed -e "s|@DROID_ROOT@|$droidroot|" \
+        | sed -e "s|@DROID_TARGET@|$droidtarget|" \
+        | sed -e "s|@DROID_TMP@|$droidtmp|" \
+        > $cc && chmod u+x $cc || exit 1
+    fi
+  
+    # Add the correct cflags option
+    cflags="$cflags -DBGL_ANDROID"
+  
     ;;
 esac
 echo >> $configurelog
@@ -1341,34 +1360,6 @@ fi
 # Grab the buildosversion info
 if [ "$buildosversion " = " " ]; then
   buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
-fi
-
-if [ "$hostos " != "$buildos " -o \
-    "$hostcpu " != "$buildcpu " -o \
-    "$hostosversion " != "$buildosversion " ]; then
-  echo "Cross compilation detected..."
-
-  # try to detect cross-tools
-  tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
-  if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      ar="$tmp";
-      echo "  Using ar=$ar";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-as/'`;
-  if [ "$as " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      as="$tmp";
-      echo "  Using as=$as";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-strip/'`;
-  if [ "$strip " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      strip="$tmp";
-      echo "  Using strip=$strip";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-ranlib/'`;
-  if [ "$ranlib " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      ranlib="$tmp";
-      echo "  Using ranlib=$ranlib";
-  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1505,27 +1496,9 @@ case $hostos in
     ;;
 
   android)
-    # Use droid-gcc if no CC specified
-    if [ "$cc " = " " ]; then
-      cc=$pwd/arch/android/droid-gcc
-  
-      cat $cc.in \
-        | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
-        | sed -e "s|@DROID_ROOT@|$droidroot|" \
-        | sed -e "s|@DROID_TARGET@|$droidtarget|" \
-        | sed -e "s|@DROID_TMP@|$droidtmp|" \
-        > $cc && chmod u+x $cc
-    fi
-  
     # Add the adhoc configure option for the collector
     gcconfigurethreadsopt="--enable-threads=posix";
   
-    # Add the correct cflags option
-    cflags="$cflags -DBGL_ANDROID"
-  
-    # Add our own stack base variable for the GC
-    gcneedstackbase=1
-
     # Requires closed libraries
     sharedlibraryclosed=yes
     ;;
@@ -1542,6 +1515,34 @@ echo >> $configurelog
 #*---------------------------------------------------------------------*/
 #*    C tool chain                                                     */
 #*---------------------------------------------------------------------*/
+if [ "$hostos " != "$buildos " -o \
+     "$hostcpu " != "$buildcpu " -o \
+     "$hostosversion " != "$buildosversion " ]; then
+  echo "Cross compilation detected..."
+
+  # try to detect cross-tools
+  tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
+  if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ar="$tmp";
+      echo "  Using ar=$ar";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-as/'`;
+  if [ "$as " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      as="$tmp";
+      echo "  Using as=$as";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-strip/'`;
+  if [ "$strip " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      strip="$tmp";
+      echo "  Using strip=$strip";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-ranlib/'`;
+  if [ "$ranlib " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ranlib="$tmp";
+      echo "  Using ranlib=$ranlib";
+  fi
+fi
+
 # create an unexisting temporary file name
 name=$buildtmp/foo
 while( test -f "$name.s" -o -f "$name.o" ); do
