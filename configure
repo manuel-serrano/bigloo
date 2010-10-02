@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Oct  2 06:56:17 2010 (serrano)                */
+#*    Last change :  Sat Oct  2 06:59:43 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -324,6 +324,8 @@ autoconfdir=`dirname $0 2> /dev/null`/autoconf
 if [ $? != "0" ]; then
    autoconfdir="autoconf"
 fi
+
+logopt="$*"
 
 autoconf="$autoconfdir/runtest -v1 -- "
 
@@ -1081,10 +1083,11 @@ fi
 
 # Cleaning
 rm -f $configurelog
-echo "# configure (" > $configurelog
+echo "# configure... " > $configurelog
+echo -n "# " >> $configurelog
 date >> $configurelog
-echo ")" >> $configurelog
-echo "$*" >> $configurelog
+echo "# $0 $logopt" >> $configurelog
+echo >> $configurelog
 
 # the mandir
 if [ -d "$mandir/man1" ]; then
