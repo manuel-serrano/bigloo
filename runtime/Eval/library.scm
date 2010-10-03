@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Mon Aug 30 14:36:53 2010 (serrano)                */
+;*    Last change :  Sun Oct  3 13:29:00 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -60,6 +60,7 @@
 			      init
 			      eval
 			      (srfi '()))
+	    (library-init-file::bstring ::symbol)
 	    (library-info::obj ::symbol)
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
 	    (library-file-name::bstring ::symbol ::bstring ::symbol)
@@ -76,7 +77,7 @@
 ;*    libinfo ...                                                      */
 ;*    -------------------------------------------------------------    */
 ;*    This structure must be identically defined in                    */
-;*    comptime/alibrary.scm                                            */
+;*    comptime/Module/libinfo.sch                                      */
 ;*---------------------------------------------------------------------*/
 (define-struct libinfo
    id basename version
