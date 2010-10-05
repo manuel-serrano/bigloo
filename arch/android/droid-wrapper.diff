@@ -1,0 +1,46 @@
+diff --git a/Makefile b/Makefile
+index 710c45f..6ca4f3d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+ VERSION = 1.0.5
+ 
+-DESTDIR = /usr/local
++DESTDIR = $(shell pwd)
+ 
+ all:
+ 
+diff --git a/droid-gcc b/droid-gcc
+index 1ebd1b2..e94c81d 100755
+--- a/droid-gcc
++++ b/droid-gcc
+@@ -89,6 +89,7 @@ cflags =
+      "-I#{droid_root}/bionic/libthread_db/include",
+      "-I#{droid_root}/bionic/libm/arm",
+      "-I#{droid_root}/bionic/libm",
++     "-I#{droid_root}/bionic/linker",
+      "-I#{droid_root}/out/target/product/#{droid_target}/obj/SHARED_LIBRARIES/libm_intermediates"
+     ]
+ 
+@@ -157,6 +158,10 @@ else
+         when "-shared"
+             mode = "shlib"
+         end
++
++        when "-v", "--version"
++            mode = "version"
++        end
+     end
+ end
+ 
+@@ -180,6 +185,10 @@ when "shlib"
+     else
+         argv = shlib_args + ARGV
+     end
++
++when "version"
++    argv = ARGV
++
+ end
+ 
+ # remove -Wl options for linker
