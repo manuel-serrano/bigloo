@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Jul  5 10:01:03 2010 (serrano)                */
+;*    Last change :  Sun Oct  3 16:03:01 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module module_eval
    (include "Ast/unit.sch"
-	    "Ast/node.sch")
+	    "Ast/node.sch"
+	    "Module/libinfo.sch")
    (import  module_module
 	    module_include
 	    engine_param
@@ -29,6 +30,7 @@
 	    ast_glo-decl
 	    ast_sexp)
    (export  (make-eval-compiler)
+	    (get-eval-libraries::pair-nil)
 	    *all-eval?*
 	    *all-export-eval?*
 	    *all-module-eval?*
@@ -78,10 +80,22 @@
        (set! *eval-classes* (cons proto *eval-classes*)))
       ((import (and (? symbol?) ?var))
        (declare-global-svar! var 'eval 'eval clause #f))
-      ((library (and (? symbol?) ?lib))
-       (set! *eval-libraries* (cons lib *eval-libraries*)))
+      ((library . ?libs)
+       (for-each (lambda (lib)
+		    (if (not (symbol? lib))
+			(user-error "Parse error"
+				    "Illegal `eval' clause"
+				    clause '())
+			(set! *eval-libraries* (cons lib *eval-libraries*))))
+		 libs))
       (else
        (user-error "Parse error" "Illegal `eval' clause" clause '()))))
+
+;*---------------------------------------------------------------------*/
+;*    get-eval-libraries ...                                           */
+;*---------------------------------------------------------------------*/
+(define (get-eval-libraries)
+   *eval-libraries*)
 
 ;*---------------------------------------------------------------------*/
 ;*    *eval-exported* ...                                              */
@@ -127,6 +141,7 @@
 ;*    eval-finalizer ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (eval-finalizer)
+   
    (if (or *one-eval?*
 	   *all-eval?*
 	   *all-export-eval?*
@@ -141,11 +156,16 @@
 	    (let loop ((globals (get-evaluated-globals))
 		       (init*  '(#unspecified)))
 	       (if (null? globals)
-		   (let ((body (append (get-eval-srfi-libraries)
-				       (get-evaluated-class-macros))))
-		      `(begin
-			  ,@body
-			  ,@(reverse! init*)))
+		   `(begin
+		       ;; declare the sfri
+		       ,@(get-eval-srfi-libraries)
+		       ;; bind the classes
+		       ,@(get-evaluated-class-macros)
+		       ;; the variables
+		       ,@(reverse! init*)
+		       ;; initialize the library module
+		       ,@(map library_e *eval-libraries*)
+		       #unspecified)
 		   (let ((g (car globals)))
 		      (set-eval-types! g)
 		      (loop (cdr globals)
@@ -168,6 +188,38 @@
 	 #f))
        'void))
 
+;*---------------------------------------------------------------------*/
+;*    get-library-info ...                                             */
+;*---------------------------------------------------------------------*/
+(define (get-library-info library)
+   (or (library-info library)
+       (let* ((init (library-init-file library))
+	      (path (find-file/path init *lib-dir*)))
+	  (if path
+	      (begin
+		 (loadq path)
+		 (let ((i (library-info library)))
+		    (if i
+			i
+			(warning library "cannot find info \"~a\"" init))))
+	      (warning library "cannot find file \"~a\" in lib path" init)))))
+
+;*---------------------------------------------------------------------*/
+;*    library_e ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    This function is in charge of initialization the _e library.     */
+;*---------------------------------------------------------------------*/
+(define (library_e lib)
+   (let ((info (get-library-info lib)))
+      (if (and (libinfo? info) (libinfo-module_e info))
+	  (let ((init (module-initialization-id (libinfo-module_e info))))
+	     `(pragma ,(format "~a( 0, ~s )"
+			       (bigloo-module-mangle
+				(symbol->string init)
+				(symbol->string (libinfo-module_e info)))
+			       (symbol->string *module*))))
+	  (warning lib "cannot initialize library for eval"))))
+      
 ;*---------------------------------------------------------------------*/
 ;*    set-eval-types! ...                                              */
 ;*    -------------------------------------------------------------    */
@@ -310,7 +362,6 @@
 (define (get-eval-srfi-libraries)
    (map (lambda (l)
 	   `(begin
-	       (eval (library-load ',l))
 	       (register-eval-srfi! ',l)))
 	*eval-libraries*))
 

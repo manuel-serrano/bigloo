@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Sep 21 11:15:31 2010 (serrano)                */
+#*    Last change :  Thu Sep 30 07:19:31 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -416,7 +416,7 @@ c-fullbootstrap:
 newrevision:
 	(cd runtime && $(MAKE) includes)
 	(mkdir lib/$(RELEASE))
-	(cd comptime && make)
+	(cd comptime && $(MAKE))
 	(cd runtime && $(MAKE) touchall && $(MAKE) all)
 	(cd comptime && $(MAKE) touchall && $(MAKE))
 	@ $(MAKE) $(REVISIONSYSTEM)-branch

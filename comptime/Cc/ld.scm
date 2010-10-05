@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Sun Apr 20 15:25:11 2008 (serrano)                */
-;*    Copyright   :  1992-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Oct  3 14:48:56 2010 (serrano)                */
+;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
 	    backend_backend
 	    cc_exec
 	    engine_param
-	    engine_configure))
+	    engine_configure
+	    module_eval))
 
 ;*---------------------------------------------------------------------*/
 ;*    ld ...                                                           */
@@ -45,6 +46,15 @@
       (*profile-library* '("_p" "_s"))
       (*unsafe-library* '("_u" "_s"))
       (else '("_s"))))
+
+;*---------------------------------------------------------------------*/
+;*    library-eval-suffix ...                                          */
+;*---------------------------------------------------------------------*/
+(define (library-eval-suffixes)
+   (cond
+      (*profile-library* '("_ep" "_es"))
+      (*unsafe-library* '("_eu" "_es"))
+      (else '("_es"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secondary-library-suffix ...                                     */
@@ -92,9 +102,7 @@
 		 (let* ((fname ((if staticp
 				    make-static-lib-name
 				    make-shared-lib-name)
-				(library-file-name library
-						   (car ss)
-						   backend)
+				(library-file-name library (car ss) backend)
 				backend))
 			(name (find-file/path fname *lib-dir*)))
 		    (if (string? name)
@@ -144,6 +152,20 @@
 					   staticp)
 				       #f
 				       (not *gc-custom?*)))
+	     ;; the eval libraries
+	     (eval-libs (let loop ((lib (get-eval-libraries))
+				   (res ""))
+			   (if (null? lib)
+			       res
+			       (loop (cdr lib)
+				     (string-append
+				      (library->os-file
+				       (car lib)
+				       (library-eval-suffixes)
+				       (or *static-all-bigloo?* staticp)
+				       #f #f)
+				      " "
+				      res)))))
 	     ;; the extra bigloo libraries
 	     (add-libs (let loop ((lib *additional-bigloo-libraries*)
 				  (res  ""))
@@ -203,7 +225,9 @@
 		       (if (not *c-debug*)
 			   (string-append " " *ld-optim-flags*)
 			   "")
-		       ;; additional Bigloo libaries
+		       ;; additional eval Bigloo libraries
+		       " " eval-libs
+		       ;; additional Bigloo libraries
 		       " " add-libs
 		       ;; standard bigloo library
 		       " " bigloo-lib

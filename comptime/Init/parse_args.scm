@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Sep  8 11:58:08 2010 (serrano)                */
+;*    Last change :  Thu Sep 30 08:56:27 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -389,7 +389,7 @@
       (("-Obench" (help "Benchmarking mode"))
        (do-parse-args `("-O6" "-unsafe"
 			     "-copt" ,*cflags-optim*
-			     "-static-bigloo"))) 
+			     "-static-all-bigloo"))) 
       ;; optimization
       (("-O?opt" (help "-O[2..6]" "Optimization modes"))
        (parse-optim-args opt))

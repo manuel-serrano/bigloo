@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Jul 30 09:30:28 2010 (serrano)                */
+;*    Last change :  Thu Sep 30 06:55:02 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -114,7 +114,9 @@
 ;*    byte-code-evaluate ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-evaluate eexp env loc)
-   (let ((cexp (evcompile eexp '() env 'nowhere #f #t loc #t #t)))
+   (let ((cexp (evcompile eexp '() env 'nowhere #f
+			  (<fx (bigloo-debug) 3)
+			  loc #t #t)))
       (evmeaning cexp '() (current-dynamic-env))))
 
 ;*---------------------------------------------------------------------*/

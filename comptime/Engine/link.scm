@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Tue Dec  8 07:27:25 2009 (serrano)                */
-;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Oct  3 15:55:36 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
 ;*    -------------------------------------------------------------    */
@@ -33,7 +33,8 @@
 	   tools_misc
 	   module_module
 	   expand_eps
-	   expand_install))
+	   expand_install
+	   read_include))
 
 ;*---------------------------------------------------------------------*/
 ;*    link ...                                                         */
@@ -119,8 +120,20 @@
       (match-case clauses
 	 (()
 	  (reverse! libraries))
-	 (((library . ?libs) . ?rest)
-	  (loop rest (append libs libraries)))
+	 (((and ?lib (library . ?libs)) . ?rest)
+	  (loop rest (cons lib libraries)))
+	 (((eval . ?evclauses) . ?rest)
+	  (let ((evlibs (filter-map (lambda (clauses)
+				       (match-case clauses
+					  ((library . ?libs) `(eval ,clauses))
+					  (else #f)))
+			     evclauses)))
+	     (loop rest (append evlibs libraries))))
+	 (((include . ?includes) . ?rest)
+	  (let ((directives (append-map (lambda (include)
+					   (read-directives include))
+					includes)))
+	     (loop (append directives rest) libraries)))
 	 (((cond-expand . ?-) . ?rest)
 	  (loop (list (comptime-expand/error (car clauses)))
 		(loop rest libraries)))
@@ -141,9 +154,7 @@
 	     (newline pout)
 	     (let ((mod `(module ,module
 			    (import ,@(reverse clauses))
-			    ,@(if (pair? libraries)
-				  `((library ,@libraries))
-				  '()))))
+			    ,@libraries)))
 		(fprint pout mod)
 		(newline pout))
 	     (when main

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Fri Sep 24 13:50:30 2010 (serrano)                */
+/*    Last change :  Sat Oct  2 06:00:44 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -15,9 +15,9 @@
 
 #include <bigloo.h>
 
-#if( BGL_GC_NEED_STACKBASE )
-void *__stack_base__ = 1; /* see the initialization in cmain.c */
-#endif
+/* #if( BGL_GC_NEED_STACKBASE )                                        */
+/* void *__stack_base__ = 1; {* see the initialization in cmain.c *}   */
+/* #endif                                                              */
 
 #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM && !defined( BGL_GC_THREADS ))
 

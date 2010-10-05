@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Sat Jun 20 07:29:28 2009 (serrano)                */
-;*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Oct  3 13:29:34 2010 (serrano)                */
+;*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
 ;*=====================================================================*/
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module module_alibrary
    (include "Ast/unit.sch")
+   (include "Module/libinfo.sch")
    (import  module_module
 	    tools_error
 	    engine_param
@@ -70,19 +71,6 @@
       (else
        (user-error "Parse error" "Illegal `library' clause" clause '()))))
        
-;*---------------------------------------------------------------------*/
-;*    libinfo ...                                                      */
-;*    -------------------------------------------------------------    */
-;*    This structure must be identically defined in                    */
-;*    runtime/library.scm                                              */
-;*---------------------------------------------------------------------*/
-(define-struct libinfo
-   id basename version
-   init_s init_e
-   module_s module_e
-   class_s class_e
-   init eval srfi)
-
 ;*---------------------------------------------------------------------*/
 ;*    get-alibrary-inits ...                                           */
 ;*---------------------------------------------------------------------*/

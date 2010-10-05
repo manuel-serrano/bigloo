@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Tue Dec  8 07:33:52 2009 (serrano)                */
-;*    Copyright   :  2003-09 Manuel Serrano                            */
+;*    Last change :  Sun Oct  3 19:31:38 2010 (serrano)                */
+;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -259,7 +259,11 @@
 		     ;; if libraries are used by some module we add them
 		     ;; to the link
 		     (for-each (lambda (lib)
-				  (use-library! lib 'now))
+				  (match-case lib
+				     ((library . ?libs)
+				      (for-each (lambda (lib)
+						   (use-library! lib 'now))
+						libs))))
 			       libraries)
 		     ;; we load the library init files.
 		     (load-library-init)

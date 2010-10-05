@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 30 07:43:06 2010 (serrano)                */
+#*    Last change :  Sat Oct  2 06:59:43 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -324,6 +324,8 @@ autoconfdir=`dirname $0 2> /dev/null`/autoconf
 if [ $? != "0" ]; then
    autoconfdir="autoconf"
 fi
+
+logopt="$*"
 
 autoconf="$autoconfdir/runtest -v1 -- "
 
@@ -1081,7 +1083,11 @@ fi
 
 # Cleaning
 rm -f $configurelog
-touch $configurelog
+echo "# configure... " > $configurelog
+echo -n "# " >> $configurelog
+date >> $configurelog
+echo "# $0 $logopt" >> $configurelog
+echo >> $configurelog
 
 # the mandir
 if [ -d "$mandir/man1" ]; then
@@ -1091,6 +1097,21 @@ fi
 # buildtmpdir
 if [ "$buildtmp " = " " ]; then
   buildtmp=/tmp
+fi
+
+#*---------------------------------------------------------------------*/
+#*    all action                                                       */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" ]; then
+  if [ ! -d bin ]; then
+     mkdir bin || exit 3
+  fi
+  if [ ! -d lib ]; then
+     mkdir lib || exit 3
+  fi
+  if [ ! -d lib/$release ]; then
+     mkdir lib/$release || exit 3
+  fi
 fi
 
 echo "Checking local configuration..."
@@ -1234,9 +1255,9 @@ case $hostos in
     cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
       | sed -e "s|@DROID_TMP@|$droidtmp|" \
-      > $hostsh && chmod u+x $hostsh; 
-  
-    # Use droid-gcc is no CC specified
+      > $hostsh && chmod u+x $hostsh || exit 1
+
+    # Use droid-gcc if no CC specified
     if [ "$cc " = " " ]; then
       cc=$pwd/arch/android/droid-gcc
   
@@ -1245,20 +1266,12 @@ case $hostos in
         | sed -e "s|@DROID_ROOT@|$droidroot|" \
         | sed -e "s|@DROID_TARGET@|$droidtarget|" \
         | sed -e "s|@DROID_TMP@|$droidtmp|" \
-        > $cc && chmod u+x $cc
+        > $cc && chmod u+x $cc || exit 1
     fi
-  
-    # Add the adhoc configure option for the collector
-    gcconfigurethreadsopt="--enable-threads=posix";
   
     # Add the correct cflags option
     cflags="$cflags -DBGL_ANDROID"
   
-    # Add our own stack base variable for the GC
-    gcneedstackbase=1
-
-    # Requires closed libraries
-    sharedlibraryclosed=yes
     ;;
 esac
 echo >> $configurelog
@@ -1352,34 +1365,6 @@ if [ "$buildosversion " = " " ]; then
   buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
 fi
 
-if [ "$hostos " != "$buildos " -o \
-    "$hostcpu " != "$buildcpu " -o \
-    "$hostosversion " != "$buildosversion " ]; then
-  echo "Cross compilation detected..."
-
-  # try to detect cross-tools
-  tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
-  if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      ar="$tmp";
-      echo "  Using ar=$ar";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-as/'`;
-  if [ "$as " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      as="$tmp";
-      echo "  Using as=$as";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-strip/'`;
-  if [ "$strip " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      strip="$tmp";
-      echo "  Using strip=$strip";
-  fi
-  tmp=`echo $cc | sed 's/-gcc$/-ranlib/'`;
-  if [ "$ranlib " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
-      ranlib="$tmp";
-      echo "  Using ranlib=$ranlib";
-  fi
-fi
-
 #*---------------------------------------------------------------------*/
 #*    Autoconfigure hostos specific configuration                      */
 #*---------------------------------------------------------------------*/
@@ -1465,7 +1450,7 @@ case $hostos in
 
     if [ "$macosx" = "yes" ]; then
       echo "* MacOS X tuning enabled"; >&2;
-      if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
+      if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
         if [ "$threadsupport " = "yes " ]; then
           customgclib=bigloogc_fth;
           extralibs="$extralibs $pthreadlibs";
@@ -1513,6 +1498,14 @@ case $hostos in
     lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
     ;;
 
+  android)
+    # Add the adhoc configure option for the collector
+    gcconfigurethreadsopt="--enable-threads=posix";
+  
+    # Requires closed libraries
+    sharedlibraryclosed=yes
+    ;;
+
   *)
     syszipdir=$zipdir
     syszipdirstr=$zipdir
@@ -1525,6 +1518,34 @@ echo >> $configurelog
 #*---------------------------------------------------------------------*/
 #*    C tool chain                                                     */
 #*---------------------------------------------------------------------*/
+if [ "$hostos " != "$buildos " -o \
+     "$hostcpu " != "$buildcpu " -o \
+     "$hostosversion " != "$buildosversion " ]; then
+  echo "Cross compilation detected..."
+
+  # try to detect cross-tools
+  tmp=`echo $cc | sed 's/-gcc$/-ar/'`;
+  if [ "$ar " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ar="$tmp";
+      echo "  Using ar=$ar";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-as/'`;
+  if [ "$as " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      as="$tmp";
+      echo "  Using as=$as";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-strip/'`;
+  if [ "$strip " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      strip="$tmp";
+      echo "  Using strip=$strip";
+  fi
+  tmp=`echo $cc | sed 's/-gcc$/-ranlib/'`;
+  if [ "$ranlib " = " " -a "$tmp " != "$cc " -a -x "$tmp" ]; then
+      ranlib="$tmp";
+      echo "  Using ranlib=$ranlib";
+  fi
+fi
+
 # create an unexisting temporary file name
 name=$buildtmp/foo
 while( test -f "$name.s" -o -f "$name.o" ); do
@@ -1588,21 +1609,6 @@ fi
 
 echo "  -> aout=$aout, abat=$abat" >> $configurelog
 echo >> $configurelog
-
-#*---------------------------------------------------------------------*/
-#*    all action                                                       */
-#*---------------------------------------------------------------------*/
-if [ $action = "all" ]; then
-  if [ ! -d bin ]; then
-     mkdir bin || exit 3
-  fi
-  if [ ! -d lib ]; then
-     mkdir lib || exit 3
-  fi
-  if [ ! -d lib/$release ]; then
-     mkdir lib/$release || exit 3
-  fi
-fi
 
 #*---------------------------------------------------------------------*/
 #*    Multi-threading                                                  */

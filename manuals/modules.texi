@@ -442,6 +442,7 @@ presentation of compilation flags that enable compilation tuning for
          | (export (@@ <bind-name> <module-name>))
          | (import <bind-name>)
          | (class <bind-name>)
+         | (library lib1 ...)
 @end smallexample
 @pindex module export-all
 @pindex module export-module
@@ -460,7 +461,9 @@ variables are immutable (i.e.@ they cannot be the first argument of a
 @code{set!}  expression with the compiled code). Variables that are
 exported to the evaluators @emph{must} be exported.  If a variable is
 exported to the evaluators but not exported within an @code{export}
-clause, the compiler will produce an error message.
+clause, the compiler will produce an error message. The @code{library}
+clause makes the variables and functions of a library accessible from
+the interpreter.
 
 @smalllisp
 (module foo
@@ -536,6 +539,9 @@ named @code{format}:
    (import  (test2 "test2.scm")))
 @end smalllisp
 
+Using a library does not automatically binds its variables and functions
+to the interpreter. In order to make these available to the interpreter
+an explicit use of an eval @code{library} clause must be used.
 @end deffn
 
 @c -- (library library...) ------------------------------------------- @c

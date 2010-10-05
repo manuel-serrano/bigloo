@@ -108,10 +108,16 @@ Example:
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Mail procedure} mime-multipart-decode string boundary
-@deffnx {Bigloo Mail procedure} mime-multipart-decode-port input-port boundary
+@deffn {Bigloo Mail procedure} mime-multipart-decode string boundary [recursive]
+@deffnx {Bigloo Mail procedure} mime-multipart-decode-port input-port boundary [recursive]
 These two functions parse respectively a @code{string} and an 
 @code{input-port} and return a list of mime sections.
+
+If the optional argument @var{recursive} controls whether subparts of
+a multipart section must be decoded are not. If the @var{recursive} is 
+@code{#t} then all subparts of the multipart content are decoded. The result
+is a fully decoded multipart section. If @var{recursive} is @code{#f} subparts
+are not decoded and included in the result as plain strings.
 @end deffn
 
 @c ------------------------------------------------------------------- @c
