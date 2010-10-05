@@ -1,0 +1,72 @@
+#! /bin/sh
+
+set -e
+
+# initially both are the same
+binary_local_path="$1"
+binary_remote_path="$1"
+basename="$(basename $binary_local_path)"
+
+droidsdkroot=@DROID_SDK_ROOT@
+droidtmp=@DROID_TMP@
+
+if [ "$droidsdkroot " = " " ]; then
+  droidsdkroot=$DROID_SDK_ROOT;
+fi
+
+if [ "$droidtmp " = " " ]; then
+  droidtmp=$DROID_TMP;
+fi
+
+if [ "$droidsdkroot " = " " ]; then
+  echo "Bad configuration, DROID_SDK_ROOT missing. You must either use" >&2
+  echo "the --android-sdk-root option of configure or define and export" >&2
+  echo "a DROID_SDK_ROOT shell variable." >&2
+  echo "" >&2
+  echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
+  echo "official Android SDK. This directory must at least contain the file" >&2
+  echo "\"tools/adb\"" >&2
+  exit 1
+fi
+
+adb="$droidsdkroot/tools/adb"
+
+case "$basename" in
+   # uname does not exist in the 
+   # emulator! -- and in the phone you don't have permissions
+   "uname")
+      case "$2" in
+         -m)
+            echo "arm";;
+         -s)
+            echo "android";;
+         -r)
+            $0 getprop ro.build.version.release;;
+         *)
+            echo "";;
+      esac
+      ;;
+
+   # we cannot run the script in the emulator. f.i., there's no sed or test
+   "config.guess")
+      echo "arm-linux-gnulibc" # yes, I know, is not glibc...
+      ;;
+
+   *)
+      # if is not a simple command, copy over the emulator
+      if [ -f "$binary_local_path" ]; then
+         binary_remote_path="$droidtmp/$basename"
+         $adb push "$binary_local_path" "$binary_remote_path" > /dev/null
+         $adb shell chmod 755 "$binary_remote_path" > /dev/null
+      fi
+
+      # remove the executable from the list of parameters
+      shift
+      # execute and exit with its exit status
+      $adb shell "$binary_remote_path" $* | sed -e 's/\r//g'
+
+      if [ -f "$binary_local_path" ]; then
+         $adb shell rm $binary_remote_path > /dev/null
+      fi
+      ;;
+esac
