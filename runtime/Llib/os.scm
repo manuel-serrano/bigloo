@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Jun 20 13:57:42 2010 (serrano)                */
+;*    Last change :  Thu Oct  7 09:17:48 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -913,7 +913,7 @@
 		  (cond-expand
 		     (bigloo-c
 		      (bigloo-module-mangle "module-initialization"
-					    (symbol->string module)))
+					    (symbol->string! module)))
 		     (else
 		      module))
 		  "")))

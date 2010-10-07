@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sat May  8 08:34:01 2010 (serrano)                */
+;*    Last change :  Thu Oct  7 09:19:07 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -260,14 +260,14 @@
 ;*    display-proxy-method ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (display-proxy-method method server port path http-version out)
-   (display (string-upcase (symbol->string method)) out)
+   (display (string-upcase (symbol->string! method)) out)
    (display-line " http://" server ":" port path " " http-version out))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-direct-method ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (display-direct-method method server port path http-version out)
-   (display (string-upcase (symbol->string method)) out)
+   (display (string-upcase (symbol->string! method)) out)
    (display-line " " path " " http-version out))
    
 ;*---------------------------------------------------------------------*/

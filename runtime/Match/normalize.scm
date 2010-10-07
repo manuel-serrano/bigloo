@@ -68,50 +68,50 @@
 
 (define (term-variable? e)
   (and (symbol? e)
-       (> (string-length (symbol->string e)) 1)
-       (char=? (string-ref (symbol->string e) 0) #\?) ) )
+       (> (string-length (symbol->string! e)) 1)
+       (char=? (string-ref (symbol->string! e) 0) #\?) ) )
 
 (define (segment-variable? e)
   (and (symbol? e)
-       (> (string-length (symbol->string e)) 2)
-       (char=? (string-ref (symbol->string e) 0) #\?)
-       (char=? (string-ref (symbol->string e) 1) #\?) ) )
+       (> (string-length (symbol->string! e)) 2)
+       (char=? (string-ref (symbol->string! e) 0) #\?)
+       (char=? (string-ref (symbol->string! e) 1) #\?) ) )
 
 (define (lispish-segment-variable? e)
   (and (symbol? e)
-       (> (string-length (symbol->string e)) 3)
-       (char=? (string-ref (symbol->string e) 0) #\?)
-       (char=? (string-ref (symbol->string e) 1) #\?)
-       (char=? (string-ref (symbol->string e) 2) #\?) ) )
+       (> (string-length (symbol->string! e)) 3)
+       (char=? (string-ref (symbol->string! e) 0) #\?)
+       (char=? (string-ref (symbol->string! e) 1) #\?)
+       (char=? (string-ref (symbol->string! e) 2) #\?) ) )
 
 (define (tree-variable? e)
   (and (symbol? e)
-       (> (string-length (symbol->string e)) 1)
-       (char=? (string-ref (symbol->string e) 0) #\!) ) )
+       (> (string-length (symbol->string! e)) 1)
+       (char=? (string-ref (symbol->string! e) 0) #\!) ) )
 
 (define (hole-variable? e)
   (and (symbol? e)
-       (> (string-length (symbol->string e)) 1)
-       (char=? (string-ref (symbol->string e) 0) #\^) ) )
+       (> (string-length (symbol->string! e)) 1)
+       (char=? (string-ref (symbol->string! e) 0) #\^) ) )
 
 (define (term-variable-true-name e)
-  (let ((s (symbol->string e)))
+  (let ((s (symbol->string! e)))
     (string->symbol (substring s 1 (string-length s))) ) )
 
 (define (segment-variable-true-name e)
-  (let ((s (symbol->string e)))
+  (let ((s (symbol->string! e)))
     (string->symbol (substring s 2 (string-length s))) ) )
 
 (define (tree-variable-true-name e)
-  (let ((s (symbol->string e)))
+  (let ((s (symbol->string! e)))
     (string->symbol (substring s 1 (string-length s))) ) )
 
 (define (hole-variable-true-name e)
-  (let ((s (symbol->string e)))
+  (let ((s (symbol->string! e)))
     (string->symbol (substring s 1 (string-length s))) ) )
 
 (define (lispish-segment-variable-true-name e)
-  (let ((s (symbol->string e)))
+  (let ((s (symbol->string! e)))
     (string->symbol (substring s 3 (string-length s))) ) )
 
 ;;;===============================================================6

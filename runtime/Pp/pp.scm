@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Tue Mar 11 15:44:02 2008 (serrano)                */
+;*    Last change :  Thu Oct  7 09:18:28 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -266,7 +266,7 @@
             (let ((proc (style head)))
               (if proc
                 (proc expr col extra)
-                (if (>fx (string-length (symbol->string head))
+                (if (>fx (string-length (symbol->string! head))
                        max-call-head-width)
                   (pp-general expr col extra #f #f #f pp-expr)
                   (pp-call expr col extra pp-expr))))
@@ -419,7 +419,7 @@
 
     (define (style head)
       (case (if (eq? *pp-case* 'respect)
-		(string->symbol (symbol->string head))
+		(string->symbol (symbol->string! head))
 		head)
         ((lambda)                                            pp-lambda)
         ((let* letrec)                                       pp-let)

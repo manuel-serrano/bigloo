@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Sun May 30 07:59:45 2010 (serrano)                */
+;*    Last change :  Thu Oct  7 09:17:11 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -79,7 +79,7 @@
        (and (inexact? obj2) (= obj1 obj2)))
       ((symbol? obj1)
        (and (symbol? obj2)
-	    (string=? (symbol->string obj1) (symbol->string obj2))))
+	    (string=? (symbol->string! obj1) (symbol->string! obj2))))
       ((foreign? obj1)
        (and (foreign? obj2) (foreign-eq? obj1 obj2)))
       ((weakptr? obj1)

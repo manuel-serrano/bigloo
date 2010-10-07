@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Tue Sep  7 21:10:31 2010 (serrano)                */
+;*    Last change :  Thu Oct  7 09:19:22 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -772,7 +772,7 @@
 	    (!print-markup #\h)
 	    (print-word len)
 	    (print-word bsize)
-	    (print-string #\" (symbol->string tag))
+	    (print-string #\" (symbol->string! tag))
 	    (case tag
 	       ((s8 u8 s16 u16 s32 u32)
 		(for i 0 len (print-word/size (ref item i) bsize)))
@@ -811,7 +811,7 @@
 	  (print-composite item print-pair))
 	 ((symbol? item)
 	  (!print-markup #\')
-	  (print-item (symbol->string item)))
+	  (print-item (symbol->string! item)))
 	 ((keyword? item)
 	  (!print-markup #\:)
 	  (print-item (keyword->string item)))

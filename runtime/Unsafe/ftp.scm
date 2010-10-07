@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Wed Aug 18 16:04:50 2010 (serrano)                */
+;*    Last change :  Thu Oct  7 09:18:58 2010 (serrano)                */
 ;*    Copyright   :  2010 Cyprien Nicolas, Manuel Serrano              */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -513,17 +513,16 @@
 ;*    ftp-data-type ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (ftp-data-type ftp type . local-byte-size)
-   (let ((t (symbol->string type)))
-      (case (string-ref (symbol->string type) 0)
-	 ((#\a #\A)
-	  (%ftp-engine-cmd ftp "TYPE" "A"))
-	 ((#\i #\I)
-	  (%ftp-engine-cmd ftp "TYPE" "I"))
-	 (else
-	  (raise (instantiate::&ftp-parse-error
-		    (proc "ftp-data-type")
-		    (msg  "Illegal type value, should be on of '(ascii image)")
-		    (obj  type)))))))
+   (case (string-ref (symbol->string! type) 0)
+      ((#\a #\A)
+       (%ftp-engine-cmd ftp "TYPE" "A"))
+      ((#\i #\I)
+       (%ftp-engine-cmd ftp "TYPE" "I"))
+      (else
+       (raise (instantiate::&ftp-parse-error
+		 (proc "ftp-data-type")
+		 (msg  "Illegal type value, should be on of '(ascii image)")
+		 (obj  type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ftp-file-structure ...                                           */

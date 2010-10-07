@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Oct  2 06:59:43 2010 (serrano)                */
+#*    Last change :  Tue Oct  5 10:55:38 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1254,7 +1254,7 @@ case $hostos in
   
     cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
-      | sed -e "s|@DROID_TMP@|$droidtmp|" \
+            -e "s|@DROID_TMP@|$droidtmp|" \
       > $hostsh && chmod u+x $hostsh || exit 1
 
     # Use droid-gcc if no CC specified
@@ -1263,9 +1263,9 @@ case $hostos in
   
       cat $cc.in \
         | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
-        | sed -e "s|@DROID_ROOT@|$droidroot|" \
-        | sed -e "s|@DROID_TARGET@|$droidtarget|" \
-        | sed -e "s|@DROID_TMP@|$droidtmp|" \
+              -e "s|@DROID_ROOT@|$droidroot|" \
+              -e "s|@DROID_TARGET@|$droidtarget|" \
+              -e "s|@DROID_TMP@|$droidtmp|" \
         > $cc && chmod u+x $cc || exit 1
     fi
   
