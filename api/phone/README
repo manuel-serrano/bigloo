@@ -1,0 +1,3 @@
+This Bigloo library offers various facilities for implementing phone
+applications. This library is merely an API specification that should
+be implemented by ad-hoc libraries (basically one per phone type).

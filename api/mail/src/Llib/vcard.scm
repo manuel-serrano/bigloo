@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Fri Aug 13 19:04:21 2010 (serrano)                */
+;*    Last change :  Mon Oct 11 17:23:32 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
@@ -37,7 +37,7 @@
 ;*---------------------------------------------------------------------*/
 (define (port->vcard iport #!key charset-encoder)
    (let ((line (read-line iport)))
-      (if (string-ci=? line "begin:vcard")
+      (if (and (string? line) (string-ci=? line "begin:vcard"))
 	  (let ((vcard (instantiate::vcard)))
 	     (read/rp vcard-line-grammar iport vcard charset-encoder)
 	     vcard)
