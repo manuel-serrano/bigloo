@@ -14,5 +14,5 @@
 ;*---------------------------------------------------------------------*/
 (declare-library! 'phone
 		  :basename "bigloophone"
-		  :module-init '__phone-music
+		  :module-init '__phone
 		  :module-eval '__phone-makelib)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Oct  7 09:17:48 2010 (serrano)                */
+;*    Last change :  Tue Oct 12 16:32:41 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -919,21 +919,28 @@
 		  "")))
       (if (not (string? flib))
 	  (err "Can't find library" lib)
-	  (case (%dload flib (if (not init) "" init) mod)
-	     ((0)
-	      flib)
-	     ((1)
-	      (proc-err flib (%dload-error) flib))
-	     ((2)
-	      (if  (equal? init %dload-init-sym)
-		   (warning (string-append "dynamic-load: " flib)
-			    "Cannot find library init entry point -- "
-			    init)
-		   (proc-err flib
-			     "Cannot find library init entry point"
-			    init)))
-	     ((3)
-	      (err "Not supported on this architecture" flib))))))
+	  (let ((init (if (not init) "" init)))
+	     (case (%dload flib init mod)
+		((0)
+		 flib)
+		((1)
+		 (proc-err flib (%dload-error) flib))
+		((2)
+		 (cond
+		    ((and (equal? init %dload-init-sym) (not module))
+		     (warning (string-append "dynamic-load: " flib)
+			      "Cannot find library init entry point -- "
+			      init))
+		    ((string=? init "")
+		     (proc-err flib
+			       "Cannot find library init module"
+			       module))
+		    (else
+		     (proc-err flib
+			       "Cannot find library init entry point"
+			       init))))
+		((3)
+		 (err "Not supported on this architecture" flib)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-unload ...                                               */

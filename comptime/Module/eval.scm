@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sun Oct  3 16:03:01 2010 (serrano)                */
+;*    Last change :  Tue Oct 12 16:38:07 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -28,7 +28,8 @@
 	    object_slots
 	    ast_env
 	    ast_glo-decl
-	    ast_sexp)
+	    ast_sexp
+	    backend_backend)
    (export  (make-eval-compiler)
 	    (get-eval-libraries::pair-nil)
 	    *all-eval?*
@@ -213,11 +214,15 @@
    (let ((info (get-library-info lib)))
       (if (and (libinfo? info) (libinfo-module_e info))
 	  (let ((init (module-initialization-id (libinfo-module_e info))))
-	     `(pragma ,(format "~a( 0, ~s )"
-			       (bigloo-module-mangle
-				(symbol->string init)
-				(symbol->string (libinfo-module_e info)))
-			       (symbol->string *module*))))
+	     (if (backend-pragma-support (the-backend))
+		 `(begin
+		     (pragma ,(format "~a( 0, ~s )"
+				      (bigloo-module-mangle
+				       (symbol->string init)
+				       (symbol->string (libinfo-module_e info)))
+				      (symbol->string *module*)))
+		     ((@ library-mark-loaded! __library) ',lib))
+		 `((@ library-mark-loaded! __library) ',lib)))
 	  (warning lib "cannot initialize library for eval"))))
       
 ;*---------------------------------------------------------------------*/

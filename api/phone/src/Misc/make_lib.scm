@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Oct 12 11:47:11 2010 (serrano)                */
+;*    Last change :  Tue Oct 12 16:02:12 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -16,8 +16,9 @@
    
    (import __phone)
    
-   (eval   (export-all)
-	   (class phone)))
+   (eval   (class phone)
+
+	   (export-all)))
 
 
 

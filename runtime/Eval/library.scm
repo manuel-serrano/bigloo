@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Oct  3 13:29:00 2010 (serrano)                */
+;*    Last change :  Tue Oct 12 16:27:47 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -66,7 +66,9 @@
 	    (library-file-name::bstring ::symbol ::bstring ::symbol)
 	    (library-load ::obj . opt)
 	    (library-load_e ::obj . opt)
-	    (library-exists? ::symbol . opt)))
+	    (library-exists? ::symbol . opt)
+	    (library-loaded?::bool ::symbol)
+	    (library-mark-loaded! ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *library-mutex* ...                                              */
@@ -255,6 +257,29 @@
        name))
 
 ;*---------------------------------------------------------------------*/
+;*    *loaded-libraries* ...                                           */
+;*---------------------------------------------------------------------*/
+(define *loaded-libraries* '())
+
+;*---------------------------------------------------------------------*/
+;*    library-loaded? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (library-loaded? lib)
+   (mutex-lock! *library-mutex*)
+   (let ((r (memq lib *loaded-libraries*)))
+      (mutex-unlock! *library-mutex*)
+      r))
+
+;*---------------------------------------------------------------------*/
+;*    library-mark-loaded! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (library-mark-loaded! lib)
+   (mutex-lock! *library-mutex*)
+   (set! *loaded-libraries* (cons lib *loaded-libraries*))
+   (mutex-unlock! *library-mutex*)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
 ;*    library-load ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (library-load lib . path)
@@ -266,6 +291,8 @@
 	     (dynamic-load lib))
 	    ((not (symbol? lib))
 	     (bigloo-type-error 'library-load "string or symbol" lib))
+	    ((library-loaded? lib)
+	     #unspecified)
 	    (else
 	     (let* ((path (if (pair? path)
 			      path
