@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/gstreamer/src/Llib/gstmm-music.scm        */
+;*    .../project/bigloo/api/gstreamer/src/Llib/gstmm_music.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Tue Mar 30 12:12:46 2010 (serrano)                */
+;*    Last change :  Wed Oct 13 09:44:11 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -160,6 +160,8 @@
 	 (let ((bus (unwind-protect
 		       (gst-pipeline-bus (gstmusic-%pipeline o))
 		       (mutex-unlock! %loop-mutex))))
+	    ;; store the current volume level
+	    (music-volume-get o)
 	    (let loop ((vol (musicstatus-volume %status))
 		       (pid (musicstatus-playlistid %status))
 		       (meta #f))
