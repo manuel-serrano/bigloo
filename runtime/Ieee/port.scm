@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Sep  7 21:13:12 2010 (serrano)                */
+;*    Last change :  Fri Oct 15 09:30:50 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -418,6 +418,7 @@
 	    (inline output-port-buffer-set! ::output-port ::bstring)
 	    
 	    (inline file-exists?::bool ::string)
+	    (file-gzip? name)
 	    (inline delete-file ::string)
 	    (inline make-directory::bool ::string)
 	    (make-directories::bool ::bstring)
