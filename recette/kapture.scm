@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Fri Nov  5 14:33:19 2004 (serrano)                */
+;*    Last change :  Sun Oct 17 08:11:07 2010 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -33,8 +33,8 @@
 (define test2 (labels ((lam_0 ()
 			    (labels ((ignore ()
 					     (let ((v 1))
-						(labels ((foo () v))
-						   (foo)))))
+						(labels ((foo2 () v))
+						   (foo2)))))
 			       (ignore))))
 	       lam_0))
 
@@ -69,7 +69,7 @@
 ;*---------------------------------------------------------------------*/
 (define (plante-7 file7)
    (let* ((toto (lambda () file7))
-	  (foo (lambda ()
+	  (foo7 (lambda ()
 		  (let ((bar (lambda ()
 				(let ((gee (lambda ()
 					      (let ((hux (lambda () (toto))))
@@ -77,7 +77,7 @@
 				   (gee)))))
 		     (bar)))))
       (toto)
-      foo))
+      foo7))
 
 ;*---------------------------------------------------------------------*/
 ;*    plante-8 ...                                                     */
@@ -86,7 +86,7 @@
    (letrec ((lexer (begin
 		      (set-car! (cons 1 2) 4)
 		      (lambda (input-port)
-			 (labels ((toto () (labels ((gee () (foo)))
+			 (labels ((toto () (labels ((gee () (foo8)))
 					      (parse)
 					      (gee))))
 			    (toto)))))
@@ -96,11 +96,11 @@
 				   (set-car! (cons 1 2) 4)
 				   (lambda (input-port)
 				      (labels ((tata ()
-						     (labels ((hux () (foo)))
+						     (labels ((hux () (foo8)))
 							(hux))))
 					 (tata))))))
 			 (numl #f))))
-	    (foo (lambda () file8)))
+	    (foo8 (lambda () file8)))
       (lexer file8)))
 
 ;*---------------------------------------------------------------------*/

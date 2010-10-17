@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  5 08:31:42 2008                          */
-;*    Last change :  Tue Sep  7 21:11:03 2010 (serrano)                */
+;*    Last change :  Sat Oct 16 20:31:01 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HMAC and CRAM                                                    */
@@ -54,31 +54,28 @@
 ;*    keyed-Hash Message Authentication Code.                          */
 ;*---------------------------------------------------------------------*/
 (define (hmac-string key message hash)
+
+   (let* ((block-size 64)
+	  (ipadc #x36)
+	  (opadc #x5c)
+	  ;; keyb is the key padded to 64 with 0
+	  (keyb (make-string block-size #a000))
+	  (ixor ($make-string/wo-fill block-size))
+	  (oxor ($make-string/wo-fill block-size)))
    
-   (define hash-length 16)
-   (define block-size 64)
+      (let ((key-length (string-length key)))
+	 (if (>fx key-length block-size)
+	     (blit-string! (string-hex-intern! (hash key)) 0 keyb 0 16)
+	     (blit-string! key 0 keyb 0 key-length)))
    
-   (define ipadc #x36)
-   (define opadc #x5c)
+      (let loop ((i 0))
+	 (when (<fx i block-size)
+	    (let ((xi (char->integer (string-ref keyb i))))
+	       (string-set! ixor i (integer->char (bit-xor ipadc xi)))
+	       (string-set! oxor i (integer->char (bit-xor opadc xi)))
+	       (loop (+fx i 1)))))
    
-   ;; keyb is the key padded to 64 with 0
-   (define keyb (make-string block-size #a000))
-   (define ixor ($make-string/wo-fill block-size))
-   (define oxor ($make-string/wo-fill block-size))
-   
-   (let ((key-length (string-length key)))
-      (if (>fx key-length block-size)
-	  (blit-string! (string-hex-intern! (hash key)) 0 keyb 0 16)
-	  (blit-string! key 0 keyb 0 key-length)))
-   
-   (let loop ((i 0))
-      (when (<fx i block-size)
-	 (let ((xi (char->integer (string-ref keyb i))))
-	    (string-set! ixor i (integer->char (bit-xor ipadc xi)))
-	    (string-set! oxor i (integer->char (bit-xor opadc xi)))
-	    (loop (+fx i 1)))))
-   
-   (hash
-    (string-append
-     oxor
-     (string-hex-intern! (hash (string-append ixor message))))))
+      (hash
+       (string-append
+	oxor
+	(string-hex-intern! (hash (string-append ixor message)))))))

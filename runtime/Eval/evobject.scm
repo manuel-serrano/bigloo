@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Jul 30 09:34:05 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 08:33:30 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -57,7 +57,8 @@
 	  (eval-make-slot ::symbol ::obj ::bool ::obj ::obj ::obj ::bool ::obj)
 	  (eval-expand-instantiate::pair-nil ::symbol ::pair-nil)
 	  (eval-expand-duplicate::pair-nil ::symbol ::pair-nil)
-	  (eval-expand-with-access::pair-nil ::symbol ::pair-nil)))
+	  (eval-expand-with-access::pair-nil ::symbol ::pair-nil)
+	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    slot                                                             */
@@ -951,3 +952,19 @@
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id))))
 		(((and ?id (? symbol?)) . ?att)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-error ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (expand-error p m x)
+   (let ((loc (when (epair? x) (cer x))))
+      (if (and (pair? loc) (pair? (cdr loc)) (pair? (cddr loc)))
+	  (error/location p m x (cadr loc) (caddr loc))
+	  (error p m x))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-co-instantiate ...                                   */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-co-instantiate x e)
+   (expand-error "co-instantiate" "Not implemented yet" x))
+   

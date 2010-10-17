@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Wed Sep  8 08:48:04 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 06:47:04 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -730,96 +730,99 @@
 ;*    cnst-alloc-homogenous-vector ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-homogenous-vector vec loc)
-   (define vec-tag
-      (multiple-value-bind (tag _ _ _)
-	 (homogeneous-vector-info vec)
-	 tag))
-   (define vec-type-id (symbol-append vec-tag 'vector))
-   (define vec-type (find-type vec-type-id))
-   (define list->vector (symbol-append 'list-> vec-tag 'vector))
-   (define vector->list
-      (case vec-tag
-	 ((s8) s8vector->list)
-	 ((u8) u8vector->list)
-	 ((s16) s16vector->list)
-	 ((u16) u16vector->list)
-	 ((s32) s32vector->list)
-	 ((u32) u32vector->list)
-	 ((s64) s64vector->list)
-	 ((u64) u64vector->list)
-	 ((f32) f32vector->list)
-	 ((f64) f64vector->list)))
-   (define (cnst-vector-node)
-      (cnst!
-       (coerce!
-	(let ((var (make-local-svar 'var vec-type)))
-	   (instantiate::let-var
-	      (loc loc)
-	      (type *obj*)
-	      (bindings
-	       (list (cons
-		      var
-		      (instantiate::app
-			 (loc loc)
-			 (type vec-type)
-			 (fun (instantiate::var
-				 (loc loc)
-				 (type vec-type)
-				 (variable (find-global list->vector))))
-			 (args (list
-				(instantiate::kwote
-				   (loc loc)
-				   (type *obj*)
-				   (value (vector->list vec)))))))))
-	      (body (instantiate::var
-		       (loc loc)
-		       (type vec-type)
-		       (variable var)))))
-	#unspecified
-	*obj*
-	#f)))
-   (define (read-alloc-vector)
-      (let ((offset *cnst-offset*))
-	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
-	 (set! *global-set* (cons vec *global-set*))
-	 (if *shared-cnst?*
-	     (set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
-	 (make-cnst-table-ref offset loc)))
-   (define (lib-alloc-vector)
-      (let ((var (def-global-svar!
-		    (make-typed-ident (gensym 'hvector) vec-type-id)
-		    *module*
-		    'cnst-vector
-		    'now)))
-	 (if *shared-cnst?*
-	     (set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
-	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(cnst-vector-node)))
-	 (instantiate::var
-	    (loc loc)
-	    (type vec-type)
-	    (variable var))))
-   (let ((old (and *shared-cnst?*
-		   (let loop ((env *vector-env*))
-		      (cond
-			 ((null? env)
-			  #f)
-			 ((cnst-equal? (cnst-info-cnst (car env)) vec)
-			  (car env))
-			 (else
-			  (loop (cdr env))))))))
-      (cond
-	 (old
-	  (if (eq? *init-mode* 'lib)
-	      (instantiate::var
+
+   (let* ((vec-tag (multiple-value-bind (tag _ _ _)
+		      (homogeneous-vector-info vec)
+		      tag))
+	  (vec-type-id (symbol-append vec-tag 'vector))
+	  (vec-type (find-type vec-type-id))
+	  (list->vector (symbol-append 'list-> vec-tag 'vector))
+	  (vector->list (case vec-tag
+			   ((s8) s8vector->list)
+			   ((u8) u8vector->list)
+			   ((s16) s16vector->list)
+			   ((u16) u16vector->list)
+			   ((s32) s32vector->list)
+			   ((u32) u32vector->list)
+			   ((s64) s64vector->list)
+			   ((u64) u64vector->list)
+			   ((f32) f32vector->list)
+			   ((f64) f64vector->list))))
+      
+      (define (cnst-vector-node)
+	 (cnst!
+	  (coerce!
+	   (let ((var (make-local-svar 'var vec-type)))
+	      (instantiate::let-var
 		 (loc loc)
-		 (type (get-default-type))
-		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
-	 ((eq? *init-mode* 'lib)
-	  (lib-alloc-vector))
-	 (else
-	  (read-alloc-vector)))))
+		 (type *obj*)
+		 (bindings
+		  (list (cons
+			 var
+			 (instantiate::app
+			    (loc loc)
+			    (type vec-type)
+			    (fun (instantiate::var
+				    (loc loc)
+				    (type vec-type)
+				    (variable (find-global list->vector))))
+			    (args (list
+				   (instantiate::kwote
+				      (loc loc)
+				      (type *obj*)
+				      (value (vector->list vec)))))))))
+		 (body (instantiate::var
+			  (loc loc)
+			  (type vec-type)
+			  (variable var)))))
+	   #unspecified
+	   *obj*
+	   #f)))
+      
+      (define (read-alloc-vector)
+	 (let ((offset *cnst-offset*))
+	    (set! *cnst-offset* (+fx 1 *cnst-offset*))
+	    (set! *global-set* (cons vec *global-set*))
+	    (if *shared-cnst?*
+		(set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
+	    (make-cnst-table-ref offset loc)))
+      
+      (define (lib-alloc-vector)
+	 (let ((var (def-global-svar!
+		       (make-typed-ident (gensym 'hvector) vec-type-id)
+		       *module*
+		       'cnst-vector
+		       'now)))
+	    (if *shared-cnst?*
+		(set! *vector-env* (cons (cnst-info vec var) *vector-env*)))
+	    (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
+				   ,(cnst-vector-node)))
+	    (instantiate::var
+	       (loc loc)
+	       (type vec-type)
+	       (variable var))))
+      
+      (let ((old (and *shared-cnst?*
+		      (let loop ((env *vector-env*))
+			 (cond
+			    ((null? env)
+			     #f)
+			    ((cnst-equal? (cnst-info-cnst (car env)) vec)
+			     (car env))
+			    (else
+			     (loop (cdr env))))))))
+	 (cond
+	    (old
+	     (if (eq? *init-mode* 'lib)
+		 (instantiate::var
+		    (loc loc)
+		    (type (get-default-type))
+		    (variable (cnst-info-offset old)))
+		 (make-cnst-table-ref (cnst-info-offset old) loc)))
+	    ((eq? *init-mode* 'lib)
+	     (lib-alloc-vector))
+	    (else
+	     (read-alloc-vector))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-alloc-tvector ...                                           */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Fri Sep 11 09:42:09 2009 (serrano)                */
+;*    Last change :  Sun Oct 17 08:27:29 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -192,18 +192,21 @@
 		    "    values: " (length value) #\Newline)
 	     (cond
 		((null? fun)
-		 (let-or-letrec let/letrec node-let))
+		 (let ((vars (map car (let-var-bindings node-let))))
+		    (let-or-letrec let/letrec node-let vars)))
 		((null? value)
 		 (let->labels fun (let-var-body node-let) site))
 		(else
-		 ;; first we ajust let-var bindings
-		 (let-var-bindings-set! node-let (reverse! value))
-		 ;; then, we send the let form to the `let-or-letrec' function
-		 (let ((nlet (let-or-letrec let/letrec node-let)))
-		    (let-var-body-set! nlet (let->labels fun
-							 (let-var-body nlet)
-							 site))
-		    nlet))))
+		 (let ((vars (map car (let-var-bindings node-let))))
+		    ;; first we ajust let-var bindings
+		    (let-var-bindings-set! node-let (reverse! value))
+		    ;; then, we send the let form to the `let-or-letrec'
+		    ;; function
+		    (let ((nlet (let-or-letrec let/letrec node-let vars)))
+		       (let-var-body-set! nlet (let->labels fun
+							    (let-var-body nlet)
+							    site))
+		       nlet)))))
 	  (let* ((binding (car bindings))
 		 (var     (car binding))
 		 (sexp    (cdr binding)))
@@ -252,46 +255,160 @@
 ;*    bindings must be introduces by the unspecified value and         */
 ;*    it must exists an initialization stage which initialize all      */
 ;*    introduced local variables. This means that in a letrec form     */
-;*    all variable have to be bound to unspecified then, they have     */
+;*    all variables have to be bound to unspecified then, they have    */
 ;*    to be mutated to their correct values.                           */
 ;*---------------------------------------------------------------------*/
-(define (let-or-letrec let/letrec node-let)
-   (if (or (eq? let/letrec 'let) (let-sym? let/letrec))
-       node-let
+(define (let-or-letrec let/letrec node-let vars)
+   
+   (define (safe-rec-val? val)
+      (or (atom? val) (closure? val) (kwote? val)
+	  (and (sequence? val) (every? safe-rec-val? (sequence-nodes val)))))
+
+   (define (safe-rec-val-optim? val vars::pair-nil)
+      (or (safe-rec-val? val)
+	  (cond
+	     ((var? val)
+	      (not (memq (var-variable val) vars)))
+	     ((sequence? val)
+	      (safe-rec-val-optim? (sequence-nodes val) vars))
+	     ((app? val)
+	      (with-access::app val (fun args)
+		 (and (safe-rec-val-optim? fun vars)
+		      (safe-rec-val-optim? fun args))))
+	     ((pair? val)
+	      (every? (lambda (v) (safe-rec-val-optim? v vars)) val))
+	     ((app-ly? val)
+	      (with-access::app-ly val (fun arg)
+		 (and (safe-rec-val-optim? fun vars)
+		      (safe-rec-val-optim? arg vars))))
+	     ((funcall? val)
+	      (with-access::funcall val (fun args)
+		 (and (safe-rec-val-optim? fun vars)
+		      (safe-rec-val-optim? args vars))))
+	     ((extern? val)
+	      (with-access::extern val (expr*)
+		 (safe-rec-val-optim? expr* vars)))
+	     ((conditional? val)
+	      (with-access::conditional val (test true false)
+		 (and (safe-rec-val-optim? test vars)
+		      (safe-rec-val-optim? true vars)
+		      (safe-rec-val-optim? false vars))))
+	     ((setq? val)
+	      (with-access::setq val (var value)
+		 (and (safe-rec-val-optim? var vars)
+		      (safe-rec-val-optim? value vars))))
+	     ((fail? val)
+	      (with-access::fail val (proc msg obj)
+		 (and (safe-rec-val-optim? proc vars)
+		      (safe-rec-val-optim? msg vars)
+		      (safe-rec-val-optim? obj vars))))
+	     ((select? val)
+	      (with-access::select val (test clauses)
+		 (and (safe-rec-val-optim? test vars)
+		      (every? (lambda (clause)
+				 (safe-rec-val-optim? (cdr clause) vars))
+			      clauses))))
+	     ((let-fun? val)
+	      (with-access::let-fun val (body locals)
+		 (and (safe-rec-val-optim? body vars)
+		      (every? (lambda (f)
+				 (safe-rec-val-optim?
+				  (sfun-body (local-value f)) vars))
+			      locals))))
+	     ((let-var? val)
+	      (with-access::let-var val (body bindings)
+		 (and (safe-rec-val-optim? body vars)
+		      (every? (lambda (binding)
+				 (safe-rec-val-optim? (cdr binding) bindings))
+			      bindings))))
+	     ((set-ex-it? val)
+	      (with-access::set-ex-it val (var body)
+		 (and (safe-rec-val-optim? var vars)
+		      (safe-rec-val-optim? body vars))))
+	     ((jump-ex-it? val)
+	      (with-access::jump-ex-it val (exit value)
+		 (and (safe-rec-val-optim? exit vars)
+		      (safe-rec-val-optim? value vars))))
+	     ((make-box? val)
+	      (with-access::make-box val (value)
+		 (safe-rec-val-optim? value vars)))
+	     ((box-ref? val)
+	      (with-access::box-ref val (var)
+		 (safe-rec-val-optim? var vars)))
+	     ((box-set!? val)
+	      (with-access::box-set! val (var value)
+		 (and (safe-rec-val-optim? var vars)
+		      (safe-rec-val-optim? value vars))))
+	     (else
+	      #f))))
+
+   (define (safe-let? node)
+      (with-access::let-var node (bindings)
+	 (every? (lambda (b) (safe-rec-val? (cdr b))) bindings)))
+   
+   (define (safe-let-optim? node)
+      (with-access::let-var node (bindings)
+	 (every? (lambda (b)
+		    (when (eq? (variable-access (car b)) 'read)
+		       (safe-rec-val-optim? (cdr b) vars)))
+		 bindings)))
+
+   (cond
+      ((or (eq? let/letrec 'let) (let-sym? let/letrec))
+       node-let)
+      ((safe-let? node-let)
+       node-let)
+      ((and (>=fx *optim* 1) (not *call/cc?*) (safe-let-optim? node-let))
+       node-let)
+      (else
        (let* ((bindings (let-var-bindings node-let))
 	      (body     (let-var-body node-let))
 	      (seq      (if (sequence? body)
 			    body
-			    (instantiate::sequence (loc   (node-loc body))
-						   (type  *_*)
-						   (nodes (list body))))))
+			    (instantiate::sequence
+			       (loc   (node-loc body))
+			       (type  *_*)
+			       (nodes (list body))))))
 	  (let-var-body-set! node-let seq)
 	  (let loop ((bindings  bindings)
+		     (nbindings '())
 		     (nsequence (sequence-nodes seq)))
 	     (if (null? bindings)
-		 (begin
-		    (let-var-body-set! node-let
-				       (instantiate::sequence
-					(loc   (node-loc seq))
-					(type  *_*)
-					(nodes nsequence)))
+		 (let* ((seq (instantiate::sequence
+				(loc   (node-loc seq))
+				(type  *_*)
+				(nodes nsequence)))
+			(letb (instantiate::let-var
+				 (loc (node-loc node-let))
+				 (type (node-type node-let))
+				 (bindings nbindings)
+				 (body seq)
+				 (removable? #t))))
+		    (let-var-body-set! node-let letb)
 		    node-let)
 		 (let* ((binding (car bindings))
 			(var     (car binding))
 			(val     (cdr binding))
-			(loc     (node-loc val)))
-		    (let ((init (instantiate::setq (loc loc)
-						   (type *unspec*)
-						   (var (instantiate::var
-							 (type *_*)
-							 (loc loc)
-							 (variable var)))
-						   (value val))))
+			(loc     (node-loc val))
+			(nvar    (make-local-svar (gensym) *_*)))
+		    (let ((init (instantiate::setq
+				   (loc loc)
+				   (type *unspec*)
+				   (var (instantiate::var
+					   (type *_*)
+					   (loc loc)
+					   (variable var)))
+				   (value (instantiate::var
+					     (type *_*)
+					     (loc loc)
+					     (variable nvar))))))
 		       (use-variable! var loc 'set!)
+		       (use-variable! nvar loc 'set!)
 		       (set-cdr! binding
 				 (sexp->node #unspecified '() loc 'value))
 		       (loop (cdr bindings)
-			     (cons init nsequence)))))))))
+			     (cons (cons nvar val) nbindings)
+			     (cons init nsequence))))))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    let->labels ...                                                  */

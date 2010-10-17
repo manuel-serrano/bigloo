@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Wed Jan 13 06:38:46 2010 (serrano)                */
+;*    Last change :  Sat Oct 16 08:58:50 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -225,33 +225,6 @@
 		       (olde x olde)))))
 	    (else
 	     (olde x e))))))
-
-(define (with-access-expander-9nov2006 olde mark instance class slots)
-   (define (id var) (cadr (assq var slots)))
-   (let ((ids (map car slots)))
-      (lambda (x e)
-         (match-case x
-            ((and ?var (? symbol?))
-             (if (and (memq var ids)
-                      (let ((cell (assq var (lexical-stack))))
-                         (and (pair? cell) (eq? (cdr cell) mark))))
-                 (olde `(,(symbol-append class '- (id var)) ,instance) olde)
-                 (olde var olde)))
-            ((set! (and (? symbol?) ?var) ?val)
-             (let ((val (e val e)))
-                (if (and (memq var ids)
-                         (let ((cell (assq var (lexical-stack))))
-                            (and (pair? cell) (eq? (cdr cell) mark))))
-                    (object-epairify
-                     (olde `(,(symbol-append class '- (id var) '-set!)
-                             ,instance ,val)
-                           olde)
-                     x)
-                    (begin
-                       (set-car! (cddr x) val)
-                       (olde x olde)))))
-            (else
-             (olde x e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-instantiate ...                                           */
