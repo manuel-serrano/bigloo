@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun Oct 17 08:33:30 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 17:07:56 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -51,25 +51,28 @@
 	    __evenv
 	    __everror
 	    __evcompile
+	    __eval
 	    __expander_define)
     
-  (export (eval-class ::symbol ::bool ::pair-nil ::pair)
-	  (eval-make-slot ::symbol ::obj ::bool ::obj ::obj ::obj ::bool ::obj)
-	  (eval-expand-instantiate::pair-nil ::symbol ::pair-nil)
-	  (eval-expand-duplicate::pair-nil ::symbol ::pair-nil)
-	  (eval-expand-with-access::pair-nil ::symbol ::pair-nil)
+  (export (eval-class ::symbol ::bool ::pair-nil ::pair ::obj)
+	  (eval-expand-instantiate::pair-nil ::symbol)
+	  (eval-expand-duplicate::pair-nil ::symbol)
+	  (eval-expand-with-access::pair-nil ::symbol)
 	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-error ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (expand-error p m x)
+   (let ((loc (when (epair? x) (cer x))))
+      (if (and (pair? loc) (pair? (cdr loc)) (pair? (cddr loc)))
+	  (error/location p m x (cadr loc) (caddr loc))
+	  (error p m x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    slot                                                             */
 ;*---------------------------------------------------------------------*/
 (define-struct slot id type ronlyp default-value getter setter indexp info)
-
-;*---------------------------------------------------------------------*/
-;*    eval-make-slot ...                                               */
-;*---------------------------------------------------------------------*/
-(define (eval-make-slot id type ronlyp default-value getter setter indexp info)
-   (slot id type ronlyp default-value getter setter indexp info))
 
 ;*---------------------------------------------------------------------*/
 ;*    slot-virtualp ...                                                */
@@ -313,38 +316,35 @@
    (let ((cla (gensym)))
       (localize
        loc
-       `(define ,id
-	   (let ((,cla (register-class!
-			',id
-			,(class-name super)
-			,abstract
-			,(unless abstract (class-make id))
-			,(if abstract list (class-allocate id))
-			,(class-nil id)
-			,(class-predicate id)
-			,hash
-			(list ,@(map (lambda (f)
-					(let ((sid (slot-id f)))
-					   `(make-class-field
-					     ',sid
-					     ,(or (slot-getter f)
-						  (slot-ref sid id))
-					     ,(unless (slot-ronlyp f)
-						 (or (slot-setter f)
-						     (slot-set sid id)))
-					     ,(if (slot-indexp f)
-						  (slot-ref (slot-len sid) id)
-						  #f)
-					     ,(slot-virtualp f)
-					     ,(slot-info f)
-					     ',(slot-default-value f)
-					     ;; MS: 21 June 2007
-					     #;(class-field-no-default-value))))
-				     slots))
-			,constructor
-			'#())))
-	      (class-evdata-set! ,cla ,sz)
-	      ,cla)))))
+       `(let ((,cla (register-class!
+		     ',id
+		     ,(class-name super)
+		     ,abstract
+		     ,(unless abstract (class-make id))
+		     ,(if abstract list (class-allocate id))
+		     ,(class-nil id)
+		     ,(class-predicate id)
+		     ,hash
+		     (list ,@(map (lambda (f)
+				     (let ((sid (slot-id f)))
+					`(make-class-field
+					  ',sid
+					  ,(or (slot-getter f)
+					       (slot-ref sid id))
+					  ,(unless (slot-ronlyp f)
+					      (or (slot-setter f)
+						  (slot-set sid id)))
+					  ,(if (slot-indexp f)
+					       (slot-ref (slot-len sid) id)
+					       #f)
+					  ,(slot-virtualp f)
+					  ,(slot-info f)
+					  ',(slot-default-value f))))
+				  slots))
+		     ,constructor
+		     '#())))
+	   (class-evdata-set! ,cla ,sz)
+	   ,cla))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field->slot ...                                                  */
@@ -363,18 +363,18 @@
 	 (class-field-info field)))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-instantiate->fill ...                                       */
+;*    eval-instantiate->make ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (eval-instantiate->fill cid args slots source)
-   (let* ((mk (class-make cid))
-	  (ins (symbol-append 'instantiate:: cid))
+(define (eval-instantiate->make cid args fields source)
+   (let* ((ins (symbol-append 'instantiate:: cid))
 	  (nodef (class-field-no-default-value))
 	  (new (gensym))
-	  (tmp (gensym)))
-      (let loop ((slots slots)
+	  (tmp (gensym))
+	  (mk (class-make cid)))
+      (let loop ((fields fields)
 		 (vals '())
 		 (virtuals '()))
-	 (if (null? slots)
+	 (if (null? fields)
 	     (list 'quasiquote
 		   (if (null? virtuals)
 		       `(,mk ,@(map (lambda (v) (list 'unquote v))
@@ -387,51 +387,51 @@
 					  ,new ,(list 'unquote id))))
 				  virtuals)
 			   ,new)))
-	     (let* ((s (car slots))
-		    (id (slot-id s)))
+	     (let* ((s (car fields))
+		    (id (class-field-name s)))
 		(cond
 		   ;; a virtual slot
-		   ((slot-virtualp s)
-		    (if (slot-ronlyp s)
+		   ((class-field-virtual? s)
+		    (if (not (class-field-mutable? s))
 			`(if (pair? (assq ',id ,args))
 			     (error/source
 			      ',ins
 			      "value provided for read-only virtual slot"
 			      ',id
 			      ,source)
-			     ,(loop (cdr slots) vals virtuals))
+			     ,(loop (cdr fields) vals virtuals))
 			`(let ((,id (let ((c (assq ',id ,args)))
 				       (if (pair? c)
 					   (cadr c)
-					   ,(let ((d (slot-default-value s)))
+					   ,(let ((d (class-field-default-value s)))
 					       (if (eq? d nodef)
 						   ;; new play the role of
 						   ;; a mark for nodef
 						   `',new
 						   (list 'quote d)))))))
-			    ,(loop (cdr slots) vals (cons id virtuals)))))
+			    ,(loop (cdr fields) vals (cons id virtuals)))))
 		   (else
 		    ;; a plain slot
 		    `(let ((,id (let ((c (assq ',id ,args)))
 				   (if (pair? c)
 				       (cadr c)
-				       ,(let ((d (slot-default-value s)))
+				       ,(let ((d (class-field-default-value s)))
 					   (if (eq? d nodef)
 					       `(error/source ',ins
 							      "argument missing"
 							      ',id
 							      ,source)
 					       (list 'quote d)))))))
-			,(loop (cdr slots) (cons id vals) virtuals)))))))))
+			,(loop (cdr fields) (cons id vals) virtuals)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-instantiate-check ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (eval-instantiate-check id args all-slots body)
+(define (eval-instantiate-check id args all-fields body)
    `(let ((lst (filter (lambda (s)
 			  (or (not (pair? s))
 			      (not (symbol? (car s)))
-			      (not (memq (car s) ',(map slot-id all-slots)))))
+			      (not (memq (car s) ',(map class-field-name all-fields)))))
 		       ,args)))
        (if (pair? lst)
 	   (error ',id "Illegal slot(s)" lst)
@@ -440,34 +440,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-instantiate ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-instantiate cid all-slots)
-   (let ((id (symbol-append 'instantiate:: cid))
-	 (a (gensym))
-	 (loc (gensym))
-	 (slots all-slots))
-      `(define-expander ,id
-	  :eval!
-	  (lambda (x e)
-	     (let ((,a (cdr x)))
-		(e ,(eval-instantiate-check
-		     id a slots
-		     (eval-instantiate->fill cid a slots 'x))
-		   e))))))
+(define (eval-expand-instantiate cid)
+   (let ((clazz (find-class cid)))
+      (if (not (class? clazz))
+	  (expand-error "instantiate" "Cannot find class" cid)
+	  (let* ((id (symbol-append 'instantiate:: cid))
+		 (a (gensym))
+		 (loc (gensym))
+		 (fields (class-all-fields clazz)))
+	     `(define-expander ,id
+		 :eval!
+		 (lambda (x e)
+		    (let ((,a (cdr x)))
+		       (e ,(eval-instantiate-check
+			    id a fields
+			    (eval-instantiate->make cid a fields 'x))
+			  e))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-duplicate->fill ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (eval-duplicate->fill cid args old slots)
+(define (eval-duplicate->fill cid args old fields)
    (let* ((mk (class-make cid))
 	  (ins (symbol-append 'duplicate:: cid))
 	  (nodef (class-field-no-default-value))
 	  (new (gensym))
 	  (tmp (gensym))
-	  (slots slots))
-      (let loop ((slots slots)
+	  (fields fields))
+      (let loop ((fields fields)
 		 (vals '())
 		 (virtuals '()))
-	 (if (null? slots)
+	 (if (null? fields)
 	     (list 'quasiquote
 		   (if (null? virtuals)
 		       `(let* ((,tmp ,(list 'unquote old)))
@@ -481,61 +484,69 @@
 				       ,new ,(list 'unquote id)))
 				  virtuals)
 			   ,new)))
-	     (let* ((s (car slots))
-		    (id (slot-id s)))
+	     (let* ((f (car fields))
+		    (id (class-field-name f)))
 		(cond
 		   ;; a virtual slot
-		   ((slot-virtualp s)
+		   ((class-field-virtual? f)
 		    `(let ((,id (let ((c (assq ',id ,args)))
 				   (if (pair? c)
 				       (cadr c)
-				       ,(let ((d (slot-default-value s)))
+				       ,(let ((d (class-field-default-value f)))
 					   (if (eq? d nodef)
 					       '#unspecified
 					       (list 'quote d)))))))
-			,(loop (cdr slots) vals (cons id virtuals))))
+			,(loop (cdr fields) vals (cons id virtuals))))
 		   (else
 		    ;; a plain slot
 		    `(let ((,id (let ((c (assq ',id ,args)))
 				   (if (pair? c)
 				       (cadr c)
 				       '(,(slot-ref id cid) ,tmp)))))
-			,(loop (cdr slots) (cons id vals) virtuals)))))))))
+			,(loop (cdr fields) (cons id vals) virtuals)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-duplicate ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-duplicate cid all-slots)
-   (let ((id (symbol-append 'duplicate:: cid))
-	 (o (gensym))
-	 (a (gensym))
-	 (loc (gensym)))
-      `(define-expander ,id
-	  :eval!
-	  (lambda (x e)
-	     (if (null? (cdr x))
-		 (error/source x "object missing" #f x)
-		 (let ((,o (cadr x))
-		       (,a (cddr x)))
-		    (e ,(eval-instantiate-check
-			 id a all-slots
-			 (eval-duplicate->fill cid a o all-slots))
-		       e)))))))
+(define (eval-expand-duplicate cid)
+   (let ((clazz (find-class cid)))
+      (if (not (class? clazz))
+	  (expand-error "duplicate" "Cannot find class" cid)
+	  (let ((id (symbol-append 'duplicate:: cid))
+		(o (gensym))
+		(a (gensym))
+		(loc (gensym))
+		(fields (class-all-fields clazz)))
+	     `(define-expander ,id
+		 :eval!
+		 (lambda (x e)
+		    (if (null? (cdr x))
+			(error/source x "object missing" #f x)
+			(let ((,o (cadr x))
+			      (,a (cddr x)))
+			   (e ,(eval-instantiate-check
+				id a fields
+				(eval-duplicate->fill cid a o fields))
+			      e)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-with-access ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-with-access id all-slots)
-   (let ((wid (symbol-append 'with-access:: id))
-	 (loc (gensym)))
-      `(define-expander ,wid
-	  :eval!
-	  (lambda (x e)
-	     (match-case x
-		((?- ?i (and (? list?) ?vars) . ?body)
-		 ,(eval-with-access-expander id all-slots 'x))
-		(else
-		 (error/source ',wid "Illegal `with-access' form" x x)))))))
+(define (eval-expand-with-access cid)
+   (let ((clazz (find-class cid)))
+      (if (not (class? clazz))
+	  (expand-error "with-access" "Cannot find class" cid)
+	  (let ((wid (symbol-append 'with-access:: cid))
+		(loc (gensym))
+		(fields (class-all-fields clazz)))
+	     `(define-expander ,wid
+		 :eval!
+		 (lambda (x e)
+		    (match-case x
+		       ((?- ?i (and (? list?) ?vars) . ?body)
+			,(eval-with-access-expander cid fields 'x))
+		       (else
+			(error/source ',wid "Illegal `with-access' form" x x)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-with-access-expander ...                                    */
@@ -543,16 +554,16 @@
 ;*    VARS and BODY are not transmitted because this code generates    */
 ;*    an expression that supposes that these two variables are bound.  */
 ;*---------------------------------------------------------------------*/
-(define (eval-with-access-expander id all-slots source)
-   `(let* ((slots ',(map (lambda (s)
-			    (list (slot-id s)
-				  (if (slot-indexp s) #t #f)
-				  (slot-ronlyp s)))
-			 all-slots))
+(define (eval-with-access-expander id all-fields source)
+   `(let* ((fields ',(map (lambda (f)
+			     (list (class-field-name f)
+				   (if (class-field-indexed? f) #t #f)
+				   (not (class-field-mutable? f))))
+			  all-fields))
 	   (bdgs (map (lambda (v)
 			 (cond
 			    ((symbol? v)
-			     (if (assq v slots)
+			     (if (assq v fields)
 				 (list v v)
 				 (error/source
 				  ',(symbol-append 'with-access:: id)
@@ -562,7 +573,7 @@
 			    ((and (pair? v) (symbol? (car v))
 				  (pair? (cdr v)) (symbol? (cadr v))
 				  (null? (cddr v)))
-			     (if (assq (cadr v) slots)
+			     (if (assq (cadr v) fields)
 				 v
 				 (error/source
 				  ',(symbol-append 'with-access:: id)
@@ -578,7 +589,7 @@
 		      vars))
 	   (ins (gensym))
 	   (body `(let ((,ins ,i))
-		     ,,(make-eval-with-access-body id all-slots 'ins)))
+		     ,,(make-eval-with-access-body id all-fields 'ins)))
 	   (e2 ,(make-eval-with-access-expander id 'ins)))
        (%with-lexical (map car bdgs) body e2 ins)))
 
@@ -602,7 +613,7 @@
 		   (d (and (pair? c1)
 			   (let ((c (assq s (%lexical-stack))))
 			      (and (pair? c) (eq? (cdr c) ,tmp)))
-			   (assq (cadr c1) slots))))
+			   (assq (cadr c1) fields))))
 	       (let ((v2 (e3 v e3)))
 		  (if (or (not d) (caddr d))
 		      (e `(set! ,s ,v2) e)
@@ -613,10 +624,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-with-access-body ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-eval-with-access-body id all-slots tmp)
-   (if (every? (lambda (s) (slot-indexp s) all-slots))
-       (make-eval-with-access-body-plain id all-slots tmp)
-       (make-eval-with-access-body-indexed id all-slots tmp)))
+(define (make-eval-with-access-body id all-fields tmp)
+   (if (every? (lambda (f) (class-field-indexed? f)) all-fields)
+       (make-eval-with-access-body-plain id all-fields tmp)
+       (make-eval-with-access-body-indexed id all-fields tmp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-with-access-body-plain ...                             */
@@ -631,7 +642,7 @@
    `(let loop ((vars vars))
        (if (null? vars)
 	   `(begin ,@body)
-	   (let ((d (assq (cadr (car bdgs)) slots)))
+	   (let ((d (assq (cadr (car bdgs)) fields)))
 	      (cond
 		 ((not d)
 		  (error ',(symbol-append 'with-access:: id)
@@ -831,7 +842,7 @@
 ;*    Returns a double value, the list of declarations and the list    */
 ;*    of bound variables.                                              */
 ;*---------------------------------------------------------------------*/
-(define (eval-class id abstract clauses src)
+(define (eval-class id abstract clauses src mod)
    (multiple-value-bind (cid sid)
       (decompose-ident id)
       (let ((loc (get-source-location src))
@@ -866,15 +877,9 @@
 					     (slot-id s))))
 				      (cdr slots))
 			    (loop (cdr slots)))))
-		   (let ((exprs '())
-			 (idents '()))
-		      ;; class definition
-		      (set! exprs (list (eval-register-class
-					 loc cid super abstract
-					 slots (+ offset size)
-					 (get-eval-class-hash id src)
-					 constructor)))
-		      (set! idents (list cid))
+		   (let ((idents (list cid)))
+		      ;; bind the class identifier
+		      (eval! `(define ,cid #unspecified))
 		      ;; class slots
 		      (let ((e1 (append-map (lambda (f)
 					       (eval-class-slot loc cid f -1))
@@ -883,8 +888,8 @@
 					       (eval-class-slot loc cid f o))
 					    plain-slots
 					    (iota size offset))))
-			 (set! exprs (append e2 exprs))
-			 (set! exprs (append e1 exprs))
+			 (for-each (lambda (e) (eval! e mod)) e1)
+			 (for-each (lambda (e) (eval! e mod)) e2)
 			 (set! idents (append (map caadr e2) idents))
 			 (set! idents (append (map caadr e1) idents)))
 		      ;; super slots
@@ -892,47 +897,56 @@
 					      (eval-class-slot-alias
 					       loc cid f super))
 					   super-slots)))
-			 (set! exprs (append e exprs))
+			 (for-each (lambda (e) (eval! e mod)) e)
 			 (set! idents (append (map cadr e) idents)))
-		      ;; with-access
-		      (set! exprs
-			    (cons (eval-expand-with-access cid all-slots)
-				  exprs))
 		      ;; predicate
 		      (let ((e (eval-class-predicate loc cid)))
-			 (set! exprs (cons e exprs))
-			 (set! idents (cons (caadr e) idents)))
-		      ;; class-nil
-		      (let ((e (eval-class-nil loc cid super native)))
-			 (set! exprs (cons e exprs))
+			 (eval! e mod)
 			 (set! idents (cons (caadr e) idents)))
 		      ;; constructor
 		      (unless abstract
+			 ;; class-nil
+			 (let ((e (eval-class-nil loc cid super native)))
+			    (eval! e mod)
+			    (set! idents (cons (caadr e) idents)))
 			 ;; make
 			 (let ((e (eval-make-class
 				   loc cid slots
-				   (or constructor (find-class-constructor super))
+				   (or constructor
+				       (find-class-constructor super))
 				   super super-slots
 				   native native-slots)))
-			    (set! exprs (cons e exprs))
+			    (eval! e mod)
 			    (set! idents (cons (caadr e) idents)))
 			 ;; allocate
 			 (let ((e (eval-allocate-class loc cid slots
 						       super super-slots
 						       native native-slots)))
-			    (set! exprs (cons e exprs))
-			    (set! idents (cons (caadr e) idents)))
-			 ;; instantiate
-			 (let ((e (eval-expand-instantiate cid all-slots)))
-			    (set! exprs (cons e exprs)))
-			 ;; duplicate
-			 (let ((e (eval-expand-duplicate cid all-slots)))
-			    (set! exprs (cons e exprs)))
-			 ;; intext
+			    (eval! e mod)
+			    (set! idents (cons (caadr e) idents))))
+		      ;; class definition
+		      (let ((e `(set! ,cid
+				      ,(eval-register-class
+					loc cid super abstract
+					slots (+ offset size)
+					(get-eval-class-hash id src)
+					constructor))))
+			 (eval! e mod))
+		      ;; serialization
+		      (unless abstract
 			 (let ((int (make-eval-struct+object->object cid all-slots))
 			       (ext (make-eval-object->struct cid all-slots)))
-			    (set! exprs (append exprs (list ext int)))))
- 		      (values exprs idents)))))))))
+			    (eval! ext mod)
+			    (eval! int mod)))
+		      ;; with-access
+		      (eval! (eval-expand-with-access cid) mod)
+		      ;; instantiate
+		      (let ((e (eval-expand-instantiate cid)))
+			 (eval! e mod))
+		      ;; duplicate
+		      (let ((e (eval-expand-duplicate cid)))
+			 (eval! e mod))
+		      idents))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-class-hash ...                                          */
@@ -954,17 +968,84 @@
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    expand-error ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (expand-error p m x)
-   (let ((loc (when (epair? x) (cer x))))
-      (if (and (pair? loc) (pair? (cdr loc)) (pair? (cddr loc)))
-	  (error/location p m x (cadr loc) (caddr loc))
-	  (error p m x))))
-
-;*---------------------------------------------------------------------*/
 ;*    eval-expand-co-instantiate ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-co-instantiate x e)
-   (expand-error "co-instantiate" "Not implemented yet" x))
+   (match-case x
+      ((co-instantiate ?bindings . ?body)
+       (e (co-instantiate->let bindings body x) e))
+      (else
+       (expand-error "co-instantiate" "Illegal `co-instantiate' form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    co-instantiate->let ...                                          */
+;*---------------------------------------------------------------------*/
+(define (co-instantiate->let bindings body x)
    
+   (define (find-instantiate-class expr bdg)
+      (match-case expr
+	 ((?instantiate . ?body)
+	  (multiple-value-bind (id type)
+	     (decompose-ident instantiate)
+	     (find-class type)))
+	 (else
+	  (expand-error "co-instantiate" "Illegal binding" bdg))))
+
+   (define (fill-args class instantiate)
+      (filter-map (lambda (f)
+		     (unless (class-field-virtual? f)
+			(let ((id (class-field-name f)))
+			   (let ((v (assq id (cdr instantiate))))
+			      (if (pair? v)
+				  (cadr v)
+				  (class-field-default-value f))))))
+		  (class-all-fields class)))
+
+   (define (fill-virtuals o class instantiate)
+      (filter-map (lambda (f)
+		     (when (and (class-field-virtual? f)
+				(class-field-mutable? f))
+			(let ((id (class-field-name f)))
+			   (let ((v (assq id (cdr instantiate))))
+			      `(,(slot-set id (class-name class))
+				,o
+				,(if (pair? v)
+				     (cadr v)
+				     (class-field-default-value f)))))))
+		  (class-all-fields class)))
+   
+   (let loop ((bindings bindings)
+	      (user-variables '())
+	      (classes '())
+	      (instantiates '()))
+      (if (null? bindings)
+	  `(let ,(map (lambda (id class)
+			 (let* ((cid (class-name class))
+				(tv id))
+			    `(,tv (,(symbol-append '%allocate- cid)))))
+		      user-variables
+		      classes)
+	      ,@(map (lambda (user class instantiate)
+			(let* ((cid (class-name class))
+			       (fill (symbol-append 'fill- cid '!))
+			       (args (fill-args class instantiate)))
+			   `(begin
+			       (,fill ,user ,@args)
+			       ,@(fill-virtuals user class instantiate))))
+		     user-variables
+		     classes
+		     instantiates)
+	      ,@body)
+	  (match-case (car bindings)
+	     (((and ?var (? symbol?)) ?expr)
+	      (let* ((bdg (car bindings))
+		     (kclass (find-instantiate-class expr bdg)))
+		 (multiple-value-bind (id type)
+		    (decompose-ident var)
+		    (loop (cdr bindings)
+			  (cons var user-variables)
+			  (cons kclass classes)
+			  (cons expr instantiates)))))
+	     (else
+	      (expand-error "co-instantiate" "Illegal binding" (car bindings)))))))
+

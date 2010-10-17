@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Sep  7 05:56:32 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 10:51:53 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -157,6 +157,7 @@
 	    (class-field-len-accessor::procedure field)
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
+	    (class-field-type::symbol field)
 	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long o o ::vector)
 	    (procedure->generic::procedure ::procedure)
 	    (add-generic!::obj ::procedure ::obj)
@@ -367,7 +368,7 @@
 (define (class-fields class)
    (if (class? class)
        (vector-ref class 8)
-       (error 'class-fields
+       (error "class-fields"
 	      (bigloo-type-error-msg "runtime type error"
 				     "Class"
 				     (find-runtime-type class))
@@ -410,14 +411,14 @@
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter indexed virtual info default)
-   (vector name getter setter indexed virtual make-class-field info default))
+   (vector name getter setter indexed virtual make-class-field info default 'obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-field? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 8)
+	(=fx (vector-length obj) 9)
 	(eq? (vector-ref obj 5) make-class-field)))
 	 
 ;*---------------------------------------------------------------------*/
@@ -432,7 +433,7 @@
 (define (class-field-name::symbol field)
    (if (class-field? field)
        (vector-ref field 0)
-       (error 'class-field-name "Not a class field" field)))
+       (error "class-field-name" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-indexed? ...                                         */
@@ -440,7 +441,7 @@
 (define (class-field-indexed?::bool field)
    (if (class-field? field)
        (procedure? (vector-ref field 3))
-       (error 'class-field-indexed? "Not a class field" field)))
+       (error "class-field-indexed?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-virtual? ...                                         */
@@ -448,7 +449,7 @@
 (define (class-field-virtual?::bool field)
    (if (class-field? field)
        (vector-ref field 4)
-       (error 'class-field-virtual? "Not a class field" field)))
+       (error "class-field-virtual?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-accessor ...                                         */
@@ -456,7 +457,7 @@
 (define (class-field-accessor::procedure field)
    (if (class-field? field)
        (vector-ref field 1)
-       (error 'class-field-accessor "Not a class field" field)))
+       (error "class-field-accessor" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-mutable? ...                                         */
@@ -464,7 +465,7 @@
 (define (class-field-mutable?::bool field)
    (if (class-field? field)
        (procedure? (vector-ref field 2))
-       (error 'class-field-mutable? "Not a class field" field)))
+       (error "class-field-mutable?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-mutator ...                                          */
@@ -472,7 +473,7 @@
 (define (class-field-mutator::procedure field)
    (if (class-field? field)
        (vector-ref field 2)
-       (error 'class-field-mutator "Not a class field" field)))
+       (error "class-field-mutator" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-len-accessor ...                                     */
@@ -480,7 +481,7 @@
 (define (class-field-len-accessor::procedure field)
    (if (class-field? field)
        (vector-ref field 3)
-       (error 'class-field-len-accessor "Not a class field" field)))
+       (error "class-field-len-accessor" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-info ...                                             */
@@ -488,7 +489,7 @@
 (define (class-field-info field)
    (if (class-field? field)
        (vector-ref field 6)
-       (error 'class-field-info "Not a class field" field)))
+       (error "class-field-info" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
@@ -496,7 +497,15 @@
 (define (class-field-default-value field)
    (if (class-field? field)
        (vector-ref field 7)
-       (error 'class-field-default-value "Not a class field" field)))
+       (error "class-field-default-value" "Not a class field" field)))
+
+;*---------------------------------------------------------------------*/
+;*    class-field-type ...                                             */
+;*---------------------------------------------------------------------*/
+(define (class-field-type field)
+   (if (class-field? field)
+       (vector-ref field 8)
+       (error "class-field-type" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-super ...                                                  */
@@ -771,7 +780,7 @@
       (lambda ()
 	 (initialize-objects!)
 	 (if (and super (not (class? super)))
-	     (error 'add-class! "Illegal super class for class" name))
+	     (error "add-class!" "Illegal super class for class" name))
 	 (if (=fx *nb-classes* *nb-classes-max*)
 	     (double-nb-classes!))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
@@ -852,7 +861,7 @@
 ;*    generic-no-default-behavior ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (generic-no-default-behavior . l)
-   (error 'generic "No default behavior" l))
+   (error "generic" "No default behavior" l))
 
 ;*---------------------------------------------------------------------*/
 ;*    procedure->generic ...                                           */
@@ -955,9 +964,9 @@
 (define (add-method! generic class method)
    (cond
       ((not (class? class))
-       (error 'add-method! "Illegal class" class))
+       (error "add-method!" "Illegal class" class))
       ((not (=fx (procedure-arity generic) (procedure-arity method)))
-       (error 'add-method! "arity mismatch" (cons generic method)))
+       (error "add-method!" "arity mismatch" (cons generic method)))
       (else
        (%add-method! generic class method))))
 
@@ -972,11 +981,11 @@
 (define (add-eval-method! generic class method)
    (cond
       ((not (class? class))
-       (error 'add-eval-method! "Illegal class" class))
+       (error "add-eval-method!" "Illegal class" class))
       ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
 	    (>fx (procedure-arity generic) 4)
 	    (not (=fx (procedure-arity method) -1)))
-       (error 'add-eval-method! "arity mismatch" (cons generic method)))
+       (error "add-eval-method!" "arity mismatch" (cons generic method)))
       (else
        (%add-method! generic class method))))
 
@@ -1070,7 +1079,7 @@
 		       (+fx 1 (class-max-num (cadr subclasses))))))
       ;; test the validity of the class number
       (when (<fx new-num 0)
-	 (error 'class-hierarchy-numbering
+	 (error "class-hierarchy-numbering"
 		"Cannot allocate fresh positive number for class"
 		(class-name class)))
       ;; we set the class type
@@ -1097,7 +1106,7 @@
 		       (*fx old-num 2))))
 	  (super (class-super class)))
       (when (<fx new-num 0)
-	 (error 'class-hierarchy-up-renumber!
+	 (error "class-hierarchy-up-renumber!"
 		"Cannot renumber class hierarchy"
 		(class-name class)))
       (class-max-num-set! class new-num)
@@ -1159,13 +1168,13 @@
 ;*    object->struct ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-generic (object->struct::struct object::object)
-   (error 'object->struct "This object can't be converted" object))
+   (error "object->struct" "This object can't be converted" object))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct+object->object ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (struct+object->object::object object::object struct::struct)
-   (error 'struct+object->object "This structure can't be converted" struct))
+   (error "struct+object->object" "This structure can't be converted" struct))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-hashnumber ...                                            */
@@ -1185,7 +1194,7 @@
 (define (allocate-instance::object cname::symbol)
    (let loop ((i 0))
       (if (=fx i *nb-classes*)
-	  (error 'allocate-instance "Can't find class" cname)
+	  (error "allocate-instance" "Can't find class" cname)
 	  (let ((class (vector-ref-ur *classes* i)))
 	     (if (eq? (class-name class) cname)
 		 ((class-allocate class))

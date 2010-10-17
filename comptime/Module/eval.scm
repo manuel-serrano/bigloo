@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Oct 12 16:38:07 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 17:07:08 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -356,6 +356,7 @@
 		     commons
 		     (cons* (get-global (class-make t))
 			    (get-global (class-allocate t))
+			    (get-global (class-fill t))
 			    (tclass-holder t)
 			    commons))))))
       (else
@@ -409,34 +410,19 @@
 			   (tclass-all-slots t))))))
 
 ;*---------------------------------------------------------------------*/
-;*    slot->eval-slot ...                                              */
-;*---------------------------------------------------------------------*/
-(define (slot->eval-slot s)
-   (with-access::slot s (id type read-only? default-value getter setter indexed user-info)
-      (eval-make-slot id
-		      (if (bigloo-type? type) (type-id type) #f)
-		      read-only?
-		      default-value
-		      getter
-		      setter
-		      indexed
-		      user-info)))
-   
-;*---------------------------------------------------------------------*/
 ;*    get-evaluated-class-macros ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (get-evaluated-class-macros)
    (map (lambda (s)
 	   (let* ((t (find-type/location (cadr s) (find-location s)))
 		  (id (tclass-id t))
-		  (libp (pair? (cddr s)))
-		  (eslots (map slot->eval-slot (tclass-all-slots t))))
+		  (libp (pair? (cddr s))))
 	      `(begin
 		  ,(if (tclass-abstract? t)
 		       #unspecified
 		       `(begin
-			   (eval! (eval-expand-instantiate ',id ',eslots))
-			   (eval! (eval-expand-duplicate ',id ',eslots))))
-		  (eval! (eval-expand-with-access ',id ',eslots))
+			   (eval! (eval-expand-instantiate ',id))
+			   (eval! (eval-expand-duplicate ',id))))
+		  (eval! (eval-expand-with-access ',id))
 		  ,@(eval-bind-super-access t libp))))
 	*eval-classes*))

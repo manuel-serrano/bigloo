@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Wed Sep 17 09:10:08 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Oct 17 16:52:10 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -75,6 +75,7 @@
 	    (type-subclass?::bool ::type ::type)
 	    (tclass-all-slots::pair-nil ::tclass)
 	    (class-make::obj ::tclass)
+	    (class-fill::obj ::tclass)
 	    (class-predicate::symbol ::tclass)
 	    (class-nil-constructor::symbol ::tclass)
 	    (class-allocate::symbol ::tclass)))
@@ -290,6 +291,16 @@
    (if (tclass-abstract? t)
        #f
        (symbol-append 'make- (type-id t))))
+
+;*---------------------------------------------------------------------*/
+;*    class-fill ...                                                   */
+;*    -------------------------------------------------------------    */
+;*    The name of the filler                                           */
+;*---------------------------------------------------------------------*/
+(define (class-fill t::tclass)
+   (if (tclass-abstract? t)
+       #f
+       (symbol-append 'fill- (type-id t) '!)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-predicate ...                                              */
