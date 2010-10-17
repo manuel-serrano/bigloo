@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Oct 17 08:27:29 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 09:17:05 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -274,7 +274,7 @@
 	     ((app? val)
 	      (with-access::app val (fun args)
 		 (and (safe-rec-val-optim? fun vars)
-		      (safe-rec-val-optim? fun args))))
+		      (safe-rec-val-optim? args vars))))
 	     ((pair? val)
 	      (every? (lambda (v) (safe-rec-val-optim? v vars)) val))
 	     ((app-ly? val)
@@ -319,7 +319,7 @@
 	      (with-access::let-var val (body bindings)
 		 (and (safe-rec-val-optim? body vars)
 		      (every? (lambda (binding)
-				 (safe-rec-val-optim? (cdr binding) bindings))
+				 (safe-rec-val-optim? (cdr binding) vars))
 			      bindings))))
 	     ((set-ex-it? val)
 	      (with-access::set-ex-it val (var body)
