@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Oct 17 09:17:05 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 07:57:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -360,13 +360,50 @@
        node-let)
       ((and (>=fx *optim* 1) (not *call/cc?*) (safe-let-optim? node-let))
        node-let)
+      ((eq? let/letrec 'letrec*)
+       (let* ((bindings (let-var-bindings node-let))
+	      (body     (let-var-body node-let))
+	      (seq      (if (sequence? body)
+			    body
+			    (instantiate::sequence
+			       (loc (node-loc body))
+			       (type  *_*)
+			       (nodes (list body))))))
+	  (let-var-body-set! node-let seq)
+	  (let loop ((bindings  bindings)
+		     (nsequence (sequence-nodes seq)))
+	     (if (null? bindings)
+		 (begin
+		    (let-var-body-set! node-let
+				       (instantiate::sequence
+					  (loc   (node-loc seq))
+					  (type  *_*)
+					  (nodes nsequence)))
+		    node-let)
+		 (let* ((binding (car bindings))
+			(var     (car binding))
+			(val     (cdr binding))
+			(loc     (node-loc val)))
+		    (let ((init (instantiate::setq
+				   (loc loc)
+				   (type *unspec*)
+				   (var (instantiate::var
+					   (type *_*)
+					   (loc loc)
+					   (variable var)))
+				   (value val))))
+		       (use-variable! var loc 'set!)
+		       (set-cdr! binding
+				 (sexp->node #unspecified '() loc 'value))
+		       (loop (cdr bindings)
+			     (cons init nsequence))))))))
       (else
        (let* ((bindings (let-var-bindings node-let))
 	      (body     (let-var-body node-let))
 	      (seq      (if (sequence? body)
 			    body
 			    (instantiate::sequence
-			       (loc   (node-loc body))
+			       (loc (node-loc body))
 			       (type  *_*)
 			       (nodes (list body))))))
 	  (let-var-body-set! node-let seq)
@@ -375,7 +412,7 @@
 		     (nsequence (sequence-nodes seq)))
 	     (if (null? bindings)
 		 (let* ((seq (instantiate::sequence
-				(loc   (node-loc seq))
+				(loc (node-loc seq))
 				(type  *_*)
 				(nodes nsequence)))
 			(letb (instantiate::let-var

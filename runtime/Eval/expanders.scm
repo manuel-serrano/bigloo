@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Oct 17 08:31:53 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 07:34:11 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -318,6 +318,9 @@
    
    ;; letrec
    (install-eval-expander 'letrec expand-eval-letrec)
+   
+   ;; letrec
+   (install-eval-expander 'letrec* expand-eval-letrec*)
    
    ;; labels
    (install-eval-expander 'labels expand-eval-labels)
