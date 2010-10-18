@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Sep 30 07:13:50 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 11:21:02 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -417,7 +417,7 @@
 					(mime-content-type-decode (cdr c)))
 				     '(text plain))))
 		       (dispo (let ((c (assq 'content-disposition header)))
-				 (if (pair? c)
+				 (if (and (pair? c) (string? (cdr c)))
 				     (mime-content-disposition-decode (cdr c))
 				     '(inline)))))
 		   (cond
