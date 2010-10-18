@@ -310,11 +310,20 @@
 		 ("body[header]" . header)
 		 ("rfc822.size"  . size)
 		 ("internaldate" . date))))
+     
     (define (pretty str)
       (let ((item (assoc str table)))
 	(if (pair? item)
 	    (cdr item)
 	    (string->symbol str))))
+
+    (define (number-component? s)
+       ;; not a full test, simply check <[0-9]...>
+       (and (string? s)
+	    (>fx (string-length s) 2)
+	    (char=? (string-ref s 0) #\<)
+	    (char=? (string-ref s (-fx (string-length s) 1)) #\>)
+	    (char-numeric? (string-ref s 1))))
 
     (lambda (l)
       (let loop ((l l)
@@ -323,14 +332,21 @@
 	  ((null? l)
 	   res)
 	  ((pair? l)
-	   (if (or (not (string? (car l)))
-		   (null? (cdr l)))
-	       (%imap-command-error '%imap-listify "Bad IMAP list component" l)
+	   (cond
+	      ((or (not (string? (car l))) (null? (cdr l)))
+	       (%imap-command-error "%imap-listify" "Bad IMAP list component" l))
+	      ((and (pair? (cddr l)) (number-component? (cadr l)))
+	       (loop (cdddr l)
+		     (cons (cons (pretty (string-downcase! (car l)))
+				 (caddr l))
+			   res)))
+	      (else
 	       (loop (cddr l)
 		     (cons (cons (pretty (string-downcase! (car l)))
 				 (cadr l))
-			   res))))
-	  (else (%imap-command-error '%imap-listify "Bad IMAP list" l)))))))
+			   res)))))
+	  (else
+	   (%imap-command-error "%imap-listify" "Bad IMAP list" l)))))))
 	
 
 ;;;; ======================================================================

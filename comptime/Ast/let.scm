@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Oct 18 07:57:40 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 08:35:59 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -371,14 +371,15 @@
 			       (nodes (list body))))))
 	  (let-var-body-set! node-let seq)
 	  (let loop ((bindings  bindings)
-		     (nsequence (sequence-nodes seq)))
+		     (nsequence '()))
 	     (if (null? bindings)
 		 (begin
 		    (let-var-body-set! node-let
 				       (instantiate::sequence
 					  (loc   (node-loc seq))
 					  (type  *_*)
-					  (nodes nsequence)))
+					  (nodes (append (reverse! nsequence)
+							 (sequence-nodes seq)))))
 		    node-let)
 		 (let* ((binding (car bindings))
 			(var     (car binding))

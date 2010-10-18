@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Fri Jul 30 09:00:14 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 08:33:56 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
@@ -113,7 +113,7 @@
 		       '_
 		       (find-location x)
 		       (lambda ()
-			  `(letrec ,vars
+			  `(,(car x) ,vars
 			      ,(e (expand-progn body) e))))))
    (let ((old-internal internal-definition?))
       (set! internal-definition? #t)

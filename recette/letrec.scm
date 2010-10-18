@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Mon Oct 18 07:58:52 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 08:33:25 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -131,6 +131,51 @@
 	   y)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-letrec*5 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*5)
+   (define (f) (- y x))
+   (define x 1)
+   (define y x)
+   (define (g) (f))
+   (g))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*6 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*6)
+   (eval '((lambda ()
+	      (define (f) (- y x))
+	      (define x 1)
+	      (define y x)
+	      (define (g) (f))
+	      (g)))))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*7 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*7)
+   (let ((r 0))
+      (define (print) (begin 1 2 3 4 #t))
+      (letrec* ((x 1)
+                (y x))
+         (set! r y))	    
+      (print)
+      r))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*8 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*8)
+   (eval '(let ((r 0))
+	   (define (print) (begin 1 2 3 4 #t))
+	   (letrec* ((x 1)
+		     (y x))
+	      (set! r y))	    
+	   (print)
+	   r)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-letrec ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (test-letrec)
@@ -146,4 +191,8 @@
    (test "letrec*.1" (test-letrec*1) 4)
    (test "letrec*.2" (test-letrec*2) 4)
    (test "letrec*.3" (test-letrec*3) 5)
-   (test "letrec*.4" (test-letrec*4) 5))
+   (test "letrec*.4" (test-letrec*4) 5)
+   (test "letrec*.5" (test-letrec*5) 0)
+   (test "letrec*.6" (test-letrec*6) 0)
+   (test "letrec*.7" (test-letrec*7) 1)
+   (test "letrec*.8" (test-letrec*8) 1))
