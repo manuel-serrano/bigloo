@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Thu Aug  9 07:18:50 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct 19 17:43:51 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -23,23 +23,23 @@
 	    ast_local
 	    integrate_info
 	    integrate_local->global)
-   (export  (globalize!              ::node ::variable <what/by>*)
+   (export  (integrate-globalize! ::node ::variable <what/by>*)
 	    (integrate-celled?::bool ::local)))
    
 ;*---------------------------------------------------------------------*/
-;*    globalize! ...                                                   */
+;*    integrate-globalize! ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    This function makes many transformation on the Ast *and*         */
 ;*    returns a free variables list.                                   */
 ;*---------------------------------------------------------------------*/
-(define (globalize! ast integrator what/by*)
+(define (integrate-globalize! ast integrator what/by*)
    (trace integrate "globalize!: " (shape integrator) " " (shape what/by*)
 	  #\Newline "  " (shape ast)
 	  #\Newline)
    ;; for each celled variable, we declare a new local
    ;; variable
-   (let* ((fun      (variable-value integrator))
-	  (celled   (celled-bindings (sfun-args fun)))
+   (let* ((fun (variable-value integrator))
+	  (celled (celled-bindings (sfun-args fun)))
 	  (what/by* (append celled what/by*)))
       ;; we set alpha-fast slot 
       (for-each (lambda (w.b)
@@ -182,12 +182,12 @@
       (let* ((fun  (var-variable (app-fun node)))
 	     (info (variable-value fun)))
 	 ;; we change the called function if globalized
-	 (if (and (local? fun) (sfun/Iinfo-G? info))
-	     (app-fun-set! node
-			   (instantiate::var
-			      (loc loc)
-			      (type (variable-type (the-global fun)))
-			      (variable (the-global fun)))))
+	 (when (and (local? fun) (sfun/Iinfo-G? info))
+	    (app-fun-set! node
+			  (instantiate::var
+			     (loc loc)
+			     (type (variable-type (the-global fun)))
+			     (variable (the-global fun)))))
 	 ;; we globalize the actuals before adding new one
 	 ;; otherwise, we could produce illegal `cell-ref'
 	 (let liip ((nodes args))
@@ -196,25 +196,22 @@
 		(begin
 		   (set-car! nodes (glo! (car nodes) integrator))
 		   (liip (cdr nodes)))))
-	 (cond
-	    ((or (global? fun) (not (sfun/Iinfo-G? info)))
-	     'done)
-	    (else
-	     ;; this is a call to globalized but non escaping
-	     ;; function. We add its kaptured variables
-	     (let loop ((new-actuals args)
-			(kaptured    (sfun/Iinfo-kaptured info)))
-		(if (null? kaptured)
-		    (set! args new-actuals)
-		    (let* ((kap   (car kaptured))
-			   (alpha (local-fast-alpha kap))
-			   (var   (if (local? alpha) alpha kap)))
-		       (loop (cons (instantiate::var
-				      (loc loc)
-				      (type *_*)
-				      (variable var))
-				   new-actuals)
-			     (cdr kaptured)))))))
+	 (unless (or (global? fun) (not (sfun/Iinfo-G? info)))
+	    ;; this is a call to globalized but non escaping
+	    ;; function. We add its kaptured variables
+	    (let loop ((new-actuals args)
+		       (kaptured (sfun/Iinfo-kaptured info)))
+	       (if (null? kaptured)
+		   (set! args new-actuals)
+		   (let* ((kap   (car kaptured))
+			  (alpha (local-fast-alpha kap))
+			  (var   (if (local? alpha) alpha kap)))
+		      (loop (cons (instantiate::var
+				     (loc loc)
+				     (type *_*)
+				     (variable var))
+				  new-actuals)
+			    (cdr kaptured))))))
 	 node)))
 	  
 ;*---------------------------------------------------------------------*/
