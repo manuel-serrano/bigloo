@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Thu Sep 18 12:00:05 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 20 08:07:12 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
 ;*=====================================================================*/
@@ -42,10 +42,10 @@
    (for-each-global! (lambda (global)
 			(with-access::global global (occurrence module
 								library value)
-			   (if (and (>fx occurrence 0)
-				    library
-				    (not (or (cfun? value) (cvar? value))))
-			       (need-library-module! module)))))
+			   (when (and (>fx occurrence 0)
+				      library
+				      (not (or (cfun? value) (cvar? value))))
+			      (need-library-module! module)))))
    ;; when compiling for bdb we must initialize the bdb module
    (if (and (>fx *bdb-debug* 0)
 	    (memq 'bdb (backend-debug-support (the-backend))))

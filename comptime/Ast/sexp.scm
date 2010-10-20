@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Oct 18 07:55:58 2010 (serrano)                */
+;*    Last change :  Wed Oct 20 09:09:45 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -734,3 +734,4 @@
 		(else
 		 (string->symbol (string-append base ">")))))
 	  (symbol-append (gensym (string-append "<" pref "-")) '>))))
+	  
