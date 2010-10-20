@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Tue Oct 19 17:44:05 2010 (serrano)                */
+;*    Last change :  Wed Oct 20 13:48:24 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
@@ -95,9 +95,7 @@
 		;; now for each function, we allocate a new
 		;; global definition
 		(let ((new-G (map local->global G)))
-		   (sfun-body-set!
-		    fun
-		    (integrate-globalize! (node-remove! body) global '()))
+		   (sfun-body-set! fun (integrate-globalize! body global '()))
 		   (trace integrate #a012 #\Newline #\Newline)
 		   (cons global new-G)))))))
 

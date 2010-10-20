@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Tue Oct 19 17:43:51 2010 (serrano)                */
+;*    Last change :  Wed Oct 20 14:09:03 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -405,8 +405,12 @@
 	  " integrator: " (shape integrator) #\Newline)
    (let* ((fun   (local-value local))
 	  (obody (sfun-body fun)))
-      (if (eq? local integrator)
-	  (sfun-body-set! fun (glo! obody integrator))
+      (cond
+	 ((eq? local integrator)
+	  (sfun-body-set! fun (glo! obody integrator)))
+	 ((and (sfun/Iinfo? fun) (sfun/Iinfo-G? fun))
+	  #unspecified)
+	 (else
 	  (let ((celled (celled-bindings (sfun-args fun))))
 	     (for-each (lambda (w.b)
 			  (variable-fast-alpha-set! (car w.b) (cdr w.b)))
@@ -416,5 +420,5 @@
 		(for-each (lambda (w.b)
 			     (variable-fast-alpha-set! (car w.b) #unspecified))
 			  celled)
-		(sfun-body-set! fun nbody2))))))
+		(sfun-body-set! fun nbody2)))))))
 
