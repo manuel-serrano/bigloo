@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  3 12:03:10 2009                          */
-;*    Last change :  Sun May 30 07:58:56 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 09:02:47 2010 (serrano)                */
 ;*    Copyright   :  2009-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CRC                                                              */
@@ -66,6 +66,7 @@
 ;*    crc-long ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (crc-long::long c::char crc::long poly::long len::long)
+   
    (define (slow-crc)
       ;; note: the bit-mask will work on the not-yet-shifted crc.
       ;;       This allows us to use (for instance) a 32bit type for a 32-bit
@@ -198,42 +199,35 @@
 ;*    crc-polynomial-be->le ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (crc-polynomial-be->le len poly)
-   
-   (define type
-      (cond
-	 ((fixnum? poly) 'long)
-	 ((elong? poly) 'elong)
-	 ((llong? poly) 'llong)
-	 (else (error 'crc-gen "could not determine type" poly))))
-   
-   (define one (case type ((long) 1) ((elong) #e1) ((llong) #l1)))
-   
-   (define zero (case type ((long) 0) ((elong) #e0) ((llong) #l0)))
-   
-   (define lsh (case type
+   (let* ((type
+	   (cond
+	      ((fixnum? poly) 'long)
+	      ((elong? poly) 'elong)
+	      ((llong? poly) 'llong)
+	      (else (error 'crc-gen "could not determine type" poly))))
+	  
+	  (one (case type ((long) 1) ((elong) #e1) ((llong) #l1)))
+	  (zero (case type ((long) 0) ((elong) #e0) ((llong) #l0)))
+	  (lsh (case type
 		  ((long) bit-lsh) ((elong) bit-lshelong)
 		  ((llong) bit-lshllong)))
-   
-   (define rsh (case type
+	  (rsh (case type
 		  ((long) bit-rsh) ((elong) bit-rshelong)
 		  ((llong) bit-rshllong)))
-   
-   (define b-and (case type
+	  (b-and (case type
 		    ((long) bit-and) ((elong) bit-andelong)
 		    ((llong) bit-andllong)))
-   
-   (define b-or (case type
+	  (b-or (case type
 		   ((long) bit-or) ((elong) bit-orelong)
-		   ((llong) bit-orllong)))
-   
-   (let loop ((i 0)
-	      (poly poly)
-	      (res zero))
-      (if (>=fx i len)
-	  res
-	  (loop (+fx i 1)
-		(rsh poly 1)
-		(b-or (lsh res 1) (b-and one poly))))))
+		   ((llong) bit-orllong))))
+      (let loop ((i 0)
+		 (poly poly)
+		 (res zero))
+	 (if (>=fx i len)
+	     res
+	     (loop (+fx i 1)
+		   (rsh poly 1)
+		   (b-or (lsh res 1) (b-and one poly)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *crcs* ...                                                       */

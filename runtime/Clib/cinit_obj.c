@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cinit-obj.c             */
+/*    serrano/prgm/project/bigloo/runtime/Clib/cinit_obj.c             */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Mar 11 09:40:01 2010 (serrano)                */
+/*    Last change :  Wed Oct 20 09:12:59 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -149,6 +149,17 @@ bgl_init_module_debug_object( char *mod ) {
    fprintf( stderr, "%s object (%s)\n",
 	    margin( bgl_module_debug_level ),
 	    mod );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_init_module_debug_string ...                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void
+bgl_init_module_debug_string( char *str ) {
+   fprintf( stderr, "%s %s\n",
+	    margin( bgl_module_debug_level ),
+	    str );
 }
 
 /*---------------------------------------------------------------------*/

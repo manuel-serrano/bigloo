@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 17:29:48 1995                          */
-;*    Last change :  Thu Aug  9 07:17:41 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Oct 19 17:44:16 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We translate a local function definition into a global one.      */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
 	    integrate_info
 	    integrate_node)
    (export  (local->global ::local)
-	    (the-global    ::local)))
+	    (the-global ::local)))
 
 ;*---------------------------------------------------------------------*/
 ;*    local->global ...                                                */
@@ -54,9 +54,9 @@
 		       (local-type-set! l *obj*)))
 		(sfun-args new-fun))
       (sfun-body-set! new-fun
-		      (globalize! (sfun-body old-fun)
-				  local
-				  (map cons kaptured add-args)))
+		      (integrate-globalize! (sfun-body old-fun)
+					    local
+					    (map cons kaptured add-args)))
       (global-value-set! global new-fun)
       global))
 

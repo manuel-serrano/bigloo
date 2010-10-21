@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Fri Jul 30 09:26:14 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 08:28:51 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -283,7 +283,7 @@
 		       bindings)
 	     (set-cdr! (cddr x) (expand* body ns))
 	     x))
-	 (((or let let* letrec) ?bindings . ?body)
+	 (((or let let* letrec letrec*) ?bindings . ?body)
 	  (let* ((frame  (map (lambda (b)
 				 (cond
 				    ((and (pair? b) (symbol? (car b)))

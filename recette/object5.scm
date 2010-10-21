@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Sun May 27 08:07:44 2007 (serrano)                */
-;*    Copyright   :  2000-07 Manuel Serrano                            */
+;*    Last change :  Thu Oct 21 12:23:27 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the classes indexed slots and the introspection          */
 ;*    facilities within the evaluator.                                 */
@@ -19,10 +19,12 @@
    (export (test-object5))
    (static (class object5 (x (default 1)) (y (default 1)) (z (default '()))))
    (export (class object6 (rec (default (object6-nil)))))
-   (export (class object7 (host (default #t))))
+   (export (class object7 (host (default #t)))
+	   (final-class object8 value::byte))
    (eval (class object5)
 	 (class object6)
-	 (class object7)))
+	 (class object7)
+	 (class object8)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-object5 ...                                                 */
@@ -111,6 +113,8 @@
    (test "-nil" (eval '(let ((o (instantiate::object6)))
 			  (eq? (object6-rec o) (object6-nil))))
 	 #t)
+   (test "-nil" (object8? (instantiate::object8 (value 0))) #t)
+   (test "-nil" (object8? (eval '(instantiate::object8 (value 0)))) #t)
    (eval '(define-generic (show o) 1))
    (eval '(define-generic (show2 o) 0))
    (eval '(define-generic (show3 o . p) (apply + p)))

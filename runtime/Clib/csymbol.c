@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Wed Aug 27 17:29:09 2008 (serrano)                */
+/*    Last change :  Wed Oct 20 08:47:55 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -19,7 +19,7 @@ extern long get_hash_power_number( char *, unsigned long );
 /*---------------------------------------------------------------------*/
 /*    Global C variables                                               */
 /*---------------------------------------------------------------------*/
-obj_t c_symtab = BUNSPEC;
+static obj_t c_symtab = BUNSPEC;
 
 /*---------------------------------------------------------------------*/
 /*    Symbol mutex                                                     */
@@ -85,7 +85,7 @@ bstring_to_symbol( obj_t name ) {
    if( NULLP( bucket ) ) {
       obj_t symbol = make_symbol( name );
       obj_t pair = MAKE_PAIR( symbol, BNIL );
-      
+
       VECTOR_SET( c_symtab, hash_number, pair );
       
       bgl_mutex_unlock( symbol_mutex );
@@ -230,6 +230,7 @@ bgl_symbol_genname( obj_t o, char *name ) {
       sprintf( &gn[ n ], "%ld", ++gensym_counter );
 
       hn = get_hash_power_number( gn, SYMBOL_HASH_TABLE_SIZE_SHIFT );
+
       
       if( !symbol_exists_sans_lock_p( gn, hn ) ) break;
    }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Mon May  4 15:08:35 2009 (serrano)                */
-;*    Copyright   :  2004-09 Manuel Serrano                            */
+;*    Last change :  Thu Oct 21 12:18:54 2010 (serrano)                */
+;*    Copyright   :  2004-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
 ;*=====================================================================*/
@@ -232,9 +232,9 @@
        (make-private-sexp 'cast-null (type-id type)))
       (else
        (case (type-id type)
-	  ((int long) 0)
+	  ((int long byte) 0)
 	  ((bool) #f)
-	  ((real double) 0.0)
+	  ((float double) 0.0)
 	  ((char) #\_)
 	  ((string) "")
 	  (else

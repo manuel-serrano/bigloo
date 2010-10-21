@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Oct 12 13:57:56 2010 (serrano)                */
+#*    Last change :  Mon Oct 18 12:19:16 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -153,7 +153,7 @@ threadsupport=
 pthreadlibs=
 pthreadtimedlock=1
 pthreadtermsig=15
-pthreadlocalstorage=no
+pthreadlocalstorage=
 
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=

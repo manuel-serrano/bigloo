@@ -133,7 +133,7 @@ instantiate             duplicate             with-access
 widen!                  shrink!               multiple-value-bind
 let-syntax              letrec-syntax         define-syntax
 cond-expand             receive               args-parse
-define-record-type      and-let*
+define-record-type      and-let*              letrec*
 @end example
 
 @noindent All other non atomic Bigloo forms are evaluated as function
@@ -344,6 +344,52 @@ while R5Rs states that,
   (even? 88))   
                                        @result{} #t
 @end smalllisp
+@end deffn
+
+@deffn {bigloo syntax} letrec* (binding @dots{}) body
+
+Each binding has the form
+
+@smalllisp
+((<variable1> <init1>) ...)
+@end smalllisp
+
+Each @code{<init>} is an expression.Any variable must not appear more
+than once in the @code{<variable>}s.
+
+The @code{<variable>}s are bound to fresh locations, each <variable>
+is assigned in left-to-right order to the result of evaluating the
+corresponding @code{<init>}, the @code{<body>} is evaluated in the resulting
+environment, and the values of the last expression in <body> are
+returned. Despite the left-to-right evaluation and assignment order,
+each binding of a <variable> has the entire letrec* expression as its
+region, making it possible to define mutually recursive procedures.
+
+Examples:
+
+@smalllisp
+(letrec* ((x 1)
+          (f (lambda (y) (+ x y))))
+   (f 3))
+                                       @result{} 4
+(letrec* ((p (lambda (x)
+                (+ 1 (q (- x 1)))))
+          (q (lambda (y)
+                (if (zero? y)
+                    0
+                    (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+                                       @result{} 5
+@end smalllisp
+
+It must be possible to evaluate each @code{<init>} without assigning or
+referring to the value of the corresponding <variable> or the
+@code{<variable>} of any of the bindings that follow it in
+<bindings>. Another restriction is that the continuation of each
+@code{<init>} should not be invoked more than once. 
+
 @end deffn
 
 @deffn {bigloo syntax} labels ((name (arg @dots{}) body) @dots{}) body

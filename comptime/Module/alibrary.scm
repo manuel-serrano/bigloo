@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Sun Oct  3 13:29:34 2010 (serrano)                */
+;*    Last change :  Wed Oct 20 07:50:34 2010 (serrano)                */
 ;*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
@@ -93,4 +93,4 @@
 					 `(,v 0 ,f)))))
 			    ,(when (libinfo-init info)
 				`(,(libinfo-init info)))))))
-	       *additional-bigloo-libraries*))
+	       (delete-duplicates *additional-bigloo-libraries*)))

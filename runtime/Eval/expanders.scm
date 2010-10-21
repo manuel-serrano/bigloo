@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Mon Aug  2 20:43:49 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 07:34:11 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -40,10 +40,9 @@
 	    __bignum
 	    __expand
 	    __evmodule
+	    __evobject
 
-	    __r5_macro_4_3_syntax
-	    ;__r5_macro_4_3_hygiene
-	    )
+	    __r5_macro_4_3_syntax)
    
    (use     __type
 	    __bigloo
@@ -320,6 +319,9 @@
    ;; letrec
    (install-eval-expander 'letrec expand-eval-letrec)
    
+   ;; letrec
+   (install-eval-expander 'letrec* expand-eval-letrec*)
+   
    ;; labels
    (install-eval-expander 'labels expand-eval-labels)
    
@@ -386,6 +388,9 @@
 			     (match-case x
 				((?id . ?-)
 				 (expand-error id "Unknown class" x)))))
+
+   ;; co-instantiate
+   (install-eval-expander 'co-instantiate eval-expand-co-instantiate)
    
    ;; classes
    (let ((e (lambda (x e) (e (evmodule-static-class x) e))))

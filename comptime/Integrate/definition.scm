@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Thu Aug  9 07:03:45 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 20 13:48:24 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
    (import  type_type
 	    ast_var
 	    ast_node
+	    ast_remove
 	    tools_shape
 	    tools_speek
 	    integrate_info
@@ -78,8 +79,6 @@
 		    (when (and (local? f) (not (sfun/Iinfo-G? (local-value f))))
 		       (let* ((g   (sfun/Iinfo-L (local-value f)))
 			      (ifu (variable-value g)))
-			  (when (eq? (global-id global) 'simpleread)
-			     (tprint "f=" (shape f) " -> " (shape g)))
 			  (sfun/Iinfo-Led-set! ifu
 					       (cons f
 						     (sfun/Iinfo-Led ifu))))))
@@ -96,7 +95,7 @@
 		;; now for each function, we allocate a new
 		;; global definition
 		(let ((new-G (map local->global G)))
-		   (sfun-body-set! fun (globalize! body global '()))
+		   (sfun-body-set! fun (integrate-globalize! body global '()))
 		   (trace integrate #a012 #\Newline #\Newline)
 		   (cons global new-G)))))))
 

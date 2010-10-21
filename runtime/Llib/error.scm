@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Sep 10 17:42:04 2010 (serrano)                */
+;*    Last change :  Wed Oct 20 06:51:05 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -580,10 +580,9 @@
 	 ;; we now print the error message
 	 (print-cursor fname line loc string space-string)
 	 ;; we display the error message
-	 (display "# *** ERROR:" port)
+	 (display "*** ERROR:" port)
 	 (display-circle proc port)
 	 (newline port)
-	 (display "# " port)
 	 (display-circle msg port)
 	 (display " -- " port)
 	 (display-circle obj port)
@@ -738,7 +737,7 @@
       ;; we now print the warning message
       (print-cursor fname line char string space-string)
       ;; we display the warning message
-      (display "# *** WARNING:bigloo:" (current-error-port))
+      (display "*** WARNING:bigloo:" (current-error-port))
       (if (not (null? args))
 	  (let ((port (current-error-port)))
 	     (display-circle (car args) port)

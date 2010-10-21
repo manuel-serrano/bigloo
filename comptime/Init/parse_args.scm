@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Sep 30 08:56:27 2010 (serrano)                */
+;*    Last change :  Tue Oct 19 17:15:19 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -805,6 +805,8 @@
        (set! *trace-level* 3))
       (("-t4")
        (set! *trace-level* 4))
+      (("-t5")
+       (set! *trace-level* 5))
       (("+t?pass" (help "Force pass to be traced"))
        (set! *additional-traces* (cons pass *additional-traces*)))
       ;; shape

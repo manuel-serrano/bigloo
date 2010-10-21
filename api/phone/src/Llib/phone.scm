@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Fri Oct 15 08:33:17 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 19:03:40 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic phone API                                                */
@@ -24,7 +24,9 @@
 	   (generic phone-vibrate-stop ::phone)
 
 	   (generic phone-sensor-list ::phone)
-	   (generic phone-sensor ::phone ::symbol . delay)))
+	   (generic phone-sensor ::phone ::symbol . delay)
+
+	   (generic phone-sms-send ::phone ::bstring ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Generic functions                                                */
@@ -43,3 +45,8 @@
 (define-generic (phone-sensor-list p::phone)
    '())
 (define-generic (phone-sensor p::phone t::symbol . delay))
+
+;*---------------------------------------------------------------------*/
+;*    sms                                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (phone-sms-send p::phone no::bstring message::bstring))

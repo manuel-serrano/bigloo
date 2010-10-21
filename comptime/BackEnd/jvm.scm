@@ -256,7 +256,11 @@
 		     ;; if libraries are used by some module we add them
 		     ;; to the link
 		     (for-each (lambda (lib)
-				  (use-library! lib 'now))
+				  (match-case lib
+				     ((library . ?libs)
+				      (for-each (lambda (lib)
+						   (use-library! lib 'now))
+						libs))))
 			       libraries)
 		     ;; we load the library init files.
 		     (load-library-init)

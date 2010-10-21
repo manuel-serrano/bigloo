@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:44:53 1994                          */
-;*    Last change :  Tue Sep 30 08:20:01 2008 (serrano)                */
-;*    Copyright   :  1994-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 18 08:37:41 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The lambda macro-expansion.                                      */
 ;*=====================================================================*/
@@ -154,7 +154,7 @@
 		       decls))))
 	  (cond
 	     ((not (null? vars))
-	      `(letrec ,decls ,(expand-progn (reverse newforms))))
+	      `(letrec* ,(reverse! decls) ,(expand-progn (reverse newforms))))
 	     (else
 	      (expand-progn body))))))
 

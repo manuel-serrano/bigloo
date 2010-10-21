@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Sep  7 20:45:34 2010 (serrano)                */
+;*    Last change :  Mon Oct 18 08:25:18 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -439,6 +439,9 @@
    
    ;; letrec
    (install-compiler-expander 'letrec expand-letrec)
+
+   ;; letrec*
+   (install-compiler-expander 'letrec* expand-letrec)
    
    ;; labels
    (install-compiler-expander 'labels expand-labels)

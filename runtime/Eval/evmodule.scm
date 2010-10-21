@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Jul 30 09:34:57 2010 (serrano)                */
+;*    Last change :  Sun Oct 17 10:05:32 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -220,19 +220,13 @@
 	     (eval `(define ,id ',evmodule-uninitialized) mod)))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs _)
-		(eval-class cla #f clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs))))
+	     (eval-class cla #f clauses clause mod)))
 	 ((final-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs _)
-		(eval-class cla #f clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs))))
+	     (eval-class cla #f clauses clause mod)))
 	 ((abstract-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs _)
-		(eval-class cla #t clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs))))
+	     (eval-class cla #t clauses clause mod)))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (evcompile-error
@@ -272,21 +266,15 @@
 	     (eval `(define ,id ',evmodule-uninitialized) mod)))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs idents)
-		(eval-class cla #f clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs)
+	     (let ((idents (eval-class cla #f clauses clause mod)))
 		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
 	 ((final-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs idents)
-		(eval-class cla #f clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs)
+	     (let ((idents (eval-class cla #f clauses clause mod)))
 		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
 	 ((abstract-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (multiple-value-bind (exprs idents)
-		(eval-class cla #t clauses clause)
-		(for-each (lambda (e) (eval e mod)) exprs)
+	     (let ((idents (eval-class cla #t clauses clause mod)))
 		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
