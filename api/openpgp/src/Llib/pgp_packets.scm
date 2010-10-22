@@ -95,7 +95,7 @@
     (final-class PGP-Signature-Sub-Preferred-Symmetric::PGP-Signature-Sub-Packet
        algos::pair-nil)
     (final-class PGP-Signature-Sub-Revocation::PGP-Signature-Sub-Packet
-       class::byte
+       clazz::byte
        sensitive?::bool ;; redundant, as it's encoded inside 'class'
        algid::byte ;; no idea what this is
        fingerprint::bstring)

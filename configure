@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Oct 18 12:19:16 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 11:02:20 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3295,7 +3295,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "DOTNETCLROPT=$dotnetclropt" >> $makefile_cfg
     echo "DOTNETCLR=$dotnetclr" >> $makefile_cfg
     echo "" >> $makefile_cfg
-    echo "DOTNETFTDLLPATH=-L../../../../../lib/$release" >> $makefile_cfg
+    echo "DOTNETFTDLLPATH=-L\$(BOOTDIR)/lib/$release" >> $makefile_cfg
     echo "DOTNETLINKBIGLOODLL=-lbigloo_s-$release.dll" >> $makefile_cfg
   else
     echo "" >> $makefile_cfg
@@ -3330,6 +3330,13 @@ echo >> $makefile_cfg
 # APIs
 echo "APIS=$apis" >> $makefile_cfg
 echo >> $makefile_cfg
+
+# Android specific
+if [ "$hostos " = "android " ]; then
+  echo "DROIDROOT=$droidroot" >> $makefile_cfg
+  echo "DROIDSDKROOT=$droidsdkroot" >> $makefile_cfg
+  echo >> $makefile_cfg
+fi
 
 #*---------------------------------------------------------------------*/
 #*    Ok, we are done now                                              */
