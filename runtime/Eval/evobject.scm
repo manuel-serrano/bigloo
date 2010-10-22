@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun Oct 17 17:07:56 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 18:37:43 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -1028,10 +1028,14 @@
 	      ,@(map (lambda (user class instantiate)
 			(let* ((cid (class-name class))
 			       (fill (symbol-append 'fill- cid '!))
-			       (args (fill-args class instantiate)))
+			       (args (fill-args class instantiate))
+			       (constr (find-class-constructor class)))
 			   `(begin
 			       (,fill ,user ,@args)
-			       ,@(fill-virtuals user class instantiate))))
+			       ,@(fill-virtuals user class instantiate)
+			       ,(when constr
+				   `(,constr ,user))
+			       ,user)))
 		     user-variables
 		     classes
 		     instantiates)

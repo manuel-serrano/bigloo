@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Oct 16 08:58:50 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 18:34:03 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -420,17 +420,13 @@
 		 (classes '())
 		 (instantiates '()))
 	 (if (null? bindings)
-	     (letrec ((e1 (lambda (x _)
+	     (letrec ((e1 (lambda (x ne)
 			     (if (symbol? x)
 				 (let ((cell (assq x rewrite-bindings)))
 				    (if (pair? cell)
 					(cdr cell)
 					x))
-				 (match-case x
-				    ((begin ?x)
-				     (e1 x e))
-				    (else
-				     (e x e)))))))
+				 (e x ne)))))
 		`(let ,(map (lambda (id class)
 			       (let* ((cid (tclass-id class))
 				      (tv (make-typed-ident id cid)))
@@ -441,8 +437,14 @@
 			   (map (lambda (user private class instantiate)
 				   (let* ((cid (tclass-id class))
 					  (fill (symbol-append 'fill- cid '!))
+					  (constrs (find-class-constructors class))
 					  (alloc (lambda (args)
-						    `(,fill ,private ,@args))))
+						    `(begin
+							(,fill ,private ,@args)
+							,@(map (lambda (c)
+								  `(,c ,private))
+							       constrs)
+							,private))))
 				      `(,user ,(instantiate->fill instantiate
 								  class
 								  alloc
