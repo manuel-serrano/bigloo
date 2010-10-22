@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Oct 22 07:58:38 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 10:41:25 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -74,7 +74,7 @@ build-dotnet:
 pop:
 	@ echo $(POPULATION:%=$(API)/%)
 	@ for d in $(POPDIR); do \
-            $(MAKE) -C $$d -s pop \
+            $(MAKE) -C $$d -s pop; \
           done;
 
 #*---------------------------------------------------------------------*/

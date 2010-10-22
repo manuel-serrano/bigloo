@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Oct 22 08:00:01 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 09:46:29 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -105,7 +105,7 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
-	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-dotnet; \
           fi
 
