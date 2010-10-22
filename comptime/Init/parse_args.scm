@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Oct 19 17:15:19 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 15:52:11 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -165,11 +165,12 @@
 			  (print "   - " (car var))
 			  (print "     " (cdr var)))
 		       (print "   - " (car var) ": " (cdr var))))
-		'(("TMPDIR" . "tmp directory (default \"/tmp\")")
-		  ("BIGLOOLIB" . "libraries' directory")
-		  ("BIGLOOHEAP" . "the initial heap size in megabytes (4 MB by default)")
-		  ("BIGLOOSTACKDEPTH" . "the error stack depth printing")
-		  ("BIGLOOLIVEPROCESS" . "the maximum number of Bigloo live processes")))
+		(cons `("TMPDIR" . ,(format "temporary directory (default \"~a\")"
+					   (os-tmp)))
+		      '(("BIGLOOLIB" . "libraries' directory")
+			("BIGLOOHEAP" . "the initial heap size in megabytes (4 MB by default)")
+			("BIGLOOSTACKDEPTH" . "the error stack depth printing")
+			("BIGLOOLIVEPROCESS" . "the maximum number of Bigloo live processes"))))
       (newline)
       (print "Runtime Command file:")
       (print "   - ~/.bigloorc"))

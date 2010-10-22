@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 23 15:13:19 1992                          */
-;*    Last change :  Tue Jan  2 17:10:55 2007 (serrano)                */
+;*    Last change :  Fri Oct 22 16:25:28 2010 (serrano)                */
 ;*                                                                     */
 ;*    Des tests d'expanseurs.                                          */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Mon Oct 18 11:21:02 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 15:11:18 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -179,7 +179,11 @@
        (proc proc)
        (msg message)
        (obj (if (char? obj)
-		(string-append "{" (string obj) "}" (read-line port))
+		(string-append "{" (string obj) "}"
+			       (let ((o (read-line port)))
+				  (if (eof-object? o)
+				      ""
+				      o)))
 		obj))
        (fname (input-port-name port))
        (location (input-port-position port)))))

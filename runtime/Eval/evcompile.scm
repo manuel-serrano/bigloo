@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Thu Sep 30 07:04:34 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 16:33:38 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -170,16 +170,23 @@
        (evcompile-and rest env genv where named? (get-location exp loc) lkp))
       ((begin . ?rest)
        (evcompile-begin rest env genv where named? tail
-			(get-location exp loc) lkp))
+			(get-location exp loc) lkp toplevelp))
       ((or (define ?var (and (lambda . ?-) ?val))
 	   (define ?var (begin (and (lambda . ?-) ?val))))
-       (if (and (eq? where 'nowhere)
+       (cond
+	  ((and (eq? where 'nowhere)
 		(or (eq? genv (scheme-report-environment 5))
 		    (eq? genv (null-environment 5))))
 	   (evcompile-error loc
 			    'eval
 			    "Illegal define form (sealed environment)"
-			    exp)
+			    exp))
+	  ((not toplevelp)
+	   (evcompile-error loc
+			    'eval
+			    "Illegal non toplevel define"
+			    exp))
+	  (else
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-lambda (untype-ident var)
 				       (evcompile val '()
@@ -187,15 +194,22 @@
 						  (<fx (bigloo-debug) 3)
 						  (get-location exp loc)
 						  lkp #f)
-				       loc))))
+				       loc)))))
       ((define ?var ?val)
-       (if (and (eq? where 'nowhere)
+       (cond
+	  ((and (eq? where 'nowhere)
 		(or (eq? genv (scheme-report-environment 5))
 		    (eq? genv (null-environment 5))))
 	   (evcompile-error loc
 			    'eval
 			    "Illegal define form (sealed environment)"
-			    exp)
+			    exp))
+	  ((not toplevelp)
+	   (evcompile-error loc
+			    'eval
+			    "Illegal non toplevel define"
+			    exp))
+	  (else
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-value (untype-ident var)
 				      (evcompile val '()
@@ -203,7 +217,7 @@
 						 (< (bigloo-debug) 3)
 						 (get-location val loc)
 						 lkp #f)
-				      loc))))
+				      loc)))))
       ((set! . ?-)
        (match-case exp
 	  ((?- (and (? symbol?) ?var) ?val)
@@ -233,7 +247,8 @@
 				    (evcompile-begin protect env genv
 						     where named? #f
 						     (get-location protect loc)
-						     lkp)
+						     lkp
+						     #f)
 				    loc)))
       ((with-handler ?handler . ?body)
        (let ((loc (get-location exp loc)))
@@ -244,7 +259,8 @@
 				  (evcompile-begin body env genv
 						   where named? #f
 						   (get-location body loc)
-						   lkp)
+						   lkp
+						   #f)
 				  loc)))
      ((lambda ?formals ?body)
        (let* ((loc (get-location exp loc))
@@ -411,15 +427,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-begin ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-begin body env genv where named? tail loc lkp)
+(define (evcompile-begin body env genv where named? tail loc lkp tlp)
    (cond
       ((null? body)
-       (evcompile #unspecified env genv where named? tail loc lkp #f))
+       (evcompile #unspecified env genv where named? tail loc lkp tlp))
       ((null? (cdr body))
        (evcompile (car body) env genv
 		  where named? tail
 		  (get-location (car body) loc)
-		  lkp #f))
+		  lkp tlp))
       (else
        (let ((cbody (let loop ((rest body))
 		       (cond
@@ -429,12 +445,12 @@
 			   (cons (evcompile (car rest) env
 					    genv where named? tail
 					    (get-location (car rest) loc)
-					    lkp #f)
+					    lkp tlp)
 				 '()))
 			  (else
 			   (cons (evcompile (car rest) env genv where #f #f
 					    (get-location (car rest) loc)
-					    lkp #f)
+					    lkp tlp)
 				 (loop (cdr rest))))))))
 	  (list->evcode 16 loc cbody)))))
 

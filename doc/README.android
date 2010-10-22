@@ -12,10 +12,8 @@ Note: in this document we use the following definitions for cross compiling [1]:
 1. Status
 =========
 
-The current Bigloo port (as of 3.4b) on Android is complete but it does not
-support shared libraries yet with multi-threading. That is, for single
-threaded applications, shared libraries can be used. On the other hand
-multi-threaded applications have to be linked against static libraries.
+The current Bigloo port (as of 3.4b) on Android is complete but it
+does not support shared libraries yet.
 
 
 2. Requirements

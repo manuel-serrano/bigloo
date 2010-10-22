@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sun Oct  3 19:31:38 2010 (serrano)                */
+;*    Last change :  Fri Oct 22 15:49:07 2010 (serrano)                */
 ;*    Copyright   :  2003-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -288,17 +288,18 @@
 		     (unwind-protect
 			(compiler)
 			;; we load the library init files.
-			(load-library-init)
-			(let* ((pre (prefix tmp))
-			       (c-file (string-append pre ".c"))
-			       (o-file (string-append
-					pre
-					"."
-					*c-object-file-extension*)))
-			   (for-each (lambda (f)
-					(if (file-exists? f)
-					    (delete-file f)))
-				     (list tmp c-file o-file))))
+			(begin
+			   (load-library-init)
+			   (let* ((pre (prefix tmp))
+				  (c-file (string-append pre ".c"))
+				  (o-file (string-append
+					   pre
+					   "."
+					   *c-object-file-extension*)))
+			      (for-each (lambda (f)
+					   (when (file-exists? f)
+					      (delete-file f)))
+					(list tmp c-file o-file)))))
 		     0))
 	      (let ((port (open-input-file (caar sources))))
 		 (if (not (input-port? port))
