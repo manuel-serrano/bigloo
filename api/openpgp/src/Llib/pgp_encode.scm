@@ -222,10 +222,10 @@
       (encode-prefs algos symmetric-key-algo->byte p)))
 (define-method (encode-sub-packet-content sp::PGP-Signature-Sub-Revocation
 					  p::output-port)
-   (with-access::PGP-Signature-Sub-Revocation sp (critical? class
+   (with-access::PGP-Signature-Sub-Revocation sp (critical? clazz
 							    algid fingerprint)
       (encode-sub-packet-header 'revocation-key critical? p)
-      (encode-octet class p)
+      (encode-octet clazz p)
       (encode-octet algid p)
       (encode-octets fingerprint 20 p)))
 (define-method (encode-sub-packet-content sp::PGP-Signature-Sub-ID

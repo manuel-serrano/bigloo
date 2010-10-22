@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jun 20 17:06:12 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 07:58:38 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -49,19 +49,19 @@ dotnet: build-dotnet
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;32m>>> C[0m"; \
-	    (cd src && $(MAKE) build-c) \
+	    $(MAKE) -C src build-c; \
           fi
 
 build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
-	    (cd src && $(MAKE) build-jvm) \
+	    $(MAKE) -C src build-jvm; \
           fi
 
 build-dotnet:
 	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) build-dotnet) \
+	    $(MAKE) -C src build-dotnet; \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -74,22 +74,22 @@ build-dotnet:
 pop:
 	@ echo $(POPULATION:%=$(API)/%)
 	@ for d in $(POPDIR); do \
-            (cd $$d && $(MAKE) -s pop) \
+            $(MAKE) -C $$d -s pop \
           done;
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
 #*---------------------------------------------------------------------*/
 clean:
-	(cd src && $(MAKE) clean)
-	(cd recette && $(MAKE) clean)
+	$(MAKE) -C src clean
+	$(MAKE) -C recette clean
 
 distclean: clean
-	(cd src && $(MAKE) distclean)
-	(cd recette && $(MAKE) distclean)
+	$(MAKE) -C src distclean
+	$(MAKE) -C recette distclean
 
 cleanall: distclean
-	(cd src && $(MAKE) cleanall)
+	$(MAKE) -C src cleanall
 	$(RM) -f lib/*fth* >/dev/null 2>&1
 	$(RM) -f *~ >/dev/null 2>&1
 
@@ -118,7 +118,7 @@ uninstall: api-uninstall-init \
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
-	(cd src && $(MAKE) ude)
+	$(MAKE) -C src ude
 
 #*---------------------------------------------------------------------*/
 #*    Common rules                                                     */

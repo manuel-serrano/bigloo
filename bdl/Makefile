@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Aug 12 11:34:50 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 07:58:25 2010 (serrano)                */
 #*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -15,28 +15,42 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-POPDIR		= src example
+POPDIR = src example
 
-POPULATION	= Makefile README
+POPULATION = Makefile README
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: boot-jvm boot-c
-boot: boot-c
-jvm: boot-jvm
+.PHONY: build build build-c build-jvm build-dotnet
 
-boot-c:
-	@if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	  echo "[0m[1;32m>>> (cd src; $(MAKE))[0m"; \
-	  (cd src && $(MAKE) c); \
-        fi
+all: build
+boot: build
 
-boot-jvm:
-	@if [ "$(JVMBACKEND)" = "yes" ]; then \
-	  echo "[0m[1;31m>>> (cd src; $(MAKE) jvm)[0m"; \
-	  (cd src && $(MAKE) jvm); \
-        fi
+build:
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-dotnet
+
+c: build-c
+jvm: build-jvm
+dotnet: build-dotnet
+
+build-c:
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;32m>>> C[0m"; \
+	    $(MAKE) -C src build-c; \
+          fi
+
+build-jvm:
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> JVM[0m"; \
+	    $(MAKE) -C src build-jvm; \
+          fi
+
+build-dotnet:
+	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> .NET[0m"; \
+	    $(MAKE) -C src build-dotnet; \
+          fi
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */
@@ -54,15 +68,15 @@ ude:
 pop:
 	@ echo $(POPULATION:%=bdl/%)
 	@ for d in $(POPDIR); do \
-            (cd $$d && $(MAKE) -s pop) \
+            $(MAKE) -C $$d -s pop \
           done;
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
 #*---------------------------------------------------------------------*/
 clean:
-	(cd src && $(MAKE) clean)
-	(cd example && $(MAKE) clean)
+	$(MAKE) -C src clean
+	$(MAKE) -C example clean
 
 distclean: clean
 cleanall: distclean
@@ -73,50 +87,16 @@ cleanall: distclean
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-c install-jvm uninstall
+.PHONY: install uninstall
 
-include ../Makefile.misc
-
-install: install-c install-jvm
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/bdl.init $(LIBDIR)/$(FILDIR)/bdl.init && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.init; \
-        fi
-
-install-c:
-	@if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	  $(MAKE) install-lib LIB=libbigloobdl_s-$(RELEASE) && \
-	  $(MAKE) install-lnlib LIB=libbigloobdl_s-$(RELEASE) LN=libbigloobdl_u-$(RELEASE) && \
-	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	    cp $(BOOTLIBDIR)/bdl.heap $(LIBDIR)/$(FILDIR)/bdl.heap && \
-	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.heap; \
-          fi \
-        fi
-
-install-jvm:
-	@if [ "$(JVMBACKEND)" = "yes" ]; then \
-	  if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	    cp $(BOOTLIBDIR)/bdl.jheap $(LIBDIR)/$(FILDIR)/bdl.jheap && \
-	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl.jheap && \
-	    cp $(BOOTLIBDIR)/bdl_s.zip $(LIBDIR)/$(FILDIR)/bdl_s.zip && \
-	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdl_s.zip && \
-	    (cd $(LIBDIR)/$(FILDIR) && \
-             $(RM) -f bdl_u.zip && \
-             ln bdl_s.zip bdl_u.zip); \
-          fi \
-        fi
+install:
+	$(MAKE) -C src install
 
 uninstall:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bdl.init
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bdl.heap
-	-$(MAKE) uninstall-lib LIB=libbigloobdl_s-$(RELEASE)
-	-$(MAKE) uninstall-lib LIB=libbigloobdl_u-$(RELEASE)
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bdl.jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bdl_s.zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bdl_u.zip
+	$(MAKE) -C src uninstall
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
-	(cd src && $(MAKE) ude)
+	$(MAKE) -C src ude

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Sep  3 18:44:31 2010 (serrano)                */
+#*    Last change :  Fri Oct 22 08:00:01 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -20,7 +20,6 @@ include ../../Makefile.misc
 # the library name
 API		= bdl
 # Where to store the library class files
-PBASE		= bigloo.bdl
 CLASS_DIR	= objs/class_s/bigloo/bdl
 BIGLOO_SRC_DIR 	= .
 DOTNET_SRC_DIR 	= .
@@ -93,6 +92,27 @@ build-jvm: api-jvm
 
 dotnet: build-dotnet
 build-dotnet: api-dotnet
+
+#*---------------------------------------------------------------------*/
+#*    Installation ...                                                 */
+#*---------------------------------------------------------------------*/
+.PHONY: install uninstall
+
+install: api-install-init
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-c; \
+          fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-jvm; \
+          fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-dotnet; \
+          fi
+
+uninstall: api-uninstall-init \
+           api-uninstall-c \
+           api-uninstall-jvm \
+           api-uninstall-dotnet
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
