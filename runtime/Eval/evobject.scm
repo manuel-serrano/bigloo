@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Oct 22 18:37:43 2010 (serrano)                */
+;*    Last change :  Sat Oct 23 07:30:26 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -111,6 +111,12 @@
    (symbol-append 'make- id))
 
 ;*---------------------------------------------------------------------*/
+;*    class-fill ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (class-fill id)
+   (symbol-append 'fill- id '!))
+
+;*---------------------------------------------------------------------*/
 ;*    class-allocate ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (class-allocate id)
@@ -202,6 +208,35 @@
 						    eval-args)))
 	      ,(when const `(,const ,tmp))
 	      ,tmp)))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-fill-class ...                                              */
+;*---------------------------------------------------------------------*/
+(define (eval-fill-class loc id slots super super-slots native native-slots)
+   (let* ((fid (class-fill id))
+	  (o (gensym))
+	  (fill-native (class-fill (class-name native)))
+	  (slots (non-virtual-slots slots))
+	  (super-slots (non-virtual-slots super-slots))
+	  (native-slots (non-virtual-slots native-slots))
+	  (all-slots (append super-slots slots))
+	  (native-args (filter-map slot-non-virtual-id native-slots))
+	  (all-args (append (map slot-id (non-virtual-slots super-slots))
+			    (map slot-id (non-virtual-slots slots))))
+	  (eval-slots (drop all-slots (length native-slots)))
+	  (eval-args (drop all-args (length native-args))))
+      (define (init-slot s a)
+	 (let ((v (if (slot-indexp s)
+		      `(make-vector ,(slot-len (slot-id s)) ,a)
+		      a)))
+	    v))
+      (localize
+       loc
+       `(define (,fid ,o ,@all-args)
+	   (,fill-native ,o ,@native-args)
+	   (%object-widening-set! ,o
+				  (vector ,@(map init-slot eval-slots eval-args)))
+	   ,o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-allocate-class ...                                          */
@@ -458,9 +493,9 @@
 			  e))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-duplicate->fill ...                                         */
+;*    eval-duplicate->make ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (eval-duplicate->fill cid args old fields)
+(define (eval-duplicate->make cid args old fields)
    (let* ((mk (class-make cid))
 	  (ins (symbol-append 'duplicate:: cid))
 	  (nodef (class-field-no-default-value))
@@ -526,7 +561,7 @@
 			      (,a (cddr x)))
 			   (e ,(eval-instantiate-check
 				id a fields
-				(eval-duplicate->fill cid a o fields))
+				(eval-duplicate->make cid a o fields))
 			      e)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -923,7 +958,14 @@
 						       super super-slots
 						       native native-slots)))
 			    (eval! e mod)
-			    (set! idents (cons (caadr e) idents))))
+			    (set! idents (cons (caadr e) idents)))
+			 ;; fill
+			 (let ((e (eval-fill-class
+				   loc cid slots
+				   super super-slots
+				   native native-slots)))
+			    (eval! e mod)
+			    (set! idents (cons (caddr e) idents))))
 		      ;; class definition
 		      (let ((e `(set! ,cid
 				      ,(eval-register-class
@@ -992,14 +1034,19 @@
 	  (expand-error "co-instantiate" "Illegal binding" bdg))))
 
    (define (fill-args class instantiate)
-      (filter-map (lambda (f)
-		     (unless (class-field-virtual? f)
-			(let ((id (class-field-name f)))
-			   (let ((v (assq id (cdr instantiate))))
-			      (if (pair? v)
-				  (cadr v)
-				  (class-field-default-value f))))))
-		  (class-all-fields class)))
+      (map (lambda (f)
+	      (let ((id (class-field-name f)))
+		 (let ((v (assq id (cdr instantiate))))
+		    (if (pair? v)
+			(cadr v)
+			(let ((d (class-field-default-value f)))
+			   (if (eq? d (class-field-no-default-value))
+			       (expand-error "co-instantiate"
+					     "argument missing"
+					     id)
+			       (list 'quote d)))))))
+	    (filter (lambda (f) (not (class-field-virtual? f)))
+		    (class-all-fields class))))
 
    (define (fill-virtuals o class instantiate)
       (filter-map (lambda (f)
@@ -1011,7 +1058,10 @@
 				,o
 				,(if (pair? v)
 				     (cadr v)
-				     (class-field-default-value f)))))))
+				     (let ((d (class-field-default-value f)))
+					(if (eq? d (class-field-no-default-value))
+					    `',o
+					    (list 'quote d)))))))))
 		  (class-all-fields class)))
    
    (let loop ((bindings bindings)
@@ -1033,8 +1083,7 @@
 			   `(begin
 			       (,fill ,user ,@args)
 			       ,@(fill-virtuals user class instantiate)
-			       ,(when constr
-				   `(,constr ,user))
+			       ,(when constr `(,constr ,user))
 			       ,user)))
 		     user-variables
 		     classes
