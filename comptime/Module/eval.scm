@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sun Oct 17 17:07:08 2010 (serrano)                */
+;*    Last change :  Mon Oct 25 10:18:46 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -202,8 +202,8 @@
 		 (let ((i (library-info library)))
 		    (if i
 			i
-			(warning library "cannot find info \"~a\"" init))))
-	      (warning library "cannot find file \"~a\" in lib path" init)))))
+			(warning library (format "cannot find info \"~a\"" init)))))
+	      (warning library (format "cannot find file \"~a\" in lib path" init))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library_e ...                                                    */
