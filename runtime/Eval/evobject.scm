@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sat Oct 23 07:30:26 2010 (serrano)                */
+;*    Last change :  Mon Oct 25 09:53:58 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -965,7 +965,7 @@
 				   super super-slots
 				   native native-slots)))
 			    (eval! e mod)
-			    (set! idents (cons (caddr e) idents))))
+			    (set! idents (cons (caadr e) idents))))
 		      ;; class definition
 		      (let ((e `(set! ,cid
 				      ,(eval-register-class
