@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Thu Oct  7 09:18:28 2010 (serrano)                */
+;*    Last change :  Mon Oct 25 17:57:27 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -187,7 +187,7 @@
 		   (out (string-downcase (close-output-port p))
 			col)))))
 	   ((procedure? obj)
-	    (out obj col))
+	    (out (with-output-to-string (lambda () (display obj))) col))
 	   ((string? obj)
 	    (let ((obj (string-for-read obj)))
 	       (if display?

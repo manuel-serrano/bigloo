@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Oct 25 09:53:58 2010 (serrano)                */
+;*    Last change :  Mon Oct 25 17:56:20 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -1044,7 +1044,7 @@
 			       (expand-error "co-instantiate"
 					     "argument missing"
 					     id)
-			       (list 'quote d)))))))
+			       d))))))
 	    (filter (lambda (f) (not (class-field-virtual? f)))
 		    (class-all-fields class))))
 
@@ -1052,16 +1052,13 @@
       (filter-map (lambda (f)
 		     (when (and (class-field-virtual? f)
 				(class-field-mutable? f))
-			(let ((id (class-field-name f)))
-			   (let ((v (assq id (cdr instantiate))))
-			      `(,(slot-set id (class-name class))
-				,o
-				,(if (pair? v)
-				     (cadr v)
-				     (let ((d (class-field-default-value f)))
-					(if (eq? d (class-field-no-default-value))
-					    `',o
-					    (list 'quote d)))))))))
+			(let* ((id (class-field-name f))
+			       (v (assq id (cdr instantiate))))
+			   (if (pair? v)
+			       `(,(slot-set id (class-name class)) ,o ,(cadr v))
+			       (let ((d (class-field-default-value f)))
+				  (unless (eq? d (class-field-no-default-value))
+				     `(,(slot-set id (class-name class)) ,o ,d)	 ))))))
 		  (class-all-fields class)))
    
    (let loop ((bindings bindings)
@@ -1082,8 +1079,8 @@
 			       (constr (find-class-constructor class)))
 			   `(begin
 			       (,fill ,user ,@args)
-			       ,@(fill-virtuals user class instantiate)
 			       ,(when constr `(,constr ,user))
+			       ,@(fill-virtuals user class instantiate)
 			       ,user)))
 		     user-variables
 		     classes
