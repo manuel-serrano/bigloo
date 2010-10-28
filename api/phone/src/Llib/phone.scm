@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Wed Oct 27 08:25:59 2010 (serrano)                */
+;*    Last change :  Thu Oct 28 06:10:05 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic phone API                                                */
@@ -29,6 +29,8 @@
 	   (generic phone-sms-send ::phone ::bstring ::bstring)
 
 	   (generic phone-contact::pair-nil ::phone)
+	   (generic phone-contact-add! ::phone ::obj)
+	   (generic phone-contact-remove! ::phone ::obj)
 	   
 	   (generic phone-call-log::pair-nil ::phone . num)))
 
@@ -59,6 +61,8 @@
 ;*    phone-contact ::phone ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-contact p::phone))
+(define-generic (phone-contact-add! p::phone o::obj))
+(define-generic (phone-contact-remove! p::phone o::obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    phone-call-log ::phone ...                                       */
