@@ -249,7 +249,7 @@ This way, the Lalr grammar will automatically handles the end-of-file.
 
 Currently the debugging facility for debugging Lalr grammars is very
 limited. When the parameter @code{bigloo-debug} is set to a value
-greater or equal to 3, the Lalr engine outputs all of the state
+greater or equal to 100, the Lalr engine outputs all of the state
 changes the parser is going through.
 
 @c -- A simple example ----------------------------------------------- @c

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 12:00:29 1998                          */
-;*    Last change :  Mon Dec 11 11:25:06 2006 (serrano)                */
+;*    Last change :  Tue Nov  2 06:58:11 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the search functions:                     */
 ;*      - a module definition (using the afile)                        */
@@ -78,7 +78,7 @@
 ;*    is entered (in order to let caller handle afile error).          */
 ;*---------------------------------------------------------------------*/
 (defun bee-find-afile-module (module)
-  (let* ((cmd (concat ude-uncase-grep " \"" module " \" "
+  (let* ((cmd (concat ude-uncase-grep " \"(" module " \" "
 		      ude-root-directory ude-afile-name))
 	 (res (shell-command-to-string cmd)))
     (if (> (length res) 0)
@@ -449,4 +449,4 @@
 ;*    bee-find-var-regexp ...                                          */
 ;*---------------------------------------------------------------------*/
 (defun bee-find-var-regexp (ident)
-  (concat " [(]?" (regexp-quote ident) "\\(?:[::][^]+\\)?[]"))
+  (concat " [(]?" (regexp-quote ident) "\\(?: \\|[::][^]+\\)?[]"))

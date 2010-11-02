@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 07:24:34 1998                          */
-;*    Last change :  Tue May 13 14:10:42 2008 (serrano)                */
-;*    Copyright   :  2000-08 Manuel Serrano                            */
+;*    Last change :  Tue Nov  2 07:32:26 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo tag generator.                                        */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
 (define *btags-modules*         #f)
 (define *btags-extern?*         #f)
 (define *oport*                 #f)
-(define *btags-define-var-list* '(define define-struct))
+(define *btags-define-var-list* '(define define-struct define-parameter))
 (define *btags-define-fun-list* '(define define-inline define-generic
 				    define-macro define-expander))
 (define *btags-module-list*     '(module))
@@ -234,15 +234,14 @@
 		(reader-reset!)
 		;; we now scan the file in order to emit the TAGs decls
 		(let loop ((line  (read-line iport))
-			   (lnum  0)
+			   (lnum  1)
 			   (pos   1)
 			   (lines decl-lines)
 			   (tags  ""))
 		   (if (and (pair? lines) (not (eof-object? line)))
 		       (if (=fx lnum (car (car lines)))
 			   ;; this is a declaration line
-			   (let ((tag (tags-substring line
-						      (cdr (car lines)))))
+			   (let ((tag (tags-substring line (cdr (car lines)))))
 			      (loop line
 				    lnum
 				    pos
@@ -312,6 +311,8 @@
 		 (loop (+fx r 1))))))
 	 ((vector? str2)
 	  (string-append "(define (" (vector-ref str2 1)))
+	 ((cell? str2)
+	  (string-append "(define-parameter " (cell-ref str2) "-set!"))
 	 (else
 	  ;; this is neither a class nor a method...
 	  (let* ((len2 (string-length str2))
@@ -385,7 +386,7 @@
    (and (epair? expr)
 	(match-case (cer expr)
 	   ((at ?fname ?pos)
-	    (file-position->line pos fname))
+	    (file-position->line (+fx pos 1) fname))
 	   (else
 	    #f))))
 
@@ -459,7 +460,7 @@
       (if (pair? decls)
 	  (let ((nlines (parser (car decls))))
 	     (loop (cdr decls)
-		   (if (pair? nlines)
+		   (if (list? nlines)
 		       (append nlines lines)
 		       lines)))
 	  lines)))
@@ -551,25 +552,25 @@
 	     ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	      (let ((lnum (line-number decl)))
 		 (if (number? lnum)
-		     (cons lnum (string-append "\"" cname "\"")))))
+		     (list (cons lnum (string-append "\"" cname "\""))))))
 	     ((or (macro ?l-name ?proto ?c-name)
 		  (infix macro ?l-name ?proto ?c-name))
 	      (let ((lnum (line-number decl)))
 		 (if (number? lnum)
-		     (cons lnum (id->string l-name decl)))))
+		     (list (cons lnum (id->string l-name decl))))))
 	     ((macro ?l-name ?c-name)
 	      (let ((lnum (line-number decl)))
 		 (if (number? lnum)
-		     (cons lnum (id->string l-name decl)))))
+		     (list (cons lnum (id->string l-name decl))))))
 	     ((?l-name ?proto ?c-name)
 	      (let ((lnum (line-number decl)))
 		 (if (number? lnum)
-		     (cons lnum (id->string l-name decl)))))
+		     (list (cons lnum (id->string l-name decl))))))
 	     ((?l-name ?c-name)
 	      (let ((lnum (line-number decl)))
 		 (if (number? lnum)
-		     (cons lnum (id->string l-name decl))))))))
-   (btags-clause-walker (list extern-parse) clause))
+		     (list (cons lnum (id->string l-name decl)))))))))
+   (btags-clause-walker extern-parse (cdr clause)))
 
 ;*---------------------------------------------------------------------*/
 ;*    btags-expression ...                                             */
@@ -597,10 +598,14 @@
 	  (if (number? lnum)
 	      (list (cons lnum (id->string fun expr)))
 	      '())))
-      (((? var-keyword?) (and (? symbol?) ?var) . ?-)
+      (((and ?def (? var-keyword?)) (and (? symbol?) ?var) . ?-)
        (let ((lnum (line-number expr)))
 	  (if (number? lnum)
-	      (list (cons lnum (id->string var expr)))
+	      (if (eq? def 'define-parameter)
+		  (let ((s (id->string var expr)))
+		     (list (cons lnum s)
+			   (cons lnum (make-cell s))))
+		  (list (cons lnum (id->string var expr))))
 	      '())))
       (((? module-keyword?) (and (? symbol?) ?var) . ?-)
        (let ((lnum (line-number expr)))

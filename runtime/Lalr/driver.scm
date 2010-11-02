@@ -41,7 +41,7 @@
    
    (export (__make-parser action-table reduction-table)))
 
-(define (lalr-debug)           5)
+(define (lalr-debug)           100)
 
 (define *max-stack-size*       500)
 (define *stack-size-increment* 200)
