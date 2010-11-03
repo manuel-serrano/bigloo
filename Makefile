@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov  3 11:35:09 2010 (serrano)                */
+#*    Last change :  Wed Nov  3 11:41:52 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -467,7 +467,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ echo "-------------------------------"
 
 ChangeLog:
-	$(MAKE) $(REVISIONSYSTEM)-log
+	$(MAKE) log > $@
 
 #*---------------------------------------------------------------------*/
 #*    distrib-jvm                                                      */
@@ -812,6 +812,7 @@ clean:
              exit 1; \
           fi
 	$(RM) -f configure.log
+	$(RM) -f ChangeLog
 	$(MAKE) -C gc clean
 	$(MAKE) -C gmp clean
 	(cd comptime && $(MAKE) clean)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/tools/hglog.scm                      */
+;*    serrano/prgm/project/hop/2.2.x/etc/hglog.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  3 07:22:22 2010                          */
-;*    Last change :  Wed Nov  3 11:31:29 2010 (serrano)                */
+;*    Last change :  Wed Nov  3 12:08:47 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate a changelog with HG                                     */
@@ -19,7 +19,7 @@
 ;*    hg-pattern ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define hg-pattern
-   "(\"{date|shortdate}\" \"{author}\" ({files}) \"{desc|fill68}\" \"{node|short}\" \"{branches}\")")
+   "(\"{date|shortdate}\" \"{author}\" \"{files}\" \"{desc|urlescape|fill68}\" \"{node|short}\" \"{branches}\")")
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
@@ -32,8 +32,8 @@
 	  (set! opts (cons* "-b" b opts)))
 	 ((("-r" "--rev") ?r (help "Select a revision"))
 	  (set! opts (cons* "-r" r opts)))
-	 ((("-" "--stdin") (help "Read from stdin"))
-	  (set! opts (cons* "-r" r opts)))
+	 (("--stdin" (help "Read from stdin"))
+	  (set! stdin #t))
 	 (else
 	  (print "Illegal argument `" else "'. Usage:")
 	  (args-parse-usage #f)))
@@ -46,42 +46,50 @@
 	    (unless (eof-object? exp)
 	       (match-case exp
 		  ((?date ?author ?files ?desc ?node ?branch)
-		   (unless (skip-entry? desc)
-		      (unless (string=? date dt)
-			 (display date)
-			 (display "  ")
-			 (display author)
-			 (newline)
-			 (newline))
-		      (display "\t*")
-		      (display-list files)
-		      (newline)
-		      (for-each (lambda (s)
-				   (print "\t" s))
-				(string-split desc "\n"))
-		      (print "\t[" node "] <" branch ">\n"))
-		   (loop (read op) date))
+		   (if (skip-entry? desc)
+		       (loop (read op) dt)
+		       (begin
+			  (unless (string=? date dt)
+			     (display date)
+			     (display "  ")
+			     (display author)
+			     (newline)
+			     (newline))
+			  (display "\t*")
+			  (display-list files)
+			  (newline)
+			  (for-each (lambda (s)
+				       (print "\t" s))
+				    (string-split (url-decode desc) "\n"))
+			  (display* "\t[" node "]")
+			  (unless (string=? branch "")
+			     (display* "<" branch ">"))
+			  (newline)
+			  (newline)
+			  (loop (read op) date))))
 		  (else
 		   (loop (read op) dt))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-list ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (display-list l)
-   (when (pair? l)
-      (let loop ((l l)
-		 (c 0))
-	 (let ((sl (string-length (symbol->string (car l)))))
-	    (when (>fx (+fx c sl) 68)
-	       (display "\n\t")
-	       (set! c 0))
-	    (display " ")
-	    (display (car l))
-	    (if (pair? (cdr l))
-		(begin
-		   (display ",")
-		   (loop (cdr l) (+ c sl 2)))
-		(display ":"))))))
+(define (display-list files)
+   (let ((l (string-split files " ")))
+      (when (pair? l)
+	 (let loop ((l l)
+		    (c 0))
+	    (let ((sl (string-length (car l))))
+	       (if (>fx (+fx c sl) 68)
+		   (begin
+		      (display "\n\t")
+		      (set! c 0))
+		   (display " "))
+	       (display (car l))
+	       (if (pair? (cdr l))
+		   (begin
+		      (display ",")
+		      (loop (cdr l) (+ c sl 2)))
+		   (display ":")))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    skip-entry? ...                                                  */

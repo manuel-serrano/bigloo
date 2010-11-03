@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 16 06:22:55 2006                          */
-#*    Last change :  Wed Nov  3 11:33:51 2010 (serrano)                */
+#*    Last change :  Wed Nov  3 12:09:10 2010 (serrano)                */
 #*    Copyright   :  2006-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Mercurial specific part of the Bigloo Makefile               */
@@ -20,7 +20,7 @@ VM-CLONE	= hg clone
 VM-TAG		= hg tag
 VM-UPDATE	= hg update -C tip
 VM-VERIFY	= hg verify
-VM-LOG		= hg log --template "(\"{date|shortdate}\" \"{author}\" ({files}) \"{desc|fill68}\" \"{node|short}\" \"{branches}\")"
+VM-LOG		= hg log --template "(\"{date|shortdate}\" \"{author}\" \"{files}\" \"{desc|fill68|urlescape}\" \"{node|short}\" \"{branches}\")"
 
 #*---------------------------------------------------------------------*/
 #*    populate ...                                                     */
@@ -78,4 +78,4 @@ pull:
 	@ $(VM-PULL) $(BIGLOOSVN)
 
 log:
-	@ $(VM-LOG) | $(BOOTBINDIR)/$(BIGLOO) -i $(BOOTBINDIR)/tools/hglog.scm -
+	@ $(VM-LOG) | $(BIGLOO) -i $(BOOTDIR)/tools/hglog.scm --stdin
