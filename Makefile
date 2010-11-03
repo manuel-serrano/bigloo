@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Oct 18 12:12:20 2010 (serrano)                */
+#*    Last change :  Wed Nov  3 11:35:09 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -429,7 +429,7 @@ newrevision:
 #*    current makefile. The dependencies are here present just to      */
 #*    check that everything is ready for a distribution.               */
 #*---------------------------------------------------------------------*/
-.PHONY: distrib
+.PHONY: distrib ChangeLog
 
 include Makefile.$(REVISIONSYSTEM)
 
@@ -458,12 +458,16 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	       ($(MAKE) -C $$d distrib) || exit 1; \
              fi \
           done
+	@ $(MAKE) ChangeLog
 	@ $(RM) -f Makefile.config;
 	@ (cd .. && \
            mv bigloo bigloo$(RELEASE)$(VERSION) && \
            tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
+
+ChangeLog:
+	$(MAKE) $(REVISIONSYSTEM)-log
 
 #*---------------------------------------------------------------------*/
 #*    distrib-jvm                                                      */
@@ -882,7 +886,7 @@ distclean:
 #*    repository for revision.                                         */
 #*---------------------------------------------------------------------*/
 pop:
-	@ echo LICENSE COPYING ChangeLog \
+	@ echo LICENSE COPYING \
                configure INSTALL INSTALL.jvm README \
                Makefile Makefile.misc \
                Makefile.prcs Makefile.mercurial \

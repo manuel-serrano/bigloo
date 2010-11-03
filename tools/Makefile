@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Fri Sep  4 11:05:23 2009 (serrano)                */
-#*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Nov  3 11:36:17 2010 (serrano)                */
+#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build args                                       */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ C_SRC		= $(C_OBJ:%.o=%.c)
 OBJ		= $(C_OBJ) $(SCM_OBJ)
 SRC		= $(C_SRC) $(SCM_SRC)
 
-POPULATION	= $(SRC) basm Makefile
+POPULATION	= $(SRC) basm hglog.scm Makefile
 
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
