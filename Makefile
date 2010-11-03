@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov  3 17:48:20 2010 (serrano)                */
+#*    Last change :  Wed Nov  3 17:52:16 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -458,7 +458,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	       ($(MAKE) -C $$d distrib) || exit 1; \
              fi \
           done
-	@ $(MAKE) -C $(BOOTDIR) log > $PWD/ChangeLog
+	@ $(MAKE) -C $(BOOTDIR) log > $$PWD/ChangeLog
 	@ $(RM) -f Makefile.config;
 	@ (cd .. && \
            mv bigloo bigloo$(RELEASE)$(VERSION) && \
