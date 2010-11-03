@@ -709,7 +709,7 @@ boot-dotnet: heap-jvm lib-dotnet_s lib-dotnet_u
 #*    Boot a new Bigloo using the Scheme files (instead of the C       */
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
-bigboot: objs includes
+bigboot: objs includes dirs $(AFILE)
 	@ $(MAKE) lib-c_s
 	@ $(MAKE) heap-c
 
