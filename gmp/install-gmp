@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Fri Dec  4 06:17:22 2009 (serrano)                */
-#*    Copyright   :  2007-09 Manuel Serrano                            */
+#*    Last change :  Fri Nov  5 17:03:40 2010 (serrano)                */
+#*    Copyright   :  2007-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GMP.                            */
 #*=====================================================================*/
@@ -33,8 +33,13 @@ remote=
 
 if [ "`echo $src | grep '^http://'` " != " " \
      -o "`echo $src | grep '^ftp://'` " != " " ]; then
-  $wget $src -O `basename $src`
-  src=`basename $src`
+
+  if [ ! -f $src ]; then
+    if [ ! -f `basename $src` ]; then
+      $wget $src -O `basename $src`
+    fi
+    src=`basename $src`;
+  fi
 fi
 
 if [ ! -f $src ]; then
