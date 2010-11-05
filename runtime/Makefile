@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Oct 25 17:57:23 2010 (serrano)                */
+#*    Last change :  Fri Nov  5 12:27:57 2010 (serrano)                */
 #*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -810,20 +810,28 @@ clean-c:
 	$(RM) -f $(BOOTLIBDIR)/bigloo_gc.h
 	$(RM) -f $(BOOTLIBDIR)/bigloo_config.h
 	$(MAKE) clean-quick
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
+	$(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)*.*
 
 clean-jvm:
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(RM) -rf objs/class*/bigloo/*.class
 	$(RM) -rf objs/class*/bigloo/runtime/*/*.class
 	$(MAKE) cleanclass CLASSDIR_USR=class_s CLASSDIR_SYS=class_u
 	$(MAKE) cleanclass CLASSDIR_USR=class_u CLASSDIR_SYS=class_u
 	$(MAKE) cleanclass CLASSDIR_USR=class_p CLASSDIR_SYS=class_p
+	$(RM) -f $(BOOTLIBDIR)/bigloo_u.zip
+	$(RM) -f $(BOOTLIBDIR)/bigloo_s.zip
 
 clean-dotnet:
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
 	$(RM) -rf objs/dotnet*/bigloo/*.dotnet
 	$(RM) -rf objs/dotnet*/bigloo/runtime/*/*.dotnet
 	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_s DOTNETDIR_SYS=dotnet_u
 	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_u DOTNETDIR_SYS=dotnet_u
 	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_p DOTNETDIR_SYS=dotnet_p
+	$(RM) -f $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll
+	$(RM) -f $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll
 
 cleanobj:
 	$(RM) -f $(OBJECTS)
@@ -842,13 +850,6 @@ cleanall: clean-c clean
              echo "*** ERROR:Illegal dir to make a cleanall `pwd`"; \
              exit 1; \
           fi
-	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
-	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
-	$(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)*.*
-	$(RM) -f $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo_u.zip
-	$(RM) -f $(BOOTLIBDIR)/bigloo_s.zip
 
 distclean: cleanall
 	$(RM) -rf objs/class*
