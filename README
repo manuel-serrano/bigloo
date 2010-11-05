@@ -42,7 +42,7 @@ order to run Bigloo .NET programs, any CLR implementation like Portable.NET
 
 *** Recent version of the systems can be downloaded from:
 
-   ftp://ftp-sop.inria.fr/mimosa/fp/Bigloo
+   ftp://ftp-sop.inria.fr/indes/fp/Bigloo
 
 The compiler distribution consists of several directories:
 

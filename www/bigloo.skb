@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Tue Dec  1 15:35:52 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Fri Nov  5 17:47:29 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
 ;*=====================================================================*/
@@ -211,6 +211,8 @@ also be browsed at the ,(ref :url *scmpkg.url* :text "ScmPkg") web site.])
 ;*--- News ------------------------------------------------------------*/
 (section :title "Related" :number #f [
 ,(itemize 
+
+(item [,(bold "1 Nov 2010:") ,(color :fg "red" "Android") full native support (including multi-threading).])
 
 (item [,(bold "27 May 2009:") ,(color :fg "red" "MacOS X bundle") released (see Section ,(ref :ident "Downloading" :text "download")).])
 

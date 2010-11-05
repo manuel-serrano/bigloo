@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  8 07:29:03 1998                          */
-;*    Last change :  Mon Jul  5 07:56:32 2010 (serrano)                */
+;*    Last change :  Fri Nov  5 17:51:13 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `Unix Development Environment' configuration. This file      */
 ;*    contains nearly all variables that are mode local.               */
@@ -21,7 +21,7 @@
 
 ;; ude author
 (defconst ude-author "Manuel Serrano (c)")
-(defconst ude-url "Manuel.Serrano@sophia.inria.fr\nhttp://www.inria.fr/mimosa/Manuel.Serrano")
+(defconst ude-url "Manuel.Serrano@inria.fr\nhttp://www-sop.inria.fr/members/Manuel.Serrano")
 
 ;; root directory
 (defvar ude-root-directory default-directory

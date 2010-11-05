@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Sep 27 08:05:22 2010 (serrano)                */
+;*    Last change :  Fri Nov  5 17:52:29 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -320,8 +320,8 @@
 (define *bigloo-args*       'nothing-yet)
 (define *rest-args*         '())
 (define *bigloo-author*     "Inria -- Sophia Antipolis")
-(define *bigloo-email*      "bigloo@sophia.inria.fr")
-(define *bigloo-url*        "http://www.inria.fr/mimosa/fp/Bigloo")
+(define *bigloo-email*      "bigloo@lists-sop.inria.fr")
+(define *bigloo-url*        "http://www-sop.inria.fr/indes/fp/Bigloo")
 (define *bigloo-date*       (bigloo-date))
 ;; the tmp directory
 (param-define *bigloo-tmp*
