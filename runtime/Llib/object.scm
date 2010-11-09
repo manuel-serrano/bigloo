@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Oct 20 07:05:24 2010 (serrano)                */
+;*    Last change :  Tue Nov  9 17:46:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -189,7 +189,8 @@
 	    (call-next-virtual-getter ::obj ::object ::int)
 	    (call-next-virtual-setter ::obj ::object ::int ::obj)
 	    (%object-widening::obj ::object)
-	    (%object-widening-set!::obj ::object ::obj))
+	    (%object-widening-set!::obj ::object ::obj)
+	    (generic-memory-statistics))
 	       
    (static  *nb-classes-max*
 	    *nb-classes*::obj
@@ -231,22 +232,23 @@
 ;*    some need for experimentation here in order to select the        */
 ;*    *best* value.                                                    */
 ;*                                                                     */
-;*    Without compaction, each generic function has a array of         */
-;*    methods. The size of this array is exactly the number of         */
-;*    declared classes. With compaction, the method array size         */
-;*    is devided by the value of BIGLOO-GENERIC-BUCKET-SIZE.           */
-;*    Each value contained in the method array is another array        */
-;*    of size BIGLOO-GENERIC-BUCKET-SIZE. Looking for a method         */
-;*    requires two memory read. However, this method is reasonably     */
-;*    fast and effecient. The compaction comes from that all the       */
-;*    bucket arrays full of DEFAULT-METHOD are shared amongst          */
-;*    the generic functions method array.                              */
+;*      * Without compaction, each generic function has an array of    */
+;*        methods whose size is exactly the number of declared         */
+;*        classes.                                                     */
+;*      * With compaction, the method array size is devided by the     */
+;*        value of BIGLOO-GENERIC-BUCKET-SIZE. Each value contained in */
+;*        the method array is another array of size                    */
+;*        BIGLOO-GENERIC-BUCKET-SIZE. Looking for a method requires    */
+;*        two memory reads. However, this method is reasonably fast    */
+;*        and efficient. The compaction comes from that all the bucket */
+;*        arrays full of DEFAULT-METHOD are shared amongst the generic */
+;*        functions method array.                                      */
 ;*                                                                     */
 ;*    Because of the compaction framework, we enforce the size of      */
 ;*    the generic vectors to be a multiple of                          */
-;*    BIGLOO-GENERIC_BUCKET_SIZE.                                      */
+;*    BIGLOO-GENERIC-BUCKET-SIZE.                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bigloo-generic-bucket-size) 8)
+(define-inline (bigloo-generic-bucket-size) 16)
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-types-number ...                                          */
@@ -639,14 +641,14 @@
    (set! *classes* (double-vector *classes* #f))
    ;; we have to enlarge the method vector for each generic
    (let loop ((i 0))
-      (if (<fx i *nb-generics*)
-	  (let* ((the-generic (vector-ref *generics* i))
-		 (default-bucket (generic-default-bucket the-generic))
-		 (old-method-array (generic-method-array the-generic)))
-	     (generic-method-array-set! the-generic
-					(double-vector old-method-array
-						       default-bucket))
-	     (loop (+fx i 1))))))
+      (when (<fx i *nb-generics*)
+	 (let* ((the-generic (vector-ref *generics* i))
+		(default-bucket (generic-default-bucket the-generic))
+		(old-method-array (generic-method-array the-generic)))
+	    (generic-method-array-set!
+	     the-generic
+	     (double-vector old-method-array default-bucket))
+	    (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    double-nb-generics! ...                                          */
@@ -735,18 +737,35 @@
 ;*---------------------------------------------------------------------*/
 ;*    method-array-set! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (method-array-set! generic array offset val)
+(define (method-array-set! generic array offset method)
    (let* ((offset (-fx offset %object-type-number))
 	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
 	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
       (let ((bucket (vector-ref-ur array mod)))
-	 (if (or (eq? val (generic-default generic))
+	 (if (or (eq? method (generic-default generic))
 		 (not (eq? bucket (generic-default-bucket generic))))
-	     (vector-set-ur! bucket rest val)
+	     ;; the bucket is already duplicated
+	     (vector-set-ur! bucket rest method)
 	     ;; we have to uncompact the entry
 	     (let ((bucket (copy-vector bucket (bigloo-generic-bucket-size))))
-		(vector-set-ur! bucket rest val)
+		(vector-set-ur! bucket rest method)
 		(vector-set-ur! array mod bucket))))))
+
+;*---------------------------------------------------------------------*/
+;*    generic-memory-statistics ...                                    */
+;*---------------------------------------------------------------------*/
+(define (generic-memory-statistics)
+   ;; return the overall memory space required by generic functions
+   (with-lock $bigloo-generic-mutex
+      (lambda ()
+	 (let loop ((g 0)
+		    (size 0))
+	    (if (=fx g *nb-generics*)
+		size
+		(let* ((the-generic (vector-ref *generics* g))
+		       (len (vector-length (generic-method-array the-generic)))
+		       (sz (+fx len (*fx len (bigloo-generic-bucket-size)))))
+		   (loop (+fx g 1) (+fx size sz))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    generics-add-class! ...                                          */
@@ -755,15 +774,12 @@
 ;*---------------------------------------------------------------------*/
 (define (generics-add-class! class-num super-num)
    (let loop ((g 0))
-      (if (=fx g *nb-generics*)
-	  'done
-	  (let* ((the-generic (vector-ref *generics* g))
-		 (method-array (generic-method-array the-generic))
-		 (method (method-array-ref the-generic
-					   method-array
-					   super-num)))
-	     (method-array-set! the-generic method-array class-num method)
-	     (loop (+fx g 1))))))
+      (when (<fx g *nb-generics*)
+	 (let* ((the-generic (vector-ref *generics* g))
+		(method-array (generic-method-array the-generic))
+		(method (method-array-ref the-generic method-array super-num)))
+	    (method-array-set! the-generic method-array class-num method)
+	    (loop (+fx g 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-no-default-value ...                                 */
@@ -779,10 +795,10 @@
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)
-	 (if (and super (not (class? super)))
-	     (error "add-class!" "Illegal super class for class" name))
-	 (if (=fx *nb-classes* *nb-classes-max*)
-	     (double-nb-classes!))
+	 (when (and super (not (class? super)))
+	    (error "add-class!" "Illegal super class for class" name))
+	 (when (=fx *nb-classes* *nb-classes-max*)
+	    (double-nb-classes!))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
 		(class (make-class name
 				   num
@@ -815,7 +831,7 @@
 	    (vector-set! *classes* *nb-classes* class)
 	    ;; we increment the global class number
 	    (set! *nb-classes* (+fx *nb-classes* 1))
-	    ;; and we ajust the method arrays of all generic functions
+	    ;; and we adjust the method arrays of all generic functions
 	    (generics-add-class! num (if (class? super) (class-num super) num))
 	    class))))
 
@@ -882,7 +898,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Adding a generic could be a two steps process. It may happens,   */
 ;*    because of graph in the module graph, that we see the first      */
-;*    method before the generic itself. It such a situation, we        */
+;*    method before the generic itself. In such a situation, we        */
 ;*    declare a dummy generic with a default body that is an error.    */
 ;*    Then, in the second time, we will have to fix the default body   */
 ;*    for that generic.                                                */
@@ -893,8 +909,8 @@
 			   default
 			   generic-no-default-behavior))
 	      (def-bucket (make-vector (bigloo-generic-bucket-size) def-met)))
-	  (if (=fx *nb-generics* *nb-generics-max*)
-	      (double-nb-generics!))
+	  (when (=fx *nb-generics* *nb-generics-max*)
+	     (double-nb-generics!))
 	  (vector-set! *generics* *nb-generics* generic)
 	  (set! *nb-generics* (+fx *nb-generics* 1))
 	  (generic-default-set! generic def-met)
@@ -902,35 +918,34 @@
 	  (generic-method-array-set! generic (make-method-array def-bucket))
 	  #unspecified)
        (begin
-	  (if (procedure? default)
-	      ;; We have to adjust the generic default bucket and the
-	      ;; generic method array. We have to plug the new default
-	      ;; function
-	      (let ((old-def-bucket (generic-default-bucket generic))
-		    (new-def-bucket (make-vector (bigloo-generic-bucket-size)
-						 default))
-		    (old-default (generic-default generic)))
-		 (generic-default-set! generic default)
-		 (generic-default-bucket-set! generic new-def-bucket)
-		 (let* ((marray (generic-method-array generic))
-			(alen (vector-length marray)))
-		    (let loop ((i 0))
-		       (if (<fx i alen)
-			   (let ((bucket (vector-ref marray i)))
-			      (if (eq? bucket old-def-bucket)
-				  (begin
-				     (vector-set! marray i new-def-bucket)
-				     (loop (+fx i 1)))
-				  (let laap ((j 0))
-				     (cond
-					((=fx j (bigloo-generic-bucket-size))
-					 (loop (+fx i 1)))
-					((eq? (vector-ref bucket j)
-					      old-default)
-					 (vector-set! bucket j default)
-					 (laap (+fx j 1)))
-					(else
-					 (laap (+fx j 1))))))))))))
+	  (when (procedure? default)
+	     ;; We have to adjust the generic default bucket and the
+	     ;; generic method array. We have to plug the new default
+	     ;; function
+	     (let ((old-def-bucket (generic-default-bucket generic))
+		   (new-def-bucket (make-vector (bigloo-generic-bucket-size)
+						default))
+		   (old-default (generic-default generic)))
+		(generic-default-set! generic default)
+		(generic-default-bucket-set! generic new-def-bucket)
+		(let* ((marray (generic-method-array generic))
+		       (alen (vector-length marray)))
+		   (let loop ((i 0))
+		      (if (<fx i alen)
+			  (let ((bucket (vector-ref marray i)))
+			     (if (eq? bucket old-def-bucket)
+				 (begin
+				    (vector-set! marray i new-def-bucket)
+				    (loop (+fx i 1)))
+				 (let laap ((j 0))
+				    (cond
+				       ((=fx j (bigloo-generic-bucket-size))
+					(loop (+fx i 1)))
+				       ((eq? (vector-ref bucket j) old-default)
+					(vector-set! bucket j default)
+					(laap (+fx j 1)))
+				       (else
+					(laap (+fx j 1))))))))))))
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
@@ -947,15 +962,15 @@
 		(cnum (class-num class))
 		(previous (method-array-ref generic method-array cnum))
 		(def (generic-default generic)))
-	    (let loop ((class class))
-	       (let* ((cn (class-num class))
+	    (let loop ((clazz class))
+	       (let* ((cn (class-num clazz))
 		      (current (method-array-ref generic method-array cn)))
 		  (if (or (eq? current def) (eq? current previous))
 		      (begin
 			 ;; we add the method
 			 (method-array-set! generic method-array cn method)
-			 ;; and we recursivly iterate on subclasses
-			 (for-each loop (class-subclasses class)))))))
+			 ;; and we recursively iterate on subclasses
+			 (for-each loop (class-subclasses clazz)))))))
 	 method)))
 
 ;*---------------------------------------------------------------------*/

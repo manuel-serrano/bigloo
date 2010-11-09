@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Tue Sep 28 13:56:49 2010 (serrano)                */
+;*    Last change :  Mon Nov  8 16:26:09 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -421,10 +421,18 @@
 	(instantiate::css-function
 	   (fun (car FUNCTION))
 	   (expr expr)))
+       ((FUNCTION S* PAR-CLO S*)
+	(instantiate::css-function
+	   (fun (car FUNCTION))
+	   (expr '())))
        ((qualified FUNCTION S* expr PAR-CLO S*)
 	(instantiate::css-function
 	   (fun (string-append qualified (car FUNCTION)))
-	   (expr expr))))
+	   (expr expr)))
+       ((qualified FUNCTION S* PAR-CLO S*)
+	(instantiate::css-function
+	   (fun (string-append qualified (car FUNCTION)))
+	   (expr '()))))
       
       (hexcolor
        ((HASH S*) (instantiate::css-hash-color (value (car HASH)))))))
