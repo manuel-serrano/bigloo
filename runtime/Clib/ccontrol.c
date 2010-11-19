@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Feb  5 08:21:00 2008 (serrano)                */
+/*    Last change :  Tue Nov 16 14:18:46 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -93,9 +93,8 @@ make_va_procedure( obj_t (*entry)(), int arity, int size ) {
 static obj_t
 generic_entry( obj_t proc, ... ) {
    va_list argl;
-   int     arity;
-   obj_t   optional, tail;
-   obj_t   runner;
+   obj_t optional, tail;
+   obj_t runner;
 
    va_start( argl, proc );
    
@@ -118,6 +117,61 @@ generic_entry( obj_t proc, ... ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    generic_entry1 ...                                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+generic_entry1( obj_t proc, obj_t a1 ) {
+   obj_t p = PROCEDURE_REF( proc, 3 );
+
+   return PROCEDURE_ENTRY( p )( p, a1 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    generic_entry2 ...                                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+generic_entry2( obj_t proc, obj_t a1, obj_t a2 ) {
+   obj_t p = PROCEDURE_REF( proc, 3 );
+
+   return PROCEDURE_ENTRY( p )( p, a1, a2 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    generic_entry3 ...                                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+generic_entry3( obj_t proc, obj_t a1, obj_t a2, obj_t a3 ) {
+   obj_t p = PROCEDURE_REF( proc, 3 );
+
+   return PROCEDURE_ENTRY( p )( p, a1, a2, a3 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    generic_entry4 ...                                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+generic_entry4( obj_t proc, obj_t a1, obj_t a2, obj_t a3, obj_t a4 ) {
+   obj_t p = PROCEDURE_REF( proc, 3 );
+
+   return PROCEDURE_ENTRY( p )( p, a1, a2, a3, a4 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    generic_entry5 ...                                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+generic_entry5( obj_t proc, obj_t a1, obj_t a2, obj_t a3, obj_t a4, obj_t a5 ) {
+   obj_t p = PROCEDURE_REF( proc, 3 );
+
+   return PROCEDURE_ENTRY( p )( p, a1, a2, a3, a4, a5 );
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_make_generic ...                                             */
 /*---------------------------------------------------------------------*/
@@ -127,10 +181,25 @@ bgl_make_generic( obj_t proc ) {
    int arity = PROCEDURE_ARITY( proc );
    obj_t res; 
 
-   if( arity >= 0 ) {
-      res = make_fx_procedure( (obj_t (*)())generic_entry, arity, 4 );
-   } else {
-      res = make_fx_procedure( (obj_t (*)())generic_entry, arity, 4 );
+   switch( arity ) {
+      case 1:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry1, arity, 4 );
+	 break;
+      case 2:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry2, arity, 4 );
+	 break;
+      case 3:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry3, arity, 4 );
+	 break;
+      case 4:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry4, arity, 4 );
+	 break;
+      case 5:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry5, arity, 4 );
+	 break;
+      default:
+	 res = make_fx_procedure( (obj_t (*)())generic_entry, arity, 4 );
+	 break;
    }
 
    PROCEDURE_SET( res, 3, proc );

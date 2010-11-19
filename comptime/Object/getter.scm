@@ -3,16 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Fri Apr 23 21:46:45 2010 (serrano)                */
+;*    Last change :  Thu Nov 18 11:56:54 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We make the class accessors                                      */
+;*    Generation of class accessors                                    */
 ;*    -------------------------------------------------------------    */
 ;*    In this module we cannot use consume-module-clause! because      */
 ;*    the importation are already done.                                */
-;*    -------------------------------------------------------------    */
-;*    This constructors does not require any importation information   */
-;*    since all accessors are always static.                           */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -61,12 +58,10 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-class-slots-access! class type widening src)
    (trace (ast 2) "make-class-slots-access!: " (shape class) #\Newline)
-   ;; we we are constructing the accessors for a wide class, this
-   ;; function will be called twice. The first time, type will be #f
-   ;; (so the slots are in the class objects, as for plain class). The
-   ;; second time, we will have to build the accessors for the plain
-   ;; part of the wide-class, using the super class (i.e. the type
-   ;; argument)
+   ;; for wide classes this function is be called twice. First, type will be #f
+   ;; (so the slots are in the class objects, as for plain class). Second,
+   ;; it will build the accessors for the plain part of the wide-class,
+   ;; using the super class (i.e. the type argument)
    (let loop ((slots (tclass-slots (if (tclass? type) type class)))
 	      (res '())
 	      (virtuals '()))

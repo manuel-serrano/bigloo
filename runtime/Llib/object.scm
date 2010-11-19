@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Nov  9 17:46:19 2010 (serrano)                */
+;*    Last change :  Tue Nov 16 17:06:40 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -27,6 +27,7 @@
 	    __bignum
 	    __thread
 	    
+	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
 	    __r4_booleans_6_1
@@ -159,12 +160,11 @@
 	    (class-field-mutator::procedure field)
 	    (class-field-type::symbol field)
 	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long o o ::vector)
+	    (register-generic!::obj ::procedure ::obj ::obj ::obj)
+	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
+	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (procedure->generic::procedure ::procedure)
-	    (add-generic!::obj ::procedure ::obj)
-	    (add-method!::procedure ::procedure ::obj ::procedure)
-	    (add-eval-method!::procedure ::procedure ::obj ::procedure)
 	    (inline find-method ::object ::procedure)
-	    (find-class-method class ::procedure)
 	    (find-method-from::pair ::object ::procedure class)
 	    (find-super-class-method ::object ::procedure class)
 	    (inline generic-default::procedure ::procedure)
@@ -182,7 +182,6 @@
 	    (struct->object::object ::struct)
 	    (allocate-instance::object ::symbol)
 	    (inline wide-object?::bool ::object)
-	    (inline generic-pre-method-set!::obj ::procedure ::obj)
 	    (inline class-virtual::vector ::vector)
 	    (call-virtual-getter ::object ::int)
 	    (call-virtual-setter ::object ::int ::obj)
@@ -601,24 +600,21 @@
 ;*    initialization.                                                  */
 ;*---------------------------------------------------------------------*/
 (define (initialize-objects!)
-   (if (initialized-objects?)
-       'done
-       (begin
-	  (set! *nb-classes* 0)
-	  (set! *nb-classes-max* 50)
-	  (set! *classes* (make-vector *nb-classes-max* #f))
-	  (set! *nb-generics-max* 50)
-	  (set! *nb-generics* 0)
-	  (set! *generics* (make-vector *nb-generics-max* #f))
-	  (unless (pair? *class-key*)
-	     (set! *class-key* (cons 1 2))))))
+   (unless (initialized-objects?)
+      (set! *nb-classes* 0)
+      (set! *nb-classes-max* 64)
+      (set! *classes* (make-vector *nb-classes-max* #f))
+      (set! *nb-generics-max* 64)
+      (set! *nb-generics* 0)
+      (set! *generics* (make-vector *nb-generics-max* #f))
+      (unless (pair? *class-key*) (set! *class-key* (cons 1 2)))))
 
 ;*---------------------------------------------------------------------*/
-;*    extend-vector ...                                                */
+;*    double-vector ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (extend-vector old-vec fill extend)
+(define (double-vector old-vec fill)
    (let* ((old-len (vector-length old-vec))
-	  (new-len (+fx extend old-len))
+	  (new-len (*fx 2 old-len))
 	  (new-vec (make-vector new-len fill)))
       (let loop ((i 0))
 	 (if (=fx i old-len)
@@ -626,12 +622,6 @@
 	     (begin
 		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
 		(loop (+fx i 1)))))))
-      
-;*---------------------------------------------------------------------*/
-;*    double-vector ...                                                */
-;*---------------------------------------------------------------------*/
-(define (double-vector old-vec fill)
-   (extend-vector old-vec fill (vector-length old-vec)))
       
 ;*---------------------------------------------------------------------*/
 ;*    double-nb-classes! ...                                           */
@@ -642,11 +632,11 @@
    ;; we have to enlarge the method vector for each generic
    (let loop ((i 0))
       (when (<fx i *nb-generics*)
-	 (let* ((the-generic (vector-ref *generics* i))
-		(default-bucket (generic-default-bucket the-generic))
-		(old-method-array (generic-method-array the-generic)))
+	 (let* ((gen (vector-ref *generics* i))
+		(default-bucket (generic-default-bucket gen))
+		(old-method-array (generic-method-array gen)))
 	    (generic-method-array-set!
-	     the-generic
+	     gen
 	     (double-vector old-method-array default-bucket))
 	    (loop (+fx i 1))))))
 
@@ -688,9 +678,6 @@
 (define-inline (generic-default generic)
    (procedure-ref generic 0))
 
-;*---------------------------------------------------------------------*/
-;*    generic-default-set! ...                                         */
-;*---------------------------------------------------------------------*/
 (define-inline (generic-default-set! generic default)
    (procedure-set! generic 0 default))
 
@@ -700,17 +687,8 @@
 (define-inline (generic-method-array generic)
    (procedure-ref generic 1))
 
-;*---------------------------------------------------------------------*/
-;*    generic-method-array-set! ...                                    */
-;*---------------------------------------------------------------------*/
 (define-inline (generic-method-array-set! generic method-array)
    (procedure-set! generic 1 method-array))
-
-;*---------------------------------------------------------------------*/
-;*    generic-pre-method-set! ...                                      */
-;*---------------------------------------------------------------------*/
-(define-inline (generic-pre-method-set! generic pre-method)
-   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-default-bucket ...                                       */
@@ -718,9 +696,6 @@
 (define-inline (generic-default-bucket::vector generic)
    (procedure-ref generic 2))
 
-;*---------------------------------------------------------------------*/
-;*    generic-default-bucket-set! ...                                  */
-;*---------------------------------------------------------------------*/
 (define-inline (generic-default-bucket-set! generic bucket::vector)
    (procedure-set! generic 2 bucket))
 
@@ -761,11 +736,27 @@
 	 (let loop ((g 0)
 		    (size 0))
 	    (if (=fx g *nb-generics*)
-		size
-		(let* ((the-generic (vector-ref *generics* g))
-		       (len (vector-length (generic-method-array the-generic)))
-		       (sz (+fx len (*fx len (bigloo-generic-bucket-size)))))
-		   (loop (+fx g 1) (+fx size sz))))))))
+		`((generic ,*nb-generics*)
+		  (class ,*nb-classes*)
+		  (mtable-size ,size)
+		  (method-array-size ,(vector-length (generic-method-array (vector-ref *generics* 0))))
+		  (generic-bucket-size ,(bigloo-generic-bucket-size))
+		  (max-class ,*nb-classes-max*)
+		  (max-generic ,*nb-generics-max*))
+		(let* ((gen (vector-ref *generics* g))
+		       (dbuck (generic-default-bucket gen))
+		       (dz 0)
+		       (sz (apply + (map (lambda (b)
+					    (cond
+					       ((eq? b dbuck)
+						(set! dz (*fx (vector-length b) 4))
+						0)
+					       (else
+						(*fx 4 (vector-length b)))))
+					 (vector->list (generic-method-array gen)))))
+		       (bz (*fx 4 (vector-length (generic-method-array gen)))))
+		   (loop (+fx g 1)
+			 (+fx size (+fx (+fx bz dz) sz)))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    generics-add-class! ...                                          */
@@ -775,10 +766,10 @@
 (define (generics-add-class! class-num super-num)
    (let loop ((g 0))
       (when (<fx g *nb-generics*)
-	 (let* ((the-generic (vector-ref *generics* g))
-		(method-array (generic-method-array the-generic))
-		(method (method-array-ref the-generic method-array super-num)))
-	    (method-array-set! the-generic method-array class-num method)
+	 (let* ((gen (vector-ref *generics* g))
+		(method-array (generic-method-array gen))
+		(method (method-array-ref gen method-array super-num)))
+	    (method-array-set! gen method-array class-num method)
 	    (loop (+fx g 1))))))
 
 ;*---------------------------------------------------------------------*/
@@ -861,17 +852,24 @@
 		    (loop (+fx i 1))))))))
 	 
 ;*---------------------------------------------------------------------*/
-;*    generic-added? ...                                               */
+;*    generic-registered? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (generic-added? generic::procedure)
+(define (generic-registered? generic::procedure)
    (vector? (generic-method-array generic)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-method-array ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (make-method-array def-bucket::vector)
-   (let ((s (+fx 1 (quotientfx *nb-classes-max* (bigloo-generic-bucket-size)))))
-      (make-vector s def-bucket)))
+   (let ((s (quotientfx *nb-classes-max* (bigloo-generic-bucket-size)))
+	 (a (remainder *nb-classes-max* (bigloo-generic-bucket-size))))
+      (if (>fx a 0)
+	  (begin
+	     (warning "make-method-array"
+		      "unoptimal bigloo-generic-bucket-size: "
+		      (bigloo-generic-bucket-size))
+	     (make-vector (+fx s 1) def-bucket))
+	  (make-vector s def-bucket))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-no-default-behavior ...                                  */
@@ -886,25 +884,25 @@
    ($make-generic proc))
 
 ;*---------------------------------------------------------------------*/
-;*    add-generic! ...                                                 */
+;*    register-generic! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (add-generic! generic default)
+(define (register-generic! generic default class-min name)
    (with-lock $bigloo-generic-mutex
       (lambda ()
-	 (add-generic-sans-lock! generic default))))
+	 (register-generic-sans-lock! generic default name))))
 
 ;*---------------------------------------------------------------------*/
-;*    add-generic-sans-lock! ...                                       */
+;*    register-generic-sans-lock! ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    Adding a generic could be a two steps process. It may happens,   */
-;*    because of graph in the module graph, that we see the first      */
+;*    Adding a generic could be a two steps process. It may happend,   */
+;*    because of cycle in the module graph, that we see the first      */
 ;*    method before the generic itself. In such a situation, we        */
 ;*    declare a dummy generic with a default body that is an error.    */
 ;*    Then, in the second time, we will have to fix the default body   */
 ;*    for that generic.                                                */
 ;*---------------------------------------------------------------------*/
-(define (add-generic-sans-lock! generic default)
-   (if (not (generic-added? generic))
+(define (register-generic-sans-lock! generic default name)
+   (if (not (generic-registered? generic))
        (let* ((def-met (if (procedure? default)
 			   default
 			   generic-no-default-behavior))
@@ -954,10 +952,10 @@
 (define (%add-method! generic class method)
    (with-lock $bigloo-generic-mutex
       (lambda ()
-	 (if (not (generic-added? generic))
-	     ;; we check the installation of the generic in order to
-	     ;; allow cycle in module graph.
-	     (add-generic-sans-lock! generic #f))
+	 (unless (generic-registered? generic)
+	    ;; we check the installation of the generic in order to
+	    ;; allow cycle in module graph.
+	    (register-generic-sans-lock! generic #f ""))
 	 (let* ((method-array (generic-method-array generic))
 		(cnum (class-num class))
 		(previous (method-array-ref generic method-array cnum))
@@ -974,47 +972,40 @@
 	 method)))
 
 ;*---------------------------------------------------------------------*/
-;*    add-method! ...                                                  */
+;*    generic-add-method! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (add-method! generic class method)
+(define (generic-add-method! generic class method name)
    (cond
       ((not (class? class))
-       (error "add-method!" "Illegal class" class))
+       (error name "Illegal class for method" class))
       ((not (=fx (procedure-arity generic) (procedure-arity method)))
-       (error "add-method!" "arity mismatch" (cons generic method)))
+       (error name "method/generic arity mismatch" (procedure-arity method)))
       (else
        (%add-method! generic class method))))
 
 ;*---------------------------------------------------------------------*/
-;*    add-eval-method! ...                                             */
+;*    generic-add-eval-method! ...                                     */
 ;*    -------------------------------------------------------------    */
 ;*    This function is similar to ADD-METHOD! but the arity check      */
 ;*    differs. Since eval function of more than four arguments are     */
 ;*    implemented with -1-arity procedure, ADD-EVAL-METHOD must        */
 ;*    enforce a more permissive arity check.                           */
 ;*---------------------------------------------------------------------*/
-(define (add-eval-method! generic class method)
+(define (generic-add-eval-method! generic class method name)
    (cond
       ((not (class? class))
-       (error "add-eval-method!" "Illegal class" class))
+       (error name "Illegal class for method" class))
       ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
 	    (>fx (procedure-arity generic) 4)
 	    (not (=fx (procedure-arity method) -1)))
-       (error "add-eval-method!" "arity mismatch" (cons generic method)))
+       (error name "method/generic arity mismatch" method))
       (else
        (%add-method! generic class method))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-class-method ...                                            */
-;*---------------------------------------------------------------------*/
-(define (find-class-method class generic)
-   (let ((obj-class-num (class-num class)))
-      (method-array-ref generic (generic-method-array generic) obj-class-num)))
-
-;*---------------------------------------------------------------------*/
 ;*    find-method ...                                                  */
 ;*    -------------------------------------------------------------    */
-;*    This function returns the exact method of a generic              */
+;*    This function returns the most specific method of a generic      */
 ;*---------------------------------------------------------------------*/
 (define-inline (find-method obj generic)
    (let ((obj-class-num (object-class-num obj)))

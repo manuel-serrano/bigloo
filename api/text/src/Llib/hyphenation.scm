@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Phil Bewig and Laurent Bloch                      */
 ;*    Creation    :  Tue Aug 31 10:15:44 2010                          */
-;*    Last change :  Wed Sep  1 10:55:29 2010 (serrano)                */
+;*    Last change :  Thu Nov 18 10:57:48 2010 (serrano)                */
 ;*    Copyright   :  2010 Phil Bewig, Laurent Bloch, Manuel Serrano    */
 ;*    -------------------------------------------------------------    */
 ;*    This Bigloo module is intended to provide word hyphenation.      */
@@ -136,12 +136,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    split-pat ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    LB: patterns are no more symbols, but strings                    */
+;*    LB: patterns are strings                                         */
 ;*---------------------------------------------------------------------*/
 (define (split-pat pat)
    (let loop ((ps (string->list pat))
 	      (cs '())
-	      (ns '())) ;; LB
+	      (ns '()))
       (cond ((null? ps)
 	     (if (=fx (length cs) (length ns))
 		 (values (reverse cs) (reverse (cons 0 ns)))
@@ -159,7 +159,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    split-exn ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    LB: patterns are no more symbols, but strings                    */
+;*    LB: patterns are strings                                         */
 ;*---------------------------------------------------------------------*/
 (define (split-exn exn)
    (let loop ((ps (string->list exn))
@@ -171,15 +171,6 @@
 	     (loop (cddr ps) (cons (cadr ps) cs) (cons 7 ns)))
 	    (else
 	     (loop (cdr ps) (cons (car ps) cs) (cons 6 ns))))))
-
-(define (split-exn-TOBEREMOVED exn)
-  ;; Modif. LB: patterns are no more symbols, but strings
-  (let loop ((ps (append (list #\.) (string->list exn) (list #\.))) ;; LB
-             (cs '()) (ns '()))
-    (cond ((null? ps) (values (reverse cs) (reverse (cons 6 ns))))
-          ((char=? (car ps) #\-)
-            (loop (cddr ps) (cons (cadr ps) cs) (cons 7 ns)))
-          (else (loop (cdr ps) (cons (car ps) cs) (cons 6 ns))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    t-looks ...                                                      */

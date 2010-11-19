@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Oct 25 17:56:20 2010 (serrano)                */
+;*    Last change :  Thu Nov 18 15:23:00 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -623,10 +623,10 @@
 			      ,source))))
 		      vars))
 	   (ins (gensym))
-	   (body `(let ((,ins ,i))
-		     ,,(make-eval-with-access-body id all-fields 'ins)))
+	   (body ,(make-eval-with-access-body id all-fields 'ins))
 	   (e2 ,(make-eval-with-access-expander id 'ins)))
-       (%with-lexical (map car bdgs) body e2 ins)))
+       `(let ((,ins ,(e i e)))
+	   ,(%with-lexical (map car bdgs) body e2 ins))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-with-access-expander ...                               */

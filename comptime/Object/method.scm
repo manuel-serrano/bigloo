@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed Oct 20 09:41:25 2010 (serrano)                */
+;*    Last change :  Tue Nov 16 14:52:30 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -39,12 +39,12 @@
 	  ;; associated generic function _and_ the type id of the
 	  ;; method. This has to be gensymed in order to avoid user
 	  ;; name collision
-	  (m-id    (mark-symbol-non-user!
-		    (gensym (symbol-append id '- (type-id type))))))
+	  (m-id (mark-symbol-non-user!
+		 (gensym (symbol-append id '- (type-id type))))))
       (if (not (tclass? type))
 	  (method-error id "method has a non-class dispatching type arg" src)
-	  (let* ((holder  (tclass-holder type))
-		 (module  (global-module holder))
+	  (let* ((holder (tclass-holder type))
+		 (module (global-module holder))
 		 (generic (find-global id)))
 	     (cond
 		((not (global? generic))
@@ -81,10 +81,11 @@
 						(backend-debug-support
 						 (the-backend))))
 				  `(pragma::void
-				   ,(string-append "bgl_init_module_debug_string( \"add-method: " (symbol->string ident) "\"); ")))
-			      (add-method! ,id
-					   (@ ,(global-id holder) ,module)
-					   ,m-id))))))))))
+				   ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) "\"); ")))
+			      (generic-add-method! ,id
+						   (@ ,(global-id holder) ,module)
+						   ,m-id
+						   ,(symbol->string ident)))))))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    method-error ...                                                 */

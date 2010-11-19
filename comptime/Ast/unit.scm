@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Tue Sep  7 18:05:53 2010 (serrano)                */
+;*    Last change :  Tue Nov 16 07:38:50 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -756,8 +756,13 @@
 		      body)))
       (trace (ast 2) "  body: " body #\Newline)
       (let* ((o-unit (get-generic-unit))
-	     (gen `(add-generic! (@ ,(global-id generic) ,module)
-				 (@ ,dname ,*module*)))
+	     (type (local-type (car locals)))
+	     (gen `(register-generic! (@ ,(global-id generic) ,module)
+				      (@ ,dname ,*module*)
+				      ,(if (tclass? type)
+					   (tclass-holder type)
+					   #f)
+				      ,(symbol->string name)))
 	     (sexp* (cons* generic gen default)))
 	 (if (not (unit? o-unit))
 	     sexp*

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Thu Nov  6 03:58:55 2008 (serrano)                */
+;*    Last change :  Tue Nov 16 14:25:48 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -101,6 +101,18 @@
 
 (define-method (do-point p::point3)
    (cons 3 (call-next-method)))
+
+(define-generic (inc-point p::point)
+   (point-x p))
+
+(define-method (inc-point p::point3)
+   (+fx (point-x p) (point3-z p)))
+
+(define-generic (inc-point2 p::point t)
+   (+fx (point-x p) t))
+
+(define-method (inc-point2 p::point3 t)
+   (+fx (+fx (point-x p) (point3-z p)) t))
 
 ;*---------------------------------------------------------------------*/
 ;*    predicat ...                                                     */
@@ -353,4 +365,9 @@
       (widen!::foo/l c2/l (dummy 'glop))
       (test "serialization.2" (string->obj (obj->string c2/l)) c2/l)
       (test "serialization.3" (foo/l? (string->obj (obj->string c2/l))) #t)
-      (test "serialization.4" (foo/l-dummy (string->obj (obj->string c2/l))) 'glop)))
+      (test "serialization.4" (foo/l-dummy (string->obj (obj->string c2/l))) 'glop))
+   (let ((l (list (instantiate::point (x 1))
+		  (instantiate::point3 (x 2) (z 10))))
+	 (p (list + inc-point inc-point2)))
+      (test "generic.1" ((car p) ((cadr p) (car l)) ((cadr p) (cadr l))) 13)
+      (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Fri Oct 22 16:08:44 2010 (serrano)                */
+;*    Last change :  Tue Nov 16 16:31:39 2010 (serrano)                */
 ;*    Copyright   :  2001-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -284,13 +284,16 @@
 				  (if (procedure? ,met)
 				      ,(if va (cons 'apply met-body) met-body)
 				      (,def)))))))
-		     (add-generic! ,id
-				   (lambda ,(cons f0 formals)
-				      ,(if (pair? body)
-					   `(begin ,@body)
-					   `(error ,(symbol->string (car pf))
-						   "No method for this object"
-						   ',(car (car pa)))))))
+		     (register-generic!
+		      ,id
+		      (lambda ,(cons f0 formals)
+			 ,(if (pair? body)
+			      `(begin ,@body)
+			      `(error ,(symbol->string (car pf))
+				      "No method for this object"
+				      ',(car (car pa)))))
+		      #f
+		      ,(symbol->string id)))
 		 e)
 	      (error fun "Illegal formal arguments for generic function" x))))
       (else
@@ -323,7 +326,7 @@
 		       (or (not (pair? formals))
 			   (not (null? (cdr (last-pair formals))))))))
 	  (if (and (pair? p0) (symbol? (cdr p0)))
-	      (let* ((res `(add-eval-method!
+	      (let* ((res `(generic-add-eval-method!
 			    ,fun
 			    ,(cdr p0)
 			    ,(e `(lambda ,(expand-args (cons f0 formals) e)
@@ -340,7 +343,8 @@
 						  ,(if va
 						       `(apply ,fun ,(car p0) ,@rest)
 						       `(,fun ,(car p0) ,@rest))))))
-				    ,@body) e))))
+				    ,@body) e)
+			    ',f0)))
 		 (evepairify res x))
 	      (error "define-method" "Illegal form" x))))
       (else

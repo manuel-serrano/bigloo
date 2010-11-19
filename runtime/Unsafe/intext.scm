@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Oct  7 09:19:22 2010 (serrano)                */
+;*    Last change :  Tue Nov 16 14:53:51 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1197,10 +1197,12 @@
 ;*    register-class-serialization! ...                                */
 ;*---------------------------------------------------------------------*/
 (define (register-class-serialization! class serializer unserializer)
-   (add-method! object-serializer
-		class
-		(lambda (o)
-		   (objcustom (serializer o))))
+   (generic-add-method! object-serializer
+			class
+			(lambda (o)
+			   (objcustom (serializer o)))
+			(string-append (symbol->string! (class-name class))
+				       "-serializer"))
    (let* ((hash (class-hash class))
 	  (cell (assq hash *class-serialization*)))
       (if (not (pair? cell))
