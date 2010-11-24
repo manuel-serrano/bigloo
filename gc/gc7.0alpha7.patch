@@ -1,0 +1,301 @@
+diff -Naur gc7.0alpha7.orig/Makefile gc7.0alpha7/Makefile
+--- gc7.0alpha7.orig/Makefile	2006-07-12 02:11:17.000000000 +0200
++++ gc7.0alpha7/Makefile	2010-11-24 08:54:28.000000000 +0100
+@@ -1,3 +1,12 @@
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
++include ../../Makefile.config
++include ../../Makefile.misc
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
++
+ # This is the original manually generated Makefile.  It may still be used
+ # to build the collector.
+ #
+@@ -19,7 +28,13 @@
+ # ABI flag for assembler.  On HP/UX this is +A64 for 64 bit
+ # executables.
+ 
+-CC=cc $(ABI_FLAG)
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (30 jul 2007)                                       */
++#*---------------------------------------------------------------------*/
++CC+=$(ABI_FLAG)
++#*---------------------------------------------------------------------*/
++#*    Bigloo end                                                       */
++#*---------------------------------------------------------------------*/
+ CXX=g++ $(ABI_FLAG)
+ AS=as $(AS_ABI_FLAG)
+ #  The above doesn't work with gas, which doesn't run cpp.
+@@ -308,12 +323,19 @@
+ AR= ar
+ RANLIB= ranlib
+ 
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
++INLOBJS= inline_alloc.o
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
+ 
+ OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o \
+   headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o  \
+   malloc.o stubborn.o checksums.o pthread_support.o pthread_stop_world.o \
+   darwin_stop_world.o typd_mlc.o ptr_chck.o mallocx.o gcj_mlc.o specific.o \
+-  gc_dlopen.o backgraph.o win32_threads.o thread_local_alloc.o
++  gc_dlopen.o backgraph.o win32_threads.o thread_local_alloc.o $(INLOBJS)
+ 
+ CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c \
+   headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c \
+@@ -409,9 +431,15 @@
+ 
+ # if AO_INSTALL_DIR doesn't exist, we assume that it is pointing to
+ # the default location, and we need to build
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
+ $(AO_INSTALL_DIR): 
+ 	CC=$(CC) $(srcdir)/configure_atomic_ops.sh
+-	cd $(AO_SRC_DIR); make CC=$(CC) install
++	cd $(AO_SRC_DIR); $(MAKE) CC=$(CC) install
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
+ 
+ LEAKFLAGS=$(CFLAGS) -DFIND_LEAK
+ 
+@@ -475,6 +503,21 @@
+ 	./if_not_there dont_ar_1 $(RANLIB) gc.a || cat /dev/null
+ #	ignore ranlib failure; that usually means it doesn't exist, and isn't needed
+ 
++#*---------------------------------------------------------------------*/
++#*    Bigloo libraries start                                           */
++#*---------------------------------------------------------------------*/
++EOBJECTS=$(OBJS) dyn_load.o
++$(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX): $(EOBJECTS)
++	@ $(MAKE) shared-lib \
++             LIBDEST=$@ \
++             SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
++             GCCLOSELIB= \
++             LDLIBS=$(EXTRAGCLIBS) \
++             OBJECTS="$(EOBJECTS)"
++#*---------------------------------------------------------------------*/
++#*    Bigloo libraries stop                                            */
++#*---------------------------------------------------------------------*/
++
+ cords: $(CORD_OBJS) cord/cordtest $(UTILS)
+ 	rm -f dont_ar_3
+ 	./if_mach SPARC SOLARIS touch dont_ar_3
+@@ -564,9 +607,9 @@
+ 	./if_mach SPARC "" $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
+ 	./if_mach SPARC "" ld -r -o mach_dep.o mach_dep1.o mach_dep2.o
+ 	./if_mach IA64 "" as $(AS_ABI_FLAG) -o ia64_save_regs_in_stack.o $(srcdir)/ia64_save_regs_in_stack.s
+-	./if_mach IA64 "" $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
++	./if_mach IA64 "" $(CC) -c -o mach_dep1.o $(SPECIALCFLAGS) $(CPICFLAGS) $(srcdir)/mach_dep.c
+ 	./if_mach IA64 "" ld -r -o mach_dep.o mach_dep1.o ia64_save_regs_in_stack.o
+-	./if_not_there mach_dep.o $(CC) -c $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
++	./if_not_there mach_dep.o $(CC) -c $(SPECIALCFLAGS) $(CPICFLAGS) $(srcdir)/mach_dep.c
+ 
+ mark_rts.o: $(srcdir)/mark_rts.c $(UTILS)
+ 	rm -f mark_rts.o
+@@ -612,14 +655,33 @@
+ 	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cord/de $(srcdir)/cord/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses
+ 	./if_not_there cord/de $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/de.c cord/cordbscs.o cord/cordxtra.o gc.a $(CURSES) `./threadlibs`
+ 
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
+ if_mach: $(srcdir)/if_mach.c $(srcdir)/include/private/gcconfig.h
+-	$(HOSTCC) $(HOSTCFLAGS) -o if_mach $(srcdir)/if_mach.c
++	$(HOSTCC) -O -o if_mach $(srcdir)/if_mach.c -I$(srcdir)/include
+ 
+ threadlibs: $(srcdir)/threadlibs.c $(srcdir)/include/private/gcconfig.h Makefile
+ 	$(HOSTCC) $(HOSTCFLAGS) -o threadlibs $(srcdir)/threadlibs.c
+ 
+ if_not_there: $(srcdir)/if_not_there.c
+-	$(HOSTCC) $(HOSTCFLAGS) -o if_not_there $(srcdir)/if_not_there.c
++	$(HOSTCC) -O -o if_not_there $(srcdir)/if_not_there.c -I$(srcdir)/include
++
++DClean: clean
++
++bigloo-clean: 
++	rm -rf libatomic_ops-install
++	rm -f config.log
++	rm -f libatomic_ops-1.2/config.log
++	rm -f libatomic_ops-1.2/src/atomic_ops/atomic_ops.o \
++              libatomic_ops-1.2/src/atomic_ops/atomic_ops_malloc.o \
++              libatomic_ops-1.2/src/atomic_ops/atomic_ops_stack.o
++	rm -f libatomic_ops-1.2/src/atomic_ops/libatomic_ops.a \
++              libatomic_ops-1.2/src/atomic_ops/libatomic_ops_gpl.a
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
++clean: 
+ 
+ clean: 
+ 	rm -f gc.a *.o *.exe tests/*.o gctest gctest_dyn_link test_cpp \
+@@ -655,11 +717,14 @@
+ 	$(CC) -o gcname $(srcdir)/gcname.c
+ 
+ #We assume this is being done from source directory.
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
+ dist gc.tar: $(SRCS) $(DOC_FILES) $(OTHER_FILES) add_gc_prefix gcname
+ 	cp Makefile Makefile.old
+ 	cp Makefile.direct Makefile
+ 	CC=$(CC) ./configure_atomic_ops.sh
+-	cd $(AO_SRC_DIR); make dist
++	cd $(AO_SRC_DIR); $(MAKE) dist
+ 	if test $(srcdir)/libatomic_ops-$(AO_VERSION) = $(AO_SRC_DIR); \
+ 	then \
+ 	  mv $(AO_SRC_DIR) $(AO_SRC_DIR).bak ; \
+@@ -674,6 +739,9 @@
+ 	cp gc.tar `./gcname`.tar
+ 	gzip `./gcname`.tar
+ 	rm `./gcname`
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
+ 
+ gc.tar.Z: gc.tar
+ 	compress gc.tar
+@@ -718,3 +786,12 @@
+ 		sed s/_GC_/GC_/g < $$file > tmp; \
+ 		cp tmp $$file; \
+ 		done
++
++#*---------------------------------------------------------------------*/
++#*    Bigloo start                                                     */
++#*---------------------------------------------------------------------*/
++inline_alloc.o: ../../runtime/Clib/inline_alloc.c
++	$(CC) $(CFLAGS) $< -c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop                                                      */
++#*---------------------------------------------------------------------*/
+diff -Naur gc7.0alpha7.orig/alloc.c gc7.0alpha7/alloc.c
+--- gc7.0alpha7.orig/alloc.c	2006-06-01 19:40:02.000000000 +0200
++++ gc7.0alpha7/alloc.c	2010-11-24 08:55:42.000000000 +0100
+@@ -432,6 +432,35 @@
+     return(result);
+ }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++static void (*GC_gcollect_hook)() = 0;
++GC_add_gc_hook( void (*f)() ) {
++   GC_gcollect_hook = f;
++}
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: stop                                 */
++/*---------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++static long allocated_bytes = 0;
++
++GC_get_allocated_bytes() {
++   return allocated_bytes;
++}
++
++#ifdef KEEP_BACK_PTRS
++int GC_heap_info_available = 1;
++#else
++int GC_heap_info_available = 0;
++#endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ /*
+  * Assumes lock is held, signals are disabled.
+  * We stop the world.
+@@ -444,6 +473,15 @@
+     int dummy;
+     CLOCK_TYPE start_time, current_time;
+ 	
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#   ifdef KEEP_BACK_PTRS
++    allocated_bytes += GC_get_bytes_since_gc();
++#   endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
+     if (GC_print_stats)
+ 	GET_TIME(start_time);
+ 
+@@ -703,6 +741,17 @@
+ 	GC_log_printf("\n");
+     }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    if( GC_gcollect_hook )
++       GC_gcollect_hook( GC_heapsize,
++			 (unsigned long)(GC_atomic_in_use)+
++			 (unsigned long)(GC_composite_in_use) );
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++
+     /* Reset or increment counters for next cycle */
+       GC_n_attempts = 0;
+       GC_is_full_gc = FALSE;
+diff -Naur gc7.0alpha7.orig/include/private/gcconfig.h gc7.0alpha7/include/private/gcconfig.h
+--- gc7.0alpha7.orig/include/private/gcconfig.h	2006-07-30 20:22:18.000000000 +0200
++++ gc7.0alpha7/include/private/gcconfig.h	2010-11-24 08:56:54.000000000 +0100
+@@ -1726,9 +1726,19 @@
+ #   endif
+ #   ifdef LINUX
+ #       define OS_TYPE "LINUX"
+-#       define LINUX_STACKBOTTOM
+-#       undef STACK_GRAN
+-#       define STACK_GRAN 0x10000000
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#       ifdef QEMU
++#         define HEURISTIC2
++#       else
++#         define LINUX_STACKBOTTOM
++#         undef STACK_GRAN
++#         define STACK_GRAN 0x10000000
++#       endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo end                                                       */
++/*---------------------------------------------------------------------*/
+ #       ifdef __ELF__
+ #            define DYNAMIC_LOADING
+ #	     include <features.h>
+diff -Naur gc7.0alpha7.orig/win32_threads.c gc7.0alpha7/win32_threads.c
+--- gc7.0alpha7.orig/win32_threads.c	2006-07-30 20:23:19.000000000 +0200
++++ gc7.0alpha7/win32_threads.c	2010-11-24 08:58:04.000000000 +0100
+@@ -25,6 +25,20 @@
+ #ifdef CYGWIN32
+ # include <errno.h>
+ 
++/* GC_DLL should not normally be defined, especially since we often do turn */
++/* on THREAD_LOCAL_ALLOC, which is currently incompatible. 		    */
++/* It might be possible to get GC_DLL and DllMain-based	thread registration */
++/* to work with Cygwin, but if you try you are on your own.		    */
++/*---------------------------------------------------------------------*/
++/*    Bigloo start (30 jul 2007)                                       */
++/*---------------------------------------------------------------------*/
++#if defined(GC_DLL) && defined(CYGWIN32)
++/*---------------------------------------------------------------------*/
++/*    Bigloo end                                                       */
++/*---------------------------------------------------------------------*/
++# error GC_DLL untested with Cygwin
++#endif
++
+  /* Cygwin-specific forward decls */
+ # undef pthread_create 
+ # undef pthread_sigmask 

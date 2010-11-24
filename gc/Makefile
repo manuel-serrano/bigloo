@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Fri Sep 24 08:17:34 2010 (serrano)                */
+#*    Last change :  Wed Nov 24 09:21:04 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -17,6 +17,8 @@ include ../Makefile.config
 include ../Makefile.misc
 
 POPULATION = Makefile \
+             install-gc6.8 gc6.8.patch Makefile-gc6.8 \
+             install-gc7.0alpha7 gc7.0alpha7.patch Makefile-gc7.0alpha7 \
              install-gc-7.0 gc-7.0.patch Makefile-gc-7.0 \
              install-gc-7.1alpha2 gc-7.1alpha2.patch \
              install-gc-7.1alpha3-080220 gc-7.1alpha3-080220.patch \

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Aug 25 10:20:15 2010 (serrano)                */
+/*    Last change :  Wed Nov 24 09:58:49 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2051,32 +2051,34 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 #if( BGL_GC_HAVE_BLOCKING )
 	 bgl_gc_start_blocking();
 
-	 n = BGL_SENDFILE( (int)PORT_STREAM( outp ),
-			   fileno( (FILE *)PORT_STREAM( inp ) ),
+	 n = BGL_SENDFILE( (int)PORT_STREAM( op ),
+			   fileno( (FILE *)PORT_STREAM( ip ) ),
 			   0L,
 			   sz );
 	 
 	 bgl_gc_stop_blocking();
 #else
 #  if( BGL_GC_HAVE_DO_BLOCKING )
-	 {
-	    struct sendfile_info_t si;
-	    si.out = (int)PORT_STREAM( op );
-	    si.in = fileno( (FILE *)(PORT_STREAM( ip ) ) );
-	    si.sz = sz;
-	    si.port = op;
-	    si.off = 0L;
+	 struct sendfile_info_t si;
+	 si.out = (int)PORT_STREAM( op );
+	 si.in = fileno( (FILE *)(PORT_STREAM( ip ) ) );
+	 si.sz = sz;
+	 si.port = op;
+	 si.off = 0L;
 
 #ifdef DEBUG_SENDCHARS   
-	    fprintf( stderr, "bgl_sendchars.5: sz=%d offset=%d\n", sz, offset );
+	 fprintf( stderr, "bgl_sendchars.5: sz=%d offset=%d\n", sz, offset );
 #endif	    
-	    bgl_gc_do_blocking( &gc_sendfile, &si );
+	 bgl_gc_do_blocking( &gc_sendfile, &si );
 
-	    n = si.res;
+	 n = si.res;
 #ifdef DEBUG_SENDCHARS   
-	    fprintf( stderr, "bgl_sendchars.6: n=%d\n", n );
+	 fprintf( stderr, "bgl_sendchars.6: n=%d\n", n );
 #endif	    
-	 }
+#  else
+      -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
+#  endif  /* BGL_HAVE_DO_BLOCKING */
+#endif  /* BGL_HAVE_BLOCKING */
       }
 
       if( n < 0 )
@@ -2084,10 +2086,6 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 			   "send-chars",
 			   strerror( errno ),
 			   MAKE_PAIR( ip, op ) );
-#  else
-      -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
-#  endif       
-#endif /* BGL_HAVE_BLOCKING */
    }
    if( offset > 0 ) {
       if( INPUT_PORT_ON_FILEP( ip ) )
@@ -2110,7 +2108,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
    _FD fd = (_FD)PORT_STREAM( op );
    int n;
    int in;
-   
+
    if( PORT( op ).kindof == KINDOF_CLOSED )
       return BFALSE;
 
@@ -2124,7 +2122,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 #  endif
 
    bgl_output_flush( op, 0, 0 );
-   
+
    if( sz == -1 ) {
       if( fstat( in, &sin ) ) {
 	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -2152,8 +2150,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 #  if( BGL_GC_HAVE_BLOCKING )
       bgl_gc_start_blocking();
 
-      n = BGL_SENDFILE( stream, in, (offset > 0 ? (off_t *)(&offset) : 0), sz );
-	 
+      n = BGL_SENDFILE( fd, in, (offset > 0 ? (off_t *)(&offset) : 0), sz );
+
       bgl_gc_stop_blocking();
 #  else
 #    if( BGL_GC_HAVE_DO_BLOCKING )
@@ -2164,21 +2162,21 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 si.sz = sz;
 	 si.port = op;
 	 si.off = (offset > 0 ? (off_t *)(&offset) : 0);
-	 
+
 	 bgl_gc_do_blocking( &gc_sendfile, &si );
 
 	 n = si.res;
       }
 #    else
       -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
-#    endif       
+#    endif
 #  endif /* BGL_HAVE_BLOCKING */
 
    }
 #endif
 
    close( in );
-   
+
    if( n < 0 )
       C_SYSTEM_FAILURE( bglerror( errno ),
 			"send-file",
