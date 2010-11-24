@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sun Feb 14 10:56:21 2010 (serrano)                */
+/*    Last change :  Wed Nov 24 06:58:21 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -96,7 +96,7 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
 				  &(mut->pmutex),
 				  &timeout );
    
-   if( res ) bglpth_mutex_mark_locked( m, mut );
+   bglpth_mutex_mark_locked( m, mut );
    
    return res;
 }

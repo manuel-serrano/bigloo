@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov 19 08:19:06 2010 (serrano)                */
+#*    Last change :  Sat Nov 20 05:57:30 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2604,7 +2604,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@LIBRARY_DIRECTORY@|$libdir$dirsep$fildir|" \
               -e "s|@BGL_GC_LIBRARY@|$gclib|" \
               -e "s|@BGL_GC_CUSTOM@|$isgccustom|" \
-              -e "s|@BGL_GC_NEED_STACKBASE@|$gcneedstackbase|" \
               -e "s|@ZIP_DIRECTORY@|$syszipdirstr|" \
               -e "s|@DLL_DIRECTORY@|$sysdlldirstr|" \
               -e "s|@DNS_CACHE@|$dnscache|" \

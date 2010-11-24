@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Mon Nov  8 16:26:09 2010 (serrano)                */
+;*    Last change :  Tue Nov 23 19:14:28 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -35,7 +35,7 @@
       (CDO CDC INCLUDES DASHMATCH STRING IDENT HASH
 	   IMPORT_SYM PAGE_SYM MEDIA_SYM FONT_FACE_SYM CHARSET_SYM
 	   ATKEYWORD IMPORTANT_SYM EMS EXS LENGTH ANGLE TIME FREQ DIMEN
-	   PERCENTAGE NUMBREC URI FUNCTION UNICODERANGE RGB NUMBER
+	   PERCENTAGE NUMBREC URI NOT_PSEUDO FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
 	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
 	   SLASH * + > ~ - DOT = EXTENSION NOT_SYM ONLY_SYM AND_SYM VALUE S)
@@ -331,7 +331,13 @@
        ((COLON IDENT)
 	(instantiate::css-selector-pseudo
 	   (expr (car IDENT))))
+       ((COLON COLON IDENT)
+	(instantiate::css-selector-pseudo
+	   (expr (list ":" (car IDENT)))))
        ((COLON EXTENSION)
+	(instantiate::css-selector-pseudo
+	   (expr (list ":" (car EXTENSION)))))
+       ((COLON COLON EXTENSION)
 	(instantiate::css-selector-pseudo
 	   (expr (car EXTENSION))))
        ((COLON FUNCTION S* IDENT S* PAR-CLO)
@@ -353,8 +359,12 @@
        ((COLON FUNCTION NUMBER S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car NUMBER))
-	   (fun (car FUNCTION)))))
-      
+	   (fun (car FUNCTION))))
+       ((COLON NOT_PSEUDO simple_selector S* PAR-CLO)
+	(instantiate::css-selector-pseudo
+	   (expr simple_selector)
+	   (fun "not"))))
+
       (declaration*
        ((S*)
 	'())

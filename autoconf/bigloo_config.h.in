@@ -286,9 +286,6 @@
 #undef BGL_GC_CUSTOM
 #define BGL_GC_CUSTOM @BGL_GC_CUSTOM@
 
-/* #undef BGL_GC_NEED_STACKBASE                                        */
-/* #define BGL_GC_NEED_STACKBASE @BGL_GC_NEED_STACKBASE@               */
-
 #undef ZIP_DIRECTORY
 #define ZIP_DIRECTORY "@ZIP_DIRECTORY@"
 

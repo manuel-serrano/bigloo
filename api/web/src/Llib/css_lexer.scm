@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Thu Jun 24 06:09:24 2010 (serrano)                */
+;*    Last change :  Tue Nov 23 18:25:51 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -162,6 +162,8 @@
        (return 'URI (the-substring 4 -1)))
       ((: "url(" w url w ")")
        (return 'URI (the-substring 4 -1)))
+      ((: "not" (* (in " \t\r\n\f")) "(")
+       (return 'NOT_PSEUDO ))
       ((: ident "(")
        (return 'FUNCTION (the-substring 0 -1)))
       

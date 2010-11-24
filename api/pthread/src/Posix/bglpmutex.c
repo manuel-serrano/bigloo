@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sun Feb 14 11:30:32 2010 (serrano)                */
+/*    Last change :  Wed Nov 24 06:59:48 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -287,7 +287,7 @@ bglpth_mutex_unlock( obj_t m ) {
       mut->locked = 0;
 
       /* physically unlock it */
-      return pthread_mutex_unlock( &(mut->pmutex) );
+      return !pthread_mutex_unlock( &(mut->pmutex) );
    } else {
       return 0;
    }

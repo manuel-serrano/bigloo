@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Oct 13 09:44:11 2010 (serrano)                */
+;*    Last change :  Sat Nov 20 06:58:46 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -47,6 +47,62 @@
 	       (%playlist::pair-nil (default '()))
 	       (%meta::pair-nil (default '()))
 	       (%tag::obj (default '())))))
+
+;*---------------------------------------------------------------------*/
+;*    debug-mutex-lock! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (debug-mutex-lock! mutex)
+   ;; (tprint ">>> mutex-lock! " mutex)
+   (unless ((@ mutex-lock! __thread)  mutex 100000)
+      (tprint "**** CANNOT LOCK MUTEX AFTER 100000: " mutex)
+      ((@ mutex-lock! __thread) mutex)))
+
+;*---------------------------------------------------------------------*/
+;*    debug-mutex-unlock! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (debug-mutex-unlock! mutex)
+   ;; (tprint "<<< mutex-unlock! " mutex)
+   ((@ mutex-unlock! __thread)  mutex))
+
+;*---------------------------------------------------------------------*/
+;*    debug-condv-wait! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (debug-condv-wait! cv mutex)
+   (tprint "~~~ waiting on " mutex)
+    ((@ condition-variable-wait! __thread) cv mutex))
+   
+;*---------------------------------------------------------------------*/
+;*    mutex-lock! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-expander mutex-lock!
+   (lambda (x e)
+      (e `(debug-mutex-lock! ,@(cdr x)) e)))
+
+;*---------------------------------------------------------------------*/
+;*    mutex-unlock! ...                                                */
+;*---------------------------------------------------------------------*/
+(define-expander mutex-unlock!
+   (lambda (x e)
+      (e `(debug-mutex-unlock! ,@(cdr x)) e)))
+
+;*---------------------------------------------------------------------*/
+;*    condition-variable-wait! ...                                     */
+;*---------------------------------------------------------------------*/
+(define-expander condition-variable-wait!
+   (lambda (x e)
+      (e `(debug-condv-wait! ,@(cdr x)) e)))
+
+;*---------------------------------------------------------------------*/
+;*    with-lock ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-expander with-lock
+   (lambda (x e)
+      (e `(unwind-protect
+	     (begin
+		(mutex-lock! ,(cadr x))
+		(,(caddr x)))
+	     (mutex-unlock! ,(cadr x)))
+	 e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::gstmusic ...                                        */
@@ -217,8 +273,6 @@
 								songpos
 								songlength
 								playlistid)
-				(tprint "gstmm state changed state=" state
-					" nstate=" nstate)
 				(set! state nstate)
 				(when (gst-element? (gstmusic-%pipeline o))
 				   (set! songpos (music-position o))
@@ -240,7 +294,6 @@
 			       (music-volume-set! o volume)))))
 		     ((and (gst-message-tag? msg) onmeta)
 		      ;; tag found
-		      (tprint "meta: " (gst-message-tag-list msg))
 		      (mutex-lock! %mutex)
 		      (let ((notify #f))
 			 (for-each (lambda (tag)

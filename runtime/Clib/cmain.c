@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Mon Oct 18 19:34:19 2010 (serrano)                */
+/*    Last change :  Sat Nov 20 05:57:50 2010 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -157,15 +157,6 @@ _bigloo_main( int argc,
       c_error( "Can't allocate heap", mes, -10 );
       return 1;
    } else {
-/*       {* For those configurations which need it, store the  *}      */
-/*       {* stack bottom address in a GC global variable.      *}      */
-/* #if( BGL_GC_NEED_STACKBASE )                                        */
-/*       {                                                             */
-/* 	 extern void *__stack_base__;                                  */
-/* 	 __stack_base__ = (void *)&argc;                               */
-/*       }                                                             */
-/* #endif                                                              */
-
       /* initialize the libraries */
       libinit( argc, argv, env );
       
