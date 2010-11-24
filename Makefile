@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov  3 17:52:16 2010 (serrano)                */
+#*    Last change :  Wed Nov 24 15:24:56 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -890,8 +890,8 @@ pop:
 	@ echo LICENSE COPYING \
                configure INSTALL INSTALL.jvm README \
                Makefile Makefile.misc \
-               Makefile.prcs Makefile.mercurial \
-               bigloo.lsm bigloo.spec .hgignore \
+               Makefile.mercurial \
+               .hgignore \
                tutorial
 	@ for d in $(DIRECTORIES); do \
              (cd $$d && $(MAKE) -s pop); \
