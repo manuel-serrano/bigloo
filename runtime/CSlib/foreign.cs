@@ -3497,31 +3497,31 @@ namespace bigloo
       // VECTOR
       //////
       // Predicates
-      public static bool VECTORP( Object  o )
+      public static bool VECTORP( Object o )
 	 {
 	    // CARE bug mono
-	    if (o is byte[])
-	       return false;
-	    if (o is char[])
-	       return false;
+	    if (o is byte[]) return false;
+	    if (o is char[]) return false;
 	    return (o is Object[]);
 	 }
 
+      public static void FREE_VECTOR_UNCOLLECTABLE(Object[]v)
+	 {
+	    ;
+	 }
+
       // Open functions
-      public static int VECTOR_LENGTH( Object[]  v )
+      public static int VECTOR_LENGTH( Object[] v )
 	 {
 	    return v.Length;
 	 }
 
-      public static Object VECTOR_REF( Object[]  v,
-				       int       i )
+      public static Object VECTOR_REF( Object[] v, int i )
 	 {
 	    return v[i];
 	 }
 
-      public static Object VECTOR_SET( Object[]  v,
-				       int       i,
-				       Object    o )
+      public static Object VECTOR_SET( Object[] v, int i, Object o )
 	 {
 	    v[i]= o;
 	    return unspecified._unspecified;
@@ -3542,13 +3542,13 @@ namespace bigloo
 	    return unspecified._unspecified;
 	 }
 
-      public static int VECTOR_TAG( Object[]  v )
+      public static int VECTOR_TAG( Object[] v )
 	 {
 	    return 0;
 	 }
 
       // Lib functions
-      public static Object[] make_vector( int n, Object  init )
+      public static Object[] make_vector( int n, Object init )
 	 {
 	    Object[] r = new Object[n];
 
@@ -3563,19 +3563,16 @@ namespace bigloo
 	    return new Object[n];
 	 }
 
-      public static Object fill_vector( Object[]  v,
-					int       len,
-					Object    o )
+      public static Object fill_vector( Object[] v, int len, Object o )
 	 {
 	    for ( int i= 0 ; i < len ; ++i )
 	       v[i]= o;
 	    return unspecified._unspecified;
 	 }
 
-      public static Object[] sort_vector( Object[]   v,
-					  procedure  p )
+      public static Object[] sort_vector( Object[] v, procedure p )
 	 {
-	    int                    n= v.Length;
+	    int n = v.Length;
 
 	    for ( int incr= n/2 ; incr != 0 ; incr/=2 )
 	       for ( int i= incr ; i<n ; ++i )
@@ -3584,7 +3581,7 @@ namespace bigloo
 			break;
 		     else 
 		     {
-			Object         tmp= v[j + incr];
+			Object tmp = v[j + incr];
 
 			v[j + incr]= v[j];
 			v[j]= tmp;

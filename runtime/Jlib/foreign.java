@@ -3191,6 +3191,11 @@ public final class foreign
 	 return (o instanceof Object[]);
       }
 
+   public static void FREE_VECTOR_UNCOLLECTABLE(Object[]v)
+      {
+	 ;
+      }
+
    // Open functions
    public static int VECTOR_LENGTH(Object[]v)
       {

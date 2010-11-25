@@ -27,9 +27,11 @@
      BGL_RUNTIME_DECL void GC_free( obj_t );
      BGL_RUNTIME_DECL void GC_gcollect();
      extern obj_t GC_malloc_atomic( size_t );
+     extern obj_t GC_malloc_uncollectable( size_t );
 #if( BGL_GC_VERSION < 700 )
      extern obj_t GC_local_malloc( size_t );
-     extern obj_t GC_local_malloc_atomic();
+     extern obj_t GC_local_malloc_atomic( size_t );
+     extern obj_t GC_local_malloc_uncollectable( size_t );
 #endif
      extern obj_t GC_debug_malloc( size_t, char *, long );
      extern obj_t GC_debug_malloc_atomic( size_t, char *, long );
@@ -57,16 +59,20 @@
 #  undef GC_MALLOC_ATOMIC
 #  undef GC_THREAD_MALLOC
 #  undef GC_THREAD_MALLOC_ATOMIC
+#  undef GC_THREAD_MALLOC_UNCOLLECTABLE
 #  undef GC_REALLOC
 #  undef GC_FREE
 #  define GC_MALLOC( sz_ ) (obj_t)GC_malloc( sz_ )
 #  define GC_MALLOC_ATOMIC( sz_ ) (obj_t)GC_malloc_atomic( sz_ )
+#  define GC_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_malloc_uncollectable( sz_ )
 #if( BGL_GC_VERSION < 700 )
 #  define GC_THREAD_MALLOC( sz_ ) (obj_t)GC_local_malloc( sz_ )
 #  define GC_THREAD_MALLOC_ATOMIC( sz_ ) (obj_t)GC_local_malloc_atomic( sz_ )
+#  define GC_THREAD_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_local_malloc_uncollectable( sz_ )
 #else
 #  define GC_THREAD_MALLOC( sz_ ) (obj_t)GC_malloc( sz_ )
 #  define GC_THREAD_MALLOC_ATOMIC( sz_ ) (obj_t)GC_malloc_atomic( sz_ )
+#  define GC_THREAD_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_malloc_uncollectable( sz_ )
 #endif
 #  define GC_REALLOC GC_realloc
 #  define GC_FREE GC_free
@@ -129,7 +135,9 @@
 #    undef GC_MALLOC
 #    define GC_MALLOC( size ) heap_alloc( size )
 #    undef GC_MALLOC_ATOMIC
+#    undef GC_MALLOC_UNCOLLECTABLE
 #    define GC_MALLOC_ATOMIC( size ) GC_MALLOC( size )
+#    define GC_MALLOC_UNCOLLECTABLE( size ) GC_MALLOC( size )
 #    define INIT_ALLOCATION( size ) init_heap( size )
 #    define FREE_ALLOCATION() free_heap()
 #    define GC_COLLECT() 
@@ -141,6 +149,7 @@
 #if( !defined( GC_THREAD_MALLOC ) )
 #  define GC_THREAD_MALLOC GC_MALLOC
 #  define GC_THREAD_MALLOC_ATOMIC GC_MALLOC_ATOMIC
+#  define GC_THREAD_MALLOC_UNCOLLECTABLE GC_MALLOC_UNCOLLECTABLE
 #endif
 
 #endif

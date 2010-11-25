@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Tue Nov  7 13:22:10 2006 (serrano)                */
+/*    Last change :  Thu Nov 25 08:14:53 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -55,7 +55,52 @@ create_vector( int len ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    make_vector ...                                                  */
+/*    create_vector_uncollectable ...                                  */
+/*    -------------------------------------------------------------    */
+/*    same as create_vector but the allocated vector is uncollectable  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+create_vector_uncollectable( int len ) {
+   obj_t vector;
+
+   if( len & ~(VECTOR_LENGTH_MASK) ) { 
+      C_FAILURE( "create_vector", "vector too large", BINT( len ) );
+      return BUNSPEC;
+   } else {
+      int byte_size;
+
+      byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
+
+      vector = GC_MALLOC( byte_size );
+
+#if( !defined( TAG_VECTOR ) )
+      vector->vector_t.header = MAKE_HEADER( VECTOR_TYPE, 0 );
+#endif		
+      vector->vector_t.length = len;
+
+      return BVECTOR( vector );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    make_vector_uncollectable ...                                    */
+/*    -------------------------------------------------------------    */
+/*    same as create_vector but the allocated vector is uncollectable  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+make_vector_uncollectable( int len, obj_t init ) {
+   obj_t vector;
+
+   vector = BVECTOR( create_vector_uncollectable( len ) );
+   fill_vector( vector, len, init );
+	
+   return vector;
+}
+
+/*---------------------------------------------------------------------*/
+/*    make_vector_uncollectable ...                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t

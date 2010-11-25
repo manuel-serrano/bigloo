@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Nov 16 17:06:40 2010 (serrano)                */
+;*    Last change :  Thu Nov 25 08:22:18 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -265,23 +265,42 @@
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-class name num min super sub max alloc ha fd constr virt inst nil pred evdata abstract)
-   (vector name          ;;  0 : the class name
-	   num           ;;  1 : the class number
-	   min           ;;  2 : the min-number in the class inheritance tree
-	   super         ;;  3 : the unique super class
-	   sub           ;;  4 : the subclasses
-	   max           ;;  5 : the max-num in the class inheritance tree
-	   alloc         ;;  6 : the class allocator
-	   ha            ;;  7 : the class hashing function
-	   fd            ;;  8 : the class fields
-	   constr        ;;  9 : the class constructor
-	   virt          ;; 10 : the class virtual getter and setter
-	   inst          ;; 11 : the function that creates instances
-	   nil           ;; 12 : the function that return the NIL object
-	   pred          ;; 13 : the class predicate
-	   evdata        ;; 14 : field used when declaring a class within eval
-	   abstract      ;; 15 : is the class abstract
-	   *class-key*)) ;; 16 : a stamp to implement class?
+   (let ((v ($create-vector-uncollectable 17)))
+      ;;  the class name
+      (vector-set-ur! v 0 name)
+      ;;  the class number
+      (vector-set-ur! v 1 num)
+      ;;  the min-number in the class inheritance tree
+      (vector-set-ur! v 2 min)
+      ;;  the unique super class
+      (vector-set-ur! v 3 super)
+      ;;  the subclasses
+      (vector-set-ur! v 4 sub)
+      ;;  the max-num in the class inheritance tree
+      (vector-set-ur! v 5 max)
+      ;;  the class allocator
+      (vector-set-ur! v 6 alloc)
+      ;;  the class hashing function
+      (vector-set-ur! v 7 ha)
+      ;;  the class fields
+      (vector-set-ur! v 8 fd)
+      ;;  the class constructor
+      (vector-set-ur! v 9 constr)
+      ;;  the class virtual getter and setter
+      (vector-set-ur! v 10 virt)
+      ;;  the function that creates instances
+      (vector-set-ur! v 11 inst)
+      ;;  the function that return the NIL object
+      (vector-set-ur! v 12 nil)
+      ;;  the class predicate
+      (vector-set-ur! v 13 pred)
+      ;;  field used when declaring a class within eval
+      (vector-set-ur! v 14 evdata)
+      ;;  is the class abstract
+      (vector-set-ur! v 15 abstract)
+      ;;  a stamp to implement class?
+      (vector-set-ur! v 16 *class-key*)
+      v))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class ...                                                   */
@@ -603,10 +622,10 @@
    (unless (initialized-objects?)
       (set! *nb-classes* 0)
       (set! *nb-classes-max* 64)
-      (set! *classes* (make-vector *nb-classes-max* #f))
+      (set! *classes* ($make-vector-uncollectable *nb-classes-max* #f))
       (set! *nb-generics-max* 64)
       (set! *nb-generics* 0)
-      (set! *generics* (make-vector *nb-generics-max* #f))
+      (set! *generics* ($make-vector-uncollectable *nb-generics-max* #f))
       (unless (pair? *class-key*) (set! *class-key* (cons 1 2)))))
 
 ;*---------------------------------------------------------------------*/
@@ -615,10 +634,12 @@
 (define (double-vector old-vec fill)
    (let* ((old-len (vector-length old-vec))
 	  (new-len (*fx 2 old-len))
-	  (new-vec (make-vector new-len fill)))
+	  (new-vec ($make-vector-uncollectable new-len fill)))
       (let loop ((i 0))
 	 (if (=fx i old-len)
-	     new-vec
+	     (begin
+		($free-vector-uncollectable old-vec)
+		new-vec)
 	     (begin
 		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
 		(loop (+fx i 1)))))))
@@ -868,8 +889,8 @@
 	     (warning "make-method-array"
 		      "unoptimal bigloo-generic-bucket-size: "
 		      (bigloo-generic-bucket-size))
-	     (make-vector (+fx s 1) def-bucket))
-	  (make-vector s def-bucket))))
+	     ($make-vector-uncollectable (+fx s 1) def-bucket))
+	  ($make-vector-uncollectable s def-bucket))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-no-default-behavior ...                                  */
@@ -906,7 +927,8 @@
        (let* ((def-met (if (procedure? default)
 			   default
 			   generic-no-default-behavior))
-	      (def-bucket (make-vector (bigloo-generic-bucket-size) def-met)))
+	      (def-bucket ($make-vector-uncollectable
+			   (bigloo-generic-bucket-size) def-met)))
 	  (when (=fx *nb-generics* *nb-generics-max*)
 	     (double-nb-generics!))
 	  (vector-set! *generics* *nb-generics* generic)
@@ -921,11 +943,9 @@
 	     ;; generic method array. We have to plug the new default
 	     ;; function
 	     (let ((old-def-bucket (generic-default-bucket generic))
-		   (new-def-bucket (make-vector (bigloo-generic-bucket-size)
-						default))
+		   (new-def-bucket ($make-vector-uncollectable
+				    (bigloo-generic-bucket-size) default))
 		   (old-default (generic-default generic)))
-		(generic-default-set! generic default)
-		(generic-default-bucket-set! generic new-def-bucket)
 		(let* ((marray (generic-method-array generic))
 		       (alen (vector-length marray)))
 		   (let loop ((i 0))
@@ -943,7 +963,12 @@
 					(vector-set! bucket j default)
 					(laap (+fx j 1)))
 				       (else
-					(laap (+fx j 1))))))))))))
+					(laap (+fx j 1)))))))
+			  (begin
+			     (generic-default-set! generic default)
+			     (generic-default-bucket-set! generic new-def-bucket)
+			     
+			     ($free-vector-uncollectable old-def-bucket)))))))
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/

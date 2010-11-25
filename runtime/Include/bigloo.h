@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 27 08:21:00 2010 (serrano)                */
+/*    Last change :  Thu Nov 25 08:09:26 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2059,6 +2059,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #   define VECTORP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_VECTOR)))
 #endif
 
+#define FREE_VECTOR_UNCOLLECTABLE( v ) GC_FREE( CREF( v ) )
+   
 #define VECTOR_REF( v, i )    (&(VECTOR( v ).obj0))[ i ]
 #define VECTOR_SET( v, i, o ) (VECTOR_REF( v, i ) = o, BUNSPEC)
 

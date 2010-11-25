@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Sep  8 05:24:30 2010 (serrano)                */
+;*    Last change :  Thu Nov 25 08:15:27 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -36,8 +36,11 @@
 	    __evenv)
    
    (extern  (macro $vector?::bool (::obj) "VECTORP")
+	    (macro $free-vector-uncollectable::void (::vector) "FREE_VECTOR_UNCOLLECTABLE")
 	    ($make-vector::vector (::int ::obj) "make_vector")
+	    ($make-vector-uncollectable::vector (::int ::obj) "make_vector_uncollectable")
 	    ($create-vector::vector (::int) "create_vector")
+	    ($create-vector-uncollectable::vector (::int) "create_vector_uncollectable")
 	    ($vector-fill!::obj (::vector ::int ::obj) "fill_vector")
 	    (macro $vector-length::int (::vector) "VECTOR_LENGTH")
 	    (macro $vector-ref::obj (::vector ::int) "VECTOR_REF")
@@ -52,9 +55,15 @@
    (java    (class foreign
 	       (method static $vector?::bool (::obj)
 		       "VECTORP")
+	       (method static $free-vector-uncollectable::void (::vector)
+		       "FREE_VECTOR_UNCOLLECTABLE")
 	       (method static $make-vector::vector (::int ::obj)
 		       "make_vector")
+	       (method static $make-vector-uncollectable::vector (::int ::obj)
+		       "make_vector")
 	       (method static $create-vector::vector (::int)
+		       "create_vector")
+	       (method static $create-vector-uncollectable::vector (::int)
 		       "create_vector")
 	       (method static $vector-fill!::obj (::vector ::int ::obj)
 		       "fill_vector")
