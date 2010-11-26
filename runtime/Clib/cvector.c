@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Thu Nov 25 08:14:53 2010 (serrano)                */
+/*    Last change :  Thu Nov 25 16:45:13 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -72,7 +72,7 @@ create_vector_uncollectable( int len ) {
 
       byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
 
-      vector = GC_MALLOC( byte_size );
+      vector = GC_MALLOC_UNCOLLECTABLE( byte_size );
 
 #if( !defined( TAG_VECTOR ) )
       vector->vector_t.header = MAKE_HEADER( VECTOR_TYPE, 0 );

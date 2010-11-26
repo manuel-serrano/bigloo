@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Sep 21 21:53:23 2004 (serrano)                */
-;*    Copyright   :  1995-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 26 08:15:27 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
 		   (sfun-body-set! fun (node-cond! node))
 		   #unspecified))
 	     globals)
-   (verbose 2 "(reduced : " *cond-reduced* #\) #\newline)
+   (verbose 2 "(reduced: " *cond-reduced* #\) #\newline)
    globals)
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Nov 25 08:09:26 2010 (serrano)                */
+/*    Last change :  Fri Nov 26 08:01:05 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1686,7 +1686,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (POINTERP( fun ) && (TYPE( fun ) == PROCEDURE_TYPE))
 
 #define PROCEDURE_ARITY( fun ) (PROCEDURE( fun ).arity)
-#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( BREF( fun )->header))
+#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( BREF( fun )->header ))
    
 #define PROCEDURE_ATTR( fun ) (PROCEDURE( fun ).attr)
 #define PROCEDURE_ATTR_SET( fun, _v ) (PROCEDURE( fun ).attr = (_v), (_v))

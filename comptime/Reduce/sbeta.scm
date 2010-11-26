@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Wed Sep  8 08:23:26 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:14:58 2010 (serrano)                */
 ;*    Copyright   :  2000-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
@@ -69,7 +69,7 @@
    (set! *c-string-length* #unspecified)
    (set! *predicates* '())
    ;; display statistics
-   (verbose 2 "(removed : " *removed* #\) #\newline)
+   (verbose 2 "(removed: " *removed* #\) #\newline)
    globals)
 
 ;*---------------------------------------------------------------------*/

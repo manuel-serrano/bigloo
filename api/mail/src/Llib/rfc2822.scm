@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Jul  9 20:02:22 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 07:41:21 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
@@ -41,7 +41,7 @@
 	 (else
 	  (let ((c (the-failure)))
 	     (if (eof-object? c)
-		 '()
+		 ""
 		 (raise (instantiate::&io-parse-error
 			   (proc "header->list")
 			   (msg "Illegal value character")

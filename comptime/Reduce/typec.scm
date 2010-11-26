@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Sep  8 08:23:34 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:15:14 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -40,8 +40,8 @@
 		   (sfun-body-set! fun (node-typec! node))
 		   #unspecified))
 	     globals)
-   (verbose 2 "(removed : " *type-checks-removed*
-	    ") (remaining : " *type-checks-remaining* #")\n")
+   (verbose 2 "(removed: " *type-checks-removed*
+	    ", remaining: " *type-checks-remaining* #")\n")
    globals)
 
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Wed Sep  8 08:19:32 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:39:45 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -79,21 +79,21 @@
 (define-generic (get-type::type node::node))
 
 ;*---------------------------------------------------------------------*/
-;*    get-type ...                                                     */
+;*    get-type ::atom ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::atom)
    (with-access::atom node (value)
       (get-type-atom value)))
  
 ;*---------------------------------------------------------------------*/
-;*    get-type ...                                                     */
+;*    get-type ::kwote ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::kwote)
    (with-access::kwote node (value)
       (get-type-kwote value)))
 
 ;*---------------------------------------------------------------------*/
-;*    get-type ...                                                     */
+;*    get-type ::var ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::var)
    (with-access::var node (variable)
@@ -102,7 +102,7 @@
 	    ((sfun? value)
 	     *procedure*)
 	    ((cfun? value)
-	     (error "get-type" "Not implemented yet" (shape node)))
+	     *obj*)
 	    (else
 	     (variable-type variable))))))
 

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sun Oct  3 17:55:00 2010 (serrano)                */
+#*    Last change :  Fri Nov 26 08:29:41 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -174,6 +174,11 @@ COERCE_FILE	= walk pproto coerce app funcall apply convert
 
 COERCE_OBJ	= $(COERCE_FILE:%=Coerce/%.o)
 
+#*--- Dataflow --------------------------------------------------------*/
+DATAFLOW_FILE	= walk
+
+DATAFLOW_OBJ	= $(DATAFLOW_FILE:%=Dataflow/%.o)
+
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration integration28c \
@@ -322,12 +327,12 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(READ_OBJ) $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
                   $(HEAP_OBJ) $(MODULE_OBJ) $(TYPE_OBJ) $(EXPAND_OBJ) \
                   $(INLINE_OBJ) $(BIVALUE_OBJ) $(USER_OBJ) $(HGEN_OBJ) \
-                  $(COERCE_OBJ) $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) \
-		  $(INTEGRATE_OBJ) $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) \
-                  $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) \
-                  $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) \
-                  $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) \
-                  $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) \
+                  $(COERCE_OBJ) $(DATAFLOW_OBJ) $(GLOBALIZE_OBJ) $(CNST_OBJ) \
+                  $(CFA_OBJ) $(INTEGRATE_OBJ) $(TAILC_OBJ) $(CGEN_OBJ) \
+                  $(TVECTOR_OBJ) $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) \
+                  $(EVAL_OBJ) $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) \
+                  $(EFFECT_OBJ) $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) \
+                  $(PROF_OBJ) $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) \
                   $(SAW_OBJ) $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_MSIL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)

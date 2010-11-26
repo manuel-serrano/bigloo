@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Sep  8 08:22:34 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:14:11 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
@@ -48,7 +48,7 @@
 					  node))
 		   #unspecified))
 	     globals)
-   (verbose 2 "      (removed : " *variable-removed* #\) #\newline)
+   (verbose 2 "      (removed: " *variable-removed* #\) #\newline)
    globals)
 
 ;*---------------------------------------------------------------------*/

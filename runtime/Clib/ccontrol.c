@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Nov 16 14:18:46 2010 (serrano)                */
+/*    Last change :  Fri Nov 26 08:02:11 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -30,29 +30,21 @@ bgl_make_procedure( obj_t entry, int arity, int size ) {
 BGL_RUNTIME_DEF
 obj_t
 make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
-   obj_t a_tproc;
-   int byte_size;
 
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
-   }
- 
-   byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
-
-   a_tproc = GC_MALLOC( byte_size );
+   } else {
+      int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
+      obj_t a_tproc = GC_MALLOC( byte_size );
 	      
-   a_tproc->procedure_t.header   = MAKE_HEADER( PROCEDURE_TYPE, size );
-   a_tproc->procedure_t.entry    = entry; 
-   a_tproc->procedure_t.va_entry = 0L;
-   a_tproc->procedure_t.attr     = BUNSPEC;
-   a_tproc->procedure_t.arity    = arity;
+      a_tproc->procedure_t.header = MAKE_HEADER( PROCEDURE_TYPE, size );
+      a_tproc->procedure_t.entry = entry; 
+      a_tproc->procedure_t.va_entry = 0L;
+      a_tproc->procedure_t.attr = BUNSPEC;
+      a_tproc->procedure_t.arity = arity;
 
-   if( (PROCEDURE_LENGTH( BREF( a_tproc ) ))!= size ) {
-      fprintf( stderr, "ERROR: ILLEGAL PROCEDURE SIZE: %d vs %d\n",
-	       PROCEDURE_LENGTH( BREF( a_tproc ) ), size );
+      return BREF( a_tproc );
    }
-      
-   return BREF( a_tproc );
 }
 
 /*---------------------------------------------------------------------*/
@@ -61,29 +53,21 @@ make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
 BGL_RUNTIME_DEF
 obj_t
 make_va_procedure( obj_t (*entry)(), int arity, int size ) {
-   obj_t a_tproc;
-   int byte_size;
 
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-va-procedure", "Environment to large", BINT( size ) );
-   }
- 
-   byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
-
-   a_tproc = GC_MALLOC( byte_size );
-
-   a_tproc->procedure_t.header   = MAKE_HEADER( PROCEDURE_TYPE, size );
-   a_tproc->procedure_t.entry    = (obj_t (*)())va_generic_entry; 
-   a_tproc->procedure_t.va_entry = entry;
-   a_tproc->procedure_t.attr     = BUNSPEC;
-   a_tproc->procedure_t.arity    = arity;
-	
-   if( (PROCEDURE_LENGTH( BREF( a_tproc ) ))!= size ) {
-      fprintf( stderr, "ERROR: ILLEGAL PROCEDURE SIZE: %d vs %d\n",
-	       PROCEDURE_LENGTH( BREF( a_tproc ) ), size );
-   }
+   } else {
+      int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
+      obj_t a_tproc = GC_MALLOC( byte_size );
+	      
+      a_tproc->procedure_t.header = MAKE_HEADER( PROCEDURE_TYPE, size );
+      a_tproc->procedure_t.entry = (obj_t (*)())va_generic_entry; 
+      a_tproc->procedure_t.va_entry = entry;
+      a_tproc->procedure_t.attr = BUNSPEC;
+      a_tproc->procedure_t.arity = arity;
       
-   return BREF( a_tproc );
+      return BREF( a_tproc );
+   }
 }
 
 /*---------------------------------------------------------------------*/

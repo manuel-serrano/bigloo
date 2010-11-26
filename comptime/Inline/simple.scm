@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Tue Sep  7 17:25:31 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 14:51:40 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */

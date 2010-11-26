@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Tue Sep  7 19:15:13 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:58:53 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    ast_let
 	    tools_dsssl
 	    expand_eps)
+   (import type_typeof)
    (export  (application->node::node ::obj ::obj ::obj ::symbol)
 	    (make-app-node::node stack loc site var::var args)
 	    (correct-arity-app?::bool ::variable ::obj)))
@@ -452,9 +453,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-fx-app-node ...                                             */
 ;*    -------------------------------------------------------------    */
-;*    This function produces nodes that represent function call in     */
-;*    the AST. If the function is special (mainly because it is an     */
-;*    operator), this function emit an ad-hoc node. Otherwise, it      */
+;*    This function produces nodes that represent function calls in    */
+;*    the AST. If the called function is special (mainly because it is */
+;*    an operator), this function emits an ad-hoc node. Otherwise, it  */
 ;*    emits an APP node if the function is constant and a FUNCALL      */
 ;*    node otherwise.                                                  */
 ;*---------------------------------------------------------------------*/
@@ -474,15 +475,15 @@
 				   (duplicate::var var)
 				   var))
 			 (args args))))
-	  (if (eq? (variable-type v) *void*)
-	      ;; the call is cast into obj
-	      (let ((unspec (instantiate::atom
-			       (type *obj*)
-			       (value #unspecified))))
-		 (instantiate::sequence
-		    (type *obj*)
-		    (nodes (list call unspec))))
-	      call)))
+	     (if (eq? (variable-type v) *void*)
+		 ;; the call is cast into obj
+		 (let ((unspec (instantiate::atom
+				  (type *obj*)
+				  (value #unspecified))))
+		    (instantiate::sequence
+		       (type *obj*)
+		       (nodes (list call unspec))))
+		 call)))
 	 (else
 	  ;; this is a computed function call (a call to an unkknown function)
 	  (instantiate::funcall

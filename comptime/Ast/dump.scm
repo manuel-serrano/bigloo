@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Sep  8 08:19:55 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:59:04 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -54,7 +54,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::var)
    (node->sexp-hook node)
-   (location-shape (node-loc node) (shape (var-variable node))))
+   (with-access::var node (type variable)
+      (let* ((vshape (shape variable))
+	     (tvshape (if (and *type-shape?*
+			       (not (sfun? (variable-value variable)))
+			       (not (eq? type (get-type node))))
+			  (string->symbol
+			   (string-append (symbol->string vshape)
+					  "[::" (shape type) "]"))
+			  vshape)))
+	 (location-shape (node-loc node) tvshape))))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::closure ...                                         */
@@ -101,11 +110,11 @@
 			 ,(vector (shape (get-type node))
 				  (shape (variable-type
 					  (var-variable (app-fun node)))))
-			 ,@(map node->sexp (app-args node)))		       )
+			 ,@(map node->sexp (app-args node))))
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))
 			 ,(vector 'side-effect: (side-effect? node))
-			 ,@(map node->sexp (app-args node)))		       )
+			 ,@(map node->sexp (app-args node))))
 		      (else
 		       `(,(node->sexp (app-fun node))
 			 ,@(map node->sexp (app-args node)))))))

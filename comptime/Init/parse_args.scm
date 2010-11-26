@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Oct 22 15:52:11 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 08:31:53 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -845,6 +845,8 @@
        (set! *pass* 'fail))
       (("-abound" (help "Stop after the array bound checking stage"))
        (set! *pass* 'abound))
+      (("-dataflow" (help "Stop after the type dataflow stage"))
+       (set! *pass* 'dataflow))
       (("-fuse" (help "Stop after the fuse stage"))
        (set! *pass* 'fuse)) 
       (("-user" (help "Stop after the user pass"))

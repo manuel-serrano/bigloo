@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Oct 22 15:11:18 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 07:40:25 2010 (serrano)                */
 ;*    Copyright   :  2007-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -411,13 +411,15 @@
 				 (if (pair? c)
 				     (with-handler
 					(lambda (e)
-					   (when (>fx (bigloo-warning) 0)
-					      (display "*** WARNING:multipart"
-						       (current-error-port))
-					      (display " Illegal mimetype, assuming text/plain\n"
-						       (current-error-port)))
-						       
-					   '(text plain))
+					   (if (&io-parse-error? e)
+					       (begin
+						  (when (>fx (bigloo-warning) 0)
+						     (display "*** WARNING:multipart"
+							      (current-error-port))
+						     (display " Illegal mimetype, assuming text/plain\n"
+							      (current-error-port)))
+						  '(text plain))
+					       (raise e)))
 					(mime-content-type-decode (cdr c)))
 				     '(text plain))))
 		       (dispo (let ((c (assq 'content-disposition header)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sun May 30 09:50:55 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 13:53:55 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -318,6 +318,19 @@
     (define (cond-expand-foo x) x))
    (else
     (define (cond-expand-foo x) 4)))
+
+;*---------------------------------------------------------------------*/
+;*    bug-jvm ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (bug-jvm scm-files)
+   ;; This function was badly compiled up to bigloo3.5b. The JAS code
+   ;; is incorrect and the bytecode verifier breaks. This function
+   ;; cannot be executed hence, it is used in this file only as a
+   ;; procedural value
+   (begin
+      (labels ((try-120 (g-119) (try-120 8)))
+	 (try-120 9))
+      6))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-vital ...                                                   */
@@ -856,4 +869,5 @@
    (test "char.2" (char->integer #\null) 0)
    (test "char.2" (char->integer #a008) 8)
    (test "labels" (vital:labels map '(1 2 3)) '(1 2 3))
-   (test "let" (vital:let 10 +) 11))
+   (test "let" (vital:let 10 +) 11)
+   (test "bug-jvm" (procedure? bug-jvm) #t))
