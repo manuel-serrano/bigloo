@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Mon Oct 18 07:34:11 2010 (serrano)                */
+;*    Last change :  Sat Nov 27 20:20:29 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -123,7 +123,14 @@
 ;*---------------------------------------------------------------------*/
    ;; quote
    (install-expander 'quote (lambda (x e) (expand-quote x e)))
-   
+
+   ;; @
+   (install-expander '@ (lambda (x e)
+			   (match-case x
+			      ((@ (? symbol?) (? symbol?))
+			       x)
+			      (else
+			       (expand-error "@" "Illegal form" x)))))
    ;; quasiquote
    (install-expander 'quasiquote (lambda (x e) (e (quasiquotation 1 x) e)))
    
@@ -165,9 +172,7 @@
 				  ((?- ?exp)
 				   `(make-promise (lambda () ,(e exp e))))
 				  (else
-				   (expand-error "delay"
-						 "Illegal form"
-						 x)))))
+				   (expand-error "delay" "Illegal form" x)))))
    ;; regular-grammar
    (install-expander 'regular-grammar expand-regular-grammar)
    

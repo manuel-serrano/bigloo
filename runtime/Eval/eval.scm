@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Oct 22 16:33:59 2010 (serrano)                */
+;*    Last change :  Sat Nov 27 19:17:20 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -121,8 +121,13 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    default-evaluate ...                                             */
+;*    -------------------------------------------------------------    */
+;*    DEFAULT-EVALUATE is very special. It must be explicitly typed    */
+;*    as obj because since eval in called by evprimop before the eval  */
+;*    module is initialized, the type of the variable must not         */
+;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-(define default-evaluate byte-code-evaluate)
+(define default-evaluate::obj byte-code-evaluate)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
@@ -152,10 +157,7 @@
 ;*    eval ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (eval exp #!optional (env (default-environment)))
-   (let ((evaluate (if (procedure? default-evaluate)
-		       default-evaluate
-		       byte-code-evaluate)))
-      (eval/expander exp env expand evaluate)))
+   (eval/expander exp env expand default-evaluate))
  
 ;*---------------------------------------------------------------------*/
 ;*    eval! ...                                                        */

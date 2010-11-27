@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Wed Sep  8 08:20:52 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 18:10:30 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
@@ -241,7 +241,7 @@
 ;*    node-collect! ::setq ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node-collect! node::setq owner)
-   (with-access::setq node (type value)
+   (with-access::setq node (value)
       (node-collect! value owner)))
 
 ;*---------------------------------------------------------------------*/

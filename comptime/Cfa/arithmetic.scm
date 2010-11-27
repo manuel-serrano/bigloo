@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Thu Nov  9 15:36:57 2006 (serrano)                */
-;*    Copyright   :  2000-06 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Sat Nov 27 07:57:58 2010 (serrano)                */
+;*    Copyright   :  2000-10 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -191,7 +191,7 @@
 			;; this was an unallocated type
 			(begin
 			   (approx-set-type! approx ty)
-			   (continue-cfa!))))
+			   (continue-cfa! 'arithmetic-app))))
 		;; we loose everything
 		(begin
 		   (for-each (lambda (a) (loose! a 'all)) args-approx)

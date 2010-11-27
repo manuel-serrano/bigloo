@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sun Apr 10 12:31:28 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 27 08:02:59 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -180,6 +180,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::var) 
    (with-access::var node (variable type)
+      (when (eq? type *_*)
+	 (set! type (variable-type variable)))
       (if (and (global? variable) (eq? (global-import variable) 'static))
 	  (type-variable! (global-value variable) variable))))
 

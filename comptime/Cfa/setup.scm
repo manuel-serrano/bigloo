@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Sep  8 08:21:07 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 17:45:45 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -121,15 +121,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    variable-value-setup! ::svar ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (variable-value-setup! value::svar var)
-   (if (global? var)
-       (let ((value (widen!::svar/Cinfo value
-		       (approx (make-type-approx (variable-type var))))))
-	  (if (and (not (eq? (global-import var) 'static))
-		   (alloc-type? (variable-type var)))
-	      (approx-set-top! (svar/Cinfo-approx value))))
-       (widen!::svar/Cinfo value
-	  (approx (make-type-approx (variable-type var))))))
+(define-method (variable-value-setup! value::svar var::variable)
+   (let ((typ (variable-type var)))
+      (if (global? var)
+	  (let ((value (widen!::svar/Cinfo value
+			  (approx (make-type-approx typ)))))
+	     (if (and (not (eq? (global-import var) 'static)) (alloc-type? typ))
+		 (approx-set-top! (svar/Cinfo-approx value))))
+	  (widen!::svar/Cinfo value
+	     (approx (make-type-approx typ))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable-value-setup! ::pre-clo-env ...                          */

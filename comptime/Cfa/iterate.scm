@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Fri Mar 24 05:34:32 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 27 07:28:52 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
    (export  (cfa-iterate-to-fixpoint! globals)
 	    (cfa-intern-sfun!::approx ::intern-sfun/Cinfo ::obj)
 	    (generic cfa-export-var! ::value ::obj)
-	    (continue-cfa!)
+	    (continue-cfa! reason)
 	    (cfa-iterate! globals)
 	    *cfa-stamp*))
 
@@ -48,7 +48,7 @@
       ;; we add the top level forms
       (set! glodefs (append (unit-initializers) glodefs))
       ;; and we start iterations
-      (continue-cfa!)
+      (continue-cfa! 'init)
       ;; and we do it
       (let loop ()
 	 (if (continue-cfa?)
@@ -151,9 +151,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    continue-cfa! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (continue-cfa!)
-   (if (not *cfa-continue?*)
-       (trace (cfa 2) "--> continue-cfa!" #\Newline))
+(define (continue-cfa! reason)
+   (when (not *cfa-continue?*)
+      (trace (cfa 2) "--> continue-cfa! (" reason ")\n"))
    (set! *cfa-continue?* #t))
 
 ;*---------------------------------------------------------------------*/

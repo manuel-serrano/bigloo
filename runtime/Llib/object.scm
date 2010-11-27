@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Nov 25 08:22:18 2010 (serrano)                */
+;*    Last change :  Sat Nov 27 08:12:33 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -205,7 +205,7 @@
 
    (pragma  (%object-class-num args-safe)
 	    (%object-class-num-set! args-safe)
-            (class? side-effect-free (predicate-of object) no-cfa-top nesting (effect))
+            (class? side-effect-free no-cfa-top nesting (effect))
 	    (class-super side-effect-free no-cfa-top no-trace nesting)
 	    (class-subclasses side-effect-free no-cfa-top no-trace nesting)
 	    (class-constructor side-effect-free no-cfa-top no-trace nesting)

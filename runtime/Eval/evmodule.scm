@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sun Oct 17 10:05:32 2010 (serrano)                */
+;*    Last change :  Sat Nov 27 18:28:07 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -179,7 +179,8 @@
 ;*    eval-find-module ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (eval-find-module id)
-   (hashtable-get *modules-table* id))
+   (when (hashtable? *modules-table*)
+      (hashtable-get *modules-table* id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-find-global ...                                         */

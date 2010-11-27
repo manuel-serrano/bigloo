@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Sun Apr 10 14:44:52 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 27 16:20:46 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -63,8 +63,13 @@
 ;*    cfa! ::var ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::var)
-   (with-access::var node (variable)
-      (cfa-variable-value-approx (variable-value variable))))
+   (with-access::var node (variable type)
+      (let ((approx (cfa-variable-value-approx (variable-value variable))))
+	 (if (or (eq? (variable-type variable) type)
+		 (eq? type *_*))
+	     approx
+	     (duplicate::approx approx
+		(type type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa! ::closure ...                                               */
@@ -196,7 +201,7 @@
    (with-access::setq/Cinfo node (approx var value)
       (let* ((var-approx (cfa! var))
 	     (val-approx (cfa! value))
-	     (v          (var-variable var)))
+	     (v (var-variable var)))
 	 (trace (cfa 3) "*** " (shape node) " <- " (shape val-approx)
 		#\Newline)
 	 (union-approx! var-approx val-approx)
@@ -265,13 +270,17 @@
 				"       val: " (shape val-approx) #\Newline
 				"     vtype: " (shape vtype) #\Newline
 				"     atype: " (shape atype) #\Newline)
-			 ;; Here we explicitly check for type errors.
+			 ;; Here we explicitly check for type downcast.
 			 ;; When one is encountered, top is propagated
+			 ;; Before version 3.5b (27 Nov 2010), this was
+			 ;; propagating a top as soon as atype was not eq
+			 ;; to vtype (not (eq? atype vtype))
 			 (if (and (not (eq? vtype *_*))
 				  (not (eq? vtype *obj*))
 				  (not (eq? atype *_*))
-				  (not (eq? atype vtype)))
+				  (eq? atype *obj*))
 			     (begin
+				(trace (cfa 4) "     -----> setting top\n")
 				(approx-set-top! val-approx)
 				(loose! val-approx 'all))))))
 		bindings)

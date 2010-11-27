@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Tue Dec 19 07:51:58 2006 (serrano)                */
+;*    Last change :  Fri Nov 26 18:03:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -142,7 +142,7 @@
 (define (test-wind2)
    (let ((ex ($get-exitd-top)))
       (test "unwind-protect"
-	    (let* ((x     10)
+	    (let* ((x 10)
 		   (value (unwind-protect
 			     (call/cc (lambda (exit)
 					 (begin
@@ -156,7 +156,7 @@
 	    14)
       (test "unwind-protect" ex ($get-exitd-top))
       (test "unwind-protect"
-	    (let* ((x     10)
+	    (let* ((x 10)
 		   (value (unwind-protect
 			     (call/cc (lambda (exit)
 					 (begin

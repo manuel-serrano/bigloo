@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Fri Nov 26 09:51:58 2010 (serrano)                */
+;*    Last change :  Sat Nov 27 21:34:46 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute variable references according to dataflow tests. E.G.,   */
@@ -21,6 +21,7 @@
 	    tools_shape
 	    type_type
 	    type_typeof
+	    type_cache
 	    ast_var
 	    ast_node
 	    effect_cgraph
@@ -58,7 +59,8 @@
    (with-access::app node (fun args)
       (if (and (fun? (variable-value (var-variable fun)))
 	       (fun-predicate-of (variable-value (var-variable fun)))
-	       (pair? args) (null? (cdr args)) (var? (car args)))
+	       (pair? args) (null? (cdr args))
+	       (var? (car args)))
 	  (let ((typ (fun-predicate-of (variable-value (var-variable fun))))
 		(var (var-variable (car args))))
 	     (list (cons var typ)))
@@ -92,8 +94,9 @@
 (define-method (dataflow-node! node::var env)
    (with-access::var node (type variable)
       (let ((b (assq variable env)))
-	 (when (pair? b)
-	    (set! type (cdr b)))))
+	 (if (pair? b)
+	     (set! type (cdr b))
+	     (set! type (variable-type variable)))))
    env)
 
 ;*---------------------------------------------------------------------*/
@@ -143,7 +146,12 @@
    (with-access::setq node (var value)
       (dataflow-node! value env)
       (with-access::var var (variable)
-	 (cons (cons variable (get-type value)) env))))
+	 (if (global? variable)
+	     env
+	     (let ((typ (get-type value)))
+		(if (or (eq? typ *_*) (eq? typ *obj*))
+		    env
+		    (cons (cons variable typ) env)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::conditional ...                                 */
@@ -204,7 +212,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::set-ex-it env)
    (with-access::set-ex-it node (var)
-      (dataflow-node! (set-ex-it-body node) env)))
+      (dataflow-node! (set-ex-it-body node) env)
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::jump-ex-it ...                                  */
@@ -213,7 +222,7 @@
    (with-access::jump-ex-it node (exit value)
       (dataflow-node! exit env)
       (dataflow-node! value env)
-      env))
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::make-box ...                                    */
