@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Mon Jul 21 16:32:34 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 28 08:45:41 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -56,59 +56,58 @@
 ;*    closure-optimization! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (closure-optimization! globals)
-   (if (closure-optimization?)
-       (begin
-	  (verbose 1 "   . Light closures" #\newline)
-	  (trace cfa
-		 "--------------------------------------"
-		 #\Newline "closure-optimization! :" #\Newline
-		 (shape *make-procedure-list*)
-		 #\Newline)
-	  ;; we set the local cache
-	  (start-cache)
-	  ;; first, we set the X et T fields for each closures.
-	  (for-each
-	   (lambda (app)
-	      (with-access::make-procedure-app app (lost-stamp X T args X-T?)
-		 (let ((fun    (var-variable (car args)))
-		       (lost?  (>fx lost-stamp -1))
-		       (size   (get-node-atom-value (caddr args))))
-		    (trace (cfa 3) "light?: " (shape app) " ... ")
-		    (if (not (or lost?
-				 (not X-T?)
-				 (<fx (sfun-arity (global-value fun)) 0)
-				 (not (fixnum? size))
-				 ;; procedure with no free variable
-				 ;; cannot be light neither extra-light
-				 ;; because they are already optimized
-				 ;; by the constant compilation.
-				 (=fx size 0)))
-			(begin
-			   (trace (cfa 3) " may be X and T." #\Newline)
-			   (set! X #t)
-			   (set! T #t))
-			(begin
-			   (trace (cfa 3) " can't be X nor T because: "
-				  #\Newline
-				  "        lost?: " lost? #\Newline
-				  "        X-T?: " X-T? #\Newline
-				  "        size : " size #\Newline
-				  "        arity: " (sfun-arity
-						     (global-value fun))
-				  #\Newline)))))) 
-	   *make-procedure-list*)
-	  ;; we compute the X property ...
-	  (X! *funcall-list*)
-	  ;; and the T one
-	  (T-fix-point! *funcall-list*)
-	  ;; we print the result
-	  (show-X-T *make-procedure-list*)
-	  ;; then, we have to scan, all funcall and procedure-ref
-	  ;; and procedure-set!, procedure? in order to change them according
-	  ;; to procedure's classifications and free variables types.
-	  (light-closure! globals)
-	  ;; we don't need the cache anymore
-	  (stop-cache))))
+   (when (closure-optimization?)
+      (verbose 1 "   . Light closures" #\newline)
+      (trace cfa
+	     "--------------------------------------"
+	     #\Newline "closure-optimization! :" #\Newline
+	     (shape *make-procedure-list*)
+	     #\Newline)
+      ;; we set the local cache
+      (start-cache)
+      ;; first, we set the X et T fields for each closures.
+      (for-each
+       (lambda (app)
+	  (with-access::make-procedure-app app (lost-stamp X T args X-T?)
+	     (let ((fun    (var-variable (car args)))
+		   (lost?  (>fx lost-stamp -1))
+		   (size   (get-node-atom-value (caddr args))))
+		(trace (cfa 3) "light?: " (shape app) " ... ")
+		(if (not (or lost?
+			     (not X-T?)
+			     (<fx (sfun-arity (global-value fun)) 0)
+			     (not (fixnum? size))
+			     ;; procedure with no free variable
+			     ;; cannot be light neither extra-light
+			     ;; because they are already optimized
+			     ;; by the constant compilation.
+			     (=fx size 0)))
+		    (begin
+		       (trace (cfa 3) " may be X and T." #\Newline)
+		       (set! X #t)
+		       (set! T #t))
+		    (begin
+		       (trace (cfa 3) " can't be X nor T because: "
+			      #\Newline
+			      "        lost?: " lost? #\Newline
+			      "        X-T?: " X-T? #\Newline
+			      "        size : " size #\Newline
+			      "        arity: " (sfun-arity
+						 (global-value fun))
+			      #\Newline)))))) 
+       *make-procedure-list*)
+      ;; we compute the X property ...
+      (X! *funcall-list*)
+      ;; and the T one
+      (T-fix-point! *funcall-list*)
+      ;; we print the result
+      (show-X-T *make-procedure-list*)
+      ;; then, we have to scan, all funcall and procedure-ref
+      ;; and procedure-set!, procedure? in order to change them according
+      ;; to procedure's classifications and free variables types.
+      (light-closure! globals)
+      ;; we don't need the cache anymore
+      (stop-cache)))
 
 ;*---------------------------------------------------------------------*/
 ;*    X! ...                                                           */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Sat Nov 27 07:57:58 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 08:33:55 2010 (serrano)                */
 ;*    Copyright   :  2000-10 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
@@ -175,14 +175,15 @@
 	     (loop (cdr args)))
 	    (else
 	     #f))))
-   (with-access::arithmetic-app node (args approx spec-types)
+   (with-access::arithmetic-app node (fun args approx spec-types)
       (trace (cfa 4) ">>> arithmetic: " (shape node) " "
 	     (shape approx) " currently: " (shape approx) #\Newline)
       ;; we process all the argument to the function call
       (let ((args-approx (map cfa! args)))
 	 ;; find the type
 	 (let ((ty (find-first-specialized-type args-approx)))
-	    (if (types-compatible? args-approx ty spec-types)
+	    (cond
+	       ((types-compatible? args-approx ty spec-types)
 		;; ok, we just return as it is...
 		(if (all-types-specialized? args-approx spec-types)
 		    ;; we, all types are specialized, we specialize
@@ -191,11 +192,10 @@
 			;; this was an unallocated type
 			(begin
 			   (approx-set-type! approx ty)
-			   (continue-cfa! 'arithmetic-app))))
-		;; we loose everything
-		(begin
-		   (for-each (lambda (a) (loose! a 'all)) args-approx)
-		   (approx-set-type! approx *obj*)))))
+			   (continue-cfa! 'arithmetic-app)))))
+	       ((unless (eq? (global-id (var-variable fun)) 'c-eq?))
+		(for-each (lambda (a) (loose! a 'all)) args-approx)
+		(approx-set-type! approx *obj*)))))
       ;; we are done
       approx))
 

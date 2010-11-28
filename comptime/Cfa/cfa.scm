@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Sat Nov 27 16:20:46 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 06:44:56 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -65,8 +65,7 @@
 (define-method (cfa! node::var)
    (with-access::var node (variable type)
       (let ((approx (cfa-variable-value-approx (variable-value variable))))
-	 (if (or (eq? (variable-type variable) type)
-		 (eq? type *_*))
+	 (if (or (eq? (variable-type variable) type) (eq? type *_*))
 	     approx
 	     (duplicate::approx approx
 		(type type))))))

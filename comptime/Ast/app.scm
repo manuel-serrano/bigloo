@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Nov 26 08:58:53 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 08:35:48 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -437,18 +437,6 @@
 					      "Illegal keyword(s) argument(s)"
  					      (map car err))))
 		   (body keys vals stack)))))))
-		   
- 		   '(let* ((stack '())
-			  (_ (unless (=fx (length stack) arity)
-				(tprint "PAS GLOP stack=" (length stack)
-					" artiy=" arity " "
-					(shape `(,var ,@args)))))
-			  (bindings (map cons stack (take args arity))))
-		      (instantiate::let-var
-			 (loc loc)
-			 (type (variable-type v))
-			 (bindings bindings)
-			 (body (body keys vals stack))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-fx-app-node ...                                             */
@@ -523,7 +511,9 @@
 ;*---------------------------------------------------------------------*/
 (define (special-cfun? global)
    (memq (global-id global)
-	 '($vector-length
+	 '(c-eq?
+	   $vector?
+	   $vector-length
 	   $vector-ref $vector-ref-ur
 	   $vector-set! $vector-set-ur!
 	   $create-vector)))
@@ -534,39 +524,61 @@
 ;*    We don't have to take care of arity checks because they have     */
 ;*    already been done.                                               */
 ;*---------------------------------------------------------------------*/
-(define (make-special-app-node loc variable args)
-   (let* ((var (var-variable variable))
-	  (gname (global-name var)))
-      (case (global-id var)
+(define (make-special-app-node loc var::var args)
+   (let* ((variable (var-variable var))
+	  (gname (global-name variable)))
+      (case (global-id variable)
+	 (($vector?)
+	  ;; As for $VECTOR-SET in order to let the cfa specialize the
+	  ;; vector it is required to erase the type of the argument
+	  (node-type-set! (car args) *_*)
+	  (instantiate::app
+	     (loc loc)
+	     (type (variable-type variable))
+	     (fun  var)
+	     (args args)))
+	 ((c-eq?)
+	  ;; As for $VECTOR-SET in order to let the cfa specialize the
+	  ;; vector it is required to erase the type of the third argument
+	  (node-type-set! (car args) *_*)
+	  (node-type-set! (cadr args) *_*)
+	  (instantiate::app
+	     (loc loc)
+	     (type (variable-type variable))
+	     (fun  var)
+	     (args args)))
 	 (($vector-length)
 	  (instantiate::vlength
 	     (loc loc)
-	     (type (global-type var))
+	     (type (global-type variable))
 	     (c-format (string-append gname "($1)"))
 	     (expr* args)
-	     (vtype (car (cfun-args-type (global-value var))))))
+	     (vtype (car (cfun-args-type (global-value variable))))))
 	 (($vector-ref $vector-ref-ur)
 	  (instantiate::vref
 	     (loc loc)
-	     (type (global-type var))
+	     (type (global-type variable))
 	     (c-format (string-append gname "($1,$2)"))
 	     (expr* args)
-	     (unsafe (eq? (global-id var) '$vector-ref-ur))
-	     (vtype (car (cfun-args-type (global-value var))))
-	     (ftype (global-type var))
-	     (otype (cadr (cfun-args-type (global-value var))))))
+	     (unsafe (eq? (global-id variable) '$vector-ref-ur))
+	     (vtype (car (cfun-args-type (global-value variable))))
+	     (ftype (global-type variable))
+	     (otype (cadr (cfun-args-type (global-value variable))))))
 	 (($vector-set! $vector-set-ur!)
+	  ;; in order to let the cfa specialize the vector it is
+	  ;; required to erase the type of the third argument
+	  (node-type-set! (caddr args) *_*)
 	  (instantiate::vset!
 	     (loc loc)
-	     (type (global-type var))
+	     (type (global-type variable))
 	     (c-format (string-append gname "($1,$2,$3)"))
 	     (expr* args)
-	     (unsafe (eq? (global-id var) '$vector-set-ur!))
-	     (vtype (car (cfun-args-type (global-value var))))
-	     (otype (cadr (cfun-args-type (global-value var))))
-	     (ftype (caddr (cfun-args-type (global-value var))))))
+	     (unsafe (eq? (global-id variable) '$vector-set-ur!))
+	     (vtype (car (cfun-args-type (global-value variable))))
+	     (otype (cadr (cfun-args-type (global-value variable))))
+	     (ftype (caddr (cfun-args-type (global-value variable))))))
 	 (($create-vector)
-	  (let* ((stack-alloc (fun-stack-allocator (variable-value var)))
+	  (let* ((stack-alloc (fun-stack-allocator (variable-value variable)))
 		 (heap-format (string-append gname "($1)"))
 		 (stack-format (if (global? stack-alloc)
 				   (string-append (global-name stack-alloc)
@@ -574,9 +586,9 @@
 				   heap-format)))
 	     (instantiate::valloc
 		(loc loc)
-		(type (global-type var))
+		(type (global-type variable))
 		(c-heap-format heap-format)
-		(otype (car (cfun-args-type (global-value var))))
+		(otype (car (cfun-args-type (global-value variable))))
 		(expr* args))))
 	 (else
 	  (error "make-special-app-node"

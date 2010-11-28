@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Thu Nov 25 08:15:27 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 06:29:48 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -91,9 +91,9 @@
 	    (inline vector::vector . args)
 	    (inline vector-length::int ::vector)
 	    (inline vector-ref ::vector ::int)
-	    (inline vector-set! ::vector ::int obj) 
+	    (inline vector-set! ::vector ::int ::obj) 
 	    (inline vector-ref-ur ::vector ::int) 
-	    (inline vector-set-ur! ::vector ::int obj)
+	    (inline vector-set-ur! ::vector ::int ::obj)
 	    (vector->list::pair-nil ::vector)
 	    (list->vector::vector ::pair-nil)
 	    (vector-fill! ::vector fill)

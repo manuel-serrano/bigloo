@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Sat Jul  7 08:41:55 2001 (serrano)                */
-;*    Copyright   :  1995-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 28 08:26:24 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The vector approximation managment                               */
 ;*    -------------------------------------------------------------    */
@@ -165,8 +165,8 @@
    (with-access::vlength/Cinfo node (expr* approx)
       (trace (cfa 4) " vector-length: " (shape node) #\Newline)
       (let ((vec-approx (cfa! (car expr*))))
-	 (if (not (vector-optim?))
-	     (loose! vec-approx 'all)))
+	 (unless (vector-optim?)
+	    (loose! vec-approx 'all)))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -190,8 +190,8 @@
 		     (approx-top? vec-approx))
 		 (approx-set-type! approx *obj*))
 	     ;; and top
-	     (if (approx-top? vec-approx)
-		 (approx-set-top! approx))
+	     (when (approx-top? vec-approx)
+		(approx-set-top! approx))
 	     ;; then we scan the allocations.
 	     (for-each-approx-alloc
 	      (lambda (app)
@@ -266,7 +266,7 @@
       (if (=fx lost-stamp *cfa-stamp*)
 	  #unspecified
 	  (begin
-	     (trace (cfa 2) " *** loose: " (shape alloc) #\Newline)
+	     (trace (cfa 2) " *** loose(make-vector-app): " (shape alloc) #\Newline)
 	     (set! lost-stamp *cfa-stamp*)
 	     (for-each-approx-alloc loose-alloc! value-approx)
 	     (approx-set-type! value-approx *obj*)
@@ -284,7 +284,7 @@
       (if (=fx lost-stamp *cfa-stamp*)
 	  #unspecified
 	  (begin
-	     (trace (cfa 2) " *** loose: " (shape alloc) #\Newline)
+	     (trace (cfa 2) " *** loose(valloc): " (shape alloc) #\Newline)
 	     (trace (cfa 3) "     value: " (shape value-approx) #\Newline)
 	     (set! lost-stamp *cfa-stamp*)
 	     (for-each-approx-alloc loose-alloc! value-approx)

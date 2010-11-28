@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Fri Nov 26 09:04:14 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 09:40:23 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -19,14 +19,13 @@
    (export (class node::object
 	      ;; the location 
 	      (loc::obj read-only (default #f))
-	      ;; the type of the node (a special type stands for `no-type')
-	      ;; don't trust that value, instead, use the get-type function of
-	      ;; module type_typeof. In case of a variable (an instance
-	      ;; of the class var, the type field of the node might differ
-	      ;; from the type of the variable because dataflow analysis
-	      ;; may have find that the reference at a particular site may
-	      ;; be more precise than the general type of the variable.
-	      ;; For instance, for an expression such as
+	      ;; the type of node, for var node this has a special meaning.
+	      ;; for variables (instances of the class VAR), the type field
+	      ;; of the node might differ from the type of the variable
+	      ;; because dataflow analysis may have found that the reference
+	      ;; at a particular site may has a more precise type than the
+	      ;; general variable reference type. For instance, for an
+	      ;; expression such as
 	      ;; (let ((x::obj EXP))
 	      ;;    (if (pair? x) THEN ELSE))
 	      ;; in the THEN part, the type of the var node might be ::pair

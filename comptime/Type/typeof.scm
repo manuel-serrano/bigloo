@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Fri Nov 26 08:39:45 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 07:11:38 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -104,6 +104,10 @@
 	    ((cfun? value)
 	     *obj*)
 	    (else
+	     (unless (eq? (variable-type variable) (node-type node))
+		(tprint "get-type: " (shape node) " vtype="
+			(shape (variable-type variable))
+			" ntype=" (shape (node-type node))))
 	     (variable-type variable))))))
 
 ;*---------------------------------------------------------------------*/

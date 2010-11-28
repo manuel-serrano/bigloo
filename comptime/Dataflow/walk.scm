@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sat Nov 27 21:34:46 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 08:13:20 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute variable references according to dataflow tests. E.G.,   */
@@ -95,7 +95,10 @@
    (with-access::var node (type variable)
       (let ((b (assq variable env)))
 	 (if (pair? b)
-	     (set! type (cdr b))
+	     (begin
+		(when (global? variable)
+		   (tprint (shape node) " -> " (shape (cdr b))))
+		(set! type (cdr b)))
 	     (set! type (variable-type variable)))))
    env)
 
@@ -160,7 +163,8 @@
    (with-access::conditional node (test true false)
       (let ((true-env (dataflow-test-env test)))
 	 (dataflow-node! false env)
-	 (dataflow-node! true (append true-env env)))))
+	 (dataflow-node! true (append true-env env))
+	 env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::fail ...                                        */

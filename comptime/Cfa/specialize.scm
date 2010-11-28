@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Wed Sep  8 08:21:24 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 07:13:12 2010 (serrano)                */
 ;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -182,10 +182,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    *specialize* ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define *specialize*                  '())
-(define *specialized-types*           '())
-(define *specialized-eq-types*        '())
-(define *boxed-eq?*                   #unspecified)
+(define *specialize* '())
+(define *specialized-types* '())
+(define *specialized-eq-types* '())
+(define *boxed-eq?* #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    install-specialized-type! ...                                    */

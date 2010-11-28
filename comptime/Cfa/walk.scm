@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Sep 25 18:07:49 2003 (serrano)                */
-;*    Copyright   :  1995-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 28 09:01:10 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
 ;*                                                                     */
@@ -80,8 +80,8 @@
 	    ;; type settings
 	    (profile type (type-settings! globals))
 	    ;; we optimize closure allocations
-	    (if (not (and (number? *profile-mode*) (> *profile-mode* 0)))
-		(profile clo (closure-optimization! globals)))
+	    (unless (>fx *profile-mode* 0)
+	       (profile clo (closure-optimization! globals)))
 	    ;; we cleanup the arithmetic optimizer
 	    (cleanup-arithmetic-nodes!)
 	    ;; generic arithmetic specialization
@@ -89,5 +89,6 @@
 	    ;; and we are done
 	    (pass-postlude (shrinkify! (append additional globals))
 			   unpatch-vector-set!)))))
+
  
  

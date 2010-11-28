@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Nov  5 17:52:29 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 05:55:51 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -66,7 +66,7 @@
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
-;* 	    *optim-dataflow-early-aliasing?*                           */
+	    *optim-dataflow-types?*
 	    *optim-reduce-beta?*
 	    *optim-jvm-inlining*
 	    *optim-jvm-constructor-inlining*
@@ -904,9 +904,9 @@
 (param-define *optim-dataflow-for-errors?*
 	      "Enable simple dataflow optimization for eliminating bad error messages"
 	      #t)
-;* (param-define *optim-dataflow-early-aliasing?*                        */
-;* 	    "Enable dataflow optimization for resolving early aliases" */
-;* 	    #f)                                                        */
+(param-define *optim-dataflow-types?*
+	      "Enable dataflow optimization for types"
+	      #f)
 (param-define *optim-reduce-beta?*
 	      "Enable simple beta reduction"
 	      #f)

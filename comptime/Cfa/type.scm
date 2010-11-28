@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Nov 27 08:02:59 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 09:37:04 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -17,9 +17,6 @@
 	    type_cache
 	    tools_shape
 	    tools_error
-
-	    tools_shape
-	    
 	    engine_param
 	    ast_var
 	    ast_node
@@ -43,17 +40,18 @@
 ;*---------------------------------------------------------------------*/
 (define (type-fun! var::variable)
    (let ((fun (variable-value var)))
-      (if (intern-sfun/Cinfo? fun)
-	  ;; if it is not an `intern-sfun/Cinfo', it means that the
-	  ;; procedure is unreachable and then we can ignore it.
-	  (with-access::intern-sfun/Cinfo fun (body args approx)
-	     ;; the formals
-	     (for-each (lambda (var) (type-variable! (local-value var) var))
-		       args)
-	     ;; the body
-	     (type-node! body)
-	     ;; and the function result
-	     (set-variable-type! var (get-approx-type approx))))))
+      (when (intern-sfun/Cinfo? fun)
+	 ;; if it is not an `intern-sfun/Cinfo', it means that the
+	 ;; procedure is unreachable and then we can ignore it.
+	 (with-access::intern-sfun/Cinfo fun (body args approx)
+	    ;; the formals
+	    (for-each (lambda (var)
+			 (type-variable! (local-value var) var))
+		      args)
+	    ;; the body
+	    (type-node! body)
+	    ;; and the function result
+	    (set-variable-type! var (get-approx-type approx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-approx-type ...                                              */
@@ -178,12 +176,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::var ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (type-node! node::var) 
+(define-method (type-node! node::var)
    (with-access::var node (variable type)
-      (when (eq? type *_*)
-	 (set! type (variable-type variable)))
-      (if (and (global? variable) (eq? (global-import variable) 'static))
-	  (type-variable! (global-value variable) variable))))
+      (when (and (global? variable) (eq? (global-import variable) 'static))
+	 (type-variable! (global-value variable) variable))
+      (when (or (eq? type *_*) (eq? type *vector*))
+	 (set! type (variable-type variable)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::closure ...                                         */

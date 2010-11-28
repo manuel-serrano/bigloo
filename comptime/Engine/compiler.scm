@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Nov 26 13:54:12 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 05:57:30 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -277,10 +277,9 @@
 
 	    ;; compute type information based on the explicit type test found
 	    ;; in the source code.
-	    '(when *optim-dataflow?*
+	    (when *optim-dataflow-types?*
 	       (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
-	       (set! ast (profile dataflow (dataflow-walk! ast))))
-	    (stop-on-pass 'reduce0 (lambda () (write-ast ast)))
+	       '(set! ast (profile dataflow (dataflow-walk! ast))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    
