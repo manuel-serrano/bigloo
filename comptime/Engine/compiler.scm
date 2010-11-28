@@ -279,7 +279,7 @@
 	    ;; in the source code.
 	    (when *optim-dataflow-types?*
 	       (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
-	       '(set! ast (profile dataflow (dataflow-walk! ast))))
+	       (set! ast (profile dataflow (dataflow-walk! ast))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    
