@@ -277,7 +277,7 @@
 
 	    ;; compute type information based on the explicit type test found
 	    ;; in the source code.
-	    (when *optim-dataflow?*
+	    '(when *optim-dataflow?*
 	       (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
 	       (set! ast (profile dataflow (dataflow-walk! ast))))
 	    (stop-on-pass 'reduce0 (lambda () (write-ast ast)))
