@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Tue Oct  3 11:18:17 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 28 18:16:04 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -19,6 +19,7 @@
    (import  tools_shape
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    globalize_ginfo
@@ -145,10 +146,12 @@
 	  node)
 	 ((celled? var)
 	  (local-access-set! var 'cell-globalize)
-	  (instantiate::box-ref
-	     (loc (node-loc node))
-	     (type (node-type node))
-	     (var node)))
+	  (let ((ty (get-type node)))
+	     (node-type-set! node *obj*)
+	     (instantiate::box-ref
+		(loc (node-loc node))
+		(type ty)
+		(var node))))
 	 (else
 	  node))))
 
@@ -289,6 +292,7 @@
 			     (loc   (node-loc node)))
 			  (local-access-set! var 'cell-globalize)
 			  (local-user?-set! a-var (local-user? var))
+			  (node-type-set! (setq-var node) *obj*)
 			  (widen!::svar/Ginfo (local-value a-var)
 			     (kaptured? #f))
 			  (instantiate::let-var

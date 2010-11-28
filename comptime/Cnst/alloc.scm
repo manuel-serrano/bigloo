@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sun Nov 28 09:36:32 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 10:04:17 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -220,7 +220,7 @@
 	     (hashtable-put! *string-env* string (cnst-info string var)))
 	 (instantiate::var
 	    (loc loc)
-	    (type (variable-type var))
+	    (type *bstring*)
 	    (variable var))))
    (let ((old (and *shared-cnst?* (hashtable-get *string-env* string))))
       (cond
@@ -274,7 +274,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type (get-default-type))
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((or (eq? *init-mode* 'lib)
@@ -326,12 +326,12 @@
 	     ((variable? (cnst-info-offset old))
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     ((eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     (else
 	      (make-cnst-table-ref (cnst-info-offset old) loc))))
@@ -388,7 +388,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type *keyword*)
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((or (eq? *init-mode* 'lib)

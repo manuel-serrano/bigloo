@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sun Nov 28 08:13:20 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 17:49:46 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute variable references according to dataflow tests. E.G.,   */
@@ -70,8 +70,10 @@
 ;*    dataflow-test-env ::conditional ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-test-env node::conditional)
-   (with-access::conditional node (test true)
-      (append (dataflow-test-env test) (dataflow-test-env true))))
+   (with-access::conditional node (test true false)
+      (if (and (atom? false) (eq? (atom-value false) #f))
+	  (append (dataflow-test-env test) (dataflow-test-env true))
+	  '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-test-env ::var ...                                      */
@@ -90,6 +92,12 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::var ...                                         */
+;*    -------------------------------------------------------------    */
+;*    This function sets the most specific for the variable            */
+;*    reference (computed according to the control flow). The          */
+;*    stage globalize and integrate that introduce cells change        */
+;*    the type of the boxed variable references (see globalize_node    */
+;*    and integrate_node).                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::var env)
    (with-access::var node (type variable)

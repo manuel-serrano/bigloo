@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Wed Oct 20 14:09:03 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 18:16:07 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -17,6 +17,7 @@
    (import  tools_shape
 	    tools_error
 	    type_type
+	    type_typeof
 	    type_cache
 	    ast_var
 	    ast_node
@@ -153,10 +154,12 @@
 	  node)
 	 ((integrate-celled? var)
 	  (local-access-set! var 'cell-integrate)
-	  (instantiate::box-ref
-	     (loc (node-loc node))
-	     (type (node-type node))
-	     (var node)))
+	  (let ((ty (get-type node)))
+	     (node-type-set! node *obj*)
+	     (instantiate::box-ref
+		(loc (node-loc node))
+		(type ty)
+		(var node))))
 	 (else
 	  node))))
 
@@ -266,6 +269,7 @@
 		       (let ((a-var (make-local-svar 'aux *obj*))
 			     (loc   (node-loc node)))
 			  (local-access-set! var 'cell-integrate)
+			  (node-type-set! (setq-var node) *obj*)
 			  (widen!::svar/Iinfo (local-value a-var)
 			     (kaptured? #f))
 			  (instantiate::let-var

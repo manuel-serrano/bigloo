@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Nov 27 08:12:33 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 09:55:45 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -390,7 +390,7 @@
        (vector-ref class 8)
        (error "class-fields"
 	      (bigloo-type-error-msg "runtime type error"
-				     "Class"
+				     "class"
 				     (find-runtime-type class))
 	      class)))
 
