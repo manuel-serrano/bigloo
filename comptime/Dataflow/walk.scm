@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sun Nov 28 17:49:46 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 08:14:29 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute variable references according to dataflow tests. E.G.,   */
@@ -47,44 +47,6 @@
    (dataflow-node! (sfun-body (global-value global)) '()))
 
 ;*---------------------------------------------------------------------*/
-;*    dataflow-test-env ...                                            */
-;*---------------------------------------------------------------------*/
-(define-generic (dataflow-test-env node::node)
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    dataflow-test-env ::app ...                                      */
-;*---------------------------------------------------------------------*/
-(define-method (dataflow-test-env node::app)
-   (with-access::app node (fun args)
-      (if (and (fun? (variable-value (var-variable fun)))
-	       (fun-predicate-of (variable-value (var-variable fun)))
-	       (pair? args) (null? (cdr args))
-	       (var? (car args)))
-	  (let ((typ (fun-predicate-of (variable-value (var-variable fun))))
-		(var (var-variable (car args))))
-	     (list (cons var typ)))
-	  '())))
-
-;*---------------------------------------------------------------------*/
-;*    dataflow-test-env ::conditional ...                              */
-;*---------------------------------------------------------------------*/
-(define-method (dataflow-test-env node::conditional)
-   (with-access::conditional node (test true false)
-      (if (and (atom? false) (eq? (atom-value false) #f))
-	  (append (dataflow-test-env test) (dataflow-test-env true))
-	  '())))
-
-;*---------------------------------------------------------------------*/
-;*    dataflow-test-env ::var ...                                      */
-;*---------------------------------------------------------------------*/
-(define-method (dataflow-test-env node::var)
-   (with-access::var node (variable)
-      (if (local/value? variable)
-	  (dataflow-test-env (local/value-node variable))
-	  '())))
-	        
-;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::node ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (dataflow-node!::pair-nil node::node env::pair-nil)
@@ -103,10 +65,7 @@
    (with-access::var node (type variable)
       (let ((b (assq variable env)))
 	 (if (pair? b)
-	     (begin
-		(when (global? variable)
-		   (tprint (shape node) " -> " (shape (cdr b))))
-		(set! type (cdr b)))
+	     (set! type (cdr b))
 	     (set! type (variable-type variable)))))
    env)
 
@@ -125,7 +84,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::app env)
    (with-access::app node (fun args)
-      (dataflow-node*! args env)))
+      (let ((aenv (dataflow-node*! args env)))
+	 (if (and (var? fun) (local? (var-variable fun)))
+	     ;; when a local variable, all the locals that are not
+	     ;; read-only have to be removed from the environment
+	     ;; because they might be affected by the called function
+	     (filter (lambda (b)
+			(let ((v (car b)))
+			   (or (global? v) (eq? (variable-access v) 'read))))
+		     aenv)
+	     aenv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::app-ly ...                                      */
@@ -169,10 +137,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::conditional env)
    (with-access::conditional node (test true false)
-      (let ((true-env (dataflow-test-env test)))
+      (let* ((tenv (dataflow-node! test env))
+	     (true-env (append (dataflow-test-env test) tenv)))
 	 (dataflow-node! false env)
-	 (dataflow-node! true (append true-env env))
-	 env)))
+	 (dataflow-node! true true-env)
+	 (if (conditional-branch-exit? false)
+	     true-env
+	     env))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::fail ...                                        */
@@ -246,14 +217,16 @@
 ;*    dataflow-node! ::box-ref ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::box-ref env)
-   (dataflow-node! (box-ref-var node) env))
+   (with-access::box-ref node (var)
+      (node-type-set! var *obj*)
+      env))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::box-set! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::box-set! env)
    (with-access::box-set! node (var value)
-      (dataflow-node! var env)
+      (node-type-set! var *obj*)
       (dataflow-node! value env)))
 
 ;*---------------------------------------------------------------------*/
@@ -262,3 +235,68 @@
 (define (dataflow-node*! node* env)
    (for-each (lambda (n) (dataflow-node! n env)) node*)
    env)
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ...                                            */
+;*---------------------------------------------------------------------*/
+(define-generic (dataflow-test-env::pair-nil node::node)
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ::app ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-env node::app)
+   (with-access::app node (fun args)
+      (if (and (fun? (variable-value (var-variable fun)))
+	       (fun-predicate-of (variable-value (var-variable fun)))
+	       (pair? args) (null? (cdr args))
+	       (var? (car args)))
+	  (let ((typ (fun-predicate-of (variable-value (var-variable fun))))
+		(var (var-variable (car args))))
+	     (list (cons var typ)))
+	  '())))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ::conditional ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-env node::conditional)
+   (with-access::conditional node (test true false)
+      (if (and (atom? false) (eq? (atom-value false) #f))
+	  (append (dataflow-test-env test) (dataflow-test-env true))
+	  '())))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ::var ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-env node::var)
+   (with-access::var node (variable)
+      (if (local/value? variable)
+	  (dataflow-test-env (local/value-node variable))
+	  '())))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ::let-var ...                                  */
+;*    -------------------------------------------------------------    */
+;*    We detect the pattern:                                           */
+;*      (let ((tmp exp))                                               */
+;*         (<predicate> tmp))                                          */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-env node::let-var)
+   (with-access::let-var node (bindings body)
+      (if (and (pair? bindings)
+		 (null? (cdr bindings))
+		 (var? (cdar bindings)))
+	  (let ((env (dataflow-test-env body)))
+	     (if (and (pair? env)
+		      (null? (cdr env))
+		      (eq? (caar env) (caar bindings)))
+		 (list (cons (var-variable (cdar bindings))
+			     (cdar env)))
+		 '()))
+	  '())))
+
+;*---------------------------------------------------------------------*/
+;*    conditional-branch-exit? ::node ...                              */
+;*---------------------------------------------------------------------*/
+(define-generic (conditional-branch-exit? node::node)
+   #f)

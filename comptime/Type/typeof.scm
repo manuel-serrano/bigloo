@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Sun Nov 28 17:43:27 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 05:47:36 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -20,6 +20,7 @@
 	    ast_node
 	    ast_var
 	    tools_shape
+	    tools_speek
 	    object_class)
    (export  (get-type-atom::type  <atom>)
 	    (get-type-kwote::type <kwote>)
@@ -114,12 +115,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::var)
 
-   (define (debug-type typen typev)
+   (define (verbose-type typen typev)
       (unless (or (eq? typen *obj*)
 		  (eq? typen *_*)
 		  (eq? typen typev))
-	 (tprint "get-type: " (shape node) ": "
-		 (shape typev) " -> " (shape typen))))
+	 (verbose 3 "   refining type " (shape node) ": "
+		  (shape typev) " -> " (shape typen))))
 	 
    (define (type-more-specific? ntype vtype)
       (or (and (eq? vtype *obj*) (bigloo-type? ntype) (not (eq? ntype *_*)))
@@ -137,7 +138,7 @@
 	     (if (and *optim-dataflow-types?*
 		      (type-more-specific? type (variable-type variable)))
 		 (begin
-		    (debug-type type (variable-type variable))
+		    (verbose-type type (variable-type variable))
 		    type)
 		 (variable-type variable)))))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Sun Nov 28 18:16:04 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 07:42:12 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -67,7 +67,12 @@
 	 ((not (celled? (car formals)))
 	  (loop celled (cdr formals)))
 	 (else
-	  (let* ((var (make-local-svar (local-id (car formals)) *obj*))
+	  (let* ((vtype (local-type (car formals)))
+		 (ntype (cond
+			   ((eq? vtype *_*) *obj*)
+			   ((bigloo-type? vtype) vtype)
+			   (else *obj*)))
+		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o.n (cons (car formals) var)))
 	     (local-access-set! var 'cell-globalize)
 	     (local-user?-set! var (local-user? (car formals)))
@@ -136,22 +141,26 @@
 ;*    glo! ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::var integrator)
-   (let* ((var   (var-variable node))
-	  (alpha (variable-fast-alpha var)))
+   (let* ((variable (var-variable node))
+	  (alpha (variable-fast-alpha variable)))
       (cond
 	 ((local? alpha)
 	  (var-variable-set! node alpha)
+	  (node-type-set! node (variable-type alpha))
 	  (glo! node integrator))
-	 ((global? var)
+	 ((global? variable)
 	  node)
-	 ((celled? var)
-	  (local-access-set! var 'cell-globalize)
-	  (let ((ty (get-type node)))
-	     (node-type-set! node *obj*)
-	     (instantiate::box-ref
-		(loc (node-loc node))
-		(type ty)
-		(var node))))
+	 ((celled? variable)
+	  (local-access-set! variable 'cell-globalize)
+	  ;; when the variable is boxed (i.e., mutated), we have to use the
+	  ;; static type of the variable, because it might be that another
+	  ;; local function changes the dynamic type of the variable
+	  ;; (same problem in the integration stage)
+	  (node-type-set! node *obj*)
+	  (instantiate::box-ref
+	     (loc (node-loc node))
+	     (type (variable-type (var-variable node)))
+	     (var node)))
 	 (else
 	  node))))
 
