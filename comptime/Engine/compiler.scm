@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Nov 28 16:44:03 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 16:50:36 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -282,7 +282,7 @@
 		   (set! *optim-dataflow-types?* #f)
 		   (begin
 		      (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
-		      (set! ast (profile dataflow (dataflow-walk! ast))))))
+		      (set! ast (profile dataflow (dataflow-walk! ast "dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    
@@ -333,6 +333,13 @@
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
 	    (check-sharing "coerce" ast)
 
+	    ;; now that type checks have been introduced, we recompute
+	    ;; the type dataflow analysis
+	    (when *optim-dataflow-types?*
+	       (set! ast (profile dataflow (dataflow-walk! ast "dataflow+"))))
+	    (stop-on-pass 'dataflow+ (lambda () (write-ast ast)))
+	    (check-sharing "dataflow" ast)
+	    
 	    ;; we re-run the effect computations (for coercion and
 	    ;; type checks)
 	    (when (or (>=fx *optim* 1) (eq? *pass* 'egen))

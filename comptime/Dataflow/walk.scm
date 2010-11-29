@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Mon Nov 29 08:14:29 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 17:40:23 2010 (serrano)                */
 ;*    Copyright   :  2010 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute variable references according to dataflow tests. E.G.,   */
@@ -22,23 +22,32 @@
 	    type_type
 	    type_typeof
 	    type_cache
+	    type_env
 	    ast_var
 	    ast_node
+	    ast_env
 	    effect_cgraph
 	    effect_spread
 	    effect_feffect
 	    engine_param)
    (static  (wide-class local/value::local
+	       (stamp::int read-only)
 	       (node::node read-only)))
-   (export  (dataflow-walk! globals)))
+   (export  (dataflow-walk! globals ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-walk! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (dataflow-walk! globals)
-   (pass-prelude "Dataflow")
+(define (dataflow-walk! globals name)
+   (pass-prelude name)
+   (set! *isa* (find-global/module 'is-a? '__object))
    (for-each dataflow-global! globals)
    (pass-postlude globals))
+
+;*---------------------------------------------------------------------*/
+;*    *isa* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *isa* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-global! ...                                             */
@@ -78,7 +87,7 @@
       (if (null? node*)
 	  env
 	  (loop (cdr node*) (dataflow-node! (car node*) env)))))
-	  
+
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::app ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -123,14 +132,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::setq env)
    (with-access::setq node (var value)
-      (dataflow-node! value env)
-      (with-access::var var (variable)
-	 (if (global? variable)
-	     env
-	     (let ((typ (get-type value)))
-		(if (or (eq? typ *_*) (eq? typ *obj*))
-		    env
-		    (cons (cons variable typ) env)))))))
+      (let ((nenv (dataflow-node! value env)))
+	 (with-access::var var (variable)
+	    (if (global? variable)
+		nenv
+		(let ((typ (get-type value)))
+		   (if (or (eq? typ *_*) (eq? typ *obj*))
+		       nenv
+		       (cons (cons variable typ) nenv))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::conditional ...                                 */
@@ -141,7 +150,7 @@
 	     (true-env (append (dataflow-test-env test) tenv)))
 	 (dataflow-node! false env)
 	 (dataflow-node! true true-env)
-	 (if (conditional-branch-exit? false)
+	 (if (abort? false)
 	     true-env
 	     env))))
 
@@ -177,18 +186,41 @@
       (dataflow-node! body env)))
 
 ;*---------------------------------------------------------------------*/
+;*    let-var-stamp ...                                                */
+;*---------------------------------------------------------------------*/
+(define let-var-stamp 0)
+
+;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::let-var ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::let-var env)
+   (set! let-var-stamp (+fx 1 let-var-stamp))
    (with-access::let-var node (body bindings)
-      (for-each (lambda (binding)
-		   (dataflow-node! (cdr binding) env)
-		   (let ((l (car binding)))
-		      (when (eq? (variable-access l) 'read)
-			 (widen!::local/value l
-			    (node (cdr binding))))))
-		bindings)
-      (dataflow-node! body env)))
+      (let* ((stamp let-var-stamp)
+	     (env (let loop ((bindings bindings)
+			     (env env))
+		     (if (null? bindings)
+			 env
+			 (let* ((node (cdar bindings))
+				(env (dataflow-node! node env)))
+			    (let ((l (caar bindings)))
+			       (when (eq? (variable-access l) 'read)
+				  (widen!::local/value l
+				     (stamp stamp)
+				     (node node))))
+			    (loop (cdr bindings) env))))))
+	 (filter-map (lambda (b)
+			(cond
+			   ((or (not (local/value? (car b)))
+				(<fx (local/value-stamp (car b)) stamp))
+			    b)
+			   ((var? (local/value-node (car b)))
+			    (let ((v (var-variable (local/value-node (car b)))))
+			       (when (eq? (variable-access v) 'read)
+				  (cons v (cdr b)))))
+			   (else
+			    #f)))
+		     (dataflow-node! body env)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::set-ex-it ...                                   */
@@ -247,13 +279,32 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-test-env node::app)
    (with-access::app node (fun args)
-      (if (and (fun? (variable-value (var-variable fun)))
-	       (fun-predicate-of (variable-value (var-variable fun)))
-	       (pair? args) (null? (cdr args))
-	       (var? (car args)))
-	  (let ((typ (fun-predicate-of (variable-value (var-variable fun))))
-		(var (var-variable (car args))))
-	     (list (cons var typ)))
+      (let* ((f (var-variable fun))
+	     (funv (variable-value f)))
+	 (cond
+	    ((eq? f *isa*)
+	     (if (and (var? (car args))
+		      (var? (cadr args))
+		      (global? (var-variable (cadr args))))
+		 (let ((ty (find-type (global-id (var-variable (cadr args))))))
+		    (list (cons (var-variable (car args)) ty)))
+		 '()))
+	    ((and (fun? funv)
+		  (fun-predicate-of funv)
+		  (pair? args) (null? (cdr args))
+		  (var? (car args)))
+	     (list (cons (var-variable (car args))
+			 (fun-predicate-of funv))))
+	    (else
+	     '())))))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-env ::isa ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-env node::isa)
+   (with-access::isa node (expr* class)
+      (if (var? (car expr*))
+	  (list (cons (var-variable (car expr*)) class))
 	  '())))
 
 ;*---------------------------------------------------------------------*/
@@ -284,8 +335,8 @@
 (define-method (dataflow-test-env node::let-var)
    (with-access::let-var node (bindings body)
       (if (and (pair? bindings)
-		 (null? (cdr bindings))
-		 (var? (cdar bindings)))
+	       (null? (cdr bindings))
+	       (var? (cdar bindings)))
 	  (let ((env (dataflow-test-env body)))
 	     (if (and (pair? env)
 		      (null? (cdr env))
@@ -296,7 +347,62 @@
 	  '())))
 
 ;*---------------------------------------------------------------------*/
-;*    conditional-branch-exit? ::node ...                              */
+;*    abort? ::node ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-generic (conditional-branch-exit? node::node)
+(define-generic (abort? node::node)
    #f)
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::fail ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::fail)
+   #t)
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::sequence ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::sequence)
+   (any? abort? (sequence-nodes node)))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::let-var ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::let-var)
+   (with-access::let-var node (bindings body)
+      (or (any? (lambda (b) (abort? (cdr b))) bindings) (abort? body))))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::let-fun ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::let-fun)
+   (with-access::let-fun node (body)
+      (abort? body)))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::conditional ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::conditional)
+   (with-access::conditional node (test true false)
+      (or (abort? test) (and (abort? true) (abort? false)))))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::app ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::app)
+   (with-access::app node (fun args)
+      (or (abort? fun) (any? abort? args))))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::funcall ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::funcall)
+   (with-access::funcall node (fun args)
+      (or (abort? fun) (any? abort? args))))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::app-ly ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::app-ly)
+   (with-access::app-ly node (fun arg)
+      (or (abort? fun) (abort? arg))))
+

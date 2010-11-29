@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Aug  2 20:50:10 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 09:41:28 2010 (serrano)                */
 ;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -116,6 +116,8 @@
 	  (tclass (declare-class-type! cdef holder wide
 				       final? abstract?
 				       src-def)))
+      ;; debug information
+      (global-src-set! holder src-def)
       ;; some paranoid checking
       [assert (tclass) (tclass? tclass)]
       ;; we store the src-import location in order to print a nice error

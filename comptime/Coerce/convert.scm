@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed Sep  8 09:24:40 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 09:08:25 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -117,48 +117,49 @@
 ;*    convertion in between Bigloo object much not be checked.         */
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
-   (trace coerce "convert: " (shape from) " -> " (shape to) " : "
-	  (shape node)
+   (trace coerce "convert: " (shape from) " -> " (shape to) " : " (shape node)
 	  #\Newline)
-   (let ((to   (get-aliased-type to))
-	 (from (get-aliased-type from)))
-      (if (or (eq? from to) (type-magic? from))
-	  node
-	  (let ((coercer (find-coercer from to))
-		(loc     (node-loc node)))
-	     (if (not (coercer? coercer))
-		 ;; There is no convertion between these types. 
-		 ;; Thus, it is a type error.
-		 (convert-error from to loc node)
-		 (let ((checks  (coercer-check-op coercer))
-		       (coerces (coercer-coerce-op coercer)))
-		    (trace (coerce 2)
-			   "   checks : " checks #\Newline
-			   "   coerces: " coerces #\Newline)
-		    (let loop ((checks  checks)
-			       (coerces coerces)
-			       (node    node))
-		       (cond
-			  ((null? checks)
-			   (if (null? coerces)
-			       node
+   (if (eq? from to)
+       node
+       (let ((to (get-aliased-type to))
+	     (from (get-aliased-type from)))
+	  (if (or (eq? from to) (type-magic? from))
+	      node
+	      (let ((coercer (find-coercer from to))
+		    (loc (node-loc node)))
+		 (if (not (coercer? coercer))
+		     ;; There is no convertion between these types. 
+		     ;; Thus, it is a type error.
+		     (convert-error from to loc node)
+		     (let ((checks  (coercer-check-op coercer))
+			   (coerces (coercer-coerce-op coercer)))
+			(trace (coerce 2)
+			       "   checks : " checks #\Newline
+			       "   coerces: " coerces #\Newline)
+			(let loop ((checks  checks)
+				   (coerces coerces)
+				   (node    node))
+			   (cond
+			      ((null? checks)
+			       (if (null? coerces)
+				   node
+				   (internal-error "Illegal conversion"
+						   (shape from)
+						   (shape to))))
+			      ((null? coerces)
 			       (internal-error "Illegal conversion"
 					       (shape from)
-					       (shape to))))
-			  ((null? coerces)
-			   (internal-error "Illegal conversion"
-					   (shape from)
-					   (shape to)))
-			  (else
-			   (loop (cdr checks)
-				 (cdr coerces)
-				 (make-one-conversion (car checks)
-						      from
-						      to
-						      (car checks)
-						      (car coerces)
-						      node
-						      safe)))))))))))
+					       (shape to)))
+			      (else
+			       (loop (cdr checks)
+				     (cdr coerces)
+				     (make-one-conversion (car checks)
+							  from
+							  to
+							  (car checks)
+							  (car coerces)
+							  node
+							  safe))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-conversion ...                                          */

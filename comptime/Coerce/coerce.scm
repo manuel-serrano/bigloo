@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Sep  8 08:21:54 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 09:01:18 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -87,11 +87,27 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
+;*    -------------------------------------------------------------    */
+;*    The coerce transformation on variable references has been        */
+;*    made more complex with the introduction of the type dataflow     */
+;*    analysis. With this new analysis, a variable is of a certain     */
+;*    type, that it not necessarily the type returned by GET-TYPE      */
+;*    which might produce a more precise type (for instance, a         */
+;*    variable of the type obj might be used as a pair on a particular */
+;*    reference). Hence, it is required here to distinguish between    */
+;*    the static type and the reference type.                          */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::var caller to safe)
    (with-access::var node (variable)
-      (let ((type (get-type node)))
-	 (convert! node type to safe))))
+      (let ((ntype (get-type node))
+	    (vtype (variable-type variable)))
+	 (cond
+	    ((eq? vtype to)
+	     node)
+	    ((eq? ntype vtype)
+	     (convert! node ntype to safe))
+	    (else
+	     (convert! (convert! node vtype ntype #f) ntype to safe))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::closure ...                                            */
