@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Fri Oct 29 19:18:21 2010 (serrano)                */
+;*    Last change :  Tue Nov 30 16:24:50 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic phone API                                                */
@@ -19,6 +19,8 @@
 	      (sensor-ttl::int (default 100)))
 	   
 	   (generic phone-init ::phone)
+
+	   (generic phone-locales::pair-nil ::phone)
 	   
 	   (generic phone-vibrate ::phone ::obj ::obj)
 	   (generic phone-vibrate-stop ::phone)
@@ -39,6 +41,11 @@
 ;*    Generic functions                                                */
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-init p::phone))
+
+;*---------------------------------------------------------------------*/
+;*    phone-locales ...                                                */
+;*---------------------------------------------------------------------*/
+(define-generic (phone-locales p::phone))
 
 ;*---------------------------------------------------------------------*/
 ;*    vibrate                                                          */
