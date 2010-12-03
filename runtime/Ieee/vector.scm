@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Fri Dec  3 17:41:07 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 18:37:32 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -223,7 +223,7 @@
 	 (if (=fx i min)
 	     new-vec
 	     (begin
-		(vector-set! new-vec i (vector-ref old-vec i))
+		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -256,7 +256,7 @@
 	     (if (=fx r stop)
 		 new-vec
 		 (begin
-		    (vector-set! new-vec w (vector-ref old-vec r))
+		    (vector-set-ur! new-vec w (vector-ref-ur old-vec r))
 		    (loop (+fx r 1) (+fx w 1))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -267,7 +267,7 @@
    (let loop ((i sstart)
 	      (j tstart))
       (when (<fx i send)
-	 (vector-set! target j (vector-ref source i))
+	 (vector-set-ur! target j (vector-ref-ur source i))
 	 (loop (+fx i 1) (+fx j 1)))))
 
 ;*---------------------------------------------------------------------*/

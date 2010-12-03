@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Tue Oct 12 16:31:50 2010 (serrano)                */
+/*    Last change :  Fri Dec  3 18:43:35 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -94,10 +94,11 @@ bgl_dload( char *filename, char *init_sym, char *init_mod ) {
       } else {
 	 strcpy( dload_error, "dlopen error" );
       }
+
       return 1;
    } else {
       p = MAKE_PAIR( string_to_bstring( filename ), handle );
-      
+
       bgl_mutex_lock( dload_mutex );
       dload_list = MAKE_PAIR( p, dload_list );
       bgl_mutex_unlock( dload_mutex );
