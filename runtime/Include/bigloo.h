@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 26 08:01:05 2010 (serrano)                */
+/*    Last change :  Fri Dec  3 17:48:44 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2081,7 +2081,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
        BUNSPEC )
 
 #define VECTOR_TAG( v ) \
-( ((unsigned int)(VECTOR( v ).length) & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT )
+   ( ((unsigned int)(VECTOR( v ).length) & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT )
 
 /*---------------------------------------------------------------------*/
 /*    Numbers                                                          */
