@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sat Nov 27 19:17:20 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 13:59:54 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -114,9 +114,7 @@
 ;*    byte-code-evaluate ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-evaluate eexp env loc)
-   (let ((cexp (evcompile eexp '() env 'nowhere #f
-			  (<fx (bigloo-debug) 3)
-			  loc #t #t)))
+   (let ((cexp (evcompile eexp '() env '_ #f loc #t #t)))
       (evmeaning cexp '() (current-dynamic-env))))
 
 ;*---------------------------------------------------------------------*/
@@ -172,6 +170,7 @@
 ;*    eval/expander ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (eval/expander exp::obj env expand::procedure evaluate::procedure)
+;*    (tprint "eval/expander exp=" exp)                                */
    (let ((loc (get-source-location exp))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (if (and loc (> (bigloo-debug) 0))
@@ -199,7 +198,7 @@
    (let* ((loc (get-source-location exp))
 	  (sexp  (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (obj->string
-       (evcompile (expand sexp) '() env 'nowhere #f #t loc #f #t))))
+       (evcompile (expand sexp) '() env '_ #t loc #f #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    byte-code-run ...                                                */
