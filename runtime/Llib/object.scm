@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec  3 18:01:57 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 18:29:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -968,7 +968,7 @@
 			     (generic-default-set! generic default)
 			     (generic-default-bucket-set! generic new-def-bucket)
 			     
-			     '($free-vector-uncollectable old-def-bucket)))))))
+			     ($free-vector-uncollectable old-def-bucket)))))))
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
