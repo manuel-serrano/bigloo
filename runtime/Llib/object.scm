@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec  3 14:21:36 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 14:23:01 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -262,7 +262,7 @@
        %object-type-number))
 
 (define-macro ($create-vector-uncollectable len)
-   `(create-vector ,len))
+   `($create-vector ,len))
 
 (define-macro ($make-vector-uncollectable len init)
    `(make-vector ,len ,init))
