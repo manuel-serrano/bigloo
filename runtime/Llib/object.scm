@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec  3 17:55:43 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 18:00:46 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -915,7 +915,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-generic-sans-lock! ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    Adding a generic could be a two steps process. It may happend,   */
+;*    Adding a generic could be a two steps process. It may happen,    */
 ;*    because of cycle in the module graph, that we see the first      */
 ;*    method before the generic itself. In such a situation, we        */
 ;*    declare a dummy generic with a default body that is an error.    */
@@ -968,7 +968,7 @@
 			     (generic-default-set! generic default)
 			     (generic-default-bucket-set! generic new-def-bucket)
 			     
-			     ($free-vector-uncollectable old-def-bucket)))))))
+			     '($free-vector-uncollectable old-def-bucket)))))))
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
