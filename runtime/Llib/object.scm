@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec  3 18:00:46 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 18:01:57 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -638,7 +638,7 @@
       (let loop ((i 0))
 	 (if (=fx i old-len)
 	     (begin
-		;($free-vector-uncollectable old-vec)
+		($free-vector-uncollectable old-vec)
 		new-vec)
 	     (begin
 		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
