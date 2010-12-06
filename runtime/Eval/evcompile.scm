@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Dec  3 13:48:35 2010 (serrano)                */
+;*    Last change :  Sat Dec  4 07:37:10 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -522,7 +522,7 @@
 (define (evcompile-application name proc args tail loc)
    (if tail
        (let ((name (if (symbol? name)
-		       (loc-where (symbol-append name '^) loc)
+		       (loc-where (symbol-append name '|(+)|) loc)
 		       name)))
 	  (case (length args)
 	     ((0)

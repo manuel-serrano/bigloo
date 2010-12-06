@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Dec  3 13:59:54 2010 (serrano)                */
+;*    Last change :  Sun Dec  5 08:04:15 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -170,7 +170,6 @@
 ;*    eval/expander ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (eval/expander exp::obj env expand::procedure evaluate::procedure)
-;*    (tprint "eval/expander exp=" exp)                                */
    (let ((loc (get-source-location exp))
 	 (sexp (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (if (and loc (> (bigloo-debug) 0))
