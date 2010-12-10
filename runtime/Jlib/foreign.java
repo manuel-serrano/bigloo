@@ -4268,7 +4268,13 @@ public final class foreign
 	 return unspecified.unspecified;
       }
 
-   public static Object SET_TRACE(Object o)
+   public static Object PUSH_TRACE_LOCATION(Object o, Object l)
+      {
+	 new stack_trace(o,l);
+	 return unspecified.unspecified;
+      }
+
+   public static Object SET_TRACE_NAME(Object o)
       {
 	 stack_trace.set_trace(o);
 	 return unspecified.unspecified;
@@ -4285,9 +4291,21 @@ public final class foreign
 	 return unspecified.unspecified;
       }
 
-   public static Object BGL_ENV_SET_TRACE(bgldynamic env, Object o)
+   public static Object BGL_ENV_PUSH_TRACE_LOCATION(bgldynamic env, Object o, Object l)
+      {
+	 new stack_trace(o,l);
+	 return unspecified.unspecified;
+      }
+
+   public static Object BGL_ENV_SET_TRACE_NAME(bgldynamic env, Object o)
       {
 	 stack_trace.set_trace(o);
+	 return unspecified.unspecified;
+      }
+
+   public static Object BGL_ENV_SET_TRACE_LOCATION(bgldynamic env, Object o)
+      {
+	 stack_trace.set_trace_location(o);
 	 return unspecified.unspecified;
       }
 

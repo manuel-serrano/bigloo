@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Fri Oct 30 10:40:30 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Dec 10 16:20:22 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -116,13 +116,13 @@
    
    (define (expand.old handler body)
       (let ((hdl (gensym 'handler))
-	     (ohs (gensym 'handlers))
-	     (nh (gensym 'handler))
-	     (val (gensym 'val))
-	     (exit (gensym 'exit))
-	     (etop (gensym 'exitd))
-	     (tmp (gensym 'tmp))
-	     (ebody (e (expand-progn body) e)))
+	    (ohs (gensym 'handlers))
+	    (nh (gensym 'handler))
+	    (val (gensym 'val))
+	    (exit (gensym 'exit))
+	    (etop (gensym 'exitd))
+	    (tmp (gensym 'tmp))
+	    (ebody (e (expand-progn body) e)))
 	 `(let ((,hdl ,(e handler e)))
 	     (if (correct-arity? ,hdl 1)
 		 (let ((,ohs ($get-error-handler)))
@@ -146,7 +146,7 @@
 		 (error 'with-handler
 			"Incorrect handler arity"
 			,hdl)))))
-
+   
    (define (expand handler body)
       (let ((ohs (gensym 'ohs))
 	    (err (gensym 'err))
@@ -174,14 +174,14 @@
 	 (if (and (location? loc)
 		  (>fx (bigloo-compiler-debug) 0)
 		  (backend-trace-support (the-backend)))
-	     (let ((trc (string->symbol (format "with-handler, ~a:~a"
-						(location-fname loc)
-						(location-lnum loc))))
-		   (symid (gensym))
-		   (vid (gensym)))
-		`(let ((,symid ',trc))
+	     (let ((location `(at ,(location-fname loc) ,(location-pos loc)))
+		   (vid (gensym))
+		   (tmp1 (mark-symbol-non-user! (gensym 'name)))
+		   (tmp2 (mark-symbol-non-user! (gensym 'loc))))
+		`(let ((,tmp1 'with-handler)
+		       (,tmp2 ',location))
 		    (let ()
-		       ($push-trace ,symid)
+		       ($push-trace-location ,tmp1 ,tmp2)
 		       (let ((,vid ,body))
 			  ,(econs '$pop-trace '() loc)
 			  ,vid))))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Apr 22 09:47:45 2010 (serrano)                */
+/*    Last change :  Fri Dec 10 15:41:23 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -190,7 +190,8 @@ make_dynamic_env() {
    
    env->dynamic_env_t.top_of_frame = 0L;
    env->dynamic_env_t.exit_traces = BNIL;
-   env->dynamic_env_t.top.symbol = BUNSPEC;
+   env->dynamic_env_t.top.name = BUNSPEC;
+   env->dynamic_env_t.top.location = BUNSPEC;
    env->dynamic_env_t.top.link = 0;
 
    env->dynamic_env_t.debug_alist = BNIL;

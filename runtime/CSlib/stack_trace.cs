@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 12:49:28 2000                          */
-/*    Last change :  Fri Sep 10 16:54:33 2010 (serrano)                */
+/*    Last change :  Fri Dec 10 16:49:27 2010 (serrano)                */
 /*    Copyright   :  2000-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Stack trace JVM implementation                                   */
@@ -21,21 +21,36 @@ namespace bigloo
   /*---------------------------------------------------------------------*/
   public sealed class stack_trace
   {
-    public static stack_trace top_of_stack =
-       new stack_trace( symbol.make_symbol( foreign.getbytes( "" ) ) );
-    private Object _symbol;
+    public static stack_trace top_of_stack = new stack_trace( foreign.BUNSPEC );
+    private Object _name;
+    private Object _location;
     private readonly stack_trace link;
 
-    public stack_trace( Object  _symbol )
+    public stack_trace( Object _name )
     {
-      this._symbol= _symbol;
-      link= top_of_stack;
-      top_of_stack= this;
+      this._name = _name;
+      this._location = foreign.BUNSPEC;
+      link = top_of_stack;
+      top_of_stack = this;
     }
 
-    public static void set_trace( Object symbol )
+    public stack_trace( Object _name, Object loc  )
     {
-       top_of_stack._symbol = symbol;
+      this._name = _name;
+      this._location = foreign.BUNSPEC;
+      this._location = loc;
+      link = top_of_stack;
+      top_of_stack = this;
+    }
+
+    public static void set_trace( Object name )
+    {
+       top_of_stack._name = name;
+    }
+	   
+    public static void set_trace_location( Object loc )
+    {
+       top_of_stack._location = loc;
     }
 	   
     public static Object pop_trace()
@@ -52,9 +67,9 @@ namespace bigloo
 
       while (((depth < 0) || (level < depth)) && (runner != null))
       {
-	 if (bigloo.foreign.SYMBOLP( runner._symbol ))
+	 if (bigloo.foreign.SYMBOLP( runner._name ))
 	 {
-	    l = new pair(runner._symbol, l);
+	    l = new pair(new pair(runner._name, runner._location), l);
 	    
 	    level++;
 	 }

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jun 17 15:11:01 2010 (serrano)                */
+#*    Last change :  Fri Dec 10 09:29:13 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the alignment on the current architecture                   */
 #*=====================================================================*/
@@ -60,7 +60,7 @@ int main ()
    while( (1<<i) < sz )
       i++;
 
-   printf( "%d\n", i ); 
+   printf( "%ld\n", i ); 
 }
 EOF
 

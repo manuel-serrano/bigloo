@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  3 18:29:55 2010 (serrano)                */
+/*    Last change :  Fri Dec 10 17:05:12 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -235,14 +235,15 @@ typedef int            bool_t;
 typedef unsigned short ucs2_t;
 
 struct bgl_dframe {              /*  Debug traces                      */
-   union scmobj *symbol;                 
+   union scmobj *name;                 
+   union scmobj *location;                 
    struct bgl_dframe *link;
 };
 
 typedef union scmobj {
-   int_t              integer;   /*  Les entiers                       */
+   int_t integer;                /*  Les entiers                       */
    
-   header_t           header;    /*  Un champs un peu fictif mais      */
+   header_t header;              /*  Un champs un peu fictif mais      */
                                  /*  il est utile pour pouvoir acceder */
                                  /*  au header des objets sans savoir  */
                                  /*  quel est leur type. Tous les      */
@@ -252,57 +253,57 @@ typedef union scmobj {
    
    struct pair {                 /*  Les pairs.                        */
 #if( !(defined( TAG_PAIR )) )
-      header_t        header;    /*  Le header est facultatif, il      */
+      header_t header;           /*  Le header est facultatif, il      */
 #endif      
-      union scmobj   *car;       /*  depend du GC qu'on utilise.       */
-      union scmobj   *cdr;       /*  Dans tous les cas, il y a biensur */
+      union scmobj *car;         /*  depend du GC qu'on utilise.       */
+      union scmobj *cdr;         /*  Dans tous les cas, il y a biensur */
    } pair_t;                     /*  un `car' et un `cdr' :-)          */
 
    struct extended_pair {        /*  Les pairs etendues.               */
 #if( !(defined( TAG_PAIR )) )
-      header_t        header;    /*  Le header est facultatif, il      */
+      header_t header;           /*  Le header est facultatif, il      */
 #endif                           /*  depend de l'utilisation des bits  */
-      union scmobj   *car;       
-      union scmobj   *cdr;
-      union scmobj   *eheader;   /*  header pour la marque `extended'  */
-      union scmobj   *cer;       /*  le slot supplementaire.           */
+      union scmobj *car;       
+      union scmobj *cdr;
+      union scmobj *eheader;     /*  header pour la marque `extended'  */
+      union scmobj *cer;         /*  le slot supplementaire.           */
    } extended_pair_t;                     
 
    struct string {               /*  Les chaines de char, juste une    */
 #if( !defined( TAG_STRING ) )
-      header_t        header;    /*  longueur, la chaine C suit.       */
+      header_t header;           /*  longueur, la chaine C suit.       */
 #endif		
-      int             length;
-      unsigned char   char0[ 1 ];
+      int length;
+      unsigned char char0[ 1 ];
    } string_t;
 
    struct ucs2_string {          /*  Ucs2 strings:                     */
-      header_t        header;    /*     - a header                     */
-      int             length;    /*     - a length                     */
-      ucs2_t          char0;     /*     - the first UCS-2 character    */
-   } ucs2_string_t;
+      header_t header;           /*     - a header                     */
+      int length;                /*     - a length                     */
+      ucs2_t char0;              /*     - the first UCS-2 character    */
+   } ucs2_string_t; 
 
    struct vector {               /*  Les vecteurs, un header et une    */
 #if( !defined( TAG_VECTOR ) )
-      header_t        header;
+      header_t header;
 #endif		
-      int             length;    /*  taille (ATTENTION: sur 24 bits,   */
-      union scmobj   *obj0;      /*  voir la macro vector-length).     */ 
+      int length;                /*  taille (ATTENTION: sur 24 bits,   */
+      union scmobj *obj0;        /*  voir la macro vector-length).     */ 
    } vector_t;             
 
    struct tvector {              /*  typed vectors                     */
-      header_t        header;    /*   - the header of tvector          */
-      int             length;    /*   - a length                       */
-      union scmobj   *descr;     /*   - a type descriptor (static)     */
+      header_t header;           /*   - the header of tvector          */
+      int length;                /*   - a length                       */
+      union scmobj *descr;       /*   - a type descriptor (static)     */
    } tvector_t;
 	
    struct procedure {            /*  Les fermetures                    */
-      header_t        header;    
+      header_t header;    
       union scmobj *(*entry)();
       union scmobj *(*va_entry)();
-      union scmobj   *attr;
-      int             arity;
-      union scmobj   *obj0;
+      union scmobj *attr;
+      int arity;
+      union scmobj *obj0;
    } procedure_t;
 
    struct procedure_light {      /*  Les fermetures legeres            */
@@ -311,54 +312,54 @@ typedef union scmobj {
    } procedure_light_t;
 
    struct symbol {               /*  Symboles & keywords:              */
-      header_t        header;    /*  - a type identifier               */
-      union scmobj   *string;    /*  - the name of the symbol/keyword  */
-      union scmobj   *cval;      /*  - a plist                         */
+      header_t header;           /*  - a type identifier               */
+      union scmobj *string;      /*  - the name of the symbol/keyword  */
+      union scmobj *cval;        /*  - a plist                         */
    } symbol_t;
 
    struct port {
-      header_t        header;    /*                                    */
-      union scmobj   *kindof;    /*    - (console, file, pipe)         */
-      union scmobj   *name;      /*    - the name of file              */
-      void           *stream;    /*    - the underlying descriptor     */
-      union scmobj   *chook;     /*    - the close hook                */
-      void           *timeout;   /*    - a timeout structure           */
-      void           *userdata;  /*    - a user data (see SSL sockets) */
-      int           (*sysclose)();/*   - the system close              */
-      long          (*sysseek)();/*    - the system seek               */
+      header_t header;           /*                                    */
+      union scmobj *kindof;      /*    - (console, file, pipe)         */
+      union scmobj *name;        /*    - the name of file              */
+      void *stream;              /*    - the underlying descriptor     */
+      union scmobj *chook;       /*    - the close hook                */
+      void *timeout;             /*    - a timeout structure           */
+      void *userdata;            /*    - a user data (see SSL sockets) */
+      int (*sysclose)();         /*   - the system close              */
+      long (*sysseek)();         /*    - the system seek               */
    } port_t;
       
    struct output_port {          /*  output_port:                      */
-      struct port     port;      /*    - a regular port                */
-      union scmobj   *buf;       /*    - the buffer as a bgl string    */
-      long            cnt;       /*    - the number of char left       */
-      char           *ptr;       /*    - the next char position        */
-      int             bufmode;   /*    - the buffering mode            */
-      size_t        (*syswrite)();/*   - the system write              */
+      struct port port;          /*    - a regular port                */
+      union scmobj *buf;         /*    - the buffer as a bgl string    */
+      long cnt;                  /*    - the number of char left       */
+      char *ptr;                 /*    - the next char position        */
+      int bufmode;               /*    - the buffering mode            */
+      size_t (*syswrite)();      /*   - the system write              */
       union scmobj *(*sysflush)();/*   - the system flush              */
-      union scmobj   *fhook;     /*    - the flush hook                */
-      union scmobj   *flushbuf;  /*    - the flush buffer              */
+      union scmobj *fhook;       /*    - the flush hook                */
+      union scmobj *flushbuf;    /*    - the flush buffer              */
    } output_port_t;
 
    struct input_port {           /*  an input_port:                    */
-      struct port     port;      /*    - a regular port                */
-      long            filepos;   /*    - the position in the file      */
-      long            fillbarrier;/*   - the fill barrier position     */
-      long          (*sysread)();/*    - the system reader             */
-      bool_t          eof;       /*    - have we seen an end-of-file   */
-      long            matchstart;/*    - the start of a match position */
-      long            matchstop; /*    - the end of the match          */
-      long            forward;   /*    - the position of READ-CHAR     */
-      long            bufpos;    /*    - the buffer read offset        */
-      union scmobj   *buf;       /*    - the buffer as a bgl string    */      
-      int             lastchar;  /*    - the last char before a fill   */
-      long            length;    /*    - the (char number) of the port */
+      struct port port;          /*    - a regular port                */
+      long filepos;              /*    - the position in the file      */
+      long fillbarrier;          /*   - the fill barrier position     */
+      long (*sysread)();         /*    - the system reader             */
+      bool_t eof;                /*    - have we seen an end-of-file   */
+      long matchstart;           /*    - the start of a match position */
+      long matchstop;            /*    - the end of the match          */
+      long forward;              /*    - the position of READ-CHAR     */
+      long bufpos;               /*    - the buffer read offset        */
+      union scmobj *buf;         /*    - the buffer as a bgl string    */      
+      int lastchar;              /*    - the last char before a fill   */
+      long length;               /*    - the (char number) of the port */
    } input_port_t;
 
    struct input_procedure_port {
       struct input_port iport;
-      union scmobj   *pbuffer;   /*   (-) a buffer to store proc res.  */
-      long            pbufpos;   /*   (-) an index in the proc buf     */
+      union scmobj *pbuffer;     /*   (-) a buffer to store proc res.  */
+      long pbufpos;              /*   (-) an index in the proc buf     */
    } input_procedure_port_t;
    
    struct input_gzip_port {
@@ -367,146 +368,146 @@ typedef union scmobj {
    } input_gzip_port_t;
    
    struct binary_port {          /*  Les binary_port                   */
-      header_t        header;    /*  ces ports sont constitues de:     */
-      union scmobj   *name;      /*    - un nom de fichier             */
-      FILE           *file;      /*    - un pointeur sur un fichier    */
-      int             io;        /*    - 0=input, 1=output, 2=close    */
+      header_t header;           /*  ces ports sont constitues de:     */
+      union scmobj *name;        /*    - un nom de fichier             */
+      FILE *file;                /*    - un pointeur sur un fichier    */
+      int io;                    /*    - 0=input, 1=output, 2=close    */
    } binary_port_t;
 	
    struct cell {                 /*  Les cellules. Ces objets sont     */
 #if( !defined( TAG_CELL ) )
-      header_t        header;    /*  utilisees quand il y a des var    */
+      header_t header;           /*  utilisees quand il y a des var    */
 #endif		
-      union scmobj   *val;        
+      union scmobj *val;        
    } cell_t;
 
    struct structure {            /*  Les structures,                   */
 #if( !defined( TAG_STRUCTURE ) )
-      header_t        header;    /*  sont constituees de :             */
+      header_t header;           /*  sont constituees de :             */
 #endif		
-      union scmobj   *key;       /*                      - une cle     */
-      int             length;    /*                      - une long.   */
-      union scmobj   *obj0;
+      union scmobj *key;         /*                      - une cle     */
+      int length;                /*                      - une long.   */
+      union scmobj *obj0;
    } struct_t;
 
    struct real {                 /*  Les nombres flottants             */
 #if( !defined( TAG_REAL ) )
-      header_t        header;    /*  ce champs est juste utile pour    */
+      header_t header;           /*  ce champs est juste utile pour    */
 #endif		
-      double          real;      
+      double real;      
    } real_t;                     
 
    struct stack {                /*  Les piles de `call/cc'            */
-      header_t        header;    /*  sont:                             */
-      union scmobj   *self;      /*        - un ptr sur soit meme      */
-      struct exitd   *exitd_top; /*        - un ptr sur les exits      */
-      union scmobj   *stamp;     /*        - an exitd stamp            */
-      long            size;      /*        - une taille                */
+      header_t header;           /*  sont:                             */
+      union scmobj *self;        /*        - un ptr sur soit meme      */
+      struct exitd *exitd_top;   /*        - un ptr sur les exits      */
+      union scmobj *stamp;       /*        - an exitd stamp            */
+      long size;                 /*        - une taille                */
       struct befored *before_top;/*        - un ptr sur les befores    */
-      char           *stack_top; /*        - the top of the stack      */
-      char           *stack_bot; /*        - the bottom of the stack   */
-      void           *stack;     /*        - un espace memoire         */
+      char *stack_top;           /*        - the top of the stack      */
+      char *stack_bot;           /*        - the bottom of the stack   */
+      void *stack;               /*        - un espace memoire         */
    } stack_t;
 
    struct foreign {              /*  Les types etrangers               */
-      header_t        header;    
-      union scmobj   *id;
-      void           *cobj;
+      header_t header;    
+      union scmobj *id;
+      void *cobj;
    } foreign_t;
 
    struct elong {                /*  The `exact long' (or full long)   */
-      header_t        header;
-      long            elong;
+      header_t header;
+      long elong;
    } elong_t;
 
    struct llong {                /* the long long Bigloo objects       */
-      header_t        header;
-      BGL_LONGLONG_T  llong;
+      header_t header;
+      BGL_LONGLONG_T llong;
    } llong_t;
 
    struct bignum {               /*  The arbitrary precision integers  */
-      header_t        header;
+      header_t header;
 #if( BGL_HAVE_GMP )
-      __mpz_struct    mpz;       /*   - from gmp.h                     */
+      __mpz_struct mpz;          /*   - from gmp.h                     */
 #else
-      union scmobj   *u16vect;
+      union scmobj *u16vect;
 #endif
    } bignum_t;
    
    struct process {              /* First class processes:             */
-      header_t      header;      /*   - a header for type checking     */
-      int           pid;         /*   - the process id                 */
-      int           index;       /*   - process index (see proc_table) */
+      header_t header;           /*   - a header for type checking     */
+      int pid;                   /*   - the process id                 */
+      int index;                 /*   - process index (see proc_table) */
       union scmobj *stream[ 3 ]; /*   - out, in and err streams        */
-      int           exited;      /*   - process is completed           */
-      int           exit_status; /*   - the exit status of the process */
+      int exited;                /*   - process is completed           */
+      int exit_status;           /*   - the exit status of the process */
 #if defined( _MSC_VER ) || defined( _MINGW_VER )
-      void *        hProcess;    /*   - the Win32 process handle       */
+      void *hProcess;            /*   - the Win32 process handle       */
 #endif
    } process_t;
 
    struct socket {               /* First class sockets:               */
-      header_t      header;      /*   - a header for type checking     */
-      int           portnum;     /*   - a port number                  */
+      header_t header;           /*   - a header for type checking     */
+      int portnum;               /*   - a port number                  */
       union scmobj *hostname;    /*   - a host name                    */
       union scmobj *hostip;      /*   - a host ip                      */
-      int           fd;          /*   - a file descriptor              */
+      int fd;                    /*   - a file descriptor              */
       union scmobj *input;       /*   - a scheme input port or #unspec */
       union scmobj *output;      /*   - a scheme output port or #unspec*/
-      int           stype;       /*   - socket type (client/server)    */
+      int stype;                 /*   - socket type (client/server)    */
       union scmobj *chook;       /*   - the close hook                 */
       union scmobj *(*accept)(); /*   - the server accept procedure    */
-      void         *userdata;    /*   - a user data                    */
+      void *userdata;            /*   - a user data                    */
    } socket_t;
 
    struct custom {               /* Custom objects                     */
-      header_t      header;      /*   - a header for type checking     */
-      char         *identifier;  /*   - a identifier                   */
-      int           (*final)();  /*   - a finalization function        */
-      int           (*equal)();  /*   - an equality function           */
-      long          (*hash)();   /*   - a hash function                */
-      char         *(*to_string)();/* - an string converster           */
+      header_t header;           /*   - a header for type checking     */
+      char *identifier;          /*   - a identifier                   */
+      int (*final)();            /*   - a finalization function        */
+      int (*equal)();            /*   - an equality function           */
+      long (*hash)();            /*   - a hash function                */
+      char *(*to_string)();      /*   - an string converster           */
       union scmobj *(*output)(); /*   - an output function             */
    } custom_t;
 
    struct bgl_date {             /* System dates                       */
-      header_t      header;
-      int           sec;         /* number of seconds [0..59]          */
-      int           min;         /* number of minutes [0..59]          */
-      int           hour;        /* number of hour [0..23]             */
-      int           mday;        /* day of month [0..30]               */
-      int           mon;         /* month number [0..11]               */
-      int           year;        /* year number [0..20xx]              */
-      int           wday;        /* day of week [0..6]                 */ 
-      int           yday;        /* day of year [0..365]               */
-      long          timezone;    /* number of seconds of timezone      */
-      int           isdst;       /* daylight savings? [-1/0/1]         */   
+      header_t header;
+      int sec;                   /* number of seconds [0..59]          */
+      int min;                   /* number of minutes [0..59]          */
+      int hour;                  /* number of hour [0..23]             */
+      int mday;                  /* day of month [0..30]               */
+      int mon;                   /* month number [0..11]               */
+      int year;                  /* year number [0..20xx]              */
+      int wday;                  /* day of week [0..6]                 */ 
+      int yday;                  /* day of year [0..365]               */
+      long timezone;             /* number of seconds of timezone      */
+      int isdst;                 /* daylight savings? [-1/0/1]         */   
    } date_t;
 
    struct bgl_mutex {
-      header_t      header;
+      header_t header;
       union scmobj *name;        /* the name (debug)                   */
-      void         *mutex;       /* the actual mutex                   */
+      void *mutex;               /* the actual mutex                   */
    } mutex_t;
    
    struct bgl_condvar {
-      header_t      header;
+      header_t header;
       union scmobj *name;        /* the name (debug)                   */
-      void         *condvar;     /* the actual condition variable      */
+      void *condvar;             /* the actual condition variable      */
    } condvar_t;
 
    struct bgl_mmap {
-      header_t      header;
+      header_t header;
       union scmobj *name;        /* the name of the file               */
-      int           fd;          /* the file descriptor                */
-      long          length;      /* the length of the mmapped file     */
-      long          rp;          /* read position                      */
-      long          wp;          /* write position                     */
+      int fd;                    /* the file descriptor                */
+      long length;               /* the length of the mmapped file     */
+      long rp;                   /* read position                      */
+      long wp;                   /* write position                     */
       unsigned char *map;        /* memory mapped                      */
 #if !HAVE_MMAP      
-      int           afd;         /* alternate file descriptor          */
-      long          ar;          /* alternate read position            */
-      long          aw;          /* alternate write position           */
+      int afd;                   /* alternate file descriptor          */
+      long ar;                   /* alternate read position            */
+      long aw;                   /* alternate write position           */
 #endif
    } mmap_t;
 
@@ -520,8 +521,8 @@ typedef union scmobj {
       union scmobj *data;
    } weakptr_t;
 
-   /* Thread dynamic environment         */
-   struct bgl_dynamic_env {      
+   struct bgl_dynamic_env {      /* Thread dynamic environment         */
+
       header_t        header;
       /* global IO ports */
       union scmobj *current_output_port;
@@ -1390,29 +1391,42 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
 
-#define BGL_ENV_PUSH_TRACE( env, name ) \
+#define BGL_ENV_PUSH_TRACE_LOCATION( env, nm, loc ) \
    struct bgl_dframe bgl_dframe; \
    struct bgl_dframe *bgl_link; \
     \
-   bgl_dframe.symbol = name; \
+   bgl_dframe.name = nm; \
+   bgl_dframe.location = loc; \
    bgl_link = bgl_dframe.link = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    BGL_ENV_SET_TOP_OF_FRAME( env, &bgl_dframe );      
+   
+#define BGL_ENV_PUSH_TRACE( env, name ) \
+   BGL_ENV_PUSH_TRACE_LOCATION( env, name, BUNSPEC )
    
 #define BGL_ENV_POP_TRACE( env ) \
    BGL_ENV_SET_TOP_OF_FRAME( env, bgl_link );
 
-#define BGL_ENV_SET_TRACE( env, name ) \
-   (BGL_ENV_GET_TOP_OF_FRAME( env )->symbol = name)
+#define BGL_ENV_SET_TRACE_NAME( env, nm ) \
+   (BGL_ENV_GET_TOP_OF_FRAME( env )->name = nm)
 
-#define PUSH_TRACE( name ) \
+#define BGL_ENV_SET_TRACE_LOCATION( env, loc ) \
+   (BGL_ENV_GET_TOP_OF_FRAME( env )->location = loc)
+
+#define PUSH_TRACE_LOCATION( nm, loc ) \
    obj_t bgl_denv = BGL_CURRENT_DYNAMIC_ENV(); \
-   BGL_ENV_PUSH_TRACE( bgl_denv, name )
+   BGL_ENV_PUSH_TRACE_LOCATION( bgl_denv, nm, loc )
+   
+#define PUSH_TRACE( name ) \
+   PUSH_TRACE_LOCATION( name, BUNSPEC )
    
 #define POP_TRACE() \
    BGL_ENV_POP_TRACE( bgl_denv )
    
-#define SET_TRACE( name ) \
-   BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), name )
+#define SET_TRACE_NAME( name ) \
+   BGL_ENV_SET_TRACE_NAME( BGL_CURRENT_DYNAMIC_ENV(), name )
+
+#define SET_TRACE_LOCATION( loc ) \
+   BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), loc )
 
 #define GET_TRACE() \
    BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:15:48 2003                          */
-/*    Last change :  Mon Jan 21 11:38:00 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Fri Dec 10 16:08:51 2010 (serrano)                */
+/*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Debug trace handling                                             */
 /*=====================================================================*/
@@ -41,9 +41,9 @@ bgl_debug_trace_top() {
       struct bgl_dframe *top = BGL_ENV_GET_TOP_OF_FRAME( env );
 
       if( !top ) goto unknown;
-      if( !SYMBOLP( top->symbol ) ) goto unknown;
+      if( !SYMBOLP( top->name ) ) goto unknown;
       
-      return top->symbol;
+      return top->name;
    }
 
  unknown:
@@ -70,27 +70,27 @@ bgl_debug_trace_top() {
       if( !top ) goto unknown;
 
       if( bmem_debug >= 20 ) {
-	 fprintf( stderr, "                  top->symbol=%p\n", top->symbol );
-	 if( top->symbol ) {
-	    if( STRINGP( top->symbol ) ) {
-	       fprintf( stderr, "                  top->symbol=STRING %p\n", top->symbol );
+	 fprintf( stderr, "                  top->name=%p\n", top->name );
+	 if( top->name ) {
+	    if( STRINGP( top->name ) ) {
+	       fprintf( stderr, "                  top->name=STRING %p\n", top->name );
 	    } else {
-	       if( KEYWORDP( top->symbol ) ) {
-		  fprintf( stderr, "                  top->symbol=KEYWORD %p\n", top->symbol );
+	       if( KEYWORDP( top->name ) ) {
+		  fprintf( stderr, "                  top->name=KEYWORD %p\n", top->name );
 	       } else {
-		  if( !POINTERP( top->symbol ) ) {
-		     fprintf( stderr, "                  top->symbol=pas pointer %d\n", top->symbol );
+		  if( !POINTERP( top->name ) ) {
+		     fprintf( stderr, "                  top->name=pas pointer %d\n", top->name );
 		  } else {
-		     fprintf( stderr, "                  top->symbol=pointer %p\n", TYPE( top->symbol  ) );
+		     fprintf( stderr, "                  top->name=pointer %p\n", TYPE( top->name  ) );
 		  }
 	       }
 	    }
 	 }
       }
 
-      if( !SYMBOLP( top->symbol ) ) goto unknown;
+      if( !SYMBOLP( top->name ) ) goto unknown;
       
-      return top->symbol;
+      return top->name;
    }
 
  unknown:
@@ -153,7 +153,7 @@ for_each_trace( void (*fun)( obj_t, void * ), int start, int stop, void *a ) {
 	 
       while( frame && (depth < stop) ) {
 	 depth++;
-	 fun( frame->symbol, a );
+	 fun( frame->name, a );
 	 frame = frame->link;
       }
    }

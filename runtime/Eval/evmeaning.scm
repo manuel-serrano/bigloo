@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sun Nov 28 11:32:03 2010 (serrano)                */
+;*    Last change :  Fri Dec 10 17:11:37 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -381,6 +381,7 @@
 		  (if (null? args)
 		      (begin
 			 ($evmeaning-byte-code-set! denv code)
+			 ($env-set-trace-location denv (evcode-loc code))
 			 (eval-apply code name fun len (reverse! new)))
 		      (loop (cdr args)
 			    (cons (evmeaning (car args) stack denv) new)
@@ -393,14 +394,15 @@
 	    ;; explicitly use a cascade of "if"s
 	    ;; procedure arity 0, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda ()
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning !b !s !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -421,14 +423,15 @@
 	   ((bounce (code stack denv) (38))
 	    ;; procedure arity 1, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning !b (cons x !s) !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -448,14 +451,15 @@
 	   ((bounce (code stack denv) (39))
 	    ;; procedure arity 2, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x y)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
@@ -475,14 +479,15 @@
 	   ((bounce (code stack denv) (40))
 	    ;; procedure arity 3, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x y z)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning !b
 					       (cons x
 						     (cons y
@@ -506,14 +511,15 @@
 	   ((bounce (code stack denv) (41))
 	    ;; procedure arity 4, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x y z t)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)	
+			 ($env-push-trace-location !denv where loc)	
 			 (let ((res (evmeaning
 				     !b
 				     (cons x
@@ -541,14 +547,15 @@
 	   ((bounce (code stack denv) (47))
 	    ;; procedure arity -1, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda x
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning !b (cons x !s) !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -568,14 +575,15 @@
 	   ((bounce (code stack denv) (48))
 	    ;; procedure arity -2, traced
 	    (let ((body  (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x . y)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
@@ -595,14 +603,15 @@
 	   ((bounce (code stack denv) (49))
 	    ;; procedure arity -3, traced
 	    (let ((body (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x y . z)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning !b
 					       (cons x
 						     (cons y
@@ -628,14 +637,15 @@
 	   ((bounce (code stack denv) (50))
 	    ;; procedure arity -4, traced
 	    (let ((body  (evcode-ref code 0))
-		  (where (evcode-ref code 1)))
+		  (where (evcode-ref code 1))
+		  (loc (evcode-loc code)))
 	       (evmeaning-procedure!
 		(lambda (x y z . t)
 		   (let ((!b body)
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace !denv where)
+			 ($env-push-trace-location !denv where loc)
 			 (let ((res (evmeaning
 				     !b
 				     (cons x
@@ -761,24 +771,8 @@
 			      (evmeaning-tailcall-0-stack code stack denv fun)
 			      denv)
 		   (evmeaning-funcall-0 code stack denv fun))))
-	   ((161)
-	    ;; traced tailcall 0
-	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? fun)
-		   (evmeaning (evmeaning-procedure-bcode fun)
-			      (evmeaning-tailcall-0-stack code stack denv fun)
-			      denv)
-		   (evmeaning-funcall-0 code stack denv fun))))
 	   ((132)
 	    ;; tailcall 1
-	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? fun)
-		   (evmeaning (evmeaning-procedure-bcode fun)
-			      (evmeaning-tailcall-1-stack code stack denv fun)
-			      denv)
-		   (evmeaning-funcall-1 code stack denv fun))))
-	   ((162)
-	    ;; traced tailcall 1
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
 	       (if (evmeaning-procedure? fun)
 		   (evmeaning (evmeaning-procedure-bcode fun)
@@ -793,14 +787,6 @@
 			      (evmeaning-tailcall-2-stack code stack denv fun)
 			      denv)
 		   (evmeaning-funcall-2 code stack denv fun))))
-	   ((163)
-	    ;; traced tailcall 2
-	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? fun)
-		   (evmeaning (evmeaning-procedure-bcode fun)
-			      (evmeaning-tailcall-2-stack code stack denv fun)
-			      denv)
-		   (evmeaning-funcall-2 code stack denv fun))))
 	   ((134)
 	    ;; tailcall 3
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
@@ -809,23 +795,7 @@
 			      (evmeaning-tailcall-3-stack code stack denv fun)
 			      denv)
 		   (evmeaning-funcall-3 code stack denv fun))))
-	   ((164)
-	    ;; trace tailcall 3
-	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
- 	       (if (evmeaning-procedure? fun)
-		   (evmeaning (evmeaning-procedure-bcode fun)
-			      (evmeaning-tailcall-3-stack code stack denv fun)
-			      denv)
-		   (evmeaning-funcall-3 code stack denv fun))))
 	   ((135)
-	    ;; tailcall 4
-	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
-	       (if (evmeaning-procedure? fun)
-		   (evmeaning (evmeaning-procedure-bcode fun)
-			      (evmeaning-tailcall-4-stack code stack denv fun)
-			      denv)
-		   (evmeaning-funcall-4 code stack denv fun))))
-	   ((165)
 	    ;; tailcall 4
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
 	       (if (evmeaning-procedure? fun)
@@ -1008,6 +978,7 @@
 (define (evmeaning-funcall-0 code stack denv fun)
    (let ((name (evcode-ref code 0)))
       ($evmeaning-byte-code-set! denv code)
+      ($env-set-trace-location denv (evcode-loc code))
       (cond
 	 ((not (procedure? fun))
 	  (evmeaning-error code "eval" name "Not a procedure"))
@@ -1023,6 +994,7 @@
    (let* ((name (evcode-ref code 0))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
+      ($env-set-trace-location denv (evcode-loc code))
       (cond
 	 ((not (procedure? fun))
 	  (evmeaning-error code "eval" "Not a procedure" name))
@@ -1039,6 +1011,7 @@
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
+      ($env-set-trace-location denv (evcode-loc code))
       (cond
 	 ((not (procedure? fun))
 	  (evmeaning-error code "eval" "Not a procedure" name))
@@ -1056,6 +1029,7 @@
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
       ($evmeaning-byte-code-set! denv code)
+      ($env-set-trace-location denv (evcode-loc code))
       (cond
 	 ((not (procedure? fun))
 	  (evmeaning-error code "eval" "Not a procedure" name))
@@ -1074,6 +1048,7 @@
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
 	  (a3 (evmeaning (evcode-ref code 5) stack denv)))
       ($evmeaning-byte-code-set! denv code)
+      ($env-set-trace-location denv (evcode-loc code))
       (cond
 	 ((not (procedure? fun))
 	  (evmeaning-error code "eval" "Not a procedure" name))
@@ -1089,7 +1064,8 @@
    ($evmeaning-byte-code-set! denv code)
    (let* ((envd (evmeaning-procedure-stack fun))
 	  (arity (evmeaning-procedure-args fun)))
-      (when (=fx (evcode-op code) 161) ($set-trace (evcode-ref code 0)))
+      (when (symbol? (evcode-ref code 0))
+	 ($set-trace-name (evcode-ref code 0)))
       (case arity
 	 ((0)
 	  envd)
@@ -1106,7 +1082,8 @@
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
-	 (when (=fx (evcode-op code) 162) ($set-trace (evcode-ref code 0)))
+	 (when (symbol? (evcode-ref code 0))
+	    ($set-trace-name (evcode-ref code 0)))
 	 (case arity
 	    ((1)
 	     (cons a0 envd))
@@ -1126,7 +1103,8 @@
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
-	 (when (=fx (evcode-op code) 163) ($set-trace (evcode-ref code 0)))
+	 (when (symbol? (evcode-ref code 0))
+	    ($set-trace-name (evcode-ref code 0)))
 	 (case arity
 	    ((2)
 	     (cons a0 (cons a1 envd)))
@@ -1149,7 +1127,8 @@
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
-	 (when (=fx (evcode-op code) 164) ($set-trace (evcode-ref code 0)))
+	 (when (symbol? (evcode-ref code 0))
+	    ($set-trace-name (evcode-ref code 0)))
 	 (case arity
 	    ((3)
 	     (cons a0 (cons a1 (cons a2 envd))))
@@ -1175,7 +1154,8 @@
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
-	 (when (=fx (evcode-op code) 165) ($set-trace (evcode-ref code 0)))
+	 (when (symbol? (evcode-ref code 0))
+	    ($set-trace-name (evcode-ref code 0)))
 	 (case arity
 	    ((4)
 	     (cons a0 (cons a1 (cons a2 (cons a3 envd)))))
@@ -1210,7 +1190,8 @@
 (define (evmeaning-make-traced-4procedure code stack denv)
    (let ((body (evcode-ref code 0))
 	 (where (evcode-ref code 1))
-	 (formals (evcode-ref code 2)))
+	 (formals (evcode-ref code 2))
+	 (loc (evcode-loc code)))
       (if (list? formals)
 	  (let ((lf (length formals)))
 	     (evmeaning-procedure!
@@ -1219,7 +1200,7 @@
 		       (!s stack)
 		       (!denv::dynamic-env (current-dynamic-env)))
 		    (let ()
-		       ($env-push-trace !denv where)
+		       ($env-push-trace-location !denv where loc)
 		       (let ((e2 (evmeaning-push-fxargs where code x lf !s)))
 			  (let ((res (evmeaning !b e2 !denv)))
 			     ($env-pop-trace !denv)
@@ -1238,7 +1219,7 @@
 		       (!s stack)
 		       (!denv::dynamic-env (current-dynamic-env)))
 		    (let ()
-		       ($env-push-trace !denv where)
+		       ($env-push-trace-location !denv where loc)
 		       (let ((e2 (evmeaning-push-vaargs where code x lf !s)))
 			  (let ((res (evmeaning !b e2 !denv)))
 			     ($env-pop-trace !denv)

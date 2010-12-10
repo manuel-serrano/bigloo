@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Oct 20 06:51:05 2010 (serrano)                */
+;*    Last change :  Fri Dec 10 17:49:02 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -25,10 +25,13 @@
 	    
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
 	    (macro $push-trace::obj (::obj) "PUSH_TRACE")
-	    (macro $set-trace::obj (::obj) "SET_TRACE")
+	    (macro $push-trace-location::obj (::obj ::obj) "PUSH_TRACE_LOCATION")
+	    (macro $set-trace-name::obj (::obj) "SET_TRACE_NAME")
 	    (macro $pop-trace::obj () "POP_TRACE")
-	    (macro $env-push-trace::obj (::dynamic-env ::obj) "BGL_ENV_PUSH_TRACE")
-	    (macro $env-set-trace::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE")
+	    (macro $env-push-trace::obj (::dynamic-env ::obj) "BGL_ENV_PUSH_TRACE_NAME")
+	    (macro $env-push-trace-location::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE_LOCATION")
+	    (macro $env-set-trace-name::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_NAME")
+	    (macro $env-set-trace-location::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_LOCATION")
 	    (macro $env-pop-trace::obj (::dynamic-env) "BGL_ENV_POP_TRACE")
 	    (macro $get-error-handler::obj () "BGL_ERROR_HANDLER_GET")
 	    (macro $set-error-handler!::void (::obj) "BGL_ERROR_HANDLER_SET")
@@ -70,14 +73,20 @@
 		       "get_trace_stack")
 	       (method static $push-trace::obj (::obj)
 		       "PUSH_TRACE")
-	       (method static $set-trace::obj (::obj)
-		       "SET_TRACE")
+	       (method static $push-trace-location::obj (::obj ::obj)
+		       "PUSH_TRACE_LOCATION")
+	       (method static $set-trace-name::obj (::obj)
+		       "SET_TRACE_NAME")
 	       (method static $pop-trace::obj ()
 		       "POP_TRACE")
 	       (method static $env-push-trace::obj (::dynamic-env ::obj)
 		       "BGL_ENV_PUSH_TRACE")
-	       (method static $env-set-trace::obj (::dynamic-env ::obj)
-		       "BGL_ENV_SET_TRACE")
+	       (method static $env-push-trace-location::obj (::dynamic-env ::obj ::obj)
+		       "BGL_ENV_PUSH_TRACE_LOCATION")
+	       (method static $env-set-trace-name::obj (::dynamic-env ::obj)
+		       "BGL_ENV_SET_TRACE_NAME")
+	       (method static $env-set-trace-location::obj (::dynamic-env ::obj)
+		       "BGL_ENV_SET_TRACE_LOCATION")
 	       (method static $env-pop-trace::obj (::dynamic-env)
 		       "BGL_ENV_POP_TRACE")
  	       (method static $foreign-typeof::string (::obj)
@@ -594,36 +603,41 @@
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/loc ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (notify-&error/loc err f loc)
-   (if (or (not (string? f)) (not (fixnum? loc)))
+(define (notify-&error/loc err fname loc)
+   (if (or (not (string? fname)) (not (fixnum? loc)))
        (notify-&error err)
-       (let* ((fname (if (string=? (os-class) "win32")
-			 (string-replace (uncygdrive f) #\/ #\\)
-			 f))
-	      (port (open-input-file fname)))
-	  (if (not (input-port? port))
+       (multiple-value-bind (lnum lpoint lstring)
+	  (location-line-num fname loc)
+	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
+	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
+
+;*---------------------------------------------------------------------*/
+;*    location-line-num ...                                            */
+;*---------------------------------------------------------------------*/
+(define (location-line-num file point)
+   (if (and (string? file) (fixnum? point))
+       (let* ((fname (if (string=? (os-class) "win32")
+			 (string-replace (uncygdrive file) #\/ #\\)
+			 file))
+	      (port (open-input-file fname)))
+	  (if (input-port? port)
 	      (let loop ((lstring (read-line port))
 			 (lnum 1)
 			 (opos 0))
 		 (if (eof-object? lstring)
 		     (begin
-			;; an error we don't know how to print
 			(close-input-port port)
-			(notify-&error/location-no-loc err))
-		     (if (>fx (input-port-position port) loc)
+			(values #f #f #f))
+		     (if (>fx (input-port-position port) point)
 			 (begin
 			    (close-input-port port)
-			    (notify-&error/location-loc err
-							fname
-							lnum
-							loc
-							lstring
-							(-fx loc opos)))
+			    (values lnum (-fx point opos) lstring))
 			 (let ((opos (input-port-position port)))
 			    (loop (read-line port) 
 				  (+fx lnum 1)
-				  opos)))))))))
+				  opos)))))))
+       (values #f #f #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-location? ...                                          */
@@ -691,35 +705,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    warning/location-file ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (warning/location-file file-name location args)
+(define (warning/location-file fname loc args)
    ;; we compute the message to print the location
-   (let ((port (open-input-file file-name)))
+   (let ((port (open-input-file fname)))
       (if (not (input-port? port))
 	  ;; we are enable to re-open the file, we just print a
 	  ;; standard warning
 	  (apply warning args)
 	  ;; we readlines until we reach location
-	  (let loop ((line-string (read-line port))
-		     (line-num    1)
-		     (old-pos     0))
-	     (if (eof-object? line-string)
-		 (begin
-		    ;; an error we don't know how to print
-		    (close-input-port port)
-		    (apply warning args))
-		 (if (>fx (input-port-position port) location)
-		     (begin
-			(close-input-port port)
-			(do-warn/location file-name
-					  line-num
-					  location
-					  line-string
-					  (-fx location old-pos)
-					  args))
-		     (let ((old-pos (input-port-position port)))
-			(loop (read-line port)
-			      (+fx line-num 1)
-			      old-pos))))))))
+	  (multiple-value-bind (lnum lpoint lstring)
+	     (location-line-num fname loc)
+	     (if (not lnum)
+		 (apply warning args)
+		 (do-warn/location fname lnum loc lstring lpoint args))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-warn/location ...                                             */
@@ -753,18 +751,32 @@
 ;*---------------------------------------------------------------------*/
 (define (display-trace-stack stack port)
    
-   (define (display-trace-stack-entry level sym num)
+   (define (display-trace-stack-frame level frame num)
       (cond
 	 ((<fx level 10) (display "    " port))
 	 ((<fx level 100) (display "   " port))
 	 ((<fx level 1000) (display "  " port)))
       (display level port)
       (display ". " port)
-      (display sym port)
-      (when (>fx num 1)
-	 (display " (* " port)
-	 (display num port)
-	 (display ")" port))
+      (display (car frame) port)
+      (cond
+	 ((>fx num 1)
+	  (display " (* " port)
+	  (display num port)
+	  (display ")" port))
+	 ((pair? (cdr frame))
+	  (display ", " port)
+	  (multiple-value-bind (lnum lpoint lstring)
+	     (location-line-num (cadr (cdr frame)) (caddr (cdr frame)))
+	     (if lnum
+		 (begin
+		    (display (relative-file-name (cadr (cdr frame))) port)
+		    (display ":" port)
+		    (display lnum port))
+		 (begin
+		    (display (cadr (cdr frame)) port)
+		    (display "@" port)
+		    (display (caddr (cdr frame))) port)))))
       (newline port))
 
    (when (pair? stack)
@@ -774,12 +786,12 @@
 		 (hdn 1))
 	 (cond
 	    ((null? stack)
-	     (display-trace-stack-entry i hds hdn)
+	     (display-trace-stack-frame i hds hdn)
 	     (flush-output-port port))
 	    ((eq? (car stack) hds)
 	     (loop (+fx i 1) (cdr stack) hds (+fx hdn 1)))
 	    (else
-	     (display-trace-stack-entry i hds hdn)
+	     (display-trace-stack-frame i hds hdn)
 	     (loop (+fx i 1) (cdr stack) (car stack) 1))))))
 
 ;*---------------------------------------------------------------------*/

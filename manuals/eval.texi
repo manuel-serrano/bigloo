@@ -175,7 +175,7 @@ The @code{load} procedure reads expressions and
 definitions from the file, evaluating them sequentially. If the file
 loaded is a module (i.e. if it begins with a regular
 module clause), load behaves as module initialization. Otherwise, this
-function returns the result of the last evaluation. The function @code{oadq}
+function returns the result of the last evaluation. The function @code{loadq}
 differs from the function @code{load} in the sense that @code{loadq} does 
 not print any intermediate evaluations.
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Fri Dec  3 10:50:52 2010 (serrano)                */
+/*    Last change :  Fri Dec 10 16:13:37 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    We dump a execution trace                                        */
 /*=====================================================================*/
@@ -18,7 +18,7 @@ void
 bgl_init_trace() {
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
 
-   BGL_DYNAMIC_ENV( env ).top.symbol = BUNSPEC;
+   BGL_DYNAMIC_ENV( env ).top.name = BUNSPEC;
    BGL_DYNAMIC_ENV( env ).top.link = 0;
 
    BGL_ENV_SET_TOP_OF_FRAME( env, &(BGL_DYNAMIC_ENV( env ).top) );
@@ -35,8 +35,9 @@ get_trace_stack( int depth ) {
    obj_t l = BNIL;
 
    while( ((depth < 0) || (level < depth)) && runner ) {
-      if( SYMBOLP( runner->symbol ) ) {
-	 l = MAKE_PAIR( runner->symbol, l );
+      if( SYMBOLP( runner->name ) ) {
+	 obj_t p = MAKE_PAIR( runner->name, runner->location );
+	 l = MAKE_PAIR( p, l );
 	 level++; 
       }
       

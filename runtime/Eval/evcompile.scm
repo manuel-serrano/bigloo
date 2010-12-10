@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sat Dec  4 07:37:10 2010 (serrano)                */
+;*    Last change :  Fri Dec 10 17:03:16 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -521,14 +521,12 @@
 ;*---------------------------------------------------------------------*/
 (define (evcompile-application name proc args tail loc)
    (if tail
-       (let ((name (if (symbol? name)
-		       (loc-where (symbol-append name '|(+)|) loc)
-		       name)))
+       (let ((name (if (symbol? name) (symbol-append name '|(+)|) name)))
 	  (case (length args)
 	     ((0)
-	      (evcode (if (symbol? name) 161 131) loc name proc tail))
+	      (evcode 131 loc name proc tail))
 	     ((1)
-	      (let ((code (if (symbol? name) 162 132)))
+	      (let ((code 132))
 		 (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
 		     (let ((fun (evcode-ref proc 0))
 			   (a0 (car args)))
@@ -538,21 +536,21 @@
 				(evcode code loc name proc (car args) tail))))
 		     (evcode code loc name proc (car args) tail))))
 	     ((2)
-	      (let ((code (if (symbol? name) 163 133)))
+	      (let ((code 133))
 		 (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
 		     (let ((fun (evcode-ref proc 0))
 			   (a0 (car args))
 			   (a1 (cadr args)))
 			(if (not (eval-global? fun))
-			    (evcode code loc name proc a0 a1 tail)
+			    (evcode 133 loc name proc a0 a1 tail)
 			    (or (evcompile-inline2 loc name fun a0 a1)
-				(evcode code loc name proc a0 a1 tail))))
-		     (evcode code loc name proc (car args) (cadr args) tail))))
+				(evcode 133 loc name proc a0 a1 tail))))
+		     (evcode 133 loc name proc (car args) (cadr args) tail))))
 	     ((3)
-	      (evcode (if (symbol? name) 164 134)
+	      (evcode 134
 		      loc name proc (car args) (cadr args) (caddr args) tail))
 	     ((4)
-	      (evcode (if (symbol? name) 165 135)
+	      (evcode 135
 		      loc name proc (car args) (cadr args) (caddr args)
 		      (cadddr args) tail))
 	     (else
@@ -651,19 +649,6 @@
 	  #f))))
 
 ;*---------------------------------------------------------------------*/
-;*    loc-where ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (loc-where where loc)
-   (match-case loc
-      ((at ?fname ?locl)
-       (let ((sloc (string-append
-		    ", "
-		    (basename fname) ":char " (integer->string locl))))
-	  (symbol-append where (string->symbol sloc))))
-      (else
-       where)))
-
-;*---------------------------------------------------------------------*/
 ;*    evcompile-lambda ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-lambda formals body where loc)
@@ -674,27 +659,27 @@
    (match-case formals
       ((or () (?-) (?- ?-) (?- ?- ?-) (?- ?- ?- ?-))
        (if (traced?)
-	   (evcode (+fx (length formals) 37) loc body (loc-where where loc))
+	   (evcode (+fx (length formals) 37) loc body where)
 	   (evcode (+fx (length formals) 42) loc body)))
       ((atom ?-)
        (if (traced?)
-	   (evcode 47 loc body (loc-where where loc))
+	   (evcode 47 loc body where)
 	   (evcode 51 loc body)))
       (((atom ?-) . (atom ?-))
        (if (traced?)
-	   (evcode 48 loc body (loc-where where loc))
+	   (evcode 48 loc body where)
 	   (evcode 52 loc body)))
       (((atom ?-) (atom ?-) . (atom ?-))
        (if (traced?)
-	   (evcode 49 loc body (loc-where where loc))
+	   (evcode 49 loc body where)
 	   (evcode 53 loc body)))
       (((atom ?-) (atom ?-) (atom ?-) . (atom ?-))
        (if (traced?)
-	   (evcode 50 loc body (loc-where where loc))
+	   (evcode 50 loc body where)
 	   (evcode 54 loc body)))
       (else
        (if (traced?)
-	   (evcode 55 loc body (loc-where where loc) formals)
+	   (evcode 55 loc body where formals)
 	   (evcode 56 loc body formals)))))
 
 ;*---------------------------------------------------------------------*/

@@ -4471,13 +4471,19 @@ namespace bigloo
       // CARE
       public static readonly procedure BIGLOO_EXIT_ENV= new procedure();
 
-      public static Object PUSH_TRACE( Object  o )
+      public static Object PUSH_TRACE( Object o, Object l )
 	 {
 	    new stack_trace( o );
 	    return unspecified._unspecified;
 	 }
 
-      public static Object SET_TRACE( Object o )
+      public static Object PUSH_TRACE_LOCATION( Object o, Object l )
+	 {
+	    new stack_trace( o, l );
+	    return unspecified._unspecified;
+	 }
+
+      public static Object SET_TRACE_NAME( Object o )
 	 {
 	    stack_trace.set_trace(o);
 	    return unspecified._unspecified;
@@ -4488,15 +4494,27 @@ namespace bigloo
 	    return stack_trace.pop_trace();
 	 }
 
-      public static Object BGL_ENV_PUSH_TRACE( bgldynamic env, Object  o )
+      public static Object BGL_ENV_PUSH_TRACE( bgldynamic env, Object o )
 	 {
 	    new stack_trace( o );
 	    return unspecified._unspecified;
 	 }
 
-      public static Object BGL_ENV_SET_TRACE( bgldynamic env, Object o )
+      public static Object BGL_ENV_PUSH_TRACE_LOCATION( bgldynamic env, Object o, Object l )
+	 {
+	    new stack_trace( o, l );
+	    return unspecified._unspecified;
+	 }
+
+      public static Object BGL_ENV_SET_TRACE_NAME( bgldynamic env, Object o )
 	 {
 	    stack_trace.set_trace(o);
+	    return unspecified._unspecified;
+	 }
+
+      public static Object BGL_ENV_SET_TRACE_LOCATION( bgldynamic env, Object o )
+	 {
+	    stack_trace.set_trace_location(o);
 	    return unspecified._unspecified;
 	 }
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Thu Apr 29 17:15:50 2010 (serrano)                */
+;*    Last change :  Fri Dec 10 16:39:13 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -233,30 +233,25 @@
    (let* ((loc  (node-loc node))
 	  (aux  (mark-symbol-non-user! (gensym 'aux)))
 	  (taux (make-typed-ident aux (type-id type)))
-	  (sym  (mark-symbol-non-user! (gensym 'symbol)))
-	  (s+   (if (and (pair? stack) (variable? (car stack)))
+	  (tmp1 (mark-symbol-non-user! (gensym 'name)))
+	  (tmp2 (mark-symbol-non-user! (gensym 'loc)))
+	  (sym  (if (and (pair? stack) (variable? (car stack)))
 		    (symbol-append symbol ': (variable-id (car stack)))
 		    symbol))
-	  (s++  (if (and (location? loc) (not *bmem-profiling*))
-		    ;; take car of bmem, if location are inserted inside
-		    ;; pushed symbols, bmem won't be able to recognize
-		    ;; the allocated object
-		    (let ((sloc (format ", ~a:~a"
-					(location-fname loc)
-					(location-lnum loc))))
-		       (symbol-append s+ (string->symbol sloc)))
-		    s+))
-	  (exp `(let ((,sym ',s++))
+	  (l    (when (location? loc)
+		   `(at ,(location-fname loc) ,(location-pos loc))))
+	  (exp `(let ((,tmp1 ',sym)
+		      (,tmp2 ',l))
 		   (let ()
-		      ($push-trace ,sym)
+		      ($push-trace-location ,tmp1 ,tmp2)
 		      (let ((,taux ,node))
 			 ,(if (location? lloc)
 			      (econs '$pop-trace '() lloc)
 			      '($pop-trace))
 			 ,aux))))
-	  (node (sexp->node exp '() loc 'value)))
-      (let-var-removable?-set! node (backend-remove-empty-let (the-backend)))
-      node))
+	  (nnode (sexp->node exp '() loc 'value)))
+      (let-var-removable?-set! nnode (backend-remove-empty-let (the-backend)))
+      nnode))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ...                                                   */
