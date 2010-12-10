@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Mon Dec 15 09:33:46 2008 (serrano)                */
+;*    Last change :  Sun Nov 28 07:10:21 2010 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -36,8 +36,9 @@
 ;*---------------------------------------------------------------------*/
 (define (test-vector)
    (test-module "vector" "vector.scm")
-   (test "vector?" (vector? '#()) #t)
-   (test "vector?" (vector? '#(1)) #t)
+   (test "vector?.1" (vector? '#()) #t)
+   (test "vector?.2" (vector? '#(1)) #t)
+   (test "vector?.3" (vector? '(1)) #f)
    (test "ref" (vector-ref '#(1 2 3 4) 2) 3)
    (test "set" (let ((v (make-vector 1 '())))
 		  (vector-set! v 0 'toto)
@@ -75,4 +76,3 @@
    (test "vector-append.4" (vector-append '#(a b) '#(c d)) '#(a b c d))
    (test "vector-append.5" (vector-append '#(a b) '#(c d) '#()) '#(a b c d))
    (test "vector-append.6" (vector-append '#(a b) '#(c d) '#(e)) '#(a b c d e)))
-   

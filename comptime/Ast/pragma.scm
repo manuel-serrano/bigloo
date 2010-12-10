@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Mon Feb 28 17:30:57 2005 (serrano)                */
+;*    Last change :  Fri Nov 26 18:57:03 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -44,12 +44,12 @@
 			     (nodes '()))
 		     (if (null? exps)
 			 (instantiate::pragma
-			    (loc          loc)
-			    (type         type)
-			    (format       format)
-			    (expr*        (reverse! nodes))
+			    (loc loc)
+			    (type type)
+			    (format format)
+			    (expr* (reverse! nodes))
 			    (side-effect? (not free))
-			    (effect       effect))
+			    (effect effect))
 			 (loop (cdr exps)
 			       (cons
 				(sexp->node (car exps)
@@ -63,7 +63,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-max-index ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (get-max-index format)
+(define (get-max-index fmt)
    (let ((parser (regular-grammar ()
 		    ((: #\$ (+ (in (#\0 #\9))))
 		     (string->number (the-substring 1 (the-length))))
@@ -71,7 +71,7 @@
 		     (ignore))
 		    (else
 		     (the-failure))))
-	 (port   (open-input-string format)))
+	 (port   (open-input-string fmt)))
       (let loop ((exp (read/rp parser port))
 		 (max 0))
 	 (cond

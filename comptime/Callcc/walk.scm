@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Sat Jan 31 13:47:30 2004 (serrano)                */
-;*    Copyright   :  1995-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 28 17:48:14 2010 (serrano)                */
+;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -144,8 +144,9 @@
 		((not (celled? var))
 		 node)
 		(else
+		 (node-type-set! node *obj*)
 		 (instantiate::box-ref
-		    (type *_*)
+		    (type *obj*)
 		    (loc (node-loc node))
 		    (var node))))))))
 
@@ -165,7 +166,7 @@
       node))
  
 ;*---------------------------------------------------------------------*/
-;*    callcc! ::app-ly ...                                              */
+;*    callcc! ::app-ly ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::app-ly)
    (with-access::app-ly node (fun arg)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Nov 25 08:22:18 2010 (serrano)                */
+;*    Last change :  Fri Dec  3 18:29:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -205,7 +205,7 @@
 
    (pragma  (%object-class-num args-safe)
 	    (%object-class-num-set! args-safe)
-            (class? side-effect-free (predicate-of object) no-cfa-top nesting (effect))
+            (class? side-effect-free no-cfa-top nesting (effect))
 	    (class-super side-effect-free no-cfa-top no-trace nesting)
 	    (class-subclasses side-effect-free no-cfa-top no-trace nesting)
 	    (class-constructor side-effect-free no-cfa-top no-trace nesting)
@@ -390,7 +390,7 @@
        (vector-ref class 8)
        (error "class-fields"
 	      (bigloo-type-error-msg "runtime type error"
-				     "Class"
+				     "class"
 				     (find-runtime-type class))
 	      class)))
 
@@ -915,7 +915,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-generic-sans-lock! ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    Adding a generic could be a two steps process. It may happend,   */
+;*    Adding a generic could be a two steps process. It may happen,    */
 ;*    because of cycle in the module graph, that we see the first      */
 ;*    method before the generic itself. In such a situation, we        */
 ;*    declare a dummy generic with a default body that is an error.    */

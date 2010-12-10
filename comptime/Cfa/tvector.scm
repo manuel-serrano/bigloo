@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Tue Sep  7 19:07:13 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 08:55:34 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -183,8 +183,8 @@
 	  (let* ((app  (car apps))
 		 (type (get-vector-item-type app)))
 	     (trace (cfa 1)
-		    "vector: " (shape app) " type: " (shape type) " "
-		    (type-class type) #\Newline)
+		    "vector: " (shape app) " type: " (shape type)
+		    " < " (type-class type) #\Newline)
 	     (if (and (not (eq? type *_*))
 		      (not (sub-type? type *obj*)))
 		 (loop (cdr apps) (cons app tvectors))
@@ -245,9 +245,8 @@
       (let ((tvector-unit (tvector-finalizer)))
 	 (pragma-finalizer)
 	 (let ((res (if (unit? tvector-unit)
-			(globalize-walk! (build-ast-sans-remove
-					  (list tvector-unit))
-					 'no-remove)
+			(let ((ast (build-ast-sans-remove (list tvector-unit))))
+			   (globalize-walk! ast 'no-remove))
 			'())))
 	    (set-default-type! old-default-type)
 	    res))))

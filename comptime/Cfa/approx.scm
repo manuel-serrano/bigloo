@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sun Apr 10 14:43:55 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 27 07:29:37 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -35,8 +35,8 @@
 	    (approx-set-type! ::approx ::type)
 	    (approx-set-top! ::approx)
 	    (make-empty-approx::approx)
-	    (make-type-approx::approx       ::type)
-	    (make-alloc-approx::approx      ::app)
+	    (make-type-approx::approx ::type)
+	    (make-alloc-approx::approx ::app)
 	    (make-type-alloc-approx::approx ::type ::node)
 	    (for-each-approx-alloc ::procedure ::approx)
 	    (generic get-node-atom-value ::node)))
@@ -71,13 +71,15 @@
    ;; we make the union of the type
    (approx-set-type! dst (approx-type src))
    ;; we check *obj* to prevent closure optimizations
-   (if (not (or (eq? (approx-type dst) *procedure*)
-		(eq? (approx-type dst) *_*)))
-       (disable-X-T! src))
+   (when (not (or (eq? (approx-type dst) *procedure*)
+		  (eq? (approx-type dst) *_*)))
+      (disable-X-T! src))
    ;; of the alloc/top 
-   (if (approx-top? src) (approx-set-top! dst))
+   (when (approx-top? src)
+      (approx-set-top! dst))
    ;; and we make the union of approximations
-   (if (set-union! (approx-allocs dst) (approx-allocs src)) (continue-cfa!))
+   (when (set-union! (approx-allocs dst) (approx-allocs src))
+       (continue-cfa! 'union))
    ;; and we return the dst
    dst)
 
@@ -100,10 +102,10 @@
        #f)
       ((eq? (approx-type dst) *_*)
        (approx-type-set! dst type)
-       (continue-cfa!))
+       (continue-cfa! 'approx-set-type!))
       (else
        (approx-type-set! dst *obj*)
-       (continue-cfa!))))
+       (continue-cfa! 'approx-set-type!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    approx-set-top! ...                                              */
@@ -112,7 +114,7 @@
    (if (not (approx-top? dst))
        (begin
 	  (approx-top?-set! dst #t)
-	  (continue-cfa!))))
+	  (continue-cfa! 'approx-set-top!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-empty-approx ...                                            */

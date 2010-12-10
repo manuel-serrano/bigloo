@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Wed Oct 20 14:09:03 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 08:13:49 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -17,6 +17,7 @@
    (import  tools_shape
 	    tools_error
 	    type_type
+	    type_typeof
 	    type_cache
 	    ast_var
 	    ast_node
@@ -64,7 +65,13 @@
 	 ((not (integrate-celled? (car formals)))
 	  (loop celled (cdr formals)))
 	 (else
-	  (let* ((var (make-local-svar (local-id (car formals)) *obj*))
+	  (let* ((vtype (local-type (car formals)))
+		 (ntype (cond
+			   ((eq? vtype *_*) *obj*)
+			   ((bigloo-type? vtype) vtype)
+			   ((eq? (local-access (car formals)) 'read) vtype)
+			   (else *obj*)))
+		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o.n (cons (car formals) var)))
 	     (local-access-set! var 'cell-integrate)
 	     (widen!::svar/Iinfo (local-value var)
@@ -143,19 +150,25 @@
 ;*    glo! ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::var integrator)
-   (let* ((var   (var-variable node))
-	  (alpha (variable-fast-alpha var)))
+   (let* ((variable (var-variable node))
+	  (alpha (variable-fast-alpha variable)))
       (cond
 	 ((local? alpha)
 	  (var-variable-set! node alpha)
+	  (node-type-set! node (variable-type alpha))
 	  (glo! node integrator))
-	 ((global? var)
+	 ((global? variable)
 	  node)
-	 ((integrate-celled? var)
-	  (local-access-set! var 'cell-integrate)
+	 ((integrate-celled? variable)
+	  (local-access-set! variable 'cell-integrate)
+	  ;; when the variable is boxed (i.e., mutated), we have to use the
+	  ;; static type of the variable, because it might be that another
+	  ;; local function changes the dynamic type of the variable
+	  ;; (same problem in the globalization stage)
+	  (node-type-set! node *obj*)
 	  (instantiate::box-ref
 	     (loc (node-loc node))
-	     (type (node-type node))
+	     (type (variable-type (var-variable node)))
 	     (var node)))
 	 (else
 	  node))))
@@ -266,6 +279,7 @@
 		       (let ((a-var (make-local-svar 'aux *obj*))
 			     (loc   (node-loc node)))
 			  (local-access-set! var 'cell-integrate)
+			  (node-type-set! (setq-var node) *obj*)
 			  (widen!::svar/Iinfo (local-value a-var)
 			     (kaptured? #f))
 			  (instantiate::let-var

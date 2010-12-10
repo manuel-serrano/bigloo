@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Mar 16 17:30:27 2010 (serrano)                */
+/*    Last change :  Fri Dec  3 18:18:39 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -425,7 +425,7 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
 	 /* CARE, MS 19 jan 2009: I'm not sure of the cast into  */
 	 /* sockaddr_in and I'm not sure that the h_length       */
 	 /* corresponds to the length of sin_addr.               */
-	 void *d = GC_MALLOC_ATOMIC(  bhp->hp.h_length );
+	 void *d = GC_MALLOC_ATOMIC( bhp->hp.h_length );
 	 memcpy( (unsigned char *)d,
 		 (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
 		 bhp->hp.h_length );

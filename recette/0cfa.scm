@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  7 11:13:48 1993                          */
-;*    Last change :  Wed Dec 26 16:44:47 2007 (serrano)                */
+;*    Last change :  Sat Nov 27 07:43:29 2010 (serrano)                */
 ;*                                                                     */
 ;*    Quelques tests sur la 0cfa                                       */
 ;*=====================================================================*/
@@ -17,6 +17,7 @@
 	    (cfa2 "cfa2.scm"))
    (include "test.sch")
    (export  (test-0cfa)
+	    (cfa-dataflow-error ::obj ::procedure)
 	    sc-vm))
 
 (define-macro (O4)
@@ -114,7 +115,20 @@
              bug))))
 
 (define (sc-vm . action)
-   (+fx 1 (my-fetch-byte 0 (cdr action))))
+   (+fx 1 (my-fetch-byte 1 (cdr action))))
+
+;*---------------------------------------------------------------------*/
+;*    A compilation bug appeared with dataflow analysis                */
+;*---------------------------------------------------------------------*/
+(define (cfa-dataflow-error x e)
+   ((labels ((TAG-1389
+	      (x y)
+	      (if (if (fixnum? x) (fixnum? y) #f)
+		  (-fx x y)
+		  0)))
+       (lambda (E-1391)
+	  (TAG-1389 (car E-1391) (car E-1391))))
+    x))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-l-procedure ...                                             */

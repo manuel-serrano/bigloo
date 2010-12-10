@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Tue Nov 16 14:53:51 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 18:16:38 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -500,7 +500,7 @@
 	    ((#\o) (read-special s *string->opaque*))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
 	    (else  (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
-   
+
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)
 	 (set! *pointer* (+fx *pointer* 1))

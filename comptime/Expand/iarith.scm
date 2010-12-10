@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Fri Mar 10 06:00:51 2006 (serrano)                */
-;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 27 07:16:37 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -222,7 +222,7 @@
        (error #f "Incorrect number of arguments for `+fx'" x))))
 
 ;*---------------------------------------------------------------------*/
-;*    expand--+fx ...                                                  */
+;*    expand---fx ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (expand--fx x e)
    (match-case x

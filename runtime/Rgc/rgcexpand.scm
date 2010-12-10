@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Sun May 30 15:04:33 2010 (serrano)                */
+;*    Last change :  Fri Nov 26 18:59:04 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -164,7 +164,8 @@
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
 		 (rgc-buffer-substring input-port min max)
 		 (error "the-substring"
-			(format "Illegal range `~a'" (the-string))
+			((@ format __r4_output_6_10_3)
+			 "Illegal range `~a'" (the-string))
 			(cons min max))))
 	  ;; @deffn the-escape-substring@
 	  (define (the-escape-substring::bstring min::int max::int strict::bool)
@@ -172,7 +173,8 @@
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
 		 (rgc-buffer-escape-substring input-port min max strict)
 		 (error "the-escape-substring"
-			(format "Illegal range `~a'" (the-string))
+			((@ format __r4_output_6_10_3)
+			 "Illegal range `~a'" (the-string))
 			(cons min max))))
 	  ;; @deffn the-length@
 	  (define (the-length::int)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sun Oct 17 10:05:32 2010 (serrano)                */
+;*    Last change :  Thu Dec  9 21:09:16 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -145,16 +145,17 @@
 	     (set! *modules-table* (make-hashtable 100))
 	     (hashtable-put! *modules-table* id mod))
 	  (let ((old (hashtable-get *modules-table* id)))
-	     (if old 
+	     (if old
 		 (begin
 		    (hashtable-update! *modules-table* id (lambda (v) mod) mod)
-		    (let ((msg (string-append "Module redefinition `"
-					      (symbol->string id)
-					      "'. Previous \""
-					      (%evmodule-path old)
-					      "\", new (ignored) \""
-					      path "\"")))
-		       (warning/loc loc msg)))
+		    (unless (string=? (%evmodule-path old) path)
+		       (let ((msg (string-append "Module redefinition `"
+						 (symbol->string id)
+						 "'. Previous \""
+						 (%evmodule-path old)
+						 "\", new (ignored) \""
+						 path "\"")))
+			  (warning/loc loc msg))))
 		 (hashtable-put! *modules-table* id mod))))
       (mutex-unlock! *modules-mutex*)
       mod))
@@ -179,7 +180,8 @@
 ;*    eval-find-module ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (eval-find-module id)
-   (hashtable-get *modules-table* id))
+   (when (hashtable? *modules-table*)
+      (hashtable-get *modules-table* id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-find-global ...                                         */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Oct 22 16:33:59 2010 (serrano)                */
+;*    Last change :  Sun Dec  5 08:04:15 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -114,15 +114,18 @@
 ;*    byte-code-evaluate ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-evaluate eexp env loc)
-   (let ((cexp (evcompile eexp '() env 'nowhere #f
-			  (<fx (bigloo-debug) 3)
-			  loc #t #t)))
+   (let ((cexp (evcompile eexp '() env '_ #f loc #t #t)))
       (evmeaning cexp '() (current-dynamic-env))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-evaluate ...                                             */
+;*    -------------------------------------------------------------    */
+;*    DEFAULT-EVALUATE is very special. It must be explicitly typed    */
+;*    as obj because since eval in called by evprimop before the eval  */
+;*    module is initialized, the type of the variable must not         */
+;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-(define default-evaluate byte-code-evaluate)
+(define default-evaluate::obj byte-code-evaluate)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
@@ -152,10 +155,7 @@
 ;*    eval ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (eval exp #!optional (env (default-environment)))
-   (let ((evaluate (if (procedure? default-evaluate)
-		       default-evaluate
-		       byte-code-evaluate)))
-      (eval/expander exp env expand evaluate)))
+   (eval/expander exp env expand default-evaluate))
  
 ;*---------------------------------------------------------------------*/
 ;*    eval! ...                                                        */
@@ -197,7 +197,7 @@
    (let* ((loc (get-source-location exp))
 	  (sexp  (if (procedure? *user-pass*) (*user-pass* exp) exp)))
       (obj->string
-       (evcompile (expand sexp) '() env 'nowhere #f #t loc #f #t))))
+       (evcompile (expand sexp) '() env '_ #t loc #f #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    byte-code-run ...                                                */

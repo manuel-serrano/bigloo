@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:02:51 1996                          */
-;*    Last change :  Sat Jul  7 08:45:54 2001 (serrano)                */
-;*    Copyright   :  1996-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 26 18:44:20 2010 (serrano)                */
+;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Loosing approximations means values are going outside.           */
 ;*    Toping approximations means add top the sets.                    */
@@ -50,7 +50,7 @@
 ;*    global-loose! ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    Global variable are not allowed to hold optimized procedure      */
-;*    because due to the module compilation we can ensure that         */
+;*    because due to the module compilation we can't ensure that       */
 ;*    the global variable is initialized and then, we always need      */
 ;*    to type check it (which cannot be performed with optimized       */
 ;*    procedures).                                                     */

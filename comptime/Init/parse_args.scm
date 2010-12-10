@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Nov 26 08:31:53 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 16:57:56 2010 (serrano)                */
 ;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -435,6 +435,10 @@
        (set! *optim-dataflow-for-errors?* #t))
       (("-fno-dataflow-for-errors" (help "Disable dataflow optimizations for improviing type error messages"))
        (set! *optim-dataflow-for-errors?* #f))
+      (("-fdataflow-types" (help "Enable type dataflow optimizations (enabled from -O2)"))
+       (set! *optim-dataflow-types?* #t))
+      (("-fno-dataflow-types" (help "Disable type dataflow optimizations"))
+       (set! *optim-dataflow-types?* #f))
       ;; O macro
       (("-fO-macro" (help "Enable Optimization macro (default)"))
        (set! *optim-O-macro?* #t))
@@ -847,6 +851,8 @@
        (set! *pass* 'abound))
       (("-dataflow" (help "Stop after the type dataflow stage"))
        (set! *pass* 'dataflow))
+      (("-dataflow+" (help "Stop after the second type dataflow stage"))
+       (set! *pass* 'dataflow+))
       (("-fuse" (help "Stop after the fuse stage"))
        (set! *pass* 'fuse)) 
       (("-user" (help "Stop after the user pass"))
@@ -1160,7 +1166,8 @@
       (set! *optim-jvm-branch* 3)
       (set! *optim-jvm-fasteq* #t)
       (set! *optim-reduce-beta?* #t)
-      (set! *optim-cfa-flonum-arithmetic?* #t))
+      (set! *optim-cfa-flonum-arithmetic?* #t)
+      (set! *optim-dataflow-types?* #t))
    (define (-O3!)
       (-O2!)
       (set! *optim-jvm-inlining* 3)

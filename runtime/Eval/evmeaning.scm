@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Thu Jul 29 17:57:50 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 11:32:03 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -752,7 +752,7 @@
 		  ((correct-arity? ehandler 1)
 		   (with-handler ehandler (evmeaning body stack denv)))
 		  (else
-		   (evmeaning-arity-error handler "with-handler" 1 ehandler)))))
+		   (evmeaning-arity-error handler "with-handler" 1 ($procedure-arity ehandler))))))
 	   ((131)
 	    ;; tailcall 0
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))

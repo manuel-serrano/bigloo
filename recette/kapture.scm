@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Sun Oct 17 08:11:07 2010 (serrano)                */
+;*    Last change :  Mon Nov 29 07:41:59 2010 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -134,6 +134,22 @@
 	  (error 'read-models "Cannot open file" file9))))
 
 ;*---------------------------------------------------------------------*/
+;*    dataflow ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (dataflow l)
+   (let ((x (cons 2 l)))
+      (letrec ((f1 (lambda ()
+		      (set! x '#(2))))
+	       (f2 (lambda ()
+		      (if (pair? x)
+			  (begin
+			     (f1)
+			     (if (pair? x)
+				 (car x)
+				 (vector-ref x 0)))))))
+	 (f2))))
+   
+;*---------------------------------------------------------------------*/
 ;*    test-kapture ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (test-kapture)
@@ -144,4 +160,5 @@
 			  (gen-sym 'a)) 'a1)
    (test "side-effect" (kapture:test) 2)
    (test "nesting" ((plante-7 7)) 7)
-   (test "nesting" (plante-8 8) 8))
+   (test "nesting" (plante-8 8) 8)
+   (test "dataflow" (dataflow '(1)) 2))

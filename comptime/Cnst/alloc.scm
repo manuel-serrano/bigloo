@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sun Oct 17 06:47:04 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 10:04:17 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -50,7 +50,7 @@
 	    (cnst-alloc-real::node ::real <loc>)
 	    (cnst-alloc-elong::node ::elong <loc>)
 	    (cnst-alloc-llong::node ::llong <loc>)
-	    (cnst-alloc-list::node <list> <loc>)
+	    (cnst-alloc-list::node ::pair-nil <loc>)
 	    (cnst-alloc-vector::node ::vector <loc>)
 	    (cnst-alloc-homogenous-vector::node ::obj <loc>)
 	    (cnst-alloc-struct::node ::struct <loc>)
@@ -220,7 +220,7 @@
 	     (hashtable-put! *string-env* string (cnst-info string var)))
 	 (instantiate::var
 	    (loc loc)
-	    (type (variable-type var))
+	    (type *bstring*)
 	    (variable var))))
    (let ((old (and *shared-cnst?* (hashtable-get *string-env* string))))
       (cond
@@ -326,12 +326,12 @@
 	     ((variable? (cnst-info-offset old))
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     ((eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     (else
 	      (make-cnst-table-ref (cnst-info-offset old) loc))))
@@ -388,7 +388,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type *keyword*)
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((or (eq? *init-mode* 'lib)
@@ -421,12 +421,12 @@
 	     ((variable? (cnst-info-offset (cdr old)))
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (variable-type (cnst-info-offset (cdr old))))
 		 (variable (cnst-info-offset (cdr old)))))
 	     ((eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (variable-type (cnst-info-offset (cdr old))))
 		 (variable (cnst-info-offset (cdr old)))))
 	     (else
 	      (make-cnst-table-ref (cnst-info-offset (cdr old)) loc))))
@@ -618,7 +618,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (variable-type (cnst-info-offset old)))
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((eq? *init-mode* 'lib)
@@ -718,7 +718,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (variable-type (cnst-info-offset old)))
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((eq? *init-mode* 'lib)
@@ -816,7 +816,7 @@
 	     (if (eq? *init-mode* 'lib)
 		 (instantiate::var
 		    (loc loc)
-		    (type (get-default-type))
+		    (type (variable-type (cnst-info-offset old)))
 		    (variable (cnst-info-offset old)))
 		 (make-cnst-table-ref (cnst-info-offset old) loc)))
 	    ((eq? *init-mode* 'lib)
@@ -928,7 +928,7 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (variable-type (cnst-info-offset old)))
 		 (variable (cnst-info-offset old)))
 	      (make-cnst-table-ref (cnst-info-offset old) loc)))
 	 ((eq? *init-mode* 'lib)

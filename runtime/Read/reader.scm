@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Fri Jul 30 09:29:49 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 11:39:47 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -196,7 +196,7 @@
 		       (laap (+fx i 1)))
 		    obj))))
 	 ((struct? obj)
-	  (let ((len (vector-length obj)))
+	  (let ((len (struct-length obj)))
 	     (let laap ((i 0))
 		(if (<fx i len)
 		    (begin

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Nov 20 05:57:30 2010 (serrano)                */
+#*    Last change :  Fri Dec 10 08:33:05 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2016,7 +2016,13 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   longjmp="$prefix"longjmp
 
   if [ "$prefix" = "sig" ]; then
-    setjmp="sigsetjmp(__jb,1)";
+    # MS 10 dec 2010: used to be: setjmp="sigsetjmp(__jb,1)";
+    # I don't think signal have to be saved/restore thus we switched
+    # to not restoring them. Switching from 0 to 1 significantly improve
+    # the performance of BIND-EXIT (and thus UNWIND-PROTECT). This 
+    # dramatically impacts the performance of the new evaluator (BPS) on
+    # benchmarks such as peval.scm
+    setjmp="sigsetjmp(__jb,0)";
     jmpbuf=sigjmp_buf
   else
     setjmp="$setjmp(__jb)";

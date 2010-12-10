@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun May 30 08:00:57 2010 (serrano)                */
+;*    Last change :  Sun Nov 28 11:36:33 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -751,7 +751,7 @@
 	   (let* ((fy ($elong->flonum y))
 		  (ly ($flonum->llong fy)))
 	      (if (=llong (remainderllong x ly) #l0)
-		  (/llong x y)
+		  (/llong x ly)
 		  (/fl ($llong->flonum x) fy))))
 	  ((llong? y)
 	   (if (=llong (remainderllong x y) #l0)
@@ -759,7 +759,7 @@
 	       (/fl ($llong->flonum x) ($llong->flonum y))))
 	  ((bignum? y)
 	   (multiple-value-bind (q r)
-	      ($divrembx x (llong->bignum x))
+	      ($divrembx (llong->bignum x) y)
 	      (if (zerobx? r)
 		  q
 		  (/fl ($llong->flonum x) (bignum->flonum y)))))
