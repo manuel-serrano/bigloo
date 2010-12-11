@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec 10 17:05:12 2010 (serrano)                */
+/*    Last change :  Sat Dec 11 07:01:18 2010 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1391,7 +1391,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_SET_TOP_OF_FRAME( env, _top ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env ) = (_top))
 
-#define BGL_ENV_PUSH_TRACE_LOCATION( env, nm, loc ) \
+#define BGL_ENV_PUSH_TRACE( env, nm, loc ) \
    struct bgl_dframe bgl_dframe; \
    struct bgl_dframe *bgl_link; \
     \
@@ -1400,8 +1400,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    bgl_link = bgl_dframe.link = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    BGL_ENV_SET_TOP_OF_FRAME( env, &bgl_dframe );      
    
-#define BGL_ENV_PUSH_TRACE( env, name ) \
-   BGL_ENV_PUSH_TRACE_LOCATION( env, name, BUNSPEC )
+#define BGL_ENV_PUSH_TRACE_NAME( env, name ) \
+   BGL_ENV_PUSH_TRACE( env, name, BUNSPEC )
    
 #define BGL_ENV_POP_TRACE( env ) \
    BGL_ENV_SET_TOP_OF_FRAME( env, bgl_link );
@@ -1412,24 +1412,14 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_SET_TRACE_LOCATION( env, loc ) \
    (BGL_ENV_GET_TOP_OF_FRAME( env )->location = loc)
 
-#define PUSH_TRACE_LOCATION( nm, loc ) \
+#define BGL_PUSH_TRACE( nm, loc ) \
    obj_t bgl_denv = BGL_CURRENT_DYNAMIC_ENV(); \
-   BGL_ENV_PUSH_TRACE_LOCATION( bgl_denv, nm, loc )
+   BGL_ENV_PUSH_TRACE( bgl_denv, nm, loc )
+
+#define BGL_PUSH_TRACE_LOCATION PUSH_TRACE
    
-#define PUSH_TRACE( name ) \
-   PUSH_TRACE_LOCATION( name, BUNSPEC )
-   
-#define POP_TRACE() \
+#define BGL_POP_TRACE() \
    BGL_ENV_POP_TRACE( bgl_denv )
-   
-#define SET_TRACE_NAME( name ) \
-   BGL_ENV_SET_TRACE_NAME( BGL_CURRENT_DYNAMIC_ENV(), name )
-
-#define SET_TRACE_LOCATION( loc ) \
-   BGL_ENV_SET_TRACE( BGL_CURRENT_DYNAMIC_ENV(), loc )
-
-#define GET_TRACE() \
-   BREF( BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() ) )
 
 /* after a bind-exit, we must reset the current trace */
 /* See cgen/emit-cop.scm and SawC/code.scm            */

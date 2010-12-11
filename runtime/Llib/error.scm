@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Dec 10 17:49:02 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 08:33:21 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -24,15 +24,12 @@
 	    (export c-debugging-show-type "bgl_show_type")
 	    
 	    ($get-trace-stack::pair-nil (::int) "get_trace_stack")
-	    (macro $push-trace::obj (::obj) "PUSH_TRACE")
-	    (macro $push-trace-location::obj (::obj ::obj) "PUSH_TRACE_LOCATION")
-	    (macro $set-trace-name::obj (::obj) "SET_TRACE_NAME")
-	    (macro $pop-trace::obj () "POP_TRACE")
-	    (macro $env-push-trace::obj (::dynamic-env ::obj) "BGL_ENV_PUSH_TRACE_NAME")
-	    (macro $env-push-trace-location::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE_LOCATION")
+	    (macro $push-trace::obj (::obj ::obj) "BGL_PUSH_TRACE")
+	    (macro $env-push-trace::obj (::dynamic-env ::obj ::obj) "BGL_ENV_PUSH_TRACE")
 	    (macro $env-set-trace-name::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_NAME")
 	    (macro $env-set-trace-location::obj (::dynamic-env ::obj) "BGL_ENV_SET_TRACE_LOCATION")
 	    (macro $env-pop-trace::obj (::dynamic-env) "BGL_ENV_POP_TRACE")
+	    (macro $pop-trace::obj () "BGL_POP_TRACE")
 	    (macro $get-error-handler::obj () "BGL_ERROR_HANDLER_GET")
 	    (macro $set-error-handler!::void (::obj) "BGL_ERROR_HANDLER_SET")
 	    (macro $get-uncaught-exception-handler::obj () "BGL_UNCAUGHT_EXCEPTION_HANDLER_GET")
@@ -71,18 +68,14 @@
 	    (class foreign
 	       (method static $get-trace-stack::pair-nil (::int)
 		       "get_trace_stack")
-	       (method static $push-trace::obj (::obj)
+	       (method static $push-trace::obj (::obj ::obj)
 		       "PUSH_TRACE")
-	       (method static $push-trace-location::obj (::obj ::obj)
-		       "PUSH_TRACE_LOCATION")
 	       (method static $set-trace-name::obj (::obj)
 		       "SET_TRACE_NAME")
 	       (method static $pop-trace::obj ()
 		       "POP_TRACE")
-	       (method static $env-push-trace::obj (::dynamic-env ::obj)
+	       (method static $env-push-trace::obj (::dynamic-env ::obj ::obj)
 		       "BGL_ENV_PUSH_TRACE")
-	       (method static $env-push-trace-location::obj (::dynamic-env ::obj ::obj)
-		       "BGL_ENV_PUSH_TRACE_LOCATION")
 	       (method static $env-set-trace-name::obj (::dynamic-env ::obj)
 		       "BGL_ENV_SET_TRACE_NAME")
 	       (method static $env-set-trace-location::obj (::dynamic-env ::obj)
@@ -776,7 +769,7 @@
 		 (begin
 		    (display (cadr (cdr frame)) port)
 		    (display "@" port)
-		    (display (caddr (cdr frame))) port)))))
+		    (display (caddr (cdr frame)) port))))))
       (newline port))
 
    (when (pair? stack)

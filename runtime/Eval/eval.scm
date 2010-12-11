@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun Dec  5 08:04:15 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 06:40:15 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -114,8 +114,14 @@
 ;*    byte-code-evaluate ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-evaluate eexp env loc)
-   (let ((cexp (evcompile eexp '() env '_ #f loc #t #t)))
-      (evmeaning cexp '() (current-dynamic-env))))
+   (let ((cexp (evcompile eexp '() env '_ #f loc #t #t))
+	 (denv::dynamic-env (current-dynamic-env)))
+      (let ()
+	 ;; it is needed to protect the stack trace frame of the caller
+	 ($env-push-trace denv #unspecified #unspecified)
+	 (let ((tmp (evmeaning cexp '() denv)))
+	    ($env-pop-trace denv)
+	    tmp))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-evaluate ...                                             */

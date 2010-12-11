@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Dec 10 16:39:13 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 08:08:46 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -235,19 +235,23 @@
 	  (taux (make-typed-ident aux (type-id type)))
 	  (tmp1 (mark-symbol-non-user! (gensym 'name)))
 	  (tmp2 (mark-symbol-non-user! (gensym 'loc)))
+	  (tmp3 (mark-symbol-non-user! (gensym 'env)))
 	  (sym  (if (and (pair? stack) (variable? (car stack)))
 		    (symbol-append symbol ': (variable-id (car stack)))
 		    symbol))
 	  (l    (when (location? loc)
 		   `(at ,(location-fname loc) ,(location-pos loc))))
 	  (exp `(let ((,tmp1 ',sym)
-		      (,tmp2 ',l))
+		      (,tmp2 ',l)
+		      (,(make-typed-ident tmp3 'dynamic-env) (current-dynamic-env)))
 		   (let ()
-		      ($push-trace-location ,tmp1 ,tmp2)
+		      ($env-push-trace ,tmp3 ,tmp1 ,tmp2)
 		      (let ((,taux ,node))
 			 ,(if (location? lloc)
-			      (econs '$pop-trace '() lloc)
-			      '($pop-trace))
+			      (econs '$env-pop-trace
+				     (econs tmp3 '() lloc)
+				     lloc)
+			      `($env-pop-trace ,tmp3))
 			 ,aux))))
 	  (nnode (sexp->node exp '() loc 'value)))
       (let-var-removable?-set! nnode (backend-remove-empty-let (the-backend)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Dec 10 17:11:37 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 06:39:26 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -89,6 +89,11 @@
 	   (set! *saw-register-allocation?* #t)
 	   (set! *saw-register-allocation-max-size* 8000)))
 
+;*---------------------------------------------------------------------*/
+;*    $env-set-trace-location :: ...                                   */
+;*---------------------------------------------------------------------*/
+;* (define-macro ($env-set-trace-location . l)                         */
+;*    #unspecified)                                                    */
 
 ;*---------------------------------------------------------------------*/
 ;*    case-bounce ...                                                  */
@@ -402,7 +407,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning !b !s !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -431,7 +436,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning !b (cons x !s) !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -459,7 +464,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
@@ -487,7 +492,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning !b
 					       (cons x
 						     (cons y
@@ -519,7 +524,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)	
+			 ($env-push-trace !denv where loc)	
 			 (let ((res (evmeaning
 				     !b
 				     (cons x
@@ -555,7 +560,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning !b (cons x !s) !denv)))
 			    ($env-pop-trace !denv)
 			    res))))
@@ -583,7 +588,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((r (evmeaning !b (cons x (cons y !s)) !denv)))
 			    ($env-pop-trace !denv)
 			    r))))
@@ -611,7 +616,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning !b
 					       (cons x
 						     (cons y
@@ -645,7 +650,7 @@
 			 (!s stack)
 			 (!denv::dynamic-env (current-dynamic-env)))
 		      (let ()
-			 ($env-push-trace-location !denv where loc)
+			 ($env-push-trace !denv where loc)
 			 (let ((res (evmeaning
 				     !b
 				     (cons x
@@ -1065,7 +1070,8 @@
    (let* ((envd (evmeaning-procedure-stack fun))
 	  (arity (evmeaning-procedure-args fun)))
       (when (symbol? (evcode-ref code 0))
-	 ($set-trace-name (evcode-ref code 0)))
+	 ($env-set-trace-name denv (evcode-ref code 0))
+	 ($env-set-trace-location denv (evcode-loc code)))
       (case arity
 	 ((0)
 	  envd)
@@ -1083,7 +1089,8 @@
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
 	 (when (symbol? (evcode-ref code 0))
-	    ($set-trace-name (evcode-ref code 0)))
+	    ($env-set-trace-name denv (evcode-ref code 0))
+	    ($env-set-trace-location denv (evcode-loc code)))
 	 (case arity
 	    ((1)
 	     (cons a0 envd))
@@ -1104,7 +1111,8 @@
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
 	 (when (symbol? (evcode-ref code 0))
-	    ($set-trace-name (evcode-ref code 0)))
+	    ($env-set-trace-name denv (evcode-ref code 0))
+	    ($env-set-trace-location denv (evcode-loc code)))
 	 (case arity
 	    ((2)
 	     (cons a0 (cons a1 envd)))
@@ -1128,7 +1136,8 @@
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
 	 (when (symbol? (evcode-ref code 0))
-	    ($set-trace-name (evcode-ref code 0)))
+	    ($env-set-trace-name denv (evcode-ref code 0))
+	    ($env-set-trace-location denv (evcode-loc code)))
 	 (case arity
 	    ((3)
 	     (cons a0 (cons a1 (cons a2 envd))))
@@ -1155,7 +1164,8 @@
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun)))
 	 (when (symbol? (evcode-ref code 0))
-	    ($set-trace-name (evcode-ref code 0)))
+	    ($env-set-trace-name denv (evcode-ref code 0))
+	    ($env-set-trace-location denv (evcode-loc code)))
 	 (case arity
 	    ((4)
 	     (cons a0 (cons a1 (cons a2 (cons a3 envd)))))
@@ -1200,7 +1210,7 @@
 		       (!s stack)
 		       (!denv::dynamic-env (current-dynamic-env)))
 		    (let ()
-		       ($env-push-trace-location !denv where loc)
+		       ($env-push-trace !denv where loc)
 		       (let ((e2 (evmeaning-push-fxargs where code x lf !s)))
 			  (let ((res (evmeaning !b e2 !denv)))
 			     ($env-pop-trace !denv)
@@ -1219,7 +1229,7 @@
 		       (!s stack)
 		       (!denv::dynamic-env (current-dynamic-env)))
 		    (let ()
-		       ($env-push-trace-location !denv where loc)
+		       ($env-push-trace !denv where loc)
 		       (let ((e2 (evmeaning-push-vaargs where code x lf !s)))
 			  (let ((res (evmeaning !b e2 !denv)))
 			     ($env-pop-trace !denv)

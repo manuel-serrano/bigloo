@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Oct 22 18:34:29 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 09:11:17 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -79,7 +79,7 @@
 				    (symbol-append '& name)
 				    (gensym '&pthread-))))
 			 (let ()
-			    ($push-trace id)
+			    ($push-trace id #unspecified)
 			    ($set-uncaught-exception-handler!
 			     (lambda (val)
 				(error (format "unwind-until!, ~a" o)

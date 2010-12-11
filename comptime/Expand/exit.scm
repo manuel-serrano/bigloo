@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Fri Dec 10 16:20:22 2010 (serrano)                */
+;*    Last change :  Sat Dec 11 06:44:59 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -181,7 +181,7 @@
 		`(let ((,tmp1 'with-handler)
 		       (,tmp2 ',location))
 		    (let ()
-		       ($push-trace-location ,tmp1 ,tmp2)
+		       ($push-trace ,tmp1 ,tmp2)
 		       (let ((,vid ,body))
 			  ,(econs '$pop-trace '() loc)
 			  ,vid))))

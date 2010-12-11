@@ -4262,13 +4262,7 @@ public final class foreign
    // CARE
    public static final procedure BIGLOO_EXIT_ENV = new procedure();
 
-   public static Object PUSH_TRACE(Object o)
-      {
-	 new stack_trace(o);
-	 return unspecified.unspecified;
-      }
-
-   public static Object PUSH_TRACE_LOCATION(Object o, Object l)
+   public static Object PUSH_TRACE(Object o, Object l)
       {
 	 new stack_trace(o,l);
 	 return unspecified.unspecified;
@@ -4285,13 +4279,7 @@ public final class foreign
 	 return stack_trace.pop_trace();
       }
 
-   public static Object BGL_ENV_PUSH_TRACE(bgldynamic env, Object o)
-      {
-	 new stack_trace(o);
-	 return unspecified.unspecified;
-      }
-
-   public static Object BGL_ENV_PUSH_TRACE_LOCATION(bgldynamic env, Object o, Object l)
+   public static Object BGL_ENV_PUSH_TRACE(bgldynamic env, Object o, Object l)
       {
 	 new stack_trace(o,l);
 	 return unspecified.unspecified;
