@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sat Dec 11 08:08:46 2010 (serrano)                */
+;*    Last change :  Sun Dec 12 10:27:31 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -19,6 +19,7 @@
    (import  tools_shape
 	    tools_error
 	    tools_misc
+	    tools_location
 	    type_env
 	    backend_backend
 	    ast_sexp
@@ -240,7 +241,7 @@
 		    (symbol-append symbol ': (variable-id (car stack)))
 		    symbol))
 	  (l    (when (location? loc)
-		   `(at ,(location-fname loc) ,(location-pos loc))))
+		   `(at ,(location-full-fname loc) ,(location-pos loc))))
 	  (exp `(let ((,tmp1 ',sym)
 		      (,tmp2 ',l)
 		      (,(make-typed-ident tmp3 'dynamic-env) (current-dynamic-env)))

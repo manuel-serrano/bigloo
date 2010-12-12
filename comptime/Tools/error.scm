@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sat Apr 30 08:10:49 2005 (serrano)                */
-;*    Copyright   :  1994-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Dec 12 14:52:58 2010 (serrano)                */
+;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
@@ -60,7 +60,7 @@
 (define (user-warning/location loc proc mes obj)
    (if (not (location? loc))
        (warning proc mes " -- " obj)
-       (warning/location (location-fname loc)
+       (warning/location (location-full-fname loc)
 			 (location-pos loc)
 			 proc
 			 mes
@@ -95,7 +95,7 @@
 	  (if (location? loc)
 	      (error-notify (duplicate::&error e
 			       (proc (or p proc))
-			       (fname (location-fname loc))
+			       (fname (location-full-fname loc))
 			       (location (location-pos loc))))
 	      (error-notify e)))))
 
@@ -142,7 +142,7 @@
 		   (exit 1)))
 	    (lambda ()
 	       (if (location? loc)
-		   (let ((fname (location-fname loc))
+		   (let ((fname (location-full-fname loc))
 			 (pos (location-pos loc)))
 		      (error/location proc msg obj-prn fname pos))
 		   (error proc msg obj-prn)))))))

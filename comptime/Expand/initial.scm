@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Mon Oct 18 08:25:18 2010 (serrano)                */
+;*    Last change :  Sun Dec 12 14:51:46 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -128,7 +128,7 @@
 		      (error/c-location ,(e l1 e)
 					,(e l2 e)
 					,(e l3 e)
-					,(location-fname loc)
+					,(location-full-fname loc)
 					,(location-pos loc))
 		      (error #f #f #f)))
 		 ((?- . ?list)
@@ -141,7 +141,7 @@
     (lambda (x::obj e::procedure)
        (let ((loc (find-location x)))
 	  (if (and (location? loc) *error-localization*)
-	      `(warning/c-location ,(location-fname loc)
+	      `(warning/c-location ,(location-full-fname loc)
 				   ,(location-pos loc)
 				   ,@(map (lambda (l) (e l e))
 					  (cdr x)))
@@ -1086,7 +1086,7 @@
        `((@ error/location  __error) ',proc
 				     ,msg
 				     ,obj
-				     ,(location-fname loc)
+				     ,(location-full-fname loc)
 				     ,(location-pos loc))
        `((@ error  __error) ',proc ,msg ,obj)))
    

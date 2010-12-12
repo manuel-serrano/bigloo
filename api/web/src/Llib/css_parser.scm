@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Tue Nov 23 19:14:28 2010 (serrano)                */
+;*    Last change :  Sun Dec 12 11:16:00 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -396,6 +396,8 @@
       (operator
        ((SLASH S*) "/")
        ((COMMA S*) ",")
+       ((* S*) "+")
+       ((- S*) "-")
        ((= S*) "="))
       
       (term

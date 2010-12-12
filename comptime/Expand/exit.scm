@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Sat Dec 11 06:44:59 2010 (serrano)                */
+;*    Last change :  Sun Dec 12 14:52:41 2010 (serrano)                */
 ;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -174,12 +174,12 @@
 	 (if (and (location? loc)
 		  (>fx (bigloo-compiler-debug) 0)
 		  (backend-trace-support (the-backend)))
-	     (let ((location `(at ,(location-fname loc) ,(location-pos loc)))
+	     (let ((loc `(at ,(location-full-fname loc) ,(location-pos loc)))
 		   (vid (gensym))
 		   (tmp1 (mark-symbol-non-user! (gensym 'name)))
 		   (tmp2 (mark-symbol-non-user! (gensym 'loc))))
 		`(let ((,tmp1 'with-handler)
-		       (,tmp2 ',location))
+		       (,tmp2 ',loc))
 		    (let ()
 		       ($push-trace ,tmp1 ,tmp2)
 		       (let ((,vid ,body))

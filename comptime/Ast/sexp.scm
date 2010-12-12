@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Oct 20 09:09:45 2010 (serrano)                */
+;*    Last change :  Sun Dec 12 14:52:01 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -717,7 +717,7 @@
 		   (car pref)
 		   "anonymous")))
       (if (location? loc)
-	  (let ((file (location-fname loc))
+	  (let ((file (location-full-fname loc))
 		(line (location-lnum loc))
 		(base (symbol->string (gensym (string-append "<" pref ":")))))
 	     (cond
