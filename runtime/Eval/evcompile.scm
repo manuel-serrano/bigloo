@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Dec 10 17:03:16 2010 (serrano)                */
+;*    Last change :  Mon Dec 13 11:05:09 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -726,6 +726,20 @@
 ;*    evcompile-letrec ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-letrec bindings body env genv where tail loc lkp)
+   (if (every? (lambda (x)
+		  (and (pair? x)
+		       (pair? (cadr x))
+		       (eq? (car (cadr x)) 'lambda)))
+	       bindings)
+       ;; this letrec only binds functions, compile it efficiently
+       (evcompile-letrec-lambda bindings body env genv where tail loc lkp)
+       ;; a generic letrec with the intermediate variables
+       (evcompile-letrec-generic bindings body env genv where tail loc lkp)))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-letrec-lambda ...                                      */
+;*---------------------------------------------------------------------*/
+(define (evcompile-letrec-lambda bindings body env genv where tail loc lkp)
    (let* ((env2 (extend-env (map (lambda (i) (untype-ident (car i))) bindings)
 			    env))
 	  (b (evcompile body env2 genv where tail loc lkp #f))
@@ -737,6 +751,24 @@
 			 (evcompile (cadr a) env2 genv n #f loc lkp #f)))
 		   bindings))) 
       (evcode 70 loc b as)))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-letrec-generic ...                                     */
+;*---------------------------------------------------------------------*/
+(define (evcompile-letrec-generic bindings body env genv where tail loc lkp)
+   (let* ((aux (map (lambda (x) (gensym)) bindings))
+	  (exp `(let ,(map (lambda (b)
+			      (list (car b) #unspecified))
+			   bindings)
+		   (let ,(map (lambda (n b)
+				 (cons n (cdr b)))
+			      aux bindings)
+		      (begin
+			 ,@(map (lambda (n b)
+				   `(set! ,(car b) ,n))
+				aux bindings)
+			 ,body)))))
+      (evcompile exp env genv where tail loc lkp #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable ...                                                     */

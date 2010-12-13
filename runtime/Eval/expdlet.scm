@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Fri Oct 22 16:20:17 2010 (serrano)                */
+;*    Last change :  Mon Dec 13 11:04:57 2010 (serrano)                */
 ;*    Copyright   :  2004-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
@@ -166,30 +166,38 @@
 			      (nbindings '()))
 		      (cond
 			 ((null? bindings)
+			  ;; since bigloo3.5b the optimization of the
+			  ;; letrec forms are implementation in the
+			  ;; pre-compilation stage.
+;* 			  (let* ((nbindings (reverse! nbindings))      */
+;* 				 (naux (map (lambda (x) (gensym)) nbindings)) */
+;* 				 (ebody (%with-lexical                 */
+;* 					 (bindings->list bindings)     */
+;* 					 (expand-progn body) e #f)))   */
+;* 			     (if (every? (lambda (x)                   */
+;* 					    (and (pair? x)             */
+;* 						 (pair? (cadr x))      */
+;* 						 (eq? (car (cadr x)) 'lambda))) */
+;* 					 nbindings)                    */
+;* 				 ;; all bindings bind lambda form, we  */
+;* 				 ;; can omit intermediate variables    */
+;* 				 `(letrec ,nbindings ,ebody)           */
+;* 				 `(let ,(map (lambda (b)               */
+;* 						(list (car b) #unspecified)) */
+;* 					     nbindings)                */
+;* 				     (let ,(map (lambda (n b)          */
+;* 						   (cons n (cdr b)))   */
+;* 						naux nbindings)        */
+;* 					(begin                         */
+;* 					   ,@(map (lambda (n b)        */
+;* 						     `(set! ,(untype-ident (car b)) ,n)) */
+;* 						  naux nbindings)      */
+;* 					   ,ebody)))))                 */
 			  (let* ((nbindings (reverse! nbindings))
-				 (naux (map (lambda (x) (gensym)) nbindings))
 				 (ebody (%with-lexical
 					 (bindings->list bindings)
 					 (expand-progn body) e #f)))
-			     (if (every? (lambda (x)
-					    (and (pair? x)
-						 (pair? (cadr x))
-						 (eq? (car (cadr x)) 'lambda)))
-					 nbindings)
-				 ;; all bindings bind lambda form, we
-				 ;; can omit intermediate variables
-				 `(letrec ,nbindings ,ebody)
-				 `(let ,(map (lambda (b)
-						(list (car b) #unspecified))
-					     nbindings)
-				     (let ,(map (lambda (n b)
-						   (cons n (cdr b)))
-						naux nbindings)
-					(begin
-					   ,@(map (lambda (n b)
-						     `(set! ,(untype-ident (car b)) ,n))
-						  naux nbindings)
-					   ,ebody))))))
+			     `(letrec ,nbindings ,ebody)))
 			 ((not (pair? (car bindings)))
 			  (loop (cdr bindings)
 				(cons (list (car bindings) #unspecified)
@@ -199,7 +207,7 @@
 			  (error "letrec" "Illegal binding form" x))
 			 (else
 			  (loop (cdr bindings)
-				(cons (list (caar bindings)
+				(cons (list (untype-ident (caar bindings))
 					    (e (expand-progn (cdar bindings)) e))
 				      nbindings))))))
 		  (else
