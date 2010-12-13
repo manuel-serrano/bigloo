@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Sat Sep  5 06:22:47 2009 (serrano)                */
-#*    Copyright   :  2007-09 Manuel Serrano                            */
+#*    Last change :  Mon Dec 13 13:46:03 2010 (serrano)                */
+#*    Copyright   :  2007-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstream is available.                                   */
 #*=====================================================================*/
@@ -73,6 +73,7 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
+#include <glib.h>
 #include <gst/gst.h>
 
 GstElement *pipeline, *source, *parser, *decoder, *conv, *sink;
