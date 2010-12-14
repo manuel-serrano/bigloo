@@ -620,7 +620,7 @@ diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
        GC_is_full_gc = FALSE;
 diff -Naur gc-7.2alpha4.orig/configure gc-7.2alpha4/configure
 --- gc-7.2alpha4.orig/configure	2009-12-01 21:34:24.000000000 +0100
-+++ gc-7.2alpha4/configure	2010-12-14 07:55:52.000000000 +0100
++++ gc-7.2alpha4/configure	2010-12-14 08:23:22.000000000 +0100
 @@ -15122,12 +15122,16 @@
  $as_echo "no" >&6; } ;;
  esac
@@ -642,21 +642,29 @@ diff -Naur gc-7.2alpha4.orig/configure gc-7.2alpha4/configure
  
  
  # Check whether --enable-gcj-support was given.
-@@ -15262,7 +15266,13 @@
+@@ -15260,11 +15264,17 @@
+   enableval=$enable_atomic_uncollectable;
+ fi
  
- if test x"$enable_atomic_uncollectible" != x"no"; then
- 
+-if test x"$enable_atomic_uncollectible" != x"no"; then
+-
 -$as_echo "#define ATOMIC_UNCOLLECTABLE 1" >>confdefs.h
+-
+-fi
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo start (14 dec 2010)                                       */
 +#*---------------------------------------------------------------------*/
++#if test x"$enable_atomic_uncollectible" != x"no"; then
++
 +#$as_echo "#define ATOMIC_UNCOLLECTABLE 1" >>confdefs.h
++
++#fi
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo stop (14 dec 2010)                                        */
 +#*---------------------------------------------------------------------*/
  
- fi
- 
+ # Check whether --enable-redirect-malloc was given.
+ if test "${enable_redirect_malloc+set}" = set; then :
 diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
 --- gc-7.2alpha4.orig/configure.ac	2009-12-01 21:34:24.000000000 +0100
 +++ gc-7.2alpha4/configure.ac	2010-12-14 07:57:46.000000000 +0100
@@ -1446,8 +1454,8 @@ diff -Naur gc-7.2alpha4.orig/configure.ac~ gc-7.2alpha4/configure.ac~
 +AC_OUTPUT
 diff -Naur gc-7.2alpha4.orig/configure~ gc-7.2alpha4/configure~
 --- gc-7.2alpha4.orig/configure~	1970-01-01 01:00:00.000000000 +0100
-+++ gc-7.2alpha4/configure~	2009-12-01 21:34:24.000000000 +0100
-@@ -0,0 +1,18191 @@
++++ gc-7.2alpha4/configure~	2010-12-14 07:55:52.000000000 +0100
+@@ -0,0 +1,18201 @@
 +#! /bin/sh
 +# From configure.ac Revision: 1.57 .
 +# Guess values for system-dependent variables and create Makefiles.
@@ -16572,12 +16580,16 @@ diff -Naur gc-7.2alpha4.orig/configure~ gc-7.2alpha4/configure~
 +$as_echo "no" >&6; } ;;
 +esac
 +
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (14 dec 2010)                                       */
++#*---------------------------------------------------------------------*/
++#$as_echo "#define NO_EXECUTE_PERMISSION 1" >>confdefs.h
 +
-+$as_echo "#define NO_EXECUTE_PERMISSION 1" >>confdefs.h
 +
-+
-+$as_echo "#define ALL_INTERIOR_POINTERS 1" >>confdefs.h
-+
++#$as_echo "#define ALL_INTERIOR_POINTERS 1" >>confdefs.h
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (14 dec 2010)                                        */
++#*---------------------------------------------------------------------*/
 +
 +
 +# Check whether --enable-gcj-support was given.
@@ -16712,7 +16724,13 @@ diff -Naur gc-7.2alpha4.orig/configure~ gc-7.2alpha4/configure~
 +
 +if test x"$enable_atomic_uncollectible" != x"no"; then
 +
-+$as_echo "#define ATOMIC_UNCOLLECTABLE 1" >>confdefs.h
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (14 dec 2010)                                       */
++#*---------------------------------------------------------------------*/
++#$as_echo "#define ATOMIC_UNCOLLECTABLE 1" >>confdefs.h
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (14 dec 2010)                                        */
++#*---------------------------------------------------------------------*/
 +
 +fi
 +
