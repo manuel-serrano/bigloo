@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Tue Sep 21 15:41:38 2010 (serrano)                */
+/*    Last change :  Tue Dec 14 18:07:25 2010 (serrano)                */
 /*    Copyright   :  2007-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */

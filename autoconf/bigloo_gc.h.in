@@ -55,6 +55,13 @@
        extern void GC_profile_start();
 #    endif
 #  endif
+
+#if( BGL_GC_VERSION < 720 )
+#  define GC_NO_INTERIOR_POINTERS() 0
+#else
+#  define GC_NO_INTERIOR_POINTERS() GC_set_all_interior_pointers( 0 )
+#endif
+
 #  undef GC_MALLOC
 #  undef GC_MALLOC_ATOMIC
 #  undef GC_MALLOC_UNCOLLECTABLE
@@ -119,7 +126,8 @@
 #  endif
 
 #  define INIT_ALLOCATION( size ) \
-     ( GC_init(), \
+     ( GC_NO_INTERIOR_POINTERS(), \
+       GC_init(), \
        GC_expand_hp( size ), \
        STRUCT_DISPLACEMENT(), \
        PAIR_DISPLACEMENT(), \

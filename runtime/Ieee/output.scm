@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Sep  7 19:35:00 2010 (serrano)                */
+;*    Last change :  Tue Dec 14 15:10:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -407,6 +407,46 @@
 		       (print-flat-list (cdr l) p)))))
 	       ((not (null? l))
 		(display l p))))
+	 (define (print-padded-number i num mincol padding)
+	    (if (=fx i len)
+		(error procname "Illegal tag" fmt)
+		(let* ((s (case (string-ref fmt i)
+			     ((#\d #\D)
+			      (number->string num 10))
+			     ((#\x #\X)
+			      (number->string num 16))
+			     ((#\o #\O)
+			      (number->string num 8))
+			     ((#\b #\B)
+			      (number->string num 2))
+			     (else
+			      (error procname "Illegal tag" fmt))))
+		       (l (string-length s)))
+		   (when (<fx l mincol)
+		      (display (make-string (-fx mincol l) padding) p))
+		   (display s p)
+		   (+fx i 1))))
+	 (define (print-formatted-number i num p)
+	    (if (not (number? num))
+		(error procname "Illegal number" num)
+		(let ((j (string-skip fmt "0123456789" i)))
+		   (cond
+		      ((not j)
+		       (error procname "Illegal tag" fmt))
+		      ((char=? (string-ref fmt j) #\,)
+		       (if (=fx j (-fx len 1))
+			   (error procname "Illegal tag" fmt)
+			   (print-padded-number (+fx j 2)
+						num
+						(string->integer
+						 (substring fmt i j))
+						(string-ref fmt (+fx j 1)))))
+		      (else
+		       (print-padded-number j
+					    num
+					    (string->integer
+					     (substring fmt i j))
+					    #\space))))))
 	 (define (handle-tag f i alt?)
 	    (case f
 	       ((#\a #\A)
@@ -432,6 +472,9 @@
 		       (begin
 			  (write-char o p)
 			  (loop (+fx i 1) (cdr os))))))
+	       ((#\d #\D)
+		(print-radix 10 (next os f))
+		(loop (+fx i 1) (cdr os)))
 	       ((#\x #\X)
 		(print-radix 16 (next os f))
 		(loop (+fx i 1) (cdr os)))
@@ -454,7 +497,10 @@
 		(write-char #\~ p)
 		(loop (+fx i 1) os))
 	       (else
-		(error procname "Illegal tag" f))))
+		(if (char-numeric? f)
+		    (let ((ni (print-formatted-number i (next os f) p)))
+		       (loop ni (cdr os)))
+		    (error procname "Illegal tag" f)))))
 
 	 (if (<fx i len)
 	     (let ((c (string-ref fmt i)))

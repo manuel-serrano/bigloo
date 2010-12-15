@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 10 08:33:05 2010 (serrano)                */
+#*    Last change :  Tue Dec 14 18:14:00 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1916,6 +1916,13 @@ fi
 
 if [ "$gstreamer " != " " ]; then
   gstreamercflags=`pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer`
+
+  if [ "gstreamercflags " = " " ]; then
+    echo "*** ERROR: Cannot configure gstreamer, cflags are empty";
+    echo "Running the command \"pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer\" might help understanding what's wrong"
+    exit 1;
+  fi
+
   if [ "$gstreameraudio " = " " ]; then
     gstreameraudio=`$autoconf gstreameraudio --cflags="$gstreamercflags $gstreamerlibs"` || exit 1;
     if [ "$gstreameraudio " != " " ]; then

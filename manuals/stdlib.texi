@@ -1159,6 +1159,31 @@ Returns the first occurrence of a character of @var{char-or-set} in
 If no character is found, @code{string-index} returns @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} string-skip string charset [start 0]
+@deffnx {bigloo procedure} string-skip-right string charset [start len-1]
+@cindex SRFI-13
+
+@code{string-index} (resp. @code{string-index-right}) searches through
+the @var{string} from the left (resp. right), returning the index of
+the first occurrence of a character which
+
+@itemize @bullet
+@item equals char/char-set/pred (if it is a character);
+@item is in char/char-set/pred (if it is a character set);
+@item satisfies the predicate char/char-set/pred (if it is a procedure). 
+@end itemize
+
+If no match is found, the functions return false.
+
+The start and end parameters specify the beginning and end indices of
+the search; the search includes the start index, but not the end
+index. Be careful of "fencepost" considerations: when searching
+right-to-left, the first index considered is end-1 whereas when
+searching left-to-right, the first index considered is start That is,
+the start/end indices describe a same half-open interval [start,end).
+
+@end deffn
+
 @deffn {bigloo procedure} string-contains string1 string2 [start 0]
 @deffnx {bigloo procedure} string-contains-ci string1 string2 [start 0]
 @cindex SRFI-13
