@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun Dec  5 08:08:53 2010 (serrano)                */
+;*    Last change :  Wed Dec 15 12:15:22 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -729,16 +729,14 @@
 (define (make-eval-struct+object->object cid slots)
    `(define-method (struct+object->object ,(symbol-append 'obj:: cid)
 					  struct::struct)
-       ,@(let loop ((i 1)
-		    (slots slots))
-	    (if (null? slots)
-		'()
-		(let ((s (car slots)))
-		   (cons `(,(symbol-append cid '- (slot-id s) '-set!)
-			   obj
-			   (struct-ref struct ,i))
-			 (loop (+fx i 1) (cdr slots))))))
-       obj))
+       (,(symbol-append 'make- cid)
+	,@(let loop ((i 1)
+		     (slots slots))
+	     (if (null? slots)
+		 '()
+		 (let ((s (car slots)))
+		    (cons `(struct-ref struct ,i)
+			  (loop (+fx i 1) (cdr slots)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-all-slots ...                                              */

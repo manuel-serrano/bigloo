@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Tue Aug 10 14:40:37 2010 (serrano)                */
+;*    Last change :  Wed Dec 15 14:18:19 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
@@ -87,7 +87,7 @@
       (display "#<imap path=" p)
       (display " socket=" p)
       (print-slot socket p)
-      (display ">\n" p)))
+      (display ">" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Bigloo specific part                                             */
