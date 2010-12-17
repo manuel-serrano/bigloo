@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Dec 12 14:48:34 2010 (serrano)                */
+;*    Last change :  Fri Dec 17 08:40:54 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -208,7 +208,6 @@
 
 	    (module-init-error ::string ::string)
 
-	    (exception-notify ::obj)
 	    (error-notify ::obj)
 	    (error-notify/location ::obj ::bstring ::int)
 	    (warning-notify ::obj)
@@ -347,25 +346,6 @@
 	  (begin
 	     (default-exception-handler val)
 	     (the_failure "raise" "uncaught execption" val)))))
-
-;*---------------------------------------------------------------------*/
-;*    exception-notify ...                                             */
-;*---------------------------------------------------------------------*/
-(define (exception-notify exc)
-   (cond
-      ((&error? exc)
-       (error-notify exc))
-      ((&warning? exc)
-       (warning-notify exc))
-      (else
-       (let ((port (current-error-port)))
-	  (display "*** UNKNOWN EXCEPTION: " port)
-	  (write-circle exc port)
-	  (newline port)
-	  (let ((stack (if (and (&exception? exc) (&exception-stack exc))
-			   (&exception-stack exc)
-			   (get-trace-stack))))
-	     (display-trace-stack stack port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec  3 18:29:19 2010 (serrano)                */
+;*    Last change :  Fri Dec 17 08:40:42 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -179,6 +179,9 @@
 	    (generic struct+object->object::object ::object ::struct)
 	    (generic object-hashnumber::int ::object)
 	    (generic object-equal?::bool ::object ::object)
+	    
+	    (generic exception-notify exc)
+	    
 	    (struct->object::object ::struct)
 	    (allocate-instance::object ::symbol)
 	    (inline wide-object?::bool ::object)
@@ -1337,6 +1340,31 @@
 			(loop (cdr fields) class))
 		       (else
 			#f)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    exception-notify ::obj ...                                       */
+;*---------------------------------------------------------------------*/
+(define-generic (exception-notify exc::obj)
+   (let ((port (current-error-port)))
+      (display "*** UNKNOWN EXCEPTION: " port)
+      (write-circle exc port)
+      (newline port)
+      (let ((stack (if (and (&exception? exc) (&exception-stack exc))
+		       (&exception-stack exc)
+		       (get-trace-stack))))
+	 (display-trace-stack stack port))))
+
+;*---------------------------------------------------------------------*/
+;*    exception-notify ::&error ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (exception-notify exc::&error)
+   (error-notify exc))
+
+;*---------------------------------------------------------------------*/
+;*    exception-notify ::&warning ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (exception-notify exc::&warning)
+   (warning-notify exc))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-virtual-getter ...                                          */
