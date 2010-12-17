@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Thu Dec  3 11:00:50 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Fri Dec 17 11:16:22 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 	($randbx::bignum (::bignum) "bgl_rand_bignum")
 	($seed-rand::void (::long) "bgl_seed_rand")
 	
-	($bignum->flonum::real (::bignum) "bgl_bignum_to_flonum")
+	($bignum->flonum::double (::bignum) "bgl_bignum_to_flonum")
 	($flonum->bignum::bignum (::double) "bgl_flonum_to_bignum"))))
 
    (cond-expand
@@ -151,7 +151,7 @@
 	    (method static *llong-safe::obj (::llong ::llong)
 		    "SAFE_MUL_LLONG")
 	    
-	    (method static $bignum->flonum::real (::bignum)
+	    (method static $bignum->flonum::double (::bignum)
 		    "BIGNUM_TO_FLONUM")
 	    (method static $flonum->bignum::bignum (::double)
 		    "FLONUM_TO_BIGNUM")))

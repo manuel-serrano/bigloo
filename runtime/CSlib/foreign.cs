@@ -772,9 +772,9 @@ namespace bigloo
 	    return new bignum( n );
 	 }
 
-      public static real BIGNUM_TO_FLONUM( bignum  n )
+      public static double BIGNUM_TO_FLONUM( bignum  n )
 	 {
-	    return new real(n.DoubleValue());
+	    return n.DoubleValue();
 	 }
 
       public static bint BINT( long  v )

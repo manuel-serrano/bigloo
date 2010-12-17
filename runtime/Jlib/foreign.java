@@ -660,9 +660,9 @@ public final class foreign
 	 return new bignum(n);
       }
 
-   public static real BIGNUM_TO_FLONUM(bignum n)
+   public static double BIGNUM_TO_FLONUM(bignum n)
       {
-	 return new real(n.value.doubleValue());
+	 return n.value.doubleValue();
       }
 
    public static bint BINT(long v)

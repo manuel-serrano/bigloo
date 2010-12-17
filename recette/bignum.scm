@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Thu Dec  3 13:16:18 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Fri Dec 17 09:59:35 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
 ;*=====================================================================*/
@@ -112,6 +112,8 @@
    (test "bignum.33" (fixnum? (+ 34 (car (list 35)))) #t)
    (test "bignum.34" (fixnum? (+ 34 (car (list #z35)))) #t)
    (test "bignum.35" (fixnum? (+ #z34 (car (list #z35)))) #t)
-   (test "bignum.36" (fixnum? (+ #z34 (car (list 35)))) #t))
+   (test "bignum.36" (fixnum? (+ #z34 (car (list 35)))) #t)
+   (test "bignum.37" (number? (/ #z2 (if (> (current-seconds) 0) 1 2))) #t)
+   (test "bignum.38" (number? (/ #z3 (if (> (current-seconds) 0) 2 2))) #t))
 
  

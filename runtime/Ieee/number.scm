@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Nov 28 11:36:33 2010 (serrano)                */
+;*    Last change :  Fri Dec 17 11:12:34 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -86,7 +86,7 @@
 	    (inline elong->flonum::double   ::elong)
 	    (inline flonum->llong::llong    ::double)
 	    (inline llong->flonum::double   ::llong)
-	    (inline bignum->flonum::real    ::bignum)
+	    (inline bignum->flonum::double  ::bignum)
 	    (inline flonum->bignum::bignum  ::double)
 	    (2=::bool                       x y)
 	    (=::bool                        x y . z)
