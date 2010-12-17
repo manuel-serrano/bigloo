@@ -18,18 +18,7 @@ if [ "$droidtmp " = " " ]; then
   droidtmp=$DROID_TMP;
 fi
 
-if [ "$droidsdkroot " = " " ]; then
-  echo "Bad configuration, DROID_SDK_ROOT missing. You must either use" >&2
-  echo "the --android-sdk-root option of configure or define and export" >&2
-  echo "a DROID_SDK_ROOT shell variable." >&2
-  echo "" >&2
-  echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
-  echo "official Android SDK. This directory must at least contain the file" >&2
-  echo "\"tools/adb\"" >&2
-  exit 1
-fi
-
-adb="$droidsdkroot/tools/adb"
+adb="@DROID_ADB@"
 
 case "$basename" in
    # uname does not exist in the 

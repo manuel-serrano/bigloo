@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 14 18:14:00 2010 (serrano)                */
+#*    Last change :  Fri Dec 17 09:03:20 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1209,12 +1209,12 @@ case $hostos in
       echo "or define and export a DROID_SDK_ROOT shell variable." >&2
       echo "" >&2
       echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
-      echo "official Android SDK. It must at least contain the file \"tools/adb\"." >&2
+      echo "official Android SDK. It must at least contain the file \"platform-tools/adb\"." >&2
       exit 1
     fi
   
     # check if we can connect to a device (physical or emulated)
-    adb=$droidsdkroot/tools/adb
+    adb=$droidsdkroot/platform-tools/adb
   
     echo -n "executing $adb shell ls -> " >&2
   
@@ -1255,6 +1255,7 @@ case $hostos in
     cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
             -e "s|@DROID_TMP@|$droidtmp|" \
+            -e "s|@DROID_ADB@|$adb|" \
       > $hostsh && chmod u+x $hostsh || exit 1
 
     # Use droid-gcc if no CC specified
@@ -1266,6 +1267,7 @@ case $hostos in
               -e "s|@DROID_ROOT@|$droidroot|" \
               -e "s|@DROID_TARGET@|$droidtarget|" \
               -e "s|@DROID_TMP@|$droidtmp|" \
+              -e "s|@DROID_ADB@|$adb|" \
         > $cc && chmod u+x $cc || exit 1
     fi
   
