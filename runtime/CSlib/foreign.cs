@@ -1332,10 +1332,15 @@ namespace bigloo
 	    return new bignum(n1.value % n2.value);
 	 }
 
-      public static pair DIVREM_BIGNUM( bignum  n1,
+      public static bignum DIVREM_BIGNUM( bignum  n1,
 					bignum  n2 )
 	 {
-	    return new pair(QUOTIENT_BIGNUM(n1, n2), REMAINDER_BIGNUM(n1, n2));
+	    bgldynamic env = BGL_CURRENT_DYNAMIC_ENV();
+
+	    env.mvalues_number = 2;
+	    env.mvalues_values[ 1 ] = REMAINDER_BIGNUM(n1, n2);
+
+	    return QUOTIENT_BIGNUM(n1, n2);
 	 }
 
       public static bignum GCD_BIGNUM( bignum  n1,

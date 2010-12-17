@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Fri Dec 17 11:16:22 2010 (serrano)                */
+;*    Last change :  Fri Dec 17 17:33:50 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -104,7 +104,7 @@
 		    "MINUS_BIGNUM")
 	    (method static $*bx::bignum (::bignum ::bignum)
 		    "MUL_BIGNUM")
-	    (method static $divrembx::pair (::bignum ::bignum)
+	    (method static $divrembx::bignum (::bignum ::bignum)
 		    "DIVREM_BIGNUM")
 	    (method static $quotientbx::bignum (::bignum ::bignum)
 		    "QUOTIENT_BIGNUM")

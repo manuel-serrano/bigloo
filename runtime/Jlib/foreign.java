@@ -1146,10 +1146,15 @@ public final class foreign
 	 return new bignum(n1.value.remainder(n2.value));
       }
 
-   public static pair DIVREM_BIGNUM(bignum n1, bignum n2)
+   public static bignum DIVREM_BIGNUM(bignum n1, bignum n2)
       {
+	 bgldynamic env = BGL_CURRENT_DYNAMIC_ENV();
 	 final java.math.BigInteger[] xy = n1.value.divideAndRemainder(n2.value);
-	 return new pair(new bignum(xy[0]), new bignum(xy[1]));
+	 env.mvalues_number = 2;
+	 
+	 env.mvalues_values[ 1 ] = new bignum(xy[1]);
+
+	 return new bignum(xy[0]);
       }
 
    public static bignum GCD_BIGNUM(bignum n1, bignum n2)
