@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Wed Aug 11 10:25:45 2010 (serrano)                */
+#*    Last change :  Fri Dec 17 18:23:54 2010 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking GC compilation flags                                    */
 #*=====================================================================*/
@@ -15,7 +15,7 @@
 cflags=""
 cgcflags68="-DSILENT -DNO_SIGNALS -DNO_DEBUGGING -Iinclude"
 #cgcflagsdarwin="-DNO_DEBUGGING -Iinclude -I./libatomic_ops/src"
-cgcflags="-DNO_DEBUGGING -Iinclude -Ilibatomic_ops-install/include"
+cgcflags="-DNO_DEBUGGING -Iinclude -Ilibatomic_ops-install/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION"
 
 
 #*---------------------------------------------------------------------*/
