@@ -1,6 +1,6 @@
 diff -Naur gc-7.2alpha4.orig/Makefile.direct gc-7.2alpha4/Makefile.direct
 --- gc-7.2alpha4.orig/Makefile.direct	2009-10-08 09:17:24.000000000 +0200
-+++ gc-7.2alpha4/Makefile.direct	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/Makefile.direct	2010-12-17 18:10:53.000000000 +0100
 @@ -35,7 +35,14 @@
  AO_SRC_DIR=$(srcdir)/libatomic_ops
  AO_INSTALL_DIR=$(srcdir)/libatomic_ops-install
@@ -19,7 +19,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.direct gc-7.2alpha4/Makefile.direct
  # -DGC_LINUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC
 diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
 --- gc-7.2alpha4.orig/Makefile.in	2009-10-19 12:56:20.000000000 +0200
-+++ gc-7.2alpha4/Makefile.in	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/Makefile.in	2010-12-17 18:10:53.000000000 +0100
 @@ -156,7 +156,7 @@
  	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
  	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -57,7 +57,7 @@ diff -Naur gc-7.2alpha4.orig/Makefile.in gc-7.2alpha4/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomic_ops_sysdeps.Plo@am__quote@
 diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
 --- gc-7.2alpha4.orig/alloc.c	2009-11-16 20:56:54.000000000 +0100
-+++ gc-7.2alpha4/alloc.c	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/alloc.c	2010-12-17 18:10:53.000000000 +0100
 @@ -537,6 +537,40 @@
    GC_INNER void GC_add_current_malloc_heap(void);
  #endif
@@ -136,12 +136,9 @@ diff -Naur gc-7.2alpha4.orig/alloc.c gc-7.2alpha4/alloc.c
        GC_is_full_gc = FALSE;
 diff -Naur gc-7.2alpha4.orig/configure gc-7.2alpha4/configure
 --- gc-7.2alpha4.orig/configure	2009-12-01 21:34:24.000000000 +0100
-+++ gc-7.2alpha4/configure	2010-12-17 17:59:57.000000000 +0100
-@@ -15122,12 +15122,15 @@
- $as_echo "no" >&6; } ;;
- esac
++++ gc-7.2alpha4/configure	2010-12-17 18:13:16.000000000 +0100
+@@ -15125,9 +15125,13 @@
  
--
  $as_echo "#define NO_EXECUTE_PERMISSION 1" >>confdefs.h
  
 -
@@ -159,25 +156,21 @@ diff -Naur gc-7.2alpha4.orig/configure gc-7.2alpha4/configure
  # Check whether --enable-gcj-support was given.
 diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
 --- gc-7.2alpha4.orig/configure.ac	2009-12-01 21:34:24.000000000 +0100
-+++ gc-7.2alpha4/configure.ac	2010-12-17 18:00:58.000000000 +0100
-@@ -551,9 +551,11 @@
- dnl Include defines that have become de facto standard.
++++ gc-7.2alpha4/configure.ac	2010-12-17 18:11:54.000000000 +0100
+@@ -552,8 +552,8 @@
  dnl ALL_INTERIOR_POINTERS can be overridden in startup code.
  AC_DEFINE([NO_EXECUTE_PERMISSION], [1],
--	  [Define to allow the collector to disable execute permission of heap objects.])
+ 	  [Define to allow the collector to disable execute permission of heap objects.])
 -AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
 -	  [Define to recognise all pointers to the interior of objects.])
-+ 	  [Define to allow the collector to disable execute permission of heap objects.])
-+dnl Bigloo start (14 dec 2010)
 +dnl AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
 +dnl 	  [Define to recognise all pointers to the interior of objects.])
-+dnl Bigloo stop (14 dec 2010)
  
  
  dnl Interface Selection
 diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 --- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/dyn_load.c	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/dyn_load.c	2010-12-17 18:10:53.000000000 +0100
 @@ -85,11 +85,16 @@
      || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
                               || defined(NETBSD) || defined(OPENBSD)))
@@ -216,7 +209,7 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
  
 diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
 --- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
-+++ gc-7.2alpha4/include/private/gcconfig.h	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/include/private/gcconfig.h	2010-12-17 18:10:53.000000000 +0100
 @@ -1845,7 +1845,8 @@
  #            define DYNAMIC_LOADING
  #            include <features.h>
@@ -229,7 +222,7 @@ diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/pri
                   extern char **__environ;
 diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
 --- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
-+++ gc-7.2alpha4/misc.c	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/misc.c	2010-12-17 18:10:53.000000000 +0100
 @@ -532,6 +532,10 @@
          word dummy;
  #   endif
@@ -273,7 +266,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
      /* No writing.  */
 diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
 --- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
-+++ gc-7.2alpha4/os_dep.c	2010-12-17 17:57:46.000000000 +0100
++++ gc-7.2alpha4/os_dep.c	2010-12-17 18:10:53.000000000 +0100
 @@ -16,6 +16,10 @@
  
  #include "private/gc_priv.h"
