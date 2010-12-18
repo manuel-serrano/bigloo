@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sat Nov 27 20:20:29 2010 (serrano)                */
+;*    Last change :  Sat Dec 18 06:46:15 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -248,11 +248,14 @@
    (install-expander 'letrec-syntax expand-letrec-syntax)
    (install-expander 'let-syntax expand-let-syntax)
    
+;*---------------------------------------------------------------------*/
+;*    Compiler macros                                                  */
+;*---------------------------------------------------------------------*/
    ;; trace
-   (install-expander 'when-trace expand-when-trace)
-   (install-expander 'with-trace expand-with-trace)
-   (install-expander 'trace-item expand-trace-item)
-   
+   (install-compiler-expander 'when-trace (make-expand-when-trace 'compiler))
+   (install-compiler-expander 'with-trace (make-expand-with-trace 'compiler))
+   (install-compiler-expander 'trace-item (make-expand-trace-item 'compiler))
+
 ;*---------------------------------------------------------------------*/
 ;*    Interpreter macros                                               */
 ;*---------------------------------------------------------------------*/
@@ -401,7 +404,12 @@
    (let ((e (lambda (x e) (e (evmodule-static-class x) e))))
       (install-eval-expander 'define-class e)
       (install-eval-expander 'define-abstract-class e)
-      (install-eval-expander 'define-final-class e)))
+      (install-eval-expander 'define-final-class e))
+
+   ;; trace
+   (install-eval-expander 'when-trace (make-expand-when-trace 'eval))
+   (install-eval-expander 'with-trace (make-expand-with-trace 'eval))
+   (install-eval-expander 'trace-item (make-expand-trace-item 'eval)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-if ...                                                    */
@@ -423,7 +431,7 @@
        (let ((nx (make-if (expand-test si e) (e alors e) #f)))
 	  (evepairify nx x)))
       (else
-       (expand-error 'if "Illegal form" x))))
+       (expand-error "if" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-tprint ...                                                */
@@ -458,10 +466,10 @@
    (match-case x
       ((?- . ?body)
        (if (not (list? body))
-	   (expand-error 'begin "Illegal form" x)
+	   (expand-error "begin" "Illegal form" x)
 	   (expand-progn (map (lambda (x) (e x e)) body))))
       (else
-       (expand-error 'begin "Illegal form" x))))
+       (expand-error "begin" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-and-let* ...                                              */
@@ -490,19 +498,19 @@
 		       (pair? (cdr claw)) (null? (cddr claw)))
 		  (let* ((var (car claw)) (var-cell (cons var '())))
 		     (if (memq var new-vars)
-			 (expand-error #f
+			 (expand-error "let"
 				       "duplicate variable in the bindings"
 				       var))
 		     (set! new-vars (cons var new-vars))
 		     (set-cdr! growth-point `((let (,claw) (and . ,var-cell))))
 		     (set! growth-point var-cell)))
 		 (else
-		  (expand-error #f "ill-formed binding" claw))))
+		  (expand-error "let" "ill-formed binding" claw))))
 	   claws)
 	  (if (not (null? body)) (andjoin! `(begin ,@body)))
 	  (evepairify (e result e) x)))
       (else
-       (expand-error #f "Illegal `and-let*' form" x))))
+       (expand-error "let" "Illegal `and-let*' form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Force the install of the expanders                               */

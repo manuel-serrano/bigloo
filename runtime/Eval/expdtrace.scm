@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Thu Apr 30 14:33:00 2009 (serrano)                */
+;*    Last change :  Sat Dec 18 06:47:00 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -44,44 +44,54 @@
    (use     __type
 	    __evenv)
    
-   (export  (expand-when-trace ::obj ::procedure)
-	    (expand-with-trace ::obj ::procedure)
-	    (expand-trace-item ::obj ::procedure)))
+   (export  (make-expand-when-trace::procedure ::symbol)
+	    (make-expand-with-trace::procedure ::symbol)
+	    (make-expand-trace-item::procedure ::symbol)))
 
 ;*---------------------------------------------------------------------*/
-;*    expand-when-trace ...                                            */
+;*    make-expand-when-trace ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (expand-when-trace x e)
+(define (make-expand-when-trace mode)
+   (lambda (x e)
    (match-case x
-      ((?- ?level . ?exp)
-       (if (>fx (bigloo-compiler-debug) 0)
-	   (e `(if (>=fx (bigloo-debug) ,level)
-		   (begin ,@exp)
-		   #unspecified)
-	      e)
-	   #unspecified))
-      (else
-       (error 'when-trace "Illegal form" x))))
+	 ((?- ?level . ?exp)
+	  (if (if (eq? mode 'compiler)
+		  (>fx (bigloo-compiler-debug) 0)
+		  (>fx (bigloo-debug) 0))
+	      (e `(if (>=fx (bigloo-debug) ,level)
+		      (begin ,@exp)
+		      #unspecified)
+		 e)
+	      #unspecified))
+	 (else
+	  (error "when-trace" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
-;*    with-trace ...                                                   */
+;*    make-with-trace ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (expand-with-trace x e)
-   (match-case x
-      ((?- ?level ?lbl . ?arg*)
-       (if (>fx (bigloo-compiler-debug) 0)
-	   (e `(if (>fx (bigloo-debug) 0)
-		   (%with-trace ,level ,lbl (lambda () (begin ,@arg*)))
-		   (begin ,@arg*)) e)
-	   (e `(begin ,@arg*) e)))
-      (else
-       (error 'with-trace "Illegal form" x))))
+(define (make-expand-with-trace mode)
+   (lambda (x e)
+      (match-case x
+	 ((?- ?level ?lbl . ?arg*)
+	  (if (if (eq? mode 'compiler)
+		  (>fx (bigloo-compiler-debug) 0)
+		  (>fx (bigloo-debug) 0))
+	      (e `(if (>fx (bigloo-debug) 0)
+		      (%with-trace ,level ,lbl (lambda () (begin ,@arg*)))
+		      (begin ,@arg*)) e)
+	      (e `(begin ,@arg*) e)))
+	 (else
+	  (error "with-trace" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
-;*    expand-trace-item ...                                            */
+;*    make-expand-trace-item ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (expand-trace-item x e)
-   (if (>fx (bigloo-compiler-debug) 0)
-       `(if (>fx (bigloo-debug) 0)
-	    (trace-item ,@(map (lambda (x) (e x e)) (cdr x))))
-       #unspecified))
+(define (make-expand-trace-item mode)
+   (lambda (x e)
+      (if (if (eq? mode 'compiler)
+		  (>fx (bigloo-compiler-debug) 0)
+		  (>fx (bigloo-debug) 0))
+	  `(if (>fx (bigloo-debug) 0)
+	       (trace-item ,@(map (lambda (x) (e x e)) (cdr x)))
+	       #unspecified)
+	  #unspecified)))

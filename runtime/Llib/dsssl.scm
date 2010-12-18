@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Fri Jul 30 08:24:33 2010 (serrano)                */
+;*    Last change :  Sat Dec 18 07:38:18 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -44,6 +44,7 @@
 	    (make-dsssl-function-prelude ::obj ::obj ::obj ::procedure)
 	    (dsssl-get-key-arg ::obj ::keyword ::obj)
 	    (dsssl-get-key-rest-arg ::obj)
+	    (dsssl-get-key-rest ::obj ::pair-nil)
 	    (dsssl-check-key-args! ::obj ::obj)
 	    (dsssl-formals->scheme-formals ::obj ::procedure)))
 	    
@@ -217,44 +218,50 @@
 			       args)))
 	     `(begin
 		 (dsssl-check-key-args! ,dsssl-arg ',key-list)
-		 ,(key-state args dsssl-arg #f))))))
+		 ,(key-state args dsssl-arg '() #f))))))
+
+   (define (formal-keyword-list args)
+      (let loop ((args args)
+		 (aux '()))
+	 (cond
+	    ((null? args)
+	     (reverse! aux))
+	    ((eq? (car args) #!rest)
+	     (reverse! aux))
+	    (else
+	     (match-case (car args)
+		((and (? symbol?) ?arg)
+		 (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		(((and (? symbol?) ?arg) ?-)
+		 (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		(else
+		 (err where
+		      "Illegal DSSSL formal list (#!key)"
+		      formals)))))))
    
    (define (no-rest-key-state args dsssl-arg)
-      
-      (define (formal-keyword-list args)
-	 (let loop ((args args)
-		    (aux '()))
-	    (cond
-	       ((null? args)
-		(reverse! aux))
-	       ((eq? (car args) #!rest)
-		(reverse! aux))
-	       (else
-		(match-case (car args)
-		   ((and (? symbol?) ?arg)
-		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
-		   (((and (? symbol?) ?arg) ?-)
-		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
-		   (else
-		    (err where
-			 "Illegal DSSSL formal list (#!key)"
-			 formals)))))))
       (cond
 	 ((null? args)
 	  body)
 	 (else
 	  `(begin
 	      (dsssl-check-key-args! ,dsssl-arg ',(formal-keyword-list args))
-	      ,(key-state args dsssl-arg #t)))))
+	      ,(key-state args dsssl-arg '() #t)))))
    
-   (define (key-state args dsssl-arg allow-restp)
-      (define (one-key-arg arg initializer)
+   (define (key-state args dsssl-arg collected-keys allow-restp)
+      
+      (define (one-key-arg arg initializer collected-keys)
 	 `(let ((,arg (dsssl-get-key-arg ,dsssl-arg
 					 ,(symbol->keyword arg)
 					 ,initializer)))
-	     ,(key-state (cdr args) dsssl-arg allow-restp)))
+	     ,(key-state (cdr args)
+			 dsssl-arg
+			 (cons (symbol->keyword arg)
+			       collected-keys)
+			 allow-restp)))
+      
       (define (rest-key-arg arg body)
-	 `(let ((,arg (dsssl-get-key-rest-arg ,dsssl-arg)))
+	 `(let ((,arg (dsssl-get-key-rest ,dsssl-arg ',collected-keys)))
 	     ,body))
       (cond
 	 ((null? args)
@@ -274,9 +281,9 @@
 	  ;; an optional DSSSL formal
 	  (match-case (car args)
 	     (((and (? symbol?) ?arg) ?initializer)
-	      (one-key-arg arg initializer))
+	      (one-key-arg arg initializer collected-keys))
 	     ((and (? symbol?) ?arg)
-	      (one-key-arg arg #f))
+	      (one-key-arg arg #f collected-keys))
 	     (else
 	      (err where "Illegal DSSSL formal list (#!key)" formals))))))
    
@@ -358,6 +365,21 @@
 	 ((null? args)
 	  '())
 	 ((or (not (keyword? (car args))) (null? (cdr args)))
+	  args)
+	 (else
+	  (loop (cddr args))))))
+   
+;*---------------------------------------------------------------------*/
+;*    dsssl-get-key-rest ...                                           */
+;*---------------------------------------------------------------------*/
+(define (dsssl-get-key-rest dsssl-args keys)
+   (let loop ((args dsssl-args))
+      (cond
+	 ((null? args)
+	  '())
+	 ((or (not (keyword? (car args)))
+	      (null? (cdr args))
+	      (not (memq (car args) keys)))
 	  args)
 	 (else
 	  (loop (cddr args))))))
