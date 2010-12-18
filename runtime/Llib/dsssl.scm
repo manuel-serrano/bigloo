@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Sat Dec 18 08:51:09 2010 (serrano)                */
+;*    Last change :  Sat Dec 18 09:03:07 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -261,7 +261,7 @@
 			 allow-restp)))
       
       (define (rest-key-arg arg body)
-	 `(let ((,arg (dsssl-get-key-rest ,dsssl-arg ',collected-keys)))
+	 `(let ((,arg (dsssl-get-key-rest-arg ,dsssl-arg ',collected-keys)))
 	     ,body))
       (cond
 	 ((null? args)
