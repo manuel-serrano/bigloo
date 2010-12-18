@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Sat Dec 18 09:03:07 2010 (serrano)                */
+;*    Last change :  Sat Dec 18 17:00:59 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -44,7 +44,6 @@
 	    (make-dsssl-function-prelude ::obj ::obj ::obj ::procedure)
 	    (dsssl-get-key-arg ::obj ::keyword ::obj)
 	    (dsssl-get-key-rest-arg ::obj ::pair-nil)
-	    (dsssl-get-key-rest ::obj ::pair-nil)
 	    (dsssl-check-key-args! ::obj ::obj)
 	    (dsssl-formals->scheme-formals ::obj ::procedure)))
 	    
@@ -360,21 +359,6 @@
 ;*    dsssl-get-key-rest-arg ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (dsssl-get-key-rest-arg dsssl-args keys)
-   (let loop ((args dsssl-args))
-      (cond
-	 ((null? args)
-	  '())
-	 ((or (not (keyword? (car args)))
-	      (null? (cdr args))
-	      (not (memq (car args) keys)))
-	  args)
-	 (else
-	  (loop (cddr args))))))
-   
-;*---------------------------------------------------------------------*/
-;*    dsssl-get-key-rest ...                                           */
-;*---------------------------------------------------------------------*/
-(define (dsssl-get-key-rest dsssl-args keys)
    (let loop ((args dsssl-args))
       (cond
 	 ((null? args)
