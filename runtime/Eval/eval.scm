@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sat Dec 11 06:40:15 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 16:43:22 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -451,7 +451,8 @@
 	  (mod ($eval-module)))
       (if (input-port? port)
 	  (unwind-protect
-	     (let* ((sexp (read port))
+	     ;; always read the first expression with location for the module
+	     (let* ((sexp (read port #t))
 		    (mainsym (if (and (pair? sexp) (eq? (car sexp) 'module))
 				 (let ((clause (assq 'main (cddr sexp))))
 				    (if (pair? clause)

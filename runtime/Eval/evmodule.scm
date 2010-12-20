@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Dec 20 15:00:49 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 16:45:02 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -496,7 +496,9 @@
 		      (if (and (pair? e0) (eq? (car e0) 'directives))
 			  (values (cdr e0) (port->list read p))
 			  (values '() (cons e0 (port->list read p)))))))
-	     (evcompile-error loc 'eval "Cannot find include file" file))))
+	     (evcompile-error loc 'eval
+			      (format "Cannot find include file ~s" file)
+			      path))))
    
    (define (evmodule-include-files! files path)
       (let loop ((files files)
