@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Dec 20 10:17:22 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 10:33:30 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -580,28 +580,34 @@
 	     clauses))
 
 ;*---------------------------------------------------------------------*/
+;*    evmodule-cond-expand ...                                         */
+;*---------------------------------------------------------------------*/
+(define (evmodule-cond-expand mod clauses loc)
+   
+   (define (evmodule-cond-expand-clause c0)
+      (let loop ((c c0))
+	 (cond
+	    ((not (and (pair? c) (list? c) (symbol? (car c))))
+	     (let ((loc (or (get-source-location c) loc)))
+		(evcompile-error loc 'eval "Illegal module clause" c0)))
+	    ((eq? (car c) 'cond-expand)
+	     (let ((nc (expand c)))
+		(if (pair? nc)
+		    (if (eq? (car nc) 'begin)
+			(append-map loop (cdr nc))
+			(loop nc))
+		    '())))
+	    (else
+	     (list c)))))
+   
+   (append-map evmodule-cond-expand-clause clauses))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule-module ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-module mod clauses loc)
    ;; check the syntax and resolve the cond-expand clauses
-   (let ((mclauses (filter-map (lambda (c0)
-				  (let loop ((c c0))
-				     (cond
-					((not (and (pair? c)
-						   (list? c)
-						   (symbol? (car c))))
-					 (let ((loc (or (get-source-location c) loc)))
-					    (evcompile-error
-					     loc 'eval
-					     "Illegal module clause" c0)))
-					((eq? (car c) 'cond-expand)
-					 (let ((nc (expand c)))
-					    (unless (or (eq? nc #f)
-							(eq? nc #unspecified))
-					       (loop (expand c)))))
-					(else
-					 c))))
-			       clauses)))
+   (let ((mclauses (evmodule-cond-expand mod clauses loc)))
       (multiple-value-bind (iclauses iexprs)
 	 (evmodule-include mod mclauses loc)
 	 ;; Step1: evaluate export clauses (and static for coherency).
