@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Dec 20 10:33:30 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 15:00:49 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -488,9 +488,9 @@
 (define (evmodule-include mod clauses loc)
 
    (define (evmodule-include-file! file path)
-      (let ((file (find-file/path file path)))
-	 (if (string? file)
-	     (call-with-input-file file
+      (let ((ffile (find-file/path file path)))
+	 (if (string? ffile)
+	     (call-with-input-file ffile
 		(lambda (p)
 		   (let ((e0 (read p)))
 		      (if (and (pair? e0) (eq? (car e0) 'directives))
