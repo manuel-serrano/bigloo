@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Dec  9 21:09:16 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 10:17:22 2010 (serrano)                */
 ;*    Copyright   :  2006-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -483,112 +483,137 @@
        (for-each from-clause (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
-;*    evmodule-include! ...                                            */
-;*---------------------------------------------------------------------*/
-(define (evmodule-include! mod file loc)
-   (let ((file (find-file/path file *load-path*)))
-      (if (string? file)
-	  (with-input-from-file file
-	     (lambda ()
-		(let ((e0 (read)))
-		   (if (and (pair? e0) (eq? (car e0) 'directives))
-		       (append (evmodule-module mod (cdr e0)
-						(or (get-source-location e0) loc))
-			       (port->list read (current-input-port)))
-		       (cons e0 (port->list read (current-input-port)))))))
-	  (evcompile-error loc 'eval "Cannot find include file" file))))
-
-;*---------------------------------------------------------------------*/
 ;*    evmodule-include ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-include mod clause loc)
-   (if (not (every? string? (cdr clause)))
-       (evcompile-error 'loc 'eval "Illegal `include' module clause" clause)
-       (append-map (lambda (file)
-		      (evmodule-include! mod file loc))
-		   (cdr clause))))
+(define (evmodule-include mod clauses loc)
+
+   (define (evmodule-include-file! file path)
+      (let ((file (find-file/path file path)))
+	 (if (string? file)
+	     (call-with-input-file file
+		(lambda (p)
+		   (let ((e0 (read p)))
+		      (if (and (pair? e0) (eq? (car e0) 'directives))
+			  (values (cdr e0) (port->list read p))
+			  (values '() (cons e0 (port->list read p)))))))
+	     (evcompile-error loc 'eval "Cannot find include file" file))))
+   
+   (define (evmodule-include-files! files path)
+      (let loop ((files files)
+		 (iclauses '())
+		 (iexprs '()))
+	 (if (null? files)
+	     (values iclauses iexprs)
+	     (multiple-value-bind (ic ie)
+		(evmodule-include-file! (car files) path)
+		(loop (cdr files) (append iclauses ic) (append iexprs ie))))))
+   
+   (let ((path (if (string? (%evmodule-path mod))
+		   (cons (dirname (%evmodule-path mod)) *load-path*)
+		   *load-path*)))
+      (let loop ((clauses clauses)
+		 (iclauses '())
+		 (iexprs '()))
+	 (cond
+	    ((null? clauses)
+	     (values iclauses iexprs))
+	    ((eq? (caar clauses) 'include)
+	     (multiple-value-bind (ic ie)
+		(evmodule-include-files! (cdar clauses) path)
+		(multiple-value-bind (ic2 ie2)
+		   (evmodule-include mod ic loc)
+		   (loop (cdr clauses)
+			 (append iclauses ic2 ic)
+			 (append iexprs ie2 ie)))))
+	    (else
+	     (loop (cdr clauses)
+		   (append iclauses (list (car clauses)))
+		   iexprs))))))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-step1 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evmodule-step1 mod clauses loc)
+   (for-each (lambda (clause)
+		($eval-module-set! mod)
+		(let ((loc (or (get-source-location clause) loc)))
+		   (when loc (evmeaning-set-error-location! loc))
+		   (case (car clause)
+		      ((library)
+		       (evmodule-library clause loc))
+		      ((static)
+		       (evmodule-static mod clause loc #f))
+		      ((export)
+		       (evmodule-export mod clause loc #f))
+		      ((load)
+		       (evmodule-import mod clause loc)))))
+	     clauses))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-step2 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evmodule-step2 mod clauses loc)
+   (for-each (lambda (clause)
+		($eval-module-set! mod)
+		(let ((loc (or (get-source-location clause) loc)))
+		   (when loc (evmeaning-set-error-location! loc))
+		   (case (car clause)
+		      ((import use with)
+		       (evmodule-import mod clause loc))
+		      ((from)
+		       (evmodule-from mod clause loc)))))
+	     clauses))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-step3 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evmodule-step3 mod clauses loc)
+   (for-each (lambda (clause)
+		($eval-module-set! mod)
+		(let ((loc (or (get-source-location clause) loc)))
+		   (when loc (evmeaning-set-error-location! loc))
+		   (case (car clause)
+		      ((static)
+		       (evmodule-static mod clause loc #t))
+		      ((export)
+		       (evmodule-export mod clause loc #t)))))
+	     clauses))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-module ...                                              */
-;*    -------------------------------------------------------------    */
-;*    Because of recursive modules, evaluating a module is a multi-    */
-;*    steps process.                                                   */
-;*      step1: evaluates export clauses (and static for coherency).    */
-;*             during that step, classes are not evaluated.            */
-;*      step2: evaluates other clauses (in particular imports).        */
-;*      step3: evaluates includes (in particular imports).             */
-;*      step4: evaluates classes.                                      */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-module mod clauses loc)
    ;; check the syntax and resolve the cond-expand clauses
-   (let ((clauses (filter-map (lambda (c0)
-				 (let loop ((c c0))
-				    (cond
-				       ((not (and (pair? c)
-						  (list? c)
-						  (symbol? (car c))))
-					(let ((loc (or (get-source-location c) loc)))
-					   (evcompile-error
-					    loc 'eval
-					    "Illegal module clause" c0)))
-				       ((eq? (car c) 'cond-expand)
-					(let ((nc (expand c)))
-					   (unless (or (eq? nc #f)
-						       (eq? nc #unspecified))
-					      (loop (expand c)))))
-				       (else
-					c))))
-		       clauses)))
-      ;; step1
-      (for-each (lambda (clause)
-		   ($eval-module-set! mod)
-		   (let ((loc (or (get-source-location clause) loc)))
-		      (when loc (evmeaning-set-error-location! loc))
-		      (case (car clause)
-			 ((library)
-			  (evmodule-library clause loc))
-			 ((static)
-			  (evmodule-static mod clause loc #f))
-			 ((export)
-			  (evmodule-export mod clause loc #f))
-			 ((load)
-			  (evmodule-import mod clause loc)))))
-		clauses)
-      ;; step2
-      (for-each (lambda (clause)
-		   ($eval-module-set! mod)
-		   (let ((loc (or (get-source-location clause) loc)))
-		      (when loc (evmeaning-set-error-location! loc))
-		      (case (car clause)
-			 ((import use with)
-			  (evmodule-import mod clause loc))
-			 ((from)
-			  (evmodule-from mod clause loc)))))
-		clauses)
-      ;; step3, include
-      (let ((incs (append-map (lambda (clause)
-				 ($eval-module-set! mod)
-				 (let ((loc (or (get-source-location clause) loc)))
-				    (when loc
-				       (evmeaning-set-error-location! loc))
-				    (case (car clause)
-				       ((include)
-					(evmodule-include mod clause loc))
-				       (else
-					'()))))
-			      clauses)))
-	 ;; step3, classes
-	 (for-each (lambda (clause)
-		      ($eval-module-set! mod)
-		      (let ((loc (or (get-source-location clause) loc)))
-			 (when loc (evmeaning-set-error-location! loc))
-			 (case (car clause)
-			    ((static)
-			     (evmodule-static mod clause loc #t))
-			    ((export)
-			     (evmodule-export mod clause loc #t)))))
-		   clauses)
-	 `(begin ,@incs))))
+   (let ((mclauses (filter-map (lambda (c0)
+				  (let loop ((c c0))
+				     (cond
+					((not (and (pair? c)
+						   (list? c)
+						   (symbol? (car c))))
+					 (let ((loc (or (get-source-location c) loc)))
+					    (evcompile-error
+					     loc 'eval
+					     "Illegal module clause" c0)))
+					((eq? (car c) 'cond-expand)
+					 (let ((nc (expand c)))
+					    (unless (or (eq? nc #f)
+							(eq? nc #unspecified))
+					       (loop (expand c)))))
+					(else
+					 c))))
+			       clauses)))
+      (multiple-value-bind (iclauses iexprs)
+	 (evmodule-include mod mclauses loc)
+	 ;; Step1: evaluate export clauses (and static for coherency).
+	 ;; During that step, classes are not evaluated.
+	 ;; Also process include directives clauses. 
+	 (evmodule-step1 mod iclauses loc)
+	 ;; Step2: evaluate import and from clauses.
+	 (evmodule-step2 mod iclauses loc)
+	 ;; step3: evaluate classes and build the module body (with includes).
+	 (evmodule-step3 mod clauses loc)
+	 ;; returns the include expressions
+	 `(begin ,@iexprs))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule ...                                                     */
@@ -607,9 +632,9 @@
 		     (mod (make-evmodule name path loc)))
 		 (unwind-protect
 		    (begin
-		       (evmodule-module mod clauses loc)
 		       (when (procedure? hdl)
-			  (%evmodule-extension-set! mod (hdl exp))))
+			  (%evmodule-extension-set! mod (hdl exp)))
+		       (evmodule-module mod clauses loc))
 		    ($eval-module-set! mod)))))
 	 (else
 	  (evcompile-error loc 'eval "Illegal module expression" exp)))))
