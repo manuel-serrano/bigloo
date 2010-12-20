@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Sat Nov 20 06:58:46 2010 (serrano)                */
+;*    Last change :  Mon Dec 20 19:49:12 2010 (serrano)                */
 ;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -244,7 +244,7 @@
 		      ;; end of stream
 		      (mutex-lock! %mutex)
 		      (gst-element-state-set! (gstmusic-%pipeline o) 'null)
-		      (musicstatus-state-set! %status 'stop)
+		      (musicstatus-state-set! %status 'ended)
 		      (musicstatus-songpos-set! %status 0)
 		      (gstmusic-%meta-set! o '())
 		      (set! meta #f)
