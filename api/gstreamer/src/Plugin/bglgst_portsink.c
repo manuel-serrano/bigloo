@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Tue Jul 29 10:08:12 2008                          */
-/*    Last change :  Sun Dec 13 07:15:29 2009 (serrano)                */
-/*    Copyright   :  2008-09 Cyprien Nicolas & Manuel Serrano          */
+/*    Last change :  Wed Dec 22 14:24:39 2010 (serrano)                */
+/*    Copyright   :  2008-10 Cyprien Nicolas & Manuel Serrano          */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OUTPUT-PORT plugin.                                       */
 /*    -------------------------------------------------------------    */
@@ -329,7 +329,8 @@ bgl_gst_port_sink_start( GstBaseSink *basesink ) {
 			    ("No file or port element set") );
 	 return FALSE;
       } else {
-	 obj_t b = sink->buffer ? sink->buffer : make_string_sans_fill( 1024 );
+	 obj_t b = sink->buffer != BFALSE ?
+	    sink->buffer : make_string_sans_fill( 1024 );
 	 sink->port = bgl_open_output_file( string_to_bstring( sink->uri), b );
 	 bglgst_register_port( sink->port );
       }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sun Feb 14 08:57:13 2010 (serrano)                */
+/*    Last change :  Tue Dec 28 12:31:39 2010 (serrano)                */
 /*    Copyright   :  2002-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -284,19 +284,25 @@ bgl_time( obj_t thunk ) {
 
    return PROCEDURE_ENTRY( thunk )( thunk, BEOA );
 #else   
+   static long ctick = 0;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    struct tms buf1, buf2;
    clock_t t1, t2;
    obj_t res;
-   
+
+   if( !ctick ) ctick = sysconf( _SC_CLK_TCK );
+
    t1 = times( &buf1 );
    res = PROCEDURE_ENTRY( thunk )( thunk, BEOA );
    t2 = times( &buf2 );
       
    BGL_ENV_MVALUES_NUMBER_SET( env, 4 );
-   BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( t2 - t1 ) );
-   BGL_ENV_MVALUES_VAL_SET( env, 2, BINT( buf2.tms_stime - buf1.tms_stime ) );
-   BGL_ENV_MVALUES_VAL_SET( env, 3, BINT( buf2.tms_utime - buf1.tms_utime ) );
+
+#  define BTICK( v ) BINT( (v) * 1000 / ctick )
+   BGL_ENV_MVALUES_VAL_SET( env, 1, BTICK( t2 - t1 ) );
+   BGL_ENV_MVALUES_VAL_SET( env, 2, BTICK( buf2.tms_stime - buf1.tms_stime ) );
+   BGL_ENV_MVALUES_VAL_SET( env, 3, BTICK( buf2.tms_utime - buf1.tms_utime ) );
+#  undef BTICK   
 
    return res;
 #endif   

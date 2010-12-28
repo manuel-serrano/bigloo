@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Dec 17 08:40:54 2010 (serrano)                */
+;*    Last change :  Sat Dec 25 11:02:12 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -510,7 +510,7 @@
 ;*    Bigloo values.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (warning/c-location fname loc . args)
-   (apply warning/location fname loc (get-trace-stack) args))
+   (apply warning/location fname loc args))
 			    
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error ...                                                */
@@ -666,7 +666,11 @@
 		 (warning/location-file fname
 					(&warning-location e)
 					(&warning-args e)))))
-	  (simple-warning e))))
+	  (simple-warning e)))
+   ;; stack
+   (when (&warning-stack e)
+      (display-trace-stack (&warning-stack e) (current-error-port)))
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    warning-notify ...                                               */

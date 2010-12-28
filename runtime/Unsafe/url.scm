@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Wed Oct  7 12:13:02 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Fri Dec 24 11:40:56 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -117,7 +117,7 @@
 	  (values protocol userinfo host port abspath)))
       ((: (+ (out "@:/")))
        (let* ((host (the-substring 0 (the-length)))
-	      (port 80)
+	      (port (if (string=? protocol "https") 443 80))
 	      (abspath (read/rp abspath-grammar (the-port))))
 	  (values protocol userinfo host port abspath)))
       ((: "/" (* (out ":\r\n")))
@@ -160,7 +160,7 @@
 	     (values protocol userinfo host port abspath))))
       ((: (+ (out "@:/")))
        (let* ((host (the-substring 0 (the-length)))
-	      (port 80)
+	      (port (if (string=? protocol "https") 443 80))
 	      (abspath (read/rp http-abspath-grammar (the-port))))
 	  (values protocol userinfo host port abspath)))
       ((: "/" (* (out ": \r\n")))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst-png.scm      */
+;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst_png.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Aug  9 06:47:25 2008                          */
-;*    Last change :  Sat Aug  9 18:11:20 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Wed Dec 22 14:20:48 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This example scales a source image into a png image.             */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
    (let ((width 120)
 	 (height 80)
 	 (src #f)
+	 (mode 'file)
 	 (dst #f))
       
       (args-parse (cdr args)
@@ -45,6 +46,8 @@
 	  (set! height (string->integer h)))
 	 ((("-o" "--output") ?d (help "Output file"))
 	  (set! dst d))
+	 (("-s" ?source (help "Select source (bigloo, gst)"))
+	  (set! mode (string->symbol source)))
 	 (else
 	  (set! src else)))
 
@@ -56,12 +59,18 @@
       (unless dst (set! dst (string-append (prefix src) ".png")))
       
       (let* ((pipeline (instantiate::gst-pipeline))
-	     (source (gst-element-factory-make "filesrc" :location src))
+	     (source (if (eq? mode 'bigloo)
+			 (gst-element-factory-make "bglportsrc" "file-source"
+						   :uri src)
+			 (gst-element-factory-make "filesrc" "file-source"
+						   :location src)))
 	     (decoder (gst-element-factory-make "decodebin"))
 	     (csp (gst-element-factory-make "ffmpegcolorspace"))
 	     (gdkpixbuf (gst-element-factory-make "gdkpixbufscale"))
 	     (encoder (gst-element-factory-make "pngenc"))
-	     (sink (gst-element-factory-make "filesink" :location dst))
+	     (sink (if (eq? mode 'bigloo)
+		       (gst-element-factory-make "bglportsink" "file-sink" :uri dst)
+		       (gst-element-factory-make "filesink" "file-sink" :location dst)))
 	     (bus (gst-pipeline-bus pipeline)))
 
 	 (tprint "src=" src " dst=" dst)

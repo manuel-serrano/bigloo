@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec 17 18:23:43 2010 (serrano)                */
+#*    Last change :  Sun Dec 26 17:18:02 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3054,7 +3054,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       dtls=0;
     fi
 
-    echo "/* automatically generated, Don't edit" >  api/ssl/src/C/bglssl.h
+    echo "/* automatically generated, Don't edit */" >  api/ssl/src/C/bglssl.h
     cat api/ssl/src/C/bglssl.h.in | sed -e "s|@HAVEDTLS@|$dtls|g" \
         >>  api/ssl/src/C/bglssl.h
   else

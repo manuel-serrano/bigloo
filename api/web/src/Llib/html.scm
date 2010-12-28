@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Thu May  6 14:39:32 2010 (serrano)                */
+;*    Last change :  Fri Dec 24 13:26:55 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -128,6 +128,15 @@
 		 (loop (+fx i 6) (+fx c 1)))
 		((substring-at? str "&nbsp;" i)
 		 (loop (+fx i 6) (+fx c 1)))
+		((substring-at? str "&#" i)
+		 (let liip ((i (+fx i 2)))
+		    (cond
+		       ((=fx i ol)
+			c)
+		       ((char-numeric? (string-ref str i))
+			(liip (+fx i 1)))
+		       (else
+			(loop (+fx i 1) (+fx c 1))))))
 		(else
 		 (loop (+fx i 1) (+fx c 1)))))
 	    (else
@@ -158,6 +167,20 @@
 		       ((substring-at? str "&nbsp;" i)
 			(string-set! res j #\space)
 			(loop (+fx i 6) (+fx j 1)))
+		       ((substring-at? str "&#" i)
+			(let liip ((i (+fx i 2))
+				   (n 0))
+			   (if (=fx i ol)
+			       res
+			       (let ((c (string-ref str i)))
+				  (if (char-numeric? c)
+				      (liip (+fx i 1)
+					    (+fx (*fx n 10)
+						 (-fx (char->integer c)
+						      (char->integer #\0))))
+				      (begin
+					 (string-set! res j (integer->char n))
+					 (loop (+fx i 1) (+fx j 1))))))))
 		       (else
 			(string-set! res j (string-ref str i))
 			(loop (+fx i 1) (+fx j 1)))))
