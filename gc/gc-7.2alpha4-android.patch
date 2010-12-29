@@ -1,0 +1,220 @@
+diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
+--- gc-7.2alpha4.orig/configure.ac	2009-12-01 21:34:24.000000000 +0100
++++ gc-7.2alpha4/configure.ac	2010-12-29 05:49:31.000000000 +0100
+@@ -105,7 +105,7 @@
+     ;;
+  posix | pthreads)
+     THREADS=posix
+-    THREADDLLIBS=-lpthread
++    AC_CHECK_LIB(pthread, pthread_self, THREADDLLIBS="-lpthread",,)
+     case "$host" in
+      x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux* | x86_64-*-linux* | alpha-*-linux* | sparc*-*-linux*)
+ 	AC_DEFINE(GC_LINUX_THREADS)
+diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
+--- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
++++ gc-7.2alpha4/dyn_load.c	2010-12-29 05:53:52.000000000 +0100
+@@ -85,11 +85,18 @@
+     || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
+                              || defined(NETBSD) || defined(OPENBSD)))
+ # include <stddef.h>
+-# if !defined(OPENBSD)
++# if !defined(OPENBSD) && !defined(PLATFORM_ANDROID)
+     /* FIXME: Why we exclude it for OpenBSD? */
+ #   include <elf.h>
+ # endif
+-# include <link.h>
++# ifdef PLATFORM_ANDROID
++    /* The header file is in bionics/linker. */
++    /* If you don't need the "dynamic loading" feature, you may build   */
++    /* the collector with -D IGNORE_DYNAMIC_LOADING.                    */
++#   include <linker.h>
++# else
++#   include <link.h>
++# endif
+ #endif
+ 
+ /* Newer versions of GNU/Linux define this macro.  We
+@@ -191,6 +198,10 @@
+         int i;
+ 
+         e = (ElfW(Ehdr) *) lm->l_addr;
++#       ifdef PLATFORM_ANDROID
++          if (e == NULL)
++            continue;
++#       endif
+         p = ((ElfW(Phdr) *)(((char *)(e)) + e->e_phoff));
+         offset = ((unsigned long)(lm->l_addr));
+         for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
+@@ -571,10 +582,13 @@
+ #  ifndef PF_W
+ #  define PF_W         2
+ #  endif
+-#else
++#elif !defined(PLATFORM_ANDROID)
+ #  include <elf.h>
+ #endif
+-#include <link.h>
++
++#ifndef PLATFORM_ANDROID
++# include <link.h>
++#endif
+ 
+ # endif
+ 
+@@ -626,6 +640,10 @@
+         int i;
+ 
+         e = (ElfW(Ehdr) *) lm->l_addr;
++#       ifdef PLATFORM_ANDROID
++          if (e == NULL)
++            continue;
++#       endif
+         p = ((ElfW(Phdr) *)(((char *)(e)) + e->e_phoff));
+         offset = ((unsigned long)(lm->l_addr));
+         for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
+diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
+--- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
++++ gc-7.2alpha4/include/private/gcconfig.h	2010-12-29 05:56:52.000000000 +0100
+@@ -39,10 +39,9 @@
+ /* Machine specific parts contributed by various people.  See README file. */
+ 
+ /* First a unified test for Linux: */
+-# if defined(linux) || defined(__linux__)
+-#  ifndef LINUX
+-#    define LINUX
+-#  endif
++# if (defined(linux) || defined(__linux__) || defined(PLATFORM_ANDROID)) \
++     && !defined(LINUX)
++#   define LINUX
+ # endif
+ 
+ /* And one for NetBSD: */
+@@ -319,7 +318,7 @@
+ #   if defined(__ppc__)  || defined(__ppc64__)
+ #    define POWERPC
+ #    define mach_type_known
+-#   elif defined(__x86_64__)
++#   elif defined(__x86_64__) || defined(__x86_64)
+ #    define X86_64
+ #    define mach_type_known
+ #   elif defined(__i386__)
+@@ -708,6 +707,9 @@
+ #            if defined(__GLIBC__)&& __GLIBC__>=2
+ #              define SEARCH_FOR_DATA_START
+ #            else /* !GLIBC2 */
++#              ifdef PLATFORM_ANDROID
++#                define __environ environ
++#              endif
+                extern char **__environ;
+ #              define DATASTART ((ptr_t)(&__environ))
+                              /* hideous kludge: __environ is the first */
+@@ -1173,7 +1175,8 @@
+ #              define DATASTART ((ptr_t)((((word) (_etext)) + 0xfff) & ~0xfff))
+ #            endif
+ #            include <features.h>
+-#            if defined(__GLIBC__) && __GLIBC__ >= 2
++#            if defined(__GLIBC__) && __GLIBC__ >= 2 \
++                || defined(PLATFORM_ANDROID)
+ #                define SEARCH_FOR_DATA_START
+ #            else
+                  extern char **__environ;
+@@ -1366,7 +1369,7 @@
+ #     define GETPAGESIZE() getpagesize()
+       /* There seems to be some issues with trylock hanging on darwin. This
+          should be looked into some more */
+-#      define NO_PTHREAD_TRYLOCK
++#     define NO_PTHREAD_TRYLOCK
+ #   endif /* DARWIN */
+ # endif
+ 
+@@ -2389,7 +2392,8 @@
+ #   define THREADS
+ # endif
+ 
+-# if defined(UNIX_LIKE) && defined(THREADS) && !defined(NO_CANCEL_SAFE)
++# if defined(UNIX_LIKE) && defined(THREADS) && !defined(NO_CANCEL_SAFE) \
++     && !defined(PLATFORM_ANDROID)
+     /* Make the code cancellation-safe.  This basically means that we   */
+     /* ensure that cancellation requests are ignored while we are in    */
+     /* the collector.  This applies only to Posix deferred cancellation;*/
+diff -Naur gc-7.2alpha4.orig/include/private/pthread_support.h gc-7.2alpha4/include/private/pthread_support.h
+--- gc-7.2alpha4.orig/include/private/pthread_support.h	2009-10-22 19:52:42.000000000 +0200
++++ gc-7.2alpha4/include/private/pthread_support.h	2010-12-29 05:49:31.000000000 +0100
+@@ -46,6 +46,9 @@
+                                   /* guaranteed to be dead, but we may  */
+                                   /* not yet have registered the join.) */
+     pthread_t id;
++#   ifdef PLATFORM_ANDROID
++      pid_t kernel_id;
++#   endif
+     /* Extra bookkeeping information the stopping code uses */
+     struct thread_stop_info stop_info;
+ 
+diff -Naur gc-7.2alpha4.orig/pthread_stop_world.c gc-7.2alpha4/pthread_stop_world.c
+--- gc-7.2alpha4.orig/pthread_stop_world.c	2009-11-05 13:35:44.000000000 +0100
++++ gc-7.2alpha4/pthread_stop_world.c	2010-12-29 05:49:31.000000000 +0100
+@@ -359,6 +359,22 @@
+   int GC_stopping_pid = 0;
+ #endif
+ 
++#ifdef PLATFORM_ANDROID
++  static int android_thread_kill(pid_t tid, int sig)
++  {
++    int ret;
++    int old_errno = errno;
++
++    ret = tkill(tid, sig);
++    if (ret < 0) {
++        ret = errno;
++        errno = old_errno;
++    }
++
++    return ret;
++  }
++#endif /* PLATFORM_ANDROID */
++
+ /* We hold the allocation lock.  Suspend all threads that might */
+ /* still be running.  Return the number of suspend signals that */
+ /* were sent. */
+@@ -401,7 +417,11 @@
+               p -> stop_info.stack_ptr =
+                         *(ptr_t *)((char *)p -> id + UTHREAD_SP_OFFSET);
+ #           else
+-              result = pthread_kill(p -> id, SIG_SUSPEND);
++#             ifndef PLATFORM_ANDROID
++                result = pthread_kill(p -> id, SIG_SUSPEND);
++#             else
++                result = android_thread_kill(p -> kernel_id, SIG_SUSPEND);
++#             endif
+               switch(result) {
+                 case ESRCH:
+                     /* Not really there anymore.  Possible? */
+@@ -540,9 +560,13 @@
+ 
+ #         ifdef GC_OPENBSD_THREADS
+             if (pthread_resume_np(p -> id) != 0)
+-              ABORT("pthread_kill failed");
++              ABORT("pthread_resume_np failed");
+ #         else
+-            result = pthread_kill(p -> id, SIG_THR_RESTART);
++#           ifndef PLATFORM_ANDROID
++              result = pthread_kill(p -> id, SIG_THR_RESTART);
++#           else
++              result = android_thread_kill(p -> kernel_id, SIG_THR_RESTART);
++#           endif
+             switch(result) {
+                 case ESRCH:
+                     /* Not really there anymore.  Possible? */
+diff -Naur gc-7.2alpha4.orig/pthread_support.c gc-7.2alpha4/pthread_support.c
+--- gc-7.2alpha4.orig/pthread_support.c	2009-11-06 10:17:00.000000000 +0100
++++ gc-7.2alpha4/pthread_support.c	2010-12-29 05:49:31.000000000 +0100
+@@ -389,6 +389,9 @@
+         if (result == 0) return(0);
+     }
+     result -> id = id;
++#   ifdef PLATFORM_ANDROID
++      result -> kernel_id = gettid();
++#   endif
+     result -> next = GC_threads[hv];
+     GC_threads[hv] = result;
+     GC_ASSERT(result -> flags == 0 && result -> thread_blocked == 0);

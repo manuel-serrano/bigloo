@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Wed Nov 24 09:21:04 2010 (serrano)                */
+#*    Last change :  Wed Dec 29 06:28:18 2010 (serrano)                */
 #*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -26,8 +26,8 @@ POPULATION = Makefile \
              install-gc-7.2alpha2 configure-gc-7.2alpha2 \
              gc-7.2alpha2.patch Makefile-gc-7.2alpha2 \
              install-gc-7.2alpha4 configure-gc-7.2alpha4 \
-             configure-gc-7.2alpha4-android \
-             gc-7.2alpha4.patch Makefile-gc-7.2alpha4 \
+             gc-7.2alpha4.patch gc-7.2alpha4-android.patch \
+             Makefile-gc-7.2alpha4 \
              gc-6.5-gentoo.patch gc-6.6-gentoo-ulibc.patch \
              sparc_linux_mach_dep.c \
              $(CUSTOMGC).tar.gz
