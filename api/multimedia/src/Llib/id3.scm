@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri Aug 27 17:24:55 2010 (serrano)                */
+;*    Last change :  Wed Dec 29 18:35:16 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -39,6 +39,11 @@
 	   (ogg-musictag ::bstring)
 	   (flac-musictag ::bstring)
 	   (file-musictag ::bstring)))
+
+(define-macro (mmap-ref v o)
+   `(if ($mmap-bound-check? ,o (mmap-length ,v))
+	(mmap-ref-ur ,v ,o)
+	(error "mmap-ref" "out of bound" ,o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *id3v2-genres* ...                                               */
@@ -187,7 +192,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mmap-substring/len ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (mmap-substring/len mm start len)
+(define-inline (mmap-substring/len mm start::elong len::elong)
    (mmap-substring mm start (+elong start len)))
 
 ;*---------------------------------------------------------------------*/
@@ -195,7 +200,7 @@
 ;*---------------------------------------------------------------------*/
 (define (id3v1? mm)
    (and (>elong (mmap-length mm) 128)
-	(string=? (mmap-substring/len mm (-elong (mmap-length mm) 128) 3)
+	(string=? (mmap-substring/len mm (-elong (mmap-length mm) 128) #e3)
 		  "TAG")))
 
 ;*---------------------------------------------------------------------*/
@@ -212,11 +217,11 @@
 (define (mp3-id3v1 mm)
    (instantiate::id3
       (version "id3v1")
-      (title (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e125) 30)))
-      (artist (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e95) 30)))
-      (album (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e65) 30)))
-      (year (string->integer (mmap-substring/len mm (-elong (mmap-length mm) #e35) 4)))
-      (comment (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e31) 4)))
+      (title (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e125) #e30)))
+      (artist (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e95) #e30)))
+      (album (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e65) #e30)))
+      (year (string->integer (mmap-substring/len mm (-elong (mmap-length mm) #e35) #e4)))
+      (comment (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e31) #e4)))
       (genre (case (mmap-ref mm (-elong (mmap-length mm) #e1))
 		(else "unknown")))))
 
@@ -348,7 +353,7 @@
    (let ((n0 (char->integer (mmap-ref mm (+ o 3))))
 	 (n1 (char->integer (mmap-ref mm (+ o 4))))
 	 (n2 (char->integer (mmap-ref mm (+ o 5)))))
-      (values (mmap-substring/len mm o 3)
+      (values (mmap-substring/len mm o #e3)
 	      (fixnum->elong
 	       (+fx (bit-lsh n0 (*fx 2 7))
 		    (+fx (bit-lsh n1 7)
@@ -381,17 +386,17 @@
 ;*    id3v2.3-frame ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (id3v2.3-frame mm o::elong)
-   (let ((n0 (char->integer (mmap-ref mm (+ o 4))))
-	 (n1 (char->integer (mmap-ref mm (+ o 5))))
-	 (n2 (char->integer (mmap-ref mm (+ o 6))))
-	 (n3 (char->integer (mmap-ref mm (+ o 7)))))
-      (values (mmap-substring/len mm o 4)
+   (let* ((n0 (char->integer (mmap-ref mm (+ o 4))))
+	  (n1 (char->integer (mmap-ref mm (+ o 5))))
+	  (n2 (char->integer (mmap-ref mm (+ o 6))))
+	  (n3 (char->integer (mmap-ref mm (+ o 7)))))
+      (values (mmap-substring/len mm o #e4)
 	      (fixnum->elong
 	       (+fx (bit-lsh n0 (*fx 3 7))
 		    (+fx (bit-lsh n1 (*fx 2 7))
 			 (+fx (bit-lsh n2 7)
 			      n3))))
-	      (mmap-substring/len mm (+ o 8) 2))))
+	      (mmap-substring/len mm (+ o 8) #e2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2.3-frames ...                                               */
@@ -400,21 +405,23 @@
    (let* ((size (id3v2-size mm #e6))
 	  (end (+ 11 size))
 	  (flags (mmap-ref mm #e4)))
-      (let loop ((i #e10)
-		 (frames '()))
-	 (if (>= i end)
-	     frames
-	     (multiple-value-bind (id sz flag)
-		(id3v2.3-frame mm i)
-		(if (or (= sz 0) (> (+ i sz) end))
-		    frames
-		    (case (string-ref id 0)
-		       ((#\T)
-			(loop (+ i (+ sz 10))
-			      (cons (cons id (id3v2-get-string mm (+ i 10) sz))
-				    frames)))
-		       (else
-			(loop (+ i (+ sz 10)) frames)))))))))
+      (if (>= size (mmap-length mm))
+	  '()
+	  (let loop ((i #e10)
+		     (frames '()))
+	     (if (>= i end)
+		 frames
+		 (multiple-value-bind (id sz flag)
+		    (id3v2.3-frame mm i)
+		    (if (or (= sz 0) (> (+ i sz) end))
+			frames
+			(case (string-ref id 0)
+			   ((#\T)
+			    (loop (+ i (+ sz 10))
+				  (cons (cons id (id3v2-get-string mm (+ i 10) sz))
+					frames)))
+			   (else
+			    (loop (+ i (+ sz 10)) frames))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2.4-frames ...                                               */

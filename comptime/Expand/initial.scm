@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Dec 12 14:51:46 2010 (serrano)                */
+;*    Last change :  Wed Dec 29 18:10:27 2010 (serrano)                */
 ;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -940,7 +940,7 @@
    (install-G-comptime-expander
     'mmap-set!
     (lambda (x::obj e::procedure)
-       (bound-check x 'mmap-length '$string-bound-check? e)))
+       (bound-check x 'mmap-length '$mmap-bound-check? e)))
    
    ;; mmap-ref
    (install-O-comptime-expander
@@ -958,7 +958,7 @@
    (install-G-comptime-expander
     'mmap-ref
     (lambda (x::obj e::procedure)
-       (bound-check x 'mmap-length '$string-bound-check? e)))
+       (bound-check x 'mmap-length '$mmap-bound-check? e)))
 
    ;; pregexp
    (let ((pregexp-expander (lambda (x::obj e::procedure)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Fri Dec 17 11:12:34 2010 (serrano)                */
+;*    Last change :  Wed Dec 29 17:56:19 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -67,7 +67,7 @@
 	       (method static $flonum->llong::llong   (::double)
 		       "FLONUM_TO_LLONG")))
    
-   (export  (inline number?::bool           obj)
+   (export  (number?::bool                  obj)
 	    (inline exact?::bool            z)
 	    (inline inexact?::bool          z)
 	    (complex?::bool                 x)
@@ -189,7 +189,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    number? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (number? obj)
+(define (number? obj)
    (if (fixnum? obj)
        #t
        (if (flonum? obj)
