@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Dec 26 17:18:02 2010 (serrano)                */
+#*    Last change :  Wed Dec 29 06:13:22 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1271,7 +1271,7 @@ case $hostos in
     fi
   
     # Add the correct cflags option
-    cflags="$cflags -DBGL_ANDROID"
+    cflags="$cflags -DBGL_ANDROID -DPLATFORM_ANDROID"
   
     ;;
 esac
