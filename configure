@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 29 06:13:22 2010 (serrano)                */
+#*    Last change :  Wed Dec 29 10:28:28 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -208,6 +208,7 @@ ldinstallname=
 ldinstallnamedirroot=lib
 sharedsuffix=so
 sharedlibraryclosed=no
+sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
 # the legal value for that variable is `yes' or `no'
@@ -1271,7 +1272,9 @@ case $hostos in
     fi
   
     # Add the correct cflags option
-    cflags="$cflags -DBGL_ANDROID -DPLATFORM_ANDROID"
+    cflags="$cflags -DBGL_ANDROID"
+    # Use the multithreaded libbigloogc to close the other shared libraries
+    sharedlibrarygcclosed='-l$(GCLIB)_fth-$(RELEASE)'
   
     ;;
 esac
@@ -1725,6 +1728,11 @@ if [ "$action" != "bigloo_config_el" ]; then
       cflags="$cflags -DBGL_FORBID_GC_COLLECT"
     fi
   
+    # android
+    if [ $hostos = "android" ]; then
+      cgcflags="-DPLATFORM_ANDROID"
+    fi
+
     # configure directories
     gcconfiguredir="--prefix=$pwd/gc/preinst"
     # install the gc source code if needed
@@ -2909,7 +2917,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ $customgc = "yes" ]; then
      echo "GCCUSTOM=yes" >> $makefile_cfg
      echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
-     echo 'GCCLOSELIB=-l$(GCLIB)-$(RELEASE)' >> $makefile_cfg
+     echo "GCCLOSELIB=-l$sharedlibrarygcclosed" >> $makefile_cfg
      echo "GCSTDOBJ=" >> $makefile_cfg
   else
      echo "GCCUSTOM=no" >> $makefile_cfg
