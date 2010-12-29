@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 29 10:28:28 2010 (serrano)                */
+#*    Last change :  Wed Dec 29 10:35:08 2010 (serrano)                */
 #*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2917,7 +2917,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ $customgc = "yes" ]; then
      echo "GCCUSTOM=yes" >> $makefile_cfg
      echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
-     echo "GCCLOSELIB=-l$sharedlibrarygcclosed" >> $makefile_cfg
+     echo "GCCLOSELIB=$sharedlibrarygcclosed" >> $makefile_cfg
      echo "GCSTDOBJ=" >> $makefile_cfg
   else
      echo "GCCUSTOM=no" >> $makefile_cfg
