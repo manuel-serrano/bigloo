@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Thu Jan  7 19:21:21 2010 (serrano)                */
+#*    Last change :  Wed Dec 29 10:06:19 2010 (serrano)                */
 #*    Copyright   :  2009-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.2alpha4 specific entries                                    */
@@ -32,6 +32,7 @@ $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
              LIBDEST=$@ \
              SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \
+             CLOSELIBS= \
              LDLIBS=$(EXTRAGCLIBS) \
              OBJECTS="$(OUTDIR)/*.o"
 
