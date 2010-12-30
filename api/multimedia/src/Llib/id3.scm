@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Dec 29 18:35:16 2010 (serrano)                */
+;*    Last change :  Thu Dec 30 07:29:42 2010 (serrano)                */
 ;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -14,6 +14,9 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-id3
 
+   (static (class &large-frame-exception::&exception
+	      (size::elong read-only)))
+	   
    (export (abstract-class musictag
 	      (title::bstring read-only)
 	      (artist::bstring read-only)
@@ -23,7 +26,9 @@
 	      (year::int read-only)
 	      (genre::bstring read-only)
 	      (comment::bstring read-only)
-	      (ufid::obj read-only (default #unspecified)))
+	      (ufid::obj read-only (default #unspecified))
+	      (copyright::obj read-only (default #f))
+	      (picture::obj (default #f)))
 
 	   (class vorbis::musictag)
 	   
@@ -32,18 +37,16 @@
 	      (orchestra::obj read-only (default #f))
 	      (conductor::obj read-only (default #f))
 	      (recording read-only (default #f))
-	      (cd::obj (default #f)))
+	      (cd::obj (default #f))
+	      (woaf::obj (default #f))
+	      (woar::obj (default #f))
+	      (wors::obj (default #f)))
 
 	   (mp3-id3 ::bstring)
 	   (mp3-musictag ::bstring)
 	   (ogg-musictag ::bstring)
 	   (flac-musictag ::bstring)
 	   (file-musictag ::bstring)))
-
-(define-macro (mmap-ref v o)
-   `(if ($mmap-bound-check? ,o (mmap-length ,v))
-	(mmap-ref-ur ,v ,o)
-	(error "mmap-ref" "out of bound" ,o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *id3v2-genres* ...                                               */
@@ -375,7 +378,7 @@
 		(if (or (=elong sz #e0) (>elong (+elong i sz) end))
 		    frames
 		    (case (string-ref id 0)
-		       ((#\T)
+		       ((#\T #\A #\W)
 			(loop (+elong i (+elong sz 6))
 			      (cons (cons id (id3v2-get-string mm (+ i 6) sz))
 				    frames)))
@@ -405,8 +408,11 @@
    (let* ((size (id3v2-size mm #e6))
 	  (end (+ 11 size))
 	  (flags (mmap-ref mm #e4)))
-      (if (>= size (mmap-length mm))
-	  '()
+      (if (> size (mmap-length mm))
+	  (raise
+	   (instantiate::&large-frame-exception
+	      (fname "id3.scm")
+	      (size size)))
 	  (let loop ((i #e10)
 		     (frames '()))
 	     (if (>= i end)
@@ -416,7 +422,7 @@
 		    (if (or (= sz 0) (> (+ i sz) end))
 			frames
 			(case (string-ref id 0)
-			   ((#\T)
+			   ((#\T #\A #\W)
 			    (loop (+ i (+ sz 10))
 				  (cons (cons id (id3v2-get-string mm (+ i 10) sz))
 					frames)))
@@ -477,6 +483,20 @@
 	  (else "unknown"))))
 
 ;*---------------------------------------------------------------------*/
+;*    id3v2-picture ...                                                */
+;*---------------------------------------------------------------------*/
+(define (id3v2-picture frame)
+   (when (string? frame)
+      (let ((i (string-index frame #a000)))
+	 (when i
+	    (let ((mime-type (if (=fx i 0) "image/" (substring frame 0 i)))
+		  (j (string-index frame  #a000 (+fx i 2))))
+	       (when j
+		  (let ((descr (substring frame (+fx i 1) j))
+			(data (substring frame (+fx j 1))))
+		     (list mime-type descr data))))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    mp3-id3v2.3 ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (mp3-id3v2.3 mm)
@@ -495,7 +515,12 @@
 	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
 	 (cd (id3v2-get-frame "MCDI" frames #f))
-	 (ufid (id3v2-get-frame "UFID" frames #f)))))
+	 (ufid (id3v2-get-frame "UFID" frames #f))
+	 (copyright (id3v2-get-frame "TCOP" frames #f))
+	 (picture (id3v2-picture (id3v2-get-frame "APIC" frames #f)))
+	 (woaf (id3v2-get-frame "WOAF" frames #f))
+	 (woar (id3v2-get-frame "WOAR" frames #f))
+	 (wors (id3v2-get-frame "WORS" frames #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-id3v2.4 ...                                                  */
@@ -516,7 +541,12 @@
 	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
 	 (cd (id3v2-get-frame "MCDI" frames #f))
-	 (ufid (id3v2-get-frame "UFID" frames #f)))))
+	 (ufid (id3v2-get-frame "UFID" frames #f))
+	 (copyright (id3v2-get-frame "TCOP" frames #f))
+	 (picture (id3v2-picture (id3v2-get-frame "APIC" frames #f)))
+	 (woaf (id3v2-get-frame "WOAF" frames #f))
+	 (woar (id3v2-get-frame "WOAR" frames #f))
+	 (wors (id3v2-get-frame "WORS" frames #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-id3 ...                                                      */
@@ -759,11 +789,18 @@
        =>
        (lambda (p)
 	  (unwind-protect
-	     (let ((s (read-chars 8192 p)))
+	     (let loop ((s (read-chars 8192 p)))
 		;; reads the first 8KB and tries to find a tag
 		(let ((mm (string->mmap s)))
 		   (unwind-protect
-		      (mmap-musictag mm)
+		      (with-handler
+			 (lambda (e)
+			    (if (&large-frame-exception? e)
+				(let ((sz (elong->fixnum
+					   (- (&large-frame-exception-size e)
+					      (string-length s)))))
+				   (loop (string-append s (read-chars sz p))))))
+			 (mmap-musictag mm))
 		      (close-mmap mm))))
 	     (close-input-port p))))
       (else

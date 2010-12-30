@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Aug 11 11:47:27 2010 (serrano)                */
+/*    Last change :  Thu Dec 30 05:57:05 2010 (serrano)                */
 /*    Copyright   :  2003-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -681,10 +681,10 @@ obj_t ident proto { \
 #define WRAPPER_PUSH( ident, tnum, typeres, proto, call ) \
 typeres ident proto { \
    typeres res; \
-   PUSH_TRACE( ident##_symbol ); \
+   BGL_PUSH_TRACE( ident##_symbol, BFALSE ); \
    set_alloc_type( tnum ); \
    res = ____##ident call ; \
-   POP_TRACE(); \
+   BGL_POP_TRACE(); \
    return res; \
 }
 
@@ -706,11 +706,11 @@ obj_t ident proto { \
 #define WRAPPER2_PUSH( ident, tnum1, tnum2, proto, call ) \
 obj_t ident proto { \
    obj_t aux; \
-   PUSH_TRACE( ident##_symbol ); \
+   BGL_PUSH_TRACE( ident##_symbol, BFALSE ); \
    set_alloc_type( tnum1 ); \
    aux = ____##ident call ; \
    set_alloc_type( tnum2 ); \
-   POP_TRACE(); \
+   BGL_POP_TRACE(); \
    return aux; \
 }
 
@@ -732,9 +732,9 @@ obj_t ident proto { \
    if( !s ) s = string_to_symbol( sym ); \
    { \
      obj_t res; \
-     PUSH_TRACE( s ); \
+     BGL_PUSH_TRACE( s, BFALSE ); \
      res = var call ; \
-     POP_TRACE(); \
+     BGL_POP_TRACE(); \
      return res; \
    } \
 }
