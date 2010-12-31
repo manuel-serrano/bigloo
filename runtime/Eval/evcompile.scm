@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Mon Dec 20 16:37:23 2010 (serrano)                */
+;*    Last change :  Fri Dec 31 11:38:02 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -154,7 +154,7 @@
 				    tail
 				    loc))))
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
-       (let ((@var (@variable loc id env genv (eval-find-module mod))))
+       (let ((@var (@variable loc id env genv mod)))
 	  (evcompile-ref @var loc lkp)))
       ((quote ?cnst)
        (evcompile-cnst cnst (get-location exp loc)))
@@ -337,7 +337,7 @@
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f loc lkp #f))
 			    args))
-	      (@proc (@variable loc fun env genv (eval-find-module mod))))
+	      (@proc (@variable loc fun env genv mod)))
 	  (evcompile-application fun
 				 (evcompile-ref @proc loc lkp)
 				 actuals
@@ -796,14 +796,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    @variable ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (@variable loc symbol env genv mod)
-   (let ((global (evmodule-find-global mod symbol)))
+(define (@variable loc symbol env genv modname)
+   (let* ((mod (eval-find-module modname))
+	  (global (evmodule-find-global mod symbol)))
       (if (not global)
 	  (if (eq? genv mod)
 	      (cons 'dynamic symbol)
-	      (error 'eval
-		     "variable unbound"
-		     `(@ ,symbol ,(evmodule-name genv))))
+	      (error 'eval "variable unbound" `(@ ,symbol ,modname)))
 	  global)))
 
 ;*---------------------------------------------------------------------*/

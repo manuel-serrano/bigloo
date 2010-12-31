@@ -1188,7 +1188,7 @@ the start/end indices describe a same half-open interval [start,end).
 @deffnx {bigloo procedure} string-contains-ci string1 string2 [start 0]
 @cindex SRFI-13
 
-Does string s1 contain string s2?
+Does string @var{string1} contain string @var{string2}?
 
 Return the index in @var{string1} where @var{string2} occurs first as a 
 substring, or false.

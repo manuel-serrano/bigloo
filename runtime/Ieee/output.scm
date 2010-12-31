@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Dec 14 15:10:42 2010 (serrano)                */
+;*    Last change :  Fri Dec 31 12:21:23 2010 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -222,6 +222,7 @@
 	    (write* . obj)
 	    (print . obj)
 	    (fprint ::output-port . obj)
+	    (tprint ::output-port . obj)
 	    (format ::bstring . obj)
 	    (printf ::bstring . obj)
 	    (fprintf ::output-port ::bstring . obj))
@@ -365,10 +366,24 @@
 		(loop (cdr l)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    tprint-mutex ...                                                 */
+;*---------------------------------------------------------------------*/
+(define tprint-mutex (make-mutex "tprint"))
+
+;*---------------------------------------------------------------------*/
+;*    tprint ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (tprint port . obj)
+   (mutex-lock! tprint-mutex)
+   (apply fprint port obj)
+   (flush-output-port port)
+   (mutex-unlock! tprint-mutex))
+
+;*---------------------------------------------------------------------*/
 ;*    fprint ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (fprint port . obj)
-   (let loop ((l    obj)
+   (let loop ((l obj)
 	      (res '()))
       (if (null? l)
 	  (begin

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Fri Aug 29 13:43:18 2008                          */
-;*    Last change :  Fri Aug 29 14:58:04 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Fri Dec 31 07:40:27 2010 (serrano)                */
+;*    Copyright   :  2008-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Unified support for atom and rss feeds                           */
 ;*=====================================================================*/
@@ -19,7 +19,7 @@
 	   __web_html
 	   __web_atom
 	   __web_rss)
-   
+
    (export (feed-parse ::input-port ::procedure ::procedure ::procedure
 		       #!key (content-length 0) (encoding 'UTF-8))))
 
@@ -67,6 +67,22 @@
 		    #!key
 		    (content-length 0)
 		    (encoding 'UTF-8))
+   ;; check the user arguments
+   (unless (correct-arity? make-feed 2)
+      (error "feed-parse"
+	     (format "make-feed: bad arity 2 expected, ~a provided"
+		     (procedure-arity make-feed))
+	     make-feed))
+   (unless (<fx (procedure-arity make-head) 0)
+      (error "feed-parse"
+	     (format "make-head: arity <0 expected, ~a provided"
+		     (procedure-arity make-head))
+	     make-head))
+   (unless (<fx (procedure-arity make-body) 0)
+      (error "feed-parse"
+	     (format "make-body: arity <0 expected, ~a provided"
+		     (procedure-arity make-body))
+	     make-body))
    (let ((xml-tree (xml-parse ip
 			      :content-length content-length
 			      :encoding encoding))

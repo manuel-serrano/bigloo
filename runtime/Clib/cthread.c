@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Dec 10 15:41:23 2010 (serrano)                */
+/*    Last change :  Fri Dec 31 12:13:27 2010 (serrano)                */
 /*    Copyright   :  2004-10 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */

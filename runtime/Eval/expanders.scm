@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sat Dec 18 06:46:15 2010 (serrano)                */
+;*    Last change :  Fri Dec 31 11:32:02 2010 (serrano)                */
 ;*    Copyright   :  2002-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -437,7 +437,7 @@
 ;*    expand-tprint ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (expand-tprint x e)
-   (set-car! x 'fprint)
+   (set-car! x '(@ tprint __r4_output_6_10_3))
    (e (if (epair? x)
 	  (match-case (cer x)
 	     ((at ?name ?pos)
@@ -450,11 +450,9 @@
 			       (cdr x)))
 	      x)
 	     (else
-	      (set-car! x 'fprint)
 	      (set-cdr! x (cons '(current-error-port) (cdr x)))
 	      x))
 	  (begin
-	     (set-car! x 'fprint)
 	     (set-cdr! x (cons '(current-error-port) (cdr x)))
 	     x))
       e))

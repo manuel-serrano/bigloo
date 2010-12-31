@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Fri Aug 29 17:12:58 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 31 07:22:21 2010 (serrano)                */
+;*    Copyright   :  2005-10 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
 ;*=====================================================================*/
@@ -142,7 +142,7 @@
 				(push! rest e)))))
 		      body)
 	    
-	    ;; attributes are read last so the title is alread known
+	    ;; attributes are read last so the title is already known
 	    (for-each (lambda (e)
 			 (when (pair? e)
 			    (case (car e)
