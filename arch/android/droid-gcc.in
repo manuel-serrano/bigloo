@@ -87,6 +87,7 @@ cflags =
      "-I#{droid_root}/bionic/libthread_db/include",
      "-I#{droid_root}/bionic/libm/arm",
      "-I#{droid_root}/bionic/libm",
+     "-I#{droid_root}/bionic/linker",
      "-I#{droid_root}/out/target/product/#{droid_target}/obj/SHARED_LIBRARIES/libm_intermediates"
     ]
 
