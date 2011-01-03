@@ -1,6 +1,6 @@
 diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
 --- gc-7.2alpha4.orig/configure.ac	2009-12-01 21:34:24.000000000 +0100
-+++ gc-7.2alpha4/configure.ac	2010-12-29 08:22:59.000000000 +0100
++++ gc-7.2alpha4/configure.ac	2011-01-03 16:54:56.000000000 +0100
 @@ -105,7 +105,7 @@
      ;;
   posix | pthreads)
@@ -12,7 +12,7 @@ diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
  	AC_DEFINE(GC_LINUX_THREADS)
 diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 --- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/dyn_load.c	2010-12-29 08:55:37.000000000 +0100
++++ gc-7.2alpha4/dyn_load.c	2011-01-03 16:56:56.000000000 +0100
 @@ -85,11 +85,18 @@
      || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
                               || defined(NETBSD) || defined(OPENBSD)))
@@ -27,7 +27,7 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 +    /* The header file is in bionics/linker. */
 +    /* If you don't need the "dynamic loading" feature, you may build   */
 +    /* the collector with -D IGNORE_DYNAMIC_LOADING.                    */
-+#   include "private/android_link.h"
++#   include <linker.h>
 +# else
 +#   include <link.h>
 +# endif
@@ -84,122 +84,9 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
          p = ((ElfW(Phdr) *)(((char *)(e)) + e->e_phoff));
          offset = ((unsigned long)(lm->l_addr));
          for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
-diff -Naur gc-7.2alpha4.orig/include/private/android_link.h gc-7.2alpha4/include/private/android_link.h
---- gc-7.2alpha4.orig/include/private/android_link.h	1970-01-01 01:00:00.000000000 +0100
-+++ gc-7.2alpha4/include/private/android_link.h	2010-12-29 08:53:47.000000000 +0100
-@@ -0,0 +1,109 @@
-+/*
-+ * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
-+ * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
-+ *
-+ * Permission is hereby granted to use or copy this program
-+ * for any purpose,  provided the above notices are retained on all copies.
-+ * Permission to modify the code and to distribute modified code is granted,
-+ * provided the above notices are retained, and a notice that the code was
-+ * modified is included with the above copyright notice.
-+ *
-+ * Original author: Manuel Serrano
-+ */
-+
-+
-+/*
-+ * This file is an awful patch/workaround for Android. It looks like
-+ * link.h is missing from the Android definition (only elf.h is provided)
-+ * and thus some structure definitions are lacking. This file defines them.
-+ * This file is actually a bunch of several cut-and-pasts from Linux link.h
-+ * file. It must _ABSOLUTELY_ be double checked by someone familiar with
-+ * the ELF format and Android (which is not my (MS) case).
-+ *
-+ * Even less than the other file, this one is distributed with absolutely
-+ * no warranty at all because I (MS again) don't really understand what I'm
-+ * doing. You have been warned...
-+ *
-+ * PS: to anyone who will improve this file, feel free to remove all this
-+ * comments
-+ */
-+
-+#ifndef _ANDROID_LINK_H
-+#define _ANDROID_LINK_H 1
-+
-+#include <elf.h>
-+
-+#ifdef __ARMEB__
-+#  define ELF_CLASS ELFCLASS32
-+#else
-+#  ifdef __i386__
-+#    define ELF_CLASS ELFCLASS32
-+#  else
-+#    define ELF_CLASS ELFCLASS64
-+#  endif
-+#endif
-+
-+extern void *__stack_base__; /* initialize by GC_init */
-+
-+/* We use this macro to refer to ELF types independent of the native wordsize.
-+   `ElfW(TYPE)' is used in place of `Elf32_TYPE' or `Elf64_TYPE'.  */
-+#if ELF_CLASS == ELFCLASS32
-+#  define ElfW(type) Elf32_##type
-+#else
-+#  if ELF_CLASS == ELFCLASS64
-+#    define ElfW(type) Elf64_##type
-+#  else
-+  -> ERROR "Elf format not supported"
-+#  endif
-+#endif  
-+
-+/* Rendezvous structure used by the run-time dynamic linker to communicate
-+   details of shared object loading to the debugger.  If the executable's
-+   dynamic section has a DT_DEBUG element, the run-time linker sets that
-+   element's value to the address where this structure can be found.  */
-+
-+struct r_debug
-+  {
-+    int r_version;		/* Version number for this protocol.  */
-+
-+    struct link_map *r_map;	/* Head of the chain of loaded objects.  */
-+
-+    /* This is the address of a function internal to the run-time linker,
-+       that will always be called when the linker begins to map in a
-+       library or unmap it, and again when the mapping change is complete.
-+       The debugger can set a breakpoint at this address if it wants to
-+       notice shared object mapping changes.  */
-+    ElfW(Addr) r_brk;
-+    enum
-+      {
-+	/* This state value describes the mapping change taking place when
-+	   the `r_brk' address is called.  */
-+	RT_CONSISTENT,		/* Mapping change is complete.  */
-+	RT_ADD,			/* Beginning to add a new object.  */
-+	RT_DELETE		/* Beginning to remove an object mapping.  */
-+      } r_state;
-+
-+    ElfW(Addr) r_ldbase;	/* Base address the linker is loaded at.  */
-+  };
-+
-+/* This is the instance of that structure used by the dynamic linker.  */
-+extern struct r_debug _r_debug;
-+  
-+/* Structure describing a loaded shared object.  The `l_next' and `l_prev'
-+   members form a chain of all the shared objects loaded at startup.
-+
-+   These data structures exist in space used by the run-time dynamic linker;
-+   modifying them may have disastrous results.  */
-+
-+struct link_map
-+  {
-+    /* These first few members are part of the protocol with the debugger.
-+       This is the same format used in SVR4.  */
-+
-+    ElfW(Addr) l_addr;		/* Base address shared object is loaded at.  */
-+    char *l_name;		/* Absolute file name object was found in.  */
-+    ElfW(Dyn) *l_ld;		/* Dynamic section of the shared object.  */
-+    struct link_map *l_next, *l_prev; /* Chain of loaded objects.  */
-+  };
-+
-+#endif
 diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
 --- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
-+++ gc-7.2alpha4/include/private/gcconfig.h	2010-12-29 08:22:59.000000000 +0100
++++ gc-7.2alpha4/include/private/gcconfig.h	2011-01-03 16:54:56.000000000 +0100
 @@ -39,10 +39,9 @@
  /* Machine specific parts contributed by various people.  See README file. */
  
@@ -264,7 +151,7 @@ diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/pri
      /* the collector.  This applies only to Posix deferred cancellation;*/
 diff -Naur gc-7.2alpha4.orig/include/private/pthread_support.h gc-7.2alpha4/include/private/pthread_support.h
 --- gc-7.2alpha4.orig/include/private/pthread_support.h	2009-10-22 19:52:42.000000000 +0200
-+++ gc-7.2alpha4/include/private/pthread_support.h	2010-12-29 08:22:59.000000000 +0100
++++ gc-7.2alpha4/include/private/pthread_support.h	2011-01-03 16:54:56.000000000 +0100
 @@ -46,6 +46,9 @@
                                    /* guaranteed to be dead, but we may  */
                                    /* not yet have registered the join.) */
@@ -277,19 +164,21 @@ diff -Naur gc-7.2alpha4.orig/include/private/pthread_support.h gc-7.2alpha4/incl
  
 diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
 --- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
-+++ gc-7.2alpha4/misc.c	2010-12-29 08:57:44.000000000 +0100
-@@ -40,6 +40,10 @@
++++ gc-7.2alpha4/misc.c	2011-01-03 16:57:10.000000000 +0100
+@@ -40,6 +40,12 @@
  # include <sys/stat.h>
  #endif
  
 +#if defined(PLATFORM_ANDROID)
-+#include "private/android_link.h"
++#include <linker.h>
++
++extern void *__stack_base__; /* initialize by GC_init */
 +#endif
 +
  #ifdef NONSTOP
  # include <floss.h>
  #endif
-@@ -532,6 +536,10 @@
+@@ -532,6 +538,10 @@
          word dummy;
  #   endif
  
@@ -300,7 +189,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
  #   ifdef GC_INITIAL_HEAP_SIZE
          word initial_heap_sz = divHBLKSZ(GC_INITIAL_HEAP_SIZE);
  #   else
-@@ -541,6 +549,10 @@
+@@ -541,6 +551,10 @@
  
      if (GC_is_initialized) return;
  
@@ -313,7 +202,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
      /* allocation lock held, the allocation lock is now    */
 diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
 --- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
-+++ gc-7.2alpha4/os_dep.c	2010-12-29 08:36:36.000000000 +0100
++++ gc-7.2alpha4/os_dep.c	2011-01-03 16:54:56.000000000 +0100
 @@ -16,6 +16,10 @@
  
  #include "private/gc_priv.h"
@@ -327,7 +216,7 @@ diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
  # if (LINUX_VERSION_CODE <= 0x10400)
 diff -Naur gc-7.2alpha4.orig/pthread_stop_world.c gc-7.2alpha4/pthread_stop_world.c
 --- gc-7.2alpha4.orig/pthread_stop_world.c	2009-11-05 13:35:44.000000000 +0100
-+++ gc-7.2alpha4/pthread_stop_world.c	2010-12-29 08:22:59.000000000 +0100
++++ gc-7.2alpha4/pthread_stop_world.c	2011-01-03 16:54:56.000000000 +0100
 @@ -359,6 +359,22 @@
    int GC_stopping_pid = 0;
  #endif
@@ -382,7 +271,7 @@ diff -Naur gc-7.2alpha4.orig/pthread_stop_world.c gc-7.2alpha4/pthread_stop_worl
                      /* Not really there anymore.  Possible? */
 diff -Naur gc-7.2alpha4.orig/pthread_support.c gc-7.2alpha4/pthread_support.c
 --- gc-7.2alpha4.orig/pthread_support.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/pthread_support.c	2010-12-29 08:22:59.000000000 +0100
++++ gc-7.2alpha4/pthread_support.c	2011-01-03 16:54:56.000000000 +0100
 @@ -389,6 +389,9 @@
          if (result == 0) return(0);
      }
