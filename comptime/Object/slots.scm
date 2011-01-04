@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Nov 16 06:49:26 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan  4 08:13:40 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
 ;*=====================================================================*/
@@ -178,7 +178,7 @@
 				(slot-class-owner other))
 			   (user-error/location
 			    loc
-			    "Class declarator"
+			    (type-id class)
 			    "Illegal duplicated virtual slot"
 			    id)
 			   (let ((new-num (slot-virtual-num (car slots))))
@@ -186,13 +186,13 @@
 			      ;; ajust the slot numbering
 			      (slot-virtual-num-set! other new-num)
 			      ;; ...and we emit a warning
-			      (if (and (>= (bigloo-warning) 2)
-				       *warning-overriden-slots*)
-				  (user-warning/location
-				   loc
-				   "Class declarator"
-				   "Overriden virtual slot"
-				   id))
+			      (when (and (>= (bigloo-warning) 2)
+					 *warning-overriden-slots*)
+				 (user-warning/location
+				  loc
+				  (type-id class)
+				  (format "Overriden virtual slot of class \"~a\"" (type-id (slot-class-owner (car slots))))
+				  id))
 			      (loop (cdr slots) res))))
 		    (loop (cdr slots) (cons (car slots) res)))))
 	    (else
@@ -203,7 +203,7 @@
       (multiple-value-bind (vget vset)
 	 (find-virtual-attr attr)
 	 (if (or vget vset)
-	     (user-error/location "Parse error"
+	     (user-error/location (type-id class)
 				  "virtual slot can't be indexed"
 				  (car slot-id)
 				  '())))
@@ -242,19 +242,19 @@
 	 (cond
 	    ((and vset (not vget))
 	     (user-error/location (find-location s)
-				  "Parse error"
+				  (type-id class)
 				  "Illegal virtual slot (missing getter)"
 				  (car slot-id)
 				  '()))
 	    ((and vset reado?)
 	     (user-error/location (find-location s)
-				  "Parse error"
+				  (type-id class)
 				  "Illegal virtual slot (read-only)"
 				  (car slot-id)
 				  '()))
 	    ((and vget (not vset) (not reado?))
 	     (user-error/location (find-location s)
-				  "Parse error"
+				  (type-id class)
 				  "Illegal virtual slot (missing setter)"
 				  (car slot-id)
 				  '()))
