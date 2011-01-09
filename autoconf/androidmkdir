@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
-#*    Last change :  Sat Jan  8 19:53:13 2011 (serrano)                */
+#*    Last change :  Sun Jan  9 15:42:32 2011 (serrano)                */
 #*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Create a directory on the Android emulator                       */
@@ -17,13 +17,11 @@ ok=0
 # test the dir exists
 if $adb shell ls $dir | grep -iq 'no such'; then
    # no; try to create it
-   if $adb shell mkdir $dir | egrep -iq '(permission denied|read-only)'; then
+   $adb shell mkdir $dir > /dev/null
+
+   if $adb shell ls $dir | grep -iq 'no such'; then
       ok=1
-   # else
-   #    ok=0
    fi
-# else
-#    ok=0
 fi
 
 if [ $ok -eq 0 ]; then
