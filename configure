@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 29 10:35:08 2010 (serrano)                */
-#*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Jan  8 19:55:53 2011 (serrano)                */
+#*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -1230,14 +1230,13 @@ case $hostos in
       echo "  $ $droidsdkroot/tools/android" >&2
       exit 1
     fi
-  
+
     # Find a proper tmp on the phone
     if [ "$droidtmp " = " " ]; then
-  
-      for dir in /tmp /sdcard/tmp /data/local/tmp; do
-        if $autoconfdir/androidmkdir $adb $dir; then
-           droidtmp=$dir
-           break
+      for dir in /tmp /sdcard/tmp /mnt/sdcard/tmp /data/local/tmp; do
+        if $autoconfdir/androidmkdir $adb $dir >&2; then
+          droidtmp=$dir
+          break
         fi
       done
     fi

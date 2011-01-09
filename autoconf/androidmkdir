@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
-#*    Last change :  Thu Sep 23 14:29:37 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Sat Jan  8 19:53:13 2011 (serrano)                */
+#*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Create a directory on the Android emulator                       */
 #*=====================================================================*/
@@ -34,10 +34,14 @@ if [ $ok -eq 0 ]; then
       ok=1
    else
       # set it executable and run it
-      $adb shell chmod 755 $dir/foo
-      if $adb shell $dir/foo | grep -iq 'permission denied'; then
-         # can't execute
-         ok=1
+      if $adb shell chmod 755 $dir/foo | grep -iq "Operation not permitted"; then
+        # can't chmod
+        ok=1;
+      else 
+        if $adb shell $dir/foo | grep -iq 'permission denied'; then
+          # can't execute
+          ok=1
+        fi
       fi
 
       # cleanup

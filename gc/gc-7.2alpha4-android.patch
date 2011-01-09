@@ -1,6 +1,6 @@
 diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
 --- gc-7.2alpha4.orig/configure.ac	2009-12-01 21:34:24.000000000 +0100
-+++ gc-7.2alpha4/configure.ac	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/configure.ac	2011-01-05 13:50:10.000000000 +0100
 @@ -105,7 +105,7 @@
      ;;
   posix | pthreads)
@@ -12,7 +12,7 @@ diff -Naur gc-7.2alpha4.orig/configure.ac gc-7.2alpha4/configure.ac
  	AC_DEFINE(GC_LINUX_THREADS)
 diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
 --- gc-7.2alpha4.orig/dyn_load.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/dyn_load.c	2011-01-03 17:25:25.000000000 +0100
++++ gc-7.2alpha4/dyn_load.c	2011-01-05 13:50:10.000000000 +0100
 @@ -85,11 +85,18 @@
      || (defined(__ELF__) && (defined(LINUX) || defined(FREEBSD) \
                               || defined(NETBSD) || defined(OPENBSD)))
@@ -84,7 +84,7 @@ diff -Naur gc-7.2alpha4.orig/dyn_load.c gc-7.2alpha4/dyn_load.c
          for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
 diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/private/gcconfig.h
 --- gc-7.2alpha4.orig/include/private/gcconfig.h	2009-11-06 12:12:00.000000000 +0100
-+++ gc-7.2alpha4/include/private/gcconfig.h	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/include/private/gcconfig.h	2011-01-05 13:50:10.000000000 +0100
 @@ -39,10 +39,9 @@
  /* Machine specific parts contributed by various people.  See README file. */
  
@@ -149,7 +149,7 @@ diff -Naur gc-7.2alpha4.orig/include/private/gcconfig.h gc-7.2alpha4/include/pri
      /* the collector.  This applies only to Posix deferred cancellation;*/
 diff -Naur gc-7.2alpha4.orig/include/private/pthread_support.h gc-7.2alpha4/include/private/pthread_support.h
 --- gc-7.2alpha4.orig/include/private/pthread_support.h	2009-10-22 19:52:42.000000000 +0200
-+++ gc-7.2alpha4/include/private/pthread_support.h	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/include/private/pthread_support.h	2011-01-05 13:50:10.000000000 +0100
 @@ -46,6 +46,9 @@
                                    /* guaranteed to be dead, but we may  */
                                    /* not yet have registered the join.) */
@@ -162,21 +162,19 @@ diff -Naur gc-7.2alpha4.orig/include/private/pthread_support.h gc-7.2alpha4/incl
  
 diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
 --- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
-+++ gc-7.2alpha4/misc.c	2011-01-03 16:57:10.000000000 +0100
-@@ -40,6 +40,12 @@
++++ gc-7.2alpha4/misc.c	2011-01-05 13:50:33.000000000 +0100
+@@ -40,6 +40,10 @@
  # include <sys/stat.h>
  #endif
  
 +#if defined(PLATFORM_ANDROID)
-+#include <linker.h>
-+
 +extern void *__stack_base__; /* initialize by GC_init */
 +#endif
 +
  #ifdef NONSTOP
  # include <floss.h>
  #endif
-@@ -532,6 +538,10 @@
+@@ -532,6 +536,10 @@
          word dummy;
  #   endif
  
@@ -187,7 +185,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
  #   ifdef GC_INITIAL_HEAP_SIZE
          word initial_heap_sz = divHBLKSZ(GC_INITIAL_HEAP_SIZE);
  #   else
-@@ -541,6 +551,10 @@
+@@ -541,6 +549,10 @@
  
      if (GC_is_initialized) return;
  
@@ -200,7 +198,7 @@ diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
      /* allocation lock held, the allocation lock is now    */
 diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
 --- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
-+++ gc-7.2alpha4/os_dep.c	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/os_dep.c	2011-01-05 13:50:10.000000000 +0100
 @@ -16,6 +16,10 @@
  
  #include "private/gc_priv.h"
@@ -214,7 +212,7 @@ diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
  # if (LINUX_VERSION_CODE <= 0x10400)
 diff -Naur gc-7.2alpha4.orig/pthread_stop_world.c gc-7.2alpha4/pthread_stop_world.c
 --- gc-7.2alpha4.orig/pthread_stop_world.c	2009-11-05 13:35:44.000000000 +0100
-+++ gc-7.2alpha4/pthread_stop_world.c	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/pthread_stop_world.c	2011-01-05 13:50:10.000000000 +0100
 @@ -359,6 +359,22 @@
    int GC_stopping_pid = 0;
  #endif
@@ -269,7 +267,7 @@ diff -Naur gc-7.2alpha4.orig/pthread_stop_world.c gc-7.2alpha4/pthread_stop_worl
                      /* Not really there anymore.  Possible? */
 diff -Naur gc-7.2alpha4.orig/pthread_support.c gc-7.2alpha4/pthread_support.c
 --- gc-7.2alpha4.orig/pthread_support.c	2009-11-06 10:17:00.000000000 +0100
-+++ gc-7.2alpha4/pthread_support.c	2011-01-03 16:54:56.000000000 +0100
++++ gc-7.2alpha4/pthread_support.c	2011-01-05 13:50:10.000000000 +0100
 @@ -389,6 +389,9 @@
          if (result == 0) return(0);
      }

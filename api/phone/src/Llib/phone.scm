@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Wed Dec  1 08:21:36 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Sun Jan  9 15:03:47 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic phone API                                                */
 ;*=====================================================================*/
@@ -37,7 +37,10 @@
 	   (generic phone-contact-update! ::phone ::obj)
 	   (generic phone-contact-remove! ::phone ::obj)
 	   
-	   (generic phone-call-log::pair-nil ::phone . num)))
+	   (generic phone-call-log::pair-nil ::phone . num)
+	   (generic phone-call-info::pair-nil ::phone)
+	   (generic phone-call-start ::phone ::bstring . optional)
+	   (generic phone-call-stop ::phone)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Generic functions                                                */
@@ -78,7 +81,10 @@
 (define-generic (phone-contact-remove! p::phone o::obj))
 
 ;*---------------------------------------------------------------------*/
-;*    phone-call-log ::phone ...                                       */
+;*    telephony                                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (phone-call-log p::phone . num))
+(define-generic (phone-call-info p::phone))
+(define-generic (phone-call-start p::phone num . optional))
+(define-generic (phone-call-stop p::phone))
    
