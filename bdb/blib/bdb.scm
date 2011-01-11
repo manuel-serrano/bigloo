@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 28 07:10:43 1999                          */
-;*    Last change :  Tue Sep 30 11:03:47 2008 (serrano)                */
+;*    Last change :  Tue Jan 11 07:14:05 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bdb library                                                  */
 ;*=====================================================================*/
@@ -88,7 +88,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bdb:init-client! port-number)
    (let ()
-      ($push-trace 'bdb:init-client!)
+      ($push-trace 'bdb:init-client! #f)
       ;; if we have already opened a client but from a different port-number
       ;; we start closing the previous client
       (if (and (socket? *client*)
@@ -117,7 +117,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bdb-invoke port-number kind obj)
    (let ()
-      ($push-trace 'bdb:invoke)
+      ($push-trace 'bdb:invoke #f)
       (bdb:init-client! port-number)
       (let ((port (socket-output *client*)))
 	 ;; the kind of connection
@@ -209,7 +209,7 @@
 ;*---------------------------------------------------------------------*/
 (define (output-value port-number::int value circle?::bool)
    (let ()
-      ($push-trace 'bdb:output-value)
+      ($push-trace 'bdb:output-value #f)
       (let ((port (open-output-string)))
 	 (if circle?
 	     (write-circle value port)
@@ -225,7 +225,7 @@
 ;*---------------------------------------------------------------------*/
 (define (output-classes::int)
    (let ()
-      ($push-trace 'bdb:output-value)
+      ($push-trace 'bdb:output-value #f)
       (print (bgl-get-classes))
       ($pop-trace)
       0))
@@ -247,7 +247,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bdb-print::string value::obj circle?::bool)
    (let ()
-      ($push-trace 'bdb:print)
+      ($push-trace 'bdb:print #f)
       (let ((port (open-output-string)))
 	 (if circle?
 	     (write-circle value port)
@@ -263,7 +263,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bdb-whatis::int port-number::int value::obj)
    (let ()
-      ($push-trace 'bdb:whatis)
+      ($push-trace 'bdb:whatis #f)
       (let ((port (open-output-string)))
 	 (display "type = " port)
 	 (write (find-runtime-type value) port)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Dec 19 15:07:49 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Tue Jan 11 10:20:13 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -458,6 +458,8 @@
 		     (bigloo-c ".heap")
 		     (bigloo-jvm ".jheap")
 		     (bigloo-.net ".jheap")))
-	  (heap (string-append (symbol->string lib) suffix)))
-      (string? (find-file/path heap path))))
+	  (heap (string-append (symbol->string lib) suffix))
+	  (init (string-append (symbol->string lib) ".init")))
+      (string? (or (find-file/path heap path)
+		   (find-file/path init path)))))
 
