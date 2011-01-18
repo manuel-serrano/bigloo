@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Tue Dec 14 14:45:44 2010 (serrano)                */
+;*    Last change :  Tue Jan 18 15:01:55 2011 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -625,4 +625,12 @@
    (test "string-as-read" (string-as-read (string #\\ #\n #\o #\\ #\t))
 	 (string #\newline #\o #\tab))
    (test "string-for-read" (string-for-read (string #\newline #\o #\tab))
-	 (string #\\ #\n #\o #\\ #\t)))
+	 (string #\\ #\n #\o #\\ #\t))
+   (test "string-delete.1" (string-delete "abcedfghij" "fgh")
+	 "abcedij")
+   (test "string-delete.2" (string-delete "abcedfghij" "fgh" 6)
+	 "ij")
+   (test "string-delete.3" (string-delete "abcedfghij" #\b 1 5)
+	 "ced")
+   (test "string-delete.4" (string-delete "abcedfghij" (lambda (c) #t) 7)
+	 ""))

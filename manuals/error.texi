@@ -148,8 +148,8 @@ Returns the result(s) of calling @var{thunk} with no arguments. The
 @var{handler}, which must be a procedure, is installed as the current
 exception handler in the dynamic environment in effect during the call
 to @var{thunk}. When possible, prefer @code{with-handler} to 
-@code{with-exception-handler} because the former is more efficient than
-the latter and because its semantics is more intuitive.
+@code{with-exception-handler} because the former provides better debugging
+support and because its semantics is more intuitive.
 @end deffn
 
 @deffn {bigloo form} with-handler handler body

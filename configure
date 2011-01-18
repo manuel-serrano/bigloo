@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jan  9 15:42:03 2011 (serrano)                */
+#*    Last change :  Tue Jan 18 14:19:59 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1206,7 +1206,7 @@ if [ "$action" != "bigloo_config_el" ]; then
 fi
 
 # Check depends for bglpkg
-if [ $enable_bglpkg = "yes" ]; then
+if [ "$enable_bglpkg " = "yes " ]; then
     if [ $pkgcomp_is_enabled = "no" ]; then
 	echo "*** WARNING: bglpkg binary requires pkgcomp library"
 	echo "Disabling bglpkg."
@@ -1229,7 +1229,7 @@ if [ $enable_bglpkg = "yes" ]; then
     fi
 fi
 
-if [ $enable_bglpkg = "force" ]; then
+if [ "$enable_bglpkg " = "force " ]; then
     if [ $pkgcomp_is_enabled = "no" ]; then
 	echo "*** ERROR: bglpkg binary requires pkgcomp library"
 	echo "Either disable bglpkg, or enable pkgcomp."
@@ -1262,7 +1262,7 @@ fi
 
 # Here, bglpkg has all its dependencies, setting it just to "yes"
 #  in order to have not to double test its value
-if [ $enable_bglpkg = "force" ]; then
+if [ "$enable_bglpkg " = "force " ]; then
     enable_bglpkg="yes"
 fi
 

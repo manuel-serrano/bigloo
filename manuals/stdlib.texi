@@ -1417,7 +1417,13 @@ introduces empty strings for consecutive occurrences of delimiters.
 @end smalllisp
 @end deffn
 
+@deffn {SRFI-13 procedure} string-delete string char/charset/pred s [start end]
 
+Filter the string @var{string}, retaining only those characters that
+are not equal to @var{char}, not present in @var{charset}, or not
+satisfying @var{pred}. This function returns a fresh string no larger
+than @var{end} - @var{start}.
+@end deffn
 
 @deffn {SRFI-13 procedure} string-prefix-length s1 s2 [start1 end1 start2 end2] 
 @deffnx {SRFI-13 procedure} string-suffix-length s1 s2 [start1 end1 start2 end2] 

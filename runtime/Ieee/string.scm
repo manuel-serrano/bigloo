@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Dec 14 14:42:51 2010 (serrano)                */
+;*    Last change :  Tue Jan 18 15:00:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -32,6 +32,7 @@
 	    __r4_characters_6_6
 	    __r4_symbols_6_4
 	    __r4_pairs_and_lists_6_3
+	    __r4_control_features_6_9
 	    
 	    __evenv)
    
@@ -201,6 +202,7 @@
 	    (inline string-shrink! ::bstring ::long)
 	    (string-replace ::bstring ::char ::char)
 	    (string-replace! ::bstring ::char ::char)
+	    (string-delete::bstring string::bstring ::obj #!optional (start::int 0) (end::long (string-length string)))
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
@@ -750,6 +752,67 @@
 	     (loop (+fx i 1)))
 	    (else
 	     (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-delete ...                                                */
+;*---------------------------------------------------------------------*/
+(define (string-delete string obj #!optional (start::int 0) (end::long (string-length string)))
+   
+   (define (string-delete-char new c start end)
+      (let loop ((i start)
+		 (j 0))
+	 (if (=fx i end)
+	     (string-shrink! new j)
+	     (let ((cc (string-ref string i)))
+		(if (char=? cc c)
+		    (loop (+fx i 1) j)
+		    (begin
+		       (string-set! new j cc)
+		       (loop (+fx i 1) (+fx j 1))))))))
+   
+   (define (string-delete-string new l start end)
+      (let loop ((i start)
+		 (j 0))
+	 (if (=fx i end)
+	     (string-shrink! new j)
+	     (let ((cc (string-ref string i)))
+		(if (memv cc l)
+		    (loop (+fx i 1) j)
+		    (begin
+		       (string-set! new j cc)
+		       (loop (+fx i 1) (+fx j 1))))))))
+   
+   (define (string-delete-predicate new pred start end)
+      (let loop ((i start)
+		 (j 0))
+	 (if (=fx i end)
+	     (string-shrink! new j)
+	     (let ((cc (string-ref string i)))
+		(if (pred cc)
+		    (loop (+fx i 1) j)
+		    (begin
+		       (string-set! new j cc)
+		       (loop (+fx i 1) (+fx j 1))))))))
+   
+   (cond
+      ((<fx start 0)
+       (error "string-delete" "start index out of range" start))
+      ((>fx end (string-length string))
+       (error "string-delete" "end index out of range" end))
+      ((<fx end start)
+       (error "string-delete" "Illegal indices" (cons start end)))
+      (else
+       (let* ((len (-fx end start))
+	      (new (string-copy string)))
+	  (cond
+	     ((char? obj)
+	      (string-delete-char new obj start end))
+	     ((string? obj)
+	      (string-delete-string new (string->list obj) start end))
+	     ((procedure? obj)
+	      (string-delete-predicate new obj start end))
+	     (else
+	      (error "string-delete" "Illegal char/charset/predicate" obj)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    delim? ...                                                       */
