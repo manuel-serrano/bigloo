@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jan 18 13:36:37 2011 (serrano)                */
+#*    Last change :  Tue Jan 18 13:40:36 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -151,7 +151,9 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-build: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
+.PHONY: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
+
+build: checkconf boot
 
 checkconf:
 	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
