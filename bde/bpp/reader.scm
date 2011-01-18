@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 15:23:18 1992                          */
-;*    Last change :  Sun May 30 09:40:00 2010 (serrano)                */
+;*    Last change :  Tue Jan 18 15:34:45 2011 (serrano)                */
 ;*                                                                     */
 ;*    Le reader de `Bigloo'                                            */
 ;*---------------------------------------------------------------------*/
@@ -65,11 +65,11 @@
 	       (integer->char 13))
 	      ((: #\" (* (or (out #\\ #\")     ;; Les chaines de caracteres
 			     (: #\\ all))) #\")
-	       ($escape-scheme-string (the-substring 1 (-fx (the-length) 1)) 0 0))
+	       (the-escape-substring 1 (-fx (the-length) 1) #t))
 	      ((: #\# #\"                  ;; Les chaines de caracteres foreign
 		      (* (or (out #\\ #\")  
 			     (: #\\ all))) #\")
-	       (string-as-read (the-substring 1 (-fx (the-length) 1))))
+	       (the-escape-substring 2 (-fx (the-length) 1) #f))
 	      ((: (or #\" (: #\# #\"))     ;; Les bouts de chaines non termines
 		  (* (or (out #\\ #\")  
 			 (: #\\ all))))
