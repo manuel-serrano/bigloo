@@ -286,6 +286,10 @@ gcfinalizer=0
 hostsh=
 buildsh=
 
+#*--- bglpkg compilation ----------------------------------------------*/
+# valid values are "no", "yes" or "force"
+enable_bgpkg="yes"
+
 #*---------------------------------------------------------------------*/
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
 #*---------------------------------------------------------------------*/
@@ -850,6 +854,12 @@ while : ; do
     --gmpconfigureopt=*)
       gmpconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --enable-bglpkg)
+      enable_bglpkg="force";;
+
+    --disable-bglpkg)
+      enable_bglpkg="no";;
+
     --enable-srfi27)
       srfi27force="yes";;
 
@@ -1136,6 +1146,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   # check apis cross dependencies
   srfi1_is_enabled=no
   packrat_is_enabled=no
+  pkgcomp_is_enabled=no
   pkglib_is_enabled=no
   sqlite_is_enabled=no
   dbus_is_enabled=no
@@ -1151,6 +1162,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       srfi27) srfi27_is_enabled="yes";;
       packrat) packrat_is_enabled="yes";;
       sqlite) sqlite_is_enabled="yes";;
+      pkgcomp) pkgcomp_is_enabled="yes";;
       pkglib) pkglib_is_enabled="yes";;
       dbus) dbus_is_enabled="yes";;
       pthread) pthread_is_enabled="yes";;
@@ -1192,6 +1204,68 @@ if [ "$action" != "bigloo_config_el" ]; then
       exit 1
   fi
 fi
+
+# Check depends for bglpkg
+if [ $enable_bglpkg = "yes" ]; then
+    if [ $pkgcomp_is_enabled = "no" ]; then
+	echo "*** WARNING: bglpkg binary requires pkgcomp library"
+	echo "Disabling bglpkg."
+	enable_bglpkg="no"
+    fi
+    if [ $pkglib_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires pkglib library"
+	echo "Disabling bglpkg."
+	enable_bglpkg="no"
+    fi
+    if [ $sqlite_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires sqlite library"
+	echo "Disabling bglpkg."
+	enable_bglpkg="no"
+    fi
+    if [ $web_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires web library"
+	echo "Disabling bglpkg."
+	enable_bglpkg="no"
+    fi
+fi
+
+if [ $enable_bglpkg = "force" ]; then
+    if [ $pkgcomp_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires pkgcomp library"
+	echo "Either disable bglpkg, or enable pkgcomp."
+	echo 
+	echo "Enabled apis: $apis"
+	exit 1
+    fi
+    if [ $pkglib_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires pkglib library"
+	echo "Either disable bglpkg, or enable pkglib."
+	echo 
+	echo "Enabled apis: $apis"
+	exit 1
+    fi
+    if [ $sqlite_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires sqlite library"
+	echo "Either disable bglpkg, or enable sqlite."
+	echo 
+	echo "Enabled apis: $apis"
+	exit 1
+    fi
+    if [ $web_is_enabled = "no" ]; then
+	echo "*** ERROR: bglpkg binary requires web library"
+	echo "Either disable bglpkg, or enable web."
+	echo 
+	echo "Enabled apis: $apis"
+	exit 1
+    fi
+fi
+
+# Here, bglpkg has all its dependencies, setting it just to "yes"
+#  in order to have not to double test its value
+if [ $enable_bglpkg = "force" ]; then
+    enable_bglpkg="yes"
+fi
+
 
 #*---------------------------------------------------------------------*/
 #*    User hostos specific configuration                               */
@@ -3192,6 +3266,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
              -e "s|@BGLPKGNAME@|$bglpkg|g" \
        >>  $configure
   chmod a-w $configure
+  echo "ENABLE_BGLPKG=$enable_bglpkg" >> $makefile_cfg
+  echo "" >> $makefile_cfg
 
   # Does the system support strip
   echo "STRIP=$strip" >> $makefile_cfg

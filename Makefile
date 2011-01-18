@@ -1,10 +1,10 @@
-#*=====================================================================*/
+ #*=====================================================================*/
 #*    serrano/prgm/project/bigloo/Makefile                             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov 24 15:24:56 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jan 18 13:36:37 2011 (serrano)                */
+#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -151,7 +151,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-build: checkconf boot
+build: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
 
 checkconf:
 	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
@@ -178,32 +178,61 @@ boot: checkgmake
 	  $(MAKE) -C runtime heap; \
 	fi
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
-           (PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
-            LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-            export LD_LIBRARY_PATH; \
-            DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-            export DYLD_LIBRARY_PATH; \
-            $(MAKE) -C runtime boot-jvm); \
+	  $(MAKE) boot-jvm; \
         fi
 	if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-           (PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
-            LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-            export LD_LIBRARY_PATH; \
-            DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-            export DYLD_LIBRARY_PATH; \
-            $(MAKE) -C runtime boot-dotnet); \
+	  $(MAKE) boot-dotnet; \
         fi
+	$(MAKE) boot-bde
+	$(MAKE) boot-api
+	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
+	  $(MAKE) boot-bglpkg; \
+        fi
+	@ echo "Boot done..."
+	@ echo "-------------------------------"
+
+boot-jvm:
+	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+         $(MAKE) -C runtime boot-jvm);
+
+boot-dotnet:
+	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+         $(MAKE) -C runtime boot-dotnet);
+
+boot-bde:
 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
          export LD_LIBRARY_PATH; \
          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
          export PATH; \
-         $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)" && \
-         $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)" && \
-         $(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)")
-	@ echo "Boot done..."
-	@ echo "-------------------------------"
+         $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)")
+
+boot-api:
+	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+         export PATH; \
+         $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)")
+
+boot-bglpkg:
+	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+         export PATH; \
+         $(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)");
 
 #*---------------------------------------------------------------------*/
 #*    cross-rts ...                                                    */
@@ -369,7 +398,10 @@ fullbootstrap-sans-log:
 	$(MAKE) -C bde -i clean; $(MAKE) -C bde
 	$(MAKE) -C api fullbootstrap
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
-	$(MAKE) -C bglpkg -i clean; $(MAKE) -C bglpkg
+	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
+	  $(MAKE) -C bglpkg -i clean; \
+	  $(MAKE) -C bglpkg; \
+	fi
 	$(MAKE) -C recette -i touchall
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
 	$(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION))
@@ -689,7 +721,9 @@ install-devel: install-dirs
          export LD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
 	 $(MAKE) -C bde install)
-	$(MAKE) -C bglpkg install
+	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
+	  $(MAKE) -C bglpkg install; \
+	fi
 	$(MAKE) -C autoconf install
 
 install-libs: install-dirs
