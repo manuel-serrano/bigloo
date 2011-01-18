@@ -1542,6 +1542,25 @@ namespace bigloo
 	    return (long)n;
 	 }
 
+      public static long DOUBLE_TO_LLONG_BITS( double n )
+	 {
+	    return BitConverter.DoubleToInt64Bits(n);
+	 }
+      public static double LLONG_BITS_TO_DOUBLE ( long n )
+	 {
+	    return BitConverter.Int64BitsToDouble(n);
+	 }
+
+      // CARE [flo]: I'm not sure if GetBytes is endian-agnostic.
+      public static int FLOAT_TO_INT_BITS( float n )
+	 {
+	    return Convert.ToInt32(BitConverter.GetBytes(n));
+	 }
+      public static float INT_BITS_TO_FLOAT( int n )
+	 {
+	    return Convert.ToSingle(BitConverter.GetBytes(n));
+	 }
+
       // Open functions
       public static bool EQ_FL( double  n1,
 				double  n2 )
@@ -6246,10 +6265,18 @@ namespace bigloo
 	 {
 	    return foreign.getbytes( v.ToString() );
 	 }
+      public static byte[] bgl_float_to_ieee_string( float  v )
+	 {
+	    return foreign.getbytes( v.ToString() );
+	 }
 
       public static double bgl_ieee_string_to_double( byte[]  s )
 	 {
 	    return Double.Parse( newstring( s ) );
+	 }
+       public static float bgl_ieee_string_to_float( byte[]  s )
+	 {
+	    return (float)(Double.Parse( newstring( s ) ));
 	 }
 
       public static int rand() 

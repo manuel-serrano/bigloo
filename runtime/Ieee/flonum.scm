@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sun May 30 08:01:38 2010 (serrano)                */
+;*    Last change :  Tue Jan 18 11:33:59 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -68,7 +68,15 @@
 	    (%ieee-string->double::double (::bstring)
 					  "bgl_ieee_string_to_double")
 	    (%double->ieee-string::bstring (::double)
-					   "bgl_double_to_ieee_string"))
+					   "bgl_double_to_ieee_string")
+	    (%ieee-string->float::float (::bstring)
+					  "bgl_ieee_string_to_float")
+	    (%float->ieee-string::bstring (::float)
+					   "bgl_float_to_ieee_string")
+	    (macro %double->llong-bits::llong (::double) "DOUBLE_TO_LLONG_BITS")
+	    (macro %llong-bits->double::double (::llong) "LLONG_BITS_TO_DOUBLE")
+	    (macro %float->int-bits::int (::float) "FLOAT_TO_INT_BITS")
+	    (macro %int-bits->float::float (::int) "INT_BITS_TO_FLOAT"))
    
    (java    (class foreign
 	       (method static c-flonum?::bool (::obj)
@@ -144,7 +152,19 @@
 	       (method static %ieee-string->double::double (::bstring)
 		       "bgl_ieee_string_to_double")
 	       (method static %double->ieee-string::bstring (::double)
-		       "bgl_double_to_ieee_string")))
+		       "bgl_double_to_ieee_string")
+	       (method static %ieee-string->float::float (::bstring)
+		       "bgl_ieee_string_to_float")
+	       (method static %float->ieee-string::bstring (::float)
+		       "bgl_float_to_ieee_string")
+	       (method static %double->llong-bits::llong (::double)
+		       "DOUBLE_TO_LLONG_BITS")
+	       (method static  %llong-bits->double::double (::llong)
+		       "LLONG_BITS_TO_DOUBLE")
+	       (method static %float->int-bits::int (::float)
+		       "FLOAT_TO_INT_BITS")
+	       (method static  %int-bits->float::float (::int)
+		       "INT_BITS_TO_FLOAT")))
    
    (export  (inline real?::bool ::obj)
 	    (inline flonum?::bool ::obj)
@@ -199,7 +219,11 @@
 	    (inline ieee-string->double::double ::bstring)
 	    (inline double->ieee-string::bstring ::double)
 	    (inline ieee-string->float::float ::bstring)
-	    (inline float->ieee-string::bstring ::float))
+	    (inline float->ieee-string::bstring ::float)
+	    (inline double->llong-bits::llong ::double)
+	    (inline llong-bits->double::double ::llong)
+	    (inline float->int-bits::int ::float)
+	    (inline int-bits->float::float ::int))
    
    (pragma  (c-flonum? side-effect-free (predicate-of real) no-cfa-top nesting)
 	    (real? side-effect-free no-cfa-top nesting)
@@ -258,7 +282,15 @@
 	    (integerfl? side-effect-free no-cfa-top nesting)
 	    (infinitefl? side-effect-free no-cfa-top nesting)
 	    (finitefl? side-effect-free no-cfa-top nesting)
-	    (nanfl? side-effect-free no-cfa-top nesting)))
+	    (nanfl? side-effect-free no-cfa-top nesting)
+	    (double->llong-bits side-effect-free no-cfa-top nesting args-safe)
+	    (llong-bits->double side-effect-free no-cfa-top nesting args-safe)
+	    (float->int-bits side-effect-free no-cfa-top nesting args-safe)
+	    (int-bits->float side-effect-free no-cfa-top nesting args-safe)
+	    (%double->llong-bits side-effect-free no-cfa-top nesting args-safe)
+	    (%llong-bits->double side-effect-free no-cfa-top nesting args-safe)
+	    (%float->int-bits side-effect-free no-cfa-top nesting args-safe)
+	    (%int-bits->float side-effect-free no-cfa-top nesting args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    real? ...                                                        */
@@ -620,10 +652,38 @@
 ;*    ieee-string->float ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (ieee-string->float string)
-   (%ieee-string->double string))
+   (%ieee-string->float string))
 
 ;*---------------------------------------------------------------------*/
 ;*    float->ieee-string ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (float->ieee-string float)
-   (%double->ieee-string float))
+   (%float->ieee-string float))
+
+;*---------------------------------------------------------------------*/
+;*    double->llong-bits ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (double->llong-bits::llong n::double)
+   (let ((tmp n))
+      (%double->llong-bits tmp)))
+
+;*---------------------------------------------------------------------*/
+;*    llong-bits->double ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (llong-bits->double::double n::llong)
+   (let ((tmp n))
+      (%llong-bits->double tmp)))
+
+;*---------------------------------------------------------------------*/
+;*    float->int-bits ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (float->int-bits::int n::float)
+   (let ((tmp n))
+      (%float->int-bits tmp)))
+
+;*---------------------------------------------------------------------*/
+;*    int-bits->float ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (int-bits->float::float n::int)
+   (let ((tmp n))
+      (%int-bits->float tmp)))

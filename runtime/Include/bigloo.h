@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Dec 11 07:01:18 2010 (serrano)                */
+/*    Last change :  Tue Jan 18 11:40:52 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2112,10 +2112,15 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define ODDP_FX( x )  ( x & 0x1 )
 #define EVENP_FX( x ) (!ODDP_FX( x ))
 
+#define DOUBLE_TO_LLONG_BITS(dd) (((union { double d; BGL_LONGLONG_T l; }) dd).l)
+#define LLONG_BITS_TO_DOUBLE(ll) (((union { double d; BGL_LONGLONG_T l; }) ll).d)
+#define FLOAT_TO_INT_BITS(ff) (((union { float f; int i; }) ff).i)
+#define INT_BITS_TO_FLOAT(ii) (((union { float f; int i; }) ii).f)
+
 #if BGL_ISOC99 || defined( __USE_ISOC99 )
 #  define BGL_SIGNBIT( a ) signbit( a ) 
-#  define BGL_NAN NAN
-#  define BGL_INFINITY INFINITY
+#  define BGL_NAN ((double) NAN)
+#  define BGL_INFINITY ((double) INFINITY)
 #  define BGL_IS_FINITE isfinite
 #  define BGL_IS_INF isinf
 #  define BGL_IS_NAN isnan

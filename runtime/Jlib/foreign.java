@@ -1345,6 +1345,24 @@ public final class foreign
 	 return (long) n;
       }
 
+   public static long DOUBLE_TO_LLONG_BITS(double n)
+      {
+	 return Double.doubleToLongBits( n );
+      }
+   public static double LLONG_BITS_TO_DOUBLE(long n)
+      {
+	 return Double.longBitsToDouble( n );
+      }
+
+   public static int FLOAT_TO_INT_BITS(float n)
+      {
+	 return Float.floatToIntBits( n );
+      }
+   public static float INT_BITS_TO_FLOAT(int n)
+      {
+	 return Float.intBitsToFloat( n );
+      }
+
    // Open functions
    public static boolean EQ_FL(double n1, double n2)
       {

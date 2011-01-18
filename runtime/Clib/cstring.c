@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Tue Sep 14 14:40:50 2010 (serrano)                */
+/*    Last change :  Tue Jan 18 11:47:12 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -645,10 +645,10 @@ bgl_ieee_string_to_double( obj_t s ) {
 /*    representation. This is mandatory in order to conform the        */
 /*    JVM specification                                                */
 /*---------------------------------------------------------------------*/
-static
+BGL_RUNTIME_DEF
 obj_t 
-bgl_float_to_ieee_string__NOT_USED( float o ) {
-   obj_t res = make_string_sans_fill( sizeof( float ) + 1 );
+bgl_float_to_ieee_string( float o ) {
+   obj_t res = make_string_sans_fill( sizeof( float ) );
    char *aux = BSTRING_TO_STRING( res );
    char *tmp = (char *)(&o);
 
@@ -676,9 +676,9 @@ bgl_float_to_ieee_string__NOT_USED( float o ) {
 /*    -------------------------------------------------------------    */
 /*    The number is stored using a big endian encoding                 */
 /*---------------------------------------------------------------------*/
-static
+BGL_RUNTIME_DEF
 float
-bgl_ieee_string_to_float__NOT_USED( obj_t s ) {
+bgl_ieee_string_to_float( obj_t s ) {
    char *aux = BSTRING_TO_STRING( s );
    float res;
    char *tmp = (char *)(&res);

@@ -917,6 +917,11 @@ Returns a binary big-endian representation of the given bignum @var{bignum}.
 @end smalllisp
 @end deffn
 
+@deffn {bigloo procedure} double->ieee-string z
+@deffnx {bigloo procedure} float->ieee-string z
+Returns a big-endian representation of the given number.
+@end deffn
+
 @deffn {procedure} string->number string [radix 10]
 @deffnx {bigloo procedure} string->real string
 @deffnx {bigloo procedure} string->elong string radix
@@ -954,6 +959,11 @@ bignum.
 
 @end deffn
 
+@deffn {bigloo procedure} ieee-string->double string
+@deffnx {bigloo procedure} ieee-string->float string
+Convert the big-endian representations to their numeric values.
+@end deffn
+
 @deffn {bigloo procedure} fixnum->flonum i
 @deffnx {bigloo procedure} flonum->fixnum r
 @deffnx {bigloo procedure} elong->fixnum i
@@ -971,6 +981,16 @@ might be wrong if the string cannot be read as a number.
 These last procedures implement the natural translation
 from and to fixnum, flonum, elong, and llong.
 
+@end deffn
+
+@deffn {bigloo procedure} double->llong-bits z
+@deffnx {bigloo-procedure} float->int-bits z
+Returns the double-bits as a llong.
+@end deffn
+
+@deffn {bigloo procedure} llong-bits->double llong
+@deffnx {bigloo procedure} int-bits->float int
+Converts the given llong bits to a double.
 @end deffn
 
 @xref{Numerical operations,,r5rs.info,R5RS}, for more details.

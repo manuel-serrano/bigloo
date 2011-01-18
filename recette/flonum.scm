@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 11:59:37 1992                          */
-;*    Last change :  Wed Dec 24 06:54:28 2008 (serrano)                */
+;*    Last change :  Tue Jan 18 12:23:01 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test un peu les flotants (il le faut bien).                   */
 ;*---------------------------------------------------------------------*/
@@ -89,5 +89,12 @@
    (test "inf.2" (<fl +inf.0 -inf.0) #f)
    (test "inf.3" (<fl +inf.0 -inf.0) #f)
    (test "inf.4" (>fl +inf.0 -inf.0) #t)
-   (test "inf.5" +inf.0 (/ 1 .0)))
+   (test "inf.5" +inf.0 (/ 1 .0))
+
+   (test "llong-bits.1" (llong-bits->double (double->llong-bits 3.1415)) 3.1415)
+   (test "llong-bits.2" (double->llong-bits 1.0) #lx3ff0000000000000)
+   (test "llong-bits.3" (double->llong-bits +inf.0) #lx7ff0000000000000)
+   (test "int-bits.1" (int-bits->float (float->int-bits 3.1415)) 3.1415)
+   (test "int-bits.2" (float->int-bits 1.0) (bit-lsh #x3f80 16))
+   (test "int-bits.3" (float->int-bits +inf.0) (bit-lsh #x7f80 16)))
 
