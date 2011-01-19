@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Fri Dec 24 13:26:55 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Wed Jan 19 10:28:31 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
 ;*=====================================================================*/
@@ -205,7 +205,7 @@
 		(case c
 		   ((#\")
 		    (loop (+fx i 1) (+fx n 6)))
-		   ((#\&)
+		   ((#\&  #\' #\;)
 		    (loop (+fx i 1) (+fx n 5)))
 		   ((#\< #\>)
 		    (loop (+fx i 1) (+fx n 4)))
@@ -229,6 +229,12 @@
 			   (loop (+fx i 1) (+fx j 4)))
 			  ((#\&)
 			   (blit-string! "&amp;" 0 res j 5)
+			   (loop (+fx i 1) (+fx j 5)))
+			  ((#\')
+			   (blit-string! "&#39;" 0 res j 5)
+			   (loop (+fx i 1) (+fx j 5)))
+			  ((#\;)
+			   (blit-string! "&#59;" 0 res j 5)
 			   (loop (+fx i 1) (+fx j 5)))
 			  ((#\")
 			   (blit-string! "&quot;" 0 res j 6)
@@ -254,6 +260,7 @@
 		  ("&gt;" . ">")
 		  ("&amp;" . "&")
 		  ("&quot;" . "\"")
+		  ("&apos;" . "'")
 		  ("&nbsp;" . " ")))
       t))
 
