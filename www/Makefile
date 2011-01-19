@@ -13,8 +13,8 @@ include /users/serrano/prgm/project/bigloo/Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Official release (not necessarily the configured release)        */
 #*---------------------------------------------------------------------*/
-OFFICIALRELEASE	= 3.5a
-OFFICIALDATE	= Nov 2010
+OFFICIALRELEASE	= 3.6a
+OFFICIALDATE	= Jan 2011
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */
