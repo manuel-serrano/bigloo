@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # configuration and variables
-version=3.5b
+version=3.6a
 minor=
 rootdir=/users/serrano
 repodir=$rootdir/prgm/distrib
