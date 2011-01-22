@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Tue Mar 11 15:44:10 2008 (serrano)                */
+;*    Last change :  Sat Jan 22 16:18:49 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -100,12 +100,12 @@
 			       (set! serial (+fx 1 serial))
 			       serial))))
       (define (register-object obj)
-	 (let* ((class      (object-class obj))
+	 (let* ((class (object-class obj))
 		(class-name (class-name class))
-		(fields     (class-fields class)))
+		(fields (class-fields class)))
 	    (if (class-fields? fields)
 		(let loop ((fields fields)
-			   (class  class))
+			   (class class))
 		   (cond
 		      ((null? fields)
 		       (let ((super (class-super class)))
@@ -275,6 +275,7 @@
 		       (display-string #">" port))
 		      ;; object display
 		      ((object? obj)
+		       (tprint "write circle" (typeof obj))
 		       (object-print obj port (lambda (x . p)
 						 (output-component x))))
 		      ;; ucs2 string display

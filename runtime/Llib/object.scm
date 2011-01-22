@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec 17 08:40:42 2010 (serrano)                */
+;*    Last change :  Sat Jan 22 16:22:19 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1083,12 +1083,14 @@
        (let ((oclass (object-class obj)))
 	  (if (eq? oclass class)
 	      #t
-	      (let ((omin (class-min-num oclass))
-		    (cmin (class-min-num class))
-		    (cmax (class-max-num class)))
-		 (if (>=fx omin cmin)
-		     (<=fx omin cmax)
-		     #f))))
+	      (if (class? class)
+		  (let ((omin (class-min-num oclass))
+			(cmin (class-min-num class))
+			(cmax (class-max-num class)))
+		     (if (>=fx omin cmin)
+			 (<=fx omin cmax)
+			 #f))
+		  #f)))
        ;; not even a class instance
        #f))
 

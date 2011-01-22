@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Dec 31 11:38:26 2010 (serrano)                */
+;*    Last change :  Sat Jan 22 15:54:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -689,9 +689,10 @@
 		   (val (evmeaning (evcode-ref code 1) '() denv))
 		   (mod (evcode-ref code 2)))
 	       (let ((cell (evmodule-find-global mod var)))
-		  (if (eval-global? cell)
-		      (let ((old (and (not (eq? (eval-global-tag cell) 1))
-				      (eval-global-value cell))))
+		  (if (and (eval-global? cell)
+			   (not (eq? (eval-global-tag cell) 1)))
+		      ;; update the variable only, if it is an eval variable
+		      (let ((old (eval-global-value cell)))
 			 (update-eval-global! code cell val)
 			 (when (and (eq? old mod)
 				    (not (eq? old evmodule-uninitialized)))

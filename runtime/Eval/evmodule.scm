@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Dec 20 16:45:02 2010 (serrano)                */
-;*    Copyright   :  2006-10 Manuel Serrano                            */
+;*    Last change :  Sat Jan 22 15:49:24 2011 (serrano)                */
+;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -296,7 +296,7 @@
 	 (else
 	  (evcompile-error
 	   loc
-	   'eval "Illegal `export' clause" clause))))
+	   "eval" "Illegal `export' clause" clause))))
    (if (not (list? clause))
        (evcompile-error loc 'eval "Illegal `export' clause" clause)
        (for-each evmodule-export-clause (cdr clause))))
@@ -496,7 +496,7 @@
 		      (if (and (pair? e0) (eq? (car e0) 'directives))
 			  (values (cdr e0) (port->list read p))
 			  (values '() (cons e0 (port->list read p)))))))
-	     (evcompile-error loc 'eval
+	     (evcompile-error loc "eval"
 			      (format "Cannot find include file ~s" file)
 			      path))))
    
@@ -519,6 +519,8 @@
 	 (cond
 	    ((null? clauses)
 	     (values iclauses iexprs))
+	    ((not (pair? (car clauses)))
+	     (evcompile-error loc "eval" "Illegal module clause" (car clauses)))
 	    ((eq? (caar clauses) 'include)
 	     (multiple-value-bind (ic ie)
 		(evmodule-include-files! (cdar clauses) path)
@@ -594,11 +596,15 @@
 		(evcompile-error loc 'eval "Illegal module clause" c0)))
 	    ((eq? (car c) 'cond-expand)
 	     (let ((nc (expand c)))
-		(if (pair? nc)
+		(cond
+		   ((pair? nc)
 		    (if (eq? (car nc) 'begin)
 			(append-map loop (cdr nc))
-			(loop nc))
-		    '())))
+			(loop nc)))
+		   ((eq? nc #unspecified)
+		    '())
+		   (else
+		    (list nc)))))
 	    (else
 	     (list c)))))
    
@@ -619,7 +625,7 @@
 	 ;; Step2: evaluate import and from clauses.
 	 (evmodule-step2 mod iclauses loc)
 	 ;; step3: evaluate classes and build the module body (with includes).
-	 (evmodule-step3 mod clauses loc)
+	 (evmodule-step3 mod mclauses loc)
 	 ;; returns the include expressions
 	 `(begin ,@iexprs))))
 
