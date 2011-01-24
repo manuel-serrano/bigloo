@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Fri Dec 24 11:40:56 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Mon Jan 24 12:41:42 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -102,12 +102,12 @@
 ;*---------------------------------------------------------------------*/
 (define absolute-uri-grammar
    (regular-grammar ((CRLF "\r\n")
-		     (unreserved (or alpha digit #\| #\- #\. #\_ #\~))
+		     (unreserved (or alpha digit #\| #\- #\. #\_ #\~ #\/))
 		     (pct-encoded (: #\% xdigit xdigit))
 		     (sub-delims (in "!$&'()*+,;= "))
 		     protocol
 		     userinfo)
-      ((: (* (or "<> " unreserved pct-encoded sub-delims #\:)) #\@)
+      ((: (* (or "<> " unreserved pct-encoded sub-delims #\: #\@ )) #\@)
        (set! userinfo (the-substring 0 -1))
        (ignore))
       ((: (+ (out "@:/")) ":")

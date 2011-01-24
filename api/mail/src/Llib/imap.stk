@@ -177,18 +177,16 @@
    (if (and (pair? reply)
 	    (%imap-tag-eq? (car reply) "OK"))
        value
-       (let ((message (if (and (pair? reply)
-			       (not (%imap-tag-eq? (car reply) "OK")))
-			  (%imap-arg (cdr reply) " ")
-			  reply))
-	     (host (cond
-		      ((or (eq? server obj) (not obj))
-		       server)
-		      ((not obj)
-		       server)
-		      (else
-		       (format "~a (~a)" obj server)))))
-	  (%imap-command-error where message host))))
+       (let* ((message (if (and (pair? reply)
+				(not (%imap-tag-eq? (car reply) "OK")))
+			   (%imap-arg (cdr reply) " ")
+			   reply))
+	      (msg (if message
+		       (format "~a (~a)" message server)
+		       (if (socket? server)
+			   (socket-hostname server)
+			   server))))
+	  (%imap-command-error where msg obj))))
 
 ;; ----------------------------------------------------------------------
 ;;	%imap-read ...

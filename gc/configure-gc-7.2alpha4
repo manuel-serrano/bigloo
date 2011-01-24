@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Fri Sep 24 08:37:46 2010 (serrano)                */
-#*    Copyright   :  2009-10 Manuel Serrano                            */
+#*    Last change :  Mon Jan 24 14:30:04 2011 (serrano)                */
+#*    Copyright   :  2009-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
@@ -23,7 +23,7 @@ fi
  export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
  export LDFLAGS=$lflags && \
  export SHELL=$sh && \
- ./configure $gcconfiguredir $gcconfigureopt --disable-threads >> configure.log || \
+ ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads >> configure.log || \
  (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
 
 # configure the collector for multi-threaded applications
@@ -34,7 +34,7 @@ if [ "$threadsupport " != "no " ]; then
    export LDFLAGS=$lflags && \
    export SHELL=$sh && \
    echo "Configuring custom multi-threaded GC..." && \
-   ./configure $gcconfiguredir $gcconfigureopt $gcconfigurethreadsopt >> configure.log || \
+   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt >> configure.log || \
    (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
 fi
 

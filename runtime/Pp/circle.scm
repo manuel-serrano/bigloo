@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Sat Jan 22 16:18:49 2011 (serrano)                */
+;*    Last change :  Sun Jan 23 07:10:36 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -275,7 +275,6 @@
 		       (display-string #">" port))
 		      ;; object display
 		      ((object? obj)
-		       (tprint "write circle" (typeof obj))
 		       (object-print obj port (lambda (x . p)
 						 (output-component x))))
 		      ;; ucs2 string display
