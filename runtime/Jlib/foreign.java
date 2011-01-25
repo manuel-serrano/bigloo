@@ -4495,16 +4495,21 @@ public final class foreign
 	 return n;
       }
 
-   public static Object c_signal(int n, Object p)
+   public static Object bgl_signal(int n, Object p)
       {
 	 return unspecified.unspecified;
       }
 
-   public static Object get_signal_handler(int n)
+   public static Object bgl_get_signal_handler(int n)
       {
 	 return BFALSE;
       }
 
+   public static void bgl_restore_signal_handlers()
+      {
+	 ;
+      }
+   
    public static Object reset_console(Object o)
       {
 	 return unspecified.unspecified;

@@ -498,6 +498,8 @@ extern union scmobj * an_object;
 /*---------------------------------------------------------------------*/
 /*    SETJMP                                                           */
 /*---------------------------------------------------------------------*/
+#define SIGSETJMP_SAVESIGS 0
+
 #define jmp_buf_t @JMP_BUF@
 
 #undef SETJMP

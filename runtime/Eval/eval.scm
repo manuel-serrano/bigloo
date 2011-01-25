@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Mon Dec 20 17:08:19 2010 (serrano)                */
+;*    Last change :  Tue Jan 25 08:39:38 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -324,37 +324,56 @@
 	       ;; and we loop until eof
 	       (newline)
 	       (let luup ()
-		  (*prompt* *repl-num*)
-		  (bind-exit (skip)
-		     (let ((exp (with-exception-handler
-				   (lambda (e)
-				      (if (&error? e)
-					  (begin
-					     (evmeaning-reset-error!)
-					     (error-notify e)
-					     (when (eof-object? (&error-obj e))
-						(reset-eof (current-input-port)))
-					     (sigsetmask 0)
-					     (skip #unspecified))
-					  (raise e)))
-				   read)))
-			(if (eof-object? exp)
-			    (quit)
-			    (let ((v (with-exception-handler
-					(lambda (e)
-					   (if (&error? e)
-					       (begin
-						  (error-notify e)
-						  (sigsetmask 0)
-						  (skip #unspecified))
-					       (raise e)))
-					(lambda () (eval exp)))))
-			       (if (not (eq? *transcript* (current-output-port)))
-				   (fprint *transcript* ";; " exp))
-			       (*repl-printer* v *transcript*)
-			       (newline *transcript*)))))
-		  (luup)))
+		  (with-handler
+		     (lambda (e)
+			(error-notify e)
+			(evmeaning-reset-error!)
+			(when (eof-object? (&error-obj e))
+			   (reset-eof (current-input-port)))
+			(sigsetmask 0)
+			(luup))
+		     (let liip ()
+			(*prompt* *repl-num*)
+			(let ((exp (read)))
+			   (if (eof-object? exp)
+			       (quit)
+			       (let ((v (eval exp)))
+				  (if (not (eq? *transcript* (current-output-port)))
+				      (fprint *transcript* ";; " exp))
+				  (*repl-printer* v *transcript*)
+				  (newline *transcript*)
+				  (liip))))))))
 	    (loop))
+;* 		  (bind-exit (skip)                                    */
+;* 		     (let ((exp (with-exception-handler                */
+;* 				   (lambda (e)                         */
+;* 				      (if (&error? e)                  */
+;* 					  (begin                       */
+;* 					     (evmeaning-reset-error!)  */
+;* 					     (error-notify e)          */
+;* 					     (when (eof-object? (&error-obj e)) */
+;* 						(reset-eof (current-input-port))) */
+;* 					     (sigsetmask 0)            */
+;* 					     (skip #unspecified))      */
+;* 					  (raise e)))                  */
+;* 				   read)))                             */
+;* 			(if (eof-object? exp)                          */
+;* 			    (quit)                                     */
+;* 			    (let ((v (with-exception-handler           */
+;* 					(lambda (e)                    */
+;* 					   (if (&error? e)             */
+;* 					       (begin                  */
+;* 						  (error-notify e)     */
+;* 						  (sigsetmask 0)       */
+;* 						  (skip #unspecified)) */
+;* 					       (raise e)))             */
+;* 					(lambda () (eval exp)))))      */
+;* 			       (if (not (eq? *transcript* (current-output-port))) */
+;* 				   (fprint *transcript* ";; " exp))    */
+;* 			       (*repl-printer* v *transcript*)         */
+;* 			       (newline *transcript*)))))              */
+;* 		  (luup)))                                             */
+;* 	    (loop))                                                    */
 	 (if (procedure? old-intrhdl)
 	     (signal sigint old-intrhdl)
 	     (signal sigint (lambda (n) (exit 0)))))))

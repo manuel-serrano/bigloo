@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Sun Dec 12 14:52:41 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 25 11:28:31 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -114,40 +114,7 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-with-handler x e)
    
-   (define (expand.old handler body)
-      (let ((hdl (gensym 'handler))
-	    (ohs (gensym 'handlers))
-	    (nh (gensym 'handler))
-	    (val (gensym 'val))
-	    (exit (gensym 'exit))
-	    (etop (gensym 'exitd))
-	    (tmp (gensym 'tmp))
-	    (ebody (e (expand-progn body) e)))
-	 `(let ((,hdl ,(e handler e)))
-	     (if (correct-arity? ,hdl 1)
-		 (let ((,ohs ($get-error-handler)))
-		    (let ((,val (set-exit (,exit)
-					  (let ()
-					     (push-exit! ,exit 0)
-					     (let ((,etop ($get-exitd-top)))
-						(let ((,nh (lambda (e)
-							      ((@ unwind-until! __bexit)
-							       ,etop
-							       (,hdl e)))))
-						   ($set-error-handler!
-						    (cons ,nh ,ohs))
-						   (let ((,tmp ,ebody))
-						      (pop-exit!)
-						      ,tmp)))))))
-		       ($set-error-handler! ,ohs)
-		       (if (val-from-exit? ,val)
-			   ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
-			   ,val)))
-		 (error 'with-handler
-			"Incorrect handler arity"
-			,hdl)))))
-   
-   (define (expand handler body)
+  (define (expand.old handler body)
       (let ((ohs (gensym 'ohs))
 	    (err (gensym 'err))
 	    (escape (gensym 'escape)))
@@ -168,7 +135,29 @@
 			 (when (car ,err)
 			    (,escape (,handler (cdr ,err))))))))
 	    e)))
-   
+
+  (define (expand handler body)
+     (let ((ohs (gensym 'ohs))
+	   (err (gensym 'err))
+	   (res (gensym 'res))
+	   (escape (gensym 'escape)))
+	(e `(let ((,res #unspecified))
+	       (if (bind-exit (,escape)
+		      (let ((,ohs ($get-error-handler)))
+			 (unwind-protect
+			    (begin
+			       ($set-error-handler!
+				(cons (lambda (e)
+					 (set! ,res e)
+					 (,escape #t))
+				      ,ohs))
+			       (set! ,res (begin ,@body))
+			       #f)
+			    ($set-error-handler! ,ohs))))
+		   (,handler ,res)
+		   ,res))
+	   e)))
+
    (define (add-trace body)
       (let ((loc (find-location x)))
 	 (if (and (location? loc)

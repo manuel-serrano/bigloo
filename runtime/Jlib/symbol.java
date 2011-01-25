@@ -44,7 +44,7 @@ public class symbol extends obj
 
    public static symbol make_symbol( final byte[] name ) {
       synchronized( table ) {
-	 final int hash_number = foreign.get_hash_power_number( name, 12);
+	 final int hash_number = foreign.get_hash_power_number( name, 12 );
 	 final bucket bucket = table[hash_number];
 
 	 if (bucket == null) {

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 18 11:40:52 2011 (serrano)                */
+/*    Last change :  Tue Jan 25 10:33:02 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -521,9 +521,9 @@ typedef union scmobj {
       union scmobj *data;
    } weakptr_t;
 
-   struct bgl_dynamic_env {      /* Thread dynamic environment         */
-
-      header_t        header;
+   /* Thread dynamic environment */
+   struct bgl_dynamic_env {
+      header_t header;
       /* global IO ports */
       union scmobj *current_output_port;
       union scmobj *current_input_port;

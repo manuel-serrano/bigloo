@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Oct 12 16:32:41 2010 (serrano)                */
+;*    Last change :  Tue Jan 25 09:30:41 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -45,8 +45,9 @@
 	    __r4_output_6_10_3
 	    __r4_input_6_10_2)
    
-   (extern  (c-signal::obj (::int ::obj) "c_signal")
-	    (c-get-signal-handler::obj (::int) "get_signal_handler")
+   (extern  ($signal::obj (::int ::obj) "bgl_signal")
+	    ($get-signal-handler::obj (::int) "bgl_get_signal_handler")
+	    ($restore-signal-handlers::void () "bgl_restore_signal_handlers")
 	    (*the-command-line*::obj "command_line")
 	    (*the-executable-name*::string "executable_name")
 	    (macro c-getenv?::bool (::string) "(long)getenv")
@@ -86,10 +87,12 @@
 		      "command_line")
 	       (field static *the-executable-name*::string
 		      "executable_name")
-	       (method static c-signal::obj (::int ::obj)
-		       "c_signal")
-	       (method static c-get-signal-handler::obj (::int)
-		       "get_signal_handler")
+	       (method static $signal::obj (::int ::obj)
+		       "bgl_signal")
+	       (method static $get-signal-handler::obj (::int)
+		       "bgl_get_signal_handler")
+	       (method static $restore-signal-handlers::void ()
+		       "bgl_restore_signal_handlers")
 	       (method static c-getenv?::bool (::string)
 		       "getenv_exists")
 	       (method static c-getenv::string (::string)
@@ -236,9 +239,9 @@
 (define (signal num proc)
    (cond
       ((eq? proc 'ignore)
-       (c-signal num #t))
+       ($signal num #t))
       ((eq? proc 'default)
-       (c-signal num #f))
+       ($signal num #f))
       ((not (=fx (procedure-arity proc) 1))
        (error "signal" "Wrong number of arguments" proc))
       ((<fx num 0)
@@ -246,13 +249,13 @@
       ((>fx num 31)
        (error "signal" "Illegal signal" num))
       (else
-       (c-signal num proc))))
+       ($signal num proc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-signal-handler ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (get-signal-handler num)
-   (let ((v (c-get-signal-handler num)))
+   (let ((v ($get-signal-handler num)))
       (cond
 	 ((eq? v #t) 'ignore)
 	 ((eq? v #f) 'default)

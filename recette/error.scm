@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Fri Oct 30 10:45:48 2009 (serrano)                */
+;*    Last change :  Tue Jan 25 10:55:50 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -291,6 +291,29 @@
 		     (raise (+ 1 e))))
 	       (raise 1)))
 	 4)
+   (test "with-handler.9"
+	 (let loop ((i 10))
+	    (if (>fx i 0)
+		(let ((x (make-string i)))
+		   (let ((v (with-handler (lambda (e) #f) (string-ref x i))))
+		      (loop (-fx i 1))))
+		i))
+	 0)
+   (test "with-handler.10"
+	 (let loop ((i 10))
+	    (if (>fx i 0)
+		(let ((v (with-handler (lambda (e) #f) (/ 1 0))))
+		   (loop (-fx i 1)))
+		i))
+	 0)
+   (test "with-handler.11"
+	 (cons
+	  (bind-exit (exit)
+	     (with-handler (lambda (e) (exit 'a))
+			   (/ 1 0)))
+	  (with-handler (lambda (e) 'b)
+			(/ 1 0)))
+	 '(a . b))
    (test "with-handler.1-eval"
 	 (eval '(with-handler
 		   (lambda (e) e)

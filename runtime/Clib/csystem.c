@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Dec 28 12:31:39 2010 (serrano)                */
-/*    Copyright   :  2002-10 Manuel Serrano                            */
+/*    Last change :  Tue Jan 25 10:37:28 2011 (serrano)                */
+/*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -63,49 +63,46 @@ bgl_init_signal() {
 }
           
 /*---------------------------------------------------------------------*/
-/*    get_handler ...                                                  */
+/*    signal_handler ...                                               */
 /*---------------------------------------------------------------------*/
 static obj_t
-get_handler( int num ) {
+signal_handler( int num ) {
    obj_t handler = BGL_SIG_HANDLERS()[ num ];
-   
+
    /* Re-install the signal handler because some OS (such as Solaris) */
    /* de-install it when the signal is raised.                        */
 #if !HAVE_SIGACTION
-   signal( num, (void (*)(int))(get_handler) );
+   signal( num, (void (*)(int))(signal_handler) );
 #endif
 
    return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
 }
     
 /*---------------------------------------------------------------------*/
-/*    obj_t ...                                                        */
+/*    bgl_signal ...                                                   */
 /*---------------------------------------------------------------------*/
 obj_t
-c_signal( int sig, obj_t obj ) {
+bgl_signal( int sig, obj_t obj ) {
    bgl_mutex_lock( signal_mutex );
 
-   if( PROCEDUREP( obj ) ) {
-      /* store the obj in the signal table */
-      BGL_SIG_HANDLERS()[ sig ] = obj;
+   /* store the obj in the signal table */
+   BGL_SIG_HANDLERS()[ sig ] = obj;
 
+   if( PROCEDUREP( obj ) ) {
 #if HAVE_SIGACTION
       {
 	 struct sigaction sigact;
 
 	 sigemptyset( &(sigact.sa_mask) );
-	 sigact.sa_handler = (void (*)( int ))get_handler;
+	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
 	 sigaction( sig, &sigact, NULL );
       }
 #else      
-      signal( (int)sig, (void (*)( int ))get_handler );
+      signal( (int)sig, (void (*)( int ))signal_handler );
 #endif      
       
    } else {
-      /* store the obj in the signal table */
-      BGL_SIG_HANDLERS()[ sig ] = obj;
-      
       if( obj == BTRUE ) {
 	 signal( (int)sig, SIG_IGN );
       } else {
@@ -122,11 +119,25 @@ c_signal( int sig, obj_t obj ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    get_signal_handler ...                                           */
+/*    bgl_get_signal_handler ...                                       */
 /*---------------------------------------------------------------------*/
 obj_t
-get_signal_handler( int sig ) {
+bgl_get_signal_handler( int sig ) {
    return BGL_SIG_HANDLERS()[ sig ];
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_restore_signal_handlers ...                                  */
+/*---------------------------------------------------------------------*/
+void
+bgl_restore_signal_handlers() {
+#if HAVE_SIGPROCMASK
+   sigset_t set;
+
+   sigemptyset( &set );
+   sigprocmask( SIG_SETMASK, &set, 0 );
+#endif
 }
 
 /*---------------------------------------------------------------------*/

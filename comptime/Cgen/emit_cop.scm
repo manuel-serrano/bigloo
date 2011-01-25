@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cgen/emit-cop.scm           */
+;*    serrano/prgm/project/bigloo/comptime/Cgen/emit_cop.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Thu Apr 22 05:14:20 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 25 10:46:49 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -573,7 +573,10 @@
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
       (emit-cop jump-value)
       (emit-bdb-loc loc)
-      (display "} else {" *c-port*)
+      (display "} else {\n" *c-port*)
+      (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
+      (display "  bgl_restore_signal_handlers();\n" *c-port*)
+      (display "#endif\n" *c-port*)
       (emit-cop body)
       (emit-bdb-loc loc)
       (display "} " *c-port*)

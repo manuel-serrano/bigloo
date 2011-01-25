@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Apr 22 09:55:05 2010 (serrano)                */
+;*    Last change :  Tue Jan 25 11:00:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -108,9 +108,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    unwind-until! ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    This function is used by unwind-protect and bind-exit. It just   */
-;*    unwinds a stack which must not be used by call/cc. The former    */
-;*    should directly use unwind-stack-until!                          */
+;*    This function is used by unwind-protect and bind-exit. It        */
+;*    unwinds a stack which must not be used by call/cc. Call/cc       */
+;*    directly invoke unwind-stack-until!                              */
 ;*---------------------------------------------------------------------*/
 (define (unwind-until! exitd val)
    (if (pair? exitd)

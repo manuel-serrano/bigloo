@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan 18 14:19:59 2011 (serrano)                */
+#*    Last change :  Tue Jan 25 10:44:15 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2111,7 +2111,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     # the performance of BIND-EXIT (and thus UNWIND-PROTECT). This 
     # dramatically impacts the performance of the new evaluator (BPS) on
     # benchmarks such as peval.scm
-    setjmp="sigsetjmp(__jb,0)";
+    setjmp="sigsetjmp(__jb,SIGSETJMP_SAVESIGS)";
     jmpbuf=sigjmp_buf
   else
     setjmp="$setjmp(__jb)";
