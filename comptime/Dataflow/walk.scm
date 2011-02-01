@@ -3,12 +3,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Mon Nov 29 17:40:23 2010 (serrano)                */
-;*    Copyright   :  2010 Manuel Serrano                               */
+;*    Last change :  Tue Feb  1 09:16:39 2011 (serrano)                */
+;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Compute variable references according to dataflow tests. E.G.,   */
-;*    for an expression such as (if (pair? x) then else), propagate    */
-;*    x::pair in the the branch.                                       */
+;*    Compute type variable references according to dataflow tests.    */
+;*    For instance, for an expression such as (if (pair? x) then else),*/
+;*    propagate x::pair in the the branch.                             */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -181,7 +181,7 @@
 (define-method (dataflow-node! node::let-fun env)
    (with-access::let-fun node (body locals)
       (for-each (lambda (local)
-		   (dataflow-node! (sfun-body (local-value local)) env))
+		   (dataflow-node! (sfun-body (local-value local)) '()))
 		locals)
       (dataflow-node! body env)))
 
@@ -348,6 +348,9 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::node ...                                                */
+;*    -------------------------------------------------------------    */
+;*    The predicate abort? returns #t for an expression iff the        */
+;*    evaluation of that expression yields to evaluation a FAIL.       */
 ;*---------------------------------------------------------------------*/
 (define-generic (abort? node::node)
    #f)

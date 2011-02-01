@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Fri Dec 31 07:22:21 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Sun Jan 30 13:29:03 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
 ;*=====================================================================*/
@@ -105,39 +105,45 @@
 	    ;; sub-elements
 	    (for-each (lambda (e)
 			 (when (pair? e)
-			    (case (car e)
-			       ((title dc:ditle)
-				(set! title (cdata-decode (caddr e))))
-			       ((description dc:description)
-				(set! desc (cdata-decode (caddr e))))
-			       ((link)
+			    (match-case e
+			       (((or title dc:ditle) ?- ?t . ?-)
+				(set! title (cdata-decode t)))
+			       (((or description dc:description) ?- ?t . ?-)
+				(set! desc (cdata-decode t)))
+			       ((link () (?href) . ?-)
 				(push! links
 				       `(alternate
-					 (href . ,(cdata-decode (caaddr e)))
+					 (href . ,(cdata-decode href))
 					 (title . ,title)
 					 (type . ,#f))))
-			       ((category dc:subject)
-				(push! cat (cdata-decode (caddr e))))
-			       ((copyright dc:rights)
+			       ((link (??- (href . ?href) ??-) . ?-)
+				(push! links
+				       `(alternate
+					 (href . ,(cdata-decode href))
+					 (title . ,title)
+					 (type . ,#f))))
+			       (((or category dc:subject) ?- ?cat . ?-)
+				(push! cat (cdata-decode cat)))
+			       (((or copyright dc:rights) ?- ?r . ?-)
 				(unless rights
-				   (set! rights (cdata-decode (caddr e)))))
-			       ((lastBuildDate pubDate)
-				(let* ((d0 (cdata-decode (caaddr e)))
+				   (set! rights (cdata-decode r))))
+			       (((or lastBuildDate pubDate) ?- (?d) . ?-)
+				(let* ((d0 (cdata-decode d))
 				       (d (date->w3c-datetime
 					   (rfc2822-date->date d0))))
 				   (when (or (not modified)
 					     (>fx (string-compare3 modified d)
 						  0))
 				      (set! modified d))))
-			       ((dc:date)
-				(let ((d (caaddr e)))
+			       ((dc:date ?- (?dt . ?-) . ?-)
+				(let ((d dt))
 				   (when (or (not modified)
 					     (>fx (string-compare3 modified d)
 						  0))
 				      (set! modified d))))
-			       ((item)
+			       ((item ?a ?b . ?-)
 				;; Only for RSS 2.0
-				(push! items (item (cadr e) (caddr e))))
+				(push! items (item a b)))
 			       (else
 				(push! rest e)))))
 		      body)

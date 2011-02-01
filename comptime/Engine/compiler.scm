@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Dec 10 16:38:57 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  1 09:11:44 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -282,7 +282,7 @@
 		   (set! *optim-dataflow-types?* #f)
 		   (begin
 		      (set! ast (profile reduce- (reduce-walk! ast "Reduce0" #t)))
-		      (set! ast (profile dataflow (dataflow-walk! ast "dataflow"))))))
+		      (set! ast (profile dataflow (dataflow-walk! ast "Dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    
@@ -336,7 +336,7 @@
 	    ;; now that type checks have been introduced, we recompute
 	    ;; the type dataflow analysis
 	    (when *optim-dataflow-types?*
-	       (set! ast (profile dataflow (dataflow-walk! ast "dataflow+"))))
+	       (set! ast (profile dataflow (dataflow-walk! ast "Dataflow+"))))
 	    (stop-on-pass 'dataflow+ (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    

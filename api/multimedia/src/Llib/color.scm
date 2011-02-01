@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 07:15:05 2009                          */
-;*    Last change :  Fri Jun 26 14:43:33 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Thu Jan 27 10:26:52 2011 (serrano)                */
+;*    Copyright   :  2009-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Color operations.                                                */
 ;*=====================================================================*/
@@ -74,7 +74,7 @@
 ;*---------------------------------------------------------------------*/
 (define (raise-color-error color)
    (raise (instantiate::&io-parse-error
-	     (proc 'parse-web-color)
+	     (proc "parse-web-color")
 	     (msg "Illegal color")
 	     (obj color))))
 

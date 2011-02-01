@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  7 11:13:48 1993                          */
-;*    Last change :  Sat Nov 27 07:43:29 2010 (serrano)                */
+;*    Last change :  Tue Feb  1 09:19:01 2011 (serrano)                */
 ;*                                                                     */
 ;*    Quelques tests sur la 0cfa                                       */
 ;*=====================================================================*/
@@ -151,6 +151,17 @@
       (else
        (lambda (a b c) (cons argv 4)))))
 
+(define (dataflow-test x)
+   (let ((y #unspecified))
+      (set! y (list 1 2))
+      (set! y '())
+      (let loop ((x x))
+         (if (= x 0)
+             (car y)
+             (begin
+                (set! y (cons x y))
+                (loop (- x 1)))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    test-0cfa ...                                                    */
 ;*---------------------------------------------------------------------*/
@@ -164,6 +175,7 @@
    (let ((l '(1)))
       (test "light" (test-l-procedure l) (cons l 1)))
    (let ((l '(1 2)))
-      (test "light" (test-l-procedure l) (cons l 2))))
+      (test "light" (test-l-procedure l) (cons l 2)))
+   (test "dataflow-test" (dataflow-test 10) 1))
 
  

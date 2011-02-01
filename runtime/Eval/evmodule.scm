@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Jan 22 15:49:24 2011 (serrano)                */
+;*    Last change :  Tue Jan 25 15:38:41 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -309,7 +309,7 @@
       (if (not var)
 	  (evcompile-error loc 'eval
 			   (string-append
-			    "Cannot find binding from module `"
+			    "Cannot find binding in module `"
 			    (symbol->string (evmodule-name from-mod))
 			    "'")
 			   from-ident)
