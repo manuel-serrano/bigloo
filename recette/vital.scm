@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Fri Nov 26 13:53:55 2010 (serrano)                */
-;*    Copyright   :  2002-10 Manuel Serrano                            */
+;*    Last change :  Tue Feb  8 16:22:50 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -54,6 +54,12 @@
 (define (vital:let x fun)
    (let ((let (if (> x 0) (fun (+ x 1)) (fun (- x)))))
       (if (> x 0) let (fun (- x)))))
+
+;*---------------------------------------------------------------------*/
+;*    vital:let* ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (vital:let*)
+   (let* ((x 1) (x (+ 1 x))) x))
 
 ;*---------------------------------------------------------------------*/
 ;*    vital:write ...                                                  */
@@ -870,4 +876,5 @@
    (test "char.2" (char->integer #a008) 8)
    (test "labels" (vital:labels map '(1 2 3)) '(1 2 3))
    (test "let" (vital:let 10 +) 11)
+   (test "let*" (vital:let*) 2)
    (test "bug-jvm" (procedure? bug-jvm) #t))

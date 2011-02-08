@@ -234,7 +234,9 @@ EVAL		= eval expand expanders expdlet expdbool expddefine \
                   expdcase expddo expdtry expdstruct evmeaning everror \
                   evcompile evenv progn macro expdquote evprimop \
                   expdsrfi0 expdrecord expdargs expdtrace library \
-                  evobject evmodule evaluate evutils
+                  evobject evmodule evutils \
+                  evaluate evaluate_types evaluate_avar evaluate_fsize \
+                  evaluate_uncomp evaluate_use evaluate_comp
 
 SCM_EVAL	= $(EVAL:%=Eval/%.scm)
 C_SCM_EVAL	= $(EVAL:%=Eval/%.c)

@@ -131,7 +131,8 @@
 ;*    module is initialized, the type of the variable must not         */
 ;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-(define default-evaluate::obj byte-code-evaluate)
+;;(define default-evaluate::obj byte-code-evaluate)
+(define default-evaluate::obj evaluate2)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
