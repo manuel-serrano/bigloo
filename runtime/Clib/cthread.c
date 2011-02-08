@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Dec 31 12:13:27 2010 (serrano)                */
-/*    Copyright   :  2004-10 Manuel Serrano                            */
+/*    Last change :  Tue Feb  8 10:41:01 2011 (serrano)                */
+/*    Copyright   :  2004-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -201,6 +201,7 @@ make_dynamic_env() {
 
    env->dynamic_env_t.lexical_stack = BNIL;
  
+   env->dynamic_env_t.evstate = BUNSPEC;
    env->dynamic_env_t.bytecode = BUNSPEC;
    env->dynamic_env_t.module = BUNSPEC;
    env->dynamic_env_t.abase = BUNSPEC;

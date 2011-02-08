@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sat Jan 22 15:54:07 2011 (serrano)                */
+;*    Last change :  Mon Feb  7 19:08:09 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -171,9 +171,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-unbound ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-unbound code name mod)
-   (evmeaning-error code
-		    'eval
+(define (evmeaning-unbound loc name mod)
+   (evmeaning-error loc
+		    "eval"
 		    (if (evmodule? mod)
 			(format "Unbound variable (from module `~a')"
 				(evmodule-name mod))
@@ -189,7 +189,7 @@
 	(case-bounce (evcode-op code)
 	   ((-2)
 	    ;; errors
-	    (apply evmeaning-error code (evcode-ref code 0)))
+	    (apply evmeaning-error (evcode-loc code) (evcode-ref code 0)))
 	   ((-1)
 	    ;; La seule constante qui nessecite un codage: les `vecteurs'
 	    (evcode-ref code 0))
@@ -230,7 +230,7 @@
 		      (evcode-op-set! code 6)
 		      (evcode-set! code 0 global)
 		      (eval-global-value global))
-		   (evmeaning-unbound code name mod))))
+		   (evmeaning-unbound (evcode-loc code) name mod))))
 	   ((8)
 	    ;; (set! <global> <value>)
 	    (let ((var (evcode-ref code 0))
@@ -249,7 +249,7 @@
 		      (evcode-set! code 0 global)
 		      (evcode-set! code 1 value)
 		      (evmeaning code stack denv))
-		   (evmeaning-unbound code name mod))))
+		   (evmeaning-unbound (evcode-loc code) name mod))))
 	   ((10)
 	    ;; la mutation de la premiere variable locale
 	    (set-car! stack (evmeaning (evcode-ref code 0) stack denv))
@@ -761,14 +761,15 @@
 	    ;; with-handler
 	    (let* ((handler (evcode-ref code 0))
 		   (body (evcode-ref code 1))
-		   (ehandler (evmeaning handler stack denv)))
+		   (ehandler (evmeaning handler stack denv))
+		   (loc (evcode-loc code)))
 	       (cond
 		  ((not (procedure? ehandler))
 		   (evmeaning-type-error code "eval" "procedure" ehandler))
 		  ((correct-arity? ehandler 1)
 		   (with-handler ehandler (evmeaning body stack denv)))
 		  (else
-		   (evmeaning-arity-error handler "with-handler" 1 ($procedure-arity ehandler))))))
+		   (evmeaning-arity-error loc "with-handler" 1 ($procedure-arity ehandler))))))
 	   ((131)
 	    ;; tailcall 0
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
@@ -812,7 +813,8 @@
 	   ((136)
 	    ;; tailcall >4
 	    (let* ((name (evcode-ref code 0))
-		   (fun (evmeaning (evcode-ref code 1) stack denv)))
+		   (fun (evmeaning (evcode-ref code 1) stack denv))
+		   (loc (evcode-loc code)))
 	       (let loop ((args (evcode-ref code 2))
 			  (new '())
 			  (len 0))
@@ -823,12 +825,12 @@
 				 (wen (reverse! new))
 				 (e2 (if (>=fx fmls 0)
 					 (evmeaning-push-fxargs name
-								code
+								loc
 								wen
 								fmls
 								stack)
 					 (evmeaning-push-vaargs name
-								code
+								loc
 								wen
 								fmls
 								stack))))
@@ -908,7 +910,7 @@
 					 "pair" a0)))))
 	   (else
 	    ;; unknown byte code
-	    (evmeaning-error code "eval" "unknown byte-code" code))))
+	    (evmeaning-error (evcode-loc code) "eval" "unknown byte-code" code))))
        code))
 
 (emit-bounced!)
@@ -982,14 +984,15 @@
 ;*    evmeaning-funcall-0 ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-funcall-0 code stack denv fun)
-   (let ((name (evcode-ref code 0)))
+   (let ((name (evcode-ref code 0))
+	 (loc (evcode-loc code)))
       ($evmeaning-byte-code-set! denv code)
-      ($env-set-trace-location denv (evcode-loc code))
+      ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error code "eval" name "Not a procedure"))
+	  (evmeaning-error loc "eval" name "Not a procedure"))
 	 ((not (correct-arity? fun 0))
-	  (evmeaning-arity-error code name 0 ($procedure-arity fun)))
+	  (evmeaning-arity-error loc name 0 ($procedure-arity fun)))
 	 (else
 	  (%funcall-0 fun)))))
 
@@ -998,14 +1001,15 @@
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-funcall-1 code stack denv fun)
    (let* ((name (evcode-ref code 0))
+	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
-      ($env-set-trace-location denv (evcode-loc code))
+      ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error code "eval" "Not a procedure" name))
+	  (evmeaning-error loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 1))
-	  (evmeaning-arity-error code name 1 ($procedure-arity fun)))
+	  (evmeaning-arity-error loc name 1 ($procedure-arity fun)))
 	 (else
 	  (%funcall-1 fun a0)))))
 
@@ -1014,15 +1018,16 @@
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-funcall-2 code stack denv fun)
    (let* ((name (evcode-ref code 0))
+	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
-      ($env-set-trace-location denv (evcode-loc code))
+      ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error code "eval" "Not a procedure" name))
+	  (evmeaning-error loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 2))
-	  (evmeaning-arity-error code name 2 ($procedure-arity fun)))
+	  (evmeaning-arity-error loc name 2 ($procedure-arity fun)))
 	 (else
 	  (%funcall-2 fun a0 a1)))))
 
@@ -1031,16 +1036,17 @@
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-funcall-3 code stack denv fun)
    (let* ((name (evcode-ref code 0))
+	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
       ($evmeaning-byte-code-set! denv code)
-      ($env-set-trace-location denv (evcode-loc code))
+      ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error code "eval" "Not a procedure" name))
+	  (evmeaning-error loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 3))
-	  (evmeaning-arity-error code name 3 ($procedure-arity fun)))
+	  (evmeaning-arity-error loc name 3 ($procedure-arity fun)))
 	 (else
 	  (%funcall-3 fun a0 a1 a2)))))
 
@@ -1049,17 +1055,18 @@
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-funcall-4 code stack denv fun)
    (let* ((name (evcode-ref code 0))
+	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
 	  (a3 (evmeaning (evcode-ref code 5) stack denv)))
       ($evmeaning-byte-code-set! denv code)
-      ($env-set-trace-location denv (evcode-loc code))
+      ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error code "eval" "Not a procedure" name))
+	  (evmeaning-error loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 4))
-	  (evmeaning-arity-error code name 4 ($procedure-arity fun)))
+	  (evmeaning-arity-error loc name 4 ($procedure-arity fun)))
 	 (else
 	  (%funcall-4 fun a0 a1 a2 a3)))))
 
@@ -1069,17 +1076,18 @@
 (define (evmeaning-tailcall-0-stack code stack denv fun)
    ($evmeaning-byte-code-set! denv code)
    (let* ((envd (evmeaning-procedure-stack fun))
-	  (arity (evmeaning-procedure-args fun)))
+	  (arity (evmeaning-procedure-args fun))
+	  (loc (evcode-loc code)))
       (when (symbol? (evcode-ref code 0))
 	 ($env-set-trace-name denv (evcode-ref code 0))
-	 ($env-set-trace-location denv (evcode-loc code)))
+	 ($env-set-trace-location denv loc))
       (case arity
 	 ((0)
 	  envd)
 	 ((-1)
 	  (cons '() envd))
 	 (else
-	  (evmeaning-arity-error code (evcode-ref code 0) 0 arity)))))
+	  (evmeaning-arity-error loc (evcode-ref code 0) 0 arity)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-1-stack ...                                   */
@@ -1088,10 +1096,11 @@
    (let ((a0 (evmeaning (evcode-ref code 2) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
-	     (arity (evmeaning-procedure-args fun)))
+	     (arity (evmeaning-procedure-args fun))
+	     (loc (evcode-loc code)))
 	 (when (symbol? (evcode-ref code 0))
 	    ($env-set-trace-name denv (evcode-ref code 0))
-	    ($env-set-trace-location denv (evcode-loc code)))
+	    ($env-set-trace-location denv loc))
 	 (case arity
 	    ((1)
 	     (cons a0 envd))
@@ -1100,7 +1109,7 @@
 	    ((-2)
 	     (cons a0 (cons '() envd)))
 	    (else
-	     (evmeaning-arity-error code (evcode-ref code 0) 1 arity))))))
+	     (evmeaning-arity-error loc (evcode-ref code 0) 1 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-2-stack ...                                   */
@@ -1110,10 +1119,11 @@
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
-	     (arity (evmeaning-procedure-args fun)))
+	     (arity (evmeaning-procedure-args fun))
+	     (loc (evcode-loc code)))
 	 (when (symbol? (evcode-ref code 0))
 	    ($env-set-trace-name denv (evcode-ref code 0))
-	    ($env-set-trace-location denv (evcode-loc code)))
+	    ($env-set-trace-location denv loc))
 	 (case arity
 	    ((2)
 	     (cons a0 (cons a1 envd)))
@@ -1124,7 +1134,7 @@
 	    ((-3)
 	     (cons a0 (cons a1 (cons '() envd))))
 	    (else
-	     (evmeaning-arity-error code (evcode-ref code 0) 2 arity))))))
+	     (evmeaning-arity-error loc (evcode-ref code 0) 2 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-3-stack ...                                   */
@@ -1135,10 +1145,11 @@
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
-	     (arity (evmeaning-procedure-args fun)))
+	     (arity (evmeaning-procedure-args fun))
+	     (loc (evcode-loc code)))
 	 (when (symbol? (evcode-ref code 0))
 	    ($env-set-trace-name denv (evcode-ref code 0))
-	    ($env-set-trace-location denv (evcode-loc code)))
+	    ($env-set-trace-location denv loc))
 	 (case arity
 	    ((3)
 	     (cons a0 (cons a1 (cons a2 envd))))
@@ -1151,7 +1162,7 @@
 	    ((-4)
 	     (cons a0 (cons a1 (cons a2 (cons '() envd)))))
 	    (else
-	     (evmeaning-arity-error code (evcode-ref code 0) 3 arity))))))
+	     (evmeaning-arity-error loc (evcode-ref code 0) 3 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-4-stack ...                                   */
@@ -1163,10 +1174,11 @@
 	  (a3 (evmeaning (evcode-ref code 5) stack denv)))
       ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
-	     (arity (evmeaning-procedure-args fun)))
+	     (arity (evmeaning-procedure-args fun))
+	     (loc (evcode-loc code)))
 	 (when (symbol? (evcode-ref code 0))
 	    ($env-set-trace-name denv (evcode-ref code 0))
-	    ($env-set-trace-location denv (evcode-loc code)))
+	    ($env-set-trace-location denv loc))
 	 (case arity
 	    ((4)
 	     (cons a0 (cons a1 (cons a2 (cons a3 envd)))))
@@ -1181,7 +1193,7 @@
 	    ((-5)
 	     (cons a0 (cons a1 (cons a2 (cons a3 (cons '() envd))))))
 	    (else
-	     (evmeaning-arity-error code (evcode-ref code 0) 4 arity))))))
+	     (evmeaning-arity-error loc (evcode-ref code 0) 4 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-apply ...                                                   */
@@ -1189,9 +1201,9 @@
 (define-inline (eval-apply code name fun len args)
    (cond
       ((not (procedure? fun))
-       (evmeaning-error code "apply" "Not a procedure" name))
+       (evmeaning-error (evcode-loc code) "apply" "Not a procedure" name))
       ((not (correct-arity? fun len))
-       (evmeaning-arity-error code name len ($procedure-arity fun)))
+       (evmeaning-arity-error (evcode-loc code) name len ($procedure-arity fun)))
       (else
        (%eval-apply fun args))))
 
@@ -1274,30 +1286,30 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-push-fxargs ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-push-fxargs name code actuals num stack)
+(define (evmeaning-push-fxargs name loc actuals num stack)
    (let _loop_ ((a actuals)
 		(n num))
       (cond
 	 ((=fx n 0)
 	  (if (not (null? a))
-	      (evmeaning-arity-error code name (length actuals) num)
+	      (evmeaning-arity-error loc name (length actuals) num)
 	      stack))
 	 ((null? a)
-	  (evmeaning-arity-error code name (length actuals) num))
+	  (evmeaning-arity-error loc name (length actuals) num))
 	 (else
 	  (cons (car a) (_loop_ (cdr a) (-fx n 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-push-vaargs ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-push-vaargs name code actuals num stack)
+(define (evmeaning-push-vaargs name loc actuals num stack)
    (let _loop_ ((a actuals)
 		(n num))
       (cond
 	 ((=fx n -1)
 	  (cons a stack))
 	 ((null? a)
-	  (evmeaning-arity-error code name (length actuals) num))
+	  (evmeaning-arity-error loc name (length actuals) num))
 	 (else
 	  (cons (car a) (_loop_ (cdr a) (+fx n 1)))))))
    

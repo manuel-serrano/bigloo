@@ -3921,6 +3921,17 @@ public final class foreign
 	 return BUNSPEC;
       }
 
+   public static Object BGL_ENV_EVSTATE(bgldynamic env)
+      {
+	 return env.evstate;
+      }
+
+   public static Object BGL_ENV_EVSTATE_SET(bgldynamic env, Object al)
+      {
+	 env.evstate = al;
+	 return BUNSPEC;
+      }
+
    public static Object BGL_MODULE()
       {
 	 return bgldynamic.abgldynamic.get().module;

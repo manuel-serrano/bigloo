@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 14 13:46:57 2004                          */
-;*    Last change :  Thu Apr 29 18:01:49 2010 (serrano)                */
-;*    Copyright   :  2004-10 Manuel Serrano                            */
+;*    Last change :  Tue Feb  8 10:45:30 2011 (serrano)                */
+;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The error of evmeaning                                           */
 ;*=====================================================================*/
@@ -81,14 +81,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-error ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-error bcode proc mes obj)
-   (if (evcode? bcode)
-       (match-case (evcode-loc bcode)
-	  ((at ?fname ?loc)
-	   (error/location proc mes obj fname loc))
-	  (else
-	   (error proc mes obj)))
-       (error proc mes obj)))
+(define (evmeaning-error loc proc mes obj)
+   (match-case loc
+      ((at ?fname ?loc)
+       (error/location proc mes obj fname loc))
+      (else
+       (error proc mes obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-type-error ...                                         */
@@ -105,14 +103,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-warning ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-warning bcode . args)
-   (if (evcode? bcode)
-       (match-case (evcode-loc bcode)
-	  ((at ?fname ?loc)
-	   (warning-notify (make-&eval-warning fname loc #f args)))
-	  (else
-	   (warning-notify (make-&eval-warning #f #f #f args))))
-       (warning-notify (make-&eval-warning #f #f #f args))))
+(define (evmeaning-warning loc . args)
+   (match-case loc
+      ((at ?fname ?loc)
+       (warning-notify (make-&eval-warning fname loc #f args)))
+      (else
+       (warning-notify (make-&eval-warning #f #f #f args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-annotate-exception! ...                                */
@@ -142,9 +138,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-arity-error ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-arity-error code name provide expect)
+(define (evmeaning-arity-error loc name provide expect)
    (let ((msg (format "Wrong number of arguments: ~a expected, ~a provided "
 		      expect provide)))
-      (evmeaning-error code "eval" msg name)))
-
-	 
+      (evmeaning-error loc "eval" msg name)))

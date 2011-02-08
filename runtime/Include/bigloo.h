@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 25 10:33:02 2011 (serrano)                */
+/*    Last change :  Tue Feb  8 10:40:40 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -558,6 +558,7 @@ typedef union scmobj {
       union scmobj *lexical_stack;
       /* eval parameter */
       union scmobj *bytecode;
+      union scmobj *evstate;
       union scmobj *module;
       union scmobj *abase;
       /* parameters list */
@@ -1277,6 +1278,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (BGL_DYNAMIC_ENV( env ).bytecode)
 #define BGL_ENV_BYTECODE_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).bytecode = (_1), BUNSPEC)
+   
+#define BGL_ENV_EVSTATE( env ) \
+   (BGL_DYNAMIC_ENV( env ).evstate)
+#define BGL_ENV_EVSTATE_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).evstate = (_1), BUNSPEC)
    
 #define BGL_ENV_MODULE( env ) \
    (BGL_DYNAMIC_ENV( env ).module)

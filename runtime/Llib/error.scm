@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sat Dec 25 11:02:12 2010 (serrano)                */
+;*    Last change :  Mon Feb  7 17:15:23 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -983,6 +983,8 @@
 	  (string-append (symbol->string tag) "vector")))
       ((bignum? obj)
        "bignum")
+;*       ((mmap? obj)                                                  */
+;*        "mmap")                                                      */
       (else
        ($foreign-typeof obj))))
 

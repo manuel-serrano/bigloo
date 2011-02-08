@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Mon Dec 13 10:16:39 2010 (serrano)                */
-;*    Copyright   :  2010 Manuel Serrano                               */
+;*    Last change :  Tue Feb  8 10:48:11 2011 (serrano)                */
+;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -13,6 +13,12 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __evaluate
+   
+   (option (set! *unsafe-type* #f)
+	   (set! *unsafe-range* #f)
+	   (set! *unsafe-arity* #f)
+	   (set! *unsafe-struct* #f)
+	   (set! *unsafe-eval* #f))
    
    (import  __type
 	    __error
@@ -54,6 +60,17 @@
 	    __evcompile
 	    __everror
 	    __evmodule)
+
+   (extern (macro $evmeaning-evstate::obj (::dynamic-env)
+		  "BGL_ENV_EVSTATE")
+	   (macro $evmeaning-evstate-set!::obj (::dynamic-env ::obj)
+		  "BGL_ENV_EVSTATE_SET"))
+   
+   (java   (class foreign
+	      (method static $evmeaning-evstate::obj (::dynamic-env)
+		      "BGL_ENV_EVSTATE")
+	      (method static $evmeaning-evstate-set!::obj (::dynamic-env ::obj)
+		      "BGL_ENV_EVSTATE_SET")))
    
    (static 
     ;;
@@ -62,7 +79,7 @@
     (class ev_expr)
     
     (class ev_var::ev_expr name::symbol (eff (default #f)))
-    (class ev_global::ev_expr name::symbol mod)
+    (class ev_global::ev_expr name::symbol mod (loc read-only))
     
     (class ev_litt::ev_expr value)
     (class ev_if::ev_expr p::ev_expr t::ev_expr e::ev_expr)
@@ -73,7 +90,7 @@
     (class ev_hook::ev_expr e::ev_expr)
     (class ev_trap::ev_hook)
     (class ev_setlocal::ev_hook v::ev_var)
-    (class ev_setglobal::ev_hook name::symbol mod)
+    (class ev_setglobal::ev_hook name::symbol mod (loc read-only))
     (class ev_defglobal::ev_setglobal)
     (class ev_bind-exit::ev_expr var::ev_var body::ev_expr)
     (class ev_unwind-protect::ev_expr e::ev_expr body::ev_expr)
@@ -127,26 +144,26 @@
 	   (print) )
        '#unspecified ))
 
-(define **prof_results** '(all 0))
+(define **prof_results** (list 'all (fixnum->llong 0)))
 
-(define-macro (prof name)
+(define-macro (prof path)
    (if #f
-       `(do_profile ',name)
+       `(do_profile ,path)
        '#unspecified ))
 
 (define (do_profile path);
    (let rec ( (t **prof_results**) (p path) )
       ;; t = (last_node_name nb ... <sub_tree> ...)
-      (set-car! (cdr t) (+fx 1 (cadr t)))
+      (set-car! (cdr t) (+ 1 (cadr t)))
       (when (pair? p)
 	 (let ( (slot (assq (car p) (cddr t))) )
 	    (unless slot
-		(begin (set! slot (list (car p) 0))
+		(begin (set! slot (list (car p) (fixnum->llong 0)))
 		       (set-cdr! (cdr t) (cons slot (cddr t))) ))
 	    (rec slot (cdr p)) ))))
 
 (define (reset_profile)
-   (set! **prof_results** (list 'all 0)))
+   (set! **prof_results** (list 'all (fixnum->llong 0))) )
 
 (define (<lexint t1 t2)
    (define (o->s v)
@@ -172,7 +189,7 @@
 ;*---------------------------------------------------------------------*/
 (define (evaluate2 sexp env loc)
    (let ( (ast (convert sexp env loc)) )
-      ;(when (> (bigloo-debug) 0) (pp (uncompile ast)))
+      (when (> (bigloo-debug) 10) (pp (uncompile ast)))
       (analyse-vars ast)
       (let ( (n (frame-size ast)) )
 	 (let ( (f (compile ast)) )
@@ -181,11 +198,11 @@
 		  (unwind-protect (f s)
 				  (vector-set! s 0 bp) )))))))
 
-(define (tmp-error msg v)
-   (error 'eval msg v) )
-
-(define (tmp-warning . msgs)
-   (error 'eval "Warning" msgs) )
+(define (loc-type-error f m v loc)
+   (match-case loc
+      ((at ?fname ?loc)
+       (bigloo-type-error/location f m v fname loc) )
+      (else (bigloo-type-error f m v)) ))
 
 ;;
 ;; Taken elsewhere...
@@ -209,7 +226,7 @@
    (walk l 0) )
 
 (define (_index x l)
-   (or (index x l) (error 'index "not found" (list x " in " (map lname l)))) )
+   (or (index x l) (error "eval" "internal error: not found" (list x " in " (map lname l)))) )
 
 (define (union l1 l2)
    (if (null? l1)
@@ -237,7 +254,7 @@
 ;; Convert cons to Ast
 ;;
 (define (convert e globals loc)
-   (conv e '() globals #f 'nowhere loc) )
+   (conv e '() globals #f 'nowhere loc #t) )
 
 (define (conv-var v locals)
    (let rec ( (l locals) )
@@ -253,17 +270,17 @@
        (ev_var-name v)
        v ))
 
-(define (conv-begin l locals globals tail? where loc)
+(define (conv-begin l locals globals tail? where loc top?)
    (match-case l
       (() (instantiate::ev_litt (value #unspecified)))
-      ((?e) (conv e locals globals tail? where loc))
-      ((?e1 . ?r) (instantiate::ev_prog2 (e1 (conv e1 locals globals #f where loc))
-					 (e2 (conv-begin r locals globals tail? where loc)) ))
-      (else (error 'conv-begin "bad syntax" l)) ))
+      ((?e) (conv e locals globals tail? where loc top?))
+      ((?e1 . ?r) (instantiate::ev_prog2 (e1 (conv e1 locals globals #f where loc top?))
+					 (e2 (conv-begin r locals globals tail? where loc top?)) ))
+      (else (evcompile-error loc "eval" "bad syntax" l)) ))
 
-(define (conv e locals globals tail? where loc)
-   (define (rconv e) (conv e locals globals tail? where (get-location e loc)))
-   (define (uconv e) (conv e locals globals #f where (get-location e loc)))
+(define (conv e locals globals tail? where loc top?)
+   (define (rconv e) (conv e locals globals tail? where (get-location e loc) #f))
+   (define (uconv e) (conv e locals globals #f where (get-location e loc) #f))
    (define (conv-lambda formals body where)
       (define (split-formals l)
 	 (let rec ( (r l) (flat '()) (arity 0) )
@@ -279,15 +296,19 @@
 				(where where)
 				(arity arity)
 				(vars vars)
-				(body (conv body (append vars locals) globals #t where nloc)) ))))
+				(body (conv body (append vars locals) globals #t where nloc #f)) ))))
    (match-case e
       ((atom ?x)
        (if (symbol? x)
 	   (or (conv-var x locals)
-	       (instantiate::ev_global (name x) (mod (if (evmodule? globals) globals ($eval-module)))) )
+	       (instantiate::ev_global (loc loc) (name x) (mod (if (evmodule? globals) globals ($eval-module)))) )
 	   (instantiate::ev_litt (value x)) ))
       ((module . ?bah)
-       (instantiate::ev_litt (value #unspecified)) )
+       (if top?
+	   (conv (expand (evmodule e (get-location e loc))) locals globals where #f loc #t)
+	   (evcompile-error loc "eval" "Illegal non toplevel module declaration" e) ))
+      ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
+       (instantiate::ev_global (loc loc) (name id) (mod mod)))
       (((and (? symbol?)
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
@@ -305,59 +326,67 @@
       (((kwote and) . ?args)
        (instantiate::ev_and (args (map uconv args))) )
       ((begin . ?l)
-       (conv-begin l locals globals tail? where loc) )
+       (conv-begin l locals globals tail? where loc top?) )
       ((let ?binds . ?body)
        (let ( (vars (map (lambda (b) (instantiate::ev_var (name (untype-ident (car b))))) binds)) )
 	  (instantiate::ev_let (vars vars)
 			       (vals (map (lambda (b) (uconv (cadr b))) binds))
-			       (body (conv-begin body (append vars locals) globals tail? where loc)) )))
+			       (body (conv-begin body (append vars locals) globals tail? where loc #f)) )))
       ((let* ?binds . ?body)
        (define (conv-vals l vars locals)
 	  (if (null? l)
 	      '()
-	      (cons (conv (cadar l) locals globals #f where loc)
+	      (cons (conv (cadar l) locals globals #f where loc #f)
 		    (conv-vals (cdr l) (cdr vars) (cons (car vars) locals)) )))
        (let ( (vars (map (lambda (b) (instantiate::ev_var (name (untype-ident (car b))))) binds)) )
 	  (instantiate::ev_let* (vars vars)
 				(vals (conv-vals binds vars locals))
-				(body (conv-begin body (append vars locals) globals tail? where loc)) )))
+				(body (conv-begin body (append vars locals) globals tail? where loc #f)) )))
       ((letrec ?binds . ?body)
        (let ( (vars (map (lambda (b) (instantiate::ev_var (name (untype-ident (car b))))) binds)) )
 	  (let ( (locals (append vars locals)) )
 	     (instantiate::ev_letrec (vars vars)
-				     (vals (map (lambda (b) (conv (cadr b) locals globals #f where loc)) binds))
-				     (body (conv-begin body locals globals tail? where loc)) ))))
+				     (vals (map (lambda (b) (conv (cadr b) locals globals #f where loc #f)) binds))
+				     (body (conv-begin body locals globals tail? where loc #f)) ))))
+      ((set! (@ (and ?id (? symbol?)) (and ?mod (? symbol?))) ?e)
+       (instantiate::ev_setglobal (loc loc)
+				  (name id)
+				  (mod mod)
+				  (e (uconv e))))
       ((set! ?v ?e)
        (let ( (cv (conv-var v locals)) (e (uconv e)) )
 	  (if cv
 	      (instantiate::ev_setlocal (v cv) (e e))
-	      (instantiate::ev_setglobal (name v)
+	      (instantiate::ev_setglobal (loc loc)
+					 (name v)
 					 (mod (if (evmodule? globals) globals ($eval-module)))
 					 (e e)) )))
       ((define ?gv (lambda ?formals ?body))
-       (instantiate::ev_defglobal (name (untype-ident gv))
+       (instantiate::ev_defglobal (loc loc)
+				  (name (untype-ident gv))
 				  (mod (if (evmodule? globals) globals ($eval-module)))
 				  (e (conv-lambda formals body gv)) ))
       ((define ?gv ?ge)
-       (instantiate::ev_defglobal (name (untype-ident gv))
+       (instantiate::ev_defglobal (loc loc)
+				  (name (untype-ident gv))
 				  (mod (if (evmodule? globals) globals ($eval-module)))
 				  (e (uconv ge)) ))
       ((bind-exit (?v) . ?body)
        (let ( (var (instantiate::ev_var (name v))) )
 	  (instantiate::ev_bind-exit (var var)
-				     (body (conv-begin body (cons var locals) globals #f where loc)) )))
+				     (body (conv-begin body (cons var locals) globals #f where loc #f)) )))
       ((unwind-protect ?e . ?body)
        (instantiate::ev_unwind-protect (e (uconv e))
-				       (body (conv-begin body locals globals #f where loc)) ))
+				       (body (conv-begin body locals globals #f where loc #f)) ))
       ((with-handler ?h . ?body)
        (instantiate::ev_with-handler (handler (uconv h))
-				     (body (conv-begin body locals globals #f where loc)) ))
+				     (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
        (conv-lambda formals body 'nowhere) )
       ((?f . ?args)
        (let ( (fun (uconv f)) (args (map uconv args)) )
 	  (instantiate::ev_app (loc loc) (fun fun) (args args) (tail? tail?)) ))
-      (else (error 'conv "bad syntax" e)) ))
+      (else (evcompile-error loc "eval" "bad syntax" e)) ))
 
 ;;
 ;; Compute free/closed variables
@@ -373,7 +402,7 @@
 	 (unless (memq var free) (ev_abs-free-set! abs (cons var free))) )))
 
 (define-generic (avar e::ev_expr local abs);
-   (error 'analyse-vars "not defined for" e) )
+   (error "eval" "internal error: not defined for" e) )
 
 (define-method (avar var::ev_var local abs);
    (check-var var local abs) )
@@ -480,7 +509,7 @@
    (fsize e 0) )
 
 (define-generic (fsize::bint e::ev_expr n::bint);
-   (error 'fsize "not defined for" e) )
+   (error "eval" "internal error: not defined for" e) )
 
 (define-method (fsize::bint e::ev_var n::bint);
    n )
@@ -563,13 +592,20 @@
 
 (define **size-stack** (* 8 1024))
 
-(define **the-stack-that-each-process-must-have**
+(define (make-state)
    (let ( (stk (make-vector **size-stack** "")) )
       (vector-set! stk 0 2)
       stk ))
-
+   
 (define (find-state)
-   **the-stack-that-each-process-must-have** )
+   (let ( (s ($evmeaning-evstate (current-dynamic-env))) )
+      (if (not (vector? s))
+	  (let ( (state (make-state)) )
+	     ($evmeaning-evstate-set! (current-dynamic-env) state)
+	     state )
+	  (begin
+	     (tprint "find-state: " (vector-length s))
+	     s ))))
 
 (define (push-state s)
    (let ( (stk (make-vector **size-stack** "")) )
@@ -651,7 +687,7 @@
    (uncomp e) )
 
 (define-generic (uncomp e::ev_expr);
-   (error 'uncomp "not defined for" e) )
+   (error "eval" "internal error: not defined for" e) )
 
 (define-method (uncomp var::ev_var);
    (ev_var-name var) )
@@ -740,7 +776,7 @@
 ;; Compute the vars used by an expression
 ;;
 (define-generic (use e::ev_expr done);
-   (error 'use "not defined for" e) )
+   (error "eval" "internal error: not defined for" e) )
 
 (define (use* l done)
    (if (null? l)
@@ -809,12 +845,12 @@
    (comp e '()) )
 
 (define-generic (comp e::ev_expr stk)
-   (error 'comp "not defined for" e) )
+   (error "eval" "internal error: not defined for" e) )
 
 (define-macro (EVA path step_args . body)
    `(lambda (s)
        (let ( (bp (vector-ref s 0)) )
-	  (prof ,path)
+	  (prof (cons 'node ,path))
 	  (step s bp (length stk) ',path ,@step_args)
 	  ,@body )))
 
@@ -824,7 +860,7 @@
 (define-method (comp e::ev_trap stk)
    (with-access::ev_trap e (e)
       (let ( (e (comp e stk)) )
-	 (EVA (trap) ()
+	 (EVA '(trap) ()
 	    (let ( (cmd (EVC e)) )
 	       (case cmd
 		  ((reset_profile)
@@ -833,14 +869,14 @@
 		   (get_profile) )
 		  ((reset_stack)
 		   (vector-set! (find-state) 0 2) )
-		  (else (error 'trap "unknown command" cmd)) ))))))
+		  (else (error "eval" "internal error: unknown command" cmd)) ))))))
 
 (define-macro (generate-fix-index . indexes)
    (define (doit i)
       `(if eff
-	   (EVA (var read cell ,i) ((ev_var-name var))
+	   (EVA `(var read cell ,i) ((ev_var-name var))
 	      (mcell-value (vector-ref s (+fx bp ,i))) )
-	   (EVA (var read direct ,i) ((ev_var-name var))
+	   (EVA `(var read direct ,i) ((ev_var-name var))
 		(vector-ref s (+fx bp ,i)) )))
    `(case i
       ,@(map (lambda (i) `((,i) ,(doit i))) indexes)
@@ -849,77 +885,87 @@
 (define-method (comp var::ev_var stk);
    (let ( (i (_index var stk)) )
       (with-access::ev_var var (eff)
-	 (generate-fix-index) )))
+	 (generate-fix-index 0 1 2 3) )))
 
 (define-method (comp e::ev_setlocal stk);
    (with-access::ev_setlocal e (v e)
       (let ( (i (_index v stk)) (e (comp e stk)) )
 	 (with-access::ev_var v (eff)
 	    (if eff
-		(EVA (var write cell) ((ev_var-name v) i)
+		(EVA '(var write cell) ((ev_var-name v) i)
 		     (mcell-value-set! (vector-ref s (+fx bp i)) (EVC e)) )
-		(EVA (var write direct) ((ev_var-name v) i)
+		(EVA '(var write direct) ((ev_var-name v) i)
 		     (vector-set! s (+fx bp i) (EVC e))) )))))
 
 (define-method (comp var::ev_global stk);
-   (with-access::ev_global var (name mod)
+   (with-access::ev_global var (name mod loc)
       (let ( (g (evmodule-find-global mod name)) )
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
-		 (EVA (global read cell) (name)
+		 (EVA '(global read cell) (name)
 		      (__evmeaning_address-ref (eval-global-value g)) )
-		 (EVA (global read direct) (name)
+		 (EVA '(global read direct) (name)
 		      (eval-global-value g) ))
 	     (let ( (slot #f) )
-		(EVA (global read check) (name)
+		(EVA '(global read check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (tmp-error "(unbound variable)" name)) )
+			(unless slot (evmeaning-error loc "eval" "unbound variable" name)) )
 		     (eval-global-value slot) ))))))
 
 (define-method (comp e::ev_setglobal stk);
-   (with-access::ev_setglobal e (name mod e)
+   (with-access::ev_setglobal e (name mod e loc)
       (let ( (g (evmodule-find-global mod name)) (e (comp e stk)) )
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
-		 (EVA (global write cell) (name)
+		 (EVA '(global write cell) (name)
 		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
-		 (EVA (global write direct) (name)
+		 (EVA '(global write direct) (name)
 		    (set-eval-global-value! g (EVC e)) ))
 	     (let ( (slot #f) )
-		(EVA (global write check) (name)
+		(EVA '(global write check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (tmp-error "(unbound variable)" name)) )
+			(unless slot (evmeaning-error loc "eval" "unbound variable" name)) )
 		     (set-eval-global-value! slot (EVC e)) ))))))
 
 (define-method (comp e::ev_defglobal stk);
-   (with-access::ev_defglobal e (name mod e)
+   (with-access::ev_defglobal e (name mod e loc)
       (let ( (e (comp e stk)) )
-	 (EVA (global write define) (name)
+	 (EVA '(global write define) (name)
 	    (let ( (g (evmodule-find-global mod name)) )
 	       (if g
-		   (begin (set-eval-global-value! g (EVC e))
-			  name )
+		   (begin
+		      (if (eq? (eval-global-tag g) 1)
+			  (__evmeaning_address-set! (eval-global-value g) (EVC e))
+			  (begin
+			     (set-eval-global-value! g (EVC e))
+			     (when (and (eq? (eval-global-tag g) 0)
+					(bigloo-eval-strict-module))
+				(evmeaning-warning loc
+						   'set! "Setting compiled read-only variable "
+						   name
+						   " can yield to incoherent state"))) )
+		      name )
 		   (let ( (g (vector 2 name (EVC e))) )
 		      (evmodule-bind-global! mod name g)
 		      name )))))))
 
 (define-method (comp e::ev_litt stk);
    (with-access::ev_litt e (value)
-      (EVA (quote) (value)
+      (EVA '(quote) (value)
 	   value) ))
    
 (define-method (comp e::ev_if stk);
    (with-access::ev_if e (p t e)
       (let ( (p (comp p stk)) (t (comp t stk)) (e (comp e stk)) )
-	 (EVA (control if) ()
+	 (EVA '(control if) ()
 	      (if (EVC p) (EVC t) (EVC e)) ))))
    
 (define-method (comp e::ev_or stk);
    (with-access::ev_or e (args)
       (let ( (args (map (lambda (e) (comp e stk)) args)) )
-	 (EVA (control or) ()
+	 (EVA '(control or) ()
 	      (let rec ( (l args) )
 		 (if (null? l)
 		     #f
@@ -928,7 +974,7 @@
 (define-method (comp e::ev_and stk);
    (with-access::ev_and e (args)
       (let ( (args (map (lambda (e) (comp e stk)) args)) )
-	 (EVA (control and) ()
+	 (EVA '(control and) ()
 	      (let rec ( (l args) (r #t) )
 		 (if (null? l)
 		     r
@@ -938,7 +984,7 @@
 (define-method (comp e::ev_prog2 stk);
    (with-access::ev_prog2 e (e1 e2)
       (let ( (e1 (comp e1 stk)) (e2 (comp e2 stk)) )
-	 (EVA (control begin) ()
+	 (EVA '(control begin) ()
 	      (begin (EVC e1) (EVC e2)) ))))
 
 (define-method (comp e::ev_let stk);
@@ -948,7 +994,7 @@
 	       (vals (comp-with-push vals stk))
 		(iboxes (map (lambda (v) (_index v nstk)) boxes))
 		(body (comp body nstk)) )
-	    (EVA (binder let) ()
+	    (EVA '(binder let) ()
 		 (let rec ( (l vals) (i (+fx bp size)) )
 		    (unless (null? l)
 		       (vector-set! s i (EVC (car l)))
@@ -965,7 +1011,7 @@
       (let ( (size (length stk)) (nstk (append stk vars)) )
 	 (let ( (vals (map (lambda (v) (comp v nstk)) vals))
 		(body (comp body nstk)) )
-	    (EVA (binder let*) ()
+	    (EVA '(binder let*) ()
 		 (let rec ( (l vals) (i (+fx bp size)) (b* boxes) )
 		    (unless (null? l)
 		       (let ( (val (EVC (car l))) )
@@ -979,7 +1025,7 @@
 	 (let ( (cvals (map (lambda (v) (comp v nstk)) vals))
 		(body (comp body nstk)) )
 	    (if (every? ev_abs? vals)
-		(EVA (binder letrec fun) ()
+		(EVA '(binder letrec fun) ()
 		     (let rec ( (l cvals) (i (+fx bp size)) )
 			(unless (null? l)
 			   (vector-set! s i (mcell #unspecified))
@@ -989,7 +1035,7 @@
 			   (mcell-value-set! (vector-ref s i) (EVC (car l)))
 			   (rec (cdr l) (+fx i 1)) ))
 		     (EVC body) )
-		(EVA (binder letrec data) ()
+		(EVA '(binder letrec data) ()
 		     (let rec ( (l cvals) (i (+fx bp size)) )
 			(unless (null? l)
 			   (vector-set! s i (mcell #unspecified))
@@ -1005,7 +1051,7 @@
    (with-access::ev_bind-exit e (var body)
       (let ( (size (length stk)) (nstk (append stk (cons var '()))) )
 	 (let ( (body (comp body nstk)) (eff? (ev_var-eff var)) )
-	    (EVA (binder bind-exit) ()
+	    (EVA '(binder bind-exit) ()
 		 (bind-exit (exit)
 		    (vector-set! s (+fx bp size) (if eff? (mcell exit) exit))
 		    (EVC body) ))))))
@@ -1013,13 +1059,16 @@
 (define-method (comp e::ev_unwind-protect stk);
    (with-access::ev_unwind-protect e (e body)
       (let ( (e (comp e stk)) (body (comp body stk)) )
-	 (EVA (exception unwind-protect) ()
-	      (unwind-protect (EVC e) (EVC body)) ))))
+	 (EVA '(exception unwind-protect) ()
+	      (let ( (saved-bp bp) )
+		 (unwind-protect (EVC e)
+				 (begin (vector-set! s 0 saved-bp)
+					(EVC body)) ))))))
 
 (define-method (comp e::ev_with-handler stk);
    (with-access::ev_with-handler e (handler body)
       (let ( (handler (comp handler stk)) (body (comp body stk)) )
-	 (EVA (exception with-handler) ()
+	 (EVA '(exception with-handler) ()
 	    (let ( (h (EVC handler)) )
 	       (with-handler h (EVC body)) )))))
 
@@ -1093,21 +1142,24 @@
        (EVA ,pn ()
 	    (let ( (f (EVC f)) )
 	       (unless (procedure? f)
-		  (error 'eval "not a procedure" f) )
+		  (loc-type-error "eval" "procedure" f loc) )
 	       (let ( (uf (procedure-attr f)) )
 		  (if (not (user? uf))
 		      (begin
-			 (prof (call int subr))
-			 ,subr-call )
+			 (prof '(call int subr))
+			 (if (not (correct-arity? f nbargs))
+			     (evmeaning-arity-error loc 'which-name? nbargs ($procedure-arity f))
+			     ,subr-call ))
 		      (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
-			 (prof (call int int))
+			 (prof '(call int int))
 			 (let ( (sp (+fx bp size)) )
-			    (unless (check-stack s ,(if tail? 'bp 'sp) sf) (error 'eval "stack overflow" bp))
 			    (if (=fx arity nbargs)
 				,fix-expr-call
 				(if (or (>=fx arity 0) (<fx arity (-fx -1 nbargs)))
 				    (error 'eval "arity mismatch" (list arity nbargs))
 				    ,notfix-expr-call ))
+			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
+			       (error 'eval "stack overflow" bp) )
 			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
 			       ($env-set-trace-location !denv loc) )
 			    ,(if tail?
@@ -1129,13 +1181,13 @@
       (let ( (size (length stk)) (nbargs (length args)) (f (comp fun stk)) )
 	 (cond
 	    ((not tail?)
-	     (comp-call-pattern (call normal) #f
+	     (comp-call-pattern `(call nottail ,nbargs) #f
 				(comp-with-push args stk)
 				(subr-call-with-push s f args bp size)
 				(push-args-on-sp s args sp)
 				(push-nargs-on-sp arity s args sp) ))
 	    ((need-shift args stk)
-	     (comp-call-pattern (call tail shift) #t
+	     (comp-call-pattern `(call tail shift ,nbargs) #t
 				(comp-with-push args stk)
 				(subr-call-with-push s f args bp size)
 				(begin (push-args-on-sp s args sp)
@@ -1143,7 +1195,7 @@
 				(begin (push-nargs-on-sp arity s args sp)
 				       (vector-copy! s bp s sp (+fx sp (-fx 0 arity))) )))
 	    (else
-	     (comp-call-pattern (call tail direct) #t
+	     (comp-call-pattern `(call tail direct ,nbargs) #t
 				(comp-in-place args stk size)
 				(subr-call-with-push s f args bp nbargs)
 				(push-args-on-sp s args bp)
@@ -1151,52 +1203,55 @@
 
 ;; specialized version for a fixed number of arguments
 (define-macro (generate-comp-calli-body tail? args)
-   (define (push-args l)
-      (map (lambda (v i) `(vector-set! s (+fx bp ,i) ,v)) l (iota (length l) 0)) )
-   (define (push-args-tail? l)
-      (if tail?
-	  `(begin
-	      ,@(push-args l)
-	      (throw-trampoline run) )
-	  `(let ( (bp (+fx bp size)) )
-	      ,@(push-args l)
-	      (let ( (!denv::dynamic-env (current-dynamic-env)) )
-		 ($env-set-trace-location !denv loc) )
-	      (catch-trampoline run s bp) )))
+   (define (push-args l sp)
+      (map (lambda (v i) `(vector-set! s (+fx ,sp ,i) ,v)) l (iota (length l) 0)) )
+   (define (bpush-args l sp)
+      `(begin ,@(push-args l sp)) )
+   
    (define (split n l)
       ;; (split 2 '(a1 a2 a3 a4)) -> (a1 a2 (list a3 a4))
       (if (=fx n 0)
 	  `((list ,@l))
 	  (cons (car l) (split (-fx n 1) (cdr l))) ))
-   (define (generate-case-neg-arity from to args)
+   (define (generate-case-neg-arity from to args sp)
       (if (=fx from to)
 	  '()
-	  (cons `((,from) ,(push-args-tail? (split (-fx -1 from) args)))
-		(generate-case-neg-arity (-fx from 1) to args) )))
+	  (cons `((,from) ,(bpush-args (split (-fx -1 from) args) sp))
+		(generate-case-neg-arity (-fx from 1) to args sp) )))
    (let ( (nbargs (length args)) )
-      `(EVA (call normal ,nbargs) ("nb args" ,nbargs "size" size)
+      `(EVA '(call ,@(if tail? '(tail direct) '(nottail)) ,nbargs) ("nb args" ,nbargs "size" size)
 	    (let ( (f (EVC fun)) ,@(map (lambda (v) `(,v (EVC ,v))) args) )
 	       (unless (procedure? f)
 		  (error 'eval "not a procedure" f) )
 	       (let ( (uf (procedure-attr f)) )
 		  (if (not (user? uf))
 		      (begin
-			 (prof (call int subr))
-			 (let ( (nbp (+fx bp size)) )
-			    (vector-set! s 0 nbp)
-			    (let ( (r (f ,@args)) )
-			       (vector-set! s 0 bp)
-			       r )))
+			 (prof '(call int subr))
+			 (if (not (correct-arity? f ,nbargs))
+			     (evmeaning-arity-error loc 'which-name? ,nbargs ($procedure-arity f))
+			     (let ( (nbp (+fx bp size)) )
+				(vector-set! s 0 nbp)
+				(let ( (r (f ,@args)) )
+				   (vector-set! s 0 bp)
+				   r ))))
 		      (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
-			 (prof (call int int))
-			 (unless (check-stack s ,(if tail? 'bp '(+fx bp size)) sf)
-			    (error 'eval "stack overflow" bp) )
-			 (case arity
-			    ((,nbargs)
-			     ,(push-args-tail? args) )
-			    ,@(generate-case-neg-arity -1 (-fx -2 nbargs) args)
-			    (else
-			     (error 'eval "wrong number of arguments" (cons arity ,nbargs)) )))))))))
+			 (let ( (sp (+fx bp size)) )
+			    (prof '(call int int))
+			    (if (=fx arity ,nbargs)
+				,(bpush-args args (if tail? 'bp 'sp))
+				(case arity
+				   ,@(generate-case-neg-arity -1 (-fx -2 nbargs) args (if tail? 'bp 'sp))
+				   (else
+				    (error 'eval "wrong number of arguments" (cons arity ,nbargs)) )))
+			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
+			       (error 'eval "stack overflow" bp) )
+			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
+			       ($env-set-trace-location !denv loc) )
+			    ,(if tail?
+				 '(throw-trampoline run)
+				 '(catch-trampoline run s sp) )
+
+			 ))))))))
 
 (define-macro (generate-comp-calli from to)
    (if (>fx from to)
@@ -1213,43 +1268,29 @@
 (generate-comp-calli 0 4)
 
 ;; inline
-(define-macro (inline1 fun* fun a1 stk);
+(define-macro (inline fun* loc fun vars stk);
    (let rec ( (l fun*) )
       (if (null? l)
 	  '#f
-	  (let ( (slot (car l)) )
-	     (let ( (fname (if (pair? slot) (car slot) slot)) (test? (if (pair? slot) (cadr slot) 'true)) )
-		`(if (eq? ,fun ,fname)
-		     (let ( (a1 (comp ,a1 ,stk)) )
-			(EVA (call inline ,fname) (,(symbol->string fname))
-			     (let ( (a1 (EVC a1)) )
-				,@(if (pair? slot)
-				      `((unless (,test? a1) (tmp-error "bad type" a1)))
-				      '() )
-				(,fname a1) )))
-		     ,(rec (cdr l)) ))))))
+	  (let* ( (slot (car l)) (type (car slot)) (pred (cadr slot)) )
+	     (let rec2 ( (names (cddr slot)) )
+		(if (null? names)
+		    (rec (cdr l))
+		    (let ( (fname (car names)) )
+		       `(if (eq? ,fun ,fname)
+			    (let ,(map (lambda (v) `(,v (comp ,v ,stk))) vars)
+			       (EVA '(call inline ,fname) (,(symbol->string fname))
+				    (let ,(map (lambda (v) `(,v (EVC ,v))) vars)
+				       ,@(if pred
+					     (map (lambda (v)
+						     `(unless (,pred ,v)
+							 (loc-type-error ',fname ',type ,v ,loc) ))
+						  vars )
+					     '() )
+				       (,fname ,@vars) )))
+			    ,(rec2 (cdr names)) ))))))))
 
-(define-macro (inline2 fun* fun a1 a2 stk);
-   (let rec ( (l fun*) )
-      (if (null? l)
-	  '#f
-	  (let ( (slot (car l)) )
-	     (let ( (fname (if (pair? slot) (car slot) slot)) (test? (if (pair? slot) (cadr slot) 'true)) )
-		`(if (eq? ,fun ,fname)
-		     (let ( (a1 (comp ,a1 ,stk)) (a2 (comp ,a2 ,stk)) )
-			(EVA (call inline ,fname) (,(symbol->string fname))
-			     (let ( (a1 (EVC a1)) (a2 (EVC a2)) )
-				,@(if (pair? slot)
-				      `((unless (,test? a1) (tmp-error "bad type" a1))
-					(unless (,test? a2) (tmp-error "bad type" a2)) )
-				      '() )
-				(,fname a1 a2) )))
-		     ,(rec (cdr l)) ))))))
-
-(define (cadr? l)
-   (and (pair? l) (pair? (cdr l))) )
-
-(define (inline-call fun args stk);
+(define (inline-call loc fun args stk);
    (when (and (ev_global? fun) (bigloo-eval-strict-module))
       (with-access::ev_global fun (name mod)
 	 (let ( (g (evmodule-find-global mod name)) )
@@ -1257,17 +1298,15 @@
 	       (let ( (val (eval-global-value g)) (n (length args)) )
 		  (or (when (=fx n 1)
 			 (let ( (a1 (car args)) )
-			    (inline1 ((car pair?) (cdr pair?) (cadr cadr?)) val a1 stk) ))
+			    (inline ((pair pair? car cdr) (pair cadr? cadr)) loc val (a1) stk) ))
 		      (when (=fx n 2)
 			 (let ( (a1 (car args)) (a2 (cadr args)) )
-			    (inline2 ((+ number?) (- number?) (* number?) (/ number?)
-				      (< number?) (> number?) (<= number?) (>= number?) (= number?)
-						  eq? cons
-						  (+fx number?) (-fx number?) (*fx number?) (/fx number?)
-						  (<fx number?) (>fx number?) (<=fx number?) (>=fx number?)
-						  (=fx number?)
-						  )
-				     val a1 a2 stk ))))))))))
+			    (inline ((number number? + - * / < > <= >= =
+					     +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
+				     (#f #f eq? cons)) loc val (a1 a2) stk ))))))))))
+
+(define (cadr? l)
+   (and (pair? l) (pair? (cdr l))) )
 
 ;; main method for application
 (define-macro (comp-dispatch cur max vars)
@@ -1283,7 +1322,7 @@
 
 (define-method (comp e::ev_app stk);
    (with-access::ev_app e (loc fun args tail?)
-      (or (inline-call fun args stk)
+      (or (inline-call loc fun args stk)
 	  (if (>fx (length args) 4)
 	      (comp-old-call e stk)
 	      (let ( (f (comp fun stk)) (size (length stk)) )
@@ -1321,16 +1360,17 @@
 	      (vector-set! s sp (car l))
 	      (rec (-fx r 1) (+fx sp 1) (cdr l)) )))))
 
-(define-macro (generate-abstraction param extra arity frame indexes iboxes)
+(define-macro (generate-abstraction param extra arity hasfree hasbox)
    (let ( (nbparam (length param)) )
-      `(EVA (lambda ,arity) ("nbfree " ,(if indexes `(vector-length ,indexes) 0))
-	    (let ( ,@(if indexes `((val* (free-collect s bp ,indexes))) '()) )
-	       (let ( (run (EVA (entry) ("param" (map lname vars)
+      `(EVA '(lambda ,arity) ("nbfree " (vector-length ifrees))
+	    (prof (list 'closing (vector-length ifrees)))
+	    (let ( ,@(if hasfree `((val* (free-collect s bp ifrees))) '()) )
+	       (let ( (run (EVA '(entry) ("param" (map lname vars)
 				         "stk " (map lname nstk)
-					 "nbbox " ,iboxes
-					 "nbfree " ,indexes)
-				,@(if iboxes `((make-boxes s ,iboxes bp)) '())
-				,@(if indexes '((free-restore s val* (+fx bp size))) '())
+					 "nbbox " iboxes
+					 "nbfree " ifrees)
+				,@(if hasbox `((make-boxes s iboxes bp)) '())
+				,@(if hasfree '((free-restore s val* (+fx bp size))) '())
 				(step s bp (length nstk) '(entry2))
 				(let ( (!denv::dynamic-env (current-dynamic-env)) (where where) (loc loc) )
 				   (let ()
@@ -1338,7 +1378,7 @@
 				      (prog1 (EVC body)
 					     ($env-pop-trace !denv) )))) ))
 		  (let ( (main (lambda (,@param . ,extra)
-				  (prof (call subr int))
+				  (prof '(call subr int))
 				  (let ( (s (find-state)) )
 				     (let ( (bp (vector-ref s 0)) )
 					(step s bp 0 '(entry main))
@@ -1356,38 +1396,38 @@
 					(unwind-protect (catch-trampoline run s bp)
 							(vector-set! s 0 bp) ))))) )
 		     (procedure-attr-set! run **a-bounce**)
-		     (procedure-attr-set! main (user ,arity run ,frame))
+		     (procedure-attr-set! main (user ,arity run size-frame))
 		     main ))))))
 
-(define-macro (generate-generate-abstraction param extra arity frame indexes iboxes);
-   `(if (=fx (vector-length ,indexes) 0)
-	(if (=fx (vector-length ,iboxes) 0)
-	    (generate-abstraction ,param ,extra ,arity ,frame #f #f)
-	    (generate-abstraction ,param ,extra ,arity ,frame #f ,iboxes) )
-	(if (=fx (vector-length ,iboxes) 0)
-	    (generate-abstraction ,param ,extra ,arity ,frame ,indexes #f)
-	    (generate-abstraction ,param ,extra ,arity ,frame ,indexes ,iboxes) )))
+(define-macro (generate-generate-abstraction param extra arity);
+   `(if (=fx (vector-length ifrees) 0)
+	(if (=fx (vector-length iboxes) 0)
+	    (generate-abstraction ,param ,extra ,arity #f #f)
+	    (generate-abstraction ,param ,extra ,arity #f #t) )
+	(if (=fx (vector-length iboxes) 0)
+	    (generate-abstraction ,param ,extra ,arity #t #f)
+	    (generate-abstraction ,param ,extra ,arity #t #t) )))
 
 (define-macro (generate-case-arity params)
    (define (gen1 l)
       (let ( (n (length l)) )
 	 (let ( (nn (-fx -1 n)) )
-	    `(((,n) (generate-generate-abstraction ,l () ,n sf i* iboxes))
-	      ((,nn) (generate-generate-abstraction ,l last ,nn sf i* iboxes)) ))))
+	    `(((,n) (generate-generate-abstraction ,l () ,n))
+	      ((,nn) (generate-generate-abstraction ,l last ,nn)) ))))
    (define (cases l)
       (if (null? l)
 	  (gen1 l)
 	  (append (cases (cdr l)) (gen1 l)) ))
    `(case arity
        ,@(cases params)
-       (else (generate-generate-abstraction ,params rest arity sf i* iboxes)) ))
+       (else (generate-generate-abstraction ,params rest arity)) ))
 
 (define-method (comp e::ev_abs stk);
    (with-access::ev_abs e (loc where arity vars free boxes body size)
-      (let ( (i* (list->vector (map (lambda (v) (_index v stk)) free)))
+      (let ( (ifrees (list->vector (map (lambda (v) (_index v stk)) free)))
 	     (iboxes (list->vector (map (lambda (v) (_index v vars)) boxes)))
 	     (size (length vars))
-	     (sf (+fx size (length free)))
+	     (size-frame (+fx size (length free)))
 	     (nstk (append vars free)) )
 	 (let ( (body (comp body nstk)) )
 	    (generate-case-arity (a b c d)) ))))
@@ -1405,7 +1445,7 @@
       (let rec ( (i 0) )
 	 (if (>=fx i n)
 	     r
-	     (begin (prof (lambda_collect))
+	     (begin (prof '(lambda_collect))
 		    (vector-set! r i (vector-ref s (+fx bp (vector-ref i* i))))
 		    (rec (+fx i 1)) )))))
 

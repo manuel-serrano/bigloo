@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Oct 19 10:42:04 2002                          */
-/*    Last change :  Fri Jun 19 15:19:04 2009 (serrano)                */
-/*    Copyright   :  2002-09 Manuel Serrano                            */
+/*    Last change :  Tue Feb  8 10:39:41 2011 (serrano)                */
+/*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Handling global dynamic environments (current_output_port et al) */
 /*=====================================================================*/
@@ -37,6 +37,7 @@ namespace bigloo
     public Object debug_alist = bigloo.foreign.BNIL;
     public Object lexical_stack = bigloo.foreign.BNIL;
     public Object bytecode = bigloo.foreign.BUNSPEC;
+    public Object evstate = bigloo.foreign.BUNSPEC;
     public Object module = bigloo.foreign.BUNSPEC;
     public Object abase = bigloo.foreign.BUNSPEC;
     public Object parameters = bigloo.foreign.BNIL;
