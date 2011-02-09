@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Feb  7 17:15:23 2011 (serrano)                */
+;*    Last change :  Tue Feb  8 20:12:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -170,6 +170,7 @@
 	    __reader
 	    
 	    __rgc
+	    (mmap? __mmap)
 	    
 	    __r4_vectors_6_8
 	    __r4_numbers_6_5_fixnum
@@ -983,8 +984,8 @@
 	  (string-append (symbol->string tag) "vector")))
       ((bignum? obj)
        "bignum")
-;*       ((mmap? obj)                                                  */
-;*        "mmap")                                                      */
+      (($mmap? obj)
+       "mmap")
       (else
        ($foreign-typeof obj))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Dec 31 11:38:02 2010 (serrano)                */
+;*    Last change :  Wed Feb  9 11:09:05 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -113,12 +113,12 @@
 		   tail::bool loc lkp::bool toplevelp::bool)
    (match-case exp
       (()
-       (evcompile-error loc 'eval "Illegal expression" '()))
+       (evcompile-error loc "eval" "Illegal expression" '()))
       ((module . ?-)
        (if toplevelp
 	   (evcompile (expand (evmodule exp (get-location exp loc)))
 		      env genv where #f loc lkp #t)
-	   (evcompile-error loc 'eval
+	   (evcompile-error loc "eval"
 			    "Illegal non toplevel module declaration" exp)))
       ((assert . ?-)
        (unspecified))
@@ -129,12 +129,12 @@
 	  ((or (vector? atom)
 	       (struct? atom))
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal expression (should be quoted)"
 			    exp))
 	  ((and (procedure? atom) (not lkp))
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal procedure in unlinked byte code"
 			    atom))
 	  (else
@@ -187,12 +187,12 @@
 		(or (eq? genv (scheme-report-environment 5))
 		    (eq? genv (null-environment 5))))
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal define form (sealed environment)"
 			    exp))
 	  ((not toplevelp)
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal non toplevel define"
 			    exp))
 	  (else
@@ -210,12 +210,12 @@
 		(or (eq? genv (scheme-report-environment 5))
 		    (eq? genv (null-environment 5))))
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal define form (sealed environment)"
 			    exp))
 	  ((not toplevelp)
 	   (evcompile-error loc
-			    'eval
+			    "eval"
 			    "Illegal non toplevel define"
 			    exp))
 	  (else
@@ -238,7 +238,7 @@
 					lkp #f)
 			     loc)))
 	  (else
-	   (error "set!" "Illegal form" exp))))
+	   (evcompile-error (get-location exp loc) "set!" "Illegal form" exp))))
       ((bind-exit ?escape ?body)
        (let ((loc (get-location exp loc)))
 	  (evcompile-bind-exit (evcompile `(lambda ,escape ,body)
@@ -326,12 +326,12 @@
 	      (if lkp
 		  (evcompile-compiled-application fun actuals loc)
 		  (evcompile-error loc
-				   'eval
+				   "eval"
 				   "Illegal procedure in unlinked byte code"
 				   fun)))
 	     (else
-	      (evcompile-error loc 'eval "Not a procedure" fun)
-	      (evcode -2 loc (list 'eval "Not a procedure" fun))))))
+	      (evcompile-error loc "eval" "Not a procedure" fun)
+	      (evcode -2 loc (list "eval" "Not a procedure" fun))))))
       (((@ (and (? symbol?) ?fun) (and (? symbol?) ?mod)) . ?args)
        (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
@@ -351,7 +351,7 @@
 	     (proc (evcompile fun env genv where #f loc lkp #f)))
 	  (evcompile-application fun proc actuals tail loc)))
       (else
-       (evcompile-error loc 'eval "Illegal form" exp))))
+       (evcompile-error loc "eval" "Illegal form" exp))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-cnst ...                                               */
@@ -775,7 +775,7 @@
 ;*---------------------------------------------------------------------*/
 (define (variable loc symbol env genv)
    (if (not (symbol? symbol))
-       (evcompile-error loc 'eval "Illegal `set!' expression" symbol)
+       (evcompile-error loc "eval" "Illegal `set!' expression" symbol)
        (let ((offset (let loop ((env   env)
 				(count 0))
 			(cond 
@@ -802,7 +802,8 @@
       (if (not global)
 	  (if (eq? genv mod)
 	      (cons 'dynamic symbol)
-	      (error 'eval "variable unbound" `(@ ,symbol ,modname)))
+	      (evcompile-error loc "eval"
+			       "variable unbound" `(@ ,symbol ,modname)))
 	  global)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 14 13:46:57 2004                          */
-;*    Last change :  Tue Feb  8 10:45:30 2011 (serrano)                */
+;*    Last change :  Wed Feb  9 11:04:24 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The error of evmeaning                                           */
@@ -13,8 +13,6 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __everror
-   
-   (include "Eval/byte-code.sch")
    
    (import  __type
  	    __object
@@ -46,42 +44,15 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3)
    
-   (extern (macro $evmeaning-byte-code::obj (::dynamic-env)
-		  "BGL_ENV_BYTECODE")
-	   (macro $evmeaning-byte-code-set!::obj (::dynamic-env ::obj)
-		  "BGL_ENV_BYTECODE_SET"))
-   
-   (java   (class foreign
-	      (method static $evmeaning-byte-code::obj (::dynamic-env)
-		      "BGL_ENV_BYTECODE")
-	      (method static $evmeaning-byte-code-set!::obj (::dynamic-env ::obj)
-		      "BGL_ENV_BYTECODE_SET")))
-   
-   (export (evmeaning-error ::obj ::obj ::obj ::obj)
-	   (evmeaning-type-error ::obj ::obj ::obj ::obj)
-	   (evmeaning-reset-error!)
-	   (evmeaning-set-error-location! ::obj)
-	   (evmeaning-warning ::obj . ::obj)
-	   (evmeaning-exception-handler ::obj)
-	   (evmeaning-arity-error ::obj ::obj ::int ::int)))
+   (export (everror ::obj ::obj ::obj ::obj)
+	   (evtype-error ::obj ::obj ::obj ::obj)
+	   (evarity-error ::obj ::obj ::int ::int)
+	   (evwarning ::obj . ::obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    evmeaning-reset-error! ...                                       */
+;*    everror ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-reset-error!)
-   ($evmeaning-byte-code-set! (current-dynamic-env) #f))
-
-;*---------------------------------------------------------------------*/
-;*    evmeaning-set-error-location! ...                                */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-set-error-location! loc)
-   ($evmeaning-byte-code-set! (current-dynamic-env)
-			      (evcode -1 loc #unspecified)))
-   
-;*---------------------------------------------------------------------*/
-;*    evmeaning-error ...                                              */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-error loc proc mes obj)
+(define (everror loc proc mes obj)
    (match-case loc
       ((at ?fname ?loc)
        (error/location proc mes obj fname loc))
@@ -89,56 +60,30 @@
        (error proc mes obj))))
 
 ;*---------------------------------------------------------------------*/
-;*    evmeaning-type-error ...                                         */
+;*    evtype-error ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-type-error bcode proc mes obj)
-   (if (evcode? bcode)
-       (match-case (evcode-loc bcode)
-	  ((at ?fname ?loc)
-	   (bigloo-type-error/location proc mes obj fname loc))
-	  (else
-	   (bigloo-type-error proc mes obj)))
-       (bigloo-type-error proc mes obj)))
-   
-;*---------------------------------------------------------------------*/
-;*    evmeaning-warning ...                                            */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-warning loc . args)
+(define (evtype-error loc proc mes obj)
    (match-case loc
       ((at ?fname ?loc)
-       (warning-notify (make-&eval-warning fname loc #f args)))
+       (bigloo-type-error/location proc mes obj fname loc))
       (else
-       (warning-notify (make-&eval-warning #f #f #f args)))))
-
-;*---------------------------------------------------------------------*/
-;*    evmeaning-annotate-exception! ...                                */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-annotate-exception! e)
-   (if (and (&exception? e)
-	    (not (&exception-fname e))
-	    (evcode? ($evmeaning-byte-code (current-dynamic-env))))
-       (match-case (evcode-loc ($evmeaning-byte-code (current-dynamic-env)))
-	  ((at ?fname ?loc)
-	   (&exception-fname-set! e fname)
-	   (&exception-location-set! e loc)
-	   e)
-	  (else
-	   e))
-       e))
+       (bigloo-type-error proc mes obj))))
    
 ;*---------------------------------------------------------------------*/
-;*    evmeaning-exception-handler ...                                  */
-;*    -------------------------------------------------------------    */
-;*    This handler is just in charge of adding a location to           */
-;*    the error/warning.                                               */
+;*    evarity-error ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evmeaning-exception-handler e)
-   (raise (evmeaning-annotate-exception! e)))
-
-;*---------------------------------------------------------------------*/
-;*    evmeaning-arity-error ...                                        */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-arity-error loc name provide expect)
+(define (evarity-error loc name provide expect)
    (let ((msg (format "Wrong number of arguments: ~a expected, ~a provided "
 		      expect provide)))
-      (evmeaning-error loc "eval" msg name)))
+      (everror loc "eval" msg name)))
+
+;*---------------------------------------------------------------------*/
+;*    evwarning ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (evwarning loc . args)
+   (match-case loc
+      ((at ?fname ?loc)
+       (warning-notify (make-&eval-warning fname loc (get-trace-stack) args)))
+      (else
+       (warning-notify (make-&eval-warning #f #f (get-trace-stack) args)))))
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Mon Feb  7 19:08:09 2011 (serrano)                */
+;*    Last change :  Wed Feb  9 11:06:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -51,8 +51,7 @@
 	    __everror
 	    __evmodule)
    
-   (export  (evmeaning ::obj ::pair-nil ::dynamic-env)
-	    (evmeaning-location))
+   (export  (evmeaning ::obj ::pair-nil ::dynamic-env))
    
    (extern  (%funcall-0::obj (::procedure)
 			     "eval_funcall_0")
@@ -140,14 +139,12 @@
 (define-macro (%inline1 fun code stack denv . type)
    (if (null? type)
        `(let ((a0 (evmeaning (evcode-ref ,code 2) ,stack ,denv)))
-	   ($evmeaning-byte-code-set! ,denv ,code)
 	   `(,fun a0))
        (let ((pred (symbol-append (car type) '?)))
 	  `(let ((a0 (evmeaning (evcode-ref ,code 2) ,stack ,denv)))
-	      ($evmeaning-byte-code-set! ,denv ,code)
 	      (if (,pred a0)
 		  (,fun a0)
-		  (evmeaning-type-error code "eval" ',(car type) a0))))))
+		  (evtype-error (evcode-loc code) "eval" ',(car type) a0))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %inline2 ...                                                     */
@@ -156,29 +153,27 @@
    (if (null? type)
        `(let ((a0 (evmeaning (evcode-ref ,code 2) ,stack ,denv))
 	      (a1 (evmeaning (evcode-ref ,code 3) ,stack ,denv)))
-	   ($evmeaning-byte-code-set! ,denv ,code)
 	   (,fun a0 a1))
        (let ((pred (symbol-append (car type) '?)))
 	  `(let ((a0 (evmeaning (evcode-ref ,code 2) ,stack ,denv))
 		 (a1 (evmeaning (evcode-ref ,code 3) ,stack ,denv)))
-	      ($evmeaning-byte-code-set! ,denv ,code)
 	      (if (,pred a0)
 		  (if (,pred a1)
 		      (,fun a0 a1)
-		      (evmeaning-type-error code "eval" ',(car type) a1))
-		  (evmeaning-type-error code "eval" ',(car type) a0))))))
+		      (evtype-error (evcode-loc code) "eval" ',(car type) a1))
+		  (evtype-error (evcode-loc code) "eval" ',(car type) a0))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-unbound ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-unbound loc name mod)
-   (evmeaning-error loc
-		    "eval"
-		    (if (evmodule? mod)
-			(format "Unbound variable (from module `~a')"
-				(evmodule-name mod))
-			"Unbound variable (from top-level)")
-		    name))
+   (everror loc
+	    "eval"
+	    (if (evmodule? mod)
+		(format "Unbound variable (from module `~a')"
+			(evmodule-name mod))
+		"Unbound variable (from top-level)")
+	    name))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning ...                                                    */
@@ -189,7 +184,7 @@
 	(case-bounce (evcode-op code)
 	   ((-2)
 	    ;; errors
-	    (apply evmeaning-error (evcode-loc code) (evcode-ref code 0)))
+	    (apply everror (evcode-loc code) (evcode-ref code 0)))
 	   ((-1)
 	    ;; La seule constante qui nessecite un codage: les `vecteurs'
 	    (evcode-ref code 0))
@@ -300,13 +295,13 @@
 			 (update-eval-global! code cell (evmeaning val '() denv))
 			 (when (and (eq? old mod)
 				    (not (eq? old evmodule-uninitialized)))
-			    (evmeaning-warning code
-					       "eval"
-					       #\Newline
-					       "redefinition of variable -- "
-					       var)))
+			    (evwarning (evcode-loc code)
+				       "eval"
+				       #\Newline
+				       "redefinition of variable -- "
+				       var)))
 		      (let ((cell (vector 2 var (unspecified))))
-			 (evmodule-bind-global! mod var cell)
+			 (evmodule-bind-global! mod var cell (evcode-loc code))
 			 ;; on le fait en deux fois pour etre
 			 ;; sur que la liaison existe.
 			 (let ((value (evmeaning val '() denv)))
@@ -323,14 +318,12 @@
 	    ;; l'appel de fonction de compilee anonyme d'arite 1
 	    (let* ((fun (evcode-ref code 0))
 		   (a0 (evmeaning (evcode-ref code 1) stack denv)))
-	       ($evmeaning-byte-code-set! denv code)
 	       (fun a0)))
 	   ((bounce (code stack denv) (27))
 	    ;; l'appel de fonction de compilee anonyme d'arite 2
 	    (let* ((fun (evcode-ref code 0))
 		   (a0 (evmeaning (evcode-ref code 1) stack denv))
 		   (a1 (evmeaning (evcode-ref code 2) stack denv)))
-	       ($evmeaning-byte-code-set! denv code)
 	       (fun a0 a1)))
 	   ((bounce (code stack denv) (28))
 	    ;; l'appel de fonction de compilee anonyme d'arite 3
@@ -338,7 +331,6 @@
 		   (a0 (evmeaning (evcode-ref code 1) stack denv))
 		   (a1 (evmeaning (evcode-ref code 2) stack denv))
 		   (a2 (evmeaning (evcode-ref code 3) stack denv)))
-	       ($evmeaning-byte-code-set! denv code)
 	       (fun a0 a1 a2)))
 	   ((bounce (code stack denv) (29))
 	    ;; l'appel de fonction de compilee anonyme d'arite 4
@@ -347,14 +339,12 @@
 		   (a1 (evmeaning (evcode-ref code 2) stack denv))
 		   (a2 (evmeaning (evcode-ref code 3) stack denv))
 		   (a3 (evmeaning (evcode-ref code 4) stack denv)))
-	       ($evmeaning-byte-code-set! denv code)
 	       (fun a0 a1 a2 a3)))
 	   ((bounce (code stack denv) (30))
 	    ;; l'appel de fonction de compilee anonyme d'arite plus que 4
 	    (let ((eargs (map (lambda (x)
 				 (evmeaning x stack denv))
 			      (evcode-ref code 1))))
-	       ($evmeaning-byte-code-set! denv code)
 	       (apply (evcode-ref code 0) eargs)))
 	   ((31)
 	    ;; funcall 0
@@ -385,7 +375,6 @@
 			  (len 0))
 		  (if (null? args)
 		      (begin
-			 ($evmeaning-byte-code-set! denv code)
 			 ($env-set-trace-location denv (evcode-loc code))
 			 (eval-apply code name fun len (reverse! new)))
 		      (loop (cdr args)
@@ -696,13 +685,13 @@
 			 (update-eval-global! code cell val)
 			 (when (and (eq? old mod)
 				    (not (eq? old evmodule-uninitialized)))
-			    (evmeaning-warning code
-					       "eval"
-					       #\Newline
-					       "redefinition of variable -- "
-					       var)))
+			    (evwarning (evcode-loc code)
+				       "eval"
+				       #\Newline
+				       "redefinition of variable -- "
+				       var)))
 		      (let ((cell (vector 2 var (unspecified))))
-			 (evmodule-bind-global! mod var cell)
+			 (evmodule-bind-global! mod var cell (evcode-loc code))
 			 ;; on le fait en deux fois pour etre
 			 ;; sur que la liaison existe.
 			 (set-eval-global-value! cell val)))
@@ -765,11 +754,11 @@
 		   (loc (evcode-loc code)))
 	       (cond
 		  ((not (procedure? ehandler))
-		   (evmeaning-type-error code "eval" "procedure" ehandler))
+		   (evtype-error loc "eval" "procedure" ehandler))
 		  ((correct-arity? ehandler 1)
 		   (with-handler ehandler (evmeaning body stack denv)))
 		  (else
-		   (evmeaning-arity-error loc "with-handler" 1 ($procedure-arity ehandler))))))
+		   (evarity-error loc "with-handler" 1 ($procedure-arity ehandler))))))
 	   ((131)
 	    ;; tailcall 0
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))
@@ -837,9 +826,7 @@
 			     (evmeaning (evmeaning-procedure-bcode fun)
 					e2
 					denv))
-			  (begin
-			     ($evmeaning-byte-code-set! denv code)
-			     (eval-apply code name fun len (reverse! new))))
+			  (eval-apply code name fun len (reverse! new)))
 		      (loop (cdr args)
 			    (cons (evmeaning (car args) stack denv) new)
 			    (+fx 1 len))))))
@@ -901,16 +888,16 @@
 		  ((and (pair? a0) (pair? (cdr a0)))
 		   (cadr a0))
 		  ((pair? a0)
-		   (evmeaning-type-error code
-					 (evcode-ref code 0)
-					 "pair" (cdr a0)))
+		   (evtype-error (evcode-loc code)
+				 (evcode-ref code 0)
+				 "pair" (cdr a0)))
 		  (else
-		   (evmeaning-type-error code
-					 (evcode-ref code 0)
-					 "pair" a0)))))
+		   (evtype-error (evcode-loc code)
+				 (evcode-ref code 0)
+				 "pair" a0)))))
 	   (else
 	    ;; unknown byte code
-	    (evmeaning-error (evcode-loc code) "eval" "unknown byte-code" code))))
+	    (everror (evcode-loc code) "eval" "unknown byte-code" code))))
        code))
 
 (emit-bounced!)
@@ -952,18 +939,6 @@
    (evprocedure-args (procedure-attr proc)))
 
 ;*---------------------------------------------------------------------*/
-;*    evmeaning-location ...                                           */
-;*---------------------------------------------------------------------*/
-(define (evmeaning-location)
-   (let ((env (current-dynamic-env)))
-      (if (evcode? ($evmeaning-byte-code env))
-	  (let ((p (evcode-loc ($evmeaning-byte-code env))))
-	     (match-case p
-		((at ?fname ?loc) p)
-		(else #f)))
-	  #f)))
-   
-;*---------------------------------------------------------------------*/
 ;*      update-eval-global! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (update-eval-global! code variable val)
@@ -974,10 +949,10 @@
        (set-eval-global-value! variable val)
        (when (and (eq? (eval-global-tag variable) 0)
 		  (bigloo-eval-strict-module))
-	  (evmeaning-warning code 
-			     'set! "Setting compiled read-only variable "
-			     (eval-global-name variable)
-			     " can yield to incoherent state"))))
+	  (evwarning (evcode-loc code)
+		     "set!" "Setting compiled read-only variable "
+		     (eval-global-name variable)
+		     " can yield to incoherent state"))))
    (eval-global-name variable))
 
 ;*---------------------------------------------------------------------*/
@@ -986,13 +961,12 @@
 (define (evmeaning-funcall-0 code stack denv fun)
    (let ((name (evcode-ref code 0))
 	 (loc (evcode-loc code)))
-      ($evmeaning-byte-code-set! denv code)
       ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error loc "eval" name "Not a procedure"))
+	  (everror loc "eval" name "Not a procedure"))
 	 ((not (correct-arity? fun 0))
-	  (evmeaning-arity-error loc name 0 ($procedure-arity fun)))
+	  (evarity-error loc name 0 ($procedure-arity fun)))
 	 (else
 	  (%funcall-0 fun)))))
 
@@ -1003,13 +977,12 @@
    (let* ((name (evcode-ref code 0))
 	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error loc "eval" "Not a procedure" name))
+	  (everror loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 1))
-	  (evmeaning-arity-error loc name 1 ($procedure-arity fun)))
+	  (evarity-error loc name 1 ($procedure-arity fun)))
 	 (else
 	  (%funcall-1 fun a0)))))
 
@@ -1021,13 +994,12 @@
 	  (loc (evcode-loc code))
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error loc "eval" "Not a procedure" name))
+	  (everror loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 2))
-	  (evmeaning-arity-error loc name 2 ($procedure-arity fun)))
+	  (evarity-error loc name 2 ($procedure-arity fun)))
 	 (else
 	  (%funcall-2 fun a0 a1)))))
 
@@ -1040,13 +1012,12 @@
 	  (a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error loc "eval" "Not a procedure" name))
+	  (everror loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 3))
-	  (evmeaning-arity-error loc name 3 ($procedure-arity fun)))
+	  (evarity-error loc name 3 ($procedure-arity fun)))
 	 (else
 	  (%funcall-3 fun a0 a1 a2)))))
 
@@ -1060,13 +1031,12 @@
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
 	  (a3 (evmeaning (evcode-ref code 5) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       ($env-set-trace-location denv loc)
       (cond
 	 ((not (procedure? fun))
-	  (evmeaning-error loc "eval" "Not a procedure" name))
+	  (everror loc "eval" "Not a procedure" name))
 	 ((not (correct-arity? fun 4))
-	  (evmeaning-arity-error loc name 4 ($procedure-arity fun)))
+	  (evarity-error loc name 4 ($procedure-arity fun)))
 	 (else
 	  (%funcall-4 fun a0 a1 a2 a3)))))
 
@@ -1074,7 +1044,6 @@
 ;*    evmeaning-tailcall-0-stack ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-tailcall-0-stack code stack denv fun)
-   ($evmeaning-byte-code-set! denv code)
    (let* ((envd (evmeaning-procedure-stack fun))
 	  (arity (evmeaning-procedure-args fun))
 	  (loc (evcode-loc code)))
@@ -1087,14 +1056,13 @@
 	 ((-1)
 	  (cons '() envd))
 	 (else
-	  (evmeaning-arity-error loc (evcode-ref code 0) 0 arity)))))
+	  (evarity-error loc (evcode-ref code 0) 0 arity)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-1-stack ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (evmeaning-tailcall-1-stack code stack denv fun)
    (let ((a0 (evmeaning (evcode-ref code 2) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun))
 	     (loc (evcode-loc code)))
@@ -1109,7 +1077,7 @@
 	    ((-2)
 	     (cons a0 (cons '() envd)))
 	    (else
-	     (evmeaning-arity-error loc (evcode-ref code 0) 1 arity))))))
+	     (evarity-error loc (evcode-ref code 0) 1 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-2-stack ...                                   */
@@ -1117,7 +1085,6 @@
 (define (evmeaning-tailcall-2-stack code stack denv fun)
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun))
 	     (loc (evcode-loc code)))
@@ -1134,7 +1101,7 @@
 	    ((-3)
 	     (cons a0 (cons a1 (cons '() envd))))
 	    (else
-	     (evmeaning-arity-error loc (evcode-ref code 0) 2 arity))))))
+	     (evarity-error loc (evcode-ref code 0) 2 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-3-stack ...                                   */
@@ -1143,7 +1110,6 @@
    (let* ((a0 (evmeaning (evcode-ref code 2) stack denv))
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun))
 	     (loc (evcode-loc code)))
@@ -1162,7 +1128,7 @@
 	    ((-4)
 	     (cons a0 (cons a1 (cons a2 (cons '() envd)))))
 	    (else
-	     (evmeaning-arity-error loc (evcode-ref code 0) 3 arity))))))
+	     (evarity-error loc (evcode-ref code 0) 3 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-tailcall-4-stack ...                                   */
@@ -1172,7 +1138,6 @@
 	  (a1 (evmeaning (evcode-ref code 3) stack denv))
 	  (a2 (evmeaning (evcode-ref code 4) stack denv))
 	  (a3 (evmeaning (evcode-ref code 5) stack denv)))
-      ($evmeaning-byte-code-set! denv code)
       (let* ((envd (evmeaning-procedure-stack fun))
 	     (arity (evmeaning-procedure-args fun))
 	     (loc (evcode-loc code)))
@@ -1193,7 +1158,7 @@
 	    ((-5)
 	     (cons a0 (cons a1 (cons a2 (cons a3 (cons '() envd))))))
 	    (else
-	     (evmeaning-arity-error loc (evcode-ref code 0) 4 arity))))))
+	     (evarity-error loc (evcode-ref code 0) 4 arity))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-apply ...                                                   */
@@ -1201,9 +1166,9 @@
 (define-inline (eval-apply code name fun len args)
    (cond
       ((not (procedure? fun))
-       (evmeaning-error (evcode-loc code) "apply" "Not a procedure" name))
+       (everror (evcode-loc code) "apply" "Not a procedure" name))
       ((not (correct-arity? fun len))
-       (evmeaning-arity-error (evcode-loc code) name len ($procedure-arity fun)))
+       (evarity-error (evcode-loc code) name len ($procedure-arity fun)))
       (else
        (%eval-apply fun args))))
 
@@ -1292,10 +1257,10 @@
       (cond
 	 ((=fx n 0)
 	  (if (not (null? a))
-	      (evmeaning-arity-error loc name (length actuals) num)
+	      (evarity-error loc name (length actuals) num)
 	      stack))
 	 ((null? a)
-	  (evmeaning-arity-error loc name (length actuals) num))
+	  (evarity-error loc name (length actuals) num))
 	 (else
 	  (cons (car a) (_loop_ (cdr a) (-fx n 1)))))))
 
@@ -1309,7 +1274,7 @@
 	 ((=fx n -1)
 	  (cons a stack))
 	 ((null? a)
-	  (evmeaning-arity-error loc name (length actuals) num))
+	  (evarity-error loc name (length actuals) num))
 	 (else
 	  (cons (car a) (_loop_ (cdr a) (+fx n 1)))))))
    

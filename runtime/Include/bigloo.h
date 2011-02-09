@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Feb  8 10:40:40 2011 (serrano)                */
+/*    Last change :  Wed Feb  9 10:53:32 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -557,7 +557,7 @@ typedef union scmobj {
       /* thread lexical stack */
       union scmobj *lexical_stack;
       /* eval parameter */
-      union scmobj *bytecode;
+/*       union scmobj *bytecode;                                       */
       union scmobj *evstate;
       union scmobj *module;
       union scmobj *abase;
@@ -1274,10 +1274,10 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_LEXICAL_STACK_SET( env, _l ) \
   (BGL_DYNAMIC_ENV( env ).lexical_stack = (_l))
    
-#define BGL_ENV_BYTECODE( env ) \
-   (BGL_DYNAMIC_ENV( env ).bytecode)
-#define BGL_ENV_BYTECODE_SET( env, _1 ) \
-   (BGL_DYNAMIC_ENV( env ).bytecode = (_1), BUNSPEC)
+/* #define BGL_ENV_BYTECODE( env ) \                                   */
+/*    (BGL_DYNAMIC_ENV( env ).bytecode)                                */
+/* #define BGL_ENV_BYTECODE_SET( env, _1 ) \                           */
+/*    (BGL_DYNAMIC_ENV( env ).bytecode = (_1), BUNSPEC)                */
    
 #define BGL_ENV_EVSTATE( env ) \
    (BGL_DYNAMIC_ENV( env ).evstate)
@@ -1373,11 +1373,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_LEXICAL_STACK( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_LEXICAL_STACK_SET( _l ) \
    BGL_ENV_LEXICAL_STACK_SET( BGL_CURRENT_DYNAMIC_ENV(), _l )
-   
-#define BGL_BYTECODE() \
-   BGL_ENV_BYTECODE( BGL_CURRENT_DYNAMIC_ENV() )
-#define BGL_BYTECODE_SET( _1 ) \
-   BGL_ENV_BYTECODE_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
    
 #define BGL_MODULE() \
    BGL_ENV_MODULE( BGL_CURRENT_DYNAMIC_ENV() )

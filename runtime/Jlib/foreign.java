@@ -3899,27 +3899,16 @@ public final class foreign
 	 bgldynamic.abgldynamic.get().lexical_stack = al;
       }
 
-   public static Object BGL_ENV_BYTECODE(bgldynamic env)
-      {
-	 return env.bytecode;
-      }
-
-   public static Object BGL_ENV_BYTECODE_SET(bgldynamic env, Object al)
-      {
-	 env.bytecode = al;
-	 return BUNSPEC;
-      }
-
-   public static Object BGL_BYTECODE()
-      {
-	 return bgldynamic.abgldynamic.get().bytecode;
-      }
-
-   public static Object BGL_BYTECODE_SET(Object al)
-      {
-	 bgldynamic.abgldynamic.get().bytecode = al;
-	 return BUNSPEC;
-      }
+/*    public static Object BGL_ENV_BYTECODE(bgldynamic env)            */
+/*       {                                                             */
+/* 	 return env.bytecode;                                          */
+/*       }                                                             */
+/*                                                                     */
+/*    public static Object BGL_ENV_BYTECODE_SET(bgldynamic env, Object al) */
+/*       {                                                             */
+/* 	 env.bytecode = al;                                            */
+/* 	 return BUNSPEC;                                               */
+/*       }                                                             */
 
    public static Object BGL_ENV_EVSTATE(bgldynamic env)
       {

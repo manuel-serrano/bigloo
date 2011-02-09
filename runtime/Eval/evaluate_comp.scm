@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :                                                    */
+;*    Last change :  Wed Feb  9 11:07:32 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -318,7 +318,7 @@
 		(EVA '(global read check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (evmeaning-error loc "eval" "unbound variable" name)) )
+			(unless slot (everror loc "eval" "Unbound variable" name)) )
 		     (eval-global-value slot) ))))))
 
 (define-method (comp e::ev_setglobal stk);
@@ -329,12 +329,20 @@
 		 (EVA '(global write cell) (name)
 		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
 		 (EVA '(global write direct) (name)
-		    (set-eval-global-value! g (EVC e)) ))
+		      (begin
+			 (set-eval-global-value! g (EVC e))
+			 (when (and (eq? (eval-global-tag g) 0)
+				    (bigloo-eval-strict-module))
+			    (evwarning
+			     loc
+			     "set!" "Setting compiled read-only variable "
+			     name
+			     " can yield to incoherent state")) )))
 	     (let ( (slot #f) )
 		(EVA '(global write check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (evmeaning-error loc "eval" "unbound variable" name)) )
+			(unless slot (everror loc "eval" "Unbound variable" name)) )
 		     (set-eval-global-value! slot (EVC e)) ))))))
 
 (define-method (comp e::ev_defglobal stk);
@@ -350,13 +358,14 @@
 			     (set-eval-global-value! g (EVC e))
 			     (when (and (eq? (eval-global-tag g) 0)
 					(bigloo-eval-strict-module))
-				(evmeaning-warning loc
-						   'set! "Setting compiled read-only variable "
-						   name
-						   " can yield to incoherent state"))) )
+				(evwarning
+				 loc
+				 "set!" "Setting compiled read-only variable "
+				 name
+				 " can yield to incoherent state"))) )
 		      name )
 		   (let ( (g (vector 2 name (EVC e))) )
-		      (evmodule-bind-global! mod name g)
+		      (evmodule-bind-global! mod name g loc)
 		      name )))))))
 
 (define-method (comp e::ev_litt stk);
@@ -550,13 +559,13 @@
        (EVA ,pn ()
 	    (let ( (f (EVC f)) )
 	       (unless (procedure? f)
-		  (loc-type-error "eval" "procedure" f loc) )
+		  (evtype-error loc "eval" "procedure" f) )
 	       (let ( (uf (procedure-attr f)) )
 		  (if (not (user? uf))
 		      (begin
 			 (prof '(call int subr))
 			 (if (not (correct-arity? f nbargs))
-			     (evmeaning-arity-error loc 'which-name? nbargs ($procedure-arity f))
+			     (evarity-error loc 'which-name? nbargs ($procedure-arity f))
 			     ,subr-call ))
 		      (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
 			 (prof '(call int int))
@@ -564,10 +573,10 @@
 			    (if (=fx arity nbargs)
 				,fix-expr-call
 				(if (or (>=fx arity 0) (<fx arity (-fx -1 nbargs)))
-				    (evmeaning-error loc "eval" "arity mismatch" (list arity nbargs))
+				    (evarity-error loc 'which-name? nbargs arity)
 				    ,notfix-expr-call ))
 			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
-			       (evmeaning-error "eval" "stack overflow" bp loc) )
+			       (everror loc "eval" "stack overflow" bp) )
 			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
 			       ($env-set-trace-location !denv loc) )
 			    ,(if tail?
@@ -630,13 +639,13 @@
       `(EVA '(call ,@(if tail? '(tail direct) '(nottail)) ,nbargs) ("nb args" ,nbargs "size" size)
 	    (let ( (f (EVC fun)) ,@(map (lambda (v) `(,v (EVC ,v))) args) )
 	       (unless (procedure? f)
-		  (evmeaning-error "eval" "procedure" f loc) )
+		  (evtype-error loc "eval" "procedure" f) )
 	       (let ( (uf (procedure-attr f)) )
 		  (if (not (user? uf))
 		      (begin
 			 (prof '(call int subr))
 			 (if (not (correct-arity? f ,nbargs))
-			     (evmeaning-arity-error loc 'which-name? ,nbargs ($procedure-arity f))
+			     (evarity-error loc 'which-name? ,nbargs ($procedure-arity f))
 			     (let ( (nbp (+fx bp size)) )
 				(vector-set! s 0 nbp)
 				(let ( (r (f ,@args)) )
@@ -650,9 +659,9 @@
 				(case arity
 				   ,@(generate-case-neg-arity -1 (-fx -2 nbargs) args (if tail? 'bp 'sp))
 				   (else
-				    (evmeaning-arity-error loc 'which-name? ,nbargs arity) )))
+				    (evarity-error loc 'which-name? ,nbargs arity) )))
 			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
-			       (error "eval" "internal error: stack overflow" bp) )
+			       (everror loc "eval" "internal error: stack overflow" bp) )
 			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
 			       ($env-set-trace-location !denv loc) )
 			    ,(if tail?
@@ -753,7 +762,7 @@
 	     ((=fx r 0)
 	      (vector-set! s sp l) )
 	     ((not (pair? l))
-	      (evmeaning-arity-error loc 'which-name? arity (length vals)) )
+	      (evarity-error loc 'which-name? arity (length vals)) )
 	     (else
 	      (vector-set! s sp (car l))
 	      (rec (-fx r 1) (+fx sp 1) (cdr l)) )))
@@ -761,9 +770,9 @@
 	  (cond
 	     ((=fx r 0)
 	      (unless (null? l)
-		 (evmeaning-arity-error loc 'which-name? arity (length vals)) ))
+		 (evarity-error loc 'which-name? arity (length vals)) ))
 	     ((not (pair? l))
-	      (evmeaning-arity-error loc 'which-name? arity (length vals)) )
+	      (evarity-error loc 'which-name? arity (length vals)) )
 	     (else
 	      (vector-set! s sp (car l))
 	      (rec (-fx r 1) (+fx sp 1) (cdr l)) )))))

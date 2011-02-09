@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Jan 11 10:20:13 2011 (serrano)                */
+;*    Last change :  Wed Feb  9 11:05:36 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -348,9 +348,9 @@
 		      ((not (string? libe))
 		       (cond-expand
 			  ((not bigloo-jvm)
-			   (evmeaning-warning
+			   (evwarning
 			    #f
-			    'library-load
+			    "library-load"
 			    (format "Can't find _e library `~a' (`~a') in path "
 				    lib ne)
 			    path)))
@@ -430,9 +430,9 @@
 		      ((not (string? libe))
 		       (cond-expand
 			  ((not bigloo-jvm)
-			   (evmeaning-warning
+			   (evwarning
 			    #f
-			    'library-load
+			    "library-load"
 			    (format "Can't find _e library `~a' (`~a') in path "
 				    lib ne)
 			    path))))

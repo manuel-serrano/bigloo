@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Mon Feb  7 16:14:44 2011 (serrano)                */
+;*    Last change :  Wed Feb  9 10:52:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -210,9 +210,7 @@
 ;*    byte-code-run ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (byte-code-run byte-code::bstring)
-   (with-handler
-      evmeaning-exception-handler
-      (evmeaning (string->obj byte-code) '() (current-dynamic-env))))
+   (evmeaning (string->obj byte-code) '() (current-dynamic-env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    scheme-report-environment ...                                    */
@@ -328,7 +326,6 @@
 		  (with-handler
 		     (lambda (e)
 			(error-notify e)
-			(evmeaning-reset-error!)
 			(when (eof-object? (&error-obj e))
 			   (reset-eof (current-input-port)))
 			(sigsetmask 0)
@@ -345,36 +342,6 @@
 				  (newline *transcript*)
 				  (liip))))))))
 	    (loop))
-;* 		  (bind-exit (skip)                                    */
-;* 		     (let ((exp (with-exception-handler                */
-;* 				   (lambda (e)                         */
-;* 				      (if (&error? e)                  */
-;* 					  (begin                       */
-;* 					     (evmeaning-reset-error!)  */
-;* 					     (error-notify e)          */
-;* 					     (when (eof-object? (&error-obj e)) */
-;* 						(reset-eof (current-input-port))) */
-;* 					     (sigsetmask 0)            */
-;* 					     (skip #unspecified))      */
-;* 					  (raise e)))                  */
-;* 				   read)))                             */
-;* 			(if (eof-object? exp)                          */
-;* 			    (quit)                                     */
-;* 			    (let ((v (with-exception-handler           */
-;* 					(lambda (e)                    */
-;* 					   (if (&error? e)             */
-;* 					       (begin                  */
-;* 						  (error-notify e)     */
-;* 						  (sigsetmask 0)       */
-;* 						  (skip #unspecified)) */
-;* 					       (raise e)))             */
-;* 					(lambda () (eval exp)))))      */
-;* 			       (if (not (eq? *transcript* (current-output-port))) */
-;* 				   (fprint *transcript* ";; " exp))    */
-;* 			       (*repl-printer* v *transcript*)         */
-;* 			       (newline *transcript*)))))              */
-;* 		  (luup)))                                             */
-;* 	    (loop))                                                    */
 	 (if (procedure? old-intrhdl)
 	     (signal sigint old-intrhdl)
 	     (signal sigint (lambda (n) (exit 0)))))))
@@ -484,7 +451,6 @@
 						   clause))))
 				 #f)))
 		(let loop ((sexp sexp))
-		   (evmeaning-reset-error!)
 		   (cond
 		      ((eof-object? sexp)
 		       (close-input-port port)

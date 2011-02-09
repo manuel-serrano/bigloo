@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Dec 31 11:32:02 2010 (serrano)                */
-;*    Copyright   :  2002-10 Manuel Serrano                            */
+;*    Last change :  Wed Feb  9 07:19:26 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -263,8 +263,10 @@
    (install-eval-expander 'bind-exit (lambda (x e)
 					(match-case x
 					   ((?- (?exit) . (and ?body (not ())))
-					    `(bind-exit (,exit)
-						,(e (expand-progn body) e)))
+					    (evepairify
+					     `(bind-exit (,exit)
+						 ,(e (expand-progn body) e))
+					     x))
 					   (else
 		    			    (expand-error "bind-exit"
 							  "Illegal form"
@@ -274,11 +276,13 @@
    (install-eval-expander 'unwind-protect (lambda (x e)
 					     (match-case x
 						((?- ?body . ?exp)
-						 `(unwind-protect
-						     ,(e body e)
-						     ,@(map (lambda (x)
-							       (e x e))
-							    exp)))
+						 (evepairify
+						  `(unwind-protect
+						      ,(e body e)
+						      ,@(map (lambda (x)
+								(e x e))
+							     exp))
+						  x))
 						(else
 						 (expand-error "unwind-protect"
 							       "Illegal form"
@@ -288,10 +292,12 @@
    (install-eval-expander 'with-handler (lambda (x e)
 					   (match-case x
 					      ((?- ?handler . ?body)
-					       `(with-handler ,(e handler e)
-							      ,@(map (lambda (x)
-									(e x e))
-								     body)))
+					       (evepairify
+						`(with-handler
+						    ,(e handler e)
+						    ,@(map (lambda (x) (e x e))
+							   body))
+						x))
 					      (else
 					       (expand-error "with-handler"
 							     "Illegal form"
@@ -302,9 +308,11 @@
 			  (lambda (x e)
 			     (match-case x
 				((?- ?vars ?call . ?exprs)
-				 (e `(call-with-values (lambda () ,call)
-						       (lambda ,vars ,@exprs))
-				    e))
+				 (evepairify
+				  (e `(call-with-values (lambda () ,call)
+							(lambda ,vars ,@exprs))
+				     e)
+				  x))
 				(else
 				 (expand-error "multiple-value-bind"
 					       "Illegal form"

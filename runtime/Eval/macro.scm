@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Mon Mar 23 17:37:46 2009 (serrano)                */
+;*    Last change :  Wed Feb  9 11:05:58 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -84,12 +84,12 @@
    (hashtable-update! table
 		      key
 		      (lambda (x)
-			 (evmeaning-warning #f
-					    "install-expander"
-					    (string-append
-					     "Redefinition of " where
-					     " expander -- ")
-					    key)
+			 (evwarning #f
+				    "install-expander"
+				    (string-append
+				     "Redefinition of " where
+				     " expander -- ")
+				    key)
 			 expander)
 		      expander))
    
@@ -111,10 +111,10 @@
 	      (begin
 		 (put-macro! mtable keyword expander "eval")
 		 (when (hashtable-get *eval-macro-table* keyword)
-		    (evmeaning-warning #f
-				       "install-eval-expander"
-				       "Redefinition of expander -- "
-				       keyword)))
+		    (evwarning #f
+			       "install-eval-expander"
+			       "Redefinition of expander -- "
+			       keyword)))
 	      (put-macro! *eval-macro-table* keyword expander "eval")))
        (mutex-unlock! *eval-macro-mutex*))))
 

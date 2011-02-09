@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Tue Aug 24 14:33:30 2010 (serrano)                */
+;*    Last change :  Wed Feb  9 08:09:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -71,7 +71,6 @@
             __eval
             __evenv
 	    __everror
-	    (evmeaning-location __evmeaning)
             __expand
 	    __expander_quote
 	    (eval-begin-expander __expander_define)
