@@ -1,9 +1,9 @@
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_comp.scm       */
 ;*    -------------------------------------------------------------    */
-;*    Author      :  Manuel Serrano                                    */
+;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Wed Feb  9 11:07:32 2011 (serrano)                */
+;*    Last change :  Thu Feb 10 11:35:36 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -323,7 +323,8 @@
 
 (define-method (comp e::ev_setglobal stk);
    (with-access::ev_setglobal e (name mod e loc)
-      (let ( (g (evmodule-find-global mod name)) (e (comp e stk)) )
+      (let* ( (g (evmodule-find-global mod name))
+	      (e (comp e stk)) )
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
 		 (EVA '(global write cell) (name)
@@ -483,6 +484,16 @@
 					(EVC body)) ))))))
 
 (define-method (comp e::ev_with-handler stk);
+   (with-access::ev_with-handler e (handler body)
+      (let ( (handler (comp handler stk)) (body (comp body stk)) )
+	 (EVA '(exception with-handler) ()
+	      (let ( (h (EVC handler)) )
+		 (let ( (saved-bp bp) )
+		    (let ( (r (with-handler h (EVC body))) )
+		       (begin (vector-set! s 0 saved-bp)
+			      r ))))))))
+
+#;(define-method (comp e::ev_with-handler stk);
    (with-access::ev_with-handler e (handler body)
       (let ( (handler (comp handler stk)) (body (comp body stk)) )
 	 (EVA '(exception with-handler) ()

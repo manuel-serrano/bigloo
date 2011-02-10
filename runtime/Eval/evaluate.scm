@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Wed Feb  9 07:59:03 2011 (serrano)                */
+;*    Last change :  Thu Feb 10 11:36:50 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -65,6 +65,9 @@
 	    (get-evaluation-contexte)
 	    (set-evaluation-contexte! v)))
 
+;*---------------------------------------------------------------------*/
+;*    get-evaluation-contexte ...                                      */
+;*---------------------------------------------------------------------*/
 (define (get-evaluation-contexte)
    (let ( (s (find-state)) )
       (let ( (bp (vector-ref s 0)) )
@@ -75,6 +78,9 @@
 		  (rec (+fx i 1)) ))
 	    r ))))
 
+;*---------------------------------------------------------------------*/
+;*    set-evaluation-contexte! ...                                     */
+;*---------------------------------------------------------------------*/
 (define (set-evaluation-contexte! v)
    (let ( (s (find-state)) )
       (let ( (bp (vector-ref v 0)) )
@@ -97,23 +103,21 @@
 		  (unwind-protect (f s)
 				  (vector-set! s 0 bp) )))))))
 
-;;
-;; Taken elsewhere...
-;;
-
-
 ;*---------------------------------------------------------------------*/
 ;*    get-location ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (get-location exp loc)
    (or (get-source-location exp) loc))
 
-;;
-;; Convert cons to Ast
-;;
+;*---------------------------------------------------------------------*/
+;*    convert ...                                                      */
+;*---------------------------------------------------------------------*/
 (define (convert e globals loc)
    (conv e '() globals #f 'nowhere loc #t) )
 
+;*---------------------------------------------------------------------*/
+;*    conv-var ...                                                     */
+;*---------------------------------------------------------------------*/
 (define (conv-var v locals)
    (let rec ( (l locals) )
       (if (null? l)
@@ -123,37 +127,60 @@
 		 rv
 		 (rec (cdr l)) )))))
 
+;*---------------------------------------------------------------------*/
+;*    conv-begin ...                                                   */
+;*---------------------------------------------------------------------*/
 (define (conv-begin l locals globals tail? where loc top?)
    (let ( (loc (get-location l loc)) )
       (match-case l
-	 (() (instantiate::ev_litt
-		(value #unspecified)))
-	 ((?e) (conv e locals globals tail? where (get-location e loc) top?))
-	 ((?e1 . ?r) (instantiate::ev_prog2
-			(e1 (conv e1 locals globals #f where (get-location e1 loc) top?))
-			(e2 (conv-begin r locals globals tail? where loc top?)) ))
-	 (else (evcompile-error loc "eval" "bad syntax" l)) )))
+	 (()
+	  (instantiate::ev_litt
+	     (value #unspecified)))
+	 ((?e)
+	  (conv e locals globals tail? where (get-location e loc) top?))
+	 ((?e1 . ?r)
+	  (instantiate::ev_prog2
+	     (e1 (conv e1 locals globals #f where (get-location e1 loc) top?))
+	     (e2 (conv-begin r locals globals tail? where loc top?)) ))
+	 (else
+	  (evcompile-error loc "eval" "bad syntax" l)) )))
 
+;*---------------------------------------------------------------------*/
+;*    conv ...                                                         */
+;*---------------------------------------------------------------------*/
 (define (conv e locals globals tail? where loc top?)
-   (define (rconv e) (conv e locals globals tail? where (get-location e loc) #f))
-   (define (uconv e) (conv e locals globals #f where (get-location e loc) #f))
+   
+   (define (rconv e)
+      (conv e locals globals tail? where (get-location e loc) #f))
+   
+   (define (uconv e)
+      (conv e locals globals #f where (get-location e loc) #f))
+   
    (define (conv-lambda formals body where)
+      
       (define (split-formals l)
 	 (let rec ( (r l) (flat '()) (arity 0) )
 	    (cond
-	       ((null? r) (values (reverse! flat) arity))
-	       ((not (pair? r)) (values (reverse! (cons (untype-ident r) flat)) (-fx -1 arity)))
-	       (else (rec (cdr r) (cons (untype-ident (car r)) flat) (+fx arity 1))) )))
-      (multiple-value-bind (vars arity) (split-formals (dsssl-formals->scheme-formals formals error))
-	(let ( (vars (map (lambda (v) (instantiate::ev_var (name v))) vars))
-	       (body (make-dsssl-function-prelude e formals body error))
-	       (nloc (get-location body loc)) )
-	   (instantiate::ev_abs
-	      (loc loc)
-	      (where where)
-	      (arity arity)
-	      (vars vars)
-	      (body (conv body (append vars locals) globals #t where nloc #f)) ))))
+	       ((null? r)
+		(values (reverse! flat) arity))
+	       ((not (pair? r))
+		(values (reverse! (cons (untype-ident r) flat)) (-fx -1 arity)))
+	       (else
+		(rec (cdr r)
+		     (cons (untype-ident (car r)) flat) (+fx arity 1))) )))
+      
+      (multiple-value-bind (vars arity)
+	 (split-formals (dsssl-formals->scheme-formals formals error))
+	 (let ( (vars (map (lambda (v) (instantiate::ev_var (name v))) vars))
+		(body (make-dsssl-function-prelude e formals body error))
+		(nloc (get-location body loc)) )
+	    (instantiate::ev_abs
+	       (loc loc)
+	       (where where)
+	       (arity arity)
+	       (vars vars)
+	       (body (conv body (append vars locals) globals #t where nloc #f)) ))))
+   
    (match-case e
       ((atom ?x)
        (if (symbol? x)
@@ -168,11 +195,11 @@
        (if top?
 	   (conv (expand (evmodule e (get-location e loc))) locals globals where #f loc #t)
 	   (evcompile-error loc "eval" "Illegal non toplevel module declaration" e) ))
-      ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
+      ((@ (and ?id (? symbol?)) (and ?modname (? symbol?)))
        (instantiate::ev_global
 	  (loc loc)
 	  (name id)
-	  (mod mod)))
+	  (mod (eval-find-module modname))))
       (((and (? symbol?)
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
@@ -229,20 +256,20 @@
 	     (body (conv-begin body (append (reverse vars) locals) globals tail? where loc #f)) )))
       ((letrec ?binds . ?body)
        (let* ( (vars (map (lambda (b)
-			    (instantiate::ev_var
-			       (name (untype-ident (car b)))))
-			 binds))
+			     (instantiate::ev_var
+				(name (untype-ident (car b)))))
+			  binds))
 	       (locals (append vars locals))
 	       (bloc (get-location binds loc)) )
-	     (instantiate::ev_letrec
-		(vars vars)
-		(vals (map (lambda (b) (conv (cadr b) locals globals #f where (get-location b bloc) #f)) binds))
-		(body (conv-begin body locals globals tail? where loc #f) ))))
-      ((set! (@ (and ?id (? symbol?)) (and ?mod (? symbol?))) ?e)
+	  (instantiate::ev_letrec
+	     (vars vars)
+	     (vals (map (lambda (b) (conv (cadr b) locals globals #f where (get-location b bloc) #f)) binds))
+	     (body (conv-begin body locals globals tail? where loc #f) ))))
+      ((set! (@ (and ?id (? symbol?)) (and ?modname (? symbol?))) ?e)
        (instantiate::ev_setglobal
 	  (loc loc)
 	  (name id)
-	  (mod mod)
+	  (mod (eval-find-module modname))
 	  (e (uconv e))))
       ((set! ?v ?e)
        (let ( (cv (conv-var v locals)) (e (uconv e)) )

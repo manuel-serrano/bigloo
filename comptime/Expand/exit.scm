@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Jan 25 11:28:31 2011 (serrano)                */
+;*    Last change :  Thu Feb 10 10:32:25 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -114,34 +114,14 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-with-handler x e)
    
-  (define (expand.old handler body)
-      (let ((ohs (gensym 'ohs))
-	    (err (gensym 'err))
-	    (escape (gensym 'escape)))
-	 (e `(bind-exit (,escape)
-		(let ((,err (cons #f #unspecified))
-		      (,ohs ($get-error-handler)))
-		   (unwind-protect
-		      (begin
-			 ($set-error-handler!
-			  (cons (lambda (e)
-				   (set-car! ,err #t)
-				   (set-cdr! ,err e)
-				   (,escape e))
-				,ohs))
-			 ,@body)
-		      (begin
-			 ($set-error-handler! ,ohs)
-			 (when (car ,err)
-			    (,escape (,handler (cdr ,err))))))))
-	    e)))
-
   (define (expand handler body)
      (let ((ohs (gensym 'ohs))
 	   (err (gensym 'err))
 	   (res (gensym 'res))
-	   (escape (gensym 'escape)))
-	(e `(let ((,res #unspecified))
+	   (escape (gensym 'escape))
+	   (hdl (gensym 'handler)))
+	(e `(let ((,res #unspecified)
+		  (,hdl ,handler))
 	       (if (bind-exit (,escape)
 		      (let ((,ohs ($get-error-handler)))
 			 (unwind-protect
@@ -154,7 +134,7 @@
 			       (set! ,res (begin ,@body))
 			       #f)
 			    ($set-error-handler! ,ohs))))
-		   (,handler ,res)
+		   (,hdl ,res)
 		   ,res))
 	   e)))
 
