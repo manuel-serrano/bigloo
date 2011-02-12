@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sat Feb 12 07:16:11 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 14:29:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -340,14 +340,12 @@
 		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
 		 (EVA '(global write direct) (name)
 		      (begin
-			 (set-eval-global-value! g (EVC e))
 			 (when (and (eq? (eval-global-tag g) 0)
 				    (bigloo-eval-strict-module))
-			    (evwarning
+			    (everror
 			     loc
-			     "set!" "Setting compiled read-only variable "
-			     name
-			     " can yield to incoherent state")) )))
+			     "set!" "read-only variable" name))
+			 (set-eval-global-value! g (EVC e)))))
 	     (let ( (slot #f) )
 		(EVA '(global write check) (name)
 		     (unless slot
@@ -365,14 +363,13 @@
 		      (if (eq? (eval-global-tag g) 1)
 			  (__evmeaning_address-set! (eval-global-value g) (EVC e))
 			  (begin
-			     (set-eval-global-value! g (EVC e))
 			     (when (and (eq? (eval-global-tag g) 0)
 					(bigloo-eval-strict-module))
-				(evwarning
+				(everror
 				 loc
-				 "set!" "Setting compiled read-only variable "
-				 name
-				 " can yield to incoherent state"))) )
+				 "set!" "read-only variable"
+				 name))
+			     (set-eval-global-value! g (EVC e))))
 		      name )
 		   (let ( (g (vector 2 name (EVC e))) )
 		      (evmodule-bind-global! mod name g loc)

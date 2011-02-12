@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Wed Feb  9 11:06:21 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 14:16:11 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -680,7 +680,7 @@
 	       (let ((cell (evmodule-find-global mod var)))
 		  (if (and (eval-global? cell)
 			   (not (eq? (eval-global-tag cell) 1)))
-		      ;; update the variable only, if it is an eval variable
+		      ;; update the variable only if it is an eval variable
 		      (let ((old (eval-global-value cell)))
 			 (update-eval-global! code cell val)
 			 (when (and (eq? old mod)
@@ -946,13 +946,12 @@
       ((eq? (eval-global-tag variable) 1)
        (__evmeaning_address-set! (eval-global-value variable) val))
       (else
-       (set-eval-global-value! variable val)
        (when (and (eq? (eval-global-tag variable) 0)
 		  (bigloo-eval-strict-module))
-	  (evwarning (evcode-loc code)
-		     "set!" "Setting compiled read-only variable "
-		     (eval-global-name variable)
-		     " can yield to incoherent state"))))
+	  (everror (evcode-loc code)
+		   "set!" "read-only variable" 
+		   (eval-global-name variable)))
+       (set-eval-global-value! variable val)))
    (eval-global-name variable))
 
 ;*---------------------------------------------------------------------*/
