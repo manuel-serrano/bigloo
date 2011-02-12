@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sat Feb 12 09:36:53 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 10:52:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -306,8 +306,8 @@
 ;*---------------------------------------------------------------------*/
 (define (internal-repl)
    (let ((old-intrhdl (get-signal-handler sigint))
-	 (read (lambda ()
-		  ((get-eval-reader) (current-input-port)))))
+	 (evread (lambda ()
+		    ((get-eval-reader) (current-input-port)))))
       (unwind-protect
 	 (let loop ()
 	    (bind-exit (re-enter-internal-repl)
@@ -332,7 +332,7 @@
 			(luup))
 		     (let liip ()
 			(*prompt* *repl-num*)
-			(let ((exp (read)))
+			(let ((exp (evread)))
 			   (if (eof-object? exp)
 			       (quit)
 			       (let ((v (eval exp)))
@@ -450,14 +450,14 @@
    
    (let* ((path (find-file file-name))
 	  (port (open-input-file path))
-	  (read (get-eval-reader))
+	  (evread (get-eval-reader))
 	  (mod ($eval-module))
 	  (denv (current-dynamic-env)))
       (if (input-port? port)
 	  (unwind-protect
 	     (let ()
 		($env-push-trace denv traceid #f)
-		(let ((sexp (read port))
+		(let ((sexp (evread port))
 		      (loc #f)
 		      (mainsym #f)
 		      (env env))
@@ -481,7 +481,7 @@
 			  (evalv! sexp env)
 			  (set! env ($eval-module)))
 		       (evalv! sexp env))
-		   (let loop ((sexp sexp))
+		   (let loop ((sexp (evread port)))
 		      (cond
 			 ((eof-object? sexp)
 			  (close-input-port port)
@@ -496,7 +496,7 @@
 			  (when (epair? sexp)
 			     ($env-set-trace-location denv (cer sexp)))
 			  (evalv! sexp env)
-			  (loop (read port)))))))
+			  (loop (evread port)))))))
 	     ($eval-module-set! mod))
 	  (error "load" "Can't open file" file-name))))
 

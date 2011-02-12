@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Feb  9 11:05:08 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 13:51:49 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -218,8 +218,9 @@
    (define (evmodule-static-clause s)
       (match-case s
 	 ((? symbol?)
-	  (let ((id (untype-ident s)))
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (eval-class cla #f clauses clause mod)))
@@ -237,11 +238,13 @@
 	      "Wide classes are not supported within eval"
 	      clause)))
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
-	  (let ((id (untype-ident s)))
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 (((and (? symbol?) ?s) . ?-)
-	  (let ((id (untype-ident s)))
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 (else
 	  (evcompile-error
 	   loc
@@ -253,8 +256,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-export! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-export! mod id)
-   (%evmodule-exports-set! mod (cons id (%evmodule-exports mod))))
+(define (evmodule-export! mod id m)
+   (%evmodule-exports-set! mod (cons (cons id m) (%evmodule-exports mod))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-export ...                                              */
@@ -263,21 +266,22 @@
    (define (evmodule-export-clause s)
       (match-case s
 	 ((? symbol?)
-	  (let ((id (untype-ident s)))
-	     (evmodule-export! mod id)
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(evmodule-export! mod id mod)
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (let ((idents (eval-class cla #f clauses clause mod)))
-		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
+		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((final-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (let ((idents (eval-class cla #f clauses clause mod)))
-		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
+		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((abstract-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (let ((idents (eval-class cla #t clauses clause mod)))
-		(for-each (lambda (i) (evmodule-export! mod i)) idents))))
+		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (evcompile-error
@@ -286,13 +290,15 @@
 	      "Wide classes are not supported within eval"
 	      clause)))
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
-	  (let ((id (untype-ident s)))
-	     (evmodule-export! mod id)
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(evmodule-export! mod id mod)
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 (((and (? symbol?) ?s) . ?-)
-	  (let ((id (untype-ident s)))
-	     (evmodule-export! mod id)
-	     (eval `(define ,id ',evmodule-uninitialized) mod)))
+	  (unless classp
+	     (let ((id (untype-ident s)))
+		(evmodule-export! mod id mod)
+		(eval `(define ,id ',evmodule-uninitialized) mod))))
 	 (else
 	  (evcompile-error
 	   loc
@@ -309,7 +315,7 @@
       (if (not var)
 	  (evcompile-error loc "eval"
 			   (string-append
-			    "Cannot find binding in module `"
+			    "Cannot find imported variable from module `"
 			    (symbol->string (evmodule-name from-mod))
 			    "'")
 			   from-ident)
@@ -366,10 +372,10 @@
 	 (hashtable-for-each (%evmodule-macros mod2)
 			     (lambda (k v)
 				(hashtable-put! t k v))))
-      ;; bind variablabes
+      ;; bind variables
       (for-each (lambda (b)
-		   (when (or (null? set) (memq b set))
-		      (evmodule-import-binding! mod b mod2 b loc)))
+		   (when (or (null? set) (memq (car b) set))
+		      (evmodule-import-binding! mod (car b) (cdr b) (car b) loc)))
 		(%evmodule-exports mod2)))
    (let ((mod2 (eval-find-module ident)))
       (cond
@@ -433,7 +439,7 @@
       (evcompile-error loc "eval" msg obj))
    (define (from-module mod2)
       (let ((nx (append (if (pair? set)
-			    (filter (lambda (b) (memq b set))
+			    (filter (lambda (b) (memq (car b) set))
 				    (%evmodule-exports mod2))
 			    (%evmodule-exports mod2))
 			(%evmodule-exports mod))))
@@ -453,7 +459,7 @@
 	     (if (not (evmodule? mod2))
 		 (from-error (string-append "Cannot find module `"
 					    (symbol->string ident)
-					    "' in source")
+					    "'")
 			     path)
 		 (from-module mod2)))))))
 
