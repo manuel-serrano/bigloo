@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Jan 22 16:22:19 2011 (serrano)                */
+;*    Last change :  Fri Feb 11 19:28:52 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -618,7 +618,7 @@
 ;*    initialize-objects! ...                                          */
 ;*    -------------------------------------------------------------    */
 ;*    Due to some bootstrap pbms we have to suppose this module        */
-;*    is unitialized before using it. This function makes the          */
+;*    is uninitialized before using it. This function makes the        */
 ;*    initialization.                                                  */
 ;*---------------------------------------------------------------------*/
 (define (initialize-objects!)

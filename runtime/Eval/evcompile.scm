@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Wed Feb  9 11:09:05 2011 (serrano)                */
+;*    Last change :  Fri Feb 11 19:50:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */

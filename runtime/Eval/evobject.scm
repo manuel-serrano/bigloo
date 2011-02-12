@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Dec 15 12:15:22 2010 (serrano)                */
-;*    Copyright   :  2006-10 Manuel Serrano                            */
+;*    Last change :  Fri Feb 11 19:28:40 2011 (serrano)                */
+;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -846,7 +846,7 @@
 			   'eval "Illegal class declaration" clauses))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
 	  ;; the constructor must be protected under a lambda because
-	  ;; may be still unitialized
+	  ;; may be still uninitialized
 	  (values `(lambda (o) (,(caar clauses) o))
 		  (append-map (lambda (f)
 				 (eval-parse-class-slot loc f))

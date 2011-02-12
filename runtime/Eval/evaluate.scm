@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Feb 10 11:36:50 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 07:18:06 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -93,6 +93,10 @@
 ;*    evaluate2 ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (evaluate2 sexp env loc)
+   #;(tprint "evaluate2: current="
+	   (if (evmodule? env)
+	       (evmodule-name env)
+	       "???"))
    (let ( (ast (convert sexp env loc)) )
       (when (> (bigloo-debug) 10) (pp (uncompile ast)))
       (analyse-vars ast)
@@ -100,8 +104,9 @@
 	 (let ( (f (compile ast)) )
 	    (let ( (s (find-state)) )
 	       (let ( (bp (vector-ref s 0)) )
-		  (unwind-protect (f s)
-				  (vector-set! s 0 bp) )))))))
+		  (unwind-protect
+		     (f s)
+		     (vector-set! s 0 bp) )))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-location ...                                                 */
@@ -185,10 +190,16 @@
       ((atom ?x)
        (if (symbol? x)
 	   (or (conv-var x locals)
+	       (begin
+		  #;(tprint "ev_global: " x " "
+			  (if (evmodule? globals)
+			      (evmodule-name globals)
+			      "???"))
 	       (instantiate::ev_global
 		  (loc loc)
 		  (name x)
 		  (mod (if (evmodule? globals) globals ($eval-module)))) )
+	       )
 	   (instantiate::ev_litt
 	      (value x)) ))
       ((module . ?bah)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Feb 10 11:26:49 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 08:35:13 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -131,8 +131,8 @@
 ;*    module is initialized, the type of the variable must not         */
 ;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-(define default-evaluate::obj byte-code-evaluate)
-;;(define default-evaluate::obj evaluate2)
+;;(define default-evaluate::obj byte-code-evaluate)
+(define default-evaluate::obj evaluate2)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
@@ -426,63 +426,87 @@
 ;*    load ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (load file-name #!optional (env (default-environment)))
-   (loadv file-name *load-verbose* env))
+   (loadv file-name *load-verbose* env 'load))
 
+;*---------------------------------------------------------------------*/
+;*    loadq ...                                                        */
+;*---------------------------------------------------------------------*/
 (define (loadq file-name #!optional (env (default-environment)))
-   (loadv file-name #f env))
+   (loadv file-name #f env 'loadq))
 
-(define (loadv file-name v? env)
+;*---------------------------------------------------------------------*/
+;*    loadv ...                                                        */
+;*    -------------------------------------------------------------    */
+;*    The C code generation imposes the variable traceid not to        */
+;*    be inlined.                                                      */
+;*---------------------------------------------------------------------*/
+(define (loadv file-name v? env traceid::symbol)
+   
+   (define (evalv! sexp env)
+      (let ((v (eval! sexp ($eval-module))))
+	 (when v?
+	    (display-circle v)
+	    (newline))))
+   
    (let* ((path (find-file file-name))
 	  (port (open-input-file path))
 	  (read (get-eval-reader))
-	  (mod ($eval-module)))
+	  (mod ($eval-module))
+	  (denv (current-dynamic-env)))
       (if (input-port? port)
 	  (unwind-protect
-	     (let* ((sexp (read port))
-		    (mainsym (if (and (pair? sexp) (eq? (car sexp) 'module))
-				 (let ((clause (assq 'main (cddr sexp))))
-				    (if (pair? clause)
-					(if (and (pair? (cdr clause))
-						 (null? (cddr clause))
-						 (symbol? (cadr clause)))
-					    (cadr clause)
-					    (error 'load
+	     (let ()
+		($env-push-trace denv traceid #f)
+		(let ((sexp (read port))
+		      (loc #f)
+		      (mainsym #f)
+		      (env env))
+		   (when (epair? sexp)
+		      ($env-set-trace-location denv (cer sexp)))
+		   ;; is it a module (don't use match-case for easier bootstrap)
+		   (if (and (pair? sexp) (eq? (car sexp) 'module))
+		       ;; grab the main clause
+		       (let ((clause (assq 'main (cddr sexp))))
+			  (set! loc (get-source-location sexp))
+			  (if (pair? clause)
+			      (if (and (pair? (cdr clause))
+				       (null? (cddr clause))
+				       (symbol? (cadr clause)))
+				  (set! mainsym (cadr clause))
+				  (evcompile-error (get-source-location sexp)
+						   "load"
 						   "Illegal main clause"
-						   clause))))
-				 #f)))
-		(let loop ((sexp sexp))
-		   (cond
-		      ((eof-object? sexp)
-		       (close-input-port port)
-		       (when (symbol? mainsym)
-			  (eval! `(,mainsym (command-line)) env))
-		       path)
-		      (else
-		       (let ((v (eval! sexp env)))
-			  (when v?
-			     (display-circle v)
-			     (newline))
+						   clause)))
+			  ;; evaluate for the module
+			  (evalv! sexp env)
+			  (set! env ($eval-module)))
+		       (evalv! sexp env))
+		   (let loop ((sexp sexp))
+		      (cond
+			 ((eof-object? sexp)
+			  ($env-pop-trace denv)
+			  (close-input-port port)
+			  (when (symbol? mainsym)
+			     (let ((iexp (econs mainsym
+						(list command-line)
+						loc)))
+				(eval! iexp env)))
+			  path)
+			 (else
+			  (when (epair? sexp)
+			     ($env-set-trace-location denv (cer sexp)))
+			  (evalv! sexp env)
 			  (loop (read port)))))))
 	     ($eval-module-set! mod))
-	  (error 'load "Can't open file" file-name))))
+	  (error "load" "Can't open file" file-name))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evexpand-error ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (evexpand-error proc mes obj)
    (if (epair? obj)
-       (match-case (cer obj)
-	  ((at ?fname ?loc)
-	   (error/location proc mes obj fname loc))
-	  (else
-	   (error proc mes obj)))
+       (everror (cer obj) proc mes obj)
        (error proc mes obj)))
-
-;*---------------------------------------------------------------------*/
-;*    On met dans ce fichier les definitions de                        */
-;*    `expand-define-expander' et `expand-define-macro' car elles      */
-;*    contiennent des appels a `Eval'.                                 */
-;*---------------------------------------------------------------------*/
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-expander ...                                       */

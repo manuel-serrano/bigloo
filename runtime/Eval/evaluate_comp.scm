@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Thu Feb 10 11:35:36 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 07:16:11 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -67,6 +67,7 @@
 	    __evmodule
 	    
 	    __evaluate_types
+	    __evaluate_uncomp
 	    __evaluate_use)
 
    (export (find-state)
@@ -271,6 +272,8 @@
 	 (EVA '(trap) ()
 	    (let ( (cmd (EVC e)) )
 	       (case cmd
+		  ((get_sp)
+		   bp )
 		  ((reset_profile)
 		   (reset_profile) )
 		  ((get_profile)
@@ -308,6 +311,13 @@
 (define-method (comp var::ev_global stk);
    (with-access::ev_global var (name mod loc)
       (let ( (g (evmodule-find-global mod name)) )
+	 #;(tprint "ev_global name=" name " mod=" (if (evmodule? mod)
+						    (evmodule-name mod)
+						    "?toplevel?")
+		 " " g
+		 " current=" (if (evmodule? (eval-module))
+				 (evmodule-name (eval-module))
+				 "???"))
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
 		 (EVA '(global read cell) (name)
@@ -323,8 +333,7 @@
 
 (define-method (comp e::ev_setglobal stk);
    (with-access::ev_setglobal e (name mod e loc)
-      (let* ( (g (evmodule-find-global mod name))
-	      (e (comp e stk)) )
+      (let ( (g (evmodule-find-global mod name)) (e (comp e stk)) )
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
 		 (EVA '(global write cell) (name)
@@ -523,7 +532,7 @@
 ;; Call
 ;;
 ;;
-(define-struct user arity runner frame)
+(define-struct user arity runner frame where)
 
 (define (check-stack s bp n)
    (<fx (+fx bp n) (vector-length s)) )
@@ -576,7 +585,7 @@
 		      (begin
 			 (prof '(call int subr))
 			 (if (not (correct-arity? f nbargs))
-			     (evarity-error loc 'which-name? nbargs ($procedure-arity f))
+			     (evarity-error loc symb-fun nbargs ($procedure-arity f))
 			     ,subr-call ))
 		      (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
 			 (prof '(call int int))
@@ -584,15 +593,20 @@
 			    (if (=fx arity nbargs)
 				,fix-expr-call
 				(if (or (>=fx arity 0) (<fx arity (-fx -1 nbargs)))
-				    (evarity-error loc 'which-name? nbargs arity)
+				    (evarity-error loc (user-where uf) nbargs arity)
 				    ,notfix-expr-call ))
-			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
-			       (everror loc "eval" "stack overflow" bp) )
 			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
 			       ($env-set-trace-location !denv loc) )
-			    ,(if tail?
-				 '(throw-trampoline run)
-				 '(catch-trampoline run s sp) )))))))))
+			    (if (check-stack s ,(if tail? 'bp 'sp) sf)
+				,(if tail?
+				     '(throw-trampoline run)
+				     '(catch-trampoline run s sp) )
+				(let ( (ns (make-state)) )
+				   (vector-copy! ns 2 s sp (+fx sp nbargs))
+				   (vector-set! ns 1 s)
+				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
+				   (unwind-protect (catch-trampoline run ns 2)
+						   ($evmeaning-evstate-set! (current-dynamic-env) s) )))))))))))
 
 (define (need-shift args stk)
    ;; CARE must memorize the results of use.
@@ -606,7 +620,7 @@
 
 (define (comp-old-call e stk)
    (with-access::ev_app e (loc fun args tail?)
-      (let ( (size (length stk)) (nbargs (length args)) (f (comp fun stk)) )
+      (let ( (size (length stk)) (nbargs (length args)) (f (comp fun stk)) (symb-fun (uncompile fun)) )
 	 (cond
 	    ((not tail?)
 	     (comp-call-pattern `(call nottail ,nbargs) #f
@@ -656,7 +670,7 @@
 		      (begin
 			 (prof '(call int subr))
 			 (if (not (correct-arity? f ,nbargs))
-			     (evarity-error loc 'which-name? ,nbargs ($procedure-arity f))
+			     (evarity-error loc symb-fun ,nbargs ($procedure-arity f))
 			     (let ( (nbp (+fx bp size)) )
 				(vector-set! s 0 nbp)
 				(let ( (r (f ,@args)) )
@@ -670,16 +684,19 @@
 				(case arity
 				   ,@(generate-case-neg-arity -1 (-fx -2 nbargs) args (if tail? 'bp 'sp))
 				   (else
-				    (evarity-error loc 'which-name? ,nbargs arity) )))
-			    (unless (check-stack s ,(if tail? 'bp 'sp) sf)
-			       (everror loc "eval" "internal error: stack overflow" bp) )
+				    (evarity-error loc (user-where uf) ,nbargs arity) )))
 			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
 			       ($env-set-trace-location !denv loc) )
-			    ,(if tail?
-				 '(throw-trampoline run)
-				 '(catch-trampoline run s sp) )
-
-			 ))))))))
+			    (if (check-stack s ,(if tail? 'bp 'sp) sf)
+				,(if tail?
+				     '(throw-trampoline run)
+				     '(catch-trampoline run s sp) )
+				(let ( (ns (make-state)) )
+				   (vector-copy! ns 2 s sp (+fx sp ,nbargs))
+				   (vector-set! ns 1 s)
+				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
+				   (unwind-protect (catch-trampoline run ns 2)
+						   ($evmeaning-evstate-set! (current-dynamic-env) s) )))))))))))
 
 (define-macro (generate-comp-calli from to)
    (if (>fx from to)
@@ -687,7 +704,7 @@
        (let ( (sn (string->symbol (integer->string from)))
 	      (args (map (lambda (i) (symbol-append 'a (string->symbol (integer->string i))))
 			    (iota from 1) )))
-	  `(begin (define (,(symbol-append 'comp-call sn) loc fun tail? stk size ,@args)
+	  `(begin (define (,(symbol-append 'comp-call sn) loc symb-fun fun tail? stk size ,@args)
 		     (if tail?
 			 (generate-comp-calli-body #t ,args)
 			 (generate-comp-calli-body #f ,args) ))
@@ -745,7 +762,7 @@
 	     (let ( (vars (cons an vars)) )
 		`(let ( (,an (comp (car args) stk)) (args (cdr args)) )
 		    (if (null? args)
-			(,fn loc f tail? stk size ,@(reverse vars))
+			(,fn loc symb-fun f tail? stk size ,@(reverse vars))
 			(comp-dispatch ,(+fx cur 1) ,max ,vars) )))))))
 
 (define-method (comp e::ev_app stk);
@@ -753,9 +770,9 @@
       (or (inline-call loc fun args stk)
 	  (if (>fx (length args) 4)
 	      (comp-old-call e stk)
-	      (let ( (f (comp fun stk)) (size (length stk)) )
+	      (let ( (f (comp fun stk)) (size (length stk)) (symb-fun (uncompile fun)) )
 		 (if (null? args)
-		     (comp-call0 loc f tail? stk size)
+		     (comp-call0 loc symb-fun f tail? stk size)
 		     (comp-dispatch 1 4 ()) ))))))
 
 ;;
@@ -766,14 +783,14 @@
        (+fx n done)
        (-fx n done) ))
 
-(define (bind-frame s sp arity vals loc)
+(define (bind-frame s where sp arity vals loc)
    (if (<fx arity 0)
        (let rec ( (r (-fx -1 arity)) (sp sp) (l vals) )
 	  (cond
 	     ((=fx r 0)
 	      (vector-set! s sp l) )
 	     ((not (pair? l))
-	      (evarity-error loc 'which-name? arity (length vals)) )
+	      (evarity-error loc where arity (length vals)) )
 	     (else
 	      (vector-set! s sp (car l))
 	      (rec (-fx r 1) (+fx sp 1) (cdr l)) )))
@@ -781,9 +798,9 @@
 	  (cond
 	     ((=fx r 0)
 	      (unless (null? l)
-		 (evarity-error loc 'which-name? arity (length vals)) ))
+		 (evarity-error loc where arity (length vals)) ))
 	     ((not (pair? l))
-	      (evarity-error loc 'which-name? arity (length vals)) )
+	      (evarity-error loc where arity (length vals)) )
 	     (else
 	      (vector-set! s sp (car l))
 	      (rec (-fx r 1) (+fx sp 1) (cdr l)) )))))
@@ -810,22 +827,40 @@
 				  (let ( (s (find-state)) )
 				     (let ( (bp (vector-ref s 0)) )
 					(step s bp 0 '(entry main))
-					,@(map (lambda (i v) `(vector-set! s (+fx bp ,i) ,v))
-					       (iota nbparam 0)
-					       param )
-					(step s bp ,nbparam '(entry main cont))
-					,@(cond
-					     ((null? extra) '())
-					     ((eq? extra 'last) `((vector-set! s (+fx bp ,nbparam) last)))
-					     (else `((bind-frame s (+ bp ,nbparam)
-								 (correct ,arity ,nbparam)
-								 ,extra
-								 loc))) )
-					(step s bp size '(entry main cont2))
-					(unwind-protect (catch-trampoline run s bp)
-							(vector-set! s 0 bp) ))))) )
+					(if (check-stack s bp size-frame)
+					    (begin
+					       ,@(map (lambda (i v) `(vector-set! s (+fx bp ,i) ,v))
+						      (iota nbparam 0)
+						      param )
+					       (step s bp ,nbparam '(entry main cont))
+					       ,@(cond
+						    ((null? extra) '())
+						    ((eq? extra 'last) `((vector-set! s (+fx bp ,nbparam) last)))
+						    (else `((bind-frame s where (+fx bp ,nbparam)
+									(correct ,arity ,nbparam)
+									,extra
+									loc))) )
+					       (step s bp size '(entry main cont2))
+					       (unwind-protect (catch-trampoline run s bp)
+							       (vector-set! s 0 bp) ))
+					    (let ( (ns (make-state)) )
+					       (vector-set! ns 1 s)
+					       ,@(map (lambda (i v) `(vector-set! ns ,(+fx 2 i) ,v))
+						      (iota nbparam 0)
+						      param )
+					       ,@(cond
+						    ((null? extra) '())
+						    ((eq? extra 'last) `((vector-set! ns ,(+fx 2 nbparam) last)))
+						    (else `((bind-frame ns where ,(+fx 2 nbparam)
+									(correct ,arity ,nbparam)
+									,extra
+									loc))) )
+					       ($evmeaning-evstate-set! (current-dynamic-env) ns)
+					       (unwind-protect (catch-trampoline run ns 2)
+							       ($evmeaning-evstate-set! (current-dynamic-env) s) ))))))) )
+					       
 		     (procedure-attr-set! run **a-bounce**)
-		     (procedure-attr-set! main (user ,arity run size-frame))
+		     (procedure-attr-set! main (user ,arity run size-frame where))
 		     main ))))))
 
 (define-macro (generate-generate-abstraction param extra arity);
