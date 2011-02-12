@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sat Feb 12 08:35:13 2011 (serrano)                */
+;*    Last change :  Sat Feb 12 09:36:53 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -443,7 +443,7 @@
 (define (loadv file-name v? env traceid::symbol)
    
    (define (evalv! sexp env)
-      (let ((v (eval! sexp ($eval-module))))
+      (let ((v (eval! sexp env)))
 	 (when v?
 	    (display-circle v)
 	    (newline))))
@@ -484,13 +484,13 @@
 		   (let loop ((sexp sexp))
 		      (cond
 			 ((eof-object? sexp)
-			  ($env-pop-trace denv)
 			  (close-input-port port)
 			  (when (symbol? mainsym)
 			     (let ((iexp (econs mainsym
-						(list command-line)
+						(list '(command-line))
 						loc)))
 				(eval! iexp env)))
+			  ($env-pop-trace denv)
 			  path)
 			 (else
 			  (when (epair? sexp)
