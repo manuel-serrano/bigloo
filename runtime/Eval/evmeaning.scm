@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sat Feb 12 14:16:11 2011 (serrano)                */
+;*    Last change :  Sun Feb 13 09:10:19 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -288,24 +288,30 @@
 	    (let ((var (evcode-ref code 0))
 		  (val (evcode-ref code 1))
 		  (mod (evcode-ref code 2)))
-	       (let ((cell (evmodule-find-global mod var)))
-		  (if (eval-global? cell)
-		      (let ((old (and (not (eq? (eval-global-tag cell) 1))
-				      (eval-global-value cell))))
-			 (update-eval-global! code cell (evmeaning val '() denv))
-			 (when (and (eq? old mod)
-				    (not (eq? old evmodule-uninitialized)))
-			    (evwarning (evcode-loc code)
-				       "eval"
-				       #\Newline
-				       "redefinition of variable -- "
-				       var)))
-		      (let ((cell (vector 2 var (unspecified))))
-			 (evmodule-bind-global! mod var cell (evcode-loc code))
-			 ;; on le fait en deux fois pour etre
-			 ;; sur que la liaison existe.
+	       (let ((v (evmodule-find-global mod var)))
+		  (if (eval-global? v)
+		      (case (eval-global-tag v)
+			 ((0)
+			  (everror (evcode-loc code) "eval"
+				   "compiled read-only variable cannot be redefined"
+				   var))
+			 ((1)
+			  (evwarning (evcode-loc code) "eval"
+				     "\nRedefinition of compiled variable -- "
+				     var)
+			  (update-eval-global! code v (evmeaning val '() denv)))
+			 ((2 3 4)
+			  (update-eval-global! code v (evmeaning val '() denv)))
+			 (else
+			  (everror (evcode-loc code) "eval"
+				   "compiled read-only variable cannot be redefined"
+				   var)))
+		      (let ((g (make-eval-global var)))
+			 ;; first we bind the variable
+			 (evmodule-bind-global! mod var g (evcode-loc code))
+			 ;; second we evaluate it's body
 			 (let ((value (evmeaning val '() denv)))
-			    (set-eval-global-value! cell value))))
+			    (set-eval-global-value! g value))))
 		  var)))
 	   ((bounce (code stack denv) (18))
 	    ;; bind-exit
@@ -672,30 +678,6 @@
 	   ;; untraced
 	   ((56)
 	    (evmeaning-make-4procedure code stack denv))
-	   ((bounce (code stack denv) (63))
-	    ;; the form define (global) value
-	    (let* ((var (evcode-ref code 0))
-		   (val (evmeaning (evcode-ref code 1) '() denv))
-		   (mod (evcode-ref code 2)))
-	       (let ((cell (evmodule-find-global mod var)))
-		  (if (and (eval-global? cell)
-			   (not (eq? (eval-global-tag cell) 1)))
-		      ;; update the variable only if it is an eval variable
-		      (let ((old (eval-global-value cell)))
-			 (update-eval-global! code cell val)
-			 (when (and (eq? old mod)
-				    (not (eq? old evmodule-uninitialized)))
-			    (evwarning (evcode-loc code)
-				       "eval"
-				       #\Newline
-				       "redefinition of variable -- "
-				       var)))
-		      (let ((cell (vector 2 var (unspecified))))
-			 (evmodule-bind-global! mod var cell (evcode-loc code))
-			 ;; on le fait en deux fois pour etre
-			 ;; sur que la liaison existe.
-			 (set-eval-global-value! cell val)))
-		  var)))
 	   ((bounce (code stack denv) (64))
 	    ;; unwind-protect
 	    (let ((body (evcode-ref code 0))
@@ -941,18 +923,22 @@
 ;*---------------------------------------------------------------------*/
 ;*      update-eval-global! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (update-eval-global! code variable val)
-   (cond
-      ((eq? (eval-global-tag variable) 1)
-       (__evmeaning_address-set! (eval-global-value variable) val))
-      (else
-       (when (and (eq? (eval-global-tag variable) 0)
-		  (bigloo-eval-strict-module))
-	  (everror (evcode-loc code)
-		   "set!" "read-only variable" 
-		   (eval-global-name variable)))
-       (set-eval-global-value! variable val)))
-   (eval-global-name variable))
+(define (update-eval-global! code var val)
+   (case (eval-global-tag var)
+      ((0)
+       (everror (evcode-loc code) "set!" "read-only variable" (eval-global-name var)))
+      ((1)
+       (__evmeaning_address-set! (eval-global-value var) val))
+      ((2)
+       (set-eval-global-value! var val))
+      ((3)
+       (set-eval-global-value! var val)
+       (eval-global-tag-set! var 2))
+      ((4)
+       (set-eval-global-value! var val)
+       (eval-global-tag-set! var 5))
+      ((5)
+       (everror (evcode-loc code) "set!" "read-only variable" (eval-global-name var)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmeaning-funcall-0 ...                                          */

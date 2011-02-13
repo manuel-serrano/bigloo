@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Mon Apr 19 14:59:02 2010 (serrano)                */
+;*    Last change :  Sun Feb 13 07:32:09 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -57,16 +57,18 @@
 		       "__EVMEANING_ADDRESS_SET")))
    
    (export  (init-the-global-environment!)
-	    (inline eval-global?           exp)
-	    (inline eval-global-value      exp)
-	    (inline set-eval-global-value! exp exp)
-	    (inline eval-global-tag        exp)
-	    (inline eval-global-name       exp)
-	    (bind-eval-global!             name var)
-	    (eval-lookup                   exp)
-	    (unbind-primop!                var)
-	    (define-primop!                var val)
-	    (define-primop-ref!            var addr))
+	    (inline make-eval-global ::symbol)
+	    (inline eval-global? ::obj)
+	    (inline eval-global-value ::vector)
+	    (inline set-eval-global-value! ::vector ::obj)
+	    (inline eval-global-tag::int ::vector)
+	    (inline eval-global-tag-set! ::vector ::int)
+	    (inline eval-global-name ::vector)
+	    (bind-eval-global! ::symbol ::vector)
+	    (eval-lookup ::symbol)
+	    (unbind-primop! ::symbol)
+	    (define-primop! ::symbol ::obj)
+	    (define-primop-ref! ::symbol addr))
 
    (pragma  (__evmeaning_address args-safe)))
 
@@ -84,14 +86,26 @@
 ;*    eval-global? ...                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    A global is a vector of 3 elements. The first one is the tag     */
-;*    which discriminates compiled, read-only compiled, and evaluated  */
-;*    global variable. The second element is the name. The third       */
-;*    is the value.                                                    */
+;*    whose meaning is:                                                */
+;*       0: compiled read-only                                         */
+;*       1: compiled                                                   */
+;*       2: evaluated                                                  */
+;*       3: evaluated uninitialized                                    */
+;*       4: evaluated read-only uninitialized                          */
+;*       5: evaluated read-only                                        */
+;*    The second element is the of the vector is the variable name.    */
+;*    The third is its value.                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (eval-global? variable)
    (if (vector? variable)
        (=fx (vector-length variable) 3)
        #f))
+
+;*---------------------------------------------------------------------*/
+;*    make-eval-global ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (make-eval-global id)
+   (vector 2 id #unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    bind-eval-global! ...                                            */
@@ -164,6 +178,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (eval-global-tag eval-global)
    (vector-ref-ur eval-global 0))
+
+;*---------------------------------------------------------------------*/
+;*    eval-global-tag-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (eval-global-tag-set! eval-global tag)
+   (vector-set-ur! eval-global 0 tag))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-global-name ...                                             */

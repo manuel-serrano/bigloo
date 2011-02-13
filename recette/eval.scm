@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Mon Feb  7 16:52:18 2011 (serrano)                */
+;*    Last change :  Sun Feb 13 09:15:55 2011 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -83,7 +83,7 @@
 		     (eval `(apply ,foo '(4))))
 	 5)
    (test "eval.10" (eval '(begin (define *v* #t) *v*)) #t)
-   (test "eval.10" (eval '(begin (define *v* #f) *v*)) #f)
+   (test "eval.11" (eval '(begin (define *v* #f) *v*)) #f)
    (test "fib" (eval '(letrec ((fib (lambda (x)
 				       (if (<fx x 2)
 					   1
@@ -532,15 +532,16 @@
 				      (%inner.3))
 				   (+ (inner.3 35) (inner.3 15))))
 	 50)
-   (test "eval define.4" (eval `(begin
-				   (define (bar)
-				      (let ((y 10))
-					 (if (begin
-						(define (glop) y)
-						(glop))
-					     1)))
-				   (bar)))
+   (test "eval define.4" (let ((p (open-output-string)))
+			    (with-error-to-port p
+  			       (lambda ()
+				  (eval `(begin
+					    (define (bar)
+					       (let ((y 10))
+						  (if (begin
+							 (define (glop)
+							    y)
+							 (glop))
+						      1)))
+					    (bar))))))
 	 1))
-				       
-   
-

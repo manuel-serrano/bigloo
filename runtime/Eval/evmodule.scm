@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Feb 12 13:51:49 2011 (serrano)                */
+;*    Last change :  Sun Feb 13 07:08:00 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -212,6 +212,29 @@
        (for-each (lambda (s) (eval `(library-load ',s))) (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
+;*    mark-global! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (mark-global! id mod tag loc)
+   (let ((v (evmodule-find-global mod id)))
+      (if (eval-global? v)
+	  (begin
+	     (eval-global-tag-set! v tag)
+	     id)
+	  (evcompile-error loc "eval" "variable unbound" id))))
+
+;*---------------------------------------------------------------------*/
+;*    mark-global-uninitialized! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (mark-global-uninitialized! id mod loc)
+   (mark-global! id mod 3 loc))
+
+;*---------------------------------------------------------------------*/
+;*    mark-global-readonly! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (mark-global-readonly! id mod loc)
+   (mark-global! id mod 4 loc))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule-static ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-static mod clause loc classp)
@@ -220,7 +243,8 @@
 	 ((? symbol?)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (eval-class cla #f clauses clause mod)))
@@ -240,11 +264,13 @@
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-readonly! id mod loc))))
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
 	   loc
@@ -269,7 +295,8 @@
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (let ((idents (eval-class cla #f clauses clause mod)))
@@ -293,12 +320,14 @@
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-readonly! id mod loc))))
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod))))
+		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
 	   loc

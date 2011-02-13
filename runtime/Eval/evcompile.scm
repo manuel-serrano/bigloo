@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Feb 11 19:50:16 2011 (serrano)                */
+;*    Last change :  Sun Feb 13 08:54:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -180,30 +180,6 @@
       ((begin . ?rest)
        (evcompile-begin rest env genv where tail
 			(get-location exp loc) lkp toplevelp))
-      ((or (define ?var (and (lambda . ?-) ?val))
-	   (define ?var (begin (and (lambda . ?-) ?val))))
-       (cond
-	  ((and (eq? where '_)
-		(or (eq? genv (scheme-report-environment 5))
-		    (eq? genv (null-environment 5))))
-	   (evcompile-error loc
-			    "eval"
-			    "Illegal define form (sealed environment)"
-			    exp))
-	  ((not toplevelp)
-	   (evcompile-error loc
-			    "eval"
-			    "Illegal non toplevel define"
-			    exp))
-	  (else
-	   (let ((loc (get-location exp loc)))
-	      (evcompile-define-lambda (untype-ident var)
-				       (evcompile val '()
-						  genv var
-						  (tailcall?)
-						  (get-location exp loc)
-						  lkp #f)
-				       loc)))))
       ((define ?var ?val)
        (cond
 	  ((and (eq? where '_)
@@ -229,6 +205,14 @@
 				      loc)))))
       ((set! . ?-)
        (match-case exp
+	  ((?- (@ (and ?id (? symbol?)) (and ?mod (? symbol?))) ?val)
+	   (let ((loc (get-location exp loc)))
+	      (evcompile-set (@variable loc id env genv mod)
+			     (evcompile val env
+					genv id #f
+					(get-location val loc)
+					lkp #f)
+			     loc)))
 	  ((?- (and (? symbol?) ?var) ?val)
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-set (variable loc var env genv)
@@ -395,18 +379,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-set ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-set variable value loc)
+(define (evcompile-set var value loc)
    (cond
-      ((eval-global? variable)
-       (evcode 8 loc variable value))
-      ((dynamic? variable)
-       (evcode 9 loc (dynamic-name variable) value ($eval-module)))
+      ((eval-global? var)
+       (if (or (eq? (eval-global-tag var) 0)
+	       (eq? (eval-global-tag var) 4)
+	       (eq? (eval-global-tag var) 5))
+	   (evcompile-error loc "eval" "Read-only variable"
+			    (eval-global-name var))
+	   (evcode 8 loc var value)))
+      ((dynamic? var)
+       (evcode 9 loc (dynamic-name var) value ($eval-module)))
       (else
-       (case variable
+       (case var
 	  ((0 1 2 3)
-	   (evcode (+fx 10 variable) loc value))
+	   (evcode (+fx 10 var) loc value))
 	  (else
-	   (evcode 14 loc variable value))))))
+	   (evcode 14 loc var value))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-if ...                                                 */
@@ -463,23 +452,11 @@
 	  (list->evcode 16 loc cbody)))))
 
 ;*---------------------------------------------------------------------*/
-;*    evcompile-define-lambda ...                                      */
-;*    -------------------------------------------------------------    */
-;*    Le calcul de `val' a ete differe car on ne veut evcompiler la    */
-;*    valeur liee d'un define qu'une fois que la variable a ete liee   */
-;*    dans l'environment. Si on ne fait pas cela on se tape que des    */
-;*    appels dynamics dans les definitions des fonctions               */
-;*    auto-recursives !                                                */
-;*---------------------------------------------------------------------*/
-(define (evcompile-define-lambda var val loc)
-   (evcode 17 loc var val ($eval-module)))
-
-;*---------------------------------------------------------------------*/
 ;*    evcompile-define-value ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-define-value var val loc)
-   (evcode 63 loc var val ($eval-module)))
-    
+   (evcode 17 loc var val ($eval-module)))
+
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-bind-exit ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -527,7 +504,7 @@
 	      (evcode 131 loc name proc tail))
 	     ((1)
 	      (let ((code 132))
-		 (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
+		 (if (eval-global-ref? proc)
 		     (let ((fun (evcode-ref proc 0))
 			   (a0 (car args)))
 			(if (not (eval-global? fun))
@@ -537,7 +514,7 @@
 		     (evcode code loc name proc (car args) tail))))
 	     ((2)
 	      (let ((code 133))
-		 (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
+		 (if (eval-global-ref? proc)
 		     (let ((fun (evcode-ref proc 0))
 			   (a0 (car args))
 			   (a1 (cadr args)))
@@ -559,7 +536,7 @@
 	  ((0)
 	   (evcode 31 loc name proc))
 	  ((1)
-	   (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
+	   (if (eval-global-ref? proc)
 	       (let ((fun (evcode-ref proc 0))
 		     (a0 (car args)))
 		  (if (not (eval-global? fun))
@@ -568,7 +545,7 @@
 			  (evcode 32 loc name proc (car args)))))
 	       (evcode 32 loc name proc (car args))))
 	  ((2)
-	   (if (and (eval-global-ref? proc) (bigloo-eval-strict-module))
+	   (if (eval-global-ref? proc)
 	       (let ((fun (evcode-ref proc 0))
 		     (a0 (car args))
 		     (a1 (cadr args)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sat Feb 12 14:29:25 2011 (serrano)                */
+;*    Last change :  Sun Feb 13 09:13:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -311,13 +311,6 @@
 (define-method (comp var::ev_global stk);
    (with-access::ev_global var (name mod loc)
       (let ( (g (evmodule-find-global mod name)) )
-	 #;(tprint "ev_global name=" name " mod=" (if (evmodule? mod)
-						    (evmodule-name mod)
-						    "?toplevel?")
-		 " " g
-		 " current=" (if (evmodule? (eval-module))
-				 (evmodule-name (eval-module))
-				 "???"))
 	 (if g
 	     (if (eq? (eval-global-tag g) 1)
 		 (EVA '(global read cell) (name)
@@ -335,17 +328,14 @@
    (with-access::ev_setglobal e (name mod e loc)
       (let ( (g (evmodule-find-global mod name)) (e (comp e stk)) )
 	 (if g
-	     (if (eq? (eval-global-tag g) 1)
+	     (case (eval-global-tag g)
+		((1)
 		 (EVA '(global write cell) (name)
-		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
-		 (EVA '(global write direct) (name)
-		      (begin
-			 (when (and (eq? (eval-global-tag g) 0)
-				    (bigloo-eval-strict-module))
-			    (everror
-			     loc
-			     "set!" "read-only variable" name))
-			 (set-eval-global-value! g (EVC e)))))
+		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) ))
+		((0 4 5)
+		 (everror loc "set!" "read-only variable" name) )
+		(else
+		 (EVA '(global write direct) (name) (set-eval-global-value! g (EVC e))) ))
 	     (let ( (slot #f) )
 		(EVA '(global write check) (name)
 		     (unless slot
@@ -360,18 +350,20 @@
 	    (let ( (g (evmodule-find-global mod name)) )
 	       (if g
 		   (begin
-		      (if (eq? (eval-global-tag g) 1)
-			  (__evmeaning_address-set! (eval-global-value g) (EVC e))
-			  (begin
-			     (when (and (eq? (eval-global-tag g) 0)
-					(bigloo-eval-strict-module))
-				(everror
-				 loc
-				 "set!" "read-only variable"
-				 name))
-			     (set-eval-global-value! g (EVC e))))
+		      (case (eval-global-tag g)
+			 ((0)
+			  (everror loc "set!" "read-only variable" name) )
+			 ((1)
+			  (evwarning loc "eval" "\nRedefinition of compiled variable -- "
+				     name)
+			  (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
+			 ((2 3 4)
+			  (set-eval-global-value! g (EVC e)) )
+			 (else
+			  (everror loc "set!" "read-only variable" name) ))
 		      name )
-		   (let ( (g (vector 2 name (EVC e))) )
+		   (let ( (g (make-eval-global name)) )
+		      (set-eval-global-value! g (EVC e))
 		      (evmodule-bind-global! mod name g loc)
 		      name )))))))
 
@@ -733,7 +725,7 @@
 			    ,(rec2 (cdr names)) ))))))))
 
 (define (inline-call loc fun args stk);
-   (when (and (ev_global? fun) (bigloo-eval-strict-module))
+   (when (ev_global? fun)
       (with-access::ev_global fun (name mod)
 	 (let ( (g (evmodule-find-global mod name)) )
 	    (when g
