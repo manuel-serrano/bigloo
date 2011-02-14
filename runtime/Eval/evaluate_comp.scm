@@ -646,6 +646,17 @@
 				(push-args-on-sp s args bp)
 				(push-nargs-on-sp arity s args bp) ))))))
 
+;; specialized version for a direct call
+(define-macro (generate-comp-constant-calli-body args)
+   (let ( (nbargs (length args)) )
+      `(EVA '(call compiled-constant ,nbargs) ("nb args" ,nbargs "size" size)
+	    (let ( ,@(map (lambda (v) `(,v (EVC ,v))) args) )
+	       (let ( (nbp (+fx bp size)) )
+		  (vector-set! s 0 nbp)
+		  (let ( (r (cfun ,@args)) )
+		     (vector-set! s 0 bp)
+		     r ))))))
+
 ;; specialized version for a fixed number of arguments
 (define-macro (generate-comp-calli-body tail? args)
    (define (push-args l sp)
@@ -707,13 +718,28 @@
        (let ( (sn (string->symbol (integer->string from)))
 	      (args (map (lambda (i) (symbol-append 'a (string->symbol (integer->string i))))
 			    (iota from 1) )))
-	  `(begin (define (,(symbol-append 'comp-call sn) loc symb-fun fun tail? stk size ,@args)
-		     (if tail?
-			 (generate-comp-calli-body #t ,args)
-			 (generate-comp-calli-body #f ,args) ))
+	  `(begin (define (,(symbol-append 'comp-call sn) loc vfun symb-fun fun tail? stk size ,@args)
+		     (let ( (cfun (is-constant-fun? vfun ,(length args))) )
+			(if cfun
+			    (generate-comp-constant-calli-body ,args)
+			    (if tail?
+				(generate-comp-calli-body #t ,args)
+				(generate-comp-calli-body #f ,args) ))))
 		  (generate-comp-calli ,(+fx 1 from) ,to) ))))
 
 (generate-comp-calli 0 4)
+
+;; calling a constant function
+(define (is-constant-fun? fun nbargs)
+   (when (ev_global? fun)
+      (with-access::ev_global fun (name mod)
+	 (let ( (g (evmodule-find-global mod name)) )
+	    (when g
+	       (when (=fx (eval-global-tag g) 0)
+		  (let ( (val (eval-global-value g)) )
+		     (when (and (procedure? val)
+				(correct-arity? val nbargs) )
+			val ))))))))
 
 ;; inline
 (define-macro (inline fun* loc fun vars stk);
@@ -765,7 +791,7 @@
 	     (let ( (vars (cons an vars)) )
 		`(let ( (,an (comp (car args) stk)) (args (cdr args)) )
 		    (if (null? args)
-			(,fn loc symb-fun f tail? stk size ,@(reverse vars))
+			(,fn loc fun symb-fun f tail? stk size ,@(reverse vars))
 			(comp-dispatch ,(+fx cur 1) ,max ,vars) )))))))
 
 (define-method (comp e::ev_app stk);
@@ -775,7 +801,7 @@
 	      (comp-old-call e stk)
 	      (let ( (f (comp fun stk)) (size (length stk)) (symb-fun (uncompile fun)) )
 		 (if (null? args)
-		     (comp-call0 loc symb-fun f tail? stk size)
+		     (comp-call0 loc fun symb-fun f tail? stk size)
 		     (comp-dispatch 1 4 ()) ))))))
 
 ;;

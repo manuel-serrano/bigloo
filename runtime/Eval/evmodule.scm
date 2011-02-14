@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Feb 14 08:20:00 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 18:54:14 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -205,12 +205,25 @@
        (bind-eval-global! id var)))
 
 ;*---------------------------------------------------------------------*/
+;*    for-each/loc ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (for-each/loc loc proc l)
+   (let loop ((l l)
+	      (loc (or (get-source-location l) loc)))
+      (when (pair? l)
+	 (proc loc (car l))
+	 (loop (cdr l) (or (get-source-location (cdr l)) loc)))))
+   
+;*---------------------------------------------------------------------*/
 ;*    evmodule-library ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-library clause loc)
    (if (not (and (list? clause) (every? symbol? clause)))
        (evcompile-error loc "eval" "Illegal `library' clause" clause)
-       (for-each (lambda (s) (eval `(library-load ',s))) (cdr clause))))
+       (for-each/loc loc
+		     (lambda (loc s)
+			(eval/loc loc `(library-load ',s)))
+		     (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-global! ...                                                 */
@@ -239,12 +252,12 @@
 ;*    evmodule-static ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-static mod clause loc classp)
-   (define (evmodule-static-clause s)
+   (define (evmodule-static-clause loc s)
       (match-case s
 	 ((? symbol?)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
@@ -265,12 +278,12 @@
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
@@ -278,7 +291,7 @@
 	   "eval" "Illegal `static' clause" clause))))
    (if (not (list? clause))
        (evcompile-error loc "eval" "Illegal `static' clause" clause)
-       (for-each evmodule-static-clause (cdr clause))))
+       (for-each/loc loc evmodule-static-clause (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-export! ...                                             */
@@ -287,16 +300,25 @@
    (%evmodule-exports-set! mod (cons (cons id m) (%evmodule-exports mod))))
 
 ;*---------------------------------------------------------------------*/
+;*    eval/loc ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (eval/loc loc exp #!optional env)
+   (let ((exp (if loc
+		  (econs (car exp) (cdr exp) loc)
+		  exp)))
+      (eval exp env)))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule-export ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-export mod clause loc classp)
-   (define (evmodule-export-clause s)
+   (define (evmodule-export-clause loc s)
       (match-case s
 	 ((? symbol?)
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
@@ -321,7 +343,7 @@
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 ((macro . ?-)
 	  #unspecified)
@@ -329,7 +351,7 @@
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(evmodule-export! mod id mod)
-		(eval `(define ,id ',evmodule-uninitialized) mod)
+		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
@@ -337,7 +359,7 @@
 	   "eval" "Illegal `export' clause" clause))))
    (if (not (list? clause))
        (evcompile-error loc "eval" "Illegal `export' clause" clause)
-       (for-each evmodule-export-clause (cdr clause))))
+       (for-each/loc loc evmodule-export-clause (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import-binding! ...                                     */
@@ -367,14 +389,11 @@
 	       (set! l (cons g l)))))
       (hashtable-for-each (%evmodule-env mod) global-check-unbound)
       (when (pair? l)
-	 (evcompile-error (or (eval-global-loc (car l)) loc)
-			  "eval"
-			  (format "Variable unbound in module \"~a\""
-				  (evmodule-name mod))
-			  (if (pair? (cdr l))
-			      (apply format "~a (~l)"
-				     (map eval-global-name l))
-			      (eval-global-name (car l)))))))
+	 (if (pair? (cdr l))
+	     (evcompile-error (or (eval-global-loc (car l)) loc)
+			      (evmodule-name mod)
+			      "Unbound variables"
+			      (format "~l" (map eval-global-name l)))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */
