@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Mon Feb 14 08:25:48 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 11:06:30 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -131,8 +131,8 @@
 ;*    module is initialized, the type of the variable must not         */
 ;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-(define default-evaluate::obj byte-code-evaluate)
-;;(define default-evaluate::obj evaluate2)
+;;(define default-evaluate::obj byte-code-evaluate)
+(define default-evaluate::obj evaluate2)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */

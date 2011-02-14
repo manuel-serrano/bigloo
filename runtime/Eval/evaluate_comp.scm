@@ -318,6 +318,10 @@
 		 (EVA '(global read direct) (name)
 		      (eval-global-value g) ))
 	     (let ( (slot #f) )
+		(when (evmodule? mod)
+		   (let ( (g (make-eval-global name mod loc)) )
+		      (eval-global-tag-set! g 3)
+		      (evmodule-bind-global! mod name g loc) ))
 		(EVA '(global read check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
@@ -337,6 +341,10 @@
 		(else
 		 (EVA '(global write direct) (name) (set-eval-global-value! g (EVC e))) ))
 	     (let ( (slot #f) )
+		(when (evmodule? mod)
+		   (let ( (g (make-eval-global name mod loc)) )
+		      (eval-global-tag-set! g 3)
+		      (evmodule-bind-global! mod name g loc) ))
 		(EVA '(global write check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
@@ -914,5 +922,6 @@
 	 (when (<fx sp stop)
 	    (vector-set! s sp (vector-ref val* i))
 	    (rec (+fx i 1) (+fx sp 1)) ))))
+
 
 
