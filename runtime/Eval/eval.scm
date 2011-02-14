@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun Feb 13 09:10:34 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 08:25:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -131,8 +131,8 @@
 ;*    module is initialized, the type of the variable must not         */
 ;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-;;(define default-evaluate::obj byte-code-evaluate)
-(define default-evaluate::obj evaluate2)
+(define default-evaluate::obj byte-code-evaluate)
+;;(define default-evaluate::obj evaluate2)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
@@ -497,7 +497,10 @@
 			     ($env-set-trace-location denv (cer sexp)))
 			  (evalv! sexp env)
 			  (loop (evread port)))))))
-	     ($eval-module-set! mod))
+	     (let ((cmod ($eval-module)))
+		(unless (eq? cmod mod)
+		   (evmodule-check-unbound cmod #f)
+		   ($eval-module-set! mod))))
 	  (error "load" "Can't open file" file-name))))
 
 ;*---------------------------------------------------------------------*/

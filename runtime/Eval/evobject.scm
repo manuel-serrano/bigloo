@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Feb 11 19:28:40 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 07:57:22 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -404,7 +404,6 @@
    (let* ((ins (symbol-append 'instantiate:: cid))
 	  (nodef (class-field-no-default-value))
 	  (new (gensym))
-	  (tmp (gensym))
 	  (mk (class-make cid)))
       (let loop ((fields fields)
 		 (vals '())
@@ -660,9 +659,9 @@
 ;*    make-eval-with-access-body ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-eval-with-access-body id all-fields tmp)
-   (if (every? (lambda (f) (class-field-indexed? f)) all-fields)
-       (make-eval-with-access-body-plain id all-fields tmp)
-       (make-eval-with-access-body-indexed id all-fields tmp)))
+   (if (or #t (any? (lambda (f) (class-field-indexed? f)) all-fields))
+       (make-eval-with-access-body-indexed id all-fields tmp)
+       (make-eval-with-access-body-plain id all-fields tmp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-with-access-body-plain ...                             */
@@ -686,13 +685,13 @@
 		 ((cadr d)
 		  ;; an indexed slot
 		  (let ((v `(,(symbol-append ',id '- (caar vars) '-len)
-			     ,tmp))
+			     ,,tmp))
 			(r `(lambda (r)
 			       (,(symbol-append ',id '- (caar vars) '-ref)
-				,tmp r)))
+				,,tmp r)))
 			(s `(lambda (r v)
 			       (,(symbol-append ',id '- (caar vars) '-set!)
-				,tmp r v))))
+				,,tmp r v))))
 		     (if (caddr d)
 			 `(let ((,(symbol-append (caar vars) '-len) ,v)
 				(,(symbol-append (caar vars) '-ref) ,r))

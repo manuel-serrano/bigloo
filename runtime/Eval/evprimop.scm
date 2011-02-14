@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Fri Sep 10 10:28:09 2010 (serrano)                */
+;*    Last change :  Mon Feb 14 08:21:33 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -97,6 +97,7 @@
  	    (eval-module-set! __evmodule)
  	    (evmodule? __evmodule)
  	    (evmodule-name __evmodule)
+ 	    (evmodule-check-unbound __evmodule)
 	    
 	    __r4_booleans_6_1
 	    __r4_equivalence_6_2

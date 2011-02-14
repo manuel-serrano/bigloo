@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sun Feb 13 09:10:19 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 07:37:34 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -284,7 +284,7 @@
 			 (evmeaning (evcode-ref code i) stack denv)
 			 (loop (+fx i 1)))))))
 	   ((bounce (code stack denv) (17))
-	    ;; (define <global> (lambda ...))
+	    ;; (define <global> <var>)
 	    (let ((var (evcode-ref code 0))
 		  (val (evcode-ref code 1))
 		  (mod (evcode-ref code 2)))
@@ -306,9 +306,10 @@
 			  (everror (evcode-loc code) "eval"
 				   "compiled read-only variable cannot be redefined"
 				   var)))
-		      (let ((g (make-eval-global var)))
+		      (let* ((loc (evcode-loc code))
+			     (g (make-eval-global var (eval-module) loc)))
 			 ;; first we bind the variable
-			 (evmodule-bind-global! mod var g (evcode-loc code))
+			 (evmodule-bind-global! mod var g loc)
 			 ;; second we evaluate it's body
 			 (let ((value (evmeaning val '() denv)))
 			    (set-eval-global-value! g value))))

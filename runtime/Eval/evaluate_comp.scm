@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sun Feb 13 09:13:33 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 07:37:43 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -357,12 +357,18 @@
 			  (evwarning loc "eval" "\nRedefinition of compiled variable -- "
 				     name)
 			  (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
-			 ((2 3 4)
+			 ((2)
 			  (set-eval-global-value! g (EVC e)) )
+			 ((3)
+			  (set-eval-global-value! g (EVC e))
+			  (eval-global-tag-set! g 2))
+			 ((4)
+			  (set-eval-global-value! g (EVC e))
+			  (eval-global-tag-set! g 5))
 			 (else
 			  (everror loc "set!" "read-only variable" name) ))
 		      name )
-		   (let ( (g (make-eval-global name)) )
+		   (let ( (g (make-eval-global name mod loc)) )
 		      (set-eval-global-value! g (EVC e))
 		      (evmodule-bind-global! mod name g loc)
 		      name )))))))

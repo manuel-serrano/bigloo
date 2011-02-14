@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Sun Feb 13 07:32:09 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 07:35:00 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -57,13 +57,15 @@
 		       "__EVMEANING_ADDRESS_SET")))
    
    (export  (init-the-global-environment!)
-	    (inline make-eval-global ::symbol)
+	    (inline make-eval-global ::symbol ::obj ::obj)
 	    (inline eval-global? ::obj)
 	    (inline eval-global-value ::vector)
 	    (inline set-eval-global-value! ::vector ::obj)
 	    (inline eval-global-tag::int ::vector)
 	    (inline eval-global-tag-set! ::vector ::int)
 	    (inline eval-global-name ::vector)
+	    (inline eval-global-module ::obj)
+	    (inline eval-global-loc ::obj)
 	    (bind-eval-global! ::symbol ::vector)
 	    (eval-lookup ::symbol)
 	    (unbind-primop! ::symbol)
@@ -85,27 +87,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    eval-global? ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    A global is a vector of 3 elements. The first one is the tag     */
-;*    whose meaning is:                                                */
-;*       0: compiled read-only                                         */
-;*       1: compiled                                                   */
-;*       2: evaluated                                                  */
-;*       3: evaluated uninitialized                                    */
-;*       4: evaluated read-only uninitialized                          */
-;*       5: evaluated read-only                                        */
-;*    The second element is the of the vector is the variable name.    */
-;*    The third is its value.                                          */
+;*    A global is a vector of 5 elements:                              */
+;*      - a the tag whose meaning is:                                  */
+;*         0: compiled read-only                                       */
+;*         1: compiled                                                 */
+;*         2: evaluated                                                */
+;*         3: evaluated uninitialized                                  */
+;*         4: evaluated read-only uninitialized                        */
+;*        5: evaluated read-only                                       */
+;*      - the variable name                                            */
+;*      - the variable value                                           */
+;*      - the variable module                                          */
+;*      - the source location of the first seen occurrence             */
 ;*---------------------------------------------------------------------*/
 (define-inline (eval-global? variable)
    (if (vector? variable)
-       (=fx (vector-length variable) 3)
+       (=fx (vector-length variable) 5)
        #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-global ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-eval-global id)
-   (vector 2 id #unspecified))
+(define-inline (make-eval-global id mod loc)
+   (vector 2 id #unspecified mod loc))
 
 ;*---------------------------------------------------------------------*/
 ;*    bind-eval-global! ...                                            */
@@ -137,7 +141,7 @@
 (define (define-primop! var val)
    (let ((cell (eval-lookup var)))
       (if (not (eval-global? cell))
-	  (bind-eval-global! var (vector 0 var val))
+	  (bind-eval-global! var (vector 0 var val #f #f))
 	  (set-eval-global-value! cell val))))
 
 ;*---------------------------------------------------------------------*/
@@ -146,7 +150,7 @@
 (define (define-primop-ref! var addr)
    (let ((cell (eval-lookup var)))
       (if (not (eval-global? cell))
-	  (bind-eval-global! var (vector 1 var addr))
+	  (bind-eval-global! var (vector 1 var addr #f #f))
 	  ;; MS 14 dec 2005
 	  (begin
 	     (set-eval-global-value! cell addr)
@@ -159,7 +163,7 @@
 ;*    define-assert-primop-ref! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (define-assert-primop-ref! var addr)
-   (bind-assert-eval-global! var (vector 1 var addr)))
+   (bind-assert-eval-global! var (vector 1 var addr #f #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-lookup ...                                                  */
@@ -202,3 +206,16 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (set-eval-global-value! eval-global value)
    (vector-set-ur! eval-global 2 value))
+
+;*---------------------------------------------------------------------*/
+;*    eval-global-module ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (eval-global-module eval-global)
+   (vector-ref-ur eval-global 3))
+
+;*---------------------------------------------------------------------*/
+;*    eval-global-loc ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (eval-global-loc eval-global)
+   (vector-ref-ur eval-global 4))
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sun Feb 13 08:54:44 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 08:12:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -125,7 +125,7 @@
       ((atom ?atom)
        (cond
 	  ((symbol? atom)
-	   (evcompile-ref (variable loc atom env genv) loc lkp))
+	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
 	  ((or (vector? atom)
 	       (struct? atom))
 	   (evcompile-error loc
@@ -149,13 +149,13 @@
 			    args)))
 	  (let ((proc (variable loc fun env genv)))
 	     (evcompile-application fun
-				    (evcompile-ref proc loc lkp)
+				    (evcompile-ref proc genv loc lkp)
 				    actuals
 				    tail
 				    loc))))
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
        (let ((@var (@variable loc id env genv mod)))
-	  (evcompile-ref @var loc lkp)))
+	  (evcompile-ref @var genv loc lkp)))
       ((quote ?cnst)
        (evcompile-cnst cnst (get-location exp loc)))
       ((if ?si ?alors ?sinon)
@@ -212,6 +212,7 @@
 					genv id #f
 					(get-location val loc)
 					lkp #f)
+			     genv
 			     loc)))
 	  ((?- (and (? symbol?) ?var) ?val)
 	   (let ((loc (get-location exp loc)))
@@ -220,6 +221,7 @@
 					genv var #f
 					(get-location val loc)
 					lkp #f)
+			     genv
 			     loc)))
 	  (else
 	   (evcompile-error (get-location exp loc) "set!" "Illegal form" exp))))
@@ -264,7 +266,7 @@
 			      (evcompile-error loc proc msg obj))))
 	     (untyped-scm-formals (untype-ident* scm-formals)))
 	 (evcompile-lambda untyped-scm-formals
-			   (evcompile (make-dsssl-function-prelude
+ 			   (evcompile (make-dsssl-function-prelude
 				       exp
 				       formals
 				       body
@@ -302,7 +304,7 @@
 	     ((symbol? fun)
 	      (let ((proc (variable loc fun env genv)))
 		 (evcompile-application fun
-					(evcompile-ref proc loc lkp)
+					(evcompile-ref proc genv loc lkp)
 					actuals
 					tail
 					loc)))
@@ -323,7 +325,7 @@
 			    args))
 	      (@proc (@variable loc fun env genv mod)))
 	  (evcompile-application fun
-				 (evcompile-ref @proc loc lkp)
+				 (evcompile-ref @proc genv loc lkp)
 				 actuals
 				 tail
 				 loc)))
@@ -356,7 +358,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-ref ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-ref variable loc lkp)
+(define (evcompile-ref variable mod loc lkp)
    (cond
       ((eval-global? variable)
        (if lkp
@@ -368,7 +370,12 @@
 		   (eval-global-name variable)
 		   ($eval-module))))
       ((dynamic? variable)
-       (evcode 7 loc (dynamic-name variable) ($eval-module)))
+       (let ((name (dynamic-name variable)))
+	  (when (evmodule? mod)
+	     (let ((g (make-eval-global name mod loc)))
+		(eval-global-tag-set! g 3)
+		(evmodule-bind-global! mod name g loc)))
+	  (evcode 7 loc name ($eval-module))))
       (else
        (case variable
 	  ((0 1 2 3)
@@ -379,7 +386,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-set ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-set var value loc)
+(define (evcompile-set var value mod loc)
    (cond
       ((eval-global? var)
        (if (or (eq? (eval-global-tag var) 0)
@@ -389,7 +396,12 @@
 			    (eval-global-name var))
 	   (evcode 8 loc var value)))
       ((dynamic? var)
-       (evcode 9 loc (dynamic-name var) value ($eval-module)))
+       (let ((name (dynamic-name var)))
+	  (when (evmodule? mod)
+	     (let ((g (make-eval-global name mod loc)))
+		(eval-global-tag-set! g 3)
+		(evmodule-bind-global! mod name g loc)))
+	  (evcode 9 loc name value ($eval-module))))
       (else
        (case var
 	  ((0 1 2 3)

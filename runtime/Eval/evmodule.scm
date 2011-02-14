@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sun Feb 13 07:08:00 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 08:20:00 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -73,6 +73,7 @@
 	    (evmodule-macro-table ::obj)
 	    (evmodule-extension ::obj)
 	    (evmodule ::pair-nil ::obj)
+	    (evmodule-check-unbound mod loc)
 	    (eval-find-module ::symbol)
 	    (eval-module)
 	    (eval-module-set! ::obj)
@@ -322,6 +323,8 @@
 		(evmodule-export! mod id mod)
 		(eval `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
+	 ((macro . ?-)
+	  #unspecified)
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
@@ -351,10 +354,44 @@
 	  (evmodule-bind-global! to-mod to-ident var loc))))
 
 ;*---------------------------------------------------------------------*/
+;*    evmodule-check-unbound ...                                       */
+;*    -------------------------------------------------------------    */
+;*    Raise an error if a module contains un unbound variable.         */
+;*---------------------------------------------------------------------*/
+(define (evmodule-check-unbound mod loc)
+   (let ((l '()))
+      (define (global-check-unbound k g)
+	 (let ((tag (eval-global-tag g)))
+	    (when (and (eq? (eval-global-module g) mod)
+		       (or (=fx tag 3) (=fx tag 4)))
+	       (set! l (cons g l)))))
+      (hashtable-for-each (%evmodule-env mod) global-check-unbound)
+      (when (pair? l)
+	 (evcompile-error (or (eval-global-loc (car l)) loc)
+			  "eval"
+			  (format "Variable unbound in module \"~a\""
+				  (evmodule-name mod))
+			  (if (pair? (cdr l))
+			      (apply format "~a (~l)"
+				     (map eval-global-name l))
+			      (eval-global-name (car l)))))))
+	  
+;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-load path)
-   ((or (bigloo-load-module) evmodule-loadq) path))
+(define (evmodule-load ident paths loc)
+   (let ((load (or (bigloo-load-module) evmodule-loadq)))
+      (for-each load paths))
+   (let ((mod (eval-find-module ident)))
+      (if (evmodule? mod)
+	  (begin
+	     (evmodule-check-unbound mod loc)
+	     mod)
+	  (evcompile-error loc "eval"
+			   (format "Cannot find module \"~a\"" ident)
+			   (if (pair? (cdr paths))
+			       paths
+			       (car paths))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *loading-list* ...                                               */
@@ -419,20 +456,7 @@
 	     (fprint (current-error-port)
 		     "*** loading module `" ident "' [" path "]..."))
 	  (unwind-protect
-	     (let loop ((path path)
-			(mod2 #f))
-		(if (pair? path)
-		    (begin
-		       (evmodule-load (car path))
-		       (let ((mod2 (eval-find-module ident)))
-			  ($eval-module-set! mod2)
-			  (loop (cdr path) mod2)))
-		    (if (not (evmodule? mod2))
-			(import-error (string-append "Cannot find module `"
-						     (symbol->string ident)
-						     "' in source")
-				      path)
-			(import-module mod2))))
+	     (import-module (evmodule-load ident path loc))
 	     ($eval-module-set! mod))))))
 
 ;*---------------------------------------------------------------------*/
@@ -483,14 +507,9 @@
 	  (when (>fx (bigloo-debug-module) 0)
 	     (fprint (current-error-port)
 		     "*** loading module `" ident "' [" path "]..."))
-	  (for-each evmodule-load path)
-	  (let ((mod2 (eval-find-module ident)))
-	     (if (not (evmodule? mod2))
-		 (from-error (string-append "Cannot find module `"
-					    (symbol->string ident)
-					    "'")
-			     path)
-		 (from-module mod2)))))))
+	  (unwind-protect
+	     (from-module (evmodule-load ident path loc))
+	     ($eval-module-set! mod))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-from ...                                                */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Wed Feb  9 08:09:55 2011 (serrano)                */
+;*    Last change :  Mon Feb 14 08:22:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -83,6 +83,7 @@
 	    (evmodule? __evmodule)
  	    (evmodule-name __evmodule)
  	    (evmodule-extension __evmodule)
+ 	    (evmodule-check-unbound __evmodule)
 	    
 	    (register-eval-srfi! __expander_srfi0)
 	    (register-compile-srfi! __expander_srfi0)
