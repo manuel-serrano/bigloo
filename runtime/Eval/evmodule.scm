@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Feb 14 18:54:14 2011 (serrano)                */
+;*    Last change :  Tue Feb 15 10:12:00 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -389,11 +389,10 @@
 	       (set! l (cons g l)))))
       (hashtable-for-each (%evmodule-env mod) global-check-unbound)
       (when (pair? l)
-	 (if (pair? (cdr l))
-	     (evcompile-error (or (eval-global-loc (car l)) loc)
-			      (evmodule-name mod)
-			      "Unbound variables"
-			      (format "~l" (map eval-global-name l)))))))
+	 (evcompile-error (or (eval-global-loc (car l)) loc)
+			  (evmodule-name mod)
+			  "Unbound variable(s)"
+			  (format "~l" (map eval-global-name l))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */
@@ -423,27 +422,27 @@
 (define (evmodule-loadq file)
    (define (loadq-with-cv path cv)
       (let ((cell (cons path cv)))
-	 (unwind-protect
-	    (begin
-	       (set! *loading-list* (cons cell *loading-list*))
-	       (mutex-unlock! *loadq-mutex*)
-	       (loadq path))
-	    (begin
-	       (mutex-lock! *loadq-mutex*)
-	       (set! *loading-list* (remq! cell *loading-list*))
-	       (condition-variable-signal! cv)
-	       (mutex-unlock! *loadq-mutex*)))))
+         (unwind-protect
+            (begin
+               (set! *loading-list* (cons cell *loading-list*))
+               (mutex-unlock! *loadq-mutex*)
+               (loadq path))
+            (begin
+               (mutex-lock! *loadq-mutex*)
+               (set! *loading-list* (remq! cell *loading-list*))
+               (condition-variable-signal! cv)
+               (mutex-unlock! *loadq-mutex*)))))
    (let ((path (file-name-unix-canonicalize file)))
       (mutex-lock! *loadq-mutex*)
       (let ((c (assoc path *loading-list*)))
-	 ;; is the path currently being loaded
-	 (if (pair? c)
-	     ;; yes it is
-	     (let ((cv (cdr c)))
-		(condition-variable-wait! cv *loadq-mutex*)
-		(loadq-with-cv path cv))
-	     ;; not it is not
-	     (loadq-with-cv path (make-condition-variable (gensym 'loadq)))))))
+         ;; is the path currently being loaded
+         (if (pair? c)
+             ;; yes it is
+             (let ((cv (cdr c)))
+                (condition-variable-wait! cv *loadq-mutex*)
+                (loadq-with-cv path cv))
+             ;; not it is not
+             (loadq-with-cv path (make-condition-variable (gensym 'loadq)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import! ...                                             */

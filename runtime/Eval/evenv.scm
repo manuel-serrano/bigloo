@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Mon Feb 14 07:35:00 2011 (serrano)                */
+;*    Last change :  Tue Feb 15 09:59:52 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -94,7 +94,7 @@
 ;*         2: evaluated                                                */
 ;*         3: evaluated uninitialized                                  */
 ;*         4: evaluated read-only uninitialized                        */
-;*        5: evaluated read-only                                       */
+;*         5: evaluated read-only                                      */
 ;*      - the variable name                                            */
 ;*      - the variable value                                           */
 ;*      - the variable module                                          */

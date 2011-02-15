@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Mon Feb 14 07:37:34 2011 (serrano)                */
+;*    Last change :  Tue Feb 15 11:04:15 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -293,18 +293,24 @@
 		      (case (eval-global-tag v)
 			 ((0)
 			  (everror (evcode-loc code) "eval"
-				   "compiled read-only variable cannot be redefined"
+				   "Compiled read-only variable cannot be redefined"
 				   var))
 			 ((1)
 			  (evwarning (evcode-loc code) "eval"
 				     "\nRedefinition of compiled variable -- "
 				     var)
 			  (update-eval-global! code v (evmeaning val '() denv)))
-			 ((2 3 4)
+			 ((2)
 			  (update-eval-global! code v (evmeaning val '() denv)))
+			 ((3)
+			  (update-eval-global! code v (evmeaning val '() denv))
+			  (eval-global-tag-set! v 2))
+			 ((4)
+			  (update-eval-global! code v (evmeaning val '() denv))
+			  (eval-global-tag-set! v 5))
 			 (else
 			  (everror (evcode-loc code) "eval"
-				   "compiled read-only variable cannot be redefined"
+				   "Read-only variable cannot be redefined"
 				   var)))
 		      (let* ((loc (evcode-loc code))
 			     (g (make-eval-global var (eval-module) loc)))
@@ -933,11 +939,9 @@
       ((2)
        (set-eval-global-value! var val))
       ((3)
-       (set-eval-global-value! var val)
-       (eval-global-tag-set! var 2))
+       (set-eval-global-value! var val))
       ((4)
-       (set-eval-global-value! var val)
-       (eval-global-tag-set! var 5))
+       (set-eval-global-value! var val))
       ((5)
        (everror (evcode-loc code) "set!" "read-only variable" (eval-global-name var)))))
 

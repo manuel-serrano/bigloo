@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Mon Feb 14 18:56:56 2011 (serrano)                */
+;*    Last change :  Tue Feb 15 11:04:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -131,8 +131,8 @@
 ;*    module is initialized, the type of the variable must not         */
 ;*    allow the compiler to remove the test from EVAL!.                */
 ;*---------------------------------------------------------------------*/
-;;(define default-evaluate::obj byte-code-evaluate)
-(define default-evaluate::obj evaluate2)
+(define default-evaluate::obj byte-code-evaluate)
+;;(define default-evaluate::obj evaluate2)
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-evaluate-set! ...                                           */
@@ -309,7 +309,7 @@
 	 (evread (lambda ()
 		    ((get-eval-reader) (current-input-port)))))
       (unwind-protect
-	 (let loop ()
+	 (let loop ((mod (eval-module)))
 	    (bind-exit (re-enter-internal-repl)
 	       ;; we setup ^C interupt
 	       (letrec ((intrhdl (lambda (n)
@@ -322,26 +322,30 @@
 		  (signal sigint intrhdl))
 	       ;; and we loop until eof
 	       (newline)
-	       (let luup ()
+	       (let luup ((mod mod))
 		  (with-handler
 		     (lambda (e)
 			(error-notify e)
 			(when (eof-object? (&error-obj e))
 			   (reset-eof (current-input-port)))
 			(sigsetmask 0)
-			(luup))
-		     (let liip ()
+			(luup mod))
+		     (let liip ((mod mod))
 			(*prompt* *repl-num*)
 			(let ((exp (evread)))
 			   (if (eof-object? exp)
 			       (quit)
-			       (let ((v (eval exp)))
+			       (let* ((v (eval exp))
+				      (nmod (eval-module)))
+				  (when (and (not (eq? nmod mod))
+					     (evmodule? mod))
+				     (evmodule-check-unbound mod #f))
 				  (if (not (eq? *transcript* (current-output-port)))
 				      (fprint *transcript* ";; " exp))
 				  (*repl-printer* v *transcript*)
 				  (newline *transcript*)
-				  (liip))))))))
-	    (loop))
+				  (liip (or nmod mod)))))))))
+	    (loop mod))
 	 (if (procedure? old-intrhdl)
 	     (signal sigint old-intrhdl)
 	     (signal sigint (lambda (n) (exit 0)))))))
@@ -440,7 +444,7 @@
 ;*    The C code generation imposes the variable traceid not to        */
 ;*    be inlined.                                                      */
 ;*---------------------------------------------------------------------*/
-(define (loadv file-name v? env traceid::symbol)
+(define (loadv filename v? env traceid::symbol)
    
    (define (evalv! sexp env)
       (let ((v (eval! sexp env)))
@@ -448,7 +452,7 @@
 	    (display-circle v)
 	    (newline))))
    
-   (let* ((path (find-file file-name))
+   (let* ((path (find-file filename))
 	  (port (open-input-file path))
 	  (evread (get-eval-reader))
 	  (mod ($eval-module))
@@ -490,6 +494,8 @@
 						(list '(command-line))
 						loc)))
 				(eval! iexp env)))
+			  (when (and (not (eq? mod env)) (evmodule? env))
+			     (evmodule-check-unbound env #f))
 			  ($env-pop-trace denv)
 			  path)
 			 (else
@@ -497,11 +503,8 @@
 			     ($env-set-trace-location denv (cer sexp)))
 			  (evalv! sexp env)
 			  (loop (evread port)))))))
-	     (let ((cmod ($eval-module)))
-		(unless (eq? cmod mod)
-		   (evmodule-check-unbound cmod #f)
-		   ($eval-module-set! mod))))
-	  (error "load" "Can't open file" file-name))))
+	     ($eval-module-set! mod))
+	  (error "load" "Can't open file" filename))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evexpand-error ...                                               */
