@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Fri Nov 26 18:59:04 2010 (serrano)                */
+;*    Last change :  Fri Feb 18 15:02:17 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -43,6 +43,7 @@
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_characters_6_6
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Feb  8 20:12:48 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 15:17:20 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -175,6 +175,7 @@
 	    __r4_vectors_6_8
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1
 	    __r4_pairs_and_lists_6_3

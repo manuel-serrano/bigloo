@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Nov  5 12:27:57 2010 (serrano)                */
-#*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Feb 18 16:12:50 2011 (serrano)                */
+#*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -203,7 +203,7 @@ CS_CSLIB	= $(CSLIB:%=CSlib/%.cs)
 #*---------------------------------------------------------------------*/
 IEEE  		= boolean equiv pairlist char string control number \
                   fixnum flonum port vector symbol input output \
-                  control5
+                  control5 dtoa
 
 SCM_IEEE	= $(IEEE:%=Ieee/%.scm)
 C_SCM_IEEE	= $(IEEE:%=Ieee/%.c)

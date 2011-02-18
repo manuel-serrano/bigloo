@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Feb  9 10:53:32 2011 (serrano)                */
+/*    Last change :  Fri Feb 18 16:32:12 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -52,6 +52,7 @@ extern "C" {
 #  include <unistd.h>
 #endif
 #include <signal.h>
+#include <string.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -2113,10 +2114,47 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define ODDP_FX( x )  ( x & 0x1 )
 #define EVENP_FX( x ) (!ODDP_FX( x ))
 
-#define DOUBLE_TO_LLONG_BITS(dd) (((union { double d; BGL_LONGLONG_T l; }) dd).l)
-#define LLONG_BITS_TO_DOUBLE(ll) (((union { double d; BGL_LONGLONG_T l; }) ll).d)
-#define FLOAT_TO_INT_BITS(ff) (((union { float f; int i; }) ff).i)
-#define INT_BITS_TO_FLOAT(ii) (((union { float f; int i; }) ii).f)
+#define __DOUBLE_TO_LLONG_BITS( dd ) \
+  double ddd = dd; \
+  BGL_LONGLONG_T result; \
+  memcpy( &result, &ddd, sizeof( result ) ); \
+  result;
+
+#define __LLONG_BITS_TO_DOUBLE( ll ) \
+  BGL_LONGLONG_T lll = ll; \
+  double result; \
+  memcpy( &result, &lll, sizeof( result ) ); \
+  result;
+
+/* If ints are bigger than floats (which can happen on 64bit machines) */
+/* then * we only want to set the least significant bytes of the int.  */
+#define __FLOAT_TO_INT_BITS( ff ) \
+  float fff = ff; \
+  int result = 0; \
+  int offset = sizeof( int ) - sizeof( float ); \
+  memcpy( ((char*)&result) + offset, &fff, sizeof( float ) ); \
+  result;
+
+/* If ints are bigger than floats (which can happen on 64bit machines) */
+/* then we only want to set the least significant bytes of the int.    */
+#define __INT_BITS_TO_FLOAT( ii ) \
+  int iii = ii; \
+  float result; \
+  int offset = sizeof( int ) - sizeof( float ); \
+  memcpy( &result, ((char*)&iii) + offset, sizeof( float ) ); \
+  result;
+
+#if( defined( __GNUC__ ) )
+#  define DOUBLE_TO_LLONG_BITS( dd ) ( { __DOUBLE_TO_LLONG_BITS( dd ) } )
+#  define LLONG_BITS_TO_DOUBLE( ll ) ( { __LLONG_BITS_TO_DOUBLE( ll ) } )
+#  define FLOAT_TO_INT_BITS( ff ) ( { __FLOAT_TO_INT_BITS( ff ) } )
+#  define INT_BITS_TO_FLOAT( ii ) ( { __INT_BITS_TO_FLOAT( ii ) } )
+#else
+BGL_RUNTIME_DECL BGL_LONGLONG_T DOUBLE_TO_LLONG_BITS( double );
+BGL_RUNTIME_DECL double LLONG_BITS_TO_DOUBLE( BGL_LONGLONG_T );
+BGL_RUNTIME_DECL int FLOAT_TO_INT_BITS( float );
+BGL_RUNTIME_DECL float INT_BITS_TO_FLOAT( int );
+#endif
 
 #if BGL_ISOC99 || defined( __USE_ISOC99 )
 #  define BGL_SIGNBIT( a ) signbit( a ) 

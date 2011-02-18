@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Sep  7 21:13:38 2010 (serrano)                */
+;*    Last change :  Fri Feb 18 15:16:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __r4_control_features_6_9
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_equivalence_6_2
 	    __r4_characters_6_6
 	    __r4_vectors_6_8

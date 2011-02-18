@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Feb 18 07:48:44 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 15:03:52 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -54,6 +54,7 @@
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_characters_6_6
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1

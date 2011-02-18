@@ -2390,17 +2390,6 @@ namespace bigloo
 	    return elong_to_string( n, radix );
 	 }
 
-      public static byte[] real_to_string( double n )
-	 {
-	    if ( isnan(n) ) return getbytes( "+nan.0" );
-	    if ( isinf(n) )
-	        if ( n < 0.0 )
-		    return getbytes( "-inf.0" );
-		else
-		    return getbytes( "+inf.0" );
-	    return getbytes( n.ToString( "F" ) );
-	 }
-
       public static double strtod( byte[] s, int i )
 	 {
 	    int len = s.Length;

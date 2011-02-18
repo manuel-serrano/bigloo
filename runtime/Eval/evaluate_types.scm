@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evalute_types.scm       */
+;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_types.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:37:05 2011                          */
-;*    Last change :                                                    */
+;*    Last change :  Fri Feb 18 15:08:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Private types of the lambda-based evaluator                      */
@@ -33,6 +33,7 @@
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_characters_6_6
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1

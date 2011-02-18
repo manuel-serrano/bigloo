@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Sun May 30 07:58:22 2010 (serrano)                */
-;*    Copyright   :  2005-10 Chris Veness                              */
+;*    Last change :  Fri Feb 18 15:14:47 2011 (serrano)                */
+;*    Copyright   :  2005-11 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -26,6 +26,7 @@
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum
+	   __r4_numbers_6_5_flonum_dtoa
 	   __r4_booleans_6_1
 	   __r4_symbols_6_4
 	   __r4_vectors_6_8

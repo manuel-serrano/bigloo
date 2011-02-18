@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Tue Jan 18 11:33:59 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 15:45:58 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 (module __r4_numbers_6_5_flonum
    
    (import  __error
-	    __param)
+	    __param
+	    __r4_numbers_6_5_flonum_dtoa)
    
    (use     __type
 	    __bigloo
@@ -64,7 +65,6 @@
 	    (macro c-isfinite::bool (::double) "BGL_IS_FINITE")
 	    (macro c-isinf::bool (::double) "BGL_IS_INF")
 	    (macro c-isnan::bool (::double) "BGL_IS_NAN")
-	    (c-real->string::bstring (::double) "real_to_string")
 	    (%ieee-string->double::double (::bstring)
 					  "bgl_ieee_string_to_double")
 	    (%double->ieee-string::bstring (::double)
@@ -147,8 +147,6 @@
 		       "isinf")
 	       (method static c-isnan::bool (::double)
 		       "isnan")
-	       (method static c-real->string::bstring (::double)
-		       "real_to_string")
 	       (method static %ieee-string->double::double (::bstring)
 		       "bgl_ieee_string_to_double")
 	       (method static %double->ieee-string::bstring (::double)
@@ -213,7 +211,6 @@
 	    (inline evenfl?::bool ::double)
 	    (inline oddfl?::bool ::double)
 	    (inline string->real::double ::string)
-	    (inline real->string::bstring ::real)
 	    (inline ieee-string->real::real ::bstring)
 	    (inline real->ieee-string::bstring ::real)
 	    (inline ieee-string->double::double ::bstring)
@@ -619,12 +616,6 @@
        (strtod string 0))))
 
 ;*---------------------------------------------------------------------*/
-;*    real->string ...                                                 */
-;*---------------------------------------------------------------------*/
-(define-inline (real->string real)
-   (c-real->string real))
-
-;*---------------------------------------------------------------------*/
 ;*    ieee-string->real ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (ieee-string->real string)
@@ -664,26 +655,22 @@
 ;*    double->llong-bits ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (double->llong-bits::llong n::double)
-   (let ((tmp n))
-      (%double->llong-bits tmp)))
+   (%double->llong-bits n))
 
 ;*---------------------------------------------------------------------*/
 ;*    llong-bits->double ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (llong-bits->double::double n::llong)
-   (let ((tmp n))
-      (%llong-bits->double tmp)))
+   (%llong-bits->double n))
 
 ;*---------------------------------------------------------------------*/
 ;*    float->int-bits ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (float->int-bits::int n::float)
-   (let ((tmp n))
-      (%float->int-bits tmp)))
+   (%float->int-bits n))
 
 ;*---------------------------------------------------------------------*/
 ;*    int-bits->float ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (int-bits->float::float n::int)
-   (let ((tmp n))
-      (%int-bits->float tmp)))
+   (%int-bits->float n))

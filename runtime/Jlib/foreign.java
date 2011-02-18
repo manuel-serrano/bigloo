@@ -2099,17 +2099,6 @@ public final class foreign
 	 return Long.toString(n, radix).getBytes();
       }
 
-   public static byte[] real_to_string(double n)
-      {
-	 if ( isnan(n) ) return "+nan.0".getBytes();
-	 if ( isinf(n) )
-	    if ( n < 0.0 )
-	       return "-inf.0".getBytes();
-	    else
-	       return "+inf.0".getBytes();
-	 return Double.toString(n).getBytes();
-      }
-
    public static double strtod(byte[]s, int i)
       {
 	 // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Sun Jan 23 07:10:36 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 15:03:14 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -45,6 +45,7 @@
             __r4_numbers_6_5
             __r4_numbers_6_5_fixnum
             __r4_numbers_6_5_flonum
+            __r4_numbers_6_5_flonum_dtoa
             __r4_characters_6_6
             __r4_equivalence_6_2
             __r4_booleans_6_1

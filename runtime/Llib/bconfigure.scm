@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Mon Aug 30 14:37:33 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Fri Feb 18 14:56:23 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -32,6 +32,7 @@
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1
 	    __r4_pairs_and_lists_6_3

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Wed Apr  7 14:19:18 2010 (serrano)                */
+/*    Last change :  Fri Feb 18 15:30:08 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -15,9 +15,9 @@
 /*---------------------------------------------------------------------*/
 extern bool_t ucs2_lower( ucs2_t );
 extern obj_t integer_to_string();
-extern char *real_to_string();
 extern obj_t make_string();
 extern ucs2_t ucs2_tolower( ucs2_t );
+extern obj_t bgl_real_to_string( double );
 
 /*---------------------------------------------------------------------*/
 /*    ucs2_string_t                                                    */
@@ -197,7 +197,7 @@ integer_to_ucs2_string( long x, long radix ) {
 /*---------------------------------------------------------------------*/
 obj_t
 real_to_ucs2_string( double x ) {
-   return string_to_ucs2_string( BSTRING_TO_STRING( real_to_string( x ) ) );
+   return string_to_ucs2_string( BSTRING_TO_STRING( bgl_real_to_string( x ) ) );
 }
 
 /*---------------------------------------------------------------------*/

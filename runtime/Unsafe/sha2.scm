@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Wed Aug 25 18:59:07 2010 (serrano)                */
-;*    Copyright   :  2008-10 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Fri Feb 18 15:13:46 2011 (serrano)                */
+;*    Copyright   :  2008-11 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -60,6 +60,7 @@
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum
+	   __r4_numbers_6_5_flonum_dtoa
 	   __r4_booleans_6_1
 	   __r4_symbols_6_4
 	   __r4_vectors_6_8

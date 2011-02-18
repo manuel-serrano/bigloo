@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Jan 25 10:37:28 2011 (serrano)                */
+/*    Last change :  Fri Feb 18 15:58:22 2011 (serrano)                */
 /*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -427,3 +427,34 @@ bgl_getpwuid( uid_t uid ) {
    return BFALSE;
 #endif   
 }
+
+/*---------------------------------------------------------------------*/
+/*    bits conversions (see bigloo.h for GCC versions).                */
+/*---------------------------------------------------------------------*/
+#if( !defined( __GNUC__ ) )
+
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+DOUBLE_TO_LLONG_BITS( double dd ) {
+   __DOUBLE_TO_LLONG_BITS( dd );
+   return result;
+}
+
+BGL_RUNTIME_DEF double
+LLONG_BITS_TO_DOUBLE( BGL_LONGLONG_T ll ) {
+   __LLONG_BITS_TO_DOUBLE( ll );
+   return result;
+}
+
+BGL_RUNTIME_DEF int
+FLOAT_TO_INT_BITS( float f ) {
+   __FLOAT_TO_INT_BITS( f );
+   return result;
+}
+
+BGL_RUNTIME_DEF float
+INT_BITS_TO_FLOAT( int i ) {
+   __INT_BITS_TO_FLOAT( i );
+   return result;
+}
+
+#endif

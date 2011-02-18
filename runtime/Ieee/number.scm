@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Dec 29 17:56:19 2010 (serrano)                */
+;*    Last change :  Fri Feb 18 14:50:49 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -30,6 +30,7 @@
 	    __r4_pairs_and_lists_6_3
 	    __r4_vectors_6_8
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r5_control_features_6_4

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:12:21 1993                          */
-;*    Last change :  Sat Apr 24 06:48:59 2010 (serrano)                */
+;*    Last change :  Fri Feb 18 15:04:12 2011 (serrano)                */
 ;*                                                                     */
 ;*    Les expanseurs des formes booleenes.                             */
 ;*---------------------------------------------------------------------*/
@@ -27,6 +27,7 @@
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_characters_6_6
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1

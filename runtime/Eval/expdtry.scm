@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Tue Mar 11 15:48:42 2008 (serrano)                */
+;*    Last change :  Fri Feb 18 15:04:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Try form expansion                                               */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5_flonum_dtoa
 	    __r4_characters_6_6
 	    __r4_equivalence_6_2
 	    __r4_booleans_6_1

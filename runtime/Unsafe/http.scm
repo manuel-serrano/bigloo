@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Thu Oct  7 09:19:07 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Fri Feb 18 15:15:12 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum
+	   __r4_numbers_6_5_flonum_dtoa
 	   __r4_booleans_6_1
 	   __r4_symbols_6_4
 	   __r4_vectors_6_8

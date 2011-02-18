@@ -91,10 +91,19 @@
    (test "inf.4" (>fl +inf.0 -inf.0) #t)
    (test "inf.5" +inf.0 (/ 1 .0))
 
-   (test "llong-bits.1" (llong-bits->double (double->llong-bits 3.1415)) 3.1415)
+   ;; Some platforms don't use the same endianess for doubles and integers.
+   ;; If the following test fails we need to modify the DOUBLE_TO_LLONG_BITS
+   ;; (and similar) macros to modify the order of the bytes for this platform.
+   ;; TODO: enable test, once Bigloo's double printing is fixed.
+   ; (test "llong-bits.0"
+   ; 	 (double->llong-bits 5.626349274901198e-221)
+   ; 	 #lx123456789ABCDEF0)
+   (test "llong-bits.1"
+	 (llong-bits->double (double->llong-bits 3.1415))
+	 3.1415)
    (test "llong-bits.2" (double->llong-bits 1.0) #lx3ff0000000000000)
    (test "llong-bits.3" (double->llong-bits +inf.0) #lx7ff0000000000000)
+   (test "int-bits.0" (float->int-bits 5.6904566139035e-28) #x12345678)
    (test "int-bits.1" (int-bits->float (float->int-bits 3.1415)) 3.1415)
    (test "int-bits.2" (float->int-bits 1.0) (bit-lsh #x3f80 16))
    (test "int-bits.3" (float->int-bits +inf.0) (bit-lsh #x7f80 16)))
-

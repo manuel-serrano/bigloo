@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Thu Oct  7 09:18:58 2010 (serrano)                */
-;*    Copyright   :  2010 Cyprien Nicolas, Manuel Serrano              */
+;*    Last change :  Fri Feb 18 15:15:28 2011 (serrano)                */
+;*    Copyright   :  2010-11 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
 ;*=====================================================================*/
@@ -28,6 +28,7 @@
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum
+	   __r4_numbers_6_5_flonum_dtoa
 	   __r4_booleans_6_1
 	   __r4_symbols_6_4
 	   __r4_vectors_6_8
