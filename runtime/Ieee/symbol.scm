@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Fri Feb 18 15:16:26 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 16:51:13 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -39,22 +39,22 @@
 
 	    __evenv)
 
-   (extern  (macro c-symbol?::bool            (::obj)       "SYMBOLP")
-	    (c-string->symbol::symbol         (::string)    "string_to_symbol")
-	    (c-bstring->symbol::symbol        (::bstring)   "bstring_to_symbol")
-	    ($gensym::symbol                  (::obj)       "bgl_gensym")
-	    (macro c-symbol->string::bstring  (::obj)       "SYMBOL_TO_STRING")
-	    (macro c-symbol-plist::obj        (::obj)       "GET_SYMBOL_PLIST")
-	    (macro set-symbol-plist::obj      (::obj ::obj) "SET_SYMBOL_PLIST")
-	    (symbol-exists?::bool             (::string)    "symbol_exists_p")
+   (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
+	    (c-string->symbol::symbol (::string) "string_to_symbol")
+	    (c-bstring->symbol::symbol (::bstring) "bstring_to_symbol")
+	    ($gensym::symbol (::obj) "bgl_gensym")
+	    (macro c-symbol->string::bstring (::obj) "SYMBOL_TO_STRING")
+	    (macro c-symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
+	    (macro set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
+	    (symbol-exists?::bool (::string) "symbol_exists_p")
 	    
-            (macro c-keyword?::bool           (::obj)      "KEYWORDP")
-	    (c-string->keyword::keyword       (::string)   "string_to_keyword")
-	    (c-bstring->keyword::keyword      (::bstring)  "bstring_to_keyword")
-	    (macro c-keyword->string::bstring (::keyword)  "KEYWORD_TO_STRING")
-	    (macro c-keyword-plist::obj       (::obj)       "GET_KEYWORD_PLIST")
-	    (macro set-keyword-plist::obj     (::obj ::obj) "SET_KEYWORD_PLIST")
-	    (macro cnst->integer::long        (::obj)      "CCNST"))
+            (macro c-keyword?::bool (::obj) "KEYWORDP")
+	    (c-string->keyword::keyword (::string) "string_to_keyword")
+	    (c-bstring->keyword::keyword (::bstring) "bstring_to_keyword")
+	    (macro c-keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
+	    (macro c-keyword-plist::obj (::obj) "GET_KEYWORD_PLIST")
+	    (macro set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
+	    (macro cnst->integer::long (::obj) "CCNST"))
    
    (java    (class foreign
 	       (method static c-symbol?::bool (::obj)
