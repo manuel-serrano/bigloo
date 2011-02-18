@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Feb 14 07:37:43 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 09:00:13 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -326,7 +326,13 @@
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
 			(unless slot (everror loc "eval" "Unbound variable" name)) )
-		     (eval-global-value slot) ))))))
+		     (let ( (v (eval-global-value slot)) )
+			(if (eq? v #unspecified)
+			    (let ( (t (eval-global-tag slot)) )
+			       (if (or (=fx t 3) (=fx t 4))
+				   (everror loc "eval" "Uninitialized variable" name)
+				   v ))
+			    v ))))))))
 
 (define-method (comp e::ev_setglobal stk);
    (with-access::ev_setglobal e (name mod e loc)

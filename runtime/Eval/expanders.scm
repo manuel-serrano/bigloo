@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Wed Feb  9 07:19:26 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 07:48:44 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -434,10 +434,10 @@
    (match-case x
       ((if ?si ?alors ?sinon)
        (let ((nx (make-if (expand-test si e) (e alors e) (e sinon e))))
-	  (evepairify nx x)))
+	  (evepairify-deep nx x)))
       ((if ?si ?alors)
        (let ((nx (make-if (expand-test si e) (e alors e) #f)))
-	  (evepairify nx x)))
+	  (evepairify-deep nx x)))
       (else
        (expand-error "if" "Illegal form" x))))
 

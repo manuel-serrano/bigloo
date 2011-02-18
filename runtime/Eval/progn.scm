@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:07:31 1994                          */
-;*    Last change :  Fri Oct 22 16:20:55 2010 (serrano)                */
+;*    Last change :  Fri Feb 18 07:53:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La normalisation des formes `begin'                              */
 ;*=====================================================================*/
@@ -45,6 +45,7 @@
    
    (export  (evepairify::obj ::obj ::obj)
 	    (evepairify*::obj ::obj ::obj)
+	    (evepairify-deep::obj ::obj ::obj)
 	    (expand-progn ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -98,6 +99,22 @@
 		 obj)
 		(else
 		 (econs (loop (car obj)) (loop (cdr obj)) e)))))))
+
+;*---------------------------------------------------------------------*/
+;*    evepairify-deep ...                                              */
+;*---------------------------------------------------------------------*/
+(define (evepairify-deep pair epair)
+   (cond
+      ((not (epair? epair))
+       pair)
+      ((not (pair? pair))
+       pair)
+      ((epair? pair)
+       pair)
+      (else
+       (econs (evepairify-deep (car pair) (car epair))
+	      (evepairify-deep (cdr pair) (cdr epair))
+	      (cer epair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-progn ...                                                 */

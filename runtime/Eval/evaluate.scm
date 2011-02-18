@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sat Feb 12 07:18:06 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 07:59:00 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -115,6 +115,14 @@
    (or (get-source-location exp) loc))
 
 ;*---------------------------------------------------------------------*/
+;*    get-location3 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (get-location3 exp lst loc)
+   (or (get-source-location exp)
+       (get-source-location lst)
+       loc))
+
+;*---------------------------------------------------------------------*/
 ;*    convert ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (convert e globals loc)
@@ -155,11 +163,25 @@
 ;*---------------------------------------------------------------------*/
 (define (conv e locals globals tail? where loc top?)
    
+   (define (rconv/loc e loc)
+      (conv e locals globals tail? where loc #f))
+   
    (define (rconv e)
-      (conv e locals globals tail? where (get-location e loc) #f))
+      (rconv/loc e (get-location e loc)))
+   
+   (define (uconv/loc e loc)
+      (conv e locals globals #f where loc #f))
    
    (define (uconv e)
-      (conv e locals globals #f where (get-location e loc) #f))
+      (uconv/loc e (get-location e loc)))
+   
+   (define (uconv* es)
+      (let loop ((es es))
+	 (if (null? es)
+	     '()
+	     (let ((e (car es)))
+		(cons (conv e locals globals #f where (get-location3 e es loc) #f)
+		      (loop (cdr es)))))))
    
    (define (conv-lambda formals body where)
       
@@ -215,7 +237,7 @@
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
 	. ?args)
-       (let ( (fun (uconv fun)) (args (map uconv args)) )
+       (let ( (fun (uconv fun)) (args (uconv* args)) )
 	  (instantiate::ev_app
 	     (loc loc)
 	     (fun fun)
@@ -227,17 +249,17 @@
       ((quote ?v)
        (instantiate::ev_litt
 	  (value v)) )
-      ((if ?p ?t ?e)
+      ((if ?p ?t ?o)
        (instantiate::ev_if
-	  (p (uconv p))
-	  (t (rconv t))
-	  (e (rconv e))) )
+	  (p (uconv/loc p (get-location (cdr e) loc)))
+	  (t (rconv/loc t (get-location (cddr e) loc)))
+	  (e (rconv/loc o (get-location (cdddr e) loc)))) )
       (((kwote or) . ?args)
        (instantiate::ev_or
-	  (args (map uconv args))) )
+	  (args (uconv* args))) )
       (((kwote and) . ?args)
        (instantiate::ev_and
-	  (args (map uconv args))) )
+	  (args (uconv* args))) )
       ((begin . ?l)
        (conv-begin l locals globals tail? where loc top?) )
       ((let ?binds . ?body)
@@ -323,7 +345,7 @@
       ((lambda ?formals ?body)
        (conv-lambda formals body 'nowhere) )
       ((?f . ?args)
-       (let ( (fun (uconv f)) (args (map uconv args)) )
+       (let ( (fun (uconv f)) (args (uconv* args)) )
 	  (instantiate::ev_app
 	     (loc loc)
 	     (fun fun)

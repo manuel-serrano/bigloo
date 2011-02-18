@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Tue Feb 15 11:04:15 2011 (serrano)                */
+;*    Last change :  Fri Feb 18 08:58:06 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -176,6 +176,12 @@
 	    name))
 
 ;*---------------------------------------------------------------------*/
+;*    evmeaning-uninitialized ...                                      */
+;*---------------------------------------------------------------------*/
+(define (evmeaning-uninitialized loc name)
+   (everror loc "eval" "Uninitialized variable" name))
+
+;*---------------------------------------------------------------------*/
 ;*    evmeaning ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (evmeaning code stack denv)
@@ -211,8 +217,16 @@
 	    (__evmeaning_address-ref
 	     (eval-global-value (evcode-ref code 0))))
 	   ((6)
-	    ;; non mutable global variable
-	    (eval-global-value (evcode-ref code 0)))
+	    ;; global variable
+	    (let* ((g (evcode-ref code 0))
+		   (val (eval-global-value g)))
+	       (if (eq? val #unspecified)
+		   (let ((tag (eval-global-tag g)))
+		      (if (or (=fx tag 3) (=fx tag 4))
+			  (evmeaning-uninitialized
+			   (evcode-loc code) (eval-global-name g))
+			  val))
+		   val)))
 	   ((bounce (code stack denv) (7))
 	    ;; dynamic global variable
 	    (let* ((name (evcode-ref code 0))
