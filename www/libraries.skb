@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct  8 05:11:58 2001                          */
-;*    Last change :  Tue Dec  1 15:36:01 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Fri Feb 18 18:58:35 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo libraries                                                 */
 ;*=====================================================================*/
@@ -87,7 +87,19 @@ build a library. In addition check the libraries presented below.
 	 "http://www-sop.inria.fr/indes/rp/Senior/"
 	 "Reactive programming with Bigloo"
 	 "J. Demaria"
-	 "2.2b"))])
+	 "2.2b")
+    ;; FastCGI
+    (lib "FastCGI"
+	 "https://github.com/donaldsonjw/fastcgi"
+	 "FactCGI interface"
+	 "J. Donaldson"
+	 "3.5a")
+    ;; pthread-extra
+    (lib "pthread-extra"
+	 "https://github.com/donaldsonjw/pthread-extra"
+	 "High level facilities for multi-threadding"
+	 "J. Donaldson"
+	 "3.5a"))])
 
  (section :title "Available SRFI libraries" :number #f :toc #f [
 ,(table
