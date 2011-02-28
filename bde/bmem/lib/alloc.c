@@ -109,7 +109,7 @@ alloc_dump_type( pa_pair_t *i, FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 alloc_dump( fun_alloc_info_t *i, FILE *f ) {
-   fprintf( f, "      (%d %d %d\n", i->gc_num,
+   fprintf( f, "      (%lu %lu %lu\n", i->gc_num,
 	    BMEMSIZE( i->dsize ), BMEMSIZE( i->isize ) );
    fprintf( f, "        (dtype" );
    for_each( (void (*)(void *, void *))alloc_dump_type, i->dtypes, f );
@@ -486,7 +486,7 @@ GC_malloc( size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_malloc(%d): %s %d\n",
+      fprintf( stderr, "GC_malloc(%zu): %s %d\n",
 	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
    }
 #endif
@@ -513,7 +513,7 @@ GC_realloc( obj_t old, size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_realloc(%d): top=%s type=%d\n",
+      fprintf( stderr, "GC_realloc(%zu): top=%s type=%d\n",
 	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
    }
 #endif
@@ -541,7 +541,7 @@ GC_malloc_atomic( size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_malloc_atomic(%d): top=%s type=%d\n",
+      fprintf( stderr, "GC_malloc_atomic(%zu): top=%s type=%d\n",
 	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
    }
 #endif
@@ -623,7 +623,7 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
 			       hash, def,
 			       constructor, virt );
 
-   fprintf( stderr, "ok\n", cname );
+   fprintf( stderr, "ok\n" );
 
    return class;
 }

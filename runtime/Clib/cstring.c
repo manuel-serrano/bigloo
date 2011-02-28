@@ -293,23 +293,23 @@ integer_to_string_padding( long x, long padding, long radix ) {
 
       case 8 :
 	 if( x < 0 ) {
-	    sprintf( fmt, "-%%0%dlo", padding - 1 );
+	    sprintf( fmt, "-%%0%ldlo", padding - 1 );
 	 } else {
-	    sprintf( fmt, "%%0%dlo", padding );
+	    sprintf( fmt, "%%0%ldlo", padding );
 	 }
 	 break;
       case 16 :
 	 if( x < 0 ) {
-	    sprintf( fmt, "-%%0%dlx", padding - 1);
+	    sprintf( fmt, "-%%0%ldlx", padding - 1);
 	 } else {
-	    sprintf( fmt, "%%0%dlx", padding );
+	    sprintf( fmt, "%%0%ldlx", padding );
 	 }
 	 break;
       default :
 	 if( x < 0 ) {
-	    sprintf( fmt, "-%%0%dld", padding - 1 );
+	    sprintf( fmt, "-%%0%ldld", padding - 1 );
 	 } else {
-	    sprintf( fmt, "%%0%dld", padding );
+	    sprintf( fmt, "%%0%ldld", padding );
 	 }
 	 break;
    }

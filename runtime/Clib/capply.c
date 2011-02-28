@@ -627,7 +627,7 @@ obj_t apply( obj_t function, obj_t args_list ) {
 	 default: {
 	    char msg[ 128 ];
 	    sprintf( msg,
-		     "too many arguments provided (%d) in apply (max 50)",
+		     "too many arguments provided (%ld) in apply (max 50)",
 		     -arity );
 	    
 	    C_SYSTEM_FAILURE( BGL_ERROR, "apply", msg, function );
@@ -1229,7 +1229,7 @@ obj_t apply( obj_t function, obj_t args_list ) {
          default: {
 	    char msg[ 128 ];
 	    sprintf( msg,
-		     "too many arguments provided (%d) in apply (max 50)",
+		     "too many arguments provided (%ld) in apply (max 50)",
 		     arity );
 	    
 	    C_SYSTEM_FAILURE( BGL_ERROR, "apply", msg, function );

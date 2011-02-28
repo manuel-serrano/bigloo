@@ -50,9 +50,9 @@ bglthread_switch( void *this, void *next ) {
 void
 thread_dump_statistics( FILE *f ) {
    if( context_switches || scheduler_awake ) {
-      fprintf( f, "  (thread (context-switches %d) (scheduler-awake %d))\n",
+      fprintf( f, "  (thread (context-switches %ld) (scheduler-awake %ld))\n",
 	       context_switches, scheduler_awake );
-      fprintf( stderr, "thread...(context switches=%d, scheduler awake=%d)\n",
+      fprintf( stderr, "thread...(context switches=%ld, scheduler awake=%ld)\n",
 	       context_switches,
 	       scheduler_awake );
    }

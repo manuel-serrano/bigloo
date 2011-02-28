@@ -200,9 +200,9 @@ bgl_procedure_entry_to_string( obj_t proc ) {
    obj_t res = make_string_sans_fill( 17 );
    
    if( VA_PROCEDUREP( proc ) ) {
-      sprintf( BSTRING_TO_STRING( res ), "%016x", PROCEDURE_VA_ENTRY( proc ) );
+      sprintf( BSTRING_TO_STRING( res ), "%016lx", (long)PROCEDURE_VA_ENTRY( proc ) );
    } else {
-      sprintf( BSTRING_TO_STRING( res ), "%016x", PROCEDURE_ENTRY( proc ) );
+      sprintf( BSTRING_TO_STRING( res ), "%016lx", (long)PROCEDURE_ENTRY( proc ) );
    }
 
    return res;

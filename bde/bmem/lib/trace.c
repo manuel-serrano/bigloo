@@ -79,9 +79,9 @@ bgl_debug_trace_top() {
 		  fprintf( stderr, "                  top->name=KEYWORD %p\n", top->name );
 	       } else {
 		  if( !POINTERP( top->name ) ) {
-		     fprintf( stderr, "                  top->name=pas pointer %d\n", top->name );
+		     fprintf( stderr, "                  top->name=pas pointer %p\n", top->name );
 		  } else {
-		     fprintf( stderr, "                  top->name=pointer %p\n", TYPE( top->name  ) );
+		     fprintf( stderr, "                  top->name=pointer %ld\n", TYPE( top->name  ) );
 		  }
 	       }
 	    }

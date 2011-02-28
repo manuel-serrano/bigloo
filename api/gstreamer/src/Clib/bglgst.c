@@ -93,12 +93,12 @@ bglgst_use_threadsp() {
 /*    bgl_gobject_boehm_alloc_init ...                                 */
 /*---------------------------------------------------------------------*/
 static gpointer bgl_gst_alloc( gsize n ) {
-   fprintf( stderr, "GC_MALLOC n=%d\n", n );
+   fprintf( stderr, "GC_MALLOC n=%" G_GSIZE_FORMAT "\n", n );
    return GC_MALLOC( n );
 }
 
 static gpointer bgl_gst_realloc( gpointer ptr, gsize n ) {
-   fprintf( stderr, "GC_REALLOC ptr=%p n=%d\n", ptr, n );
+   fprintf( stderr, "GC_REALLOC ptr=%p n=%" G_GSIZE_FORMAT "\n", ptr, n );
    return GC_REALLOC( ptr, n );
 }
 
@@ -297,7 +297,7 @@ bgl_g_value_to_obj( const GValue *gval, int doref, int doobj ) {
       case G_TYPE_ENUM: {
 	 long obj = g_value_get_enum( gval );
 
-	 fprintf( stderr, "G_TYPE_ENUM not implemented yet %d (%s:%d)\n",
+	 fprintf( stderr, "G_TYPE_ENUM not implemented yet %ld (%s:%d)\n",
 		  obj, __FILE__, __LINE__ );
 
 	 return BUNSPEC;

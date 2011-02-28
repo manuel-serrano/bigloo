@@ -45,13 +45,13 @@ GC_collect_hook( int heapsz, long livesz ) {
    gc_number++;
 
    if( heapsz > (1024 * 1024) ) {
-      fprintf( stderr, "gc %3d: alloc size=%.2fMB, heap size=%.2fMB, live size=%.2fMB\n",
+      fprintf( stderr, "gc %3lu: alloc size=%.2fMB, heap size=%.2fMB, live size=%.2fMB\n",
 	       gc_number,
 	       ((double)gc_alloc_size / (1024. * 1024.)),
 	       ((double)heapsz / (1024. * 1024.)),
 	       ((double)livesz / (1024. * 1024.)) );
    } else {
-      fprintf( stderr, "gc %3d: alloc size=%dKB, heap size=%dKB, live size=%ldKB\n",
+      fprintf( stderr, "gc %3lu: alloc size=%luKB, heap size=%dKB, live size=%ldKB\n",
 	       gc_number,
 	       gc_alloc_size / 1024,
 	       heapsz / 1024,
@@ -81,7 +81,7 @@ gc_alloc_size_add( int size ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    (%d %d %d %d)\n",
+   fprintf( f, "    (%lu %lu %lu %lu)\n",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    BMEMSIZE( i->heap_size ),

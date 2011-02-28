@@ -69,7 +69,7 @@ bgl_debug_typeof( obj_t obj ) {
 obj_t
 bgl_debug_header( obj_t obj ) {
    fprintf( stderr, "obj=%p\n", obj );
-   fprintf( stderr, "  TAG_MASK=%d ", (((long)obj) & TAG_MASK) );
+   fprintf( stderr, "  TAG_MASK=%ld ", (((long)obj) & TAG_MASK) );
    switch( (((long)obj) & TAG_MASK) ) {
       case TAG_STRUCT: fprintf( stderr, "(TAG_STRUCT)\n" ); break;
       case TAG_INT: fprintf( stderr, "(TAG_INT)\n" ); break;
@@ -96,7 +96,7 @@ bgl_debug_header( obj_t obj ) {
    }
 
    if( POINTERP( obj ) ) {
-      fprintf( stderr, "  TYPE=%d ", TYPE( obj ) );
+      fprintf( stderr, "  TYPE=%ld ", TYPE( obj ) );
       switch( TYPE( obj ) ) {
 	 case 0: fprintf( stderr, "(PAIR_TYPE) " ); break;
 	 case 1: fprintf( stderr, "(STRING_TYPE) " ); break;
@@ -132,7 +132,7 @@ bgl_debug_header( obj_t obj ) {
 	    else
 	       fprintf( stderr, "(unknown type) " );
       }
-      fprintf( stderr, "HEADER_SIZE=%d\n", HEADER_SIZE( CREF( obj )->header ) );
+      fprintf( stderr, "HEADER_SIZE=%ld\n", HEADER_SIZE( CREF( obj )->header ) );
    }
 
    return obj;

@@ -33,7 +33,7 @@ make_symbol( obj_t name ) {
 
 #if BMEMDEBUG
    if( bmem_debug > 1 ) {
-      fprintf( stderr, "make_symbol: %s %p\n", name, symbol );
+      fprintf( stderr, "make_symbol: %s %p\n", BSTRING_TO_STRING( name ), symbol );
    }
 #endif
    symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
