@@ -267,12 +267,12 @@ input_obj( obj_t port ) {
    /* On fait deux cas en fonction de la taille de l'objet a lire */
    if( clen < 1024 ) {
       char  string[ 1024 + STRING_SIZE ];
-      obj_t res;
+      obj_t res, strobj = (obj_t)string;
 
 #if( !defined( TAG_STRING ) || defined( BUMPY_GC ) )
-      ((obj_t)string)->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+      strobj->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif		
-      ((obj_t)string)->string_t.length = clen;
+      strobj->string_t.length = clen;
       
       fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
 
@@ -283,10 +283,9 @@ input_obj( obj_t port ) {
 #endif
       return res;
    } else {
-      char  *string;
-      obj_t  res;
+      obj_t  res, string;
 
-      string = (char *)malloc( STRING_SIZE + clen );
+      string = (obj_t)malloc( STRING_SIZE + clen );
 
       if( !string )
          C_SYSTEM_FAILURE( BGL_IO_ERROR,
@@ -294,9 +293,9 @@ input_obj( obj_t port ) {
 			   "can't allocate string", port );
 
 #if( !defined( TAG_STRING ) || defined( BUMPY_GC ) )
-      ((obj_t)string)->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+      string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif		
-      ((obj_t)string)->string_t.length = clen;
+      string->string_t.length = clen;
 		
       fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
       
