@@ -44,6 +44,8 @@ extern obj_t c_error();
 extern void bgl_init_objects();
 extern obj_t bigloo_exit_apply();
 extern void *bgl_callcc_get_top_of_stack( void * );
+extern void bgl_end_io();
+extern void GC_set_all_interior_pointers( int );
 
 #ifndef _MSC_VER
 extern char *getenv();

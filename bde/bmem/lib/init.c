@@ -22,6 +22,15 @@
 #   define RTLD_LAZY 0
 #endif
 
+extern void alloc_dump_statistics( FILE *f );
+extern void alloc_reset_statistics();
+extern void declare_type( int tnum, char *tname );
+extern void GC_dump_statistics( FILE *f );
+extern void GC_reset_statistics();
+extern void thread_dump_statistics( FILE *f );
+extern void thread_reset_statistics();
+extern void type_dump( FILE *f );
+
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
 /*---------------------------------------------------------------------*/

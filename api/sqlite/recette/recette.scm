@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Nov 23 18:41:06 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Wed Mar  2 12:03:49 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
 ;*=====================================================================*/
@@ -277,13 +277,13 @@
 ;*---------------------------------------------------------------------*/
 (define-test join.1
    (sqlite-map *db* list "select l1.*
-                           from lee l1, lee l2
+                            from lee l1, lee l2
                            where (l1.l1=l2.l2) and (l1.l2=3)")
    :result '(("2" "3" "0") ("2" "3" "0")))
 
 (define-test join.2
    (sqlite-map *db* list "select DISTINCT l1.*
-                           from lee l1, lee l2
+                            from lee l1, lee l2
                            where (l1.l1=l2.l2) and (l1.l2=3)")
    :result '(("2" "3" "0")))
 

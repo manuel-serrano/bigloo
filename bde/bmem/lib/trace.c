@@ -9,6 +9,9 @@
 /*    Debug trace handling                                             */
 /*=====================================================================*/
 #include <bigloo.h>
+#ifdef BMEMDEBUG
+#include <pthread.h>
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Importations                                                     */

@@ -23,6 +23,7 @@
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t void_star_to_obj();
 extern void bglgst_thread_init();
+extern obj_t bgl_gst_bin_elements_set( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    Threads                                                          */

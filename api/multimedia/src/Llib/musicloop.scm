@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Thu Mar 11 11:59:52 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Wed Mar  2 20:11:52 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
 ;*=====================================================================*/
@@ -69,7 +69,7 @@
       (with-access::musicstatus stat2 (playlistid)
 	 (not (eq? (musicstatus-playlistid stat1) playlistid))))
    
-   (with-access::music m (%loop-mutex %abort-loop %reset-loop %status)
+   (with-access::music m (%loop-mutex %abort-loop %reset-loop %status %mutex)
       (mutex-lock! %loop-mutex)
       (let loop ((stat1 (duplicate::musicstatus %status
 			   (state 'unspecified)))
@@ -93,6 +93,16 @@
 		      ;; onmeta
 		      (when onmeta
 			 (onmeta (music-get-meta stat2 m))))
+		     ((ended)
+		      ;; onstate
+		      (when onstate
+			 (onstate stat2))
+		      (with-access::musicstatus stat2 (song playlistlength)
+			 (when (<fx song (-fx playlistlength 1))
+			    (mutex-lock! %mutex)
+			    (set! song (+fx 1 song))
+			    (mutex-unlock! %mutex)
+			    (music-play m))))
 		     (else
 		      ;; onstate
 		      (when onstate
@@ -137,11 +147,11 @@
    (with-access::musicstatus status (song playlistlength)
       (when (>fx playlistlength 0)
 	 (let ((plist (music-playlist-get m)))
-	    (if (and (>=fx song 0) (<fx song (length plist)))
-		(let ((f (list-ref plist song)))
-		   (if (file-exists? f)
-		       (or (file-musictag f) (alist->id3 (music-meta m)) f)
-		       (or (alist->id3 (music-meta m)) f))))))))
+	    (when (and (>=fx song 0) (<fx song (length plist)))
+	       (let ((f (list-ref plist song)))
+		  (if (file-exists? f)
+		      (or (file-musictag f) (alist->id3 (music-meta m)) f)
+		      (or (alist->id3 (music-meta m)) f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-reset! ::music ...                              */

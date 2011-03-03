@@ -30,6 +30,8 @@
 /*---------------------------------------------------------------------*/
 /*    Bigloo imports                                                   */
 /*---------------------------------------------------------------------*/
+extern obj_t bgl_close_input_port( obj_t );
+extern obj_t bgl_input_port_seek( obj_t, long );
 extern obj_t bglgst_open_input_file( char *file );
 extern obj_t bglgst_register_port( obj_t );
 extern obj_t bglgst_unregister_port( obj_t );

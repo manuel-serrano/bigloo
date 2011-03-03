@@ -27,6 +27,7 @@ extern void perror();
 extern char *strerror( int );
 extern void exit( int );
 #endif
+extern obj_t bgl_typeof( obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    c_error ...                                                      */

@@ -68,6 +68,7 @@ DEFINE_STRING( ssl_mutex_name, _1, "ssl-mutex", sizeof( "ssl-mutex" ) + 1 );
 /*---------------------------------------------------------------------*/
 /*    SSL socket close hook                                            */
 /*---------------------------------------------------------------------*/
+extern obj_t socket_close(obj_t);
 static obj_t socket_close_hook( obj_t, obj_t );
 static obj_t input_close_hook( obj_t, obj_t );
 static obj_t output_close_hook( obj_t, obj_t );

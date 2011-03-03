@@ -25,6 +25,9 @@
 /*---------------------------------------------------------------------*/
 /*    imports                                                          */
 /*---------------------------------------------------------------------*/
+extern void bglpth_thread_cleanup( void *arg );
+extern void bglpth_thread_env_create( void *thread, obj_t bglthread );
+extern void bglpth_thread_init( void *self, char *stack_bottom );
 extern obj_t bglpth_thread_thunk();
 void *bglpth_thread_new();
 
@@ -216,7 +219,7 @@ bglgst_thread_run( void *self ) {
    
    /* The environment is stored in a specific variable for dynamic   */
    /* access but it is pointed to by the thread structure for the GC */
-   bglpth_thread_init( self );
+   bglpth_thread_init( self, (char *)&self );
 
    /* Start the gstreamer thread */
    thread_func( arg );

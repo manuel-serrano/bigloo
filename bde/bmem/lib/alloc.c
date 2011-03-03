@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern void gc_alloc_size_add( int size );
+
 /*---------------------------------------------------------------------*/
 /*    static pa_pair_t *                                               */
 /*    all_functions ...                                                */

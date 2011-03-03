@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Feb 18 15:18:26 2011 (serrano)                */
+;*    Last change :  Tue Mar  1 10:12:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -464,8 +464,8 @@
 		((null? buck)
 		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 		 (vector-set! buckets bucket-num (cons (cons key obj) bucket))
-		 (if (>fx count max-bucket-len)
-		     (plain-hashtable-expand! table))
+		 (when (>fx count max-bucket-len)
+		    (plain-hashtable-expand! table))
 		 obj)
 		((hashtable-equal? table (caar buck) key)
 		 (let ((old-obj (cdar buck)))
@@ -502,8 +502,8 @@
 		((null? buck)
 		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 		 (vector-set! buckets bucket-num (cons (cons key obj) bucket))
-		 (if (>fx count max-bucket-len)
-		     (plain-hashtable-expand! table))
+		 (when (>fx count max-bucket-len)
+		    (plain-hashtable-expand! table))
 		 obj)
 		((hashtable-equal? table (caar buck) key)
 		 (let ((res (proc (cdar buck))))
@@ -541,8 +541,8 @@
 		 (let ((v (proc obj init)))
 		    (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
 		    (vector-set! buckets bucket-num (cons (cons key v) bucket))
-		    (if (>fx count max-bucket-len)
-			(plain-hashtable-expand! table))
+		    (when (>fx count max-bucket-len)
+		       (plain-hashtable-expand! table))
 		    v))
 		((hashtable-equal? table (caar buck) key)
 		 (let ((res (proc obj (cdar buck))))

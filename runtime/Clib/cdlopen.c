@@ -125,6 +125,8 @@ bgl_dload( char *filename, char *init_sym, char *init_mod ) {
 int
 bgl_dunload( obj_t filename ) {
 #if HAVE_DLOPEN
+   extern bool_t bigloo_strcmp( obj_t, obj_t );
+
    obj_t p = dload_list;
 
    bgl_mutex_lock( dload_mutex );

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 10 08:43:29 2000                          */
-/*    Last change :  Sat Jun 10 07:20:52 2000 (serrano)                */
+/*    Last change :  Wed Mar  2 18:49:40 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Statistics handling (mostly hash tables).                        */
 /*=====================================================================*/
@@ -30,7 +30,6 @@
 /*---------------------------------------------------------------------*/
 extern long get_hash_number( char * );
 extern long get_hash_number_from_int( unsigned long );
-extern char *strdup( char * );
 extern long bgl_types_number();
 extern obj_t create_vector();
 
