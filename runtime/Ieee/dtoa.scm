@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Feb 18 15:23:37 2011 (serrano)                */
+;*    Last change :  Fri Mar  4 15:35:32 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
