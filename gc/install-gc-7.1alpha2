@@ -4,15 +4,15 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Tue Jun  8 06:40:35 2010 (serrano)                */
-#*    Copyright   :  2007-10 Manuel Serrano                            */
+#*    Last change :  Sat Mar  5 07:38:49 2011 (serrano)                */
+#*    Copyright   :  2007-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
 #*      GC=/usr/local/src/gc-7.0.tar.gz ./install-gc                   */
 #*=====================================================================*/
 
-src=$GC
+src=$GC.tar.gz
 gc=`basename $src .tar.gz`
 bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
 

@@ -1,17 +1,19 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gc/install-gc-7.2alpha2              */
+#*    serrano/prgm/project/bigloo/gc/install-gc-7_2alpha5-20110107     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano, Florian Loitsch                   */
 #*    Copyright   :  2007-11 Manuel Serrano, Florian Loitsch           */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
-#*      GC=/usr/local/src/gc-7.2alpha2.tar.gz ./install-gc             */
+#*      ./install-gc-7_2alpha5-20110107                                */
 #*=====================================================================*/
 
-src=$GC.tar.gz
-gc=`basename $src .tar.gz`
+gc=bdwgc-7_2alpha5-20110107
+src=$gc.tar.gz
+gcdir=bdwgc
+
 bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
 
 tar=$TAR
@@ -25,14 +27,27 @@ if [ "$patch " = " " ]; then
   patch=patch
 fi
 
-# untar the two version of the GC
-tar xfz $src -C ../gc || (echo "tar xfz $src failed"; exit 1)
-mv ../gc/$gc "../gc/$gc"_fth || (echo "mv gc-7.1 failed"; exit 1)
+# untar the two versions of the GC
+/bin/rm -rf "../gc/$gcdir"
+$tar xfj $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+/bin/rm -rf "../gc/$gc"_fth
+mv ../gc/$gcdir "../gc/$gc"_fth || (echo "mv $gc_fth failed"; exit 1)
 
-tar xfz $src  -C ../gc || (echo "tar xfz $src failed"; exit 1)
+$tar xfj $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+/bin/rm -rf "../gc/$gc"
+mv ../gc/$gcdir "../gc/$gc" || (echo "mv $gc failed"; exit 1)
 
-(cd "../gc/$gc"_fth && patch -p1 < ../$gc.patch > /dev/null) || exit 1
-(cd ../gc/$gc && patch -p1 < ../$gc.patch > /dev/null) || exit 1
+# android patch
+#* (cd "../gc/$gcdir"_fth && $patch -p1 < ../$gc-android.patch > /dev/null) */
+#* if [ $? != "0" ]; then echo "android patch failed"; exit 1; fi      */
+#* (cd ../gc/$gcdir && $patch -p1 < ../$gc-android.patch > /dev/null)    */
+#* if [ $? != "0" ]; then echo "android patch failed"; exit 1; fi      */
+
+# general Bigloo patch
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gc.patch > /dev/null)
+if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
+(cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null)
+if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
 
 # Remove parasite IA64 object files
 (/bin/rm -f "../gc/$gc"_fth/libatomic_ops-1.2/src/*.a) || exit 1
@@ -48,10 +63,6 @@ for p in configure configure.ac Makefile.direct Makefile.am Makefile.in Makefile
   mv "$gc"_fth/$p.new "$gc"_fth/$p
 
 done
-
-# Install the Makefiles.
-#mv $gc/Makefile.direct $gc/Makefile
-#mv "$gc"_fth/Makefile.direct "$gc"_fth/Makefile
 
 # Set the correct mode for configure (configure is not currently used by Bigloo)
 chmod a+rx $gc/configure

@@ -1,0 +1,50 @@
+diff -Naur gc-7.2alpha4.orig/misc.c gc-7.2alpha4/misc.c
+--- gc-7.2alpha4.orig/misc.c	2009-11-18 10:39:08.000000000 +0100
++++ gc-7.2alpha4/misc.c	2011-01-05 13:50:33.000000000 +0100
+@@ -40,6 +40,10 @@
+ # include <sys/stat.h>
+ #endif
+ 
++#if defined(PLATFORM_ANDROID)
++extern void *__stack_base__; /* initialize by GC_init */
++#endif
++
+ #ifdef NONSTOP
+ # include <floss.h>
+ #endif
+@@ -532,6 +536,10 @@
+         word dummy;
+ #   endif
+ 
++#ifdef PLATFORM_ANDROID
++	void *__stack_bottom;
++#endif
++	
+ #   ifdef GC_INITIAL_HEAP_SIZE
+         word initial_heap_sz = divHBLKSZ(GC_INITIAL_HEAP_SIZE);
+ #   else
+@@ -541,6 +549,10 @@
+ 
+     if (GC_is_initialized) return;
+ 
++#ifdef PLATFORM_ANDROID
++    __stack_base__ = GC_stackbottom ? (void *)GC_stackbottom : &__stack_bottom;
++#endif
++    
+     DISABLE_CANCEL(cancel_state);
+     /* Note that although we are nominally called with the */
+     /* allocation lock held, the allocation lock is now    */
+diff -Naur gc-7.2alpha4.orig/os_dep.c gc-7.2alpha4/os_dep.c
+--- gc-7.2alpha4.orig/os_dep.c	2009-11-09 13:27:34.000000000 +0100
++++ gc-7.2alpha4/os_dep.c	2011-01-05 13:50:10.000000000 +0100
+@@ -16,6 +16,10 @@
+ 
+ #include "private/gc_priv.h"
+ 
++#ifdef PLATFORM_ANDROID
++void *__stack_base__ = 1; /* initialize by GC_init */
++#endif
++
+ #if defined(LINUX) && !defined(POWERPC)
+ # include <linux/version.h>
+ # if (LINUX_VERSION_CODE <= 0x10400)

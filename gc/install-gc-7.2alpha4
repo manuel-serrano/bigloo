@@ -3,14 +3,14 @@
 #*    serrano/prgm/project/bigloo/gc/install-gc-7.2alpha4              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano, Florian Loitsch                   */
-#*    Copyright   :  2007-10 Manuel Serrano, Florian Loitsch           */
+#*    Copyright   :  2007-11 Manuel Serrano, Florian Loitsch           */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
 #*      GC=/usr/local/src/gc-7.2alpha4.tar.gz ./install-gc             */
 #*=====================================================================*/
 
-src=$GC
+src=$GC.tar.gz
 
 gc=`basename $src .tar.gz`
 bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
@@ -26,7 +26,7 @@ if [ "$patch " = " " ]; then
   patch=patch
 fi
 
-# untar the two version of the GC
+# untar the two versions of the GC
 $tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 /bin/rm -rf "../gc/$gc"_fth
 mv ../gc/$gc "../gc/$gc"_fth || (echo "mv gc-7.2 failed"; exit 1)
@@ -65,6 +65,5 @@ chmod a+rx $gc/configure
 chmod a+rx "$gc"_fth/configure
 
 # Copy the inline_alloc.c file
-pwd
 cp ../runtime/Clib/inline_alloc.c $gc
 cp ../runtime/Clib/inline_alloc.c "$gc"_fth
