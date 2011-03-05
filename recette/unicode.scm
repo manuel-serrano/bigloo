@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Wed Apr  7 18:20:10 2010 (serrano)                */
+;*    Last change :  Sat Mar  5 20:51:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode test.                                                    */
 ;*=====================================================================*/
@@ -35,7 +35,7 @@
    (test "ucs2>?" (ucs2>? (char->ucs2 #\a) (char->ucs2 #\b)) #f)
    (test "ucs2>?" (ucs2>? (char->ucs2 #\b) (char->ucs2 #\a)) #t)
    (test "ucs2>=?" (ucs2>=? (char->ucs2 #\a) (char->ucs2 #\b)) #f)
-   (test "ucs2>=?" (ucs2>=? (char->ucs2 #\b) (char->ucs2 #\b)) #f)
+   (test "ucs2>=?" (ucs2>=? (char->ucs2 #\b) (char->ucs2 #\b)) #t)
    (test "ucs2>=?" (ucs2>=? (char->ucs2 #\c) (char->ucs2 #\a)) #t)
    (test "ucs2-ci=?" (ucs2-ci=? (char->ucs2 #\a) (char->ucs2 #\A)) #t)
    (test "ucs2-ci=?" (ucs2-ci=? (char->ucs2 #\a) (char->ucs2 #\b)) #f)
@@ -47,7 +47,7 @@
    (test "ucs2-ci>?" (ucs2-ci>? (char->ucs2 #\a) (char->ucs2 #\b)) #f)
    (test "ucs2-ci>?" (ucs2-ci>? (char->ucs2 #\B) (char->ucs2 #\a)) #t)
    (test "ucs2-ci>=?" (ucs2-ci>=? (char->ucs2 #\a) (char->ucs2 #\B)) #f)
-   (test "ucs2-ci>=?" (ucs2-ci>=? (char->ucs2 #\b) (char->ucs2 #\b)) #f)
+   (test "ucs2-ci>=?" (ucs2-ci>=? (char->ucs2 #\b) (char->ucs2 #\b)) #t)
    (test "ucs2-ci>=?" (ucs2-ci>=? (char->ucs2 #\c) (char->ucs2 #\a)) #t)
    (test "ucs2-alphabetic?" (ucs2-alphabetic? (char->ucs2 #\a)) #t)
    (test "ucs2-alphabetic?" (ucs2-alphabetic? (char->ucs2 #\0)) #f)
