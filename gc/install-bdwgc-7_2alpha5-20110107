@@ -29,18 +29,18 @@ fi
 
 # untar the two versions of the GC
 /bin/rm -rf "../gc/$gcdir"
-$tar xfj $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+$tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 /bin/rm -rf "../gc/$gc"_fth
 mv ../gc/$gcdir "../gc/$gc"_fth || (echo "mv $gc_fth failed"; exit 1)
 
-$tar xfj $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+$tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 /bin/rm -rf "../gc/$gc"
 mv ../gc/$gcdir "../gc/$gc" || (echo "mv $gc failed"; exit 1)
 
 # android patch
-(cd "../gc/$gcdir"_fth && $patch -p1 < ../$gc-android.patch > /dev/null)
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gc-android.patch > /dev/null)
 if [ $? != "0" ]; then echo "android patch failed"; exit 1; fi
-(cd ../gc/$gcdir && $patch -p1 < ../$gc-android.patch > /dev/null)
+(cd ../gc/$gc && $patch -p1 < ../$gc-android.patch > /dev/null)
 if [ $? != "0" ]; then echo "android patch failed"; exit 1; fi
 
 # general Bigloo patch
