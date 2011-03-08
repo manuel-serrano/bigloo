@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Feb 18 15:08:08 2011 (serrano)                */
+;*    Last change :  Tue Mar  8 10:57:09 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -127,7 +127,7 @@
 ;*    convert ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (convert e globals loc)
-   (conv e '() globals #f 'nowhere loc #t) )
+   (conv e '() globals #f 'toplevel loc #t) )
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-var ...                                                     */
@@ -297,7 +297,8 @@
 	       (bloc (get-location binds loc)) )
 	  (instantiate::ev_letrec
 	     (vars vars)
-	     (vals (map (lambda (b) (conv (cadr b) locals globals #f where (get-location b bloc) #f)) binds))
+	     (vals (map (lambda (b)
+			   (conv (cadr b) locals globals #f (symbol-append (car b) '| | where) (get-location b bloc) #f)) binds) )
 	     (body (conv-begin body locals globals tail? where loc #f) ))))
       ((set! (@ (and ?id (? symbol?)) (and ?modname (? symbol?))) ?e)
        (instantiate::ev_setglobal
@@ -344,7 +345,7 @@
 	  (handler (uconv h))
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
-       (conv-lambda formals body 'nowhere) )
+       (conv-lambda formals body (symbol-append '\@ where)) )
       ((?f . ?args)
        (let ( (fun (uconv f)) (args (uconv* args)) )
 	  (instantiate::ev_app
