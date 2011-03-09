@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Nov 26 15:23:07 1993                          */
-/*    Last change :  Tue Aug 26 10:30:34 2008 (serrano)                */
+/*    Last change :  Wed Mar  9 08:56:34 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Le hashage                                                       */
 /*=====================================================================*/
@@ -161,16 +161,18 @@ bgl_pointer_hashnumber( void * i, unsigned long power ) {
 /*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    bgl_string_hash_number ...                                       */
+/*    -------------------------------------------------------------    */
+/*    New setting has been provided by Joseph Donaldson on March 2011. */
 /*---------------------------------------------------------------------*/
 long
 bgl_string_hash_number( char *string ) {
    char c;
-   long result = 0;
+   long result = 5381;
 
-   while( (c = *string++) )
-      result += (result << 3) + (long)c;
+   while( c = *string++ )
+      result += (result << 5) + c;
 
-   return (result & ((1 << 29) - 1));
+   return result & ((1 << 29) - 1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -180,13 +182,13 @@ bgl_string_hash_number( char *string ) {
 long
 bgl_string_hash( char *string, int start, int len ) {
    int i;
-   long result = 0;
+   long result = 5381;
 
    for( i = start; i < len; i++ ) {
-      result += (result << 3) + (long)string[ i ];
+      result += (result << 5) + (long)string[ i ];
    }
 
-   return (result & ((1 << 29) - 1));
+   return result & ((1 << 29) - 1);
 }
 
 /*---------------------------------------------------------------------*/

@@ -5988,20 +5988,20 @@ public final class foreign
 
    public static int bgl_string_hash_number(byte[]s)
       {
-	 int result = 0;
+	 int result = 5381;
 
 	 for (int i = 0; i < s.length; ++i)
-	    result += (result << 3) + s[i];
+	    result += (result << 5) + s[i];
 
 	 return result & ((1 << 29) - 1);
       }
 
    public static int bgl_string_hash(byte[]s, int start, int len)
       {
-	 int result = 0;
+	 int result = 5381;
 
 	 for (int i = start; i < len; ++i, i++)
-	    result += (result << 3) + s[i];
+	    result += (result << 5) + s[i];
 	 return result & ((1 << 29) - 1);
       }
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Tue Mar  1 10:12:04 2011 (serrano)                */
+;*    Last change :  Wed Mar  9 08:51:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -33,6 +33,7 @@
 	    __bignum
 	    __thread
 	    
+	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
 	    __r4_numbers_6_5_flonum_dtoa
@@ -609,8 +610,8 @@
 	 (when (<fx i old-bucks-len)
 	    (for-each (lambda (cell)
 			 (let* ((key (car cell))
-				(h (remainderfx (table-get-hashnumber table key)
-					      new-bucks-len)))
+				(n (table-get-hashnumber table key))
+				(h (remainderfx n new-bucks-len)))
 			    (vector-set! new-bucks
 					 h
 					 (cons cell
