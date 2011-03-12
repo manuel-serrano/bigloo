@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Mar  8 10:57:09 2011 (serrano)                */
+;*    Last change :  Wed Mar  9 18:00:10 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -213,16 +213,10 @@
       ((atom ?x)
        (if (symbol? x)
 	   (or (conv-var x locals)
-	       (begin
-		  #;(tprint "ev_global: " x " "
-			  (if (evmodule? globals)
-			      (evmodule-name globals)
-			      "???"))
 	       (instantiate::ev_global
 		  (loc loc)
 		  (name x)
 		  (mod (if (evmodule? globals) globals ($eval-module)))) )
-	       )
 	   (instantiate::ev_litt
 	      (value x)) ))
       ((module . ?bah)

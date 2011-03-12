@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Feb  1 09:11:44 2011 (serrano)                */
+;*    Last change :  Sat Mar 12 09:37:42 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -58,6 +58,7 @@
 	    fail_walk
 	    abound_walk
 	    dataflow_walk
+	    initflow_walk
 	    globalize_walk
 	    cfa_walk
 	    cfa_tvector
@@ -285,6 +286,12 @@
 		      (set! ast (profile dataflow (dataflow-walk! ast "Dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
+
+	    ;; compute the global init property
+	    (when *optim-initflow?*
+	       (set! ast (profile initflow (initflow-walk! ast))))
+	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
+	    (check-sharing "initflow" ast)
 	    
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sun Nov 28 09:37:04 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 12 09:33:53 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -145,7 +145,7 @@
 	 ((eq? otype *_*)
 	  (if (and (global? variable)
 		   (not (fun? (global-value variable)))
-		   (not *unsafe-type*)
+		   (or (not *unsafe-type*) (eq? (global-init variable) #t))
 		   (not (eq? (type-class ntype) 'bigloo)))
 	      ;; due to the pbm of the initialization order, global variables
 	      ;; have to be checked before read. This means that it is

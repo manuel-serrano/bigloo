@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat Dec 11 08:20:33 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Mar 12 08:58:49 2011 (serrano)                */
+#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -179,6 +179,11 @@ DATAFLOW_FILE	= walk
 
 DATAFLOW_OBJ	= $(DATAFLOW_FILE:%=Dataflow/%.o)
 
+#*--- Initflow --------------------------------------------------------*/
+INITFLOW_FILE	= walk
+
+INITFLOW_OBJ	= $(INITFLOW_FILE:%=Initflow/%.o)
+
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
                   integration integration28c \
@@ -327,13 +332,14 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(READ_OBJ) $(AST_OBJ) $(BETA_OBJ) $(CC_OBJ) $(FOREIGN_OBJ) \
                   $(HEAP_OBJ) $(MODULE_OBJ) $(TYPE_OBJ) $(EXPAND_OBJ) \
                   $(INLINE_OBJ) $(BIVALUE_OBJ) $(USER_OBJ) $(HGEN_OBJ) \
-                  $(COERCE_OBJ) $(DATAFLOW_OBJ) $(GLOBALIZE_OBJ) $(CNST_OBJ) \
-                  $(CFA_OBJ) $(INTEGRATE_OBJ) $(TAILC_OBJ) $(CGEN_OBJ) \
-                  $(TVECTOR_OBJ) $(TSTRUCT_OBJ) $(TRACE_OBJ) $(CALLCC_OBJ) \
-                  $(EVAL_OBJ) $(LIFEXT_OBJ) $(FAIL_OBJ) $(REDUCE_OBJ) \
-                  $(EFFECT_OBJ) $(OBJECT_OBJ) $(TOOLS_OBJ) $(BDB_OBJ) \
-                  $(PROF_OBJ) $(ABOUND_OBJ) $(JAS_OBJ) $(BACKEND_OBJ) \
-                  $(SAW_OBJ) $(SAW_C_OBJ) $(SAW_JVM_OBJ) $(SAW_MSIL_OBJ)
+                  $(COERCE_OBJ) $(DATAFLOW_OBJ) $(INITFLOW_OBJ) \
+                  $(GLOBALIZE_OBJ) $(CNST_OBJ) $(CFA_OBJ) $(INTEGRATE_OBJ) \
+                  $(TAILC_OBJ) $(CGEN_OBJ) $(TVECTOR_OBJ) $(TSTRUCT_OBJ) \
+                  $(TRACE_OBJ) $(CALLCC_OBJ) $(EVAL_OBJ) $(LIFEXT_OBJ) \
+                  $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
+                  $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
+                  $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
+                  $(SAW_JVM_OBJ) $(SAW_MSIL_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

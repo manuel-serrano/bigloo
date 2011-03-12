@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Mon Jan 19 20:32:12 2009 (serrano)                */
+;*    Last change :  Sat Mar 12 08:38:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -60,7 +60,12 @@
 	      src::obj
 	      ;; the qualified type the global belongs to
 	      ;; (for JVM compilation only)
-	      jvm-type-name::bstring)
+	      jvm-type-name::bstring
+	      ;; is the global always initialized before used? #t means
+	      ;; that the variable is always initialized, #f means that
+	      ;; it is used before initialized, and #unspecified means that
+	      ;; the exact property is unknown
+	      (init::obj (default #unspecified)))
 
 	   (final-class local::variable
 	      ;; does this local variable belongs to the user ?

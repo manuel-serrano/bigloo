@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Nov 28 05:55:51 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 12 09:31:49 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -67,6 +67,7 @@
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
 	    *optim-dataflow-types?*
+	    *optim-initflow?*
 	    *optim-reduce-beta?*
 	    *optim-jvm-inlining*
 	    *optim-jvm-constructor-inlining*
@@ -906,6 +907,9 @@
 	      #t)
 (param-define *optim-dataflow-types?*
 	      "Enable dataflow optimization for types"
+	      #f)
+(param-define *optim-initflow?*
+	      "Enable initflow optimization for global variables"
 	      #f)
 (param-define *optim-reduce-beta?*
 	      "Enable simple beta reduction"

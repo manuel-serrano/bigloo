@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Nov 29 16:57:56 2010 (serrano)                */
-;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 12 09:33:01 2011 (serrano)                */
+;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -439,6 +439,10 @@
        (set! *optim-dataflow-types?* #t))
       (("-fno-dataflow-types" (help "Disable type dataflow optimizations"))
        (set! *optim-dataflow-types?* #f))
+      (("-finitflow" (help "Enable init flow"))
+       (set! *optim-initflow?* #t))
+      (("-fno-initflow" (help "Disable init flow"))
+       (set! *optim-initflow?* #f))
       ;; O macro
       (("-fO-macro" (help "Enable Optimization macro (default)"))
        (set! *optim-O-macro?* #t))
