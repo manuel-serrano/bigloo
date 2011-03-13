@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Mar 13 10:13:37 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 13:58:33 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -208,7 +208,7 @@
 	    (check-sharing "ast" ast)
 
 	    ;; compute the global init property
-	    (when (and #f *optim-initflow?*)
+	    (when *optim-initflow?*
 	       (set! ast (profile initflow (initflow-walk! ast))))
 	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
 	    (check-sharing "initflow" ast)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat Mar 12 08:58:49 2011 (serrano)                */
+#*    Last change :  Sun Mar 13 14:01:28 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -165,7 +165,6 @@ EXPAND_OBJ	= $(EXPAND_FILE:%=Expand/%.o)
 
 #*--- inline ----------------------------------------------------------*/
 INLINE_FILE	= walk inline app size simple recursion variant loop
-
 
 INLINE_OBJ	= $(INLINE_FILE:%=Inline/%.o)
 

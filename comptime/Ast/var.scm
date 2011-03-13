@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Sat Mar 12 08:38:44 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 14:46:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -35,7 +35,9 @@
 	      ;; does this variable can be removed
 	      (removable (default 'now))
 	      ;; the variable number of occurrences
-	      (occurrence::long (default 0)))
+	      (occurrence::long (default 0))
+	      ;; the variable number of write occurrences
+	      (occurrencew::long (default 0)))
 	   
 	   (final-class global::variable
 	      ;; the global's module. this variable is changed only
@@ -47,6 +49,8 @@
 	      import
 	      ;; is this global can be known by eval?
 	      (evaluable?::bool (default #t))
+	      ;; is the variable eval exported?
+	      (eval?::bool (default #f))
 	      ;; The library that defines the variable (or #f)
 	      (library (default #f))
 	      ;; does this global variable belongs to the user? this field

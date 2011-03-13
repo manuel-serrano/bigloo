@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Tue Jan  8 12:28:04 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 18:37:24 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -75,8 +75,12 @@
       (if (and (>fx *optim* 0)
 	       (global? variable)
 	       (eq? (global-import variable) 'static)
-	       (eq? (global-access variable) 'read)
-	       (atom? (global-src variable)))
+	       (not (global-eval? variable))
+	       (or (eq? (global-access variable) 'read)
+		   (and (eq? (global-init variable) #t)
+			(= (global-occurrencew variable) 1)))
+	       (or (atom? (global-src variable))
+		   (kwote? (global-src variable))))
 	  (begin
 	     (trace inline "*** inlining global variable: " (shape variable)
 		    #\Newline)

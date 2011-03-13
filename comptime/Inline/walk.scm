@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Sun Mar 13 11:01:27 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 14:01:16 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
@@ -21,6 +21,7 @@
 	    module_module
 	    engine_param
 	    ast_remove
+	    ast_occur
 	    (inline-sfun! inline_inline))
    (export  (inline-walk! <globals> ::symbol)
 	    (inline-setup! ::symbol)
@@ -42,6 +43,9 @@
    (pass-prelude "Inlining" reset-stat!)
    ;; we setup the inlining
    (inline-setup! what)
+   ;; count the number of occurences of each variable
+   (when (eq? what 'all)
+      (occur-var globals))
    ;; we scan all the local definitions to inline their body
    (for-each (lambda (g)
 		(let ((kfactor (if (eq? (sfun-class (global-value g)) 'sifun)

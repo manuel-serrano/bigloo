@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Sun Mar 13 11:01:06 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 12:06:27 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -29,8 +29,9 @@
 ;*    occur-var ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (occur-var globals)
-   ;; first, we rester the counter.
+   ;; first, we reste the counter.
    (for-each-global! (lambda (global) (global-occurrence-set! global 0)))
+   (for-each-global! (lambda (global) (global-occurrencew-set! global 0)))
    ;; then we recompute the global occurrences.
    (for-each (lambda (global)
 		(occur-node-in! (sfun-body (global-value global)) global))
@@ -63,8 +64,8 @@
       (let ((value (variable-value v)))
 	 (if (and (scnst? value) (node? (scnst-node value)))
 	     (occur-node! (scnst-node value))))
-      (if (not (eq? v *global*))
-	  (variable-occurrence-set! v (+fx (variable-occurrence v) 1)))))
+      (unless (eq? v *global*)
+	 (variable-occurrence-set! v (+fx (variable-occurrence v) 1)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::sequence ...                                       */
@@ -129,8 +130,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::setq)
    (with-access::setq node (var value)
-      (with-access::variable (var-variable var) (access)
-	 (when (eq? access 'read) (set! access 'write)))
+      (with-access::variable (var-variable var) (access occurrencew)
+	 (when (eq? access 'read) (set! access 'write))
+	 (set! occurrencew (+fx 1 occurrencew)))
       (occur-node! var)
       (occur-node! value)))
 
@@ -168,8 +170,9 @@
 (define-method (occur-node! node::let-fun)
    (with-access::let-fun node (body locals)
       (for-each (lambda (local)
-		   (with-access::local local (occurrence access)
+		   (with-access::local local (occurrence occurrencew access)
 		      (set! occurrence 0)
+		      (set! occurrencew 0)
 		      ;; re-compute the access property of written locals
 		      (when (eq? access 'write) (set! access 'read)))
 		   (for-each (lambda (a) (local-occurrence-set! a 1))
@@ -188,8 +191,9 @@
 (define-method (occur-node! node::let-var)
    (with-access::let-var node (body bindings)
       (for-each (lambda (binding)
-		   (with-access::local (car binding) (occurrence access)
+		   (with-access::local (car binding) (occurrence occurrencew access)
 		      (set! occurrence 0)
+		      (set! occurrencew 0)
 		      (set! access 'read)))
 		bindings)
       (for-each (lambda (binding)
@@ -202,8 +206,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::set-ex-it)
    (with-access::set-ex-it node (var)
-      (with-access::local (var-variable var) (occurrence access)
+      (with-access::local (var-variable var) (occurrence occurrencew access)
 	 (set! occurrence 0)
+	 (set! occurrencew 0)
 	 (when (eq? access 'write) (set! access 'read)))
       (occur-node! (set-ex-it-body node))))
 

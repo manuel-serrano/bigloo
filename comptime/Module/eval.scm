@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Oct 25 10:18:46 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 14:46:54 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -35,16 +35,16 @@
 	    *all-eval?*
 	    *all-export-eval?*
 	    *all-module-eval?*
-	    *all-export-mutable?*)
-   (static  (wide-class evglobal::global)))
+	    *all-export-mutable?*))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-compiler ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (make-eval-compiler)
-   (instantiate::ccomp (id 'eval)
-		       (producer eval-producer)
-		       (finalizer eval-finalizer)))
+   (instantiate::ccomp
+      (id 'eval)
+      (producer eval-producer)
+      (finalizer eval-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-producer ...                                                */
@@ -142,7 +142,6 @@
 ;*    eval-finalizer ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (eval-finalizer)
-   
    (if (or *one-eval?*
 	   *all-eval?*
 	   *all-export-eval?*
@@ -170,10 +169,10 @@
 		   (let ((g (car globals)))
 		      (set-eval-types! g)
 		      (loop (cdr globals)
-			    (if (evglobal? g)
+			    (if (global-eval? g)
 				init*
 				(begin
-				   (widen!::evglobal g)
+				   (global-eval?-set! g #t)
 				   (cons (cond
 					    ((svar? (global-value g))
 					     (variable-access-set! g 'write)
