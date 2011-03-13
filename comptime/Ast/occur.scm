@@ -3,9 +3,9 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Sep  7 17:32:27 2010 (serrano)                */
+;*    Last change :  Sun Mar 13 11:01:06 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
-;*    Compute the occurrence number and compute the read/write         */
+;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
 ;*    recomputed because dead code elimination might remove useless    */
 ;*    set!                                                             */

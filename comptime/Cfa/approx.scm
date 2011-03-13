@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sun Mar 13 09:44:25 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 10:53:45 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -27,7 +27,8 @@
 	    cfa_set
 	    cfa_iterate
 	    cfa_loose
-	    cfa_procedure)
+	    cfa_procedure
+	    object_class)
    (export  (inline node-key ::node/effect)
 	    (inline node-key-set! ::node/effect ::obj)
 	    (declare-approx-sets!)
@@ -85,40 +86,61 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    approx-set-type! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    This function computes the smallest subtype of dst and type.     */
+;*    Subtyping rules may apply to integers, nil/pair/epair/pair-nil,  */
+;*    and classes.                                                     */
 ;*---------------------------------------------------------------------*/
-(define (approx-set-type! dst::approx type::type) 
-   (cond
-      ((approx-type-locked? dst)
-       #f)
-      ((eq? type *_*)
-       #f)
-      ((eq? (approx-type dst) type)
-       #f)
-      ((or (and (eq? (approx-type dst) *long*) (eq? type *int*))
-	   (and (eq? (approx-type dst) *int*) (eq? type *long*)))
-       #f)
-;*       ((and (eq? (approx-type dst) *pair*) (eq? type *epair*))      */
-;*        (approx-type-set! dst *epair*)                               */
-;*        (continue-cfa! 'approx-set-type!))                           */
-;*       ((and (eq? (approx-type dst) *pair-nil*)                      */
-;* 	    (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*))) */
-;*        #f)                                                          */
-;*       ((and (eq? (approx-type dst) *nil*)                           */
-;* 	    (or (eq? type *pair*) (eq? type *epair*)))                 */
-;*        (approx-type-set! dst *pair-nil*)                            */
-;*        (continue-cfa! 'approx-set-type!))                           */
-;*       ((and (or (eq? (approx-type dst) *pair*) (eq? (approx-type dst) *epair*)) */
-;* 	    (or (eq? type *nil*)))                                     */
-;*        (approx-type-set! dst *pair-nil*)                            */
-;*        (continue-cfa! 'approx-set-type!))                           */
-      ((eq? (approx-type dst) *obj*)
-       #f)
-      ((eq? (approx-type dst) *_*)
-       (approx-type-set! dst type)
-       (continue-cfa! 'approx-set-type!))
-      (else
-       (approx-type-set! dst *obj*)
-       (continue-cfa! 'approx-set-type!))))
+(define (approx-set-type! dst::approx type::type)
+   (let ((dtype (approx-type dst)))
+      (cond
+	 ((approx-type-locked? dst)
+	  #f)
+	 ((eq? type *_*)
+	  #f)
+	 ((eq? dtype type)
+	  #f)
+	 ((or (and (eq? dtype *long*) (eq? type *int*))
+	      (and (eq? dtype *int*) (eq? type *long*)))
+	  ;; integer equivalence
+	  #f)
+	 ((and (eq? dtype *epair*) (eq? type *pair*))
+	  ;; pair-nil subtyping 1
+	  (approx-type-set! dst *pair*)
+	  (continue-cfa! 'approx-set-type!))
+	 ((and (eq? dtype *pair-nil*)
+	       (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*)))
+	  ;; pair-nil subtyping 2
+	  #f)
+	 ((and (eq? dtype *bnil*)
+	       (or (eq? type *pair*) (eq? type *epair*)))
+	  ;; pair-nil subtyping 3
+	  (approx-type-set! dst *pair-nil*)
+	  (continue-cfa! 'approx-set-type!))
+	 ((and (or (eq? dtype *pair*) (eq? dtype *epair*)) (eq? type *bnil*))
+	  ;; pair-nil subtyping 4
+	  (approx-type-set! dst *pair-nil*)
+	  (continue-cfa! 'approx-set-type!))
+	 ((and (tclass? dtype) (tclass? type))
+	  (let ((super (find-common-super-class dtype type)))
+	     (cond
+		((eq? super dtype)
+		 #f)
+		(super
+		 ;; class subtyping
+		 (approx-type-set! dst super)
+		 (continue-cfa! 'approx-set-type!))
+		(else
+		 (approx-type-set! dst *obj*)
+		 (continue-cfa! 'approx-set-type!)))))
+	 ((eq? dtype *obj*)
+	  #f)
+	 ((eq? dtype *_*)
+	  (approx-type-set! dst type)
+	  (continue-cfa! 'approx-set-type!))
+	 (else
+	  (approx-type-set! dst *obj*)
+	  (continue-cfa! 'approx-set-type!)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    approx-set-top! ...                                              */

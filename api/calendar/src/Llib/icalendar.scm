@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:14:19 2005                          */
-;*    Last change :  Mon Aug 30 11:59:15 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Sun Mar 13 11:15:52 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    iCalendar parser                                                 */
 ;*=====================================================================*/
@@ -522,18 +522,18 @@
 				     (location (line-location l))))))))))
 		(read/rp g (the-port))))
 	  (define (read-list read pred)
-	     (let loop ((l '()))
+	     (let loop ((e '()))
 		(let ((o (read)))
 		   (if (pred o)
 		       (let ((c (read-char)))
 			  (case c
 			     ((#\,)
-			      (loop (cons o l)))
+			      (loop (cons o e)))
 			     ((#\;)
-			      (reverse! (cons o l)))
+			      (reverse! (cons o e)))
 			     (else
 			      (if (eof-object? c)
-				  (reverse! (cons o l))
+				  (reverse! (cons o e))
 				  (raise
 				   (instantiate::&io-parse-error
 				      (proc 'icalendar)

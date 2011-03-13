@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Oct 17 16:52:10 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 10:55:40 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -72,6 +72,7 @@
 	    (final-class?::bool ::obj)
 	    (wide-class?::bool ::obj)
 	    (find-class-constructors ::tclass)
+	    (find-common-super-class ::tclass ::tclass)
 	    (type-subclass?::bool ::type ::type)
 	    (tclass-all-slots::pair-nil ::tclass)
 	    (class-make::obj ::tclass)
@@ -273,6 +274,32 @@
 	    (else
 	     (loop its-super))))))
 
+;*---------------------------------------------------------------------*/
+;*    find-common-super-class ...                                      */
+;*---------------------------------------------------------------------*/
+(define (find-common-super-class c1::tclass c2::tclass)
+   (define (tclass-super* c)
+      (with-access::tclass c (its-super)
+	 (if (or (not its-super) (eq? its-super c))
+	     '()
+	     (cons c (tclass-super* its-super)))))
+   (cond
+      ((type-subclass? c1 c2)
+       c2)
+      ((type-subclass? c2 c1)
+       c1)
+      (else
+       (let ((l1 (tclass-super* c1))
+	     (l2 (tclass-super* c2)))
+	  (let loop ((l l1))
+	     (cond
+		((null? l)
+		 #f)
+		((memq (car l) l2)
+		 (car l))
+		(else
+		 (loop (cdr l)))))))))
+      
 ;*---------------------------------------------------------------------*/
 ;*    tclass-all-slots ...                                             */
 ;*---------------------------------------------------------------------*/

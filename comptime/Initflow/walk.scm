@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Sun Mar 13 10:14:19 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 10:18:29 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
@@ -101,11 +101,15 @@
 		 (eq? (global-init variable) #unspecified)
 		 (eq? (global-module variable) *module*))
 	 (global-init-set! variable #f)
-	 (unless (or (eq? (global-type variable) *_*)
-		     (eq? (global-type variable) *obj*))
-	    (user-error/location
-	     loc *module* "Typed global variable used before initialized"
-	     (variable-id variable))))
+	 (cond
+	    ((eq? (global-type variable) *_*)
+	     (global-type-set! variable *obj*))
+	    ((eq? (global-type variable) *obj*)
+	     #unspecified)
+	    (else
+	     (user-error/location
+	      loc *module* "Typed global variable used before initialized"
+	      (variable-id variable)))))
       (if (sfun? (variable-value variable))
 	  (initflow-fun variable e)
 	  '())))
