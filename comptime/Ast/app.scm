@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Sun Nov 28 08:35:48 2010 (serrano)                */
+;*    Last change :  Sun Mar 13 08:53:46 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -66,28 +66,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    application->node ...                                            */
 ;*    -------------------------------------------------------------    */
-;*    Each parameters which is not a variable _is_ force to be bound   */
+;*    Each parameters which is not a variable _is_ forced to be bound  */
 ;*    to a variable.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (application->node exp stack loc site)
+   
+   (define (atomic? exp)
+      (match-case exp
+	 ((atom ?-)
+	  #t)
+	 ((? symbol?)
+	  #t)
+	 ((? keyword?)
+	  #t)
+	 (((kwote quote) . ?-)
+	  #t)
+	 ((@ (? symbol?) (? symbol?))
+	  #t)
+	 (else
+	  #f)))
+
    (define (all-subexp-symbol? exp)
       (let loop ((exp exp))
-	 (if (null? exp)
-	     #t
-	     (match-case (car exp)
-		((atom ?-)
-		 (loop (cdr exp)))
-		((? symbol?)
-		 (loop (cdr exp)))
-		((? keyword?)
-		 (loop (cdr exp)))
-		(((kwote quote) . ?-)
-		 (loop (cdr exp)))
-		((@ (? symbol?) (? symbol?))
-		 (loop (cdr exp)))
-		(else
-		 (and (or (atom? (car exp)) (var? (car exp)))
-		      (loop (cdr exp))))))))
+	 (cond
+	    ((null? exp)
+	     #t)
+	    ((atomic? (car exp))
+	     (loop (cdr exp)))
+	    (else
+	     (and (or (atom? (car exp)) (var? (car exp)))
+		  (loop (cdr exp)))))))
+   
    (let* ((loc (find-location/loc exp loc))
 	  (err-nb *nb-error-on-pass*)
 	  (debugstamp (gensym))
@@ -128,9 +137,7 @@
 					 ,(make-the-app new-fun)))
 			       (node (sexp->node lexp stack loc site)))
 			   (clean-user-node! node)))))
-		((or (symbol? (car old-args))
-		     (keyword? (car old-args))
-		     (cnst? (car old-args)))
+		((atomic? (car old-args))
 		 (loop (cdr old-args)
 		       (if (epair? old-args)
 			   (econs (car old-args) new-args (cer old-args))

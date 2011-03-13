@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Sat Mar 12 09:38:38 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 10:14:19 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
@@ -38,6 +38,7 @@
 	    ast_env
 	    module_module
 	    engine_param)
+   (static  (wide-class sfun/iflow::sfun))
    (export  (initflow-walk! ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -45,33 +46,69 @@
 ;*---------------------------------------------------------------------*/
 (define (initflow-walk! globals)
    (pass-prelude "Initflow")
-   (let ((root (find-global/module 'toplevel-init *module*)))
-      (initflow-fun root #t)
-      (pass-postlude globals)))
+   ;; Some specical types are set to global variable even before the
+   ;; top-level is entered. Read-only global bound to these values are
+   ;; marked initialized.
+   (for-each (lambda (g)
+		(when (eq? (global-access g) 'read)
+		   (let ((value (global-value g)))
+		      (when (sfun? value)
+			 (global-init-set! g #t)))))
+	     globals)
+   ;; depth first walk from the roots function
+   (for-each (lambda (id)
+		(let ((root (find-global/module id *module*)))
+		   (when (global? root)
+		      (initflow-fun root #t)
+		      (let ((l (filter (lambda (g)
+					  (and (not (sfun? (global-value g)))
+					       (not (eq? (global-init g) #t))))
+				       globals)))
+			 (when (pair? l)
+			    (verbose 2 "      uninitialized globals : "
+				     (map shape l)
+				     #\newline))))))
+	     '(object-init toplevel-init generic-init method-init))
+   ;; return the unchanged list of globals
+   (pass-postlude globals))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-fun ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (initflow-fun var::variable e::bool)
+(define (initflow-fun::pair-nil var::variable e::bool)
    (let ((f (variable-value var)))
-      (initflow-node (sfun-body f) e)))
+      (cond
+	 ((not (node? (sfun-body f)))
+	  '())
+	 ((sfun/iflow? f)
+	  '())
+	 (else
+	  (widen!::sfun/iflow f)
+	  (initflow-node (sfun-body f) e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node ::node ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-generic (initflow-node node::node e::bool)
+(define-generic (initflow-node::pair-nil node::node e::bool)
    '())
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node ::var ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (initflow-node node::var e)
-   (with-access::var node (variable)
-      (when (global? variable)
+   (with-access::var node (variable loc)
+      (when (and (global? variable)
+		 (eq? (global-init variable) #unspecified)
+		 (eq? (global-module variable) *module*))
 	 (global-init-set! variable #f)
-	 (if (sfun? (variable-value variable))
-	     (initflow-node var e)
-	     '()))))
+	 (unless (or (eq? (global-type variable) *_*)
+		     (eq? (global-type variable) *obj*))
+	    (user-error/location
+	     loc *module* "Typed global variable used before initialized"
+	     (variable-id variable))))
+      (if (sfun? (variable-value variable))
+	  (initflow-fun variable e)
+	  '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node* ...                                               */
@@ -83,7 +120,7 @@
 	  (if e
 	      (begin
 		 (for-each (lambda (g)
-			      (when (global-init g)
+			      (when (eq? (global-init g) #unspecified)
 				 (global-init-set! g #t)))
 			   is)
 		 '())
@@ -108,10 +145,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (initflow-node node::app e)
    (with-access::app node (fun args)
-      (let ((is (initflow-node* args e)))
-	 (if (and (var? fun) (sfun? (variable-value (var-variable fun))))
-	     (append (initflow-fun (var-variable fun) e) is)
-	     is))))
+      (let* ((v (var-variable fun))
+	     (f (variable-value v)))
+	 (if (and (sfun? f) (and (memq 'no-init-flow (sfun-property f))))
+	     '()
+	     (let ((is (initflow-node* args e)))
+		(if (sfun? f)
+		    (append (initflow-fun v e) is)
+		    is))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node ::app-ly ...                                       */
@@ -141,12 +182,14 @@
    (with-access::setq node (var value)
       (let ((is (initflow-node value e))
 	    (v (var-variable var)))
-	 (if (and (global? v) (eq? (global-init v) #unspecified))
+	 (if (and (global? v)
+		  (eq? (global-init v) #unspecified)
+		  (eq? (global-module v) *module*))
 	     (if e
 		 (begin
 		    (global-init-set! v #t)
 		    '())
-		 (cons var is))
+		 (cons v is))
 	     is))))
 
 ;*---------------------------------------------------------------------*/

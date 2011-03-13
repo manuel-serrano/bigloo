@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Feb 18 15:19:49 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 08:58:51 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -224,7 +224,8 @@
 	    (struct+object->object no-cfa-top no-trace nesting)
 	    (object->struct side-effect-free no-cfa-top no-trace nesting)
 	    (wide-object? side-effect-free no-cfa-top no-trace nesting)
-	    (object-widening side-effect-free no-cfa-top nesting)))
+	    (object-widening side-effect-free no-cfa-top nesting)
+	    (register-class! no-init-flow)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-generic-bucket-size ...                                   */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Sat Nov 27 07:28:52 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 09:29:07 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -146,7 +146,7 @@
 ;*    The iteration process control                                    */
 ;*---------------------------------------------------------------------*/
 (define *cfa-continue?* #unspecified)
-(define *cfa-stamp*     -1)
+(define *cfa-stamp* -1)
 
 ;*---------------------------------------------------------------------*/
 ;*    continue-cfa! ...                                                */

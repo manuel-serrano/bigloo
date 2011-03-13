@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Mar 12 09:33:01 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 10:11:58 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -853,6 +853,8 @@
        (set! *pass* 'fail))
       (("-abound" (help "Stop after the array bound checking stage"))
        (set! *pass* 'abound))
+      (("-initflow" (help "Stop after the type initflow stage"))
+       (set! *pass* 'initflow))
       (("-dataflow" (help "Stop after the type dataflow stage"))
        (set! *pass* 'dataflow))
       (("-dataflow+" (help "Stop after the second type dataflow stage"))
@@ -1171,7 +1173,8 @@
       (set! *optim-jvm-fasteq* #t)
       (set! *optim-reduce-beta?* #t)
       (set! *optim-cfa-flonum-arithmetic?* #t)
-      (set! *optim-dataflow-types?* #t))
+      (set! *optim-dataflow-types?* #t)
+      (set! *optim-initflow?* #t))
    (define (-O3!)
       (-O2!)
       (set! *optim-jvm-inlining* 3)

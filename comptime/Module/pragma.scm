@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Mon Sep 15 11:12:17 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 09:01:52 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -117,39 +117,43 @@
        (case prop
 	  ;; the side-effect-free pragma
 	  ((side-effect-free)
-	   (let ((value (global-value global)))
-	      (if (not (fun? value))
+	   (let ((val (global-value global)))
+	      (if (not (fun? val))
 		  (sfun-error "side-effect-free" global)
-		  (fun-side-effect?-set! value #f))))
+		  (fun-side-effect?-set! val #f))))
 	  ;; the no-cfa-top pragma
 	  ((no-cfa-top)
-	   (let ((value (global-value global)))
-	      (if (not (fun? value))
+	   (let ((val (global-value global)))
+	      (if (not (fun? val))
 		  (sfun-error "no-cfa-top" global)
-		  (fun-top?-set! value #f))))
+		  (fun-top?-set! val #f))))
+	  ;; don't trace the argument of the function during
+	  ;; the initflow analysis
+	  ((no-init-flow)
+	   (let ((val (global-value global)))
+	      (if (not (fun? val))
+		  (sfun-error "no-init-flow" global)
+		  (sfun-property-set! val (cons prop (sfun-property val))))))
 	  ;; this function is a generated allocator. That property is
 	  ;; used when emitting symbol tables for profiling
 	  ((allocator)
-	   (let ((value (global-value global)))
-	      (if (not (sfun? value))
+	   (let ((val (global-value global)))
+	      (if (not (sfun? val))
 		  (sfun-error "allocator" global)
-		  (sfun-property-set! value (cons prop
-						  (sfun-property value))))))
+		  (sfun-property-set! val (cons prop (sfun-property val))))))
 	  ((no-trace)
-	   (let ((value (global-value global)))
-	      (if (not (sfun? value))
+	   (let ((val (global-value global)))
+	      (if (not (sfun? val))
 		  (sfun-error "no-trace" global)
-		  (sfun-property-set! value (cons prop
-						  (sfun-property value))))))
+		  (sfun-property-set! val (cons prop (sfun-property val))))))
 	  ((nesting)
-	   (let ((value (global-value global)))
-	      (if (cfun? value)
+	   (let ((val (global-value global)))
+	      (if (cfun? val)
 		  (global-pragma-set! global
-				      (cons 'nesting
-					    (global-pragma global))))))
+				      (cons 'nesting					    (global-pragma global))))))
 	  ((args-safe)
-	   (let ((value (global-value global)))
-	      (if (cfun? value)
+	   (let ((val (global-value global)))
+	      (if (cfun? val)
 		  (global-pragma-set! global
 				      (cons 'args-safe
 					    (global-pragma global))))))

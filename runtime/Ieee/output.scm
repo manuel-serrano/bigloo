@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Mar  9 10:27:18 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 09:11:06 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -229,7 +229,9 @@
 	    (printf ::bstring . obj)
 	    (fprintf ::output-port ::bstring . obj))
 
-   (pragma  ($display-char nesting)
+   (pragma  (display-2 no-init-flow no-cfa-top)
+	    (write-2 no-init-flow no-cfa-top)
+	    ($display-char nesting)
 	    ($write-char nesting)))
    
 ;*---------------------------------------------------------------------*/

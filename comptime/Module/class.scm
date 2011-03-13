@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov 29 09:41:28 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 08:38:45 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/
@@ -210,8 +210,8 @@
 					      class-make-id))
 			     (else
 			      `(@ ,class-make-id ,class-module))))
-	  (class-nil      (symbol-append class-id '-nil))
-	  (class-pred     (class-predicate class))
+	  (class-nil      `(@ ,(symbol-append class-id '-nil) ,class-module))
+	  (class-pred     `(@ ,(class-predicate class) ,class-module))
 	  (class-alloc    (if (tclass-abstract? class)
 			      `(lambda (x)
 				  (error

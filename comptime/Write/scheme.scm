@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:07:23 1994                          */
-;*    Last change :  Sat Mar 24 08:34:09 2001 (serrano)                */
-;*    Copyright   :  1994-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 12 16:48:55 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools to write Scheme code.                                 */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
    (fprint port ";; " string)
    (fprint port ";; " *bigloo-name*)
    (fprint port ";; " *bigloo-author* "       " *bigloo-date*)
+   (fprint port ";; " (command-line))
    (fprint port ";; =========================================================")
    (newline port))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Mar 12 09:37:42 2011 (serrano)                */
+;*    Last change :  Sun Mar 13 10:13:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -207,10 +207,11 @@
 	    (stop-on-pass 'ast (lambda () (write-ast ast)))
 	    (check-sharing "ast" ast)
 
-	    ;; when compiling with warning enabled we perform a check
-	    ;; on global variable initialization
-	    (when (>fx (bigloo-warning) 0)
-	       (check-global-initialization))
+	    ;; compute the global init property
+	    (when (and #f *optim-initflow?*)
+	       (set! ast (profile initflow (initflow-walk! ast))))
+	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
+	    (check-sharing "initflow" ast)
 	    
 	    ;; we make a heap on `mkheap' mode
 	    (stop-on-pass 'make-heap (lambda () (make-heap)))
@@ -287,12 +288,6 @@
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 
-	    ;; compute the global init property
-	    (when *optim-initflow?*
-	       (set! ast (profile initflow (initflow-walk! ast))))
-	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
-	    (check-sharing "initflow" ast)
-	    
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
 	    (stop-on-pass 'globalize (lambda () (write-ast ast)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Nov 27 07:29:37 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 13 09:44:25 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -94,10 +94,23 @@
        #f)
       ((eq? (approx-type dst) type)
        #f)
-      ((and (eq? (approx-type dst) *long*) (eq? type *int*))
+      ((or (and (eq? (approx-type dst) *long*) (eq? type *int*))
+	   (and (eq? (approx-type dst) *int*) (eq? type *long*)))
        #f)
-      ((and (eq? (approx-type dst) *int*) (eq? type *long*))
-       #f)
+;*       ((and (eq? (approx-type dst) *pair*) (eq? type *epair*))      */
+;*        (approx-type-set! dst *epair*)                               */
+;*        (continue-cfa! 'approx-set-type!))                           */
+;*       ((and (eq? (approx-type dst) *pair-nil*)                      */
+;* 	    (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*))) */
+;*        #f)                                                          */
+;*       ((and (eq? (approx-type dst) *nil*)                           */
+;* 	    (or (eq? type *pair*) (eq? type *epair*)))                 */
+;*        (approx-type-set! dst *pair-nil*)                            */
+;*        (continue-cfa! 'approx-set-type!))                           */
+;*       ((and (or (eq? (approx-type dst) *pair*) (eq? (approx-type dst) *epair*)) */
+;* 	    (or (eq? type *nil*)))                                     */
+;*        (approx-type-set! dst *pair-nil*)                            */
+;*        (continue-cfa! 'approx-set-type!))                           */
       ((eq? (approx-type dst) *obj*)
        #f)
       ((eq? (approx-type dst) *_*)

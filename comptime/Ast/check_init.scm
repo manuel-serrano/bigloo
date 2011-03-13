@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/check-init.scm          */
+;*    serrano/prgm/project/bigloo/comptime/Ast/check_init.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 11:02:16 1999                          */
-;*    Last change :  Fri May 19 12:00:09 2006 (serrano)                */
+;*    Last change :  Sun Mar 13 10:14:41 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module checks that global variables are not used before     */
 ;*    being initialized. This function implements a walk thru          */
@@ -26,13 +26,14 @@
 	    object_class
 	    module_module
 	    module_include
-	    module_class)
-   (export  (check-global-initialization)))
+	    module_class))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-global-initialization ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (check-global-initialization)
+(define (check-global-initialization-TOBEREMOVE-13mar2011)
+   ;; this function (and its whole module) is to be removed, it has been
+   ;; subsumed by the init flow analysis (see initflow_walk module). 
    (let* ((init-name (symbol-append (unit-id (get-toplevel-unit)) '-init))
  	  (global    (find-global init-name)))
       (if (and (global? global) (sfun? (global-value global)))
