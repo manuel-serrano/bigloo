@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Sun Feb 13 09:15:55 2011 (serrano)                */
+;*    Last change :  Mon Mar 14 09:21:17 2011 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -220,7 +220,17 @@
    (test "eval.cond" (eval '((lambda (x) (begin (set! x 4) (set! x 5) x)) 1)) 5)
    (test "eval.define" (eval '(begin (define (ffoo x) x) (ffoo 3))) 3)
    (test "eval.define" (eval '(begin (define vvar (ffoo 4)) vvar)) 4)
-   (test "eval.bind-exit" (eval '(+ 1 (bind-exit (exit) (exit 3) 14))) 4)
+   (test "eval.bind-exit1" (eval '(+ 1 (bind-exit (exit) (exit 3) 14))) 4)
+   (test "eval bind-exit.2" (eval
+			     '(let ((str #u"foo")
+				    (ht (cons 1 2)))
+			       (bind-exit (break)
+				  (let loop ()
+				     (set-car! ht 2)
+				     (break #unspecified)
+				     (loop)))
+			       (car ht)))
+	 2)
    (test "eval.unwind-protext" (eval '(let ((x 0))
 					 (unwind-protect
 					    (set! x 10)

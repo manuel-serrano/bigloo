@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Sat Mar  5 09:19:45 2011 (serrano)                */
+#*    Last change :  Mon Mar 14 10:58:29 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -17,64 +17,74 @@ include ../Makefile.config
 include ../Makefile.misc
 
 POPULATION = Makefile \
-             $(POP65) \
-             $(POP66) \
-             $(POP68) \
-             $(POP70ALPHA7) \
-             $(POP70) \
-             $(POP71ALPHA2) \
-             $(POP71ALPHA3) \
-             $(POP71) \
-             $(POP72ALPHA2) \
-             $(POP72ALPHA4) \
-             $(POP72ALPHA5) \
-             sparc_linux_mach_dep.c \
-             $(CUSTOMGC).tar.gz
+  $(POP65) \
+  $(POP66) \
+  $(POP68) \
+  $(POP70ALPHA7) \
+  $(POP70) \
+  $(POP71ALPHA2) \
+  $(POP71ALPHA3) \
+  $(POP71) \
+  $(POP72ALPHA2) \
+  $(POP72ALPHA4) \
+  $(POP72ALPHA5) \
+  sparc_linux_mach_dep.c \
+  $(CUSTOMGC).tar.gz
 
-POP65      = gc-6.5-gentoo.patch
+POP65 = gc-6.5-gentoo.patch
 
-POP66      = gc-6.6-gentoo-ulibc.patch
+POP66 = gc-6.6-gentoo-ulibc.patch
 
-POP68      = install-gc6.8 \
-             gc6.8.patch \
-             Makefile-gc6.8
+POP68 = install-gc6.8 \
+  gc6.8.patch \
+  Makefile-gc6.8
 
-POP70ALPHA7= install-gc7.0alpha7 \
-             gc7.0alpha7.patch \
-             Makefile-gc7.0alpha7
+POP70ALPHA7 = install-gc7.0alpha7 \
+  gc7.0alpha7.patch \
+  Makefile-gc7.0alpha7
 
-POP70      = install-gc-7.0 \
-             gc-7.0.patch \
-             Makefile-gc-7.0
+POP70 = install-gc-7.0 \
+  gc-7.0.patch \
+  Makefile-gc-7.0
 
-POP71ALPHA2= install-gc-7.1alpha2 \
-             gc-7.1alpha2.patch
+POP71ALPHA2 = install-gc-7.1alpha2 \
+  gc-7.1alpha2.patch
 
-POP71ALPHA3= install-gc-7.1alpha3-080220 \
-             gc-7.1alpha3-080220.patch
+POP71ALPHA3 = install-gc-7.1alpha3-080220 \
+  gc-7.1alpha3-080220.patch
 
-POP71      = install-gc-7.1 \
-             gc-7.1.patch \
-             Makefile-gc-7.1
+POP71 = install-gc-7.1 \
+  gc-7.1.patch \
+  Makefile-gc-7.1
 
-POP72ALPHA2= install-gc-7.2alpha2 \
-             configure-gc-7.2alpha2 \
-             gc-7.2alpha2.patch \
-             Makefile-gc-7.2alpha2
+POP72ALPHA2 = install-gc-7.2alpha2 \
+  configure-gc-7.2alpha2 \
+  gc-7.2alpha2.patch \
+  Makefile-gc-7.2alpha2
 
-POP72ALPHA4= install-gc-7.2alpha4 \
-             configure-gc-7.2alpha4 \
-             configure-gc-7.2alpha4-android \
-             gc-7.2alpha4.patch \
-             gc-7.2alpha4-android.patch \
-             Makefile-gc-7.2alpha4
+POP72ALPHA4 = install-gc-7.2alpha4 \
+  configure-gc-7.2alpha4 \
+  configure-gc-7.2alpha4-android \
+  gc-7.2alpha4.patch \
+  gc-7.2alpha4-android.patch \
+  Makefile-gc-7.2alpha4
 
-POP72ALPHA5= install-bdwgc-7_2alpha5-20110107 \
-             configure-bdwgc-7_2alpha5-20110107 \
-             configure-bdwgc-7_2alpha5-20110107-android \
-             bdwgc-7_2alpha5-20110107.patch \
-             bdwgc-7_2alpha5-20110107-android.patch \
-             Makefile-bdwgc-7_2alpha5-20110107
+POP72ALPHA5_20110107 = install-bdwgc-7_2alpha5-20110107 \
+  configure-bdwgc-7_2alpha5-20110107 \
+  configure-bdwgc-7_2alpha5-20110107-android \
+  bdwgc-7_2alpha5-20110107.patch \
+  bdwgc-7_2alpha5-20110107-android.patch \
+  Makefile-bdwgc-7_2alpha5-20110107
+             
+
+POP72ALPHA5_20110313 = install-bdwgc-7_2alpha5-20110313 \
+  configure-bdwgc-7_2alpha5-20110313 \
+  configure-bdwgc-7_2alpha5-20110313-android \
+  bdwgc-7_2alpha5-20110313.patch \
+  Makefile-bdwgc-7_2alpha5-20110313
+
+POP72ALPHA5 = $(POP72ALPHA5_20110107) \
+  $(POP72ALPHA5_20110313)
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */

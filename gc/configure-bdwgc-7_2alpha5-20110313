@@ -1,0 +1,45 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../project/bigloo/gc/configure-bdwgc-7_2alpha5-20110107         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Sep  7 09:49:25 2009                          */
+#*    Last change :  Sat Mar  5 08:18:09 2011 (serrano)                */
+#*    Copyright   :  2009-11 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Ad-hoc configuration for the GC.                                 */
+#*=====================================================================*/
+
+# GC's config.guess needs the env SHELL variable to be defined
+if [ "$SHELL " = " " ]; then \
+  sh=/bin/sh;
+else
+  sh=$SHELL;
+fi
+
+# configure the collector for single-threaded applications
+(cd gc/$gccustom && \
+ export CC=$cc && \
+ export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
+ export LDFLAGS=$lflags && \
+ export SHELL=$sh && \
+ ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads >> configure.log || \
+ (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
+
+# configure the collector for multi-threaded applications
+if [ "$threadsupport " != "no " ]; then
+  (cd "gc/$gccustom"_fth && \
+   export CC=$cc && \
+   export CFLAGS="$cgcflags $cgcfinalflags -DBGL_GC_THREADS -I$bootdir/lib/$release" && \
+   export LDFLAGS=$lflags && \
+   export SHELL=$sh && \
+   echo "Configuring custom multi-threaded GC..." && \
+   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt >> configure.log || \
+   (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
+fi
+
+# hostos Bigloo specific patch
+if [ "$hostos " != " " -a -x gc/configure-$gccustom-$hostos ]; then
+  (cd gc && . ./configure-$gccustom-$hostos) || exit 1
+fi
+

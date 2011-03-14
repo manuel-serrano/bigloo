@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Mar  5 08:11:49 2011 (serrano)                */
+#*    Last change :  Mon Mar 14 10:40:27 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -176,7 +176,8 @@ gstusethread=1
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=bdwgc-7_2alpha5-20110107
+gccustom=bdwgc-7_2alpha5-20110313
+#gccustom=bdwgc-7_2alpha5-20110107
 gcversion=
 # the following  variable is relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC

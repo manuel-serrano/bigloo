@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Feb 18 15:08:20 2011 (serrano)                */
+;*    Last change :  Mon Mar 14 13:31:58 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -489,9 +489,11 @@
       (let ( (size (length stk)) (nstk (append stk (cons var '()))) )
 	 (let ( (body (comp body nstk)) (eff? (ev_var-eff var)) )
 	    (EVA '(binder bind-exit) ()
-		 (bind-exit (exit)
-		    (vector-set! s (+fx bp size) (if eff? (mcell exit) exit))
-		    (EVC body) ))))))
+		 (let ( (saved-bp bp) )
+		    (prog1 (bind-exit (exit)
+			      (vector-set! s (+fx bp size) (if eff? (mcell exit) exit))
+			      (EVC body) )
+			   (vector-set! s 0 saved-bp) )))))))
 
 (define-method (comp e::ev_unwind-protect stk);
    (with-access::ev_unwind-protect e (e body)
@@ -508,16 +510,8 @@
 	 (EVA '(exception with-handler) ()
 	      (let ( (h (EVC handler)) )
 		 (let ( (saved-bp bp) )
-		    (let ( (r (with-handler h (EVC body))) )
-		       (begin (vector-set! s 0 saved-bp)
-			      r ))))))))
-
-#;(define-method (comp e::ev_with-handler stk);
-   (with-access::ev_with-handler e (handler body)
-      (let ( (handler (comp handler stk)) (body (comp body stk)) )
-	 (EVA '(exception with-handler) ()
-	    (let ( (h (EVC handler)) )
-	       (with-handler h (EVC body)) )))))
+		    (prog1 (with-handler h (EVC body))
+			   (vector-set! s 0 saved-bp) )))))))
 
 ;;
 ;; Call
