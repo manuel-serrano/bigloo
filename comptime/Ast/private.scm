@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Tue Sep  7 19:08:44 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Tue Mar 15 16:55:55 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
 	     (fname field-name)
 	     (ftype ftype)
 	     (side-effect? #f)
-	     (expr* (list (sexp->node obj stack loc site)))
+	     (expr* (list (sexp->node obj stack loc 'value)))
 	     (effect (instantiate::feffect
 			(read (list tid)))))))
       ((?- setfield ?ftype ?otype ?field-name . ?rest)
@@ -72,7 +72,7 @@
 				  (bigloodemangle field-name)))))
 	  (instantiate::setfield
 	     (loc loc)
-	     (type *unspec*)
+	     (type *obj*)
 	     (otype otype)
 	     (fname field-name)
 	     (ftype ftype)

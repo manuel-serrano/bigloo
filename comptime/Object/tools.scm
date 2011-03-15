@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Tue Sep  7 08:53:49 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 15 17:59:15 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
 ;*=====================================================================*/
@@ -74,7 +74,7 @@
 ;*    make-pragma-direct-ref ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-pragma-direct-ref type slot obj)
-   (if (not (backend-pragma-support (the-backend)))
+   (if (or #t (not (backend-pragma-support (the-backend))))
        (make-private-sexp 'getfield
 			  (type-id (slot-type slot))
 			  (type-id (real-slot-class-owner slot))
@@ -97,7 +97,7 @@
 ;*    make-pragma-direct-set! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (make-pragma-direct-set! type slot obj val)
-   (if (not (backend-pragma-support (the-backend)))
+   (if (or #t (not (backend-pragma-support (the-backend))))
        (make-private-sexp 'setfield
 			  (type-id (slot-type slot))
 			  (type-id (real-slot-class-owner slot))
@@ -140,10 +140,10 @@
 			       ftype-id
 			       (type-id (slot-type slot))
 			       (type-id *int*)
-			       ""
+			       "($1)[$2]"
 			       field
 			       index))))
-   (if (backend-pragma-support (the-backend))
+   (if (and #f (backend-pragma-support (the-backend)))
        (pragma-index)
        (nopragma-index)))
 
@@ -225,11 +225,11 @@
 			    ftype-id
 			    (type-id (slot-type slot))
 			    (type-id *int*)
-			    ""
+			    "($1[$2]=($3),BUNSPEC)"
 			    gfield
 			    index
 			    val)))
-   (if (backend-pragma-support (the-backend))
+   (if (and #f (backend-pragma-support (the-backend)))
        (pragma-index)
        (nopragma-index)))
 
@@ -237,10 +237,14 @@
 ;*    real-slot-class-owner ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (real-slot-class-owner slot)
-   (let ((t (slot-class-owner slot)))
-      (if (and *saw* (wide-class? t))
-	  (find-type (saw-wide-class-id (tclass-id t)))
-	  t)))
+   (define (slot-class slot)
+      (let ((t (slot-class-owner slot)))
+	 (if (and *saw* (wide-class? t))
+	     (find-type (saw-wide-class-id (tclass-id t)))
+	     t)))
+   (let ((t (slot-class slot)))
+      (type-occurrence-increment! t)
+      t))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-pragma-indexed-set!/widening ...                            */
