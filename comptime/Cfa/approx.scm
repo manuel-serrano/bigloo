@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sun Mar 13 10:53:45 2011 (serrano)                */
+;*    Last change :  Tue Mar 15 10:47:09 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -112,13 +112,10 @@
 	       (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*)))
 	  ;; pair-nil subtyping 2
 	  #f)
-	 ((and (eq? dtype *bnil*)
-	       (or (eq? type *pair*) (eq? type *epair*)))
+	 ((and (or (eq? dtype *bnil*) (eq? dtype *pair*) (eq? dtype *epair*))
+	       (or (eq? type *bnil*)
+		   (eq? type *pair*) (eq? type *epair*) (eq? type *pair-nil*)))
 	  ;; pair-nil subtyping 3
-	  (approx-type-set! dst *pair-nil*)
-	  (continue-cfa! 'approx-set-type!))
-	 ((and (or (eq? dtype *pair*) (eq? dtype *epair*)) (eq? type *bnil*))
-	  ;; pair-nil subtyping 4
 	  (approx-type-set! dst *pair-nil*)
 	  (continue-cfa! 'approx-set-type!))
 	 ((and (tclass? dtype) (tclass? type))
