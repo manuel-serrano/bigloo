@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Mar 13 08:58:51 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 07:23:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -837,8 +837,8 @@
 	    (if (class? super)
 		(begin
 		   ;; we add the class to its super subclasses list
-		   (class-subclasses-set! super
-					  (cons class (class-subclasses super)))
+		   (class-subclasses-set!
+		    super (cons class (class-subclasses super)))
 		   ;; and then, we renumber the tree
 		   (class-hierarchy-numbering! class super))
 		(begin

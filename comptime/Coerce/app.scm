@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Mon Jun 15 14:57:28 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 15:19:15 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	    tools_shape
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    coerce_coerce
@@ -53,7 +54,7 @@
    (let loop ((actuals (app-args node))
 	      (types   (cfun-args-type fun)))
       (if (null? actuals)
-	  (convert! node (variable-type callee) to safe)
+	  (convert! node (get-type node) to safe)
 	  (begin
 	     (set-car! actuals (coerce! (car actuals) caller (car types) safe))
 	     (loop (cdr actuals) (cdr types))))))
@@ -69,7 +70,7 @@
 	  ;; this is the formals of a foreign va-args
 	  (let loop ((actuals actuals))
 	     (if (null? actuals)
-		 (convert! node (variable-type callee) to safe)
+		 (convert! node (get-type node) to safe)
 		 (begin
 		    (set-car! actuals (coerce! (car actuals)
 					       caller
@@ -106,7 +107,8 @@
 	  "(" (shape (node-type node)) ") -> " (shape to) #\Newline)
    (let* ((fun   (variable-value callee))
 	  (arity (sfun-arity fun))
-	  (sh    (shape callee)))
+	  (sh    (shape callee))
+	  (ntype (get-type node)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
 	 [assert (actuals formals sh) (=fx (length actuals) (length formals))]
@@ -116,8 +118,8 @@
 		 ;; type check the result of a self recursive call.
 		 ;; Local are always tail-called (otherwise they would have
 		 ;; been globalized).
-		 (convert! node (variable-type callee) to #f)
-		 (convert! node (variable-type callee) to safe))
+		 (convert! node ntype to #f)
+		 (convert! node ntype to safe))
 	     (let ((type (local-type (car formals))))
 		(set-car! actuals (coerce! (car actuals)
 					   caller
@@ -130,11 +132,12 @@
 ;*---------------------------------------------------------------------*/
 (define (coerce-bigloo-extern-app! callee::variable caller node to safe)
    (let* ((fun (variable-value callee))
-	  (arity (sfun-arity fun)))
+	  (arity (sfun-arity fun))
+	  (ntype (get-type node)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
 	 (if (null? actuals)
-	     (convert! node (variable-type callee) to safe)
+	     (convert! node ntype to safe)
 	     (let ((type (car formals)))
 		(set-car! actuals (coerce! (car actuals) caller type safe))
 		(loop (cdr actuals) (cdr formals)))))))

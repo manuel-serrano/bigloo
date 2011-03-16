@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Nov  6 04:12:39 2008 (serrano)                */
-;*    Copyright   :  1994-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 08:53:27 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
 ;*=====================================================================*/
@@ -291,12 +291,15 @@
    (let ((type (hashtable-get *Tenv* id)))
       (cond
 	 ((type? type)
+	  (type-occurrence-increment! type)
 	  type)
 	 (*types-already-checked?*
 	  (user-error/location loc 'use-type! "Can't find type" id))
 	 (else
 	  (trace (ast 3) "    TYPE BOUND " id #\Newline)
-	  (bind-type! id #f loc)))))
+	  (let ((type (bind-type! id #f loc)))
+	     (type-occurrence-increment! type)
+	     type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-type/import-loc! ...                                         */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Mar 13 10:11:58 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 15:44:12 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -394,7 +394,7 @@
       ;; optimization
       (("-O?opt" (help "-O[2..6]" "Optimization modes"))
        (parse-optim-args opt))
-      ;; cfa arithmetic
+      ;; cfa optimizations
       (("-fcfa-arithmetic" (help "Enable arithmetic spec. (fixum and flonum)"))
        (set! *optim-cfa-fixnum-arithmetic?* #t)
        (set! *optim-cfa-flonum-arithmetic?* #t))
@@ -409,6 +409,10 @@
        (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic-flonum" (help "Disable flonum arithmetic spec. "))
        (set! *optim-cfa-flonum-arithmetic?* #f))
+      (("-fcfa-free-var-tracking" (help "Enable CFA free vars tracking (enabled from -O2)"))
+       (set! *optim-cfa-free-var-tracking?* #t))
+      (("-fno-cfa-free-var-tracking" (help "Disable CFA free vars tracking."))
+       (set! *optim-cfa-free-var-tracking?* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))

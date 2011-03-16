@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sun Nov 28 06:05:58 2010 (serrano)                */
+;*    Last change :  Wed Mar 16 14:47:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -107,9 +107,7 @@
 			       (list
 				(vector 'side-effect: (side-effect? node)))
 			       '())
-			 ,(vector (shape (get-type node))
-				  (shape (variable-type
-					  (var-variable (app-fun node)))))
+			 ,(vector (shape (node-type node)))
 			 ,@(map node->sexp (app-args node))))
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))
@@ -201,8 +199,12 @@
    (with-access::vref node (expr* ftype unsafe)
       (let ((id (if unsafe 'vref-ur 'vref)))
 	 (if *type-shape?*
-	     `(,id ,(vector (shape (get-type node)) (shape ftype))
-		 ,@(map node->sexp expr*))
+	     `(,(string->symbol
+		 (string-append (symbol->string id)
+				"::"
+				(shape (get-type node))
+				"[::" (shape ftype) "]"))
+	       ,@(map node->sexp expr*))
 	     `(,id ,@(map node->sexp expr*))))))
    
 ;*---------------------------------------------------------------------*/
@@ -223,7 +225,7 @@
 (define-method (node->sexp node::valloc)
    (node->sexp-hook node)
    (with-access::valloc node (expr*)
-      `(vnew ,@(map node->sexp expr*))))
+      `(valloc ,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::isa ...                                             */

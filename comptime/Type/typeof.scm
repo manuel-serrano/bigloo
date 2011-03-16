@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon Nov 29 05:47:36 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 15:28:26 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -108,7 +108,7 @@
 ;*    To make the thing even more complex, the type of the reference   */
 ;*    might be not correct with respect to boxing/unboxing invariant.  */
 ;*    For instance, after an expression such as (set! x 1), the        */
-;*    variable X will be considered as ::int. However is the global    */
+;*    variable X will be considered as ::int. However if the global    */
 ;*    analysis fails to unbox X types it as ::obj, then the expression */
 ;*    must be compiled as  X = BINT( 1 ) and not X = 1. The predicate  */
 ;*    TYPE-MORE-SPECIFIC? deals with these cases.                      */

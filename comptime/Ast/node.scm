@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sun Nov 28 09:40:23 2010 (serrano)                */
+;*    Last change :  Wed Mar 16 11:00:50 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -97,17 +97,21 @@
 	   (final-class pragma::extern
 	      (format::bstring read-only))
 
+	   ;; private extern expression
+	   (class private::extern
+	      (c-format::bstring read-only))
+	   
 	   ;; the object field read and write
-	   (final-class getfield::extern
+	   (final-class getfield::private
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field
 	      (ftype::type read-only)
 	      ;; the type the field belongs to
 	      (otype::type read-only))
-	   
+
 	   ;; the object field read and write
-	   (final-class setfield::extern
+	   (final-class setfield::private
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field
@@ -116,22 +120,18 @@
 	      (otype::type read-only))
 
 	   ;; extern object creation
-	   (final-class new::extern
+	   (final-class new::private
 	      (args-type::pair-nil (default '())))
 
 	   ;; extern vector object creation
-	   (final-class valloc::extern
-	      ;; the format of the extern call to be emitted
-	      (c-heap-format::bstring read-only)
+	   (final-class valloc::private
 	      ;; the vector fields type
 	      (ftype::type read-only (default *obj*))
 	      ;; the type of the dimension
 	      (otype::type read-only))
 
 	   ;; vector reference
-	   (final-class vref::extern
-	      ;; the format of the extern call to be emitted
-	      (c-format::bstring read-only)
+	   (final-class vref::private
 	      ;; the vector fields type
 	      (ftype::type (default *obj*))
 	      ;; the type of the offset
@@ -142,9 +142,7 @@
 	      (unsafe::bool read-only (default #f)))
 
 	   ;; vector mutation
-	   (final-class vset!::extern
-	      ;; the format of the extern call to be emitted
-	      (c-format::bstring read-only)
+	   (final-class vset!::private
 	      ;; the vector fields type
 	      (ftype::type (default *obj*))
 	      ;; the type of the offset
@@ -155,18 +153,16 @@
 	      (unsafe::bool read-only (default #f)))
 
 	   ;; vector length
-	   (final-class vlength::extern
-	      ;; the format of the extern call to be emitted
-	      (c-format::bstring read-only)
+	   (final-class vlength::private
 	      ;; the vector fields type
 	      (vtype::type read-only))
 	   
 	   ;; extern predicate
-	   (final-class isa::extern
+	   (final-class isa::private
 	      (class::type read-only))
 	      
 	   ;; the null node
-	   (final-class cast-null::extern)
+	   (final-class cast-null::private)
 
 	   ;; the cast node
 	   (class cast::node

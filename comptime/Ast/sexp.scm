@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sun Dec 12 14:52:01 2010 (serrano)                */
+;*    Last change :  Wed Mar 16 10:58:28 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -529,7 +529,7 @@
 			 exp
 			 (find-location/loc exp loc)))
       ((? private-sexp?)
-       (private->node exp stack loc site))
+       (private-node exp stack loc site))
 ;*--- app -------------------------------------------------------------*/
       (else
        ;; this expression can be a function call or a typed pragma

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Tue Mar 15 17:36:36 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 11:02:04 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -326,69 +326,14 @@
       (extern->cop format #f node kont)))
 
 ;*---------------------------------------------------------------------*/
-;*    node->cop ::getfield ...                                         */
+;*    node->cop ::private ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::getfield kont)
+(define-method (node->cop node::private kont)
    (trace (cgen 3)
 	  "(node->cop node::getfield kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::getfield node (fname otype)
-      (let ((fmt (string-append "(((" (type-name otype) ")CREF($1))->"
-				fname ")")))
-	 (extern->cop fmt #t node kont))))
-   
-;*---------------------------------------------------------------------*/
-;*    node->cop ::setfield ...                                         */
-;*---------------------------------------------------------------------*/
-(define-method (node->cop node::setfield kont)
-   (trace (cgen 3)
-	  "(node->cop node::setfield kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
-   (with-access::setfield node (fname ftype otype)
-      (let ((fmt (string-append "((((" (type-name otype) ")CREF($1))->"
-				fname ") = ((" (type-name ftype)
-				")$2), BUNSPEC)")))
-	 (extern->cop fmt #t node kont))))
-
-;*---------------------------------------------------------------------*/
-;*    node->cop ::vlength ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (node->cop node::vlength kont)
-   (with-access::vlength node (c-format)
-      (trace (cgen 3)
-	     "(node->cop node::vlength kont): " (shape node) #\Newline
-	     "  kont: " kont " " c-format #\Newline)
+   (with-access::private node (c-format)
       (extern->cop c-format #t node kont)))
-   
-;*---------------------------------------------------------------------*/
-;*    node->cop ::vref ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (node->cop node::vref kont)
-   (with-access::vref node (c-format)
-      (trace (cgen 3)
-	     "(node->cop node::vref kont): " (shape node) #\Newline
-	     "  kont: " kont " " c-format #\Newline)
-      (extern->cop c-format #t node kont)))
-   
-;*---------------------------------------------------------------------*/
-;*    node->cop ::vset! ...                                            */
-;*---------------------------------------------------------------------*/
-(define-method (node->cop node::vset! kont)
-   (with-access::vset! node (c-format)
-      (trace (cgen 3)
-	     "(node->cop node::vset! kont): " (shape node) #\Newline
-	     "  kont: " kont " " c-format #\Newline)
-      (extern->cop c-format #t node kont)))
-   
-;*---------------------------------------------------------------------*/
-;*    node->cop ::valloc ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (node->cop node::valloc kont)
-   (with-access::valloc node (c-heap-format)
-      (trace (cgen 3)
-	     "(node->cop node::vallocate kont): " (shape node) #\Newline
-	     "  kont: " kont " " c-heap-format " " #\Newline) 
-      (extern->cop c-heap-format #t node kont)))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::cast ...                                             */

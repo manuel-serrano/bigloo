@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Tue Feb  8 16:22:50 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 19:58:01 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -744,7 +744,7 @@
    (test "cond-expand(or-eval)" (eval '(cond-expand
 					  ((or bigloo-eval bigloo) 5)
 					  (else -1)))
-	 5) 
+	 5)
    (test "cond-expand(or)" (cond-expand
 			      ((or bigloo bigloo-eval) 2)
 			      (else -1))

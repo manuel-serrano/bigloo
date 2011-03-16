@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov  6 10:40:50 1992                          */
-;*    Last change :  Fri Feb 17 14:13:01 2006 (serrano)                */
+;*    Last change :  Wed Mar 16 12:27:13 2011 (serrano)                */
 ;*                                                                     */
 ;*    Des petits tests qui verifie que l'inlining se fait              */
 ;*    convenablement.                                                  */
@@ -102,8 +102,8 @@
 (define-inline (type-foo::char x)
    (type-hux x))
 
-(define (type-gee x)
-   ;; the inlining of (foo x) must produce a type error
+(define (type-gee x::obj)
+   ;; the inlining of (try-foo x) must produce a type error
    (try (type-foo x)
 	(lambda (a b c d)
 	   (a (+fx x 1)))))

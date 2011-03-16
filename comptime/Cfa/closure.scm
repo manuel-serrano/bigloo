@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sun Nov 28 08:45:41 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 15:15:54 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -44,7 +44,8 @@
 	    (add-make-procedure! ::node)
 	    (add-funcall! ::node)
 	    (approx-procedure-el?::bool ::approx)
-	    (approx-procedure-el1?::bool ::approx)))
+	    (approx-procedure-el1?::bool ::approx)
+	    (stop-closure-cache)))
 
 ;*---------------------------------------------------------------------*/
 ;*    closure-optimization? ...                                        */
@@ -64,7 +65,7 @@
 	     (shape *make-procedure-list*)
 	     #\Newline)
       ;; we set the local cache
-      (start-cache)
+      (start-closure-cache)
       ;; first, we set the X et T fields for each closures.
       (for-each
        (lambda (app)
@@ -105,9 +106,7 @@
       ;; then, we have to scan, all funcall and procedure-ref
       ;; and procedure-set!, procedure? in order to change them according
       ;; to procedure's classifications and free variables types.
-      (light-closure! globals)
-      ;; we don't need the cache anymore
-      (stop-cache)))
+      (light-closure! globals)))
 
 ;*---------------------------------------------------------------------*/
 ;*    X! ...                                                           */
@@ -226,7 +225,6 @@
    (light-funcall!)
    (light-access!)
    (light-make-procedure!)
-   ;; CARE: *saw* (fomerly invoked only with *saw*)
    (light-type! globals))
 
 ;*---------------------------------------------------------------------*/
@@ -430,9 +428,9 @@
 (define *make-l-procedure*    #f)
 
 ;*---------------------------------------------------------------------*/
-;*    start-cache ...                                                  */
+;*    start-closure-cache ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (start-cache)
+(define (start-closure-cache)
    (set! *procedure-ref* (get-global/module 'procedure-ref 'foreign))
    (set! *procedure-set!* (get-global/module 'procedure-set! 'foreign))
    (set! *procedure-l-ref* (get-global/module 'procedure-l-ref 'foreign))
@@ -446,9 +444,9 @@
    (set! *make-l-procedure* (get-global/module 'make-l-procedure 'foreign)))
 
 ;*---------------------------------------------------------------------*/
-;*    stop-cache ...                                                   */
+;*    stop-closure-cache ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (stop-cache)
+(define (stop-closure-cache)
    (set! *procedure-ref* #f)
    (set! *procedure-set!* #f)
    (set! *procedure-l-ref* #f)

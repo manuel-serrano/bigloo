@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Fri Nov 26 18:10:30 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 12:06:01 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
 ;*=====================================================================*/
@@ -201,10 +201,9 @@
 (define-method (node-collect! node::valloc owner)
    (with-access::valloc node (expr*)
       (node-collect*! expr* owner)
-      (if (vector-optim?)
-	  (begin
-	     (use-alloc! node)
-	     (widen!::pre-valloc/Cinfo node (owner owner)))))) 
+      (when (vector-optim?)
+	 (use-alloc! node)
+	 (widen!::pre-valloc/Cinfo node (owner owner)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node-collect! ::app-ly ...                                       */

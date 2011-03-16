@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 11:52:53 1996                          */
-;*    Last change :  Thu May 12 09:22:37 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 08:25:48 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The object<->struct conversion                                   */
 ;*=====================================================================*/
@@ -196,13 +196,13 @@
 		 (tf (make-typed-ident f (type-id (slot-type slot)))))
 	     `(let ((,v (struct-ref s ,i)))
 		 (let ((,(symbol-append len '::long) (vector-length ,v)))
-		    ,(make-pragma-indexed-init-set! type slot 'o len)
+		    ,(make-indexed-init-set! type slot 'o len)
 		    ;; this loop fill the field slots
 		    (labels ((,loop (,runner-typed)
 				    (if (=fx ,runner ,len)
 					'done
 					(let ((,tf (vector-ref-ur ,v ,runner)))
-					   ,(make-pragma-indexed-set!
+					   ,(make-indexed-set!
 					     type
 					     slot
 					     'o
@@ -213,7 +213,7 @@
 	 (else
 	  `(let ((,(make-typed-ident v (type-id (slot-type slot)))
 		  (struct-ref s ,i)))
-	      ,(make-pragma-direct-set! type slot 'o v))))))
+	      ,(make-direct-set! type slot 'o v))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-struct->plain-class ...                                      */

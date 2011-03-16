@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Tue Mar 15 17:59:15 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 11:45:03 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -32,13 +32,13 @@
 	    (class?-id::symbol ::symbol)
 	    (class->super-id::symbol ::symbol ::symbol)
 	    (super->class-id::symbol ::symbol ::symbol)
-	    (make-pragma-direct-set! ::type ::slot obj val)
-	    (make-pragma-direct-ref/widening ::type ::slot obj obj)
-	    (make-pragma-direct-set!/widening ::type ::slot obj val w)
-	    (make-pragma-indexed-ref/widening ::type ::slot obj index ::obj)
-	    (make-pragma-indexed-init-set! ::type ::slot obj val)
-	    (make-pragma-indexed-set! ::type ::slot obj val index)
-	    (make-pragma-indexed-set!/widening ::type ::slot obj val index ::obj)))
+	    (make-direct-set! ::type ::slot obj val)
+	    (make-direct-ref/widening ::type ::slot obj obj)
+	    (make-direct-set!/widening ::type ::slot obj val w)
+	    (make-indexed-ref/widening ::type ::slot obj index ::obj)
+	    (make-indexed-init-set! ::type ::slot obj val)
+	    (make-indexed-set! ::type ::slot obj val index)
+	    (make-indexed-set!/widening ::type ::slot obj val index ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class->obj-id ...                                                */
@@ -71,185 +71,153 @@
    (symbol-append super '-> class))
 
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-direct-ref ...                                       */
+;*    make-direct-ref ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-direct-ref type slot obj)
-   (if (or #t (not (backend-pragma-support (the-backend))))
-       (make-private-sexp 'getfield
-			  (type-id (slot-type slot))
-			  (type-id (real-slot-class-owner slot))
-			  (slot-name slot) obj)
-       `(,(make-typed-ident 'free-pragma/effect (type-id (slot-type slot)))
-	 (effect (read (,(symbol-append (type-id type) '- (slot-id slot)))))
-	 ,(string-append "(((" (type-class-name type) ")CREF($1))->"
-			 (slot-name slot) ")")
-	 ,obj)))
+(define (make-direct-ref type slot obj)
+   (let* ((otype (real-slot-class-owner slot))
+	  (fname (slot-name slot))
+	  (tname (type-name otype))
+	  (fmt (format "(((~a)CREF($1))->~a)" tname fname)))
+      (make-private-sexp 'getfield
+			 (type-id (slot-type slot))
+			 (type-id otype)
+			 fname
+			 fmt
+			 obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-direct-ref/widening ...                              */
+;*    make-direct-ref/widening ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-direct-ref/widening type slot obj widening)
+(define (make-direct-ref/widening type slot obj widening)
    (if (not widening)
-       (make-pragma-direct-ref type slot obj)
-       (make-pragma-direct-ref type slot `(object-widening ,obj))))
+       (make-direct-ref type slot obj)
+       (make-direct-ref type slot `(object-widening ,obj))))
 
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-direct-set! ...                                      */
+;*    make-direct-set! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-direct-set! type slot obj val)
-   (if (or #t (not (backend-pragma-support (the-backend))))
-       (make-private-sexp 'setfield
-			  (type-id (slot-type slot))
-			  (type-id (real-slot-class-owner slot))
-			  (slot-name slot) obj val)
-       `(pragma/effect::obj
-	 (effect (write (,(symbol-append (type-id type) '- (slot-id slot)))))
-	 ,(string-append "((((" (type-class-name type) ")CREF($1))->" (slot-name slot)
-			 ") = ((" (type-class-name (slot-type slot)) ")$2), BUNSPEC)")
-	 ,obj
-	 ,val)))
+(define (make-direct-set! type slot obj val)
+   (let* ((otype (real-slot-class-owner slot))
+	  (fname (slot-name slot))
+	  (tname (type-name otype))
+	  (fmt (format "((((~a)CREF($1))->~a)=((~a)$2),BUNSPEC)" tname fname
+		       (type-name (slot-type slot)))))
+      (make-private-sexp 'setfield
+			 (type-id (slot-type slot))
+			 (type-id otype)
+			 (slot-name slot)
+			 fmt
+			 obj val)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-direct-set!/widening ...                             */
+;*    make-direct-set!/widening ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-direct-set!/widening type slot obj val widening)
+(define (make-direct-set!/widening type slot obj val widening)
    (if (not widening)
-       (make-pragma-direct-set! type slot obj val)
-       (make-pragma-direct-set! type slot `(object-widening ,obj) val)))
+       (make-direct-set! type slot obj val)
+       (make-direct-set! type slot `(object-widening ,obj) val)))
    
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-indexed-ref ...                                      */
+;*    make-indexed-ref ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-indexed-ref type slot obj index)
-   (define (pragma-index)
-      `(,(make-typed-ident 'free-pragma (type-id (slot-type slot)))
-	,(string-append "(((" (type-class-name type) ")CREF($1))->"
-			(slot-name slot)
-			")[ $2 ]")
-	,obj
-	,index))
-   (define (nopragma-index)
-      (with-access::slot slot (name indexed class-owner)
-	 (let* ((ftype-id (type-id indexed))
-		(field (make-private-sexp 'getfield
-					  ftype-id
-					  (type-id class-owner)
-					  name
-					  obj)))
-	    (make-private-sexp 'vref-ur
-			       ftype-id
-			       (type-id (slot-type slot))
-			       (type-id *int*)
-			       "($1)[$2]"
-			       field
-			       index))))
-   (if (and #f (backend-pragma-support (the-backend)))
-       (pragma-index)
-       (nopragma-index)))
-
-;*---------------------------------------------------------------------*/
-;*    make-pragma-indexed-ref/widening ...                             */
-;*---------------------------------------------------------------------*/
-(define (make-pragma-indexed-ref/widening type slot obj index widening)
-   (if (not widening)
-       (make-pragma-indexed-ref type slot obj index)
-       (make-pragma-indexed-ref type slot `(object-widening ,obj) index)))
-
-;*---------------------------------------------------------------------*/
-;*    c-allocate-indexed-slot ...                                      */
-;*---------------------------------------------------------------------*/
-(define (c-allocate-indexed-slot type len)
-   (let ((tid  (type-id type))
-	 (tname (string-sans-$ (type-class-name type)))
-	 (sizeof (if (string? (type-size type))
-		     (type-size type)
-		     (type-class-name type))))
-      `(,(make-typed-ident 'free-pragma tid)
-	,(string-append "GC_MALLOC( sizeof(" sizeof ") * $1 )") ,len)))
-
-;*---------------------------------------------------------------------*/
-;*    jvm-allocate-indexed-slot ...                                    */
-;*---------------------------------------------------------------------*/
-(define (jvm-allocate-indexed-slot vtype-id ftype-id len)
-   (make-private-sexp 'valloc vtype-id ftype-id (type-id *int*) "" "" #f len))
-   
-;*---------------------------------------------------------------------*/
-;*    make-pragma-indexed-init-set! ...                                */
-;*---------------------------------------------------------------------*/
-(define (make-pragma-indexed-init-set! type slot obj len)
-   (define (pragma-index)
-      `(pragma::obj
-	,(string-append "((((" (type-class-name type) ")CREF($1))->"
-			(slot-name slot)
-			") = ((" (type-class-name (slot-type slot))
-			" *)$2), BUNSPEC)")
-	,obj
-	,(c-allocate-indexed-slot type len)))
-   (define (nopragma-index)
-      (let ((ftype (type-id (slot-indexed slot)))
-	    (otype (slot-type slot))
-	    (name (slot-name slot)))
-	 (make-private-sexp 'setfield
-			    ftype
-			    (type-id (real-slot-class-owner slot))
-			    name
-			    obj
-			    (jvm-allocate-indexed-slot ftype
-						       (type-id otype)
-						       len))))
-   (if (backend-pragma-support (the-backend))
-       (pragma-index)
-       (nopragma-index)))
-
-;*---------------------------------------------------------------------*/
-;*    make-pragma-indexed-set! ...                                     */
-;*---------------------------------------------------------------------*/
-(define (make-pragma-indexed-set! type slot obj val index)
-   (define (pragma-index)
-      `(pragma::obj
-	,(string-append "((((" (type-class-name type) ")CREF($1))->"
-			(slot-name slot)
-			")[ $2 ] = ((" (type-class-name (slot-type slot))
-			")$3), BUNSPEC)")
-	,obj
-	,index
-	,val))
-   (define (nopragma-index)
-      (let* ((ftype-id (type-id (slot-indexed slot)))
-	     (gfield (make-private-sexp 'getfield
-					ftype-id
-					(type-id (real-slot-class-owner slot))
-					(slot-name slot)
-					obj)))
-	 (make-private-sexp 'vset-ur!
+(define (make-indexed-ref type slot obj index)
+   (with-access::slot slot (name indexed class-owner)
+      (let* ((ftype-id (type-id indexed))
+	     (otype (real-slot-class-owner slot))
+	     (tname (type-name otype))
+	     (fmt (string-append "(((" tname ")CREF($1))->" name ")"))
+	     (field (make-private-sexp 'getfield
+				       ftype-id
+				       (type-id otype)
+				       name
+				       fmt
+				       obj)))
+	 (make-private-sexp 'vref-ur
 			    ftype-id
 			    (type-id (slot-type slot))
 			    (type-id *int*)
-			    "($1[$2]=($3),BUNSPEC)"
-			    gfield
-			    index
-			    val)))
-   (if (and #f (backend-pragma-support (the-backend)))
-       (pragma-index)
-       (nopragma-index)))
+			    "($1)[$2]"
+			    field
+			    index))))
+
+;*---------------------------------------------------------------------*/
+;*    make-indexed-ref/widening ...                                    */
+;*---------------------------------------------------------------------*/
+(define (make-indexed-ref/widening type slot obj index widening)
+   (if (not widening)
+       (make-indexed-ref type slot obj index)
+       (make-indexed-ref type slot `(object-widening ,obj) index)))
+   
+;*---------------------------------------------------------------------*/
+;*    make-indexed-init-set! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (make-indexed-init-set! type slot obj len)
+   
+   (define (allocate-indexed-slot type vtype-id ftype-id len)
+      (let* ((tname (string-sans-$ (type-class-name type)))
+	     (sizeof (if (string? (type-size type))
+			 (type-size type)
+			 (type-class-name type)))
+	     (fmt (format "(sizeof(~a)*$1)" sizeof)))
+	 (make-private-sexp 'valloc vtype-id ftype-id (type-id *int*)
+			    (string-append "GC_MALLOC" fmt)
+			    (string-append "alloca" fmt)
+			    #f len)))
+   
+   (let* ((ftype (type-id (slot-indexed slot)))
+	  (otype (real-slot-class-owner slot))
+	  (stype (slot-type slot))
+	  (tname (type-name otype))
+	  (name (slot-name slot))
+	  (fmt (format "((((~a)CREF($1))->~a)=((~a *)$2), BUNSPEC)"
+		       tname
+		       (slot-name slot)
+		       (type-name (slot-type slot)))))
+      (make-private-sexp 'setfield
+			 ftype
+			 (type-id (real-slot-class-owner slot))
+			 name
+			 fmt
+			 obj
+			 (allocate-indexed-slot type ftype (type-id stype) len))))
+
+;*---------------------------------------------------------------------*/
+;*    make-indexed-set! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (make-indexed-set! type slot obj val index)
+   (let* ((ftype-id (type-id (slot-indexed slot)))
+	  (otype (real-slot-class-owner slot))
+	  (tname (type-name otype))
+	  (name (slot-name slot))
+	  (fmt (string-append "(((" tname ")CREF($1))->" name ")"))
+	  (gfield (make-private-sexp 'getfield
+				     ftype-id
+				     (type-id otype)
+				     name
+				     fmt
+				     obj)))
+      (make-private-sexp 'vset-ur!
+			 ftype-id
+			 (type-id (slot-type slot))
+			 (type-id *int*)
+			 "($1[$2]=($3),BUNSPEC)"
+			 gfield
+			 index
+			 val)))
 
 ;*---------------------------------------------------------------------*/
 ;*    real-slot-class-owner ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (real-slot-class-owner slot)
-   (define (slot-class slot)
-      (let ((t (slot-class-owner slot)))
-	 (if (and *saw* (wide-class? t))
-	     (find-type (saw-wide-class-id (tclass-id t)))
-	     t)))
-   (let ((t (slot-class slot)))
-      (type-occurrence-increment! t)
-      t))
+   (let ((t (slot-class-owner slot)))
+      (if (and *saw* (wide-class? t))
+	  (find-type (saw-wide-class-id (tclass-id t)))
+	  t)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-pragma-indexed-set!/widening ...                            */
+;*    make-indexed-set!/widening ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-pragma-indexed-set!/widening type slot obj val index widening)
+(define (make-indexed-set!/widening type slot obj val index widening)
    (if (not widening)
-       (make-pragma-indexed-set! type slot obj val index)
-       (make-pragma-indexed-set! type slot `(object-widening ,obj) val index)))
+       (make-indexed-set! type slot obj val index)
+       (make-indexed-set! type slot `(object-widening ,obj) val index)))

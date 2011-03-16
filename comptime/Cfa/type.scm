@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Mar 12 16:11:22 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 19:53:31 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -15,6 +15,7 @@
 (module cfa_type
    (import  type_type
 	    type_cache
+	    type_typeof
 	    tools_shape
 	    tools_error
 	    engine_param
@@ -25,6 +26,7 @@
 	    cfa_info3
 	    cfa_set
 	    cfa_tvector
+	    cfa_closure
 	    tvector_tvector)
    (export  (type-settings! globals)
 	    (get-approx-type ::approx)))
@@ -49,7 +51,7 @@
 			 (type-variable! (local-value var) var))
 		      args)
 	    ;; the body
-	    (type-node! body)
+	    (set! body (type-node! body))
 	    ;; and the function result
 	    (set-variable-type! var (get-approx-type approx))))))
 
@@ -133,7 +135,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    set-variable-type! ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    We set the type of the variable in two different circontances:   */
+;*    We set the type of the variable in two different circumstances:  */
 ;*      1- the variable has no type yet (*_* type)                     */
 ;*      2- the variable has the type *vector* but this variable        */
 ;*         holds actually optimized tvectors.                          */
@@ -159,19 +161,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-generic (type-node! node::node))
+(define-generic (type-node!::node node::node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::atom ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::atom)
-   #unspecified)
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::kwote ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::kwote)
-   #unspecified)
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::var ...                                             */
@@ -181,7 +183,8 @@
       (when (and (global? variable) (eq? (global-import variable) 'static))
 	 (type-variable! (global-value variable) variable))
       (when (or (eq? type *_*) (eq? type *vector*))
-	 (set! type (variable-type variable)))))
+	 (set! type (variable-type variable))))
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::closure ...                                         */
@@ -194,37 +197,88 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sequence)
    (with-access::sequence node (nodes)
-      (type-node*! nodes)))
+      (type-node*! nodes)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::app ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::app)
    (with-access::app node (type fun args)
-      (type-node*! args)))
+      (type-node*! args)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    get-procedure-approx-type ...                                    */
+;*---------------------------------------------------------------------*/
+(define (get-procedure-approx-type approx)
+   (cond
+      ((not (approx-procedure-el? approx)) (approx-type approx))
+      ((approx-procedure-el1? approx) *procedure-el1*)
+      (else *procedure-el*)))
+   
+;*---------------------------------------------------------------------*/
+;*    type-node! ::procedure-ref-app ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::procedure-ref-app)
+   (with-access::procedure-ref-app node (args approx type fun)
+      (call-next-method)
+      (if *optim-cfa-free-var-tracking?*
+	  (let ((atype (get-procedure-approx-type approx)))
+	     (if (and (bigloo-type? atype)
+		      (not (eq? atype *_*))
+		      (not (eq? atype (get-type node))))
+		 (begin
+		    (tprint "CASTING: " (shape node) " -> " (shape approx))
+		 (instantiate::cast
+		    (type atype)
+		    (arg node)))
+		 
+		 node))
+	  node)))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::procedure-set!-app ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::procedure-set!-app)
+   (with-access::procedure-set!-app node (args approx vapprox type fun)
+      (call-next-method)
+      (when *optim-cfa-free-var-tracking?*
+	 (let ((atype (get-procedure-approx-type vapprox)))
+	    (when (and (bigloo-type? atype)
+		       (not (eq? atype *_*))
+		       (not (eq? atype (get-type (caddr args)))))
+	       (set-car! (cddr args)
+			 (instantiate::cast
+			    (type *obj*)
+			    (arg (caddr args)))))))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::app-ly ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::app-ly)
    (with-access::app-ly node (fun arg)
-      (type-node! fun)
-      (type-node! arg)))
+      (set! fun (type-node! fun))
+      (set! arg (type-node! arg))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::funcall)
    (with-access::funcall node (fun args)
-      (type-node! fun)
-      (type-node*! args)))
+      (set! fun (type-node! fun))
+      (type-node*! args)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::extern ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::extern)
    (with-access::extern node (expr* type)
-      (type-node*! expr*)))
+      (type-node*! expr*)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::vref ...                                            */
@@ -232,8 +286,9 @@
 (define-method (type-node! node::vref)
    (call-next-method)
    (with-access::vref node (ftype)
-      (if (eq? ftype *_*)
-	  (set! ftype *obj*))))
+      (when (eq? ftype *_*)
+	 (set! ftype *obj*)))
+   node)
       
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::vset! ...                                           */
@@ -241,51 +296,57 @@
 (define-method (type-node! node::vset!)
    (call-next-method)
    (with-access::vset! node (ftype)
-      (if (eq? ftype *_*)
-	  (set! ftype *obj*))))
+      (when (eq? ftype *_*)
+	 (set! ftype *obj*)))
+   node)
       
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::cast ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::cast)
    (with-access::cast node (arg)
-      (type-node! arg)))
+      (set! arg (type-node! arg))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::setq ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::setq)
    (with-access::setq node (var value)
-      (type-node! value)
-      (type-node! var)))
+      (set! value (type-node! value))
+      (set! var (type-node! var))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::conditional ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::conditional)
    (with-access::conditional node (test true false)
-       (type-node! test)
-       (type-node! true)
-       (type-node! false)))
+       (set! test (type-node! test))
+       (set! true (type-node! true))
+       (set! false (type-node! false))
+       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::fail ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::fail)
    (with-access::fail node (type proc msg obj)
-      (type-node! proc)
-      (type-node! msg)
-      (type-node! obj)))
+      (set! proc (type-node! proc))
+      (set! msg (type-node! msg))
+      (set! obj (type-node! obj))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::select ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::select)
    (with-access::select node (clauses test)
-      (type-node! test)
+      (set! test (type-node! test))
       (for-each (lambda (clause)
-		   (type-node! (cdr clause)))
-		clauses)))
+		   (set-cdr! clause (type-node! (cdr clause))))
+		clauses)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::let-fun ...                                         */
@@ -293,7 +354,8 @@
 (define-method (type-node! node::let-fun)
    (with-access::let-fun node (body locals)
       (for-each type-fun! locals)
-      (type-node! body)))
+      (set! body (type-node! body))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::let-var ...                                         */
@@ -303,10 +365,11 @@
       (for-each (lambda (binding)
 		   (let ((var (car binding))
 			 (val (cdr binding)))
-		      (type-node! val)
+		      (set-cdr! binding (type-node! val))
 		      (type-variable! (local-value var) var)))
 		bindings)
-      (type-node! body)))
+      (set! body (type-node! body))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::set-ex-it ...                                       */
@@ -315,44 +378,49 @@
    (with-access::set-ex-it node (var body)
       (let ((v (var-variable var)))
 	 (type-variable! (local-value v) v))
-      (type-node! body)
-      (type-node! var)))
+      (set! body (type-node! body))
+      (set! var (type-node! var))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::jump-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
-      (type-node! exit) 
-      (type-node! value)))
+      (set! exit (type-node! exit) )
+      (set! value (type-node! value))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::make-box ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::make-box)
    (with-access::make-box node (value)
-      (type-node! value)))
+      (set! value (type-node! value))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::box-set! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::box-set!)
    (with-access::box-set! node (var value)
-      (type-node! var)
-      (type-node! value)))
+      (set! var (type-node! var))
+      (set! value (type-node! value))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::box-ref)
    (with-access::box-ref node (var)
-      (type-node! var)))
+      (set! var (type-node! var))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node*! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (type-node*! node*)
-   (for-each type-node! node*))
+   (map! type-node! node*))
 
 
 		

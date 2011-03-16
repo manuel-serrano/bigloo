@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Thu Nov 18 11:56:54 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 08:26:06 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
 ;*    -------------------------------------------------------------    */
@@ -209,8 +209,7 @@
 		(list
 		 (epairify*
 		  `(define-inline (,slot-ref-tid ,(symbol-append obj tid))
- 		      ,(make-pragma-direct-ref/widening class slot
-							obj widening))
+ 		      ,(make-direct-ref/widening class slot obj widening))
 		  src
 		  src-def)))
 	     ;; otherwise we define a alias pointing to the real slot
@@ -225,12 +224,12 @@
 (define (slot-indexed-ref class-id type slot widening src-def)
    (define (indexed-ref-unsafe sid id tid)
       `(define-inline (,tid ,(make-typed-ident 'o class-id) i::long)
-	  ,(make-pragma-indexed-ref/widening type slot 'o 'i widening)))
+	  ,(make-indexed-ref/widening type slot 'o 'i widening)))
    (define (indexed-ref-safe sid id tid)
       `(define (,tid ,(make-typed-ident 'o class-id) i::long)
 	  (if (>=fx i 0)
 	      (if (<fx i (,(symbol-append class-id '- sid '-len) o))
-		  ,(make-pragma-indexed-ref/widening type slot 'o 'i widening)
+		  ,(make-indexed-ref/widening type slot 'o 'i widening)
 		  (error ',id "Index out of bound" i))
 	      (error ',id "Index out of bound" i))))
    (with-access::slot slot (id type src)
@@ -355,7 +354,7 @@
 	     (list
 	      (epairify* `(define-inline (,slot-set!-tid
 					  ,(symbol-append obj tid) ,v-tid)
-			     ,(make-pragma-direct-set!/widening class
+			     ,(make-direct-set!/widening class
 								slot
 								obj
 								v-id
@@ -376,12 +375,12 @@
 (define (slot-indexed-set! class-id class slot widening src-def)
    (define (indexed-set!-unsafe class-id sid! stid! vid vtid)
       `(define-inline (,stid! ,(make-typed-ident 'o class-id) i::long ,vtid)
-	  ,(make-pragma-indexed-set!/widening class slot 'o vid 'i widening)))
+	  ,(make-indexed-set!/widening class slot 'o vid 'i widening)))
    (define (indexed-set!-safe id class-id sid! stid! vid vtid)
       `(define (,stid! ,(make-typed-ident 'o class-id) i::long ,vtid)
 	  (if (>=fx i 0)
 	      (if (<fx i (,(symbol-append class-id '- id '-len) o))
-		  ,(make-pragma-indexed-set!/widening class slot 'o vid 'i widening)
+		  ,(make-indexed-set!/widening class slot 'o vid 'i widening)
 		  (error ',sid! "Index out of bound" i))
 	      (error ',sid! "Index out of bound" i))))
    (with-access::slot slot (id type src)

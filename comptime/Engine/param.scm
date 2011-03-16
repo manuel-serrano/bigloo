@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Mar 12 09:31:49 2011 (serrano)                */
+;*    Last change :  Wed Mar 16 15:43:03 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -63,6 +63,7 @@
 	    *optim-O-macro?*
 	    *optim-cfa-fixnum-arithmetic?*
 	    *optim-cfa-flonum-arithmetic?*
+	    *optim-cfa-free-var-tracking?*
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
@@ -895,6 +896,9 @@
 	      #f)
 (param-define *optim-cfa-flonum-arithmetic?*
 	      "Enable refined flonum arithmetic specialization"
+	      #f)
+(param-define *optim-cfa-free-var-tracking?*
+	      "Enable closure free-variables specialization"
 	      #f)
 (param-define *optim-integrate?*
 	      "Enable function integration (closure analysis)"

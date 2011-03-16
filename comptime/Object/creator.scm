@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Sun Mar 30 07:12:56 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 08:25:36 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
 ;*    -------------------------------------------------------------    */
@@ -418,13 +418,13 @@
 	     ;; for an indexed field we have to make a
 	     ;; malloc call and then to fill all the field slots
 	     `(begin
-		 ,(make-pragma-indexed-init-set! type slot new flen)
+		 ,(make-indexed-init-set! type slot new flen)
 		 ;; this loop fills the field slots
 		 (labels ((,loop (,rtid)
 				 (if (=fx ,rid ,flen)
 				     'done
 				     (begin
-					,(make-pragma-indexed-set!/widening
+					,(make-indexed-set!/widening
 					  type
 					  slot
 					  new
@@ -434,7 +434,7 @@
 					(,loop (+fx ,rid 1))))))
 		    (,loop 0))))
 	    (else
-	     (make-pragma-direct-set! type slot new formal)))))
+	     (make-direct-set! type slot new formal)))))
    (let loop ((slots slots)
 	      (f-ids f-ids)
 	      (res   '())

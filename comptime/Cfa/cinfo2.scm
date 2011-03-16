@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Sat Jul  7 08:36:29 2001 (serrano)                */
-;*    Copyright   :  1999-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 17:05:58 2011 (serrano)                */
+;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
 ;*    requiring to many memory. I have simply slit that module.        */
@@ -52,8 +52,11 @@
 	      (owner::variable read-only)
 	      ;; a stamp use for the stack loosing propagation
 	      (stack-stamp (default '())))
-	   (wide-class procedure-ref-app::app (approx::approx read-only))
-	   (wide-class procedure-set!-app::app (approx::approx read-only))
+	   (wide-class procedure-ref-app::app
+	      (approx::approx read-only))
+	   (wide-class procedure-set!-app::app
+	      (approx::approx read-only)
+	      (vapprox (default #unspecified)))
 
 	   ;; vector
 	   (wide-class pre-make-vector-app::app

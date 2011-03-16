@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Sat Jul  7 08:41:38 2001 (serrano)                */
-;*    Copyright   :  1996-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 16 17:06:27 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module cfa_procedure
    (include "Tools/trace.sch")
-   (import  tools_error
+   (import  engine_param
+	    tools_error
 	    tools_shape
 	    type_type
 	    type_cache
@@ -54,6 +55,14 @@
 		(begin
 		   (vector-set! res i (make-type-approx *obj*))
 		   (loop (+fx i 1)))))))
+   (define (make-empty-approx-vector len)
+      (let ((res (make-vector len)))
+	 (let loop ((i 0))
+	    (if (=fx i len)
+		res
+		(begin
+		   (vector-set! res i (make-empty-approx))
+		   (loop (+fx i 1)))))))
    (with-access::pre-make-procedure-app node (fun args)
       (add-make-procedure! node)
       (node-setup*! args)
@@ -64,11 +73,13 @@
 	    (if (and (fixnum? proc-size)
 		     (var? proc)
 		     (fun? (variable-value (var-variable proc))))
-		(let ((node (widen!::make-procedure-app node
-			       (owner owner)
-			       (approx (make-empty-approx))
-			       (values-approx (make-obj-approx-vector
-					       proc-size)))))
+		(let* ((vapprox (if *optim-cfa-free-var-tracking?*
+				    (make-empty-approx-vector proc-size)
+				    (make-obj-approx-vector proc-size)))
+		       (node (widen!::make-procedure-app node
+				(owner owner)
+				(approx (make-empty-approx))
+				(values-approx vapprox))))
 		   (trace (cfa 3)
 			  " make-procedure-app: " (shape node) #\Newline
 			  "          proc-size: " proc-size #\Newline)
@@ -101,7 +112,9 @@
       (node-setup*! args)
       (let ((node (shrink! node)))
 	 (widen!::procedure-ref-app node
-	    (approx (make-type-approx *obj*))))))
+	    (approx (if *optim-cfa-free-var-tracking?*
+			(make-empty-approx)
+			(make-type-approx *obj*)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pre-procedure-set!-app ...                         */
@@ -144,10 +157,11 @@
       (let ((proc-approx (cfa! (car args)))
 	    (offset      (get-node-atom-value (cadr args))))
 	 (trace (cfa 4) " procedure-ref: " (shape node) #\Newline
-		"        offset: " offset #\Newline)
+		"        offset: " offset #\Newline
+		"        approx: " (shape approx) #\Newline)
 	 ;; we check for top
-	 (if (approx-top? proc-approx)
-	     (approx-set-top! approx))
+	 (when (approx-top? proc-approx)
+	    (approx-set-top! approx))
 	 (if (fixnum? offset)
 	     ;; if the offset is a fixnum, we compute an accurate approx
 	     (for-each-approx-alloc
@@ -187,18 +201,18 @@
 ;*    cfa! ::procedure-set!-app ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::procedure-set!-app)
-   (with-access::procedure-set!-app node (args approx)
+   (with-access::procedure-set!-app node (args approx vapprox)
       (cfa! (cadr args))
       (let ((proc-approx (cfa! (car args)))
-	    (offset      (get-node-atom-value (cadr args)))
-	    (val-approx  (cfa! (caddr args))))
+	    (offset      (get-node-atom-value (cadr args))))
+	 (set! vapprox (cfa! (caddr args)))
 	 (trace (cfa 4) " procedure-set!: " (shape node) #\Newline
 		"         offset: " offset #\Newline
-		"         val-ap: " (shape val-approx) #\Newline)
+		"         val-ap: " (shape vapprox) #\Newline)
 	 ;; do we have top in the proc approximation ?
 	 (if (approx-top? proc-approx)
 	     ;; yes, we have, hence we loose every thing.
-	     (loose! val-approx 'all)
+	     (loose! vapprox 'all)
 	     (if (fixnum? offset)
 		 ;; if the offset is a fixnum, we compute an accurate approx
 		 (for-each-approx-alloc
@@ -211,7 +225,7 @@
 					 (make-procedure-app-values-approx
 					  app)
 					 offset)
-					val-approx)))
+					vapprox)))
 		  proc-approx)
 		 ;; if the offset is not a fixnum, we compute a merging approx
 		 (for-each-approx-alloc
@@ -227,7 +241,7 @@
 					(make-procedure-app-values-approx
 					 app)
 					i)
-				       val-approx)
+				       vapprox)
 				      (loop (+fx i 1))))))))
 		  proc-approx)))
 	 approx)))
