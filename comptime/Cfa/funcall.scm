@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sat Dec 17 13:28:29 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 07:31:10 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
 ;*=====================================================================*/
@@ -42,49 +42,46 @@
 (define-method (cfa! node::funcall/Cinfo)
    (trace (cfa 2) "  funcall: " (shape node) #\Newline)
    (with-access::funcall/Cinfo node (approx fun args)
-      (let* ((fun-approx (cfa! fun))
-	     (args-approx (map cfa! (cdr args))))
+      (let* ((fapprox (cfa! fun))
+	     (aapprox (map cfa! (cdr args))))
 	 (trace (cfa 2)
-	     "      fun: " (shape fun-approx) #\Newline
-	     "     args: " (shape args-approx) #\Newline)
+	     "      fun: " (shape fapprox) #\Newline
+	     "     args: " (shape aapprox) #\Newline)
 	 ;; we check for a possible type error
-	 (let ((fun-type (approx-type fun-approx)))
-	    (if (and (not (eq? fun-type *_*))
-		     (not (eq? fun-type *obj*))
-		     (not (eq? fun-type *procedure*)))
-		(funcall-type-error node fun-type)))
+	 (let ((fun-type (approx-type fapprox)))
+	    (when (and (not (eq? fun-type *_*))
+		       (not (eq? fun-type *obj*))
+		       (not (eq? fun-type *procedure*)))
+	       (funcall-type-error node fun-type)))
 	 ;; we check the type...
-	 (if (or (not (eq? (approx-type fun-approx) *procedure*))
-		 (approx-top? fun-approx))
-	     (approx-set-type! approx *obj*))
+	 (when (or (not (eq? (approx-type fapprox) *procedure*))
+		   (approx-top? fapprox))
+	    (approx-set-type! approx *obj*))
 	 ;; and we compute the approximations
-	 (if (or (approx-top? fun-approx)
-		 (not (eq? (approx-type fun-approx) *procedure*)))
+	 (if (or (approx-top? fapprox)
+		 (not (eq? (approx-type fapprox) *procedure*)))
 	     (begin
-		(for-each (lambda (approx) (loose! approx 'all)) args-approx)
+		(for-each (lambda (approx) (loose! approx 'all)) aapprox)
 		(for-each-approx-alloc
 		 (lambda (alloc)
 		    (if (make-procedure-app? alloc)
-			(let ((env-approx (make-procedure-app-approx alloc)))
-			   (union-approx! approx
-					  (funcall! alloc
-						    (cons env-approx
-							  args-approx)
-						    node)))
+			(let ((eapprox (make-procedure-app-approx alloc)))
+			   (union-approx!
+			    approx
+			    (funcall! alloc (cons eapprox aapprox) node)))
 			(make-empty-approx)))
-		 fun-approx)
+		 fapprox)
 		(approx-set-top! approx))
 	     (for-each-approx-alloc
 	      (lambda (alloc)
 		 (if (make-procedure-app? alloc)
-		     (let ((env-approx (make-procedure-app-approx alloc)))
-			(union-approx! approx
-				       (funcall! alloc
-						 (cons env-approx args-approx)
-						 node)))
+		     (let ((eapprox (make-procedure-app-approx alloc)))
+			(union-approx!
+			 approx
+			 (funcall! alloc (cons eapprox aapprox) node)))
 		     (make-empty-approx)))
-	      fun-approx))
-	 (trace (cfa 2) "       ->: " (shape approx) #\Newline)
+	      fapprox))
+	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/

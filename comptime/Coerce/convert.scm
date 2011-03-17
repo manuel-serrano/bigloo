@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Nov 29 09:08:25 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 09:48:45 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -117,8 +117,8 @@
 ;*    convertion in between Bigloo object much not be checked.         */
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
-   (trace coerce "convert: " (shape from) " -> " (shape to) " : " (shape node)
-	  #\Newline)
+   (trace coerce
+	  "convert: " (shape node) " " (shape from) " -> " (shape to) "\n")
    (if (eq? from to)
        node
        (let ((to (get-aliased-type to))

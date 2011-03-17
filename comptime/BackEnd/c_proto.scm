@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c-proto.scm         */
+;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_proto.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Mon Jan 19 20:28:34 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 16:22:20 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -241,10 +241,16 @@
 	  (emit-cnst-sfun node variable))
 	 ((sgfun)
 	  (emit-cnst-sgfun node variable))
+	 ((selfun)
+	  (emit-cnst-selfun node variable))
+	 ((slfun)
+	  (emit-cnst-slfun node variable))
 	 ((stvector)
 	  (emit-cnst-stvector node variable))
 	 (else
-	  (internal-error 'backend:emit-cnst "Unknown cnst class" class)))))
+	  (internal-error "backend:emit-cnst"
+			  (format "Unknown cnst class \"~a\"" class)
+			  (shape node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-string ...                                             */
@@ -431,6 +437,31 @@
 		      ", BUNSPEC, "
 		      arity
 		      " );"))))))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-selfun ...                                             */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-selfun fun global)
+   (let ((vname (set-variable-name! global)))
+      
+      (fprint *c-port* "static obj_t " vname ";")))
+   
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-slfun ...                                              */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-slfun fun global)
+   (let* ((actuals (app-args fun))
+	  (entry   (car actuals))
+	  (vname (set-variable-name! global))
+	  (name (set-variable-name! (var-variable entry))))
+      (fprint *c-port*
+	      "DEFINE_BGL_L_PROCEDURE("
+	      vname
+	      ", "
+	      (id->name (gensym name))
+	      ", "
+	      name 
+	      " );")))
    
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-stvector ...                                           */

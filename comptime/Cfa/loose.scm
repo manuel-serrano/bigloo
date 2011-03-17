@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:02:51 1996                          */
-;*    Last change :  Fri Nov 26 18:44:20 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 09:16:42 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Loosing approximations means values are going outside.           */
 ;*    Toping approximations means add top the sets.                    */
@@ -60,4 +60,4 @@
 	  "global-loose!: " (shape global) " " (shape approx) #\Newline)
    (if (memq (global-import global) '(import export))
        (loose! approx 'all)
-       (disable-X-T! approx)))
+       (disable-X-T! approx "global track is lost")))

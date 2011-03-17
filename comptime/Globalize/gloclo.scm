@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Mon Dec 12 19:28:58 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 08:24:22 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -156,6 +156,20 @@
       res))
    
 ;*---------------------------------------------------------------------*/
+;*    globalized-type-id ...                                           */
+;*    -------------------------------------------------------------    */
+;*    The type of the procedure entry point.                           */
+;*    -------------------------------------------------------------    */
+;*    See (@ globalized-type globalize_local->global) for a similar    */
+;*    function.                                                        */
+;*---------------------------------------------------------------------*/
+(define (globalized-type-id type)
+   (cond
+      ((not *optim-cfa-funcall-tracking?*) 'obj)
+      ((bigloo-type? type) (type-id type))
+      (else 'obj)))
+
+;*---------------------------------------------------------------------*/
 ;*    gloclo ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (gloclo global env::local args)   
@@ -166,7 +180,8 @@
 		     (if (symbol-exists? str)
 			 (gensym (symbol-append '_ (global-id global)))
 			 (symbol-append '_ (global-id global)))))
-	  (gloclo (def-global-sfun-no-warning! (make-typed-ident id 'obj)
+	  (tyid   (globalized-type-id (global-type global)))
+	  (gloclo (def-global-sfun-no-warning! (make-typed-ident id tyid)
 		     (make-n-proto (+-arity arity 1))
 		     (cons env args)
 		     (if (eq? (global-import global) 'foreign)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Mar 16 15:44:12 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 06:25:01 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -413,6 +413,10 @@
        (set! *optim-cfa-free-var-tracking?* #t))
       (("-fno-cfa-free-var-tracking" (help "Disable CFA free vars tracking."))
        (set! *optim-cfa-free-var-tracking?* #f))
+      (("-fcfa-funcall-tracking" (help "Enable CFA funcall tracking (enabled from -O2)"))
+       (set! *optim-cfa-funcall-tracking?* #t))
+      (("-fno-cfa-funcall-tracking" (help "Disable CFA funcall tracking."))
+       (set! *optim-cfa-funcall-tracking?* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))

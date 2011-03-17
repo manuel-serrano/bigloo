@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Tue Mar 15 10:47:09 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 09:15:56 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -74,7 +74,7 @@
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
 		  (eq? (approx-type dst) *_*)))
-      (disable-X-T! src))
+      (disable-X-T! src "dst is not a procedure"))
    ;; of the alloc/top 
    (when (approx-top? src)
       (approx-set-top! dst))

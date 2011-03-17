@@ -3,23 +3,23 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Sun Nov 28 08:33:55 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Thu Mar 17 08:00:10 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
-;*    like +, if we don't approximate + as a special function, the     */
+;*    like + and if we don't approximate + as a special function, the  */
 ;*    parameters to + will be forced to be OBJ and thus, all the       */
 ;*    optimization will be disabled.                                   */
 ;*    -------------------------------------------------------------    */
 ;*    The key idea is that for each arithmetic function (+, -, neg,    */
 ;*    etc.), if the two arguments are fixnum then the result is        */
 ;*    fixnum, if the two arguments are flonum then the result is       */
-;*    a flonum otherwise, it is an obj.                                */
+;*    a flonum. Otherwise, it is an obj.                               */
 ;*    -------------------------------------------------------------    */
 ;*    This works in collaboration with the CFA_SPECIALIZE module. This */
-;*    last one is in charge of translating generic operator to         */
-;*    specific operator in the annotated source code.                  */
+;*    last one is in charge of translating generic operators into      */
+;*    specific operators in the annotated source code.                 */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -115,8 +115,7 @@
 		(node-type-set! node *_*)))
 	 (cond
 	  ((sfun? val)
-	   (sfun-args-set! val
-			   (map unspecified-type (sfun-args val))))
+	   (sfun-args-set! val (map unspecified-type (sfun-args val))))
 	  ((cfun? val)
 	   (let loop ((l (cfun-args-type val)))
 	      (if (pair? l)
@@ -177,26 +176,30 @@
 	     #f))))
    (with-access::arithmetic-app node (fun args approx spec-types)
       (trace (cfa 4) ">>> arithmetic: " (shape node) " "
-	     (shape approx) " currently: " (shape approx) #\Newline)
+	     (shape approx) "\n    currently: " (shape approx) #\Newline)
       ;; we process all the argument to the function call
       (let ((args-approx (map cfa! args)))
 	 ;; find the type
 	 (let ((ty (find-first-specialized-type args-approx)))
+	    (trace (cfa 5)
+		   "      args-approx=" (shape args-approx) #\Newline
+		   "      ty=" (shape ty) #\Newline
+		   "      spec-types=" (map shape spec-types) #\Newline)
 	    (cond
 	       ((types-compatible? args-approx ty spec-types)
 		;; ok, we just return as it is...
-		(if (all-types-specialized? args-approx spec-types)
-		    ;; we, all types are specialized, we specialize
-		    ;; the result
-		    (if (eq? (approx-type approx) *_*)
-			;; this was an unallocated type
-			(begin
-			   (approx-set-type! approx ty)
-			   (continue-cfa! 'arithmetic-app)))))
+		(trace (cfa 5) "      TYPE COMPATIBLE\n")
+		(when (and (all-types-specialized? args-approx spec-types)
+			   (eq? (approx-type approx) *_*))
+		   ;; all types are specialized, we specialize
+		   ;; the result
+		   (approx-set-type! approx ty)
+		   (continue-cfa! 'arithmetic-app)))
 	       ((unless (eq? (global-id (var-variable fun)) 'c-eq?))
 		(for-each (lambda (a) (loose! a 'all)) args-approx)
 		(approx-set-type! approx *obj*)))))
       ;; we are done
+      (trace (cfa 4) "<<< arithmetic: " (shape approx) #\Newline)
       approx))
 
 

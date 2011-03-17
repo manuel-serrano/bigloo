@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Mar 16 14:47:22 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 07:22:28 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -122,25 +122,33 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::app-ly)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-		   `(apply ,(node->sexp (app-ly-fun node))
-			   ,(node->sexp (app-ly-arg node)))))
+   (let ((top (if *type-shape?*
+		  (string->symbol
+		   (string-append "apply::" (shape (node-type node))))
+		  'apply)))
+      (location-shape (node-loc node)
+		      `(,top ,(node->sexp (app-ly-fun node))
+			     ,(node->sexp (app-ly-arg node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::funcall)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-		   `(,(case (funcall-strength node)
-			 ((light)
-			  'funcall-l)
-			 ((elight)
-			  'funcall-el)
-			 (else
-			  'funcall))
-		     ,(node->sexp (funcall-fun node))
-		     ,@(map node->sexp (funcall-args node)))))
+   (let* ((op (case (funcall-strength node)
+		 ((light) 'funcall-l)
+		 ((elight) 'funcall-el)
+		 (else 'funcall)))
+	  (top (if *type-shape?*
+		   (string->symbol
+		    (string-append (symbol->string op)
+				   "::"
+				   (shape (node-type node))))
+		   op)))
+      (location-shape (node-loc node)
+		      `(,top
+			,(node->sexp (funcall-fun node))
+			,@(map node->sexp (funcall-args node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::pragma ...                                          */

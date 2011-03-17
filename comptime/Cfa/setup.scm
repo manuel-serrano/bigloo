@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Fri Nov 26 17:45:45 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 06:27:01 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module cfa_setup
    (include "Tools/trace.sch")
-   (import  type_type
+   (import  engine_param
+	    type_type
 	    type_cache
 	    type_typeof
 	    module_module
@@ -246,9 +247,13 @@
    (with-access::app-ly node (fun arg)
       (node-setup! fun)
       (node-setup! arg)
-      (widen!::app-ly/Cinfo node
-	 (approx (make-type-approx *obj*)))
-      (approx-set-top! (app-ly/Cinfo-approx node))))
+      (if *optim-cfa-funcall-tracking?*
+	  (widen!::app-ly/Cinfo node
+	     (approx (make-empty-approx)))
+	  (begin
+	     (widen!::app-ly/Cinfo node
+		(approx (make-type-approx *obj*)))
+	     (approx-set-top! (app-ly/Cinfo-approx node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::funcall ...                                        */
@@ -257,10 +262,15 @@
    (with-access::funcall node (fun args)
       (node-setup! fun)
       (node-setup*! args)
-      (widen!::funcall/Cinfo node
-	 (approx (make-type-approx *obj*))
-	 (va-approx (make-type-approx *obj*)))
-      (approx-set-top! (funcall/Cinfo-va-approx node))))
+      (if *optim-cfa-funcall-tracking?*
+	  (widen!::funcall/Cinfo node
+	     (approx (make-empty-approx))
+	     (va-approx (make-empty-approx)))
+	  (begin
+	     (widen!::funcall/Cinfo node
+		(approx (make-type-approx *obj*))
+		(va-approx (make-type-approx *obj*)))
+	     (approx-set-top! (funcall/Cinfo-va-approx node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pragma ...                                         */

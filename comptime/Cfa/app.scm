@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Wed Feb 22 18:08:38 2006 (serrano)                */
-;*    Copyright   :  1996-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 09:08:44 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
 ;*=====================================================================*/
@@ -47,7 +47,9 @@
 ;*    app! ::intern-sfun/Cinfo ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::intern-sfun/Cinfo var::var args-approx)
-   (trace (cfa 3) "  app(intern)!: " (shape var) " " (shape args-approx)
+   (trace (cfa 3)
+	  "  app(intern)! var=" (shape var)
+	  "\n       args-approx=" (shape args-approx)
 	  #\Newline)
    (with-access::intern-sfun/Cinfo fun (args)
       ;; we set the new formals approximation

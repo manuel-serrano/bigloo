@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime.case1.3/Cgen/cop.scm        */
+;*    serrano/prgm/project/bigloo/comptime/Cgen/cop.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Thu Jul  5 18:23:13 2001 (serrano)                */
-;*    Copyright   :  1996-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 13:50:34 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
 ;*=====================================================================*/
@@ -77,7 +77,8 @@
 	   (class cfuncall::cop
 	      (fun::cop read-only)
 	      (args read-only)
-	      (strength::symbol read-only))
+	      (strength::symbol read-only)
+	      (type read-only))
 	   
 	   (class capply::cop
 	      (fun::cop read-only)

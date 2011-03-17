@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Wed Mar 16 19:53:31 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 15:59:22 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -228,12 +228,9 @@
 	     (if (and (bigloo-type? atype)
 		      (not (eq? atype *_*))
 		      (not (eq? atype (get-type node))))
-		 (begin
-		    (tprint "CASTING: " (shape node) " -> " (shape approx))
 		 (instantiate::cast
 		    (type atype)
-		    (arg node)))
-		 
+		    (arg node))
 		 node))
 	  node)))
 
@@ -257,19 +254,27 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::app-ly ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (type-node! node::app-ly)
-   (with-access::app-ly node (fun arg)
+(define-method (type-node! node::app-ly/Cinfo)
+   (with-access::app-ly/Cinfo node (fun arg type approx)
       (set! fun (type-node! fun))
       (set! arg (type-node! arg))
+      (if *optim-cfa-funcall-tracking?*
+	  (set! type (approx-type approx))
+	  (set! type *obj*))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (type-node! node::funcall)
-   (with-access::funcall node (fun args)
+(define-method (type-node! node::funcall/Cinfo)
+   (with-access::funcall/Cinfo node (fun args type approx)
       (set! fun (type-node! fun))
       (type-node*! args)
+      (if *optim-cfa-funcall-tracking?*
+	  (begin
+	     (tprint "TYPE funcall: " (shape (approx-type approx)))
+	     (set! type (approx-type approx)))
+	  (set! type *obj*))
       node))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Tue Oct  3 09:42:10 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 08:24:49 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -56,6 +56,27 @@
       global))
 
 ;*---------------------------------------------------------------------*/
+;*    globalized-type ...                                              */
+;*    -------------------------------------------------------------    */
+;*    See (@ gobalize-type-id globalize_global-closure) for a          */
+;*    similar function.                                                */
+;*---------------------------------------------------------------------*/
+(define (globalized-type type)
+   (cond
+      ((not *optim-cfa-funcall-tracking?*)
+       ;; we set function types of the escaping function.
+       ;; unless funcall-tracking optimization is enabled, these
+       ;; function are _always_ of type procedure x obj x .. x obj -> obj
+       ;; because type check cannot be perform on the call site.
+       *obj*)
+      ((bigloo-type? type)
+       ;; if funcall-tracking is enable, the type of the global function
+       ;; is the type of the local function
+       type)
+      (else
+       *obj*)))
+
+;*---------------------------------------------------------------------*/
 ;*    fix-escaping-definition ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (fix-escaping-definition global local args kaptured body)
@@ -90,10 +111,7 @@
       (widen!::sfun/Ginfo new-fun)
       ;; we must set now the info slot of env
       (widen!::svar/Ginfo (local-value env) (kaptured? #f))
-      ;; we set function types (an escaping function is _always_ of
-      ;; type procedure x obj x .. x obj -> obj because type check cannot be
-      ;; perform on the call site).
-      (global-type-set! global *obj*)
+      (global-type-set! global (globalized-type (local-type local)))
       ;; since the first argument (the procedure itself) has a correct
       ;; (the type is the type of the `env' variable) type, we just skip it.
       (for-each (lambda (l) (local-type-set! l *obj*))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Feb 18 16:32:12 2011 (serrano)                */
+/*    Last change :  Thu Mar 17 16:41:34 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -739,7 +739,7 @@ struct bgl_input_timeout {
 #define CLIGHT( l )        CPAIR( l )
 
 #if( defined( TAG_PAIR ) )
-#   define BPAIR( p )      ((obj_t)((long)p | TAG_PAIR))
+#   define BPAIR( p )      ((obj_t)((long)p + TAG_PAIR))
 #   define CPAIR( p )      ((obj_t)((long)p - TAG_PAIR))
 #else
 #   define BPAIR( p )      BREF( p )
@@ -747,7 +747,7 @@ struct bgl_input_timeout {
 #endif
 
 #if( defined( TAG_CELL ) )
-#   define BCELL( p )      ((obj_t)((long)p | TAG_CELL))
+#   define BCELL( p )      ((obj_t)((long)p + TAG_CELL))
 #   define CCELL( p )      ((obj_t)((long)p - TAG_CELL))
 #else
 #   define BCELL( p )      BREF( p )
@@ -755,7 +755,7 @@ struct bgl_input_timeout {
 #endif
 
 #if( defined( TAG_VECTOR ) )
-#   define BVECTOR( p )    ((obj_t)((long)p | TAG_VECTOR))
+#   define BVECTOR( p )    ((obj_t)((long)p + TAG_VECTOR))
 #   define CVECTOR( p )    ((obj_t)((long)p - TAG_VECTOR))
 #else
 #   define BVECTOR( p )    BREF( p )
@@ -763,7 +763,7 @@ struct bgl_input_timeout {
 #endif
 
 #if( defined( TAG_STRUCTURE ) )
-#   define BSTRUCTURE( r ) ((obj_t)((long)p | TAG_STRUCTURE))
+#   define BSTRUCTURE( r ) ((obj_t)((long)p + TAG_STRUCTURE))
 #   define CSTRUCTURE( p ) ((obj_t)((long)p - TAG_STRUCTURE))
 #else
 #   define BSTRUCTURE( p ) BREF( p )
@@ -996,6 +996,12 @@ struct bgl_input_timeout {
 	     BFALSE, \
 	     BUNSPEC }; \
       static const obj_t n = BREF( &(na.header) )
+
+#define DEFINE_BGL_L_PROCEDURE( n, na, e ) \
+   static struct { __CNST_ALIGN ; \
+                   union scmobj *(*entry)(); } \
+      na = { __CNST_FILLER, (obj_t (*)())e }; \
+      static const obj_t n = BLIGHT( &(na.entry) )
    
 #define DEFINE_TVECTOR_START( aux, len, itype ) \
    static struct { __CNST_ALIGN header_t header; \
@@ -1719,7 +1725,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define PROCEDURE_L( _o_ ) (CLIGHT( _o_ )->procedure_light_t)
 
-#define PROCEDURE_L_ENTRY( fun ) (obj_t)(PROCEDURE_L( fun ).entry)
+#define PROCEDURE_L_ENTRY( fun ) (PROCEDURE_L( fun ).entry)
 
 #define PROCEDURE_L_ENV( fun ) (&(PROCEDURE_L( fun ).obj0))
 
@@ -1727,20 +1733,20 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define PROCEDURE_L_SET( p, _i, o ) (PROCEDURE_L_REF( p, _i ) = o, BUNSPEC)
 
 #if( defined( __GNUC__ ) )
-#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size )                    \
-      ( { obj_t an_object;                                                   \
-	  an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) );    \
-	  (an_object->procedure_light_t).entry = _entry;                     \
+#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
+      ( { obj_t an_object; \
+	  an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ); \
+	  (an_object->procedure_light_t).entry = _entry; \
           ( BLIGHT( an_object ) ); } )
 #else
-#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size )                    \
-      (   an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ),    \
-	  (an_object->procedure_light_t).entry = _entry,                     \
+#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
+      (   an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ), \
+	  (an_object->procedure_light_t).entry = _entry, \
           ( BLIGHT( an_object ) ) )
 #endif
 
 #define MAKE_L_PROCEDURE( _entry, _size )   \
-   MAKE_L_PROCEDURE_ALLOC( GC_MALLOC, _entry, _size )
+   MAKE_L_PROCEDURE_ALLOC( GC_MALLOC, ((obj_t (*)())_entry), _size )
 
 /*---------------------------------------------------------------------*/
 /*    Extra-light procedures                                           */

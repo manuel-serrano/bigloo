@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Wed Mar 16 15:19:15 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 13:16:11 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -16,6 +16,7 @@
    (include "Tools/trace.sch")
    (import  engine_param
 	    tools_shape
+	    tools_error
 	    type_type
 	    type_cache
 	    type_typeof
@@ -48,16 +49,39 @@
 	  (coerce-foreign-va-app! ffun callee caller node to safe))))
 
 ;*---------------------------------------------------------------------*/
+;*    make-procedure-ids ...                                           */
+;*---------------------------------------------------------------------*/
+(define make-procedure-ids
+   '(make-fx-procedure make-va-procedure make-l-procedure))
+
+;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-fx-app! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (coerce-foreign-fx-app! fun callee::variable caller node to safe)
-   (let loop ((actuals (app-args node))
-	      (types   (cfun-args-type fun)))
-      (if (null? actuals)
-	  (convert! node (get-type node) to safe)
-	  (begin
-	     (set-car! actuals (coerce! (car actuals) caller (car types) safe))
-	     (loop (cdr actuals) (cdr types))))))
+   (define (coerce-args! args types)
+      (let loop ((actuals args)
+		 (types   types))
+	 (when (pair? actuals)
+	    (set-car! actuals (coerce! (car actuals) caller (car types) safe))
+	    (loop (cdr actuals) (cdr types)))))
+   (define (coerce-procedure args types loc)
+      (coerce-args! (cdr args) (cdr types))
+      (let ((clo (car args)))
+	 (if (var? clo)
+	     (unless (sfun? (variable-value (var-variable clo)))
+		(user-error/location loc
+				     (variable-name (var-variable clo))
+				     (shape (variable-type (var-variable clo)))
+				     "procedure"))
+	     (set-car! args (coerce! clo caller *procedure* safe)))))
+   (with-access::app node (args loc)
+      ;; make-XXX-procedure are special, their first
+      ;; argument is not really typable because it's not a Bigloo correct
+      ;; value (in C it's a pointer to function).
+      (if (memq (global-id callee) make-procedure-ids)
+	  (coerce-procedure args (cfun-args-type fun) loc)
+	  (coerce-args! args (cfun-args-type fun))))
+   (convert! node (get-type node) to safe))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-va-app! ...                                       */

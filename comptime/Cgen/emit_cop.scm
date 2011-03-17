@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Jan 25 10:46:49 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 13:57:50 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -19,6 +19,7 @@
    (import  type_type
 	    type_tools
 	    type_cache
+	    type_typeof
 	    tools_shape
 	    engine_param
 	    ast_var
@@ -310,9 +311,14 @@
 			    (loop (cdr actuals)))))))
 	    (emit-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
-		  (display "PROCEDURE_L_ENTRY(" *c-port*)
+		  (if (bigloo-type? (cfuncall-type cop))
+		      (display "(PROCEDURE_L_ENTRY(" *c-port*)
+		      (begin
+			 (display "((" *c-port*)
+			 (display (type-name (cfuncall-type cop)) *c-port*)
+			 (display "(*)())PROCEDURE_L_ENTRY(" *c-port*)))
 		  (emit-cop (cfuncall-fun cop))
-		  (display ")(" *c-port*)
+		  (display "))(" *c-port*)
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because their are always
 		     ;; the function and EOA.

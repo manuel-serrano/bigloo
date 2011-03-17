@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Fri Dec  9 11:33:26 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 15:00:14 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -36,18 +36,19 @@
 (define-method (coerce! node::funcall caller to safe)
    (trace coerce "coerce-funcall!: " (shape node) #\Newline)
    (let ((error-msg (list 'quote (shape node)))
-	 (strength  (funcall-strength node)))
+	 (strength  (funcall-strength node))
+	 (nty (node-type node)))
       ;; we coerce the arguments
       (coerce-funcall-args! node caller to safe)
       (if (memq strength '(light elight))
-	  (convert! node *obj* to safe)
+	  (convert! node nty to safe)
 	  ;; we coerce the procedure
 	  (let ((c-fun (coerce! (funcall-fun node) caller *procedure* safe)))
 	     ;; we check arity
 	     (if *unsafe-arity*
 		 (begin
 		    (funcall-fun-set! node c-fun)
-		    (convert! node *obj* to safe))
+		    (convert! node nty to safe))
 		 (let* ((fun    (make-local-svar 'fun *procedure*))
 			(loc    (node-loc node))
 			(len    (instantiate::atom
@@ -60,12 +61,12 @@
 				 (symbol-append a-len '::int)))
 			(lnode  (instantiate::let-var
 				   (loc loc)
-				   (type *obj*)
+				   (type nty)
 				   (bindings (list (cons fun c-fun)))
 				   (body (top-level-sexp->node
 					  `(let ((,a-tlen ,len))
 					      (if (correct-arity? ,fun ,a-len)
-						  ,(convert! node *obj* to safe)
+						  ,(convert! node nty to safe)
 						  ,(make-arity-error-node
 						    fun
 						    error-msg

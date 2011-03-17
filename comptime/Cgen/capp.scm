@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Wed Dec 24 09:37:46 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 17 14:58:44 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
 	    type_type
 	    type_tools
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    ast_local
@@ -113,14 +114,14 @@
 (define-method (node->cop node::funcall kont)
    (trace (cgen 3) "(node->cop node::funcall kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::funcall node (fun args strength loc)
+   (with-access::funcall node (fun args strength loc type)
       (let loop ((old-actuals  args)
 		 (new-actuals  '())
-		 (aux          (make-local-svar/name 'aux *obj*))
 		 (auxs         '())
 		 (exps         '()))
 	 (if (null? old-actuals)
-	     (let* ((aux (make-local-svar/name 'aux *obj*))
+	     (let* ((type (get-type node))
+		    (aux (make-local-svar/name 'tmp type))
 		    (cop (node->cop (node-setq aux fun) *id-kont*)))
 		(if (and (csetq? cop)
 			 (var? fun)
@@ -131,7 +132,8 @@
 				    (loc loc)
 				    (fun cfun)
 				    (args (reverse! new-actuals))
-				    (strength strength)))
+				    (strength strength)
+				    (type type)))
 			   (instantiate::block
 			      (loc  loc)
 			      (body (instantiate::csequence
@@ -148,7 +150,8 @@
 						  (loc loc)
 						  (fun cfun)
 						  (args (reverse! new-actuals))
-						  (strength strength))))))))))
+						  (strength strength)
+						  (type type))))))))))
 		    (let ((cfun cop))
 		       (instantiate::block
 			  (loc  loc)
@@ -168,15 +171,16 @@
 						      (loc loc)
 						      (variable aux)))
 					      (args (reverse! new-actuals))
-					      (strength strength)))))))))))
-	     (let ((cop (node->cop (node-setq aux (car old-actuals))
-				   *id-kont*)))
+					      (strength strength)
+					      (type type)))))))))))
+	     (let* ((a (car old-actuals))
+		    (aux (make-local-svar/name 'a (get-type a)))
+		    (cop (node->cop (node-setq aux a) *id-kont*)))
 		(if (and (csetq? cop)
 			 (eq? (varc-variable (csetq-var cop)) aux))
 		    ;; the local is useless, we ignore it
 		    (loop (cdr old-actuals)
 			  (cons (csetq-value cop) new-actuals)
-			  aux
 			  auxs
 			  exps)
 		    (begin
@@ -185,7 +189,6 @@
 				      (loc (node-loc (car old-actuals)))
 				      (variable aux))
 				   new-actuals)
-			     (make-local-svar/name 'aux *obj*)
 			     (cons aux auxs)
 			     (cons cop exps)))))))))
 		

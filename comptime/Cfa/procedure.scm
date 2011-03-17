@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Wed Mar 16 17:06:27 2011 (serrano)                */
+;*    Last change :  Thu Mar 17 14:58:48 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -29,18 +29,23 @@
 	    cfa_cfa
 	    cfa_iterate
 	    cfa_closure)
-   (export  (disable-X-T! approx::approx)))
+   (export  (disable-X-T! approx::approx ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    disable-X-T! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (disable-X-T! approx)
+(define (disable-X-T! approx reason)
    (for-each-approx-alloc (lambda (app)
 			     (trace (cfa 3)
 				    "!!! Je disable X-T pour: " (shape app)
+				    " because " reason
 				    #\Newline)
-			     (if (make-procedure-app? app)
-				 (make-procedure-app-X-T?-set! app #f)))
+			     (when (make-procedure-app? app)
+				(with-access::make-procedure-app app (args X-T?)
+				   (when (and (var? (car args))
+					      (eq? (variable-type (var-variable (car args))) *_*))
+				      (variable-type-set! (var-variable (car args)) *obj*))
+				   (set! X-T? #f))))
 			  approx))
 
 ;*---------------------------------------------------------------------*/
@@ -83,10 +88,9 @@
 		   (trace (cfa 3)
 			  " make-procedure-app: " (shape node) #\Newline
 			  "          proc-size: " proc-size #\Newline)
-		   (make-procedure-app-approx-set! node
-						   (make-type-alloc-approx
-						    *procedure*
-						    node))
+		   (make-procedure-app-approx-set!
+		    node
+		    (make-type-alloc-approx *procedure* node))
 		   ;; we mark that first argument (or we set) is
 		   ;; bound to a closure
 		   (let* ((clo (car (sfun-args
@@ -153,9 +157,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::procedure-ref-app)
    (with-access::procedure-ref-app node (args approx)
-      (cfa! (cadr args))
+      
       (let ((proc-approx (cfa! (car args)))
 	    (offset      (get-node-atom-value (cadr args))))
+	 (cfa! (cadr args))
 	 (trace (cfa 4) " procedure-ref: " (shape node) #\Newline
 		"        offset: " offset #\Newline
 		"        approx: " (shape approx) #\Newline)
@@ -202,13 +207,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::procedure-set!-app)
    (with-access::procedure-set!-app node (args approx vapprox)
-      (cfa! (cadr args))
       (let ((proc-approx (cfa! (car args)))
 	    (offset      (get-node-atom-value (cadr args))))
-	 (set! vapprox (cfa! (caddr args)))
 	 (trace (cfa 4) " procedure-set!: " (shape node) #\Newline
 		"         offset: " offset #\Newline
 		"         val-ap: " (shape vapprox) #\Newline)
+	 (cfa! (cadr args))
+	 (set! vapprox (cfa! (caddr args)))
 	 ;; do we have top in the proc approximation ?
 	 (if (approx-top? proc-approx)
 	     ;; yes, we have, hence we loose every thing.
@@ -221,11 +226,20 @@
 			      (<fx offset
 				   (vector-length
 				    (make-procedure-app-values-approx app))))
-			 (union-approx! (vector-ref
-					 (make-procedure-app-values-approx
-					  app)
-					 offset)
-					vapprox)))
+			 (begin
+			    (trace (cfa 5) "         app: "
+				   (shape app)
+				   " vapprox[" offset "]: "
+				   (shape
+				    (vector-ref
+				     (make-procedure-app-values-approx app)
+				     offset))
+				   #\Newline)
+			    (union-approx! (vector-ref
+					    (make-procedure-app-values-approx app)
+					    offset)
+					   vapprox))
+			 (approx-set-top! vapprox)))
 		  proc-approx)
 		 ;; if the offset is not a fixnum, we compute a merging approx
 		 (for-each-approx-alloc
@@ -242,7 +256,8 @@
 					 app)
 					i)
 				       vapprox)
-				      (loop (+fx i 1))))))))
+				      (loop (+fx i 1))))))
+			 (approx-set-top! vapprox)))
 		  proc-approx)))
 	 approx)))
 
