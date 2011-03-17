@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 14 10:40:27 2011 (serrano)                */
+#*    Last change :  Thu Mar 17 17:24:12 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1529,14 +1529,14 @@ case $hostos in
     if [ "$macosx" = "yes" ]; then
       echo "* MacOS X tuning enabled"; >&2;
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
-        if [ "$threadsupport " = "yes " ]; then
-          customgclib=bigloogc_fth;
-          extralibs="$extralibs $pthreadlibs";
-          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
-        else
+        if [ "$threadsupport " = "no " ]; then
           threadsupport=no;
           pthreadlibs=no;
           ldcomplibs="\$(GCCLOSELIB) -lc";
+        else
+          customgclib=bigloogc_fth;
+          extralibs="$extralibs $pthreadlibs";
+          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
         fi
       fi
       if [ `dirname $bindir` != `dirname $libdir` ]; then

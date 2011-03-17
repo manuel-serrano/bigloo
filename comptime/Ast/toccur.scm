@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Sep 17 09:09:30 2008 (serrano)                */
+;*    Last change :  Thu Mar 17 18:51:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -118,10 +118,96 @@
 	 (occur-node*! nodes))))
 
 ;*---------------------------------------------------------------------*/
+;*    occur-node! ::getfield ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::getfield)
+   (with-access::getfield node (type otype ftype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! otype)
+      (type-occurrence-increment! ftype)
+      (call-next-method)))
+			    
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::setfield ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::setfield)
+   (with-access::setfield node (type otype ftype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! otype)
+      (type-occurrence-increment! ftype)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::new ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::new)
+   (with-access::new node (type args-type)
+      (type-occurrence-increment! type)
+      (for-each type-occurrence-increment! args-type)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
 ;*    occur-node! ::cast ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::cast)
-   (occur-node! (cast-arg node)))
+   (with-access::cast node (type)
+      (type-occurrence-increment! type)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::cast-null ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::cast-null)
+   (with-access::cast-null node (type)
+      (type-occurrence-increment! type)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::isa ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::isa)
+   (with-access::isa node (type class)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! class)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::vlength ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::vlength)
+   (with-access::vlength node (type vtype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! vtype)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::vref ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::vref)
+   (with-access::vref node (type ftype otype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! ftype)
+      (type-occurrence-increment! otype)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::vset! ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::vset!)
+   (with-access::vset! node (type ftype otype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! ftype)
+      (type-occurrence-increment! otype)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::valloc ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::valloc)
+   (with-access::valloc node (type ftype otype)
+      (type-occurrence-increment! type)
+      (type-occurrence-increment! ftype)
+      (type-occurrence-increment! otype)
+      (call-next-method)))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::setq ...                                           */

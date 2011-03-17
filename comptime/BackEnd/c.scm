@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Oct 22 15:49:07 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Thu Mar 17 18:27:58 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -29,6 +29,7 @@
 	    module_alibrary
 	    type_type
 	    type_cache
+	    type_env
 	    ast_var
 	    ast_node
 	    ast_occur
@@ -134,6 +135,8 @@
    (fprint *c-port* "#endif")
 
    ;; we emit the generated type for the used classes
+   (for-each-type!
+    (lambda (t) (type-occurrence-set! t 0)))
    (for-each-global!
     (lambda (global)
        (cond
