@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Wed Jan 19 11:37:27 2005 (serrano)                */
-;*    Copyright   :  2003-05 Manuel Serrano                            */
+;*    Last change :  Fri Mar 18 12:10:34 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
 ;*=====================================================================*/
@@ -189,7 +189,11 @@
    (let ((value (global-value var)))
       (cond
 	 ((scnst? value)
-	  (get-node-atom-value (cadr (app-args (scnst-node value)))))
+	  (let* ((actuals (app-args (scnst-node value)))
+		 (entry (car actuals))
+		 (fun (sfun-the-closure-global (global-value (var-variable entry)))))
+	     (sfun-arity (variable-value fun))
+	     #;(get-node-atom-value (cadr (app-args (scnst-node value))))))
 	 ((sfun? value)
 	  (let ((x (sfun-arity value)))
 	     (if (>= x 0) (- x 1) (+ x 1))))

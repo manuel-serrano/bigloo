@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Sat Dec 13 13:57:10 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 19 06:30:40 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
 ;*=====================================================================*/
@@ -32,6 +32,7 @@
 	    *long->int*
 	    *make-fx-procedure*
 	    *make-va-procedure*
+	    *make-l-procedure*
 	    *double->real*
 	    *elong->belong*
 	    *llong->bllong*
@@ -43,28 +44,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    The cache registers definition                                   */
 ;*---------------------------------------------------------------------*/
-(define *cache-started?*        #f)
+(define *cache-started?* #f)
 
-(define *cnst-table-ref*        #f)
-(define *cnst-table-set!*       #f)
-(define *cons*                  #f)
-(define *btrue*                 #f)
-(define *bfalse*                #f)
-(define *string->bstring*       #f)
-(define *string->ucs2string*    #f)
-(define *bstring->symbol*       #f)
-(define *bstring->keyword*      #f)
-(define *bool->bbool*           #f)
-(define *long->int*             #f)
-(define *make-fx-procedure*     #f)
-(define *make-va-procedure*     #f)
-(define *double->real*          #f)
-(define *elong->belong*         #f)
-(define *llong->bllong*         #f)
-(define *list->vector*          #f)
-(define *vector-tag-set!*       #f)
-(define *list->struct*          #f)
-(define *string->bignum*        #f)
+(define *cnst-table-ref* #f)
+(define *cnst-table-set!* #f)
+(define *cons* #f)
+(define *btrue* #f)
+(define *bfalse* #f)
+(define *string->bstring* #f)
+(define *string->ucs2string* #f)
+(define *bstring->symbol* #f)
+(define *bstring->keyword* #f)
+(define *bool->bbool* #f)
+(define *long->int* #f)
+(define *make-fx-procedure* #f)
+(define *make-va-procedure* #f)
+(define *make-l-procedure* #f)
+(define *double->real* #f)
+(define *elong->belong* #f)
+(define *llong->bllong* #f)
+(define *list->vector* #f)
+(define *vector-tag-set!* #f)
+(define *list->struct* #f)
+(define *string->bignum* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    start-cnst-cache! ...                                            */
@@ -99,6 +101,8 @@
 		(get-global/module 'make-fx-procedure 'foreign))
 	  (set! *make-va-procedure*
 		(get-global/module 'make-va-procedure 'foreign))
+	  (set! *make-l-procedure*
+		(get-global/module 'make-l-procedure 'foreign))
 	  (set! *double->real*
 		(get-global/module '$double->real 'foreign))
 	  (set! *elong->belong*
@@ -121,19 +125,19 @@
 ;*    stop-cnst-cache! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (stop-cnst-cache!)
-   (set! *string->bignum*     #f)
-   (set! *string->bstring*    #f)
+   (set! *string->bignum* #f)
+   (set! *string->bstring* #f)
    (set! *string->ucs2string* #f)
-   (set! *bstring->symbol*    #f)
-   (set! *bstring->keyword*   #f)
-   (set! *bool->bbool*        #f)
-   (set! *long->int*          #f)
-   (set! *make-fx-procedure*  #f)
-   (set! *make-va-procedure*  #f)
-   (set! *double->real*       #f)
-   (set! *cons*               #f)
-   (set! *btrue*              #f)
-   (set! *bfalse*             #f)
+   (set! *bstring->symbol* #f)
+   (set! *bstring->keyword* #f)
+   (set! *bool->bbool* #f)
+   (set! *long->int* #f)
+   (set! *make-fx-procedure* #f)
+   (set! *make-va-procedure* #f)
+   (set! *double->real* #f)
+   (set! *cons* #f)
+   (set! *btrue* #f)
+   (set! *bfalse* #f)
    #t)
 
 

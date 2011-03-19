@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:46:40 1995                          */
-;*    Last change :  Sun Jan 25 15:07:11 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 19 06:25:22 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `constant compilation'                                       */
 ;*=====================================================================*/
@@ -72,9 +72,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    old-unsafes                                                      */
 ;*---------------------------------------------------------------------*/
-(define *old-unsafe-type*    #f)
-(define *old-unsafe-arity*   #f)
-(define *old-unsafe-range*   #f)
-(define *old-unsafe-struct*  #f)
+(define *old-unsafe-type* #f)
+(define *old-unsafe-arity* #f)
+(define *old-unsafe-range* #f)
+(define *old-unsafe-struct* #f)
 (define *old-unsafe-version* #f)
 

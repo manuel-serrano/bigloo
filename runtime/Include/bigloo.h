@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Mar 17 16:41:34 2011 (serrano)                */
+/*    Last change :  Sat Mar 19 06:16:27 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1755,7 +1755,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define PROCEDURE_EL_REF( p, i )    ((obj_t *)p)[ i ]
 #define PROCEDURE_EL_SET( p, i, o ) (PROCEDURE_EL_REF( p, i ) = o, BUNSPEC)
-
 
 #define MAKE_EL_PROCEDURE_1( size )   BUNSPEC
 

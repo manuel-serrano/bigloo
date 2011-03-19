@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sun Nov 28 10:04:17 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 19 06:37:48 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -47,6 +47,7 @@
 	    (cnst-alloc-bignum::obj ::obj <loc>)
 	    (cnst-alloc-keyword::node ::keyword <loc>)
 	    (cnst-alloc-procedure::node ::node <loc>)
+	    (cnst-alloc-l-procedure::node ::node <loc>)
 	    (cnst-alloc-real::node ::real <loc>)
 	    (cnst-alloc-elong::node ::elong <loc>)
 	    (cnst-alloc-llong::node ::llong <loc>)
@@ -449,6 +450,20 @@
 		 *module*
 		 procedure
 		 'sfun
+		 loc)))
+      (instantiate::var
+	 (loc loc)
+	 (type (variable-type var))
+	 (variable var))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst-alloc-l-procedure ...                                       */
+;*---------------------------------------------------------------------*/
+(define (cnst-alloc-l-procedure procedure loc)
+   (let ((var (def-global-scnst! (make-typed-ident (gensym 'proc) 'procedure)
+		 *module*
+		 procedure
+		 'slfun
 		 loc)))
       (instantiate::var
 	 (loc loc)

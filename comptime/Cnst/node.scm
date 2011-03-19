@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Sat Dec 13 16:47:34 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 19 06:30:16 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -297,6 +297,11 @@
 		 (let ((size-value (get-node-atom-value (caddr args))))
 		    (if (and (fixnum? size-value) (=fx size-value 0))
 			(cnst-alloc-procedure node loc)
+			node)))
+		((eq? fun *make-l-procedure*)
+		 (let ((size-value (get-node-atom-value (cadr args))))
+		    (if (and (fixnum? size-value) (=fx size-value 0))
+			(cnst-alloc-l-procedure node loc)
 			node)))
 		((eq? fun *double->real*)
 		 (if (real? actual-value)

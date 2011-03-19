@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Thu Dec  3 09:38:43 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Mar 18 10:17:06 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -55,7 +55,8 @@
 	   (get-default-type::type)
 	   (set-default-type! ::type)
 	   (get-object-type)
-	   (get-default-c-type::type)))
+	   (get-default-c-type::type)
+	   (get-bigloo-type::type ::type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-type-cache! ...                                          */
@@ -178,3 +179,22 @@
 ;*---------------------------------------------------------------------*/
 (define (get-default-c-type)
    *int*)
+
+;*---------------------------------------------------------------------*/
+;*    get-bigloo-type ...                                              */
+;*    -------------------------------------------------------------    */
+;*    Find the corresponding Bigloo (boxed) type.                      */
+;*---------------------------------------------------------------------*/
+(define (get-bigloo-type type)
+   (cond
+      ((bigloo-type? type) type)
+      ((or (eq? type *int*) (eq? type *long*)) *bint*)
+      ((eq? type *elong*) *belong*)
+      ((eq? type *llong*) *bllong*)
+      ((eq? type *bool*) *bbool*)
+      ((eq? type *real*) *breal*)
+      ((eq? type *char*) *bchar*)
+      ((eq? type *string*) *bstring*)
+      (else *obj*)))
+      
+      

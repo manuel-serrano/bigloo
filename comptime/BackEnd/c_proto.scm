@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Thu Mar 17 16:22:20 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 13:21:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -443,7 +443,6 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-selfun fun global)
    (let ((vname (set-variable-name! global)))
-      
       (fprint *c-port* "static obj_t " vname ";")))
    
 ;*---------------------------------------------------------------------*/

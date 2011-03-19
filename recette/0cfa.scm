@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  7 11:13:48 1993                          */
-;*    Last change :  Tue Feb  1 09:19:01 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 12:13:23 2011 (serrano)                */
 ;*                                                                     */
 ;*    Quelques tests sur la 0cfa                                       */
 ;*=====================================================================*/
@@ -163,6 +163,25 @@
                 (loop (- x 1)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    test-l-procedure-types                                           */
+;*---------------------------------------------------------------------*/
+(define (test-l-procedure-type x)
+   (let ((f1 (lambda (x v)
+		(/ (vector-length (vector x)) 10)))
+	 (f2 (lambda (x v)
+		(vector-length (vector x x)))))
+      (case x
+	 ((1) (gee f1 x))
+	 ((2) (gee f2 x))
+	 (else (gee f3 x)))))
+
+(define (f3::pair x v)
+   (list (vector-length (vector x x x))))
+
+(define (gee f x)
+   (f x (vector 1 2 3)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-0cfa ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (test-0cfa)
@@ -176,6 +195,7 @@
       (test "light" (test-l-procedure l) (cons l 1)))
    (let ((l '(1 2)))
       (test "light" (test-l-procedure l) (cons l 2)))
-   (test "dataflow-test" (dataflow-test 10) 1))
-
- 
+   (test "dataflow-test" (dataflow-test 10) 1)
+   (test "light-typed.1" (test-l-procedure-type 1) .1)
+   (test "light-typed.2" (test-l-procedure-type 2) 2)
+   (test "light-typed.3" (test-l-procedure-type 3) '(3)))

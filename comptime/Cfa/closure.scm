@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Thu Mar 17 16:56:25 2011 (serrano)                */
+;*    Last change :  Sat Mar 19 06:20:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -70,27 +70,33 @@
       (for-each
        (lambda (app)
 	  (with-access::make-procedure-app app (lost-stamp X T args X-T?)
-	     (let ((fun    (var-variable (car args)))
-		   (lost?  (>fx lost-stamp -1))
-		   (size   (get-node-atom-value (caddr args))))
+	     (let* ((fun   (var-variable (car args)))
+		    (clo   (sfun-the-closure (global-value fun)))
+		    (lost? (>fx lost-stamp -1))
+		    (size  (get-node-atom-value (caddr args))))
 		(trace (cfa 3) "light?: " (shape app) " ... ")
 		(if (or lost?
 			(not X-T?)
 			(<fx (sfun-arity (global-value fun)) 0)
 			(not (fixnum? size))
-			(or (local? fun) (eq? (global-import fun) 'static)))
+			(and (global? clo)
+			     (not (eq? (global-import clo) 'static))))
 		    (begin
 		       (trace (cfa 3) " can't be X nor T because: "
 			      #\Newline
 			      "        lost?: " lost? #\Newline
 			      "        X-T?: " X-T? #\Newline
 			      "        arity: " (sfun-arity (global-value fun))
-			      "        import: " (if (local? fun)
-						     'local
-						     (global-import fun))
+			      #\Newline
+			      "        import: "
+			      (if (local? clo) 'local (global-import clo))
 			      #\Newline))
 		    (begin
-		       (trace (cfa 3) " may be X and T." #\Newline)
+		       (trace (cfa 3) " may be X and T ("
+			      (if (local? clo)
+				  'local
+				  (global-import clo))
+			       ")\n")
 		       (set! X #t)
 		       (set! T #t))))))
        *make-procedure-list*)
@@ -239,13 +245,6 @@
 		(ffun (var-variable (car args)))
 		(sfun (variable-value ffun)))
 	    (cond
-	       ((<=fx size 0)
-		(if (and (global? ffun)
-			 (global? (sfun-the-closure sfun))
-			 (scnst?  (global-value (sfun-the-closure sfun))))
-		    (scnst-class-set! (global-value (sfun-the-closure sfun))
-				      'selfun))
-		(var-variable-set! fun *make-el-procedure*))
 	       ((<=fx size 1)
 		(if (and (global? ffun)
 			 (global? (sfun-the-closure sfun))
@@ -347,7 +346,7 @@
    (define (show prop l)
       (if (pair? l)
 	  (begin
-	     (verbose 2 "     " prop ": " (shape (car l)) #\Newline)
+	     (verbose 2 "      " prop ": " (shape (car l)) #\Newline)
 	     (for-each (lambda (x)
 			  (verbose 2 "        " (shape x) #\newline))
 		       (cdr l)))))

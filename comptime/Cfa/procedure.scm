@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Thu Mar 17 14:58:48 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 10:37:22 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -29,7 +29,8 @@
 	    cfa_cfa
 	    cfa_iterate
 	    cfa_closure)
-   (export  (disable-X-T! approx::approx ::bstring)))
+   (export  (disable-X-T! approx::approx ::bstring)
+	    (set-procedure-approx-bigloo-type! alloc::make-procedure-app)))
 
 ;*---------------------------------------------------------------------*/
 ;*    disable-X-T! ...                                                 */
@@ -278,14 +279,45 @@
 	  (begin
 	     (trace (cfa 2) " *** loose: " (shape alloc) #\Newline)
 	     (set! lost-stamp *cfa-stamp*)
+	     (set-procedure-approx-bigloo-type! alloc)
 	     (let* ((callee (car (make-procedure-app-args alloc)))
 		    (v      (var-variable callee))
 		    (fun    (variable-value v)))
 		(cfa-export-var! fun v))))))
 
-
-
-   
-
-
-
+;*---------------------------------------------------------------------*/
+;*    set-procedure-approx-bigloo-type! ...                            */
+;*    -------------------------------------------------------------    */
+;*    When on a funcall not all the closures returnthe same type,      */
+;*    all the closures have to use a polymorphic representation of     */
+;*    their values, that is a Bigloo type. This function is in charge  */
+;*    of setting a Bigloo type for all the closures potentially        */
+;*    called on a funcall site.                                        */
+;*---------------------------------------------------------------------*/
+(define (set-procedure-approx-bigloo-type! alloc::make-procedure-app)
+   (when (make-procedure-app? alloc)
+      (let* ((proc (car (make-procedure-app-args alloc)))
+	     (v (var-variable proc))
+	     (t (variable-type v)))
+	 (cond
+	    ((eq? t *_*)
+	     ;; the closure entry function is not typed yet
+	     (let* ((clo (variable-value v))
+		    (fun (sfun-the-closure-global clo))
+		    (tyc (variable-type fun))
+		    (typ (if (eq? tyc *_*)
+			     ;; the associated function is untyped, we then
+			     ;; use the current type of the approximation
+			     (let ((va (variable-value fun)))
+				(if (intern-sfun/Cinfo? va)
+				    (approx-type
+				     (intern-sfun/Cinfo-approx va))
+				    ;; we don't find suitable approximation
+				    ;; so we use a fault back case. 
+				    *obj*))
+			     tyc)))
+		(variable-type-set! v (get-bigloo-type typ))))
+	    (else
+	     ;; set the type of the closure as the corresponding
+	     ;; bigloo type to the computed type
+	     (variable-type-set! v (get-bigloo-type t)))))))

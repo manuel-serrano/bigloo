@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Thu Mar 17 08:24:22 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 10:11:23 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
@@ -163,11 +163,19 @@
 ;*    See (@ globalized-type globalize_local->global) for a similar    */
 ;*    function.                                                        */
 ;*---------------------------------------------------------------------*/
-(define (globalized-type-id type)
-   (cond
-      ((not *optim-cfa-funcall-tracking?*) 'obj)
-      ((bigloo-type? type) (type-id type))
-      (else 'obj)))
+(define (globalized-type-id global)
+   (let ((type (global-type global)))
+      (cond
+	 ((not *optim-cfa-funcall-tracking?*)
+	  'obj)
+	 ((bigloo-type? type)
+	  (type-id type))
+	 ((eq? (global-import global) 'static)
+	  ;; if the global is static, let the CFA finds the most
+	  ;; appropriate type of this closure
+	  '_)
+	 (else
+	  (get-bigloo-type type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gloclo ...                                                       */
@@ -180,7 +188,7 @@
 		     (if (symbol-exists? str)
 			 (gensym (symbol-append '_ (global-id global)))
 			 (symbol-append '_ (global-id global)))))
-	  (tyid   (globalized-type-id (global-type global)))
+	  (tyid   (globalized-type-id global))
 	  (gloclo (def-global-sfun-no-warning! (make-typed-ident id tyid)
 		     (make-n-proto (+-arity arity 1))
 		     (cons env args)
@@ -196,34 +204,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    fill-gloclo! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (fill-gloclo! global::global gloclo::global)
-   (global/Ginfo-global-closure-set! global gloclo)
+(define (fill-gloclo! global::global gclo::global)
+   (global/Ginfo-global-closure-set! global gclo)
    ;; we have to propagate the location definition
    ;; of the local variable
-   (if (sfun? (global-value global))
-       (sfun-loc-set! (global-value gloclo)
-		      (sfun-loc (global-value global))))
-   ;; Closure function are now always static. I don't know I did
-   ;; it different before. If this turn out to be wrong, I will
-   ;; be necessary to restore the old code that was:
-   ;;     (global-import-set! gloclo (global-import global))
-   ;; For that modification I have added a new kind of removable
-   ;; property: NEVER.
-   ;; The Cgen prototyper (Cgen/proto.scm) checks for value prior
-   ;; to decide not to emit a C function prototype.
-   (if (eq? (global-import global) 'foreign)
-       (begin
-	  (set! *foreign-closures* (cons gloclo *foreign-closures*))
-	  (global-removable-set! gloclo 'never)
-	  (global-import-set! gloclo 'static))
-       (begin
-	  (if (not (eq? (global-import global) 'static))
-	      (global-removable-set! gloclo 'never))
-	  (global-import-set! gloclo 'static)))
-   (fun-side-effect?-set! (global-value gloclo)
-			  (fun-side-effect? (global-value global)))
-   (if (not (global? gloclo))
-       (internal-error "global-closure"
-		       "Can't allocate global closure"
-		       gloclo)
-       gloclo))
+   (let ((sfun (global-value global)))
+      (when (sfun? sfun)
+	 (sfun-loc-set! (global-value gclo) (sfun-loc sfun)))
+      ;; Closure function are now always static. I don't know I did
+      ;; it different before. If this turn out to be wrong, I will
+      ;; be necessary to restore the old code that was:
+      ;;     (global-import-set! gclo (global-import global))
+      ;; For that modification I have added a new kind of removable
+      ;; property: NEVER.
+      ;; The Cgen prototyper (Cgen/proto.scm) checks for value prior
+      ;; to decide not to emit a C function prototype.
+      (if (eq? (global-import global) 'foreign)
+	  (begin
+	     (set! *foreign-closures* (cons gclo *foreign-closures*))
+	     (global-removable-set! gclo 'never)
+	     (global-import-set! gclo 'static))
+	  (begin
+	     (if (not (eq? (global-import global) 'static))
+		 (global-removable-set! gclo 'never))
+	     (global-import-set! gclo 'static)))
+      (fun-side-effect?-set! (global-value gclo) (fun-side-effect? sfun))
+      (if (not (global? gclo))
+	  (internal-error "global-closure" "Can't allocate global closure" gclo)
+	  gclo)))

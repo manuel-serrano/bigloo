@@ -1,6 +1,7 @@
 (module saw_jvm_funcall
    (import type_type ast_var ast_node ast_env
 	   type_env
+	   tools_shape
 	   object_class
 	   object_slots
 	   backend_backend

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Thu Mar 17 08:24:49 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 10:08:08 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -69,7 +69,7 @@
        ;; function are _always_ of type procedure x obj x .. x obj -> obj
        ;; because type check cannot be perform on the call site.
        *obj*)
-      ((bigloo-type? type)
+      ((or #t (bigloo-type? type))
        ;; if funcall-tracking is enable, the type of the global function
        ;; is the type of the local function
        type)
@@ -112,6 +112,8 @@
       ;; we must set now the info slot of env
       (widen!::svar/Ginfo (local-value env) (kaptured? #f))
       (global-type-set! global (globalized-type (local-type local)))
+      ;; associate the closure entry point and the function
+      (sfun-the-closure-global-set! new-fun local)
       ;; since the first argument (the procedure itself) has a correct
       ;; (the type is the type of the `env' variable) type, we just skip it.
       (for-each (lambda (l) (local-type-set! l *obj*))

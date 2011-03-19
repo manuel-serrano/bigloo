@@ -9,4 +9,4 @@
       (and (eq? (global-module var) *module*)
 	   (require-prototype? var)
 	   (scnst? val)
-	   (memq (scnst-class val) '(sfun sgfun)) )))
+	   (memq (scnst-class val) '(sfun sgfun slfun)) )))

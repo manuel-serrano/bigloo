@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Thu Mar 17 07:31:10 2011 (serrano)                */
+;*    Last change :  Fri Mar 18 10:37:34 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module cfa_funcall
    (include "Tools/trace.sch")
-   (import  tools_shape
+   (import  engine_param
+	    tools_shape
 	    tools_args
 	    tools_error
 	    type_type
@@ -26,7 +27,8 @@
 	    cfa_cfa
 	    cfa_loose
 	    cfa_approx
-	    cfa_app))
+	    cfa_app
+	    cfa_procedure))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa! ...                                                         */
@@ -81,6 +83,12 @@
 			 (funcall! alloc (cons eapprox aapprox) node)))
 		     (make-empty-approx)))
 	      fapprox))
+	 ;; If approx is *obj* it must be propagated in all the procedure
+	 ;; that they must return a bigloo type. In consequence for each
+	 ;; closure we find the most possible specific Bigloo type
+	 (when (and *optim-cfa-funcall-tracking?*
+		    (eq? (approx-type approx) *obj*))
+	    (for-each-approx-alloc set-procedure-approx-bigloo-type! fapprox))
 	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 
