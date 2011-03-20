@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Fri Sep  3 18:39:46 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 20 08:51:24 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -101,6 +101,11 @@
 	  (trace inline " no (recursive)" #\Newline)
 	  (trace inline+ " no (recursive)" #\Newline)
 	  ;; recursive functions can be inlined only on the first inlining
+	  #f)
+	 ((eq? (sfun-class sfun) 'sgfun)
+	  (trace inline " no (generic)" #\Newline)
+	  (trace inline+ " no (generic)" #\Newline)
+	  ;; don't inline generic (they use find-method which is inline)
 	  #f)
 	 ((and (eq? (sfun-class sfun) 'sifun)
 	       (not (memq var stack))
