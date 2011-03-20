@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Mar 16 07:23:48 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 08:27:14 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -161,13 +161,13 @@
 	    (class-field-mutator::procedure field)
 	    (class-field-type::symbol field)
 	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long o o ::vector)
-	    (register-generic!::obj ::procedure ::obj ::obj ::obj)
+	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (procedure->generic::procedure ::procedure)
-	    (inline find-method ::object ::procedure)
+	    (inline find-method::procedure ::object ::procedure)
 	    (find-method-from::pair ::object ::procedure class)
-	    (find-super-class-method ::object ::procedure class)
+	    (find-super-class-method::procedure ::object ::procedure class)
 	    (inline generic-default::procedure ::procedure)
 	    (inline generic-method-array ::procedure)
 	    (inline method-array-ref ::procedure ::vector ::int)

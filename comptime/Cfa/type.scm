@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Mar 18 07:17:25 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 06:51:52 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -272,8 +272,10 @@
       (type-node*! args)
       (if *optim-cfa-funcall-tracking?*
 	  (begin
-	     (tprint "TYPE funcall: " (shape (approx-type approx)))
-	     (set! type (approx-type approx)))
+	     (let ((typ (approx-type approx)))
+		(if (eq? typ *_*)
+		    (internal-error "cfa!" "Illegal type _ for funcall" (shape node))
+		    (set! type typ))))
 	  (set! type *obj*))
       node))
 

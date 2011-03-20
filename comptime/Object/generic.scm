@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 12:05:09 1996                          */
-;*    Last change :  Fri Dec  9 14:23:59 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 20 08:31:44 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The generic management                                           */
 ;*=====================================================================*/
@@ -102,14 +102,10 @@
 	  (tmethod         (make-typed-ident method 'procedure))
 	  (default-name    (symbol-append id '-default))
 	  (app-ly-method   `(let ((,tmethod (find-method ,method-arg-id
-							 (@ ,id
-							    ,*module*))))
-			       (if (procedure? ,method)
-				   ,(if (>=fx arity 0)
-					`(,method ,@args-id)
-					`(apply ,method (cons* ,@args-id)))
-				   (begin
-				      (,default-name))))))
+							 (@ ,id ,*module*))))
+			       ,(if (>=fx arity 0)
+				    `(,method ,@args-id)
+				    `(apply ,method (cons* ,@args-id))))))
       ;; we now create the body of the generic
       `(labels ((,default-name () ,default-body))
 	  (if (object? ,method-arg-id)

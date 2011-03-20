@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Tue Nov 16 14:52:30 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 20 08:44:05 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -31,7 +31,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-method-body ident args locals body src)
    (let* ((id (id-of-id ident (find-location src)))
-	  (method (gensym 'next-method))
+	  (met (gensym 'next-method))
 	  (arity (global-arity args))
 	  (args-id (map local-id locals))
 	  (type (local-type (car locals)))
@@ -51,22 +51,14 @@
 		 (method-error id "Can't find generic for method" src))
 		(else
 		 (let* ((body `(labels ((call-next-method ()
-				  (let ((,method (find-super-class-method
+				  (let ((,met (find-super-class-method
 						  ,(car args-id)
 						  ,id
 						  (@ ,(global-id holder)
 						     ,module))))
-				     (if (procedure? ,method)
-					 ,(if (>=fx arity 0)
-					      `(,method ,@args-id)
-					      `(apply ,method
-						      (cons* ,@args-id)))
-					 (begin
-					    ,(if (>=fx arity 0)
-						 `(,id ,@args-id)
-						 `(apply
-						   ,id
-						   (cons* ,@args-id))))))))
+				     ,(if (>=fx arity 0)
+					  `(,met ,@args-id)
+					  `(apply ,met (cons* ,@args-id))))))
 				  ,body))
 			(ebody (if (epair? src)
 				   (econs (car body) (cdr body) (cer src))
@@ -82,10 +74,11 @@
 						 (the-backend))))
 				  `(pragma::void
 				   ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) "\"); ")))
-			      (generic-add-method! ,id
-						   (@ ,(global-id holder) ,module)
-						   ,m-id
-						   ,(symbol->string ident)))))))))))
+			      (generic-add-method!
+			       ,id
+			       (@ ,(global-id holder) ,module)
+			       ,m-id
+			       ,(symbol->string ident)))))))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    method-error ...                                                 */

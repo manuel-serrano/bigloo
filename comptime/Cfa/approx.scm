@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Thu Mar 17 09:15:56 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 08:16:29 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -40,6 +40,7 @@
 	    (make-alloc-approx::approx ::app)
 	    (make-type-alloc-approx::approx ::type ::node)
 	    (for-each-approx-alloc ::procedure ::approx)
+	    (empty-approx-alloc? ::approx)
 	    (generic get-node-atom-value ::node)))
  
 ;*---------------------------------------------------------------------*/
@@ -213,6 +214,12 @@
 (define (for-each-approx-alloc proc::procedure approx::approx)
    (with-access::approx approx (allocs)
       (set-for-each proc allocs)))
+
+;*---------------------------------------------------------------------*/
+;*    empty-approx-alloc? ...                                          */
+;*---------------------------------------------------------------------*/
+(define (empty-approx-alloc? approx::approx)
+   (=fx (set-length (approx-allocs approx)) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-node-atom-value ...                                          */

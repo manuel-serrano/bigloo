@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Fri Mar 18 10:37:34 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 08:18:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -60,20 +60,10 @@
 		   (approx-top? fapprox))
 	    (approx-set-type! approx *obj*))
 	 ;; and we compute the approximations
-	 (if (or (approx-top? fapprox)
+	 (cond
+	    ((or (approx-top? fapprox)
 		 (not (eq? (approx-type fapprox) *procedure*)))
-	     (begin
-		(for-each (lambda (approx) (loose! approx 'all)) aapprox)
-		(for-each-approx-alloc
-		 (lambda (alloc)
-		    (if (make-procedure-app? alloc)
-			(let ((eapprox (make-procedure-app-approx alloc)))
-			   (union-approx!
-			    approx
-			    (funcall! alloc (cons eapprox aapprox) node)))
-			(make-empty-approx)))
-		 fapprox)
-		(approx-set-top! approx))
+	     (for-each (lambda (approx) (loose! approx 'all)) aapprox)
 	     (for-each-approx-alloc
 	      (lambda (alloc)
 		 (if (make-procedure-app? alloc)
@@ -82,13 +72,29 @@
 			 approx
 			 (funcall! alloc (cons eapprox aapprox) node)))
 		     (make-empty-approx)))
-	      fapprox))
+	      fapprox)
+	     (approx-set-top! approx))
+	    ((empty-approx-alloc? fapprox)
+	     ;; this might occur when the the functions potentially invoked
+	     ;; are obtained from a foreign function pragma-ed with
+	     ;; no-cfa-top
+	     (approx-set-type! approx *obj*))
+	    (else
+	     (for-each-approx-alloc
+	      (lambda (alloc)
+		 (if (make-procedure-app? alloc)
+		     (let ((eapprox (make-procedure-app-approx alloc)))
+			(union-approx!
+			 approx
+			 (funcall! alloc (cons eapprox aapprox) node)))
+		     (make-empty-approx)))
+	      fapprox)))
 	 ;; If approx is *obj* it must be propagated in all the procedure
 	 ;; that they must return a bigloo type. In consequence for each
 	 ;; closure we find the most possible specific Bigloo type
 	 (when (and *optim-cfa-funcall-tracking?*
 		    (eq? (approx-type approx) *obj*))
-	    (for-each-approx-alloc set-procedure-approx-bigloo-type! fapprox))
+	     (for-each-approx-alloc set-procedure-approx-bigloo-type! fapprox))
 	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 

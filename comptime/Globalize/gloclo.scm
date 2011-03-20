@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Fri Mar 18 10:11:23 2011 (serrano)                */
+;*    Last change :  Sat Mar 19 07:04:48 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
@@ -175,7 +175,7 @@
 	  ;; appropriate type of this closure
 	  '_)
 	 (else
-	  (get-bigloo-type type)))))
+	  (type-id (get-bigloo-type type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gloclo ...                                                       */

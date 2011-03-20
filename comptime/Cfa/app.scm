@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Thu Mar 17 09:08:44 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 07:18:32 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
@@ -77,6 +77,7 @@
       ;; we set the new formals approximation
       (if top? (for-each (lambda (a) (loose! a 'all)) args-approx))
       ;; and we return the global approximation
+      (trace (cfa 3) "  app(extern) <- " (shape approx) #\Newline)
       approx))
    
 ;*---------------------------------------------------------------------*/
