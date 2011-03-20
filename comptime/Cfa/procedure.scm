@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Fri Mar 18 10:37:22 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 16:50:59 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -295,29 +295,28 @@
 ;*    called on a funcall site.                                        */
 ;*---------------------------------------------------------------------*/
 (define (set-procedure-approx-bigloo-type! alloc::make-procedure-app)
-   (when (make-procedure-app? alloc)
-      (let* ((proc (car (make-procedure-app-args alloc)))
-	     (v (var-variable proc))
-	     (t (variable-type v)))
-	 (cond
-	    ((eq? t *_*)
-	     ;; the closure entry function is not typed yet
-	     (let* ((clo (variable-value v))
-		    (fun (sfun-the-closure-global clo))
-		    (tyc (variable-type fun))
-		    (typ (if (eq? tyc *_*)
-			     ;; the associated function is untyped, we then
-			     ;; use the current type of the approximation
-			     (let ((va (variable-value fun)))
-				(if (intern-sfun/Cinfo? va)
-				    (approx-type
-				     (intern-sfun/Cinfo-approx va))
-				    ;; we don't find suitable approximation
-				    ;; so we use a fault back case. 
-				    *obj*))
-			     tyc)))
-		(variable-type-set! v (get-bigloo-type typ))))
-	    (else
-	     ;; set the type of the closure as the corresponding
-	     ;; bigloo type to the computed type
-	     (variable-type-set! v (get-bigloo-type t)))))))
+   (let* ((proc (car (make-procedure-app-args alloc)))
+	  (v (var-variable proc))
+	  (t (variable-type v)))
+      (cond
+	 ((eq? t *_*)
+	  ;; the closure entry function is not typed yet
+	  (let* ((clo (variable-value v))
+		 (fun (sfun-the-closure-global clo))
+		 (tyc (variable-type fun))
+		 (typ (if (eq? tyc *_*)
+			  ;; the associated function is untyped, we then
+			  ;; use the current type of the approximation
+			  (let ((va (variable-value fun)))
+			     (if (intern-sfun/Cinfo? va)
+				 (approx-type
+				  (intern-sfun/Cinfo-approx va))
+				 ;; we don't find suitable approximation
+				 ;; so we use a fault back case. 
+				 *obj*))
+			  tyc)))
+	     (variable-type-set! v (get-bigloo-type typ))))
+	 (else
+	  ;; set the type of the closure as the corresponding
+	  ;; bigloo type to the computed type
+	  (variable-type-set! v (get-bigloo-type t))))))

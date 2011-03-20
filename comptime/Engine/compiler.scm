@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Mar 13 13:58:33 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 19:02:59 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -174,7 +174,10 @@
 		(c1 (if (>=fx (bigloo-compiler-debug) 2)
 			(cons `(bigloo-debug-set! ,(bigloo-compiler-debug)) c0)
 			c0)))
-	    (unit-sexp*-add! (get-toplevel-unit) c1))
+	    (unit-sexp*-add! (get-toplevel-unit) c1)
+	    (when (>=fx *optim* 2)
+	       (unit-sexp*-add-head! (get-toplevel-unit)
+				     (list (%append-2-define)))))
 			  
 	 ;; we check error occured while building the ast
 	 (pass-postlude #unspecified)

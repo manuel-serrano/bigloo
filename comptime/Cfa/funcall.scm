@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sun Mar 20 08:18:37 2011 (serrano)                */
+;*    Last change :  Sun Mar 20 16:51:51 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -94,7 +94,10 @@
 	 ;; closure we find the most possible specific Bigloo type
 	 (when (and *optim-cfa-funcall-tracking?*
 		    (eq? (approx-type approx) *obj*))
-	     (for-each-approx-alloc set-procedure-approx-bigloo-type! fapprox))
+	     (for-each-approx-alloc (lambda (a)
+				       (when (make-procedure-app? a)
+					  (set-procedure-approx-bigloo-type! a)))
+				    fapprox))
 	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 

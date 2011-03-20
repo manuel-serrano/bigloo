@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Mon Oct 18 08:28:51 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 20 19:50:23 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    Expansion-Passing Style: Beyond Conventional Macro,              */
@@ -219,6 +219,9 @@
 		    (cond
 		       ((pair? (assq id (lexical-stack)))
 			application-expander)
+;* 		       ((or (find-G-expander id) (find-O-expander id)) */
+;* 			=>                                             */
+;* 			expander-expander)                             */
 		       ((get-compiler-expander id)
 			=>
 			(lambda (x) x))

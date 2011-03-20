@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Dec 29 18:10:27 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 20 19:53:32 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -41,7 +41,8 @@
 	    ast_node
 	    ast_var
 	    ast_sexp)
-   (export  (install-initial-expander)))
+   (export  (install-initial-expander)
+	    (%append-2-define)))
 
 ;*---------------------------------------------------------------------*/
 ;*    installedp ...                                                   */
@@ -153,12 +154,20 @@
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?l1 ?l2)
-	   `(append-2 ,(e l1 e) ,(e l2 e)))
+	   (e `(append-2 ,l1 ,l2) e))
 	  ((?- . ?lists)
-	   `(append
-	     ,@(map (lambda (l) (e l e)) lists)))
+	   `(append ,@(map (lambda (l) (e l e)) lists)))
 	  (else
 	   (error #f "Illegal `append' form" x)))))
+   ;; append-2
+   (install-O-comptime-expander
+    'append-2
+    (lambda (x::obj e::procedure)
+       (match-case x
+	  ((?- ?l1 ?l2)
+	   (e `(,%append-2-id ,l1 ,l2) e))
+	  (else
+	   (error #f "Illegal `append-2' form" x)))))
    
    ;; append!
    (install-O-comptime-expander
@@ -166,10 +175,9 @@
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?l1 ?l2)
-	   `(append-2! ,(e l1 e) ,(e l2 e)))
+	   (e `(append-2! ,l1 ,l2) e))
 	  ((?- . ?lists)
-	   `(append!
-	     ,@(map (lambda (l) (e l e)) lists)))
+	   `(append! ,@(map (lambda (l) (e l e)) lists)))
 	  (else
 	   (error #f "Illegal `append!' form" x)))))
    
@@ -179,7 +187,7 @@
     (lambda (x::obj e::procedure)
        (match-case x
 	  ((?- ?l1 ?l2)
-	   `(eappend-2 ,(e l1 e) ,(e l2 e)))
+	   (e `(eappend-2 ,l1 ,l2) e))
 	  ((?- . ?lists)
 	   `(eappend ,@(map (lambda (l) (e l e)) lists)))
 	  (else
@@ -1109,3 +1117,30 @@
        '(@ write-char-2 __r4_output_6_10_3))
       (else
        '(@ display-2 __r4_output_6_10_3))))
+
+;*---------------------------------------------------------------------*/
+;*    append-2-id ...                                                  */
+;*---------------------------------------------------------------------*/
+(define %append-2-id (gensym 'append-2))
+
+;*---------------------------------------------------------------------*/
+;*    %append-2-define ...                                             */
+;*    -------------------------------------------------------------    */
+;*    APPEND is special. It cannot be typed                            */
+;*                                                                     */
+;*      append: pair-nil x pair-nil -> pair-nil                        */
+;*                                                                     */
+;*    because one may use expressions such as:                         */
+;*                                                                     */
+;*      (append '(1 2 3) 4)                                            */
+;*                                                                     */
+;*    Hence, APPEND breaks the type inference because it introduces    */
+;*    "obj" type in the CFA. To work around that problem we override   */
+;*    the global definition with a local function which can be         */
+;*    infered as returning a pair-nil value.                           */
+;*---------------------------------------------------------------------*/
+(define (%append-2-define)
+   `(define (,%append-2-id l1 l2)
+       (if (pair? l1)
+	   (cons (car l1) (,%append-2-id (cdr l1) l2))
+	   l2)))
