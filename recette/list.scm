@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:21:42 1992                          */
-;*    Last change :  Mon May 28 14:59:47 2007 (serrano)                */
+;*    Last change :  Mon Mar 21 10:26:49 2011 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations primitives sur les listes                */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Tue Feb  1 09:16:39 2011 (serrano)                */
+;*    Last change :  Mon Mar 21 10:40:24 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -41,6 +41,9 @@
 (define (dataflow-walk! globals name)
    (pass-prelude name)
    (set! *isa* (find-global/module 'is-a? '__object))
+   (set! *c-null?* (find-global/module 'c-null? 'foreign))
+   (set! *c-pair?* (find-global/module 'c-pair? 'foreign))
+   (set! *c-epair?* (find-global/module 'c-epair? 'foreign))
    (for-each dataflow-global! globals)
    (pass-postlude globals))
 
@@ -48,6 +51,9 @@
 ;*    *isa* ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define *isa* #f)
+(define *c-null?* #f)
+(define *c-pair?* #f)
+(define *c-epair?* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-global! ...                                             */
@@ -147,8 +153,9 @@
 (define-method (dataflow-node! node::conditional env)
    (with-access::conditional node (test true false)
       (let* ((tenv (dataflow-node! test env))
-	     (true-env (append (dataflow-test-env test) tenv)))
-	 (dataflow-node! false env)
+	     (true-env (append (dataflow-test-env test) tenv))
+	     (false-env (append (dataflow-test-false-env test) tenv)))
+	 (dataflow-node! false false-env)
 	 (dataflow-node! true true-env)
 	 (if (abort? false)
 	     true-env
@@ -293,8 +300,7 @@
 		  (fun-predicate-of funv)
 		  (pair? args) (null? (cdr args))
 		  (var? (car args)))
-	     (list (cons (var-variable (car args))
-			 (fun-predicate-of funv))))
+	     (list (cons (var-variable (car args)) (fun-predicate-of funv))))
 	    (else
 	     '())))))
 
@@ -345,6 +351,31 @@
 			     (cdar env)))
 		 '()))
 	  '())))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-false-env ...                                      */
+;*---------------------------------------------------------------------*/
+(define-generic (dataflow-test-false-env::pair-nil node::node)
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-test-false-env ::app ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-test-false-env node::app)
+   (with-access::app node (fun args)
+      (let* ((f (var-variable fun))
+	     (funv (variable-value f)))
+	 (if (and (pair? args) (null? (cdr args))
+		  (var? (car args))
+		  (eq? (variable-type (var-variable (car args))) *pair-nil*))
+	     (cond
+		((eq? f *c-null?*)
+		 (list (cons (var-variable (car args)) *pair*)))
+		((or (eq? f *c-pair?*) (eq? f *c-epair?*))
+		 (list (cons (var-variable (car args)) *bnil*)))
+		(else
+		 '()))
+	     '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::node ...                                                */

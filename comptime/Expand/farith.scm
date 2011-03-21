@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 16:05:55 1995                          */
-;*    Last change :  Mon May 15 07:45:00 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 21 08:39:21 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The flonum expanders.                                            */
 ;*=====================================================================*/
@@ -30,10 +30,10 @@
 	   (maxfl x y))
 	  (else
 	   (e `(max-2fl ,x ,y) e))))
-      ((?- ?x . ?y)
+      ((?- ?x ?y . ?z)
        (let ((max (mark-symbol-non-user! (gensym 'max))))
-	  (e `(let ((,max (max-2fl ,x ,(car y))))
-		 (maxfl ,max ,@y))
+	  (e `(let ((,max (max-2fl ,x ,y)))
+		 (maxfl ,max ,@z))
 	     e)))))
 
 ;*---------------------------------------------------------------------*/
@@ -47,10 +47,10 @@
 	   (minfl x y))
 	  (else
 	   (e `(min-2fl ,x ,y) e))))
-      ((?- ?x . ?y)
+      ((?- ?x ?y . ?z)
        (let ((min (mark-symbol-non-user! (gensym 'min))))
-	  (e `(let ((,min (min-2fl ,x ,(car y))))
-		 (minfl ,min ,@y))
+	  (e `(let ((,min (min-2fl ,x ,y)))
+		 (minfl ,min ,@z))
 	     e)))))
 
 ;*---------------------------------------------------------------------*/

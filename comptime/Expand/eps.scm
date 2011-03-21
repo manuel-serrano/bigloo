@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Sun Mar 20 19:50:23 2011 (serrano)                */
+;*    Last change :  Mon Mar 21 08:09:20 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -150,26 +150,28 @@
 				  (loop (cdr src) (cons nbody res)))))))))
 	     units)
    ;; in a second time, we apply compile (i.e., optim/debug macros).
-   (for-each (lambda (unit)
-		(if (procedure? (unit-sexp* unit))
-		    ;; a freezed unit (such as the eval unit)
-		    ;; cannot be macro expanser.
-		    'nothing
-		    (let loop ((src (unit-sexp* unit))
-			       (res '()))
-		       (if (null? src)
-			   (unit-sexp*-set! unit (reverse! res))
-			   (let* ((obody (car src))
-				  (nbody (bind-exit (skip)
-					    (with-exception-handler
-					       (lambda (e)
-						  (handler e)
-						  (if (&error? e)
-						      (skip ''())))
-					       (lambda ()
-						  (compile-expand obody))))))
-			      (loop (cdr src) (cons nbody res)))))))
-	     units)
+   (when (or *optim-O-macro?*
+	     (and (number? *compiler-debug*) (>= *compiler-debug* 1)))
+      (for-each (lambda (unit)
+		   (if (procedure? (unit-sexp* unit))
+		       ;; a freezed unit (such as the eval unit)
+		       ;; cannot be macro expanser.
+		       'nothing
+		       (let loop ((src (unit-sexp* unit))
+				  (res '()))
+			  (if (null? src)
+			      (unit-sexp*-set! unit (reverse! res))
+			      (let* ((obody (car src))
+				     (nbody (bind-exit (skip)
+					       (with-exception-handler
+						  (lambda (e)
+						     (handler e)
+						     (if (&error? e)
+							 (skip ''())))
+						  (lambda ()
+						     (compile-expand obody))))))
+				 (loop (cdr src) (cons nbody res)))))))
+		units))
    ;; we are done
    (pass-postlude units check-to-be-macros))
       
@@ -188,19 +190,16 @@
 	 (lambda (e)
 	    (when (&error? e)
 	       (user-error-notify e 'expand))
-	    (user-error 'module "Illegal module clause" x #f)
+	    (user-error "module" "Illegal module clause" x #f)
 	    (exit 1))
 	 (lambda ()
 	    (comptime-expand x)))))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-expand ...                                               */
+;*    compile-expand ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (compile-expand x)
-   (if (or *optim-O-macro?*
-	   (and (number? *compiler-debug*) (>= *compiler-debug* 1)))
-       (compile-expander x compile-expander '())
-       x))
+   (compile-expander x compile-expander '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    initial-expander ...                                             */
@@ -219,9 +218,6 @@
 		    (cond
 		       ((pair? (assq id (lexical-stack)))
 			application-expander)
-;* 		       ((or (find-G-expander id) (find-O-expander id)) */
-;* 			=>                                             */
-;* 			expander-expander)                             */
 		       ((get-compiler-expander id)
 			=>
 			(lambda (x) x))
@@ -239,10 +235,13 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-expander ...                                             */
+;*    -------------------------------------------------------------    */
+;*    This expander is used in a second time, after the first          */
+;*    traditional macro-expansion has been applied.                    */
 ;*---------------------------------------------------------------------*/
 (define (compile-expander x e::procedure s::pair-nil)
-   (trace expand "compiler-expander: " x #\Newline)
-
+   (trace expand "compile-expander: " x #\Newline)
+   
    (define (id-of-id id)
       (fast-id-of-id id #f))
    
@@ -251,7 +250,7 @@
    
    (define (expand* x s)
       (map! (lambda (x) (expand x s)) x))
-
+   
    (define (expand-lambda x s)
       (let ((frame (proto->frame (cadr x))))
 	 (set-cdr! (cdr x) (expand* (cddr x) (append frame s)))
@@ -277,7 +276,7 @@
 					    ((symbol? b)
 					     (id-of-id b))
 					    (else
-					     (error 'let "Illegal form" x))))
+					     (error "let" "Illegal form" x))))
 				      bindings)))
 		 (ns (append frame s)))
 	     (for-each (lambda (b)
@@ -306,7 +305,7 @@
 	 ((labels ?bindings . ?body)
 	  (let* ((frame (map (lambda (b)
 				(if (not (pair? b))
-				    (error 'labels "Illegal form" x)
+				    (error "labels" "Illegal form" x)
 				    (id-of-id (car b))))
 			     bindings))
 		 (ns (append frame s)))
@@ -354,11 +353,13 @@
 			    (let ((b (or (find-G-expander id)
 					 (find-O-expander id))))
 			       (if b
-				   (let ((e (expander-expander b)))
-				      (e x initial-expander))
+				   (let* ((e (expander-expander b))
+					  (e2 (lambda (x e)
+						 (let ((nx (comptime-expand x)))
+						    (compile-expander nx e s)))))
+				      (e x e2))
 				   nx))))
 		     nx))))))
-
    (expand x s))
 
 ;*---------------------------------------------------------------------*/
