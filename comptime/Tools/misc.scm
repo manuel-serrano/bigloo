@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 16:54:25 1994                          */
-;*    Last change :  Mon Dec 18 11:34:18 2006 (serrano)                */
-;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 22 08:03:06 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Various general tools                                            */
 ;*=====================================================================*/
@@ -16,7 +16,7 @@
    (export (string*->string::bstring ::pair-nil)
 	   (replace! p1 p2)
 	   (string-split-char::pair-nil str::bstring separator::bchar)
-	   (epairify p1::pair ::obj)
+	   (epairify ::pair ::obj)
 	   (epairify-rec ::obj ::obj)
 	   (epairify-propagate ::obj ::obj)
 	   (epairify* def . srcs)
@@ -112,9 +112,7 @@
 	     ((epair? p)
 	      p)
 	     (else
-	      (econs (loop (car p))
-		     (loop (cdr p))
-		     (cer ep)))))))
+	      (econs (loop (car p)) (loop (cdr p)) (cer ep)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    epairify* ...                                                    */

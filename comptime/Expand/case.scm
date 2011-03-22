@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Fri Dec 15 05:40:21 2006 (serrano)                */
-;*    Copyright   :  1992-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 22 08:06:46 2011 (serrano)                */
+;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On macro-expanse ce satane `case'                                */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module expand_case
    (include "Tools/trace.sch")
    (import  tools_error
+	    tools_misc
 	    engine_param
 	    type_type
 	    ast_ident)
@@ -160,10 +161,12 @@
 				       (error "case"
 					      "Illegal `case' clause"
 					      (car clauses))
-				       (cons `(,datums
-					       ,@(map (lambda (x) (e x e))
-						      body))
-					     (loop (cdr clauses)))))
+				       (let* ((nbody (map (lambda (x) (e x e))
+							  body))
+					      (ebody (epairify-rec nbody body))
+					      (nclause `(,datums ,@ebody)))
+					  (cons (epairify nclause (car clauses))
+						(loop (cdr clauses))))))
 				  (else
 				   (error "case"
 					  "Illegal `case' form"

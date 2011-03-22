@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Tue Jul 22 08:06:43 2008                          */
-;*    Last change :  Wed Oct 22 15:27:25 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Mar 22 08:20:59 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    W3C dates (i.e., ISO8601 date format described in RFC 3339).     */
 ;*    See:                                                             */
@@ -37,8 +37,10 @@
       (define date-grammar
 	 (regular-grammar ((2d (= 2 digit)) (4d (= 4 digit)))
 	    ((: 4d "-" 2d "-" 2d "T") ; Date followed by time
-	     (cons* (the-substring 0 4) (the-substring 5 7) (the-substring 8 10)
-		    (read/rp time-grammar ip)))
+	     (let ((d1 (the-substring 0 4))
+		   (d2 (the-substring 5 7))
+		   (d3 (the-substring 8 10)))
+		(cons* d1 d2 d3 (read/rp time-grammar ip))))
 	    ((: 4d "-" 2d "-" 2d) ; Full date without time
 	     (list (the-substring 0 4) (the-substring 5 7) (the-substring 8 10)))
 	    ((: 4d "-" 2d) ; Year and month
@@ -55,14 +57,19 @@
 	 (regular-grammar ((2d (= 2 digit)))
 	    ((: 2d ":" 2d ":" 2d (in ",.") (+ digit)) ; Full time
 	     ;; decimal fraction is ignored as Bigloo ignores it too
-	     (cons* (the-substring 0 2) (the-substring 3 5) (the-substring 6 8)
-		    (read/rp tz-grammar ip)))
+	     (let ((d1 (the-substring 0 2))
+		   (d2 (the-substring 3 5))
+		   (d3 (the-substring 6 8)))
+		(cons* d1 d2 d3 (read/rp tz-grammar ip))))
 	    ((: 2d ":" 2d ":" 2d) ; Full time, without decimal fraction
-	     (cons* (the-substring 0 2) (the-substring 3 5) (the-substring 6 8)
-		    (read/rp tz-grammar ip)))
+	     (let ((d1 (the-substring 0 2))
+		   (d2 (the-substring 3 5))
+		   (d3 (the-substring 6 8)))
+		(cons* d1 d2 d3 (read/rp tz-grammar ip))))
 	    ((: 2d ":" 2d) ; Time without seconds
-	     (cons* (the-substring 0 2) (the-substring 3 5)
-		    (read/rp tz-grammar ip)))
+	     (let ((d1 (the-substring 0 2))
+		   (d2 (the-substring 3 5)))
+		(cons*  d1 d2 (read/rp tz-grammar ip))))
 	    (else
 	     (error 'w3c-datetine-parse
 		    "Invalid (ISO-8601:2000/W3C-NOTE-datetime) format"
@@ -80,7 +87,7 @@
 	     (error 'w3c-datetine-parse
 		    "Invalid (ISO-8601:2000/W3C-NOTE-datetime) format"
 		    string))))
-      
+
       (unwind-protect
 	 (read/rp date-grammar ip)
 	 (close-input-port ip))))

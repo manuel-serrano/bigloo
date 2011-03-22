@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 26 08:15:14 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 22 08:49:13 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    ast_var
 	    ast_node
 	    ast_lvtype
+	    ast_env
 	    object_class)
    (export  (reduce-type-check! globals)))
 
@@ -34,6 +35,8 @@
 ;*---------------------------------------------------------------------*/
 (define (reduce-type-check! globals)
    (verbose 2 #"      type check             ")
+   (set! *pair?* (find-global/module 'c-pair? 'foreign))
+   (set! *null?* (find-global/module 'c-null? 'foreign))
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
 		       (node (sfun-body fun))) 
@@ -42,8 +45,15 @@
 	     globals)
    (verbose 2 "(removed: " *type-checks-removed*
 	    ", remaining: " *type-checks-remaining* #")\n")
+   (set! *pair?* #f)
+   (set! *null?* #f)
    globals)
 
+;*---------------------------------------------------------------------*/
+;*    *pair?* ...                                                      */
+;*---------------------------------------------------------------------*/
+(define *pair?* #f)
+(define *null?* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Statitics ...                                                    */
@@ -136,10 +146,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::conditional)
    (with-access::conditional node (test true false)
-       (set! test (node-typec! test))
-       (set! true (node-typec! true))
-       (set! false (node-typec! false))
-       node))
+      (set! test (node-typec! test))
+      (set! true (node-typec! true))
+      (set! false (node-typec! false))
+      (when (pair-of-pair-nil? test)
+	 ;; an expression
+	 ;;     (if (pair? x) e1 e2)
+	 ;; is replaced with
+	 ;;     (if (null? x) e2 e1)
+	 ;; if the compiler knows that x is ::pair-nil because testing null?
+	 ;; is faster than testing pair?
+	 (set-null-test! test)
+	 (let ((otrue true))
+	    (set! true false)
+	    (set! false otrue)
+	    (trace (reduce 3) "typec: inverting pair?/null? test: "
+		   (shape node)
+		   #\Newline)))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-typec! ::fail ...                                           */
@@ -295,3 +319,21 @@
 		    node)))
 	     node))))
 
+;*---------------------------------------------------------------------*/
+;*    pair-of-pair-nil? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (pair-of-pair-nil? node)
+   (when (app? node)
+      (with-access::app node (fun args loc)
+	 (and (eq? (var-variable fun) *pair?*)
+	      (pair? args)
+	      (null? (cdr args))
+	      (eq? (get-type (car args)) *pair-nil*)))))
+
+;*---------------------------------------------------------------------*/
+;*    set-null-test! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (set-null-test! node::app)
+   (with-access::app node (fun)
+      (with-access::var fun (variable)
+	 (set! variable *null?*))))
