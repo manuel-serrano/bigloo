@@ -43,8 +43,8 @@
    ;; we mark functions which are known not to make side effect
    (for-each (lambda (var)
 		(let ((fun (variable-value var)))
-		   (when (eq? (fun-side-effect? fun) #unspecified)
-		      (fun-side-effect?-set! fun #f))))
+		   (when (eq? (fun-side-effect fun) #unspecified)
+		      (fun-side-effect-set! fun #f))))
 	     (get-var/all))
    ;; we spread the effect properties
    (trace effect "spread..." #\Newline)
@@ -67,8 +67,8 @@
       (for-each
        (lambda (var)
 	  (let ((fun (variable-value var)))
-	     (unless (eq? (fun-side-effect? fun) #t)
-		(fun-side-effect?-set! fun #t)
+	     (unless (eq? (fun-side-effect fun) #t)
+		(fun-side-effect-set! fun #t)
 		(cond
 		   ((local/from? var)
 		    (iterate-to-fix-point! (local/from-from var)))

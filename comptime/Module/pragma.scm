@@ -120,7 +120,7 @@
 	   (let ((val (global-value global)))
 	      (if (not (fun? val))
 		  (sfun-error "side-effect-free" global)
-		  (fun-side-effect?-set! val #f))))
+		  (fun-side-effect-set! val #f))))
 	  ;; the no-cfa-top pragma
 	  ((no-cfa-top)
 	   (let ((val (global-value global)))
@@ -176,7 +176,7 @@
 			 (remove-var-from! 'coerce global)
 			 ;; furthermore a predicate is _always_
 			 ;; free of side effects
-			 (fun-side-effect?-set! value #f))))))
+			 (fun-side-effect-set! value #f))))))
 	  ((effect)
 	   (let ((value (global-value global)))
 	      (if (not (fun? value))

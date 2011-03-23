@@ -190,7 +190,7 @@
 	  #f)
 	 (else
 	  (with-access::app expr (fun args)
-	     (if (not (fun-side-effect? (variable-value (var-variable fun))))
+	     (if (not (fun-side-effect (variable-value (var-variable fun))))
 		 (every? side-effect-safe? args)
 		 #f))))))
 
@@ -268,8 +268,8 @@
 	     (set! *removed* (+fx *removed* 1))
 	     (let ((val (cdr (car bindings))))
 		(conditional-test-set! abody val)
-		(if (not (conditional-side-effect? abody))
-		    (conditional-side-effect?-set! abody (side-effect? val))))
+		(if (not (conditional-side-effect abody))
+		    (conditional-side-effect-set! abody (side-effect? val))))
 	     abody)
 	    ((and (app? abody)
 		  (every? simple? (app-args abody))
@@ -287,8 +287,8 @@
 	     (with-access::app abody (args)
 		(let ((nargs (make-args-list bindings (app-args abody))))
 		   (set! args nargs)
-		   (if (not (app-side-effect? abody))
-		       (app-side-effect?-set! abody
+		   (if (not (app-side-effect abody))
+		       (app-side-effect-set! abody
 					      (any? side-effect? nargs)))))
 	     abody)
 	    ((and (extern? abody)
@@ -306,9 +306,9 @@
 	     (with-access::extern abody (expr*)
 		(let ((nexpr* (make-args-list bindings (extern-expr* body))))
 		   (extern-expr*-set! abody nexpr*)
-		   (if (not (extern-side-effect? abody))
-		       (extern-side-effect?-set! abody
-						 (any? side-effect? nexpr*)))))
+		   (if (not (extern-side-effect abody))
+		       (extern-side-effect-set! abody
+						(any? side-effect? nexpr*)))))
 	     abody)
 	    (else
 	     node)))))

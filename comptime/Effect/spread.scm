@@ -34,17 +34,17 @@
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::sequence)
    (let ((res (spread-side-effect*! (sequence-nodes node))))
-      (sequence-side-effect?-set! node res)
+      (sequence-side-effect-set! node res)
       res))
 
 ;*---------------------------------------------------------------------*/
 ;*    spread-side-effect! ::app ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::app)
-   (with-access::app node (side-effect? fun args)
+   (with-access::app node (side-effect fun args)
       (let ((res (or (spread-side-effect*! args)
-		     (fun-side-effect? (variable-value (var-variable fun))))))
-	 (set! side-effect? res)
+		     (fun-side-effect (variable-value (var-variable fun))))))
+	 (set! side-effect res)
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -69,9 +69,9 @@
 ;*    spread-side-effect! ::extern ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::extern)
-   (with-access::extern node (side-effect? expr*)
-      (let ((res (or (spread-side-effect*! expr*) side-effect?)))
-	 (set! side-effect? res)
+   (with-access::extern node (side-effect expr*)
+      (let ((res (or (spread-side-effect*! expr*) side-effect)))
+	 (set! side-effect res)
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -93,12 +93,12 @@
 ;*    spread-side-effect! ::conditional ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::conditional)
-   (with-access::conditional node (side-effect? test true false)
+   (with-access::conditional node (side-effect test true false)
       (let* ((res-test  (spread-side-effect! test))
 	     (res-true  (spread-side-effect! true))
 	     (res-false (spread-side-effect! false))
 	     (res       (or res-test res-true res-false)))
-	 (set! side-effect? res)
+	 (set! side-effect res)
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -115,12 +115,12 @@
 ;*    spread-side-effect! ::select ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::select)
-   (with-access::select node (side-effect? test clauses)
+   (with-access::select node (side-effect test clauses)
       (let loop ((clauses clauses)
 		 (res     (spread-side-effect! test)))
 	 (if (null? clauses)
 	     (begin
-		(set! side-effect? res)
+		(set! side-effect res)
 		res)
 	     (loop (cdr clauses)
 		   (or (spread-side-effect! (cdr (car clauses))) res))))))
@@ -129,24 +129,24 @@
 ;*    spread-side-effect! ::let-fun ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::let-fun)
-   (with-access::let-fun node (side-effect? body locals)
+   (with-access::let-fun node (side-effect body locals)
       (for-each (lambda (local)
 		   (spread-side-effect! (sfun-body (local-value local))))
 		locals)
       (let ((res (spread-side-effect! body)))
-	 (set! side-effect? res)
+	 (set! side-effect res)
 	 res)))
  
 ;*---------------------------------------------------------------------*/
 ;*    spread-side-effect! ::let-var ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::let-var)
-   (with-access::let-var node (side-effect? body bindings)
+   (with-access::let-var node (side-effect body bindings)
       (let loop ((bdgs bindings)
 		 (res  (spread-side-effect! body)))
 	 (if (null? bdgs)
 	     (begin
-		(set! side-effect? res)
+		(set! side-effect res)
 		res)
 	     (loop (cdr bdgs)
 		   (or (spread-side-effect! (cdr (car bdgs))) res))))))
@@ -171,9 +171,9 @@
 ;*    spread-side-effect! ::make-box ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::make-box)
-   (with-access::make-box node (side-effect? value)
+   (with-access::make-box node (side-effect value)
       (let ((res (spread-side-effect! value)))
-	 (set! side-effect? res)
+	 (set! side-effect res)
 	 res)))
 
 ;*---------------------------------------------------------------------*/

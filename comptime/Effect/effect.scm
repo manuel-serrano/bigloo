@@ -41,7 +41,7 @@
 ;*    side-effect? ::node ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (side-effect? node::node/effect)
-   (let ((effect (node/effect-side-effect? node)))
+   (let ((effect (node/effect-side-effect node)))
       (if (boolean? effect)
 	  effect
 	  #t)))

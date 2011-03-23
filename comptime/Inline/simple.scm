@@ -107,7 +107,7 @@
 	 (let ((inline-body (instantiate::let-var
 			       (loc loc)
 			       (type type)
-			       (side-effect? (side-effect? alpha-body))
+			       (side-effect (side-effect? alpha-body))
 			       (bindings bindings)
 			       (body (inline-node alpha-body
 						  new-kfactor
@@ -129,7 +129,7 @@
 		   (instantiate::let-var
 		      (loc loc)
 		      (type type)
-		      (side-effect? (side-effect? inline-body))
+		      (side-effect (side-effect? inline-body))
 		      (bindings (list (cons var inline-body)))
 		      (body (instantiate::var
 			       (loc loc)

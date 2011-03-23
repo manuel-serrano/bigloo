@@ -103,6 +103,6 @@
 	     (if (not (local-user? local))
 		 (global-user?-set! global #f))
 	     (sfun/Iinfo-global-set! value global)
-	     (sfun-side-effect?-set! (global-value global)
-				     (sfun-side-effect? value))
+	     (sfun-side-effect-set! (global-value global)
+				    (sfun-side-effect value))
 	     global))))

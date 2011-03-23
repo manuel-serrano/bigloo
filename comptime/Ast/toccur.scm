@@ -113,7 +113,7 @@
 ;*    occur-node! ::extern ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::extern)
-   (with-access::extern node (side-effect?)
+   (with-access::extern node (side-effect)
       (let ((nodes (extern-expr* node)))
 	 (occur-node*! nodes))))
 

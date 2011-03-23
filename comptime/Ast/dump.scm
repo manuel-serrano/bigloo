@@ -156,7 +156,7 @@
 (define-method (node->sexp node::pragma)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   (let ((p (if (pragma-side-effect? node)
+		   (let ((p (if (pragma-side-effect node)
 				'pragma
 				'free-pragma)))
 		      `(,(if *type-shape?*

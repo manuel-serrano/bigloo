@@ -34,7 +34,7 @@
 
 	   (class node/effect::node
 	      ;; a side effect field
-	      (side-effect? (default #unspecified))
+	      (side-effect (default #unspecified))
 	      ;; a key for set manipulation (exclusively the cfa
 	      ;; but to avoid wasting time in node-key this field
 	      ;; is in the global tree)

@@ -104,7 +104,7 @@
 		     (if *ast-case-sensitive*
 			 (symbol->string (global-import g))
 			 (string-downcase (symbol->string (global-import g))))
-		     "  side-effect: " (atom->string (sfun-side-effect? sfun))
+		     "  side-effect: " (atom->string (sfun-side-effect sfun))
 		     (let ((t (sfun-predicate-of sfun)))
 			(if (type? t)
 			    (string-append "  predicate-of: "

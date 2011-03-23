@@ -240,8 +240,8 @@
 	     (unless (local-user? local)
 		(global-user?-set! global #f))
 	     (widen!::global/Ginfo global)
-	     (sfun-side-effect?-set! (global-value global)
-				     (sfun-side-effect? value))
+	     (sfun-side-effect-set! (global-value global)
+				    (sfun-side-effect value))
 	     (sfun/Ginfo-the-global-set! value global)
 	     global))))
 

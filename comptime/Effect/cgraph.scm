@@ -75,9 +75,9 @@
 ;*    call-graph! ::extern ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (call-graph! node::extern owner)
-   (with-access::extern node (side-effect? expr*)
-      (if side-effect?
-	  (mark-side-effect! owner))
+   (with-access::extern node (side-effect expr*)
+      (when side-effect
+         (mark-side-effect! owner))
       (call-graph*! expr* owner)))
 
 ;*---------------------------------------------------------------------*/
@@ -210,7 +210,7 @@
       (if (or (cfun? fun)
 	      (and (sfun? fun)
 		   (eq? (global-import callee) 'import)))
-	  (if (fun-side-effect? fun)
+	  (if (fun-side-effect fun)
 	      (mark-side-effect! owner))
 	  (save-call! (widen!::global/from callee (from '())) owner))))
 
@@ -272,9 +272,9 @@
    (trace (effect 2) "!!! mark-side-effect!(" (shape v) ")" #\Newline)
    (let ((fun (variable-value v)))
       (cond
-	 ((not (fun-side-effect? fun))
+	 ((not (fun-side-effect fun))
 	  (set! *var/side-effect* (cons v *var/side-effect*))
-	  (fun-side-effect?-set! fun #t))
+	  (fun-side-effect-set! fun #t))
 	 ((not (memq v *var/side-effect*))
 	  (set! *var/side-effect* (cons v *var/side-effect*)))
 	 (else

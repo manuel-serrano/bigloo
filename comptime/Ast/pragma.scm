@@ -48,7 +48,7 @@
 			    (type type)
 			    (format format)
 			    (expr* (reverse! nodes))
-			    (side-effect? (not free))
+			    (side-effect (not free))
 			    (effect effect))
 			 (loop (cdr exps)
 			       (cons

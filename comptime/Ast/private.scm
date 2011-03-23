@@ -60,7 +60,7 @@
 	     (otype otype)
 	     (fname field-name)
 	     (ftype ftype)
-	     (side-effect? #f)
+	     (side-effect #f)
 	     (expr* (list (sexp->node obj stack loc 'value)))
 	     (effect (instantiate::feffect
 			(read (list tid))))
@@ -77,7 +77,7 @@
 	     (otype otype)
 	     (fname field-name)
 	     (ftype ftype)
-	     (side-effect? #t)
+	     (side-effect #t)
 	     (expr* (sexp*->node rest stack loc 'value))
 	     (effect (instantiate::feffect
 			(write (list tid))))
@@ -86,7 +86,7 @@
        (instantiate::new
 	  (loc loc)
 	  (type (use-type! type loc))
-	  (side-effect? #t)
+	  (side-effect #t)
 	  (c-format "")))
       ((?- new ?type (quote ?args-type) . ?rest)
        (if (null? rest)
@@ -95,7 +95,7 @@
 	      (loc loc)
 	      (type (use-type! type loc))
 	      (args-type (map (lambda (t) (use-type! t loc)) args-type))
-	      (side-effect? #t)
+	      (side-effect #t)
 	      (c-format ""))
 	   (instantiate::new
 	      (loc loc)
@@ -104,7 +104,7 @@
 	      (expr* (if (null? rest)
 			 '()
 			 (sexp*->node rest stack loc 'value)))
-	      (side-effect? #t)
+	      (side-effect #t)
 	      (c-format ""))))
       ((?- cast ?type ?exp)
        (instantiate::cast

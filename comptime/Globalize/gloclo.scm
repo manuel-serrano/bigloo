@@ -228,7 +228,7 @@
 	     (if (not (eq? (global-import global) 'static))
 		 (global-removable-set! gclo 'never))
 	     (global-import-set! gclo 'static)))
-      (fun-side-effect?-set! (global-value gclo) (fun-side-effect? sfun))
+      (fun-side-effect-set! (global-value gclo) (fun-side-effect sfun))
       (if (not (global? gclo))
 	  (internal-error "global-closure" "Can't allocate global closure" gclo)
 	  gclo)))

@@ -102,7 +102,7 @@
 ;*    occur-node! ::extern ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::extern)
-   (with-access::extern node (side-effect?)
+   (with-access::extern node (side-effect)
       (let ((nodes (extern-expr* node)))
 	 (occur-node*! nodes))))
 
@@ -110,8 +110,8 @@
 ;*    occur-node! ::pragma ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::pragma)
-   (with-access::pragma node (side-effect?)
-      (when side-effect?
+   (with-access::pragma node (side-effect)
+      (when side-effect
 	 (for-each (lambda (n)
 		      (if (and (var? n) (local? (var-variable n)))
 			  (with-access::local  (var-variable n) (access)

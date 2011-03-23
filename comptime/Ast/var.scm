@@ -88,7 +88,7 @@
 	      ;; field of the SFUN class 
 	      (arity::long read-only)
 	      ;; side effect field
-	      (side-effect? (default #unspecified))
+	      (side-effect (default #unspecified))
 	      ;; if this function is a predicate, the type tested
 	      (predicate-of (default #f))
 	      ;; an associated stack allocator
