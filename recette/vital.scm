@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Mar 16 19:58:01 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 15:39:17 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -408,32 +408,35 @@
    (test "symbol.9" (symbol? (string->symbol "01234")) #t)
    (test "symbol.10" (symbol? '|;|) #t)
    (test "symbol.11" (symbol? (string->symbol ";")) #t)
+   (let ((s1 (symbol->string '|:=|))
+	 (s2 (symbol->string '|:=|)))
+      (test "symbol.12" (string=? s1 s2) #t))
    (let ((s1 (with-output-to-string (lambda () (write ':=))))
 	 (s2 (with-output-to-string (lambda () (write '|:=|)))))
-      (test "symbol.12" (string=? s1 s2) #f))
+      (test "symbol.13" (string=? s1 s2) #f))
    (let ((s1 (with-output-to-string (lambda () (write '|(|))))
 	 (s2 (with-output-to-string (lambda () (write (string->symbol "("))))))
-      (test "symbol.13" (string=? s1 s2) #t))
+      (test "symbol.14" (string=? s1 s2) #t))
    (let ((s (with-output-to-string (lambda () (write '(|;| k))))))
       (with-input-from-string s
 	 (lambda ()
 	    (let ((v (read)))
-	       (test "symbol.14"
+	       (test "symbol.15"
 		     (and (pair? v)
 			  (pair? (cdr v))
 			  (null? (cddr v))
 			  (equal? v (list (string->symbol ";") 'k)))
 		     #t)))))
-   (test "symbol.15" (symbol? '|(ab)|) #t)
-   (test "symbol.16" '|(a,b)| (string->symbol "(a,b)"))
-   (test "symbol.17" (symbol? '|:=|) #t)
-   (test "symbol.18" '|.| (string->symbol "."))
+   (test "symbol.16" (symbol? '|(ab)|) #t)
+   (test "symbol.17" '|(a,b)| (string->symbol "(a,b)"))
+   (test "symbol.18" (symbol? '|:=|) #t)
+   (test "symbol.19" '|.| (string->symbol "."))
    (let ((s1 (with-output-to-string (lambda () (write '|.|))))
 	 (s2 (with-output-to-string (lambda () (write (string->symbol "."))))))
-      (test "symbol.19" (string=? s1 s2) #t))
-   (test "symbol.20" (symbol->string '.foo) ".foo")
-   (test "symbol.21" '.foo (string->symbol ".foo"))
-   (test "symbol.22" (string->symbol "`") '|`|)
+      (test "symbol.20" (string=? s1 s2) #t))
+   (test "symbol.21" (symbol->string '.foo) ".foo")
+   (test "symbol.22" '.foo (string->symbol ".foo"))
+   (test "symbol.23" (string->symbol "`") '|`|)
    (test "gensym.1" (symbol? (gensym)) #t)
    (test "gensym.2" (symbol? (gensym 'foo)) #t)
    (test "gensym.3" (symbol? (gensym "foo")) #t)

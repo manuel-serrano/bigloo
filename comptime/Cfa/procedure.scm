@@ -30,24 +30,22 @@
 	    cfa_iterate
 	    cfa_closure)
    (export  (disable-X-T! approx::approx ::bstring)
-	    (set-procedure-approx-bigloo-type! alloc::make-procedure-app)))
+	    (set-procedure-approx-polymorphic! ::make-procedure-app)))
 
 ;*---------------------------------------------------------------------*/
 ;*    disable-X-T! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (disable-X-T! approx reason)
-   (for-each-approx-alloc (lambda (app)
-			     (trace (cfa 3)
-				    "!!! Je disable X-T pour: " (shape app)
-				    " because " reason
-				    #\Newline)
-			     (when (make-procedure-app? app)
-				(with-access::make-procedure-app app (args X-T?)
-				   (when (and (var? (car args))
-					      (eq? (variable-type (var-variable (car args))) *_*))
-				      (variable-type-set! (var-variable (car args)) *obj*))
-				   (set! X-T? #f))))
-			  approx))
+   (define (disable-alloc! app)
+      (when (make-procedure-app? app)
+	 (trace (cfa 3)
+		"!!! disable X-T: " (shape app)
+		" because " reason
+		#\Newline)
+	 (with-access::make-procedure-app app (X-T?)
+	    (set! X-T? #f))
+	 (set-procedure-approx-polymorphic! app)))
+   (for-each-approx-alloc disable-alloc! approx))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pre-make-procedure-app ...                         */
@@ -271,22 +269,20 @@
 ;*    vectors).                                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (loose-alloc! alloc::make-procedure-app)
-     (trace (cfa 4) " *** loose-alloc::make-procedure-app: " *cfa-stamp* " "
-	    (shape alloc) #\Newline)
     (with-access::make-procedure-app alloc (lost-stamp)
       (if (=fx lost-stamp *cfa-stamp*)
 	  #unspecified
 	  (begin
-	     (trace (cfa 2) "     loose-alloc::make-procedure-app.2: " (shape alloc) #\Newline)
+	     (trace (cfa 2) "     loose-alloc::make-procedure-app: " (shape alloc) #\Newline)
 	     (set! lost-stamp *cfa-stamp*)
-;* 	     (set-procedure-approx-bigloo-type! alloc)                 */
+	     (set-procedure-approx-polymorphic! alloc)
 	     (let* ((callee (car (make-procedure-app-args alloc)))
 		    (v (var-variable callee))
 		    (fun (variable-value v)))
 		(cfa-export-var! fun v))))))
 
 ;*---------------------------------------------------------------------*/
-;*    set-procedure-approx-bigloo-type! ...                            */
+;*    set-procedure-approx-polymorphic! ...                            */
 ;*    -------------------------------------------------------------    */
 ;*    When on a funcall not all the closures return the same type,     */
 ;*    all the closures have to use a polymorphic representation of     */
@@ -294,34 +290,17 @@
 ;*    of setting a Bigloo type for all the closures potentially        */
 ;*    called on a funcall site.                                        */
 ;*---------------------------------------------------------------------*/
-(define (set-procedure-approx-bigloo-type! alloc::make-procedure-app)
-   (let* ((proc (car (make-procedure-app-args alloc)))
-	  (v (var-variable proc))
-	  (t (variable-type v)))
+(define (set-procedure-approx-polymorphic! app::make-procedure-app)
+   (let* ((callee (car (make-procedure-app-args app)))
+	  (v (var-variable callee))
+	  (fun (variable-value v)))
+      (trace (cfa 2) "     set-polymorphic!: " (shape v) " " (typeof fun) #\Newline)
       (cond
-	 ((eq? t *_*)
-	  ;; the closure entry function is not typed yet
-	  (let* ((clo (variable-value v))
-		 (fun (sfun-the-closure-global clo))
-		 (tyc (variable-type fun))
-		 (typ (if (eq? tyc *_*)
-			  ;; the associated function is untyped, we then
-			  ;; use the current type of the approximation
-			  (let ((va (variable-value fun)))
-			     (if (intern-sfun/Cinfo? va)
-				 (approx-type
-				  (intern-sfun/Cinfo-approx va))
-				 ;; we don't find suitable approximation
-				 ;; so we use a fault back case. 
-				 *obj*))
-			  tyc)))
-	     (trace (cfa 4) " *** set-procedure-approx-bigloo-type.1: "
-		    (shape proc) " <- " (shape tyc) #\Newline)	     
-	     '(variable-type-set! v (get-bigloo-type typ))))
-	 (else
-	  ;; set the type of the closure as the corresponding
-	  ;; bigloo type to the computed type
-	  (trace (cfa 4) " *** set-procedure-approx-bigloo-type.2: "
-		 (shape proc) " <- " (shape (get-bigloo-type t)) #\Newline)
-	  '(variable-type-set! v (get-bigloo-type t))))))
-
+	 ((intern-sfun/Cinfo? fun)
+	  (unless (intern-sfun/Cinfo-polymorphic? fun)
+	     (continue-cfa! "polymorphic intern fun")
+	     (intern-sfun/Cinfo-polymorphic?-set! fun #t)))
+	 ((extern-sfun/Cinfo-approx fun)
+	  (unless (extern-sfun/Cinfo-polymorphic? fun)
+	     (continue-cfa! "polymorphic extern fun")
+	     (extern-sfun/Cinfo-polymorphic?-set! fun #t))))))

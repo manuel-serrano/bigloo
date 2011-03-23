@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Wed Mar 23 09:08:49 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 17:21:49 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -16,6 +16,7 @@
    (include "Tools/trace.sch")
    (import  tools_shape
 	    type_type
+	    type_cache
 	    ast_var
 	    ast_node
 	    ast_unit
@@ -54,7 +55,6 @@
 	 (if (continue-cfa?)
 	     (begin
 		(cfa-iterate! glodefs)
-		(trace cfa "<======= Cfa iteration!: " *cfa-stamp* #\Newline)
 		(loop))
 	     glodefs))))
 
@@ -122,9 +122,10 @@
 			  (let ((val (local-value local)))
 			     (trace (cfa 3) " ~~~ formal " (shape local)
 				    " clo-env?: " (svar/Cinfo-clo-env? val)
+				    " val: " (shape (svar/Cinfo-approx val))
 				    #\Newline)
-			     (if (not (svar/Cinfo-clo-env? val))
-				 (approx-set-top! (svar/Cinfo-approx val)))))
+			     (unless (svar/Cinfo-clo-env? val)
+				(approx-set-top! (svar/Cinfo-approx val)))))
 		       args)
 	     ;; after the formals, we loose the result.
 	     (loose! (cfa-intern-sfun! value owner) 'all)))))
@@ -133,13 +134,21 @@
 ;*    cfa-intern-sfun! ::intern-sfun/Cinfo ...                         */
 ;*---------------------------------------------------------------------*/
 (define (cfa-intern-sfun!::approx sfun::intern-sfun/Cinfo owner)
+   
+   (define (polymorphic approx)
+      (with-access::intern-sfun/Cinfo sfun (polymorphic?)
+	 (when polymorphic?
+	    (with-access::approx approx (type)
+	       (set! type (get-bigloo-type type))))
+	 approx))
+
    (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
       (if (=fx stamp *cfa-stamp*)
 	  (begin
 	     (trace (cfa 3) "--- cfa-intern-sfun!: " (shape owner) " -> "
 		    (shape approx)
-		    #\Newline)	     
-	     approx)
+		    #\Newline)
+	     (polymorphic approx))
 	  (begin
 	     (trace (cfa 3) ">>> cfa-intern-sfun!: " (shape owner) #\Newline)
 	     (set! stamp *cfa-stamp*)
@@ -147,7 +156,7 @@
 	     (trace (cfa 3) "<<< cfa-intern-sfun!: " (shape owner) " -> "
 		    (shape approx)
 		    #\Newline)
-	     approx))))
+	     (polymorphic approx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    The iteration process control                                    */

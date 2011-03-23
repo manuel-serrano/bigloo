@@ -42,8 +42,9 @@
 ;*    computed by the Cfa.                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::funcall/Cinfo)
-   (trace (cfa 2) "  funcall: " (shape node) #\Newline)
    (with-access::funcall/Cinfo node (approx fun args)
+      (trace (cfa 2) "  funcall: " (shape node) " approx=" (shape approx)
+	     #\Newline)
       (let* ((fapprox (cfa! fun))
 	     (aapprox (map cfa! (cdr args))))
 	 (trace (cfa 2)
@@ -92,12 +93,13 @@
 	 ;; If approx is *obj* it must be propagated in all the procedures
 	 ;; that from now on they must return a bigloo type. In consequence
 	 ;; for each closure we find the most possible specific Bigloo type
-;* 	 (when (and *optim-cfa-funcall-tracking?*                      */
-;* 		    (eq? (approx-type approx) *obj*))                  */
-;* 	     (for-each-approx-alloc (lambda (a)                        */
-;* 				       (when (make-procedure-app? a)   */
-;* 					  (set-procedure-approx-bigloo-type! a))) */
-;* 				    fapprox))                          */
+   	 (when (and *optim-cfa-funcall-tracking?*
+		    (bigloo-type? (approx-type approx))
+		    (not (eq? (approx-type approx) *_*)))
+	    (for-each-approx-alloc (lambda (a)
+				      (when (make-procedure-app? a)
+					 (set-procedure-approx-polymorphic! a)))
+				   fapprox))
 	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 
@@ -142,7 +144,8 @@
 	  (v      (var-variable callee))
 	  (fun    (variable-value v))
 	  (arity  (fun-arity fun)))
-      (trace (cfa 3) " funcall!: " (shape callee) " arity: " arity " "
+      (trace (cfa 3) " funcall!: " (shape callee) " (" (typeof fun)
+	     ") arity: " arity " "
 	     (shape args-approx) #\Newline)
       (cond 
 	 ((not (cfa-correct-arity? fun args-approx))
@@ -151,15 +154,15 @@
 	 ((or (global-optional? (sfun-the-closure-global fun))
 	      (global-key? (sfun-the-closure-global fun)))
 	  ;; optional/key function, we loose everything
-	  (trace (cfa 3) "  funcall! -> opt/key app!: " #\Newline)
+	  (trace (cfa 3) "  funcall! opt/key app!: " #\Newline)
 	  (for-each (lambda (approx) (loose! approx 'all)) args-approx)
-	  (make-empty-approx))
+	  (make-type-approx *obj*))
 	 ((>=fx arity 0)
 	  ;; fix arity call
-	  (trace (cfa 3) "  funcall! -> fx app!: " #\Newline)
+	  (trace (cfa 3) "  funcall! fx app!: " #\Newline)
 	  (app! fun callee args-approx))
 	 (else
-	  (trace (cfa 3) "  funcall! -> va app!: " #\Newline)
+	  (trace (cfa 3) "  funcall! va app!: " #\Newline)
 	  ;; va arity call
 	  (let loop ((old-args-approx args-approx)
 		     (new-args-approx '())

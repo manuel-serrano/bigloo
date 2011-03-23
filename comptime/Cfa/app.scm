@@ -17,6 +17,7 @@
    (import  tools_shape
 	    tools_error
 	    type_type
+	    type_cache
 	    ast_var
 	    ast_node
 	    cfa_info
@@ -45,11 +46,12 @@
 ;*    app! ::intern-sfun/Cinfo ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::intern-sfun/Cinfo var::var args-approx)
-   (trace (cfa 3)
-	  ">>>  app(intern)! var=" (shape var)
-	  " args-approx=" (shape args-approx)
-	  #\Newline)
-   (with-access::intern-sfun/Cinfo fun (args)
+   (with-access::intern-sfun/Cinfo fun (args polymorphic?)
+      (trace (cfa 3)
+	     ">>>  app(intern-sfun/Cinfo)! var=" (shape var)
+	     " polymorphic?=" polymorphic?
+	     " args-approx=" (shape args-approx)
+	     #\Newline)
       ;; we set the new formals approximation
       (for-each (lambda (formal approx)
 		   (union-approx! (svar/Cinfo-approx (local-value formal))
@@ -63,13 +65,13 @@
 	  ;; this is a unexported function 
 	  (let ((a (cfa-intern-sfun! fun (var-variable var))))
 	     (trace (cfa 3)
-		    "<<<  app(intern)! var=" (shape var)
+		    "<<<  app(intern)! " (shape var)
 		    " intern <- " (shape a) "\n")
 	     a)
 	  ;; this is an exported function
 	  (let ((a (cfa-export-var! fun (var-variable var))))
 	     (trace (cfa 3)
-		    "<<<  app(intern)! var=" (shape var)
+		    "<<<  app(intern)! " (shape var)
 		    " export <-" (shape a) "\n")
 	     a))))
 
@@ -77,12 +79,16 @@
 ;*    app! ::extern-sfun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::extern-sfun/Cinfo var::var args-approx)
-   (trace (cfa 3) ">>> app(extern)!: " (shape var) " " (shape args-approx)
+   (trace (cfa 3) ">>> app(extern-sfun/Cinfo)!: "
+	  (shape var) " " (shape args-approx)
 	  #\Newline)
-   (with-access::extern-sfun/Cinfo fun (top? approx)
+   (with-access::extern-sfun/Cinfo fun (top? approx polymorphic?)
       ;; we set the new formals approximation
       (when top?
 	 (for-each (lambda (a) (loose! a 'all)) args-approx))
+      (when polymorphic?
+	 (with-access::approx approx (type)
+	    (set! type (get-bigloo-type (approx-type approx)))))
       ;; and we return the global approximation
       (trace (cfa 3) "<<< app(extern) " (shape var) " <- " (shape approx)
 	     #\Newline)

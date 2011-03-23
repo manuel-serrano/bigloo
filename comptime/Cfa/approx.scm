@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sun Mar 20 08:16:29 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 17:34:18 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -102,7 +102,8 @@
 	 ((eq? dtype type)
 	  #f)
 	 ((or (and (eq? dtype *long*) (eq? type *int*))
-	      (and (eq? dtype *int*) (eq? type *long*)))
+	      (and (eq? dtype *int*) (eq? type *long*))
+	      (and (eq? dtype *bint*) (or (eq? type *int*) (eq? type *long*))))
 	  ;; integer equivalence
 	  #f)
 	 ((and (eq? dtype *epair*) (eq? type *pair*))
@@ -113,6 +114,9 @@
 	       (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*)))
 	  ;; pair-nil subtyping 2
 	  #f)
+	 ((and (bigloo-type? dtype) (eq? dtype (get-bigloo-type type)))
+	  ;; C / bigloo mapping
+	  #t)
 	 ((and (or (eq? dtype *bnil*) (eq? dtype *pair*) (eq? dtype *epair*))
 	       (or (eq? type *bnil*)
 		   (eq? type *pair*) (eq? type *epair*) (eq? type *pair-nil*)))
@@ -144,10 +148,12 @@
 ;*    approx-set-top! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (approx-set-top! dst::approx)
-   (if (not (approx-top? dst))
-       (begin
-	  (approx-top?-set! dst #t)
-	  (continue-cfa! 'approx-set-top!))))
+   (with-access::approx dst (top? dup)
+      (unless top?
+	 (approx-top?-set! dst #t)
+	 (continue-cfa! 'approx-set-top!))
+      (when (approx? dup)
+	 (approx-set-top! dup))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-empty-approx ...                                            */

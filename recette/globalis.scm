@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */
-;*    Last change :  Fri Nov  5 14:51:17 2004 (serrano)                */
+;*    Last change :  Wed Mar 23 15:42:45 2011 (serrano)                */
 ;*                                                                     */
 ;*    Des tests qui globalisent des fonctions locales par la passe Glo */
 ;*---------------------------------------------------------------------*/
@@ -278,12 +278,12 @@
 ;*---------------------------------------------------------------------*/
 (define (test-globalisation)
    (test-module "globalisation" "globalisation.scm")
-   (test "globalisation" ((test1)) 0)
-   (test "kapture" ((test2 1 2 3)) 1)
-   (test "kapture" (test3) 1)
-   (test "cell" ((test4 1 2) 3) 2)
-   (test "cell" ((test5 1 2 3 4) 2) 2)
-   (test "cell" ((test6 1 2 3 4) 2) 2)
-   (test "globalisation" (((test7 5) 6) 7) 5)
+   (test "globalisation.1" ((test1)) 0)
+   (test "globalisation.2" (((test7 5) 6) 7) 5)
+   (test "kapture.1" ((test2 1 2 3)) 1)
+   (test "kapture.2" (test3) 1)
+   (test "cell.1" ((test4 1 2) 3) 2)
+   (test "cell.2" ((test5 1 2 3 4) 2) 2)
+   (test "cell.3" ((test6 1 2 3 4) 2) 2)
    (test "rgc" (test8 "(foo(bar(gee)))") '(foo bar gee))
    (test "_" (_plante-4 5 6) 11))

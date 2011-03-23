@@ -65,6 +65,7 @@
 	    *optim-cfa-flonum-arithmetic?*
 	    *optim-cfa-free-var-tracking?*
 	    *optim-cfa-funcall-tracking?*
+	    *optim-cfa-apply-tracking?*
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
@@ -902,7 +903,10 @@
 	      "Enable closure free-variables specialization"
 	      #f)
 (param-define *optim-cfa-funcall-tracking?*
-	      "Track values inside funcall and apply"
+	      "Track values across funcall"
+	      #f)
+(param-define *optim-cfa-apply-tracking?*
+	      "Track values across apply"
 	      #f)
 (param-define *optim-integrate?*
 	      "Enable function integration (closure analysis)"

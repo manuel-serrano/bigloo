@@ -146,7 +146,6 @@
       (cond
 	 ((local? alpha)
 	  (var-variable-set! node alpha)
-	  (node-type-set! node (variable-type alpha))
 	  (glo! node integrator))
 	 ((global? variable)
 	  node)

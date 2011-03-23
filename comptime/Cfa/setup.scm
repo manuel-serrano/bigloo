@@ -247,7 +247,7 @@
    (with-access::app-ly node (fun arg)
       (node-setup! fun)
       (node-setup! arg)
-      (if *optim-cfa-funcall-tracking?*
+      (if *optim-cfa-apply-tracking?*
 	  (widen!::app-ly/Cinfo node
 	     (approx (make-empty-approx)))
 	  (begin

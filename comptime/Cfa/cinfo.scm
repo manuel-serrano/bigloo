@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Fri Nov  5 16:08:22 2004 (serrano)                */
-;*    Copyright   :  1996-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 23 17:33:07 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
 ;*=====================================================================*/
@@ -34,14 +34,19 @@
        ;; or top
        (top?::bool (default #f))
        ;; a stamp to avoid useless multiple loose.
-       (lost-stamp::long (default -1)))
+       (lost-stamp::long (default -1))
+       ;; dup (variables duplicate their approx), this points to
+       ;; the initial approx
+       (dup (default #unspecified)))
     
     ;; function extensions
     (wide-class cfun/Cinfo::cfun
        (approx::approx read-only))
     (wide-class extern-sfun/Cinfo::sfun
+       (polymorphic?::bool (default #f))
        (approx::approx read-only))
     (wide-class intern-sfun/Cinfo::sfun
+       (polymorphic?::bool (default #f))
        (approx::approx read-only)
        (stamp::long (default -1)))
     

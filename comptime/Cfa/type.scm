@@ -212,10 +212,9 @@
 ;*    get-procedure-approx-type ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (get-procedure-approx-type approx)
-   (cond
-      ((not (approx-procedure-el? approx)) (approx-type approx))
-      ((approx-procedure-el1? approx) *procedure-el1*)
-      (else *procedure-el*)))
+   (if (approx-procedure-el? approx)
+       *procedure-el*
+       (approx-type approx)))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::procedure-ref-app ...                               */

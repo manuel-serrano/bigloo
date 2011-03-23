@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Tue Mar 15 11:00:42 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 17:33:10 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -68,6 +68,7 @@
 	 (if (or (eq? (variable-type variable) type) (eq? type *_*))
 	     approx
 	     (duplicate::approx approx
+		(dup approx)
 		(type type))))))
 
 ;*---------------------------------------------------------------------*/
@@ -204,7 +205,10 @@
 	 (trace (cfa 3) "*** " (shape node) " <- " (shape val-approx)
 		#\Newline)
 	 (union-approx! var-approx val-approx)
-	 (if (global? v) (global-loose! v var-approx))
+	 (when (and (global? v)
+		    (or (not (global-init v))
+			(not (eq? (global-import v) 'static))))
+	    (global-loose! v var-approx))
 	 approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -269,20 +273,21 @@
 				"       val: " (shape val-approx) #\Newline
 				"     vtype: " (shape vtype) #\Newline
 				"     atype: " (shape atype) #\Newline)
-			 ;; Here we explicitly check for type downcast.
+			 ;; Here we explicitly check for type downcasts.
 			 ;; When one is encountered, top is propagated
 			 ;; Before version 3.5b (27 Nov 2010), this was
 			 ;; propagating a top as soon as atype was not eq
 			 ;; to vtype (not (eq? atype vtype))
-			 (if (and (not (eq? vtype *_*))
-				  (not (eq? vtype *obj*))
-				  (not (eq? atype *_*))
-				  (eq? atype *obj*))
-			     (begin
-				(trace (cfa 4) "     -----> setting top\n")
-				(approx-set-top! val-approx)
-				(loose! val-approx 'all))))))
+			 (when (and (not (eq? vtype *_*))
+				    (not (eq? vtype *obj*))
+				    (not (eq? atype *_*))
+				    (eq? atype *obj*))
+			    (trace (cfa 4) "     -----> setting top "
+				   (shape val-approx) "\n")
+			    (approx-set-top! val-approx)
+			    (loose! val-approx 'all)))))
 		bindings)
+      (trace (cfa 3) "<<< let-var: " (shape node) #\Newline)
       (cfa! body)))
 
 ;*---------------------------------------------------------------------*/

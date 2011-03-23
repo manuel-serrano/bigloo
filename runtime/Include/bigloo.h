@@ -1751,7 +1751,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 /*---------------------------------------------------------------------*/
 /*    Extra-light procedures                                           */
 /*---------------------------------------------------------------------*/
-#define MAKE_EL_PROCEDURE( size )   GC_MALLOC( size * OBJ_SIZE )
+#define MAKE_EL_PROCEDURE( size )   (( !size ) ? BUNSPEC : GC_MALLOC( size * OBJ_SIZE ))
 
 #define PROCEDURE_EL_REF( p, i )    ((obj_t *)p)[ i ]
 #define PROCEDURE_EL_SET( p, i, o ) (PROCEDURE_EL_REF( p, i ) = o, BUNSPEC)

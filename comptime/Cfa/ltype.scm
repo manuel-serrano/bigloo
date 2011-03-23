@@ -60,9 +60,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-approx-type approx)
    (if (approx-procedure-el? approx)
-       (if (approx-procedure-el1? approx)
-	   *procedure-el1*
-	   *procedure-el*)
+       *procedure-el*
        *_*))
 
 ;*---------------------------------------------------------------------*/

@@ -41,10 +41,10 @@
    (export  (closure-optimization! ::pair-nil)
 	    (closure-optimization?)
 	    (add-procedure-ref!  ::node)
+	    (get-procedure-list::pair-nil)
 	    (add-make-procedure! ::node)
 	    (add-funcall! ::node)
 	    (approx-procedure-el?::bool ::approx)
-	    (approx-procedure-el1?::bool ::approx)
 	    (stop-closure-cache)))
 
 ;*---------------------------------------------------------------------*/
@@ -245,13 +245,13 @@
 		(ffun (var-variable (car args)))
 		(sfun (variable-value ffun)))
 	    (cond
-	       ((<=fx size 1)
+	       ((<fx size 1)
 		(if (and (global? ffun)
 			 (global? (sfun-the-closure sfun))
 			 (scnst?  (global-value (sfun-the-closure sfun))))
 		    (scnst-class-set! (global-value (sfun-the-closure sfun))
 				      'selfun))
-		(var-variable-set! fun *make-el-procedure-1*))
+		(var-variable-set! fun *make-el-procedure*))
 	       (else
 		(var-variable-set! fun *make-el-procedure*))))
 	 (set! args (cddr args))
@@ -326,13 +326,9 @@
 		 (with-access::make-procedure-app alloc (X T args)
 		    (cond
 		       (X
-			(if (=fx (get-node-atom-value (caddr args)) 1)
-			    (if (eq? vfun *procedure-ref*)
-				(var-variable-set! fun *procedure-1-el-ref*)
-				(var-variable-set! fun *procedure-1-el-set!*))
-			    (if (eq? vfun *procedure-ref*)
-				(var-variable-set! fun *procedure-el-ref*)
-				(var-variable-set! fun *procedure-el-set!*))))
+			(if (eq? vfun *procedure-ref*)
+			    (var-variable-set! fun *procedure-el-ref*)
+			    (var-variable-set! fun *procedure-el-set!*)))
 		       (T
 			(if (eq? vfun *procedure-ref*)
 			    (var-variable-set! fun *procedure-l-ref*)
@@ -375,6 +371,12 @@
 (define *procedure-ref-list*  '())
 
 ;*---------------------------------------------------------------------*/
+;*    get-procedure-list ...                                           */
+;*---------------------------------------------------------------------*/
+(define (get-procedure-list)
+   *make-procedure-list*)
+
+;*---------------------------------------------------------------------*/
 ;*    add-funcall! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (add-funcall! ast)
@@ -408,14 +410,6 @@
 	   (make-procedure-app-X (car alloc-list)))))
 
 ;*---------------------------------------------------------------------*/
-;*    approx-procedure-el1? ...                                        */
-;*---------------------------------------------------------------------*/
-(define (approx-procedure-el1? approx)
-   (let ((alloc-list (set->list (approx-allocs approx))))
-      (with-access::make-procedure-app (car alloc-list) (fun)
-	 (eq? (var-variable fun) *make-el-procedure-1*))))
-   
-;*---------------------------------------------------------------------*/
 ;*    A small cache                                                    */
 ;*---------------------------------------------------------------------*/
 (define *procedure-ref*       #f)
@@ -424,10 +418,7 @@
 (define *procedure-l-set!*    #f)
 (define *procedure-el-ref*    #f)
 (define *procedure-el-set!*   #f)
-(define *procedure-1-el-ref*  #f)
-(define *procedure-1-el-set!* #f)
 (define *make-el-procedure*   #f)
-(define *make-el-procedure-1* #f)
 (define *make-l-procedure*    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -440,10 +431,7 @@
    (set! *procedure-l-set!* (get-global/module 'procedure-l-set! 'foreign))
    (set! *procedure-el-ref* (get-global/module 'procedure-el-ref 'foreign))
    (set! *procedure-el-set!* (get-global/module 'procedure-el-set! 'foreign))
-   (set! *procedure-1-el-ref* (get-global/module 'procedure-1-el-ref 'foreign))
-   (set! *procedure-1-el-set!* (get-global/module 'procedure-1-el-set! 'foreign))
    (set! *make-el-procedure* (get-global/module 'make-el-procedure 'foreign))
-   (set! *make-el-procedure-1* (get-global/module 'make-el-procedure-1 'foreign))
    (set! *make-l-procedure* (get-global/module 'make-l-procedure 'foreign)))
 
 ;*---------------------------------------------------------------------*/
@@ -456,9 +444,6 @@
    (set! *procedure-l-set!* #f)
    (set! *procedure-el-ref* #f)
    (set! *procedure-el-set!* #f)
-   (set! *procedure-1-el-ref* #f)
-   (set! *procedure-1-el-set!* #f)
    (set! *make-el-procedure* #f)
-   (set! *make-el-procedure-1* #f)
    (set! *make-l-procedure* #f))
    

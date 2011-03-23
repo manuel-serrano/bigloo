@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 19 15:38:42 1992                          */
-;*    Last change :  Mon Jun  7 16:58:32 2010 (serrano)                */
+;*    Last change :  Wed Mar 23 16:11:47 2011 (serrano)                */
 ;*                                                                     */
 ;*    Le fichier principale de test des foreign                        */
 ;*---------------------------------------------------------------------*/

@@ -44,9 +44,9 @@
    (test-module "bps" "bps.scm")
    (reset)
    ;; CHARACTER
-   (test "char?" (char? (maybe #\a)) #t)
-   (test "char?" (char? (maybe 32)) #f)
-   (test "char?" (char? (string-ref (maybe "hello") 1)) #t)
+   (test "char?.1" (char? (maybe #\a)) #t)
+   (test "char?.2" (char? (maybe 32)) #f)
+   (test "char?.3" (char? (string-ref (maybe "hello") 1)) #t)
    (test "char->integer" (char->integer (maybe #\a)) (char->integer #\a))
    (test "char->integer" (char->integer (maybe #\é)) (char->integer #\é))
    ;; string-as-read against integer
