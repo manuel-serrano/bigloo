@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Mon Feb 28 14:39:46 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 23 09:20:29 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the effect property.                          */
 ;*=====================================================================*/
@@ -43,8 +43,8 @@
    ;; we mark functions which are known not to make side effect
    (for-each (lambda (var)
 		(let ((fun (variable-value var)))
-		   (if (eq? (fun-side-effect? fun) #unspecified)
-		       (fun-side-effect?-set! fun #f))))
+		   (when (eq? (fun-side-effect? fun) #unspecified)
+		      (fun-side-effect?-set! fun #f))))
 	     (get-var/all))
    ;; we spread the effect properties
    (trace effect "spread..." #\Newline)
@@ -63,20 +63,18 @@
 ;*    iterate-to-fix-point! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (iterate-to-fix-point! W)
-   (if (null? W)
-       'done
-       (for-each
-	(lambda (var)
-	   (let ((fun (variable-value var)))
-	      (if (not (eq? (fun-side-effect? fun) #t))
-		  (begin
-		     (fun-side-effect?-set! fun #t)
-		     (cond
-			((local/from? var)
-			 (iterate-to-fix-point! (local/from-from var)))
-			((global/from? var)
-			 (iterate-to-fix-point! (global/from-from var))))))))
-	W)))
+   (when (pair? W)
+      (for-each
+       (lambda (var)
+	  (let ((fun (variable-value var)))
+	     (unless (eq? (fun-side-effect? fun) #t)
+		(fun-side-effect?-set! fun #t)
+		(cond
+		   ((local/from? var)
+		    (iterate-to-fix-point! (local/from-from var)))
+		   ((global/from? var)
+		    (iterate-to-fix-point! (global/from-from var)))))))
+       W)))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-effect ...                                                 */

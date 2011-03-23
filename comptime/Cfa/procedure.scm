@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Sun Mar 20 16:50:59 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 09:07:23 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -86,7 +86,7 @@
 				(owner owner)
 				(approx (make-empty-approx))
 				(values-approx vapprox))))
-		   (trace (cfa 3)
+		   (trace (cfa 5)
 			  " make-procedure-app: " (shape node) #\Newline
 			  "          proc-size: " proc-size #\Newline)
 		   (make-procedure-app-approx-set!
@@ -100,7 +100,7 @@
 			  (vclo (local-value clo)))
 		      (if (svar/Cinfo? vclo)
 			  (begin
-			     (trace (cfa 2) "Je set un pre-clo-env..."
+			     (trace (cfa 5) "Je set un pre-clo-env..."
 				    (shape clo) #\Newline)
 			     (svar/Cinfo-clo-env?-set! vclo #t))
 			  (widen!::pre-clo-env vclo))))
@@ -267,7 +267,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Loosing a procedure only means that the result of the procedure  */
 ;*    is lost and all formals can be bound to top. It does not mean    */
-;*    anything about the values closed by the procedure (contrarily to */
+;*    anything about the values closed by the procedure (contrary to   */
 ;*    vectors).                                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (loose-alloc! alloc::make-procedure-app)
@@ -277,18 +277,18 @@
       (if (=fx lost-stamp *cfa-stamp*)
 	  #unspecified
 	  (begin
-	     (trace (cfa 2) " *** loose: " (shape alloc) #\Newline)
+	     (trace (cfa 2) "     loose-alloc::make-procedure-app.2: " (shape alloc) #\Newline)
 	     (set! lost-stamp *cfa-stamp*)
-	     (set-procedure-approx-bigloo-type! alloc)
+;* 	     (set-procedure-approx-bigloo-type! alloc)                 */
 	     (let* ((callee (car (make-procedure-app-args alloc)))
-		    (v      (var-variable callee))
-		    (fun    (variable-value v)))
+		    (v (var-variable callee))
+		    (fun (variable-value v)))
 		(cfa-export-var! fun v))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-procedure-approx-bigloo-type! ...                            */
 ;*    -------------------------------------------------------------    */
-;*    When on a funcall not all the closures returnthe same type,      */
+;*    When on a funcall not all the closures return the same type,     */
 ;*    all the closures have to use a polymorphic representation of     */
 ;*    their values, that is a Bigloo type. This function is in charge  */
 ;*    of setting a Bigloo type for all the closures potentially        */
@@ -315,8 +315,13 @@
 				 ;; so we use a fault back case. 
 				 *obj*))
 			  tyc)))
-	     (variable-type-set! v (get-bigloo-type typ))))
+	     (trace (cfa 4) " *** set-procedure-approx-bigloo-type.1: "
+		    (shape proc) " <- " (shape tyc) #\Newline)	     
+	     '(variable-type-set! v (get-bigloo-type typ))))
 	 (else
 	  ;; set the type of the closure as the corresponding
 	  ;; bigloo type to the computed type
-	  (variable-type-set! v (get-bigloo-type t))))))
+	  (trace (cfa 4) " *** set-procedure-approx-bigloo-type.2: "
+		 (shape proc) " <- " (shape (get-bigloo-type t)) #\Newline)
+	  '(variable-type-set! v (get-bigloo-type t))))))
+

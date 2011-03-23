@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Mon Nov 29 07:42:12 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 23 08:03:26 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -533,10 +533,8 @@
 	  (kaptured (sfun/Ginfo-kaptured (local-value local)))
 	  (loc      #unspecified)
 	  (make-p   (cond
-		       ((<fx arity 0)
-			'make-va-procedure)
-		       (else
-			'make-fx-procedure))))
+		       ((<fx arity 0) 'make-va-procedure)
+		       (else 'make-fx-procedure))))
       (instantiate::app
 	 (loc loc)
 	 (type *_*)

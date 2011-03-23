@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Mar 17 06:25:01 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 11:18:20 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -409,13 +409,11 @@
        (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic-flonum" (help "Disable flonum arithmetic spec. "))
        (set! *optim-cfa-flonum-arithmetic?* #f))
-      (("-fcfa-free-var-tracking" (help "Enable CFA free vars tracking (enabled from -O2)"))
-       (set! *optim-cfa-free-var-tracking?* #t))
-      (("-fno-cfa-free-var-tracking" (help "Disable CFA free vars tracking."))
-       (set! *optim-cfa-free-var-tracking?* #f))
-      (("-fcfa-funcall-tracking" (help "Enable CFA funcall tracking (enabled from -O2)"))
+      (("-fcfa-tracking" (help "Enable CFA tracking (enabled from -O2)"))
+       (set! *optim-cfa-free-var-tracking?* #t)
        (set! *optim-cfa-funcall-tracking?* #t))
-      (("-fno-cfa-funcall-tracking" (help "Disable CFA funcall tracking."))
+      (("-fnocfa-tracking" (help "Disable CFA tracking"))
+       (set! *optim-cfa-free-var-tracking?* #f)
        (set! *optim-cfa-funcall-tracking?* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))

@@ -183,11 +183,11 @@
 (define (gloclo global env::local args)   
    (let* ((arity  (fun-optional-arity (global-value global)))
 	  (id     (let ((str (string-append
-			      "_"
+			      "&"
 			      (symbol->string (global-id global)))))
 		     (if (symbol-exists? str)
-			 (gensym (symbol-append '_ (global-id global)))
-			 (symbol-append '_ (global-id global)))))
+			 (gensym (symbol-append '& (global-id global)))
+			 (symbol-append '& (global-id global)))))
 	  (tyid   (globalized-type-id global))
 	  (gloclo (def-global-sfun-no-warning! (make-typed-ident id tyid)
 		     (make-n-proto (+-arity arity 1))

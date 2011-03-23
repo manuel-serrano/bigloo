@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Fri Mar 18 10:08:08 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 08:10:35 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -216,10 +216,10 @@
    (let ((value (local-value local)))
       (if (global? (sfun/Ginfo-the-global value))
 	  (sfun/Ginfo-the-global value)
-	  (let* ((id     (if (global? (find-global/module (local-id local)
-							  *module*))
-			     (gensym (symbol-append (local-id local) '_))
-			     (local-id local)))
+	  (let* ((lid (symbol-append '& (local-id local)))
+		 (id (if (global? (find-global/module lid *module*))
+			 (gensym lid)
+			 lid))
 		 (global (def-global-sfun-no-warning! id
 			    ;; we set dummy empty args-id 
 			    ;; and dummy empty args because a new-fun
@@ -237,8 +237,8 @@
 	     ;; we have to set the same type for the new global
 	     (global-type-set! global (local-type local))
 	     ;; we check if the function is a user one
-	     (if (not (local-user? local))
-		 (global-user?-set! global #f))
+	     (unless (local-user? local)
+		(global-user?-set! global #f))
 	     (widen!::global/Ginfo global)
 	     (sfun-side-effect?-set! (global-value global)
 				     (sfun-side-effect? value))

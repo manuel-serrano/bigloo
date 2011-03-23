@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Wed Mar 16 15:15:46 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 09:17:44 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
@@ -22,7 +22,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_walk
-   (include "Engine/pass.sch")
+   (include "Engine/pass.sch"
+	    "Tools/trace.sch")
    (import  tools_shape
 	    tools_error
 	    engine_param
@@ -60,14 +61,18 @@
    (pass-prelude "Cfa")
    ;; first of all, we scan the global definitions in order
    ;; to collect all used types and allocations.
+   (trace cfa "================== collect ===========================\n")
    (collect-all-approx! globals)
    ;; we have collected all the approximation, we can now declare
    ;; the approximations sets.
+   (trace cfa "================== declare ===========================\n")
    (declare-approx-sets!)
    ;; we have collect all the possible approximation, we now
    ;; prepare the ast to the iteration process.
+   (trace cfa "================== initial ===========================\n")
    (set-initial-approx! globals)
    ;; ok, we can start now the control flow analysis
+   (trace cfa "================== iterate ===========================\n")
    (let ((iteration-roots (cfa-iterate-to-fixpoint! globals)))
       ;; the number of iterations
       (show-cfa-nb-iterations)

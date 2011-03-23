@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Mar 20 19:53:32 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 08:36:34 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -32,6 +32,7 @@
 	    tools_misc
 	    tools_location
 	    tools_error
+	    tools_args
 	    engine_param
 	    expand_expander
 	    type_type
@@ -91,7 +92,7 @@
    (install-compiler-expander 'define-generic expand-generic)
    
    ;; define-method
-   (install-compiler-expander 'define-method expand-method)
+<(install-compiler-expander 'define-method expand-method)
    
    ;; define-struct
    (install-compiler-expander 'define-struct expand-struct)
@@ -219,39 +220,39 @@
    (install-O-comptime-expander 'map expand-map)
    (install-G-comptime-expander 'map
 				(lambda (x::obj e::procedure)
-				   (map-check-non-null x e ''())))
+				   (map-check x e ''())))
    
    ;; for-each
    (install-O-comptime-expander 'for-each expand-for-each)
    (install-G-comptime-expander 'for-each
 				(lambda (x::obj e::procedure)
-				   (map-check-non-null x e #unspecified)))
+				   (map-check x e #unspecified)))
    
    ;; filter and filter!
    (install-G-comptime-expander 'filter
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e '())))
    (install-G-comptime-expander 'filter!
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e #unspecified)))
    
    ;; any? / every?
    (install-O-comptime-expander 'any? expand-any?)
    (install-G-comptime-expander 'any?
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e #f)))
    (install-O-comptime-expander 'every? expand-every?)
    (install-G-comptime-expander 'every?
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e #t)))
    
    ;; any / every
    (install-G-comptime-expander 'any
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e #f)))
    (install-G-comptime-expander 'every
 				(lambda (x::obj e::procedure)
-				   (map-check x e)))
+				   (map-check x e #t)))
 
    ;; reduce
    (install-O-comptime-expander 'reduce expand-reduce)
@@ -1032,21 +1033,29 @@
        (error #f "Illegal expression" x))))
 
 ;*---------------------------------------------------------------------*/
-;*    map-check-non-null ...                                           */
+;*    map-check ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (map-check-non-null x e null-val)
+(define (map-check x e null-val)
    (match-case x
       ((?name ?-)
        (user-warning name "used with only two arguments" x)
        null-val)
-      (else
-       (map-check x e))))
-
-;*---------------------------------------------------------------------*/
-;*    map-check ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (map-check x e)
-   (match-case x
+      ((?op (and ?fun (lambda ?args . ?-)) ?actual)
+       (let ((arity (local-arity args))
+	     (tmp (mark-symbol-non-user! (gensym)))
+	     (ufun (mark-symbol-non-user! (gensym)))
+	     (msg-list (mark-symbol-non-user! (gensym)))
+	     (loc (find-location x))
+	     (msge (string-append (symbol->string op) ": argument not a list")))
+	  (if (or (= arity 1) (= arity -1))
+	      (epairify-rec 
+	       `(,(let-sym) ((,tmp ,(e actual e))
+			     (,ufun ,(e fun e)))
+			    (,(if-sym) (list? ,tmp)
+				       (,op ,ufun ,tmp)
+				       ((@ error  __error) #f ,msge ,tmp)))
+	       x)
+	      (error op "Illegal function arity" x))))
       ((?op ?fun . ?actuals)
        (let ((formals (map (lambda (x) (mark-symbol-non-user! (gensym)))
 			   actuals))
@@ -1084,7 +1093,7 @@
 				      (length actuals))))
 	   x)))
       (else
-       (error #f (car x) "Illegal form"))))
+       (error (car x) "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    err/loc ...                                                      */
@@ -1141,6 +1150,12 @@
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
    `(define (,%append-2-id l1 l2)
-       (if (pair? l1)
-	   (cons (car l1) (,%append-2-id (cdr l1) l2))
-	   l2)))
+       (let ((head (cons '() l2)))
+	  (labels ((loop (prev tail)
+			 (if (null? tail)
+			     '()
+			     (let ((new-prev (cons (car tail) l2)))
+				(set-cdr! prev new-prev)
+				(loop new-prev (cdr tail))))))
+	     (loop head l1)
+	     (cdr head)))))

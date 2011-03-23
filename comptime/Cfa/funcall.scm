@@ -89,15 +89,15 @@
 			 (funcall! alloc (cons eapprox aapprox) node)))
 		     (make-empty-approx)))
 	      fapprox)))
-	 ;; If approx is *obj* it must be propagated in all the procedure
-	 ;; that they must return a bigloo type. In consequence for each
-	 ;; closure we find the most possible specific Bigloo type
-	 (when (and *optim-cfa-funcall-tracking?*
-		    (eq? (approx-type approx) *obj*))
-	     (for-each-approx-alloc (lambda (a)
-				       (when (make-procedure-app? a)
-					  (set-procedure-approx-bigloo-type! a)))
-				    fapprox))
+	 ;; If approx is *obj* it must be propagated in all the procedures
+	 ;; that from now on they must return a bigloo type. In consequence
+	 ;; for each closure we find the most possible specific Bigloo type
+;* 	 (when (and *optim-cfa-funcall-tracking?*                      */
+;* 		    (eq? (approx-type approx) *obj*))                  */
+;* 	     (for-each-approx-alloc (lambda (a)                        */
+;* 				       (when (make-procedure-app? a)   */
+;* 					  (set-procedure-approx-bigloo-type! a))) */
+;* 				    fapprox))                          */
 	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
 	 approx)))
 

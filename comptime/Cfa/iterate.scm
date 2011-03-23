@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Sun Mar 13 09:29:07 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 09:08:49 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -108,7 +108,7 @@
    (with-access::intern-sfun/Cinfo value (stamp args approx)
       (trace (cfa 3) "  ~~~ cfa-export-var!::intern-sfun/Cinfo[stamp: " stamp 
 	     " *cfa-stamp*: " *cfa-stamp*
-	     "]" #\Newline)
+	     "] " (shape owner) #\Newline)
       (if (=fx stamp *cfa-stamp*)
 	  (begin
 	     (set! stamp *cfa-stamp*)
@@ -134,12 +134,19 @@
 ;*---------------------------------------------------------------------*/
 (define (cfa-intern-sfun!::approx sfun::intern-sfun/Cinfo owner)
    (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
-      (trace (cfa 3) "~~~ cfa-intern-sfun!: " (shape body) #\Newline)
       (if (=fx stamp *cfa-stamp*)
-	  approx
 	  (begin
+	     (trace (cfa 3) "--- cfa-intern-sfun!: " (shape owner) " -> "
+		    (shape approx)
+		    #\Newline)	     
+	     approx)
+	  (begin
+	     (trace (cfa 3) ">>> cfa-intern-sfun!: " (shape owner) #\Newline)
 	     (set! stamp *cfa-stamp*)
 	     (union-approx! approx (cfa! body))
+	     (trace (cfa 3) "<<< cfa-intern-sfun!: " (shape owner) " -> "
+		    (shape approx)
+		    #\Newline)
 	     approx))))
 
 ;*---------------------------------------------------------------------*/

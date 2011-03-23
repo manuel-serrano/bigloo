@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Sun Mar 20 07:18:32 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 09:20:04 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
@@ -39,17 +39,15 @@
 ;*    app! ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-generic (app!::approx fun::fun var::var args-approx)
-   (internal-error "app!"
-		   "No method for this function"
-		   (cons fun (shape var))))
+   (internal-error "app!" "No method for this function" (cons fun (shape var))))
 
 ;*---------------------------------------------------------------------*/
 ;*    app! ::intern-sfun/Cinfo ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::intern-sfun/Cinfo var::var args-approx)
    (trace (cfa 3)
-	  "  app(intern)! var=" (shape var)
-	  "\n       args-approx=" (shape args-approx)
+	  ">>>  app(intern)! var=" (shape var)
+	  " args-approx=" (shape args-approx)
 	  #\Newline)
    (with-access::intern-sfun/Cinfo fun (args)
       ;; we set the new formals approximation
@@ -63,30 +61,41 @@
 	      (and (global? (var-variable var))
 		   (eq? (global-import (var-variable var)) 'static)))
 	  ;; this is a unexported function 
-	  (cfa-intern-sfun! fun (var-variable var))
+	  (let ((a (cfa-intern-sfun! fun (var-variable var))))
+	     (trace (cfa 3)
+		    "<<<  app(intern)! var=" (shape var)
+		    " intern <- " (shape a) "\n")
+	     a)
 	  ;; this is an exported function
-	  (cfa-export-var! fun (var-variable var)))))
+	  (let ((a (cfa-export-var! fun (var-variable var))))
+	     (trace (cfa 3)
+		    "<<<  app(intern)! var=" (shape var)
+		    " export <-" (shape a) "\n")
+	     a))))
 
 ;*---------------------------------------------------------------------*/
 ;*    app! ::extern-sfun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::extern-sfun/Cinfo var::var args-approx)
-   (trace (cfa 3) "  app(extern)!: " (shape var) " " (shape args-approx)
+   (trace (cfa 3) ">>> app(extern)!: " (shape var) " " (shape args-approx)
 	  #\Newline)
    (with-access::extern-sfun/Cinfo fun (top? approx)
       ;; we set the new formals approximation
-      (if top? (for-each (lambda (a) (loose! a 'all)) args-approx))
+      (when top?
+	 (for-each (lambda (a) (loose! a 'all)) args-approx))
       ;; and we return the global approximation
-      (trace (cfa 3) "  app(extern) <- " (shape approx) #\Newline)
+      (trace (cfa 3) "<<< app(extern) " (shape var) " <- " (shape approx)
+	     #\Newline)
       approx))
    
 ;*---------------------------------------------------------------------*/
 ;*    app! ::cfun/Cinfo ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::cfun/Cinfo var::var args-approx)
-   (trace (cfa 3) "  app(cfun)!: " (shape var) #\Newline)
+   (trace (cfa 3) ">>> app(cfun)!: " (shape var) #\Newline)
    (with-access::cfun/Cinfo fun (top? approx)
       ;; we set the new formals approximation
-      (if top? (for-each (lambda (a) (loose! a 'all)) args-approx))
+      (when top?
+	 (for-each (lambda (a) (loose! a 'all)) args-approx))
       ;; and we return the global approximation
       approx))

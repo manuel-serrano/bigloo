@@ -105,13 +105,13 @@
 		       `(,(node->sexp (app-fun node))
 			 ,@(if *access-shape?*
 			       (list
-				(vector 'side-effect: (side-effect? node)))
+				(list "side-effect:" (side-effect? node)))
 			       '())
-			 ,(vector (shape (node-type node)))
+			 ,(list "type:" (shape (node-type node)))
 			 ,@(map node->sexp (app-args node))))
 		      (*access-shape?*
 		       `(,(node->sexp (app-fun node))
-			 ,(vector 'side-effect: (side-effect? node))
+			 ,(list "side-effect:" (side-effect? node))
 			 ,@(map node->sexp (app-args node))))
 		      (else
 		       `(,(node->sexp (app-fun node))

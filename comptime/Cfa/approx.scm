@@ -194,19 +194,19 @@
 ;*---------------------------------------------------------------------*/
 (define-method (shape exp::approx)
    (with-access::approx exp (top? type allocs)
-      (let ((type-id (make-typed-formal (type-id type))))
-	 (let* ((keys   (set->vector allocs))
-		(len    (vector-length keys))
-		(slen   (if top? (+fx len 1) len))
-		(struct (make-struct type-id slen #unspecified)))
-	    (if top? (struct-set! struct 0 'top))
-	    (let loop ((r (if top? 1 0))
-		       (w 0))
-	       (if (=fx w len)
-		   struct
-		   (begin 
-		      (struct-set! struct r (node-key (vector-ref keys w)))
-		      (loop (+fx r 1) (+fx w 1)))))))))
+      (let* ((keys   (set->vector allocs))
+	     (len    (vector-length keys))
+	     (slen   (if top? (+fx len 1) len))
+	     (struct (make-struct 'approx (+fx 1 slen) #unspecified)))
+	 (struct-set! struct 0 (type-id type))
+	 (if top? (struct-set! struct 1 'top))
+	 (let loop ((r (if top? 2 1))
+		    (w 0))
+	    (if (=fx w len)
+		struct
+		(begin 
+		   (struct-set! struct r (node-key (vector-ref keys w)))
+		   (loop (+fx r 1) (+fx w 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    for-each-approx-alloc ...                                        */

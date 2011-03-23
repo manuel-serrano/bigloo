@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Thu Mar 17 06:27:01 2011 (serrano)                */
+;*    Last change :  Wed Mar 23 09:00:11 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -36,7 +36,7 @@
 ;*---------------------------------------------------------------------*/
 (define (set-initial-approx! globals)
    (for-each (lambda (global)
-		(trace (cfa 2) "set-initial-approx!: " (shape global)
+		(trace (cfa 5) "set-initial-approx!: " (shape global)
 		       #\Newline)
 		(let ((fun (global-value global)))
 		   (fun-setup! fun global)
@@ -136,7 +136,7 @@
 ;*    variable-value-setup! ::pre-clo-env ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (variable-value-setup! value::pre-clo-env var)
-   (trace (cfa 2) "Je set un pre-clo-env..." (shape var) #\Newline)
+   (trace (cfa 5) "Je set un pre-clo-env..." (shape var) #\Newline)
    (call-next-method)
    (svar/Cinfo-clo-env?-set! (local-value var) #t))
 
@@ -157,7 +157,7 @@
 ;*    variable-value-setup! ::scnst ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (variable-value-setup! value::scnst var)
-   (trace (cfa 2) "Je setup une scnst: " (shape var) " "
+   (trace (cfa 5) "Je setup une scnst: " (shape var) " "
 	  (shape (scnst-node value)) #\Newline)
    (if (global? var)
        (if (and (eq? (global-module var) *module*)
@@ -165,7 +165,7 @@
 		(pre-make-procedure-app? (scnst-node value)))
 	   ;; this variable holds a closure
 	   (let ((node (scnst-node value)))
-	      (trace (cfa 2) "    et en plus, c'est une closure" #\Newline)
+	      (trace (cfa 5) "    et en plus, c'est une closure" #\Newline)
 	      (node-setup! node)
 	      (widen!::scnst/Cinfo value
 		 (approx (make-procedure-app-approx node))))
@@ -201,7 +201,7 @@
 ;*    node-setup! ::app ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::app)
-   (trace (cfa 2) "Je setup une app: " (shape node) #\Newline)
+   (trace (cfa 5) "Je setup une app: " (shape node) #\Newline)
    (with-access::app node (fun args)
       (node-setup*! args)
       (let ((variable (var-variable fun)))
@@ -341,7 +341,7 @@
 ;*    node-setup! ::setq ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::setq)
-   (trace (cfa 2) "Je setup un setq: " (shape node) #\Newline)
+   (trace (cfa 5) "Je setup un setq: " (shape node) #\Newline)
    (with-access::setq node (var value)
       (node-setup! value)
       (node-setup! var)
@@ -404,7 +404,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::let-var)
    (with-access::let-var node (body bindings)
-      (trace (cfa 3) "let-var settup: " (shape node) #\Newline)
+      (trace (cfa 5) "let-var setup: " (shape node) #\Newline)
       (for-each (lambda (binding)
 		   (let ((var (car binding))
 			 (val (cdr binding)))
@@ -417,10 +417,10 @@
 			 (binding-value (if (eq? (local-access var) 'read)
 					    val
 					    #f)))
-		      (trace (cfa 3) "Je vais descendre dans val: " (shape val)
+		      (trace (cfa 5) "Je vais descendre dans val: " (shape val)
 			     " " (find-runtime-type val)
 			     #\Newline)
-		      (trace (cfa 3) "  " (shape var) " ... " #\Newline)))
+		      (trace (cfa 5) "  " (shape var) " ... " #\Newline)))
 		bindings)
       (node-setup! body)))
  
