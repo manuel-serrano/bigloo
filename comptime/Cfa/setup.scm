@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Mar 23 09:00:11 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 09:01:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -26,7 +26,8 @@
 	    cfa_info
 	    cfa_info2
 	    cfa_info3
-	    cfa_approx)
+	    cfa_approx
+	    cfa_pair)
    (export  (set-initial-approx! globals)
 	    (generic node-setup! ::node)
 	    (node-setup*! node*)))
@@ -35,6 +36,7 @@
 ;*    set-initial-approx! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (set-initial-approx! globals)
+   (trace cfa "================== initial ===========================\n")   
    (for-each (lambda (global)
 		(trace (cfa 5) "set-initial-approx!: " (shape global)
 		       #\Newline)
@@ -92,19 +94,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    alloc-type? ...                                                  */
 ;*    -------------------------------------------------------------    */
-;*    This predicate returns #t for all type denoting data             */
+;*    This predicate returns #t for all types denoting data            */
 ;*    structures approximated by the cfa.                              */
 ;*---------------------------------------------------------------------*/
 (define (alloc-type? type)
    (cond
-      ((eq? type *vector*)
-       #t)
-      ((eq? type *procedure*)
-       #t)
-      ((eq? type *struct*)
-       #t)
-      (else
-       #f)))
+      ((eq? type *vector*) #t)
+      ((eq? type *procedure*) #t)
+      ((eq? type *struct*) #t)
+      ((eq? type *pair*) (pair-optim?))
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable-value-setup! ...                                        */
@@ -181,8 +180,8 @@
 (define-method (variable-value-setup! value::cvar var)
    (widen!::cvar/Cinfo value
       (approx (make-type-approx (variable-type var))))
-   (if (alloc-type? (variable-type var))
-       (approx-set-top! (cvar/Cinfo-approx value))))
+   (when (alloc-type? (variable-type var))
+      (approx-set-top! (cvar/Cinfo-approx value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::closure ...                                        */

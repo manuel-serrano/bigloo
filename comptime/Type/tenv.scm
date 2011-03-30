@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Mar 16 08:53:27 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 21:52:19 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -100,10 +100,11 @@
 ;*    add-tenv! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (add-tenv! Tenv)
+   
    (define (adjust-type-coercers! type)
       ;; fix aliased type
-      (if (type? (type-alias type))
-	  (type-alias-set! type (find-type (type-id (type-alias type)))))
+      (when (type? (type-alias type))
+	 (type-alias-set! type (find-type (type-id (type-alias type)))))
       ;; fix subtypes
       (type-parents-set! type
 			 (map (lambda (parent)
@@ -112,31 +113,37 @@
       ;; fix coercers
       (for-each (lambda (coercer)
 		   (let ((from (coercer-from coercer))
-			 (to   (coercer-to coercer)))
+			 (to (coercer-to coercer)))
 		      (coercer-from-set! coercer (find-type (type-id from)))
-		      (coercer-to-set! coercer (find-type (type-id to)))))
+		      (coercer-to-set! coercer (find-type (type-id to)))
+		      (for-each (lambda (co)
+				   (set-cdr! co (find-type (type-id (cdr co)))))
+				(coercer-check-op coercer))
+		      (for-each (lambda (co)
+				   (set-cdr! co (find-type (type-id (cdr co)))))
+				(coercer-coerce-op coercer))))
 		(type-coerce-to type)))
+   
    (define (find-coercer from to)
       (let loop ((coercer (type-coerce-to from)))
 	 (cond
-	    ((null? coercer)
-	     #f)
-	    ((eq? (coercer-to (car coercer)) to)
-	     (car coercer))
-	    (else
-	     (loop (cdr coercer))))))
+	    ((null? coercer) #f)
+	    ((eq? (coercer-to (car coercer)) to) (car coercer))
+	    (else (loop (cdr coercer))))))
+   
    (define (add-type-coercers! old new)
       (for-each (lambda (coercer)
-		   (let* ((from        (coercer-from coercer))
-			  (to          (coercer-to coercer))
-			  (tid         (type-id to))
+		   (let* ((from (coercer-from coercer))
+			  (to (coercer-to coercer))
+			  (tid (type-id to))
 			  (tid-exists? (type-exists? tid)))
-		      (if (or (not tid-exists?)
-			      (not (find-coercer old (find-type tid))))
-			  (type-coerce-to-set! old
-					       (cons coercer
-						     (type-coerce-to old))))))
+		      (when (or (not tid-exists?)
+				(not (find-coercer old (find-type tid))))
+			 (type-coerce-to-set! old
+					      (cons coercer
+						    (type-coerce-to old))))))
 		(type-coerce-to new)))
+   
    ;; in a first stage, we bind all new types
    ;; (not rebinding already binded types)
    (let ((remember-list '())
@@ -199,9 +206,6 @@
       ;; the tvector traversal
       (for-each (lambda (new)
 		   (delay-tvector! new 'heap))
-;* 		   (add-tvector-type! new)                             */
-;* 		   (add-tvector-accesses!                              */
-;* 		    (make-tvector-accesses new 'heap)))                */
 		tvector-list)
       ;; the last walk to construct the class accessors
       ;; When we load an additional heap that contains classes

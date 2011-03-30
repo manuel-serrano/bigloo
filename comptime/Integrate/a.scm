@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Sep  8 08:22:21 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 29 09:14:19 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
 ;*    -------------------------------------------------------------    */
@@ -45,11 +45,11 @@
    (set! *kont* 0)
    (initialize-fun! global global)
    ;; we start the A computation
-   (let* ((A (node-A node global (cons 'tail (global-type global)) '()))
-	  (A' (tail-coercion A global)))
+   (let ((A (node-A node global (cons 'tail (global-type global)) '())))
       (trace-A A "Before tail-coercion")
-      (trace-A A' "After tail-coercion")
-      A'))
+      (let ((A' (tail-coercion A global)))
+	 (trace-A A' "After tail-coercion")
+	 A')))
 
 ;*---------------------------------------------------------------------*/
 ;*    initialize-fun! ...                                              */
@@ -118,8 +118,10 @@
 		(match-case a
 		   ((?- ?callee (?- . ?type))
 		    (let ((fun (variable-value callee)))
-		       (with-access::sfun/Iinfo fun (tail-coercion)
+		       (with-access::sfun/Iinfo fun (tail-coercion body forceG?)
 			  (cond
+			     ((not tail-coercion)
+			      #unspecified)
 			     ((not (type? type))
 			      #unspecified)
 			     ((or (eq? type *obj*) (eq? type *magic*))
@@ -135,12 +137,12 @@
 			      #unspecified)
 			     ((not (tail-type-compatible? tail-coercion type))
 			      (if (local? callee)
-				  (warning (shape global)
-					   "Globalizing `" (shape callee)
-					   "' because used in two different type contexts: "
-				       
-				       (shape tail-coercion)
-				       ", " (shape type)))
+				  (user-warning/location
+				   (node-loc body)
+				   (shape callee)
+				   "Globalized because used in two different type contexts"
+
+				   (format "~a/~a" (shape tail-coercion) (shape type))))
 			      (set! tail-coercion #f))))))))
 	     A)
    ;; cleanup the A set according to the first traversal
@@ -212,7 +214,7 @@
       (let ((callee (var-variable fun)))
 	 ;; we manage the actuals
 	 (let liip ((args (app-args node))
-		    (A    A))
+		    (A A))
 	    (if (null? args)
 		(cond
 		   ((local? callee)
@@ -244,7 +246,7 @@
 	      host
 	      (cons (get-new-kont) (get-type fun))
 	      (let liip ((args args)
-			 (A    A))
+			 (A A))
 		 (if (null? args)
 		     A
 		     (liip (cdr args)
@@ -366,20 +368,30 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::set-ex-it host k A)
    (with-access::set-ex-it node (var body)
-      ;; in order to be sure that `set-ex-it' handler
-      ;; are always globalized we simulate to two-non tail
-      ;; call to them if the handler is not detached
-      ;; (see globalize pass)
+      ;; `set-ex-it' handler must alway be globalized
+;*       ;; in order to be sure that `set-ex-it' handler               */
+;*       ;; are always globalized we simulate to two-non tail          */
+;*       ;; calls to them if the handler is not detached               */
+;*       ;; (see globalize pass)                                       */
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
-	     (let ((call1 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node))))
-		   (call2 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node)))))
+;* 	     (let ((call1 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node)))) */
+;* 		   (call2 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node))))) */
+;* 		(node-A body                                           */
+;* 			host                                           */
+;* 			(cons (get-new-kont) (get-type body))          */
+;* 			(cons* call1 call2 A)))                        */
+	     ;; CARE, MS 28mar2011: used to be a trick with two fake
+	     ;; continuations(see integrate_ctn).
+	     (begin
+		(with-access::sfun/Iinfo (local-value hdlg) (forceG?)
+		   (set! forceG? #t))
 		(node-A body
 			host
 			(cons (get-new-kont) (get-type body))
-			(cons call1 (cons call2 A))))
+			A))
 	     A))))
 
 ;*---------------------------------------------------------------------*/

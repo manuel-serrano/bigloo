@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Sat Mar 19 06:30:16 2011 (serrano)                */
+;*    Last change :  Sun Mar 27 16:08:29 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -21,6 +21,7 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    ast_env
@@ -82,7 +83,10 @@
 	      (cnst? value)
 	      (elong? value)
 	      (llong? value))
-	  (instantiate::atom (loc loc) (type type) (value value)))
+	  (instantiate::atom
+	     (loc loc)
+	     (type (strict-node-type (get-type-atom value) type))
+	     (value value)))
 	 ((struct? value)
 	  (cnst-alloc-struct value loc))
 	 (else

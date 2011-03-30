@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Thu Oct  7 09:17:11 2010 (serrano)                */
+;*    Last change :  Wed Mar 30 08:30:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -143,7 +143,7 @@
 					  (test (+fx i 1)))))))))))))
       ((c-flonum? obj1)
        #f)
-      ((c-struct? obj1)
+      (($struct? obj1)
        (let ((lobj1 (struct-length obj1)))
 	  (and (struct? obj2)
 	       (=fx (struct-length obj2) lobj1)

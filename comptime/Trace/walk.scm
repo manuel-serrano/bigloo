@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sun Dec 12 10:27:31 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 26 07:39:17 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -16,6 +16,7 @@
    (include "Engine/pass.sch"
 	    "Ast/node.sch"
 	    "Tools/location.sch")
+   (import ast_let)
    (import  tools_shape
 	    tools_error
 	    tools_misc
@@ -77,7 +78,6 @@
 (define (trace-fun! var stack)
    (let* ((fun  (variable-value var))
 	  (body (sfun-body fun))
-	  (type (variable-type var))
 	  (lloc (if (global? var)
 		    (find-location (find-last-sexp (global-src var)))
 		    (node-loc (find-last-node body)))))
@@ -86,25 +86,23 @@
 	       (user-symbol? (variable-id var)))
 	  (begin
 	     (enter-function (trace-id var))
-	     (let* ((new-body  (if (or (>fx *compiler-debug-trace* 1)
-				       (and (global? var)
-					    (eq? (global-id var)
-						 'toplevel-init)))
-				   ;; we always goes trough the first level
-				   ;; (i.e. not the nested local functions)
-				   ;; of the toplevel-init function even
-				   ;; if [*compiler-debug-trace* < 2]. That way
-				   ;; we are sure that global closures will
-				   ;; be correctly traced and not labeled
-				   ;; [toplevel-init].
-				   (trace-node body (cons var stack))
-				   body))
-		    (new2-body (make-traced-node new-body
-						 type
-						 (trace-id var)
-						 lloc
-						 stack)))
-		(sfun-body-set! fun new2-body)
+	     (let* ((bd (if (or (>fx *compiler-debug-trace* 1)
+				(and (global? var)
+				     (eq? (global-id var)
+					  'toplevel-init)))
+			    ;; we always goes trough the first level
+			    ;; (i.e. not the nested local functions)
+			    ;; of the toplevel-init function even
+			    ;; if [*compiler-debug-trace* < 2]. That way
+			    ;; we are sure that global closures will
+			    ;; be correctly traced and not labeled
+			    ;; [toplevel-init].
+			    (trace-node body (cons var stack))
+			    body))
+		    (t (strict-node-type (node-type body) (variable-type var)))
+		    (id (trace-id var))
+		    (nbody (make-traced-node bd t id lloc stack)))
+		(sfun-body-set! fun nbody)
 		(leave-function))))))
 
 ;*---------------------------------------------------------------------*/
@@ -411,11 +409,9 @@
 ;*    trace-node*! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (trace-node*! node* stack)
-   (if (null? node*)
-       'done
-       (begin
-	  (set-car! node* (trace-node (car node*) stack))
-	  (trace-node*! (cdr node*) stack))))
+   (unless (null? node*)
+      (set-car! node* (trace-node (car node*) stack))
+      (trace-node*! (cdr node*) stack)))
    
 ;*---------------------------------------------------------------------*/
 ;*    toplevel-trace-node ...                                          */
@@ -441,26 +437,24 @@
 (define-method (toplevel-trace-node node::setq)
    (with-access::setq node (var value loc)
       (with-access::var var (variable)
-	 (if (and (global? variable)
-		  (not (or (atom? value)
-			   (var? value)
-			   (kwote? value)
-			   (pragma? value))))
-	     (let* ((id    (global-id variable))
-		    (type  (global-type variable))
-		    (trace (make-traced-node value type id loc '())))
-		(set! value trace)))))
+	 (when (and (global? variable)
+		    (not (or (atom? value)
+			     (var? value)
+			     (kwote? value)
+			     (pragma? value))))
+	    (let* ((id (global-id variable))
+		   (t (strict-node-type (node-type value) (global-type variable)))
+		   (trace (make-traced-node value t id loc '())))
+	       (set! value trace)))))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    toplevel-trace-node*! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (toplevel-trace-node*! node*)
-   (if (null? node*)
-       'done
-       (begin
-	  (set-car! node* (toplevel-trace-node (car node*)))
-	  (toplevel-trace-node*! (cdr node*)))))
+   (unless (null? node*)
+      (set-car! node* (toplevel-trace-node (car node*)))
+      (toplevel-trace-node*! (cdr node*))))
    
 
 

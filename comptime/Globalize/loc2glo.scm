@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Wed Mar 23 08:10:35 2011 (serrano)                */
+;*    Last change :  Thu Mar 24 14:23:22 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -144,7 +144,7 @@
       (sfun-body-set! (local-value local) body)
       (instantiate::let-var
 	 (loc loc)
-	 (type *_*)
+	 (type (strict-node-type (variable-type local) *_*))
 	 (bindings (let loop ((kaptured kaptured)
 			      (num  0)
 			      (res  '()))
@@ -161,19 +161,21 @@
 				      res)))))
 	 (body (instantiate::let-fun
 		  (loc loc)
-		  (type *_*)
+		  (type (strict-node-type (variable-type local) *_*))
 		  (locals (list local))
 		  (body (instantiate::app
 			   (loc loc)
-			   (type *_*)
+			   (type (strict-node-type (variable-type local) *_*))
 			   (fun (instantiate::var
 				   (loc loc)
-				   (type *_*)
+				   (type (strict-node-type
+					  (variable-type local) *_*))
 				   (variable local)))
 			   (args (map (lambda (v)
 					 (instantiate::var
 					    (loc loc)
-					    (type *_*)
+					    (type (strict-node-type
+						   (variable-type v) *_*))
 					    (variable v)))
 				      args)))))))))
 					    

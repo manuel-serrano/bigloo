@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sun Nov 28 07:13:12 2010 (serrano)                */
-;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 29 11:04:31 2011 (serrano)                */
+;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -41,15 +41,14 @@
 ;*    specialize! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (specialize! globals)
-   (trace (cfa 4) "============= specialize arithmetic ===============\n")
-   (if (specialize-optimization?)
-       (begin
-	  (for-each (lambda (spec)
-		       (apply install-specialize! (cdr spec)))
-		    *specializations*)
-	  (patch-tree! globals)
-	  (show-specialize)
-	  (uninstall-specializes!)))
+   (when (specialize-optimization?)
+      (trace (cfa 4) "============= specialize arithmetic ===============\n")
+      (for-each (lambda (spec)
+		   (apply install-specialize! (cdr spec)))
+		*specializations*)
+      (patch-tree! globals)
+      (show-specialize)
+      (uninstall-specializes!))
    globals)
 
 ;*---------------------------------------------------------------------*/
@@ -58,8 +57,7 @@
 (define (arithmetic-operator? global)
    (with-access::global global (id module)
       (let ((cell (assq id *specializations*)))
-	 (and (pair? cell)
-	      (eq? (cadr (cadr cell)) module)))))
+	 (and (pair? cell) (eq? (cadr (cadr cell)) module)))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    arithmetic-spec-types ...                                        */
@@ -167,7 +165,7 @@
 ;*    show-specialize ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (show-specialize)
-   (verbose 1 "   . specializing" #\newline)
+   (verbose 1 "   . Specializing" #\newline)
    (for-each (lambda (type.num)
 		(if (>fx (cdr type.num) 0)
 		    (verbose 2 "        (-> " (shape (car type.num))
@@ -191,11 +189,10 @@
 ;*    install-specialized-type! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (install-specialized-type! type)
-   (if (not (pair? (assq type *specialized-types*)))
-       (begin
-	  (set! *specialized-types* (cons (cons type 0) *specialized-types*))
-	  (set! *boxed-eq?* (find-global 'c-boxed-eq? 'foreign))
-	  (set! *c-eq?* (find-global 'c-eq? 'foreign)))))
+   (unless (pair? (assq type *specialized-types*))
+      (set! *specialized-types* (cons (cons type 0) *specialized-types*))
+      (set! *boxed-eq?* (find-global 'c-boxed-eq? 'foreign))
+      (set! *c-eq?* (find-global 'c-eq? 'foreign))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-specialized-type! ...                                        */
@@ -203,9 +200,8 @@
 (define (add-specialized-type! type)
    (let ((cell (assq type *specialized-types*)))
       (if (not (pair? cell))
-	  (internal-error "add-specialized-type!"
-			  "Unspecialized type"
-			  (shape type))
+	  (internal-error
+	   "add-specialized-type!" "Unspecialized type" (shape type))
 	  (set-cdr! cell (+fx 1 (cdr cell))))))
 
 ;*---------------------------------------------------------------------*/
@@ -241,9 +237,7 @@
 			(let ((val (global-value global)))
 			   (cond
 			      ((and (sfun? val) (pair? (sfun-args val)))
-			       (let ((type (let ((v (car
-						     (sfun-args
-						      val))))
+			       (let ((type (let ((v (car (sfun-args val))))
 					      (cond
 						 ((type? v)
 						  v)
@@ -509,7 +503,7 @@
 	  ;; we check if the type of all the arguments
 	  ;; is either fixnum or flonum
 	  (let* ((type (normalize-get-type (car args)))
-		 (glo  (var-variable fun))
+		 (glo (var-variable fun))
 		 (spec (assq type (specialized-global-fix glo))))
 	     (if (pair? spec)
 		 (let loop ((args (cdr args)))
@@ -517,7 +511,8 @@
 		       ((null? args)
 			(add-specialized-type! type)
 			(var-variable-set! fun (cdr spec))
-			(node-type-set! node type)
+			(let ((nt (variable-type (var-variable fun))))
+			   (node-type-set! node (strict-node-type nt type)))
 			node)
 		       ((eq? (normalize-get-type (car args)) type)
 			(loop (cdr args)))
@@ -536,10 +531,10 @@
 (define (specialize-eq? node)
    (with-access::app node (fun args)
       (define (boxed-eq! node type)
-	 (if (global? *boxed-eq?*)
-	     (begin
-		(var-variable-set! fun *boxed-eq?*)
-		(add-specialized-eq-type! type))))
+	 (when (global? *boxed-eq?*)
+	    (var-variable-set! fun *boxed-eq?*)
+	    (add-specialized-eq-type! type)))
+      ;; arguments type have been erase, we have to restore them now
       (if (and (eq? (var-variable fun) *c-eq?*)
 	       (backend-typed-eq (the-backend)))
 	  ;; here we are...

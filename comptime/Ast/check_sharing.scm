@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/check-sharing.scm       */
+;*    serrano/prgm/project/bigloo/comptime/Ast/check_sharing.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Wed Aug  7 15:28:22 2002 (serrano)                */
-;*    Copyright   :  2000-02 Manuel Serrano                            */
+;*    Last change :  Tue Mar 29 11:02:40 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that appears several times (because of illegal sharing)    */
@@ -35,15 +35,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    check-sharing ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (check-sharing when::bstring globals)
+(define (check-sharing pass::bstring globals)
    (if *compiler-sharing-debug?*
        (begin
-	  (pass-prelude (string-append "Check sharing (" when ")"))
+	  (set! *check-sharing-pass* pass)
 	  (for-each (lambda (global)
 		       (check-sharing-fun global #unspecified))
 		    globals)
 	  (check-node-sharing-reset!)
 	  (pass-postlude globals))))
+
+;*---------------------------------------------------------------------*/
+;*    *check-sharing-pass* ...                                         */
+;*---------------------------------------------------------------------*/
+(define *check-sharing-pass* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    check-sharing-fun ...                                            */
@@ -71,7 +76,8 @@
    (if (memq node *previous*)
        (begin
 	  (user-warning/location (node-loc node)
-				 "check-node-sharing"
+				 (format "check-node-sharing (~a)"
+					 *check-sharing-pass*)
 				 "shared node"
 				 (find-runtime-type node))
 	  (fprint (current-error-port) "node    : " (shape node))
@@ -201,8 +207,8 @@
 (define-method (check-node-sharing node::jump-ex-it context)
    (call-next-method)
    (with-access::jump-ex-it node (exit value)
-      (check-node-sharing exit node)) 
-      (check-node-sharing value node))
+      (check-node-sharing exit node)
+      (check-node-sharing value node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-sharing ::make-box ...                                */

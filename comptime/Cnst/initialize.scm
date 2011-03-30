@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Tue Sep  7 18:08:40 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 27 13:05:02 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -54,10 +54,10 @@
 	  (let ((unit (unit 'cnst 8 body #t (eq? *object-init-mode* 'staged))))
 	     (let ((ast (build-ast (list unit))))
 		(for-each (lambda (global)
-			     (coerce! (sfun-body (global-value global))
-				      global
-				      (global-type global)
-				      #f))
+			     (let ((body (sfun-body (global-value global))))
+				(when *strict-node-type*
+				   (lvtype-node! body))
+				(coerce! body global (global-type global) #f)))
 			  ast)
 		ast))
 	  '())))
@@ -66,8 +66,7 @@
 ;*    lib-initialize! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (lib-initialize!)
-   (global-name-set! (get-cnst-table)
-		     (backend-cnst-table-name (the-backend) 0))
+   (global-name-set! (get-cnst-table) (backend-cnst-table-name (the-backend) 0))
    (get-cnst-sexp))
 
 ;*---------------------------------------------------------------------*/
@@ -82,22 +81,19 @@
 ;*    read-empty-cnst-initialize! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (read-empty-cnst-initialize!)
-   (global-name-set! (get-cnst-table)
-		     (backend-cnst-table-name (the-backend) 0))
+   (global-name-set! (get-cnst-table) (backend-cnst-table-name (the-backend) 0))
    (get-cnst-sexp))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-full-cnst-initialize! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (read-full-cnst-initialize!)
-   (global-name-set! (get-cnst-table)
-		     (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+   
    (define (read-full-cnst-initialize/small-string cnst-string)
       (let* ((var-string  (cnst-alloc-string cnst-string #f))
 	     (sexp `(let ((cport::input-port
 			   ($open-input-string ,(global-id
-						 (var-variable
-						  var-string))
+						 (var-variable var-string))
 					       0)))
 		       (labels ((loop (i::long)
 				      (if (c-=fx i -1)
@@ -110,6 +106,10 @@
 						(loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
 	 (cons sexp (get-cnst-sexp))))
+   
+   (global-name-set! (get-cnst-table)
+		     (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+   
    (let ((cnst-string (cnst-set->cnst-string (get-cnst-set))))
       (read-full-cnst-initialize/small-string cnst-string)))
 

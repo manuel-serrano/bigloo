@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Wed Apr 21 21:05:50 2010 (serrano)                */
+;*    Last change :  Tue Mar 29 11:26:11 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -187,22 +187,22 @@
 (define (test-bind-exit)
    (test-module "bind-exit" "bind-exit.scm")
    (test "goto bind-exit" (test0 4) 5)
-   (test "simple bind-exit" (test1 1 2 4) 7)
-   (test "simple bind-exit" (test1 1 'toto 4) -1)
-   (test "fake-call-with-current-continuation" (test2 1 2 4) 7)
-   (test "fake-call-with-current-continuation" (test2 1 'toto 4) -1)
+   (test "simple bind-exit.1" (test1 1 2 4) 7)
+   (test "simple bind-exit.2" (test1 1 'toto 4) -1)
+   (test "fake-call-with-current-continuation.1" (test2 1 2 4) 7)
+   (test "fake-call-with-current-continuation.2" (test2 1 'toto 4) -1)
    (test "kapture bind-exit" (test4 (lambda (x y) x)) 1)
-   (test "try" (begin
+   (test "try.1" (try (error 1 2 3) (lambda (a b c d) (a #t))) #t)
+   (test "try.2" (begin
 		  (try (error 1 2 3) (lambda (a b c d) (a #t)))
 		  (try (test5 5)
 		       (lambda (a b c d)
 			  #f)))
 	 #t)
-   (test "try(next)" (try (error 1 2 3) (lambda (a b c d) (a #t))) #t)
    (test "cfa" (test6) 345)
-   (test "unwind" (eval '(unwind-protect 10 10)) 10)
-   (test "unwind" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
-   (test "unwind" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
+   (test "unwind.1" (eval '(unwind-protect 10 10)) 10)
+   (test "unwind.2" (eval '(bind-exit (exit) (unwind-protect (exit 10) 9))) 10)
+   (test "unwind.3" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
    (test "trace stack.1" (test-stack-traces) #t)
    (test "trace stack.2" (test-trace-stack) #t)
    (test "trace stack.3" (test-trace-stack2) #t))

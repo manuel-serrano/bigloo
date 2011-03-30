@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Thu Mar 17 10:42:10 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 13:51:02 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -98,7 +98,7 @@
 ;*    the static type and the reference type.                          */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::var caller to safe)
-   (with-access::var node (variable)
+   (with-access::var node (type variable)
       (let ((ntype (get-type node))
 	    (vtype (variable-type variable)))
 	 (cond
@@ -119,20 +119,17 @@
 ;*    coerce! ::sequence ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::sequence caller to safe)
-   (with-access::sequence node (nodes)
-      (let loop ((hook nodes))
-	 (if (null? (cdr hook))
-	     (begin
-		(set-car! hook (coerce! (car hook) caller to safe))
-		node)
-	     (begin
-		;; yes, it is strange, we coerce to the type of
-		;; the expression !
-		(set-car! hook (coerce! (car hook)
-					caller
-					(get-type (car hook))
-					safe))
-		(loop (cdr hook)))))))
+   (with-access::sequence node (type nodes)
+      (let loop ((nodes nodes))
+	 (let ((n (car nodes)))
+	    (if (null? (cdr nodes))
+		(begin
+		   (set-car! nodes (coerce! n caller to safe))
+		   (set! type (strict-node-type to type))
+		   node)
+		(begin
+		   (set-car! nodes (coerce! n caller (get-type n) safe))
+		   (loop (cdr nodes))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::extern ...                                             */
@@ -142,11 +139,9 @@
       (let loop ((values expr*))
 	 (if (null? values)
 	     (convert! node (get-type node) to safe)
-	     (begin
-		(set-car! values (coerce! (car values)
-					  caller
-					  (get-type (car values))
-					  safe))
+	     (let* ((v (car values))
+		    (nv (coerce! v caller (get-type v) safe)))
+		(set-car! values nv)
 		(loop (cdr values)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -177,11 +172,9 @@
       (let loop ((l expr*))
 	 (if (null? l)
 	     (convert! node type to safe)
-	     (begin
-		(set-car! l (coerce! (car l)
-				     caller
-				     (get-type (car l))
-				     safe))
+	     (let* ((v (car l))
+		    (nv (coerce! v caller (get-type v) safe)))
+		(set-car! l nv)
 		(loop (cdr l)))))
       (convert! node type to safe)))
 
@@ -360,8 +353,8 @@
 (define-method (coerce! node::select caller to safe)
    (with-access::select node (loc clauses test type)
       (set! type to)
-      (let ((clauses        clauses)
-	    (test-type      (select-item-type node))
+      (let ((clauses clauses)
+	    (test-type (select-item-type node))
 	    (test-node-type (get-type test)))
 	 ;; select constructions are normalized: the test should have
 	 ;; been placed in a variable. That's why this test below should
@@ -389,10 +382,14 @@
 ;*    coerce! ::let-fun ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::let-fun caller to safe)
-   (with-access::let-fun node (body locals)
+   (with-access::let-fun node (type body locals)
       (inc-ppmarge!)
       (for-each (lambda (f) (coerce-function! f (not *unsafe-type*))) locals)
       (set! body (coerce! body caller to safe))
+      (unless (eq? (node-type body) (get-type body))
+	 (tprint "let-fun to=" (shape to) " ntype=" (shape (node-type body))
+		 " gtype=" (shape (get-type body))))
+      (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))
 
@@ -402,7 +399,7 @@
 (define-method (coerce! node::let-var caller to safe)
    (trace (coerce 3) "coercer ::let-var: " (shape node) " -> " (shape to)
 	  #\Newline)
-   (with-access::let-var node (body bindings)
+   (with-access::let-var node (type body bindings)
       (inc-ppmarge!)
       (for-each (lambda (binding)
 		   (pvariable-proto 3 (car binding))
@@ -412,6 +409,11 @@
 					      safe)))
 		bindings)
       (set! body (coerce! body caller to safe))
+      (unless (eq? (node-type body) (get-type body))
+	 (tprint "let-var to=" (shape to) " ntype=" (shape (node-type body))
+		 " gtype=" (shape (get-type body)) "\n"
+		 "node=" (shape node)))
+      (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))
  
@@ -429,10 +431,15 @@
 ;*    coerce! ::jump-ex-it ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::jump-ex-it caller to safe)
-   (with-access::jump-ex-it node (exit value)
+   (with-access::jump-ex-it node (exit value type)
       (set! exit (coerce! exit caller *exit* safe))
-      (set! value (coerce! value caller to safe))
-      node))
+      (if *strict-node-type*
+	  (begin
+	     (set! value (coerce! value caller (get-type value) safe))
+	     (convert! node type to safe))
+	  (begin
+	     (set! value (coerce! value caller to safe))
+	     node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::make-box ...                                           */

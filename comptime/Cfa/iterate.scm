@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Wed Mar 23 17:21:49 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 09:02:28 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -36,6 +36,7 @@
 ;*    cfa-iterate-to-fixpoint! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (cfa-iterate-to-fixpoint! globals)
+   (trace cfa "================== iterate ===========================\n")
    ;; we reset the global stamp
    (set! *cfa-stamp* -1)
    ;; we collect all the exported variables (both functions and

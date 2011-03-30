@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Mon Feb 28 18:08:58 2005 (serrano)                */
-;*    Copyright   :  1995-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 14:12:51 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    ast_node
 	    ast_sexp
 	    ast_local
+	    ast_lvtype
 	    coerce_coerce
 	    coerce_convert))
 
@@ -53,32 +54,31 @@
 						(variable fun)))
 		       (instantiate::let-var
 			  (loc (node-loc node))
-			  (type (node-type node))
+			  (type (strict-node-type to (node-type node)))
 			  (bindings (list (cons fun c-fun)))
 			  (body (convert! node *obj* to safe))))))
-	     (let* ((fun   (make-local-svar 'fun *procedure*))
-		    (val   (make-local-svar 'val *pair-nil*))
-		    (loc   (node-loc node))
-		    (lval  (top-level-sexp->node `(length ,val) loc))
-		    (len   (gensym 'len))
+	     (let* ((fun (make-local-svar 'fun *procedure*))
+		    (val (make-local-svar 'val *pair-nil*))
+		    (loc (node-loc node))
+		    (lval (lvtype-node (top-level-sexp->node `(length ,val) loc)))
+		    (len (gensym 'len))
+		    (body (lvtype-node
+			   (top-level-sexp->node
+			    `(let ((,(symbol-append len '::int)
+				    ,(coerce! lval caller *int* safe)))
+				(if (correct-arity? ,fun ,len)
+				    ,(convert! node *obj* to safe)
+				    ,(make-error-node error-msg
+						      loc
+						      caller 
+						      to)))
+			    loc)))
 		    (lnode (instantiate::let-var
 			      (loc loc)
-			      (type *obj*)
+			      (type (strict-node-type (node-type body) *obj*))
 			      (bindings (list (cons fun c-fun)
 					      (cons val (app-ly-arg node))))
-			      (body     (top-level-sexp->node
-					 `(let ((,(symbol-append len '::int)
-						 ,(coerce! lval
-							   caller
-							   *int*
-							   safe)))
-					     (if (correct-arity? ,fun ,len)
-						 ,(convert! node *obj* to safe)
-						 ,(make-error-node error-msg
-								   loc
-								   caller 
-								   to)))
-					 loc)))))
+			      (body body))))
 		   ;; we set the new apply value
 		(app-ly-fun-set! node (instantiate::var
 					(loc loc)
@@ -86,7 +86,8 @@
 					(variable fun)))
 		(app-ly-arg-set! node (instantiate::var
 					(loc loc)
-					(type *obj*)
+					(type (strict-node-type
+					       (variable-type val) *obj*))
 					(variable val)))
 		lnode)))))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Feb 11 15:25:12 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 13:49:21 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -28,6 +28,7 @@
 	    ast_glo-def
 	    ast_unit
 	    ast_occur
+	    ast_lvtype
 	    coerce_coerce
 	    backend_backend
 	    backend_cplib)
@@ -89,17 +90,18 @@
 						  from)))))
 	  (cvar (make-local-svar 'checksum *long*))
 	  (nvar (make-local-svar 'from *string*))
-	  (node (let ((_ *_*))
-		   (set! *_* *obj*)
-		   (let ((node (coerce! (sexp->node body
-						    (list cvar nvar)
-						    '()
-						    'value)
-					req
-					*obj*
-					#f)))
-		      (set! *_* _)
-		      node)))
+	  (node (if *strict-node-type*
+		    (let ((node (sexp->node body (list cvar nvar) '() 'value)))
+		       (lvtype-node! node)
+		       (coerce!  node req *unspec* #f))
+		    (let ((_ *_*))
+		       (set! *_* *obj*)
+		       (let ((node (coerce! (sexp->node body (list cvar nvar) '() 'value)
+					    req
+					    *obj*
+					    #f)))
+			  (set! *_* _)
+			  node))))
 	  (init (def-global-sfun-no-warning!
 		   (module-initialization-id *module*)
 		   '(checksum from)

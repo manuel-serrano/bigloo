@@ -264,7 +264,7 @@
 (define *pref* (instantiate::feffect (read '(procedure))))
 (define *pset* (instantiate::feffect (write '(procedure))))
 
-(define-effect foreign c-cons () ())
+(define-effect foreign $cons () ())
 (define-effect foreign make-fx-procedure () ())
 (define-effect foreign procedure-ref (procedure) ())
 (define-effect foreign procedure-set! () (procedure))

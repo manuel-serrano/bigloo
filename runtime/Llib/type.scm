@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Sat Mar 19 06:17:01 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:47:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -47,11 +47,10 @@
     (subtype dynamic-env   "obj_t"          (obj))
     (subtype procedure     "obj_t"          (obj))
     (subtype procedure-el  "obj_t"          (obj))
-    (subtype procedure-el1 "obj_t"          (obj))
     (subtype pair          "obj_t"          (obj))
     (subtype epair         "obj_t"          (obj))
     (subtype nil           "obj_t"          (obj))
-    ;; There is a relationship that exists between pair-nil, nil and
+    ;; There is a relationship that exists between list, pair-nil, nil and
     ;; pair which is nil > pair-nil and pair > pair-nil. This has introduced
     ;; a bug into one compiler optimization that attempts to statically
     ;; reduce runtime type check. I have not been able to find a better
@@ -59,6 +58,7 @@
     ;; @ref ../../comptime/Reduce/typec.scm:pair-nil subtyping@
     ;; @label pair-nil subtyping@
     (subtype pair-nil      "obj_t"          (obj))
+    (subtype list          "obj_t"          (obj))
     (subtype bint          "obj_t"          (obj))
     (subtype belong        "obj_t"          (obj))
     (subtype bllong        "obj_t"          (obj))
@@ -168,12 +168,13 @@
     (coerce obj weakptr        (c-weakptr?)     ())
     (coerce obj dynamic-env    ($dynamic-env?)  ())
     (coerce obj procedure      (c-procedure?)   ())
-    (coerce obj struct         (c-struct?)      ())
+    (coerce obj struct         ($struct?)       ())
     (coerce obj tstruct        (c-tstruct?)     ())
-    (coerce obj pair           (c-pair?)        ())
-    (coerce obj epair          (c-epair?)       ())
-    (coerce obj nil            (c-null?)        ())
+    (coerce obj pair           ($pair?)         ())
+    (coerce obj epair          ($epair?)        ())
+    (coerce obj nil            ($null?)         ())
     (coerce obj pair-nil       (pair-or-null?)  ())
+    (coerce obj list           (list?)          ())
     (coerce obj cell           ()               ())
     (coerce obj exit           ()               ())
     (coerce obj input-port     (c-input-port?)  ())
@@ -250,6 +251,7 @@
     (coerce pair obj           ()               ())
     (coerce epair obj          ()               ())
     (coerce pair-nil obj       ()               ())
+    (coerce list obj           ()               ())
     (coerce nil obj            ()               ())
     (coerce cell obj           ()               ())
     (coerce exit obj           ()               ())
@@ -539,8 +541,6 @@
     ;; procedure
     (coerce procedure-el procedure ()           ())
     (coerce procedure procedure-el ()           ())
-    (coerce procedure-el1 procedure ()          ())
-    (coerce procedure procedure-el1 ()          ())
 
     ;; struct
     (coerce struct bool        ()               ((lambda (x) #t)))
@@ -549,22 +549,29 @@
     (coerce tstruct bool       ()               ((lambda (x) #t)))
 
     ;; pair
-    (coerce pair epair         (c-epair?)       ())
+    (coerce pair epair         ($epair?)        ())
     (coerce pair bool          ()               ((lambda (x) #t)))
 
     ;; epair
     (coerce epair pair         ()               ())
     (coerce epair pair-nil     ()               ())
+;*     (coerce epair list         (list?)          ())                 */
     (coerce epair bool         ()               ((lambda (x) #t)))
 
     ;; pair-nil
     (coerce pair-nil pair      (pair?)          ())
+;*     (coerce pair-nil list      (list?)          ())                 */
+;*     (coerce pair list          (list?)          ())                 */
     (coerce pair pair-nil      ()               ())
     (coerce pair-nil epair     (epair?)         ())
     (coerce pair-nil nil       (null?)          ())
     (coerce pair-nil bool      ()               ((lambda (x) #t)))
+;*     (coerce list epair         (epair?)         ())                 */
+;*     (coerce list nil           (null?)          ())                 */
+;*     (coerce list bool          ()               ((lambda (x) #t)))  */
 
     ;; nil
+;*     (coerce nil list           ()               ())                 */
     (coerce nil pair-nil       ()               ())
     (coerce nil bool           ()               ((lambda (x) #t)))
 

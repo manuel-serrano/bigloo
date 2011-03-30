@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Thu Mar 17 09:48:45 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 15:00:35 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -36,7 +36,25 @@
 	    coerce_coerce
 	    effect_spread)
     (export (convert!::node ::node ::type ::type ::bool)
-	    (runtime-type-error loc ti value)))
+	    (runtime-type-error loc ti ::node)
+	    (get-stack-check)))
+
+;*---------------------------------------------------------------------*/
+;*    *check* ...                                                      */
+;*---------------------------------------------------------------------*/
+(define *check* 0)
+
+;*---------------------------------------------------------------------*/
+;*    increment-stat-check! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (increment-stat-check!)
+   (set! *check* (+fx 1 *check*)))
+
+;*---------------------------------------------------------------------*/
+;*    get-stack-check ...                                              */
+;*---------------------------------------------------------------------*/
+(define (get-stack-check)
+   *check*)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-error/location ...                                          */
@@ -63,33 +81,32 @@
 			   (shape from))))
 
 ;*---------------------------------------------------------------------*/
+;*    runtime-type-error/id ...                                        */
+;*---------------------------------------------------------------------*/
+(define (runtime-type-error/id loc ti id::symbol)
+   (trace coerce "   runtime-type-error/id: " (shape id) #\Newline)
+   (let ((fname (when (location? loc) (location-full-fname loc)))
+	 (pos (when (location? loc) (location-pos loc))))
+      `(failure
+	((@ type-error __error) ,fname ,pos
+				,(symbol->string (current-function))
+				,(symbol->string ti)
+				,id)
+	#f #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    runtime-type-error ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (runtime-type-error loc ti value)
+(define (runtime-type-error loc ti value::node)
    (trace coerce "runtime-type-error: " (shape ti) "  " (shape value) #\Newline)
-   (define (runtime-type-error/id id)
-      (trace coerce "   runtime-type-error/id: " (shape id) #\Newline)
-      (let ((fname (when (location? loc) (location-full-fname loc)))
-	    (pos (when (location? loc) (location-pos loc))))
-	 `(failure
-	   ((@ type-error __error) ,fname ,pos
-				   ,(symbol->string (current-function))
-				   ,(symbol->string ti)
-				   ,id)
-	   #f #f)))
-   (define (runtime-type-error/node)
-      (trace coerce "   runtime-type-error/node: " #\Newline)
-      (let* ((aux (gensym 'aux))
-	     (res (top-level-sexp->node
-		   `(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
-			   #unspecified))
-		       ,(runtime-type-error/id aux))
-		   loc)))
-	 (set-cdr! (car (let-var-bindings res)) value)
-	 res))
-   (if (node? value)
-       (runtime-type-error/node)
-       (runtime-type-error/id value)))
+   (let* ((aux (gensym 'aux))
+	  (res (top-level-sexp->node
+		`(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
+			#unspecified))
+		    ,(runtime-type-error/id loc ti aux))
+		loc)))
+      (set-cdr! (car (let-var-bindings res)) value)
+      res))
 
 ;*---------------------------------------------------------------------*/
 ;*    convert-error ...                                                */
@@ -102,23 +119,23 @@
    (trace coerce "convert-error: " (shape from) " " (shape to) " " (shape node)
 	  #\Newline)
    (if (and (not (eq? to *obj*)) (sub-type? to *obj*))
-       (begin
+       (let ((node (runtime-type-error loc (type-id to) node)))
 	  (type-warning/location loc (current-function) from to)
-	  (coerce! (runtime-type-error loc (type-id to) node)
-		   #unspecified
-		   from
-		   #f))
+	  (when *strict-node-type*
+	     (lvtype-node! node))
+	  (coerce! node #unspecified from #f))
        (type-error/location loc (current-function) from to)))
 
 ;*---------------------------------------------------------------------*/
 ;*    convert! ...                                                     */
 ;*    -------------------------------------------------------------    */
 ;*    If the parameter `safe' is set to false it means that type       */
-;*    convertion in between Bigloo object much not be checked.         */
+;*    convertion in between Bigloo objects must not be checked.        */
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
    (trace coerce
-	  "convert: " (shape node) " " (shape from) " -> " (shape to) "\n")
+	  "convert: " (shape node) " " (shape from) " -> " (shape to)
+	  "  (safe: " safe ")\n")
    (if (eq? from to)
        node
        (let ((to (get-aliased-type to))
@@ -131,35 +148,32 @@
 		     ;; There is no convertion between these types. 
 		     ;; Thus, it is a type error.
 		     (convert-error from to loc node)
-		     (let ((checks  (coercer-check-op coercer))
-			   (coerces (coercer-coerce-op coercer)))
-			(trace (coerce 2)
-			       "   checks : " checks #\Newline
-			       "   coerces: " coerces #\Newline)
-			(let loop ((checks  checks)
-				   (coerces coerces)
-				   (node    node))
-			   (cond
-			      ((null? checks)
-			       (if (null? coerces)
-				   node
-				   (internal-error "Illegal conversion"
-						   (shape from)
-						   (shape to))))
-			      ((null? coerces)
-			       (internal-error "Illegal conversion"
-					       (shape from)
-					       (shape to)))
-			      (else
-			       (loop (cdr checks)
-				     (cdr coerces)
-				     (make-one-conversion (car checks)
-							  from
-							  to
-							  (car checks)
-							  (car coerces)
-							  node
-							  safe))))))))))))
+		     (let loop ((checks (coercer-check-op coercer))
+				(coerces (coercer-coerce-op coercer))
+				(node node))
+			(cond
+			   ((null? checks)
+			    (if (null? coerces)
+				node
+				(internal-error "Illegal conversion"
+						(shape from)
+						(shape to))))
+			   ((null? coerces)
+			    (internal-error "Illegal conversion"
+					    (shape from)
+					    (shape to)))
+			   (else
+			    (loop (cdr checks)
+				  (cdr coerces)
+				  (make-one-conversion (caar checks)
+						       ;; from
+						       ;; to
+						       (cdar checks)
+						       (cdar coerces)
+						       (caar checks)
+						       (caar coerces)
+						       node
+						       safe)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-conversion ...                                          */
@@ -171,7 +185,7 @@
 ;* 	       (type-error)))                                          */
 ;*---------------------------------------------------------------------*/
 (define (make-one-conversion id-from from to checkop coerceop node safe)
-   (if (or (null? checkop) (not safe))
+   (if (or (eq? checkop #t) (not safe))
        (do-convert coerceop node from)
        (if (tclass? from)
 	   (make-one-class-conversion id-from from to checkop coerceop node)
@@ -191,8 +205,8 @@
 (define (make-one-type-conversion id-from from to check-op coerce-op node)
    (trace (coerce 2) "make-one-type-conversion: " (shape node) " ("
 	  (shape from) " -> " (shape to) ")" #\Newline)
-   (let* ((aux   (mark-symbol-non-user! (gensym 'aux)))
-	  (loc   (node-loc node))
+   (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
+	  (loc (node-loc node))
 	  (lnode (top-level-sexp->node
 		  ;; we coerce all checked object into `obj' because
 		  ;; all the predicate are only defined under this
@@ -204,28 +218,31 @@
 			  #unspecified))
 		      (if (,check-op ,aux)
 			  ,aux
-			  ,(runtime-type-error loc (type-id to) aux)))
+			  ,(runtime-type-error/id loc (type-id to) aux)))
 		  loc)))
-      (lvtype-node! lnode)
+      (increment-stat-check!)
+      (unless *strict-node-type* (lvtype-node! lnode))
       (spread-side-effect! lnode)
-      (let* ((var        (car (car (let-var-bindings lnode))))
+      (let* ((var (car (car (let-var-bindings lnode))))
 	     (coerce-app (do-convert coerce-op
 				     (instantiate::var
 					(loc loc)
-					(type from)
+					(type (strict-node-type to from))
 					(variable var))
 				     from))
-	     (condn      (skip-let-var lnode)))
+	     (condn (skip-let-var lnode)))
 	 ;; we set the local variable type
 	 (local-type-set! var from)
 	 ;; and the local variable value
 	 (set-cdr! (car (let-var-bindings lnode)) node)
+	 (node-type-set! node from)
 	 (conditional-true-set! condn coerce-app)
 	 (conditional-false-set! condn
 				 (coerce! (conditional-false condn)
 					  #unspecified
 					  from
 					  #f))
+	 (when *strict-node-type* (lvtype-node! lnode))
 	 lnode)))
 
 ;*---------------------------------------------------------------------*/
@@ -244,18 +261,19 @@
 				   (symbol-append aux2 '::obj)) #unspecified))
 			     (if (,check-op ,aux2)
 				 ,aux
-				 ,(runtime-type-error loc (type-id to) aux))))
+				 ,(runtime-type-error/id loc (type-id to) aux))))
 		      loc)))
-	  (lvtype-node! lnode)
+	  (increment-stat-check!)
+	  (unless *strict-node-type* (lvtype-node! lnode))
 	  (spread-side-effect! lnode)
-	  (let* ((var        (car (car (let-var-bindings lnode))))
+	  (let* ((var (car (car (let-var-bindings lnode))))
 		 (coerce-app (do-convert coerce-op
 					 (instantiate::var
 					    (loc loc)
 					    (type from)
 					    (variable var))
 					 from))
-		 (condn      (skip-let-var lnode)))
+		 (condn (skip-let-var lnode)))
 	     ;; we set the local variable type
 	     (local-type-set! var from)
 	     ;; and the local variable value
@@ -274,6 +292,7 @@
 					      #unspecified
 					      from
 					      #f))
+	     (when *strict-node-type* (lvtype-node! lnode))
 	     lnode))))
 
 ;*---------------------------------------------------------------------*/
@@ -282,7 +301,7 @@
 (define (do-convert coerce-op node from::type)
    (trace coerce "do-convert: " (shape coerce-op) " " (shape node)
 	  #\Newline)
-   (if (null? coerce-op)
+   (if (eq? coerce-op #t)
        node
        (let* ((nnode (top-level-sexp->node `(,coerce-op #unspecified)
 					   (node-loc node))))
@@ -294,7 +313,9 @@
 		 "   from: " (shape from) #\Newline)
 	  ;; we have to mark that the node has been converted and is
 	  ;; now of the correct type...
- 	  (node-type-set! node from)
+	  (if *strict-node-type*
+	      (lvtype-node! nnode)
+	      (node-type-set! node from))
 	  (spread-side-effect! nnode)
 	  ;; we apply the conversion
 	  (cond

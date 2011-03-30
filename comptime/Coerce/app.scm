@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Thu Mar 17 13:16:11 2011 (serrano)                */
+;*    Last change :  Fri Mar 25 10:49:57 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -145,10 +145,7 @@
 		 (convert! node ntype to #f)
 		 (convert! node ntype to safe))
 	     (let ((type (local-type (car formals))))
-		(set-car! actuals (coerce! (car actuals)
-					   caller
-					   type
-					   safe))
+		(set-car! actuals (coerce! (car actuals) caller type safe))
 		(loop (cdr actuals) (cdr formals)))))))
 
 ;*---------------------------------------------------------------------*/

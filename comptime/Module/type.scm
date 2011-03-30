@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Thu Sep 18 11:59:54 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 14:27:14 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
 ;*=====================================================================*/
@@ -113,16 +113,22 @@
 		       (user-error "Coercion" "Illegal clause" clause #f))
 		      (else
 		       (loop (cdr coerce))))))
-	   (let* ((loc   (find-location clause))
+	   (let* ((loc (find-location clause))
 		  (tfrom (use-type! from loc))
-		  (tto   (use-type! to loc)))
+		  (tto (use-type! to loc))
+		  (checks (if (null? check)
+			      (list (cons #t tfrom))
+			      (map (lambda (c) (cons c tfrom)) check)))
+		  (coerces (if (null? coerce)
+			       (list (cons #t tto))
+			       (map (lambda (c) (cons c tto)) coerce))))
 	      (cond
 		 ((not (type? tfrom))
 		  (user-error "type coercion" "Unknow type" from '()))
 		 ((not (type? tto))
 		  (user-error "type coercion" "Unknow type" to '()))
 		 (else
-		  (add-coercion! tfrom tto check coerce))))
+		  (add-coercion! tfrom tto checks coerces))))
 	   '()))
       (else
        (user-error "Parse error" "Illegal type declaration" clause '()))))

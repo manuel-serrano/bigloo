@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Tue Mar  8 14:40:33 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 21:10:39 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C opaque accessors creations                                 */
 ;*=====================================================================*/
@@ -73,7 +73,7 @@
       ;; and the predicate
       (produce-module-clause! `(static
 				,(make-proto-inline `(,bid?-bool ::obj))))
-      (produce-module-clause! `(pragma (,bid? (predicate-of ,wid))))
+      (produce-module-clause! `(pragma (,bid? (predicate-of ,bid))))
 
       ;; and we return the built code
       (list (mk-=id) (mk-bid?))))

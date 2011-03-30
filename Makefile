@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jan 18 13:40:36 2011 (serrano)                */
+#*    Last change :  Tue Mar 29 20:08:56 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -391,7 +391,7 @@ fullbootstrap-sans-log:
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
         fi
-	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
+	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime EFLAGS+=-gself
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime

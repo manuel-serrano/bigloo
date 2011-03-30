@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct 17 07:53:29 2002                          */
-;*    Last change :  Sat Apr 18 19:29:18 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Tue Mar 29 07:39:18 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test system features                                             */
 ;*=====================================================================*/

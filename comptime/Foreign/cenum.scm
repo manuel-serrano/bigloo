@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo2.3/comptime/Foreign/cenum.scm        */
+;*    serrano/prgm/project/bigloo/comptime/Foreign/cenum.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Mon Jul 17 11:07:57 2000 (serrano)                */
-;*    Copyright   :  1996-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 21:10:16 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C enum accessors creations                                   */
 ;*=====================================================================*/
@@ -92,7 +92,7 @@
       ;; and the predicate
       (produce-module-clause! `(static
 				,(make-proto-inline `(,bid?-bool ::obj))))
-      (produce-module-clause! `(pragma (,bid? (predicate-of ,wid))))
+      (produce-module-clause! `(pragma (,bid? (predicate-of ,bid))))
       
       ;; and we return the built code
       (cons* (mk-=id) (mk-bid?) (literal-accessors))))

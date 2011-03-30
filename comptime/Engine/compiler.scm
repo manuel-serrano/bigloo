@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Mar 20 19:02:59 2011 (serrano)                */
+;*    Last change :  Mon Mar 28 14:39:13 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -32,6 +32,7 @@
 	    heap_make
 	    ast_env
 	    ast_check-sharing
+	    ast_check-type
 	    ast_remove
 	    type_type
 	    ast_var
@@ -40,6 +41,7 @@
 	    ast_unit
 	    ast_check-global-init
 	    ast_init
+	    ast_lvtype
 	    user_user
 	    type_env
 	    type_cache
@@ -209,12 +211,14 @@
 	 (let ((ast (profile ast (build-ast units))))
 	    (stop-on-pass 'ast (lambda () (write-ast ast)))
 	    (check-sharing "ast" ast)
+	    (check-type "ast" ast #f #f)
 
 	    ;; compute the global init property
 	    (when *optim-initflow?*
 	       (set! ast (profile initflow (initflow-walk! ast))))
 	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
 	    (check-sharing "initflow" ast)
+	    (check-type "initflow" ast #f #f)
 	    
 	    ;; we make a heap on `mkheap' mode
 	    (stop-on-pass 'make-heap (lambda () (make-heap)))
@@ -232,6 +236,7 @@
 		       (backend-trace-support (the-backend)))
 	       (set! ast (profile trace (trace-walk! ast))))
 	    (check-sharing "trace" ast)
+	    (check-type "trace" ast #f #f)
 	    
 	    ;; when we are compiling with call/cc we have to
 	    ;; put all written local variables in cells
@@ -239,17 +244,20 @@
 	       (set! ast (profile callcc (callcc-walk! ast))))
 	    (stop-on-pass 'callcc (lambda () (write-ast ast)))
 	    (check-sharing "callcc" ast)
+	    (check-type "callcc" ast #f #f)
 	    
 	    ;; the effect property computation
 	    (when *optim-unroll-loop?*
 	       (set! ast (profile effect (effect-walk! ast #f))))
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
+	    (check-type "effect" ast #f #f)
 	    
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
 	    (check-sharing "inline" ast)
+	    (check-type "inline" ast #f #f)
 
 	    ;; we make a heap on `mkheap' mode
 	    ;; MS: 10 May 2007
@@ -264,6 +272,7 @@
 	    (set! ast (profile beta (beta-walk! ast)))
 	    (stop-on-pass 'beta (lambda () (write-ast ast)))
 	    (check-sharing "beta" ast)
+	    (check-type "beta" ast #f #f)
 	    
 	    ;; we introduce traces in `small debug mode'
 	    (when (and (>fx *compiler-debug-trace* 0)
@@ -272,6 +281,7 @@
 	       (set! ast (profile trace (trace-walk! ast))))
 	    (stop-on-pass 'trace (lambda () (write-ast ast)))
 	    (check-sharing "trace" ast)
+	    (check-type "trace" ast #f #f)
 	    
 	    ;; we replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)
@@ -279,6 +289,7 @@
 	       (set! ast (profile fail (fail-walk! ast))))
 	    (stop-on-pass 'fail  (lambda () (write-ast ast)))
 	    (check-sharing "fail" ast)
+	    (check-type "fail" ast #f #f)
 
 	    ;; compute type information based on the explicit type test found
 	    ;; in the source code.
@@ -290,16 +301,19 @@
 		      (set! ast (profile dataflow (dataflow-walk! ast "Dataflow"))))))
 	    (stop-on-pass 'dataflow (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
+	    (check-type "dataflow" ast #f #f)
 
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
 	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
 	    (check-sharing "globalize" ast)
-
+	    (check-type "globalize" ast #f #f)
+ 
 	    ;; the control flow analysis
 	    (set! ast (profile cfa (cfa-walk! ast)))
 	    (stop-on-pass 'cfa (lambda () (write-ast ast)))
 	    (check-sharing "cfa" ast)
+	    (check-type "cfa" ast #t #f)
 
 	    ;; now we have done the cfa, type election has been performed
 	    ;; we change the default type from *_* to *obj*.
@@ -309,18 +323,21 @@
 	    (set! ast (profile integ (integrate-walk! ast)))
 	    (stop-on-pass 'integrate (lambda () (write-ast ast)))
 	    (check-sharing "integrate" ast)
+	    (check-type "integrate" ast #t #f)
 
 	    ;; the tail-call pass
 	    (when (or *global-tail-call?*
 		      (backend-require-tailc (the-backend)))
 	       (set! ast (profile integ (tailc-walk! ast)))
-	       (check-sharing "tailc" ast))
+	       (check-sharing "tailc" ast)
+	       (check-type "tailc" ast #t #f))
 	    (stop-on-pass 'tailc (lambda () (write-ast ast)))
 
 	    ;; the reduction transformation for improving error detections
 	    (when *optim-dataflow-for-errors?*
 	       (set! ast (profile reduce- (reduce-walk! ast "Reduce-" #t)))
-	       (check-sharing "reduce-" ast))
+	       (check-sharing "reduce-" ast)
+	       (check-type "reduce-" ast #t #f))
 	    (stop-on-pass 'reduce- (lambda () (write-ast ast)))
 
 	    ;; introduce array (vectors and strings) bound checking
@@ -332,11 +349,13 @@
 	       (set! ast (profile abound (abound-walk! ast))))
 	    (stop-on-pass 'abound (lambda () (write-ast ast)))
 	    (check-sharing "abound" ast)
+	    (check-type "abound" ast #t #f)
 	    
 	    ;; we introduce type coercion and checking
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
 	    (check-sharing "coerce" ast)
+	    (check-type "coerce" ast #t #t)
 
 	    ;; now that type checks have been introduced, we recompute
 	    ;; the type dataflow analysis
@@ -344,6 +363,7 @@
 	       (set! ast (profile dataflow (dataflow-walk! ast "Dataflow+"))))
 	    (stop-on-pass 'dataflow+ (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
+	    (check-type "dataflow" ast #t #t)
 	    
 	    ;; we re-run the effect computations (for coercion and
 	    ;; type checks)
@@ -351,12 +371,14 @@
 	       (set! ast (profile effect (effect-walk! ast #t))))
 	    (stop-on-pass 'egen (lambda () (write-effect ast)))
 	    (check-sharing "effect" ast)
+	    (check-type "effect" ast #t #t)
 
 	    ;; the reduction optimizations
 	    (when (>=fx *optim* 1)
 	       (set! ast (profile reduce (reduce-walk! ast "Reduce"))))
 	    (stop-on-pass 'reduce (lambda () (write-ast ast)))
 	    (check-sharing "reduce" ast)
+	    (check-type "reduce" ast #t #t)
 
 	    ;; the bdb initialization code
 	    (when (and (>fx *bdb-debug* 0)
@@ -368,17 +390,21 @@
 	    (set! ast (profile cnst (cnst-walk! ast)) )
 	    (stop-on-pass 'cnst (lambda () (write-ast ast)))
 	    (check-sharing "cnst" ast)
+	    (check-type "cnst" ast #t #t)
 	    
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.
 	    (set! ast (profile inline (inline-walk! ast 'reducer)))
+	    (when *strict-node-type* (set! ast (lvtype-ast! ast)))
 	    (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 	    (check-sharing "inline+" ast)
+	    (check-type "inline+" ast #t #t)
 	    
 	    ;; the code production
 	    (let ((ast2 (append-ast (ast-initializers) ast)))
 	       (stop-on-pass 'init (lambda () (write-ast ast2)))
 	       (check-sharing "init" ast2)
+	       (check-type "init" ast2 #t #t)
 	       
 	       ;; the 2nd reduction optimizations
 	       (when (or (>=fx *optim* 2) (backend-effect+ (the-backend)))
@@ -387,6 +413,7 @@
 		  (set! ast2 (profile reduce (reduce-walk! ast2 "Reduce+"))))
 	       (stop-on-pass 'reduce+ (lambda () (write-ast ast2)))
 	       (check-sharing "reduce+" ast2)
+	       (check-type "reduce+" ast2 #t #t)
 	       
 	       (backend-walk (remove-var 'now ast2)))
 	    

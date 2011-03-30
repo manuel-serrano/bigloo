@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Mon May 28 16:28:27 2007 (serrano)                */
+;*    Last change :  Tue Mar 29 07:39:10 2011 (serrano)                */
 ;*                                                                     */
 ;*    Process tests                                                    */
 ;*---------------------------------------------------------------------*/
@@ -139,7 +139,7 @@
 		  '(#f 7 "bar"))))
    (test "kill"
 	 (let ((proc (run-process *bigloo-path*
-				  "-eval" 
+				  "-eval"
 				  "(define (loop) (sleep 100) (loop)) (loop)"
 				  wait: #f)))
 	    (list (process-alive? proc)

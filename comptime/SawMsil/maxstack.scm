@@ -77,7 +77,7 @@
 	      (eq? id 'cnst-table-set!)
 	      (eq? id 'make-l-procedure)
 	      (eq? id '$obj->bool)
-	      (eq? id 'c-null?) )
+	      (eq? id '$null?) )
 	  '1 )
 	 (else '0) )))
 

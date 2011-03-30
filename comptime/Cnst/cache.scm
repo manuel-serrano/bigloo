@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Sat Mar 19 06:30:40 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:51:30 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
@@ -80,7 +80,7 @@
 	  (set! *cnst-table-set!*
 		(get-global/module 'cnst-table-set! 'foreign))
 	  (set! *cons*
-		(get-global/module 'c-cons 'foreign))
+		(get-global/module '$cons 'foreign))
 	  (set! *btrue*
 		(get-global/module 'btrue 'foreign))
 	  (set! *bfalse*

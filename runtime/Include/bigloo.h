@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Mar 19 06:16:27 2011 (serrano)                */
+/*    Last change :  Wed Mar 30 08:06:21 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1718,6 +1718,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define PROCEDURE_REF( p, i )    (PROCEDURE_ENV( p ))[ i ]
 #define PROCEDURE_SET( p, i, o ) (PROCEDURE_REF( p, i ) = o, BUNSPEC)
 
+#define MAKE_FX_PROCEDURE( entry, arity, size ) \
+   make_fx_procedure( (function_t)entry, arity, size )
+
+#define MAKE_VA_PROCEDURE( entry, arity, size ) \
+   make_va_procedure( (function_t)entry, arity, size )
+
 /*---------------------------------------------------------------------*/
 /*    Light procedures                                                 */
 /*---------------------------------------------------------------------*/
@@ -1755,11 +1761,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define PROCEDURE_EL_REF( p, i )    ((obj_t *)p)[ i ]
 #define PROCEDURE_EL_SET( p, i, o ) (PROCEDURE_EL_REF( p, i ) = o, BUNSPEC)
-
-#define MAKE_EL_PROCEDURE_1( size )   BUNSPEC
-
-#define PROCEDURE_1_EL_REF( p, i )    p
-#define PROCEDURE_1_EL_SET( p, i, o ) (PROCEDURE_1_EL_REF( p, i ) = o, BUNSPEC)
 
 /*---------------------------------------------------------------------*/
 /*    Ports                                                            */

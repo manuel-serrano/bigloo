@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 19 14:33:36 2005                          */
-;*    Last change :  Tue Jul 28 17:11:13 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Sun Mar 27 14:58:23 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization part of the AST                               */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	    ast_occur
 	    ast_build
 	    ast_env
+	    ast_lvtype
 	    object_class
 	    bdb_emit
 	    prof_emit
@@ -57,9 +58,10 @@
 	  (lib-init (if (unit? lib-unit)
 			(let ((vars (build-ast-sans-remove (list lib-unit))))
 			   (for-each (lambda (g)
-					(occur-node-in!
-					 (sfun-body (global-value g))
-					 g))
+					(let ((n (sfun-body (global-value g))))
+					   (occur-node-in! n g)
+					   (when *strict-node-type*
+					      (lvtype-node! n))))
 				     vars)
 			   vars)
 			'()))

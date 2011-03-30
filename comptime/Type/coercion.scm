@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Tue Nov  7 16:52:29 2006 (serrano)                */
-;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 14:37:22 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
 ;*=====================================================================*/
@@ -19,8 +19,8 @@
 	    tools_shape
 	    type_type
 	    engine_param)
-   (export  (add-coercion!         ::type ::type ::obj ::obj)
-	    (find-coercer::obj     ::type ::type)
+   (export  (add-coercion! ::type ::type ::obj ::obj)
+	    (find-coercer::obj ::type ::type)
 	    (coercer-exists?::bool ::type ::type)))
 
 ;*---------------------------------------------------------------------*/
@@ -30,7 +30,7 @@
 ;*---------------------------------------------------------------------*/
 (define (find-coercer from::type to::type)
    (let ((from (get-aliased-type from))
-	 (to   (get-aliased-type to)))
+	 (to (get-aliased-type to)))
       (let loop ((coercer (type-coerce-to from)))
 	 (cond
 	    ((null? coercer)
@@ -78,15 +78,15 @@
    [assert (check coerce) (check-coercion? check coerce)]
    (trace (ast 2) "add-coercion!:" (shape from) " -> " (shape to)
 	  " check: " check " coerce: " coerce #\Newline)
-   (if (null? check) (set! check '(())))
-   (if (null? coerce) (set! coerce '(())))
+;*    (if (null? check) (set! check '(())))                            */
+;*    (if (null? coerce) (set! coerce '(())))                          */
    (let ((from (get-aliased-type from))
-	 (to   (get-aliased-type to)))
+	 (to (get-aliased-type to)))
       (if (coercer? (find-coercer from to))
-	  (if (not *lib-mode*)
-	      (warning "add-coercion!"
-		       "Type coercion redefinition -- "
-		       (shape (list from to check coerce))))
+	  (unless *lib-mode*
+	     (warning "add-coercion!"
+		      "Type coercion redefinition -- "
+		      (shape (list from to check coerce))))
 	  (begin
 	     ;; we set the coercion between `from' and `to'
 	     (let ((new (coercer from to check coerce)))
@@ -105,7 +105,7 @@
 					(format "while adding: ~a -> ~a"
 						(shape from)
 						(shape to)))
-			    (let ((check-p  (coercer-check-op coercer-p))
+			    (let ((check-p (coercer-check-op coercer-p))
 				  (coerce-p (coercer-coerce-op coercer-p)))
 			       (add-coercion! from
 					      parent
@@ -125,7 +125,7 @@
 						(shape parent) (shape from))
 					(format "while adding: ~a -> ~a"
 						(shape from) (shape to)))
-			    (let ((check-p  (coercer-check-op coercer-p))
+			    (let ((check-p (coercer-check-op coercer-p))
 				  (coerce-p (coercer-coerce-op coercer-p)))
 			       (add-coercion! parent
 					      to
@@ -145,18 +145,14 @@
 		((null? coerce)
 		 #t)
 		((match-case (car coerce)
-		    ((? symbol?)
-		     #f)
-		    (()
-		     #f)
-		    ((lambda (?-) . ?-)
-		     #f)
-		    (else
-		     #t))
+		    (((? symbol?) . ?-) #f)
+		    ((#t . ?-) #f)
+		    (((lambda (?-) . ?-) . ?-) #f)
+		    (else #t))
 		 #f)
 		(else
 		 (loop (cdr coerce))))))
-	 ((and (not (symbol? (car check))) (not (null? (car check))))
+	 ((and (not (symbol? (caar check))) (not (eq? (caar check) #t)))
 	  #f)
 	 (else
 	  (loop (cdr check))))))

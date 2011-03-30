@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Tue Jan 25 10:55:50 2011 (serrano)                */
+;*    Last change :  Mon Mar 28 18:12:51 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -49,8 +49,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    try-test-2 ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (try-test-2)
-   (try (try (car 1)
+(define (try-test-2 x)
+   (try (try (car (if (> x 0) 1 '(2)))
 	     (lambda (escape obj proc msg)
 		(error obj proc msg)))
 	(lambda (escape obj proc msg)
@@ -89,7 +89,7 @@
    (test "type error (integer?)" (try (integer? (string-length (gee #f))) handler) #f)
    (test "type error (pair?)" (try (pair? (string-length (gee #f))) handler) #f)
    (test "try" (try-test) #t)
-   (test "try-2" (try-test-2) #t)
+   (test "try-2" (try-test-2 1) #t)
    (test "side effect" (side-effect 3) 3)
    (test "error port" (error-port) "5")
    (test "with-exception-handler.1"
@@ -102,6 +102,7 @@
 	    (with-exception-handler
 	       (lambda (e) (exit e))
 	       (lambda () (raise 1))))
+
 	 1)
    (test "with-exception-handler.3"
 	 (bind-exit (exit)
@@ -423,5 +424,4 @@
 	       (set! x (cons 5 x)))
 	    x)
 	 '(5 1 4 2 3)))
-
-   
+ 

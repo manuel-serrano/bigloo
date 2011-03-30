@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/let-fun.scm       */
+;*    serrano/prgm/project/bigloo/comptime/Integrate/let_fun.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Thu Aug  9 07:26:09 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 27 15:02:07 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
 ;*    local functions and which adds the integrated ones.              */
@@ -19,6 +19,7 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_node
 	    integrate_info)
@@ -88,7 +89,9 @@
 		(if (pair? added)
 		    (let ((new-body (instantiate::let-fun
 				       (loc (node-loc old-body))
-				       (type *_*)
+				       (type (if *strict-node-type*
+						 (get-type old-body)
+						 *_*))
 				       (locals added)
 				       (body old-body))))
 		       (trace (integrate 3)

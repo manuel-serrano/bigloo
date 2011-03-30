@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Wed Mar 16 10:49:46 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:42:11 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -132,7 +132,7 @@
 			      (clean-user-node! node)))
 			(let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
 			       (lexp `(,(let-sym) ((,new-fun ,(if fun-err?
-							   '(@ list __r4_pairs_and_lists_6_3)
+								  '(@ list __r4_pairs_and_lists_6_3)
 							   fun)))
 					 ,(make-the-app new-fun)))
 			       (node (sexp->node lexp stack loc site)))
@@ -300,10 +300,8 @@
 	     ;; all optional arguments are provided
 	     (instantiate::app
 		(loc loc)
-		(type (variable-type v))
-		(fun  (if (closure? var)
-			  (duplicate::var var)
-			  var))
+		(type (strict-node-type *_* (variable-type v)))
+		(fun  (if (closure? var) (duplicate::var var) var))
 		(args actuals))
 	     ;; compile the optionals arguments in a left-to-right env
 	     (let* ((reqs (take args-name arity))
@@ -338,10 +336,10 @@
 				 (cons (list (car l) (cadr l))
 				       (loop (cddr l))))
 				(else
-				 (user-error/location loc
-						      (variable-id v)
-						      "Illegal keyword application"
-						      (shape (car l))))))))
+				 (user-error/location
+				  loc (variable-id v)
+				  "Illegal keyword application"
+				  (shape (car l))))))))
 	    (define (funcall)
 	       (let ((f (gensym (variable-id v))))
 		  ;; introduce a funcall on purpose for using the
@@ -359,10 +357,9 @@
 		     ((null? (cdr vs))
 		      (reverse! (cons (car vs) nvals)))
 		     ((eq? (caar vs) (car (cadr vs)))
-		      (user-warning/location loc
-					     (variable-id v)
-					     "Illegal duplicated key"
-					     (caar vs))
+		      (user-warning/location
+		       loc (variable-id v)
+		       "Illegal duplicated key" (caar vs))
 		      (loop (cdr vs) nvals))
 		     (else
 		      (loop (cdr vs) (cons (car vs) nvals))))))
@@ -376,7 +373,7 @@
 		     ((null? keys)
 		      (instantiate::app
 			 (loc loc)
-			 (type (variable-type v))
+			 (type (strict-node-type *_* (variable-type v)))
 			 (fun var)
 			 (args (append
 				(take args arity)
@@ -392,7 +389,7 @@
 			     (body (loop (cdr keys) '() nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (variable-type v))
+			    (type (strict-node-type *_* (variable-type v)))
 			    (bindings (list (cons var val)))
 			    (body body))))
 		     ((eq? (fast-id-of-id (caar keys) loc) (caar vals))
@@ -404,7 +401,7 @@
 			     (body (loop (cdr keys) (cdr vals) nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (variable-type v))
+			    (type (strict-node-type *_* (variable-type v)))
 			    (bindings (list (cons var val)))
 			    (body body))))
 		     (else
@@ -416,7 +413,7 @@
 			     (body (loop (cdr keys) vals nenv nstack)))
 			 (instantiate::let-var
 			    (loc loc)
-			    (type (variable-type v))
+			    (type (strict-node-type *_* (variable-type v)))
 			    (bindings (list (cons var val)))
 			    (body body)))))))
 	    (if (any? (lambda (v)
@@ -439,10 +436,9 @@
 					  (not (memq (car v) fkeys)))
 				       vals)))
 		      (when (pair? err)
-			 (user-error/location loc
-					      (variable-id v)
-					      "Illegal keyword(s) argument(s)"
- 					      (map car err))))
+			 (user-error/location
+			  loc (variable-id v)
+			  "Illegal keyword(s) argument(s)" (map car err))))
 		   (body keys vals stack)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -465,18 +461,16 @@
 	  ;; this is a regular direct call
 	  (let ((call (instantiate::app
 			 (loc loc)
-			 (type (variable-type v))
-			 (fun  (if (closure? var)
-				   (duplicate::var var)
-				   var))
+			 (type (strict-node-type *_* (variable-type v)))
+			 (fun  (if (closure? var) (duplicate::var var) var))
 			 (args args))))
 	     (if (eq? (variable-type v) *void*)
 		 ;; the call is cast into obj
 		 (let ((unspec (instantiate::atom
-				  (type *obj*)
+				  (type (strict-node-type (get-type-atom #unspecified) *obj*))
 				  (value #unspecified))))
 		    (instantiate::sequence
-		       (type *obj*)
+		       (type (strict-node-type *_* *obj*))
 		       (nodes (list call unspec))))
 		 call)))
 	 (else
@@ -494,20 +488,21 @@
    (define (make-args-list args)
       (if (null? args)
 	  ''()
-	  `((@ c-cons foreign) ,(car args) ,(make-args-list (cdr args)))))
+	  `((@ $cons foreign) ,(car args) ,(make-args-list (cdr args)))))
    (let loop ((old-args args)
 	      (arity    arity)
 	      (f-args   '()))
       (if (=fx arity -1)
-	  (let* ((l-arg  (mark-symbol-non-user! (gensym 'list)))
+	  (let* ((l-arg (mark-symbol-non-user! (gensym 'list)))
 		 (l-exp  `(,(let-sym) ((,l-arg ,(make-args-list old-args)))
-			     ,l-arg))
+				      ,l-arg))
 		 (l-node (sexp->node l-exp stack loc 'value))
-		 (l-var  (let-var-body l-node))
-		 (app    (make-fx-app-node loc
-					   var
-					   (reverse! (cons l-var f-args)))))
-	     (let-var-body-set! l-node app)
+		 (l-var (let-var-body l-node))
+		 (app (make-fx-app-node
+		       loc var (reverse! (cons l-var f-args)))))
+	     (with-access::let-var l-node (body type)
+		(set! body app)
+		(set! type (strict-node-type *_* type)))
 	     (clean-user-node! l-node))
 	  (loop (cdr old-args)
 		(+fx arity 1)
@@ -541,17 +536,24 @@
 	  (node-type-set! (car args) *_*)
 	  (instantiate::app
 	     (loc loc)
-	     (type (variable-type variable))
+	     (type (strict-node-type *_* (variable-type variable)))
 	     (fun  var)
 	     (args args)))
 	 ((c-eq?)
 	  ;; As for $VECTOR-SET in order to let the cfa specialize the
 	  ;; vector it is required to erase the type of the third argument
-	  (node-type-set! (car args) *_*)
-	  (node-type-set! (cadr args) *_*)
+	  (if *strict-node-type*
+	      (begin
+		 (when (and (var? (car args)) (not (closure? (car args))))
+		    (node-type-set! (car args) *_*))
+		 (when (and (var? (cadr args)) (not (closure? (cadr args))))
+		    (node-type-set! (cadr args) *_*)))
+	      (begin
+		 (node-type-set! (car args) *_*)
+		 (node-type-set! (cadr args) *_*)))
 	  (instantiate::app
 	     (loc loc)
-	     (type (variable-type variable))
+	     (type (strict-node-type *_* (variable-type variable)))
 	     (fun  var)
 	     (args args)))
 	 (($vector-length)
@@ -564,7 +566,7 @@
 	 (($vector-ref $vector-ref-ur)
 	  (instantiate::vref
 	     (loc loc)
-	     (type (global-type variable))
+	     (type (strict-node-type *_* (global-type variable)))
 	     (c-format (string-append gname "($1,$2)"))
 	     (expr* args)
 	     (unsafe (eq? (global-id variable) '$vector-ref-ur))
@@ -577,7 +579,7 @@
 	  (node-type-set! (caddr args) *_*)
 	  (instantiate::vset!
 	     (loc loc)
-	     (type (global-type variable))
+	     (type (strict-node-type *unspec* (global-type variable)))
 	     (c-format (string-append gname "($1,$2,$3)"))
 	     (expr* args)
 	     (unsafe (eq? (global-id variable) '$vector-set-ur!))
@@ -593,11 +595,9 @@
 				   heap-format)))
 	     (instantiate::valloc
 		(loc loc)
-		(type (global-type variable))
+		(type (strict-node-type *_* (global-type variable)))
 		(c-format heap-format)
 		(otype (car (cfun-args-type (global-value variable))))
 		(expr* args))))
 	 (else
-	  (error "make-special-app-node"
-		 "Illegal special application"
-		 (shape var))))))
+	  (error "make-special-app-node" "Illegal application" (shape var))))))

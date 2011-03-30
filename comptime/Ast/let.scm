@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Oct 18 08:35:59 2010 (serrano)                */
+;*    Last change :  Sun Mar 27 07:42:34 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -62,7 +62,7 @@
 				 (else
 				  '???))
 	  #\Newline)
-  (match-case exp
+   (match-case exp
       ((?- () . ?body)
        ;; we don't remove explicit user let.
        (let* ((nloc (find-location/loc exp oloc))
@@ -75,10 +75,10 @@
 		 "bloc: " bloc #\Newline
 		 "nloc: " nloc #\Newline)
 	  (instantiate::let-var
-	     (loc        nloc)
-	     (type       (node-type body))
-	     (bindings   '())
-	     (body       body)
+	     (loc nloc)
+	     (type (strict-node-type *_* (node-type body)))
+	     (bindings '())
+	     (body body)
 	     (removable? (backend-remove-empty-let (the-backend))))))
       ((?- ?bindings . ?-)
        (if (or (not (or (pair? bindings) (null? bindings)))
@@ -125,8 +125,8 @@
 			  loc))
 	  (frame      (map (lambda (binding)
 			      (let* ((var.id (parse-id (car binding) nloc))
-				     (id     (car var.id))
-				     (type   (cdr var.id)))
+				     (id (car var.id))
+				     (type (cdr var.id)))
 				 (if (user-symbol? id)
 				     (make-user-local-svar id type)
 				     (make-local-svar id type))))
@@ -202,10 +202,11 @@
 		    (let-var-bindings-set! node-let (reverse! value))
 		    ;; then, we send the let form to the `let-or-letrec'
 		    ;; function
-		    (let ((nlet (let-or-letrec let/letrec node-let vars)))
-		       (let-var-body-set! nlet (let->labels fun
-							    (let-var-body nlet)
-							    site))
+		    (let* ((nlet (let-or-letrec let/letrec node-let vars))
+			   (nbody (let->labels fun (let-var-body nlet) site)))
+		       (with-access::let-var nlet (body type)
+			  (set! body nbody)
+			  (set! type (strict-node-type *_* type)))
 		       nlet)))))
 	  (let* ((binding (car bindings))
 		 (var     (car binding))
@@ -232,8 +233,7 @@
 					     (eq? (local-type var) *procedure*)
 					     (eq? (local-type var) *_*)
 					     (eq? (local-type var) *obj*))))
-				   ;; the variable is mutated
-				   ;; we skip
+				   ;; the variable is mutated, skip it
 				   (loop (cdr bindings)
 					 fun
 					 (cons (car bindings) value))
@@ -367,24 +367,25 @@
 			    body
 			    (instantiate::sequence
 			       (loc (node-loc body))
-			       (type  *_*)
+			       (type *_*)
 			       (nodes (list body))))))
 	  (let-var-body-set! node-let seq)
 	  (let loop ((bindings  bindings)
 		     (nsequence '()))
 	     (if (null? bindings)
 		 (begin
-		    (let-var-body-set! node-let
-				       (instantiate::sequence
-					  (loc   (node-loc seq))
-					  (type  *_*)
-					  (nodes (append (reverse! nsequence)
-							 (sequence-nodes seq)))))
+		    (let-var-body-set!
+		     node-let
+		     (instantiate::sequence
+			(loc (node-loc seq))
+			(type *_*)
+			(nodes (append (reverse! nsequence)
+				       (sequence-nodes seq)))))
 		    node-let)
 		 (let* ((binding (car bindings))
-			(var     (car binding))
-			(val     (cdr binding))
-			(loc     (node-loc val)))
+			(var (car binding))
+			(val (cdr binding))
+			(loc (node-loc val)))
 		    (let ((init (instantiate::setq
 				   (loc loc)
 				   (type *unspec*)
@@ -405,20 +406,23 @@
 			    body
 			    (instantiate::sequence
 			       (loc (node-loc body))
-			       (type  *_*)
+			       (type *_*)
 			       (nodes (list body))))))
 	  (let-var-body-set! node-let seq)
 	  (let loop ((bindings  bindings)
 		     (nbindings '())
 		     (nsequence (sequence-nodes seq)))
 	     (if (null? bindings)
-		 (let* ((seq (instantiate::sequence
+		 (let* ((typ (if (pair? nsequence)
+				 (node-type (car (last-pair nsequence)))
+				 *unspec*))
+			(seq (instantiate::sequence
 				(loc (node-loc seq))
-				(type  *_*)
+				(type *_*)
 				(nodes nsequence)))
 			(letb (instantiate::let-var
 				 (loc (node-loc node-let))
-				 (type (node-type node-let))
+				 (type (strict-node-type *_* (node-type node-let)))
 				 (bindings nbindings)
 				 (body seq)
 				 (removable? #t))))
@@ -453,7 +457,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    This function creates a `labels' construction for variables      */
 ;*    introduced in a `let' form which are never mutated and bound     */
-;*    to function.                                                     */
+;*    to functions.                                                    */
 ;*---------------------------------------------------------------------*/
 (define (let->labels value-bindings node site)
    ;; we compute (allocate) the list of new functions
@@ -484,22 +488,21 @@
 			      (node-loc (sfun-body (local-value (car funs))))
 			      (node-loc node))))
 		(instantiate::let-fun
-		   (loc    loc)
-		   (type   (node-type node))
+		   (loc loc)
+		   (type (node-type node))
 		   (locals funs)
-		   (body   body)))
+		   (body body)))
 	     ;; we style have to alpha-convert the body of `var'
 	     (let* ((binding (car vbindings))
-		    (nvar    (car nvars))
-		    (sfun    (local-value nvar))
-		    (body    (sfun-body sfun))
-		    (val     (cdr binding))
-		    (aux     (car (let-fun-locals val))))
+		    (nvar (car nvars))
+		    (sfun (local-value nvar))
+		    (body (sfun-body sfun))
+		    (val (cdr binding))
+		    (aux (car (let-fun-locals val))))
 		(sfun-body-set! sfun
 				(substitute! (cons aux old-funs)
 					     (cons nvar new-funs)
 					     body
 					     'value))
 		;; ok, it is finished, we loop now.
-		(loop (cdr vbindings)
-		      (cdr nvars)))))))
+		(loop (cdr vbindings) (cdr nvars)))))))

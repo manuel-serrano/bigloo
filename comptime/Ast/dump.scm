@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Thu Mar 17 07:22:28 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 17:40:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 	    engine_param
 	    ast_ident
 	    type_typeof
+	    type_cache
 	    effect_effect)
    (export  (generic node->sexp ::node)))
 
@@ -44,9 +45,9 @@
        (location-shape (node-loc node) ''())
        (location-shape (node-loc node)
 		       (if *type-shape?*
-			   (vector (atom-value node)
-				   (shape (get-type node))
-				   (shape (node-type node)))
+			   `#(,(atom-value node)
+			      ,(shape (get-type node))
+			      ,(shape (node-type node)))
 			   (atom-value node)))))
 
 ;*---------------------------------------------------------------------*/
@@ -58,7 +59,8 @@
       (let* ((vshape (shape variable))
 	     (tvshape (if (and *type-shape?*
 			       (not (sfun? (variable-value variable)))
-			       (not (eq? type (variable-type variable))))
+			       (not (eq? type (variable-type variable)))
+			       (not (eq? type *_*)))
 			  (string->symbol
 			   (string-append (symbol->string vshape)
 					  "[::" (shape type) "]"))
@@ -71,7 +73,8 @@
 (define-method (node->sexp node::closure)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(function ,(shape (closure-variable node)))))
+		   `(,(shape-typed-id 'closure (node-type node))
+		     ,(shape (closure-variable node)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::kwote ...                                           */
@@ -90,9 +93,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::sequence)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-		   `(begin
-		       ,@(map node->sexp (sequence-nodes node)))))
+   (let ((sym (shape-typed-id 'begin (node-type node))))
+      (location-shape (node-loc node)
+		      `(,sym ,@(map node->sexp (sequence-nodes node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::app ...                                             */
@@ -122,10 +125,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::app-ly)
    (node->sexp-hook node)
-   (let ((top (if *type-shape?*
-		  (string->symbol
-		   (string-append "apply::" (shape (node-type node))))
-		  'apply)))
+   (let ((top (shape-typed-id 'apply (shape (node-type node)))))
       (location-shape (node-loc node)
 		      `(,top ,(node->sexp (app-ly-fun node))
 			     ,(node->sexp (app-ly-arg node))))))
@@ -139,12 +139,7 @@
 		 ((light) 'funcall-l)
 		 ((elight) 'funcall-el)
 		 (else 'funcall)))
-	  (top (if *type-shape?*
-		   (string->symbol
-		    (string-append (symbol->string op)
-				   "::"
-				   (shape (node-type node))))
-		   op)))
+	  (top (shape-typed-id op (node-type node))))
       (location-shape (node-loc node)
 		      `(,top
 			,(node->sexp (funcall-fun node))
@@ -159,9 +154,7 @@
 		   (let ((p (if (pragma-side-effect node)
 				'pragma
 				'free-pragma)))
-		      `(,(if *type-shape?*
-			     (make-typed-ident p (type-id (get-type node)))
-			     p)
+		      `(,(shape-typed-id p (get-type node))
 			,(pragma-format node)
 			,@(map node->sexp (pragma-expr* node))))))
 
@@ -189,15 +182,15 @@
 (define-method (node->sexp node::new)
    (node->sexp-hook node)
    (with-access::new node (expr* type)
-      `(new ,(type-id type) ,@(map node->sexp expr*))))
+      `(,(shape-typed-id 'new type) ,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vlength ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::vlength)
    (node->sexp-hook node)
-   (with-access::vlength node (expr*)
-      `(vlength ,(node->sexp (car expr*)))))
+   (with-access::vlength node (type expr*)
+      `(,(shape-typed-id 'vlength type) ,(node->sexp (car expr*)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vref ...                                            */
@@ -221,10 +214,9 @@
 (define-method (node->sexp node::vset!)
    (node->sexp-hook node)
    (with-access::vset! node (expr* ftype unsafe)
-      (let ((id (if unsafe 'vset-ur! 'vset!)))
+      (let ((id (shape-typed-id (if unsafe 'vset-ur! 'vset!) (get-type node))))
 	 (if *type-shape?*
-	     `(,id ,(vector (shape (get-type node)) (shape ftype))
-		     ,@(map node->sexp expr*))
+	     `(,id ,(vector (shape ftype)) ,@(map node->sexp expr*))
 	     `(,id ,@(map node->sexp expr*))))))
    
 ;*---------------------------------------------------------------------*/
@@ -232,8 +224,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::valloc)
    (node->sexp-hook node)
-   (with-access::valloc node (expr*)
-      `(valloc ,@(map node->sexp expr*))))
+   (with-access::valloc node (expr* type ftype)
+      `(,(string->symbol
+	  (string-append "valloc::"
+			 (shape (get-type node))
+			 "[::" (shape ftype) "]"))
+	,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::isa ...                                             */
@@ -274,9 +270,10 @@
 (define-method (node->sexp node::conditional) 
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(if ,(node->sexp (conditional-test node))
-			,(node->sexp (conditional-true node))
-			,(node->sexp (conditional-false node)))))
+		   `(,(shape-typed-id 'if (node-type node))
+		     ,(node->sexp (conditional-test node))
+		     ,(node->sexp (conditional-true node))
+		     ,(node->sexp (conditional-false node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::fail ...                                            */
@@ -294,54 +291,59 @@
 (define-method (node->sexp node::select)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   `(case ,(node->sexp (select-test node))
-		       ,@(map (lambda (clause)
-				 `(,(car clause) ,(node->sexp (cdr clause))))
-			      (select-clauses node)))))
+		   `(,(shape-typed-id 'case (node-type node))
+		     ,(node->sexp (select-test node))
+		     ,@(map (lambda (clause)
+			       `(,(car clause) ,(node->sexp (cdr clause))))
+			    (select-clauses node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::let-fun ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::let-fun)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-		   `(labels ,(map (lambda (fun)
-				     `(,(shape fun)
-				       ,(args-list->args*
-					 (map shape
-					      (sfun-args (local-value fun)))
-					 (sfun-arity (local-value fun)))
-				       ,(node->sexp
-					 (sfun-body (local-value fun)))))
-				  (let-fun-locals node))
-		       ,(node->sexp (let-fun-body node)))))
+   (let ((sym (shape-typed-id 'labels (node-type node))))
+      (location-shape (node-loc node)
+		      `(,sym ,(map (lambda (fun)
+				      `(,(shape fun)
+					,(args-list->args*
+					  (map shape
+					       (sfun-args (local-value fun)))
+					  (sfun-arity (local-value fun)))
+					,(node->sexp
+					  (sfun-body (local-value fun)))))
+				   (let-fun-locals node))
+			     ,(node->sexp (let-fun-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::let-var ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::let-var)
    (node->sexp-hook node)
-   (location-shape (node-loc node)
-		   `(let ,(map (lambda (b)
-				  `(,(shape (car b)) ,(node->sexp (cdr b))))
-			       (let-var-bindings node))
-		       ,(node->sexp (let-var-body node)))))
+   (let ((sym (shape-typed-id 'let (node-type node))))
+      (location-shape (node-loc node)
+		      `(,sym ,(map (lambda (b)
+				      `(,(shape (car b)) ,(node->sexp (cdr b))))
+				   (let-var-bindings node))
+			     ,(node->sexp (let-var-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::set-ex-it)
    (node->sexp-hook node)
-   `(set-exit ,(node->sexp (set-ex-it-var node))
-	      ,(node->sexp (set-ex-it-body node))))
+   `(,(shape-typed-id 'set-exit (node-type node))
+     ,(node->sexp (set-ex-it-var node))
+     ,(node->sexp (set-ex-it-body node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::jump-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::jump-ex-it)
    (node->sexp-hook node)
-   `(jump-exit ,(node->sexp (jump-ex-it-exit node))
-	       ,(node->sexp (jump-ex-it-value node))))
+   `(,(shape-typed-id 'jump-exit (node-type node))
+     ,(node->sexp (jump-ex-it-exit node))
+     ,(node->sexp (jump-ex-it-value node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::make-box ...                                        */
@@ -355,7 +357,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::box-ref)
    (node->sexp-hook node)
-   `(box-ref ,(node->sexp (box-ref-var node))))
+   `(,(shape-typed-id 'box-ref (node-type node)) ,(node->sexp (box-ref-var node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::box-set! ...                                        */
@@ -365,7 +367,10 @@
    `(box-set! ,(node->sexp (box-set!-var node))
 	      ,(node->sexp (box-set!-value node))))
 		  
-	
-
-     
-   
+;*---------------------------------------------------------------------*/
+;*    shape-typed-id ...                                               */
+;*---------------------------------------------------------------------*/
+(define (shape-typed-id id type)
+   (if *type-shape?*
+       (string->symbol (string-append (symbol->string id) "::" (shape type)))
+       id))

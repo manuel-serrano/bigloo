@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 28 14:06:46 1996                          */
-;*    Last change :  Thu Apr  3 10:46:58 2003 (serrano)                */
-;*    Copyright   :  1996-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 16:07:37 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The extension for the integrate pass.                            */
 ;*=====================================================================*/
@@ -61,8 +61,10 @@
 	      (Ct (default '()))
 	      ;; the variable from which self is the kont.
 	      (kont (default '()))
-	      ;; is this function globalized ?
+	      ;; is this function globalized?
 	      G?::bool
+	      ;; is this function forced to be globalized?
+	      (forceG?::bool (default #f))
 	      ;; the integrator (if not G?)
 	      (L (default #unspecified))
 	      ;; the integrated functions (if G?).

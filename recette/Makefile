@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Jun  7 16:58:46 2010 (serrano)                */
-#*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 29 17:46:33 2011 (serrano)                */
+#*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -44,7 +44,7 @@ JVMCLASSPATH	= -jvm-bigloo-classpath $(BOOTLIBDIR)
 VERBOSE		= 
 EFLAGS		= 
 BFLAGS          = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
-                  -eval "(set! *indent* (= 1 2))"
+                  -eval "(set! *indent* (= 1 2))" -gself
 
 BCFLAGS         = $(BFLAGS) -afile .afile-c
                   

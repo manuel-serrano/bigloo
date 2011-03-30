@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Wed Oct 20 13:48:24 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 16:21:53 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
 ;*=====================================================================*/
@@ -59,9 +59,9 @@
 	  "========================================" #\newline
 	  (shape global) #\Newline
 	  "----------------------------------------" #\newline)
-   (let* ((fun  (global-value global))
+   (let* ((fun (global-value global))
 	  (body (sfun-body fun))
-	  (A    (A global body)))
+	  (A (A global body)))
       (K*! (K! A global))
       (U!) 
       (let ((G (G! (Cn&Ct! A))))

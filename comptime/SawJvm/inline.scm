@@ -40,7 +40,7 @@
 	     (let ( (name (global-name var)) (id (global-id var)) )
 		'not-inlined )))))
 
-(define *too-hard* '(%exit long->bint c-cons c-write-char))
+(define *too-hard* '(%exit long->bint $cons c-write-char))
 
 (define-macro (define-inline-call name . body)
    `(begin
@@ -151,14 +151,6 @@
 (define-inline-call procedure-el-set!
    (code! me '(aastore))
    'no-value )
-
-(define-inline-call-args make-el-procedure-1
-   (code! me '(aconst_null)) )
-
-(define-inline-call procedure-1-el-ref
-   (code! me '(pop)) )
-
-;(define-inline-call procedure-1-el-set!) done in node2rtl
 
 ;
 ;;;
@@ -393,11 +385,11 @@
 ;(define-inline-call ("EOF_OBJECTP" env)
 ;   (_instanceof env (jlib-declare env 'j_eof)) )
 
-(define-inline-call c-null? ; "NULLP"
+(define-inline-call $null? ; "NULLP"
    (code! me '(getstatic *nil*))
    (compute-boolean me 'if_acmpeq) )
 
-(define-inline-predicate c-null? ; "NULLP"
+(define-inline-predicate $null? ; "NULLP"
    (code! me '(getstatic *nil*))
    (branch me (if on? 'if_acmpeq 'if_acmpne) lab) )
 
@@ -491,33 +483,33 @@
 ;;;
 ;;; PAIR
 ;;;
-(define-inline-call c-pair? ; "PAIRP"
+(define-inline-call $pair? ; "PAIRP"
    (code! me '(instanceof pair)) )
 
-(define-inline-call c-car ; "CAR"
+(define-inline-call $car ; "CAR"
    (code! me '(getfield car)) )
 
-(define-inline-call c-cdr ; "CDR"
+(define-inline-call $cdr ; "CDR"
    (code! me '(getfield cdr)) )
 
-(define-inline-call c-set-car! ; "SET_CAR"
+(define-inline-call $set-car! ; "SET_CAR"
    (code! me '(putfield car))
    'no-value )
 
-(define-inline-call c-set-cdr! ; "SET_CDR"
+(define-inline-call $set-cdr! ; "SET_CDR"
    (code! me '(putfield cdr))
    'no-value )
 
 ;;;
 ;;; EXTENDED PAIR
 ;;;
-(define-inline-call c-epair? ; "EXTENDED_PAIRP"
+(define-inline-call $epair? ; "EXTENDED_PAIRP"
    (code! me '(instanceof extended_pair)) )
 
-(define-inline-call c-cer ; "CER"
+(define-inline-call $cer ; "CER"
    (code! me '(getfield cer)) )
 
-(define-inline-call c-set-cer! ; "SET_CER"
+(define-inline-call $set-cer! ; "SET_CER"
    (code! me '(putfield cer))
    'no-value )
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Tue Mar 11 15:52:21 2008 (serrano)                */
+;*    Last change :  Wed Mar 30 08:33:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -36,9 +36,9 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-struct-ref::obj (::struct ::int)
+   (extern  (macro $struct-ref::obj (::struct ::int)
 		   "STRUCT_REF")
-	    (macro c-struct-set!::obj (::struct ::int ::obj)
+	    (macro $struct-set!::obj (::struct ::int ::obj)
 		   "STRUCT_SET")
 	    (macro u-struct-ref::obj (::obj ::int)
 		   "STRUCT_REF")
@@ -48,47 +48,44 @@
 	    ;; parameters because the key of the structure is used by
 	    ;; intext. intext stores non symbol into that field. to avoid
 	    ;; untrapped type error it is safe to untype the C functions.
-	    (macro c-struct-key::obj (::struct)
+	    (macro $struct-key::obj (::struct)
 		   "STRUCT_KEY")
-	    (macro c-struct-key-set!::obj (::struct ::obj)
+	    (macro $struct-key-set!::obj (::struct ::obj)
 		   "STRUCT_KEY_SET")
-	    (macro c-struct?::bool (::obj)
+	    (macro $struct?::bool (::obj)
 		   "STRUCTP")
-	    (macro c-struct-length::int (::struct)
+	    (macro $struct-length::int (::struct)
 		   "STRUCT_LENGTH")
-	    (c-make-struct::struct (::symbol ::int ::obj)
-				   "make_struct")
-	    (macro c-make-s-struct::struct (::symbol ::int ::obj)
-		   "MAKE_S_STRUCT")
-	    (c-create-struct::struct (::symbol ::int)
-				     "create_struct")
-	    (macro c-create-s-struct::struct (::symbol ::int)
+	    ($make-struct::struct (::symbol ::int ::obj) "make_struct")
+	    (macro $make-s-struct::struct (::symbol ::int ::obj) "MAKE_S_STRUCT")
+	    ($create-struct::struct (::symbol ::int) "create_struct")
+	    (macro $create-s-struct::struct (::symbol ::int)
 		   "CREATE_S_STRUCT"))
    
    (java    (class foreign
-	       (method static c-struct-ref::obj (::struct ::int)
+	       (method static $struct-ref::obj (::struct ::int)
 		       "STRUCT_REF")
-	       (method static c-struct-set!::obj (::struct ::int ::obj)
+	       (method static $struct-set!::obj (::struct ::int ::obj)
 		       "STRUCT_SET")
 	       (method static u-struct-ref::obj (::struct ::int)
 		       "UNSAFE_STRUCT_REF")
 	       (method static u-struct-set!::obj (::struct ::int ::obj)
 		       "UNSAFE_STRUCT_SET")
-	       (method static c-struct-key::obj (::struct)
+	       (method static $struct-key::obj (::struct)
 		       "STRUCT_KEY")
-	       (method static c-struct-key-set!::obj (::struct ::obj)
+	       (method static $struct-key-set!::obj (::struct ::obj)
 		       "STRUCT_KEY_SET")
-	       (method static c-struct?::bool (::obj)
+	       (method static $struct?::bool (::obj)
 		       "STRUCTP")
-	       (method static c-struct-length::int (::struct)
+	       (method static $struct-length::int (::struct)
 		       "STRUCT_LENGTH")
-	       (method static c-make-struct::struct (::symbol ::int ::obj)
+	       (method static $make-struct::struct (::symbol ::int ::obj)
 		       "make_struct")
-	       (method static c-make-s-struct::struct (::symbol ::int ::obj)
+	       (method static $make-s-struct::struct (::symbol ::int ::obj)
 		       "MAKE_S_STRUCT")
-	       (method static c-create-struct::struct (::symbol ::int)
+	       (method static $create-struct::struct (::symbol ::int)
 		       "create_struct")
-	       (method static c-create-s-struct::struct (::symbol ::int)
+	       (method static $create-s-struct::struct (::symbol ::int)
 		       "CREATE_S_STRUCT")))
    
    (export  (inline make-struct::struct ::symbol ::int ::obj)
@@ -103,66 +100,66 @@
 	    (struct->list::pair ::struct)
 	    (list->struct::struct ::pair))
    
-   (pragma  (c-struct? (predicate-of struct) no-cfa-top nesting)
+   (pragma  ($struct? (predicate-of struct) no-cfa-top nesting)
 	    (struct? side-effect-free no-cfa-top nesting)
 	    (record? side-effect-free no-cfa-top nesting)
-	    (c-make-struct no-cfa-top)
+	    ($make-struct no-cfa-top)
 	    (make-struct no-cfa-top)
-	    (c-struct-length side-effect-free no-cfa-top nesting args-safe)
+	    ($struct-length side-effect-free no-cfa-top nesting args-safe)
 	    (struct-length side-effect-free no-cfa-top nesting)
-	    (c-struct-ref side-effect-free no-cfa-top nesting args-safe)
+	    ($struct-ref side-effect-free no-cfa-top nesting args-safe)
 	    (struct-ref side-effect-free no-cfa-top nesting)
 	    (u-struct-ref side-effect-free no-cfa-top nesting)
-	    (c-struct-key side-effect-free no-cfa-top nesting args-safe)
+	    ($struct-key side-effect-free no-cfa-top nesting args-safe)
 	    (struct-key side-effect-free no-cfa-top nesting)))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    make-struct ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-struct key len init)
-   (c-make-struct key len init))
+   ($make-struct key len init))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (struct? o)
-   (c-struct? o))
+   ($struct? o))
 
 ;*---------------------------------------------------------------------*/
 ;*    record? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (record? o)
-   (c-struct? o))
+   ($struct? o))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-key ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (struct-key s)
-   (c-struct-key s))
+   ($struct-key s))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-key-set! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (struct-key-set! s k)
-   (c-struct-key-set! s k))
+   ($struct-key-set! s k))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-length ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline  (struct-length s)
-   (c-struct-length s))
+   ($struct-length s))
    
 ;*---------------------------------------------------------------------*/
 ;*    struct-ref ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline  (struct-ref s k)
-   (c-struct-ref s k))
+   ($struct-ref s k))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-set! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline  (struct-set! s k o)
-   (c-struct-set! s k o))
+   ($struct-set! s k o))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-update! ...                                               */

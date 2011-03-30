@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Mar 16 11:00:50 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 17:44:03 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -16,6 +16,8 @@
    (import type_type
 	   ast_var)
 
+   (export *strict-node-type*)
+   
    (export (class node::object
 	      ;; the location 
 	      (loc::obj read-only (default #f))
@@ -126,7 +128,7 @@
 	   ;; extern vector object creation
 	   (final-class valloc::private
 	      ;; the vector fields type
-	      (ftype::type read-only (default *obj*))
+	      (ftype::type (default *obj*))
 	      ;; the type of the dimension
 	      (otype::type read-only))
 
@@ -244,7 +246,20 @@
 	      var::var
 	      value::node)
 	   
+	   (strict-node-type::type ::type ::type)
 	   (generic node-walk ::node ::procedure)))
+
+;*---------------------------------------------------------------------*/
+;*    *strict-node-type* ...                                           */
+;*---------------------------------------------------------------------*/
+(define *strict-node-type*
+   (not (equal? (getenv "BIGLOO_NODE_UNTYPED") "yes")))
+
+;*---------------------------------------------------------------------*/
+;*    strict-node-type ...                                             */
+;*---------------------------------------------------------------------*/
+(define (strict-node-type t1 t2)
+   (if *strict-node-type* t1 t2))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-walk ...                                                    */

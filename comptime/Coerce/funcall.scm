@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Thu Mar 17 15:00:14 2011 (serrano)                */
+;*    Last change :  Tue Mar 29 19:30:38 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -27,6 +27,7 @@
 	    ast_sexp
 	    ast_local
 	    ast_ident
+	    ast_lvtype
 	    coerce_coerce
 	    coerce_convert))
 
@@ -61,7 +62,7 @@
 				 (symbol-append a-len '::int)))
 			(lnode  (instantiate::let-var
 				   (loc loc)
-				   (type nty)
+				   (type (strict-node-type to nty))
 				   (bindings (list (cons fun c-fun)))
 				   (body (top-level-sexp->node
 					  `(let ((,a-tlen ,len))
@@ -76,8 +77,10 @@
 					  loc)))))
 		    (funcall-fun-set! node (instantiate::var
 					      (loc loc)
-					      (type *obj*)
+					      (type (strict-node-type
+						     (variable-type fun) *obj*))
 					      (variable fun)))
+		    (when *strict-node-type* (lvtype-node! lnode))
 		    lnode))))))
 
 ;*---------------------------------------------------------------------*/
@@ -107,22 +110,24 @@
 			      ,error-msg
 			      ,fun))
 		loc)))
+      (when *strict-node-type* (lvtype-node! node))
       (coerce! node caller to #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-funcall-args! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (coerce-funcall-args! node caller to safe)
+   (define (toplevel-exp node)
+      (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
+	 (when *strict-node-type*
+	    (lvtype-node! n))
+	 n))
    (if (null? (funcall-args node))
-       (funcall-args-set! node (list (top-level-sexp->node
-				      '__eoa__
-				      (node-loc node))))
+       (funcall-args-set! node (list (toplevel-exp node)))
        (let loop ((actuals (funcall-args node))
 		  (prev    'dummy))
 	  (if (null? actuals)
-	      (set-cdr! prev (list (top-level-sexp->node
-				    '__eoa__
-				    (node-loc node))))
+	      (set-cdr! prev (list (toplevel-exp node)))
 	      (begin
 		 (set-car! actuals (coerce! (car actuals) caller *obj* safe))
 		 (loop (cdr actuals) actuals))))))

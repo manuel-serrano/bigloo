@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Sat Mar 19 07:04:48 2011 (serrano)                */
+;*    Last change :  Sat Mar 26 07:45:34 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
@@ -127,10 +127,10 @@
 (define (make-noopt-body loc global new-args)
    (instantiate::app
       (loc loc)
-      (type *obj*)
+      (type (strict-node-type (global-type global) *obj*))
       (fun (instantiate::var
 	      (loc loc)
-	      (type *_*)
+	      (type (strict-node-type (global-type global) *_*))
 	      (variable global)))
       ;; we have to ignore the addition environment
       ;; parameters, so we just take the cdr of the
@@ -138,7 +138,7 @@
       (args (map (lambda (v)
 		    (instantiate::var
 		       (loc loc)
-		       (type *obj*)
+		       (type (strict-node-type (variable-type v) *obj*))
 		       (variable v)))
 		 new-args))))
 

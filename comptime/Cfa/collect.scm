@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Wed Mar 16 12:06:01 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 18:07:24 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
@@ -33,6 +33,7 @@
 	    cfa_specialize
 	    cfa_procedure
 	    cfa_vector
+	    cfa_pair
 	    cfa_struct
 	    cfa_box
 	    cfa_closure)
@@ -43,6 +44,7 @@
 ;*    collect-all-approx! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (collect-all-approx! globals)
+   (trace cfa "================== collect ===========================\n")
    (for-each (lambda (global) (collect-sfun! (global-value global) global))
 	     globals))
 
@@ -67,8 +69,37 @@
 ;*    node-collect! ::kwote ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node-collect! node::kwote owner)
+   
+   (define (monomorphic-vector? vector)
+      (define (get-atype value)
+	 (cond
+	    ((fixnum? value) 'integer)
+	    ((char? value) 'char)
+	    ((boolean? value) 'boolean)
+	    ((string? value) 'string)
+	    ((real? value) 'real)
+	    (else #f)))
+      (let ((len (vector-length vector)))
+	 (if (=fx len 0)
+	     #f 
+	     (let ((atype (get-atype (vector-ref vector 0))))
+		(let loop ((i 1))
+		   (cond
+		      ((not atype)
+		       #f)
+		      ((=fx i len)
+		       #t)
+		      ((eq? (get-atype (vector-ref vector i)) atype)
+		       (loop (+fx i 1)))
+		      (else
+		       #f)))))))
+
+   (define (monomorphic-list? list)
+      (monomorphic-vector? (list->vector list)))
+   
    (let ((value (kwote-value node)))
-      (if (and (vector-optim?) (vector? value))
+      (cond
+	 ((and (vector? value) (vector-optim?))
 	  (let* ((warning (let ((wan (bigloo-warning)))
 			     (bigloo-warning-set! 0)
 			     wan))
@@ -85,41 +116,23 @@
 	     (backend-pragma-support-set! backend pragma?)
 	     (bigloo-warning-set! warning)
 	     (widen!::kwote/node node (node dummy))
-	     (node-collect! dummy owner)))))
+	     (node-collect! dummy owner)))
+	 ((and (pair? value) (pair-optim?) (list? value))
+	  (let* ((warning (let ((wan (bigloo-warning)))
+			     (bigloo-warning-set! 0)
+			     wan))
+		 (backend (the-backend))
+		 (pragma? (let ((tgt (backend-pragma-support backend)))
+			     (backend-pragma-support-set! backend #t)
+			     tgt))
+		 (dummy (top-level-sexp->node
+			 `($cons ,(car value) ())
+			 #f)))
+	     (backend-pragma-support-set! backend pragma?)
+	     (bigloo-warning-set! warning)
+	     (widen!::kwote/node node (node dummy))
+	     (node-collect! dummy owner))))))
 		    
-;*---------------------------------------------------------------------*/
-;*    monomorphic-vector? ...                                          */
-;*---------------------------------------------------------------------*/
-(define (monomorphic-vector? vector)
-   (define (get-atype value)
-      (cond
-	 ((fixnum? value)
-	  'integer)
-	 ((char? value)
-	  'char)
-	 ((boolean? value)
-	  'boolean)
-	 ((string? value)
-	  'string)
-	 ((real? value)
-	  'real)
-	 (else
-	  #f)))
-   (let ((len (vector-length vector)))
-      (if (=fx len 0)
-	  #f 
-	  (let ((atype (get-atype (vector-ref vector 0))))
-	     (let loop ((i 1))
-		(cond
-		   ((not atype)
-		    #f)
-		   ((=fx i len)
-		    #t)
-		   ((eq? (get-atype (vector-ref vector i)) atype)
-		    (loop (+fx i 1)))
-		   (else
-		    #f)))))))
-  
 ;*---------------------------------------------------------------------*/
 ;*    node-collect! ::var ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -173,21 +186,41 @@
 		       ((procedure-ref)
 			(widen!::pre-procedure-ref-app node))
 		       ((procedure-set!)
-			(widen!::pre-procedure-set!-app node)))
-		    (if (vector-optim?)
-			(case (global-id v)
-			   ((c-make-vector $make-vector)
-			    (use-alloc! node)
-			    (widen!::pre-make-vector-app node (owner owner)))))
-		    (if (>=fx *optim* 2)
-			(case (global-id v)
-			   ((c-make-struct)
-			    (use-alloc! node)
-			    (widen!::pre-make-struct-app node (owner owner)))
-			   ((c-struct-ref)
-			    (widen!::pre-struct-ref-app node))
-			   ((c-struct-set!)
-			    (widen!::pre-struct-set!-app node)))))
+			(widen!::pre-procedure-set!-app node))
+		       (($make-vector)
+			(when (vector-optim?)
+			   (use-alloc! node)
+			   (widen!::pre-make-vector-app node (owner owner))))
+		       (($make-struct)
+			(when (>=fx *optim* 2)
+			   (use-alloc! node)
+			   (widen!::pre-make-struct-app node (owner owner))))
+		       (($struct-ref)
+			(when (>=fx *optim* 2)
+			   (widen!::pre-struct-ref-app node)))
+		       (($struct-set!)
+			(when (>=fx *optim* 2)
+			   (widen!::pre-struct-set!-app node)))
+		       (($cons)
+			(when (pair-optim?)
+			   (use-alloc! node)
+			   (widen!::pre-cons-app node (owner owner))))
+		       (($car)
+			(when (pair-optim?)
+			   (widen!::pre-cons-ref-app node
+			      (get car))))
+		       (($cdr)
+			(when (pair-optim?)
+			   (widen!::pre-cons-ref-app node
+			      (get cdr))))
+		       (($set-car!)
+			(when (pair-optim?)
+			   (widen!::pre-cons-set!-app node
+			      (get car))))
+		       (($set-cdr!)
+			(when (pair-optim?)
+			   (widen!::pre-cons-set!-app node
+			      (get cdr))))))
 		 ;; non C function 
 		 (if (or *optim-cfa-fixnum-arithmetic?*
 			 *optim-cfa-flonum-arithmetic?*)

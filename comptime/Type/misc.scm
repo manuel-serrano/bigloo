@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Wed Oct  6 15:35:46 2004 (serrano)                */
-;*    Copyright   :  2004 Manuel Serrano                               */
+;*    Last change :  Wed Mar 30 21:01:27 2011 (serrano)                */
+;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
 	   ast_node)
    
    (export (type-less-specific?::bool ::type ::type)
-	   (type-disjoint?::bool ::type ::type)))
+	   (type-disjoint?::bool ::type ::type)
+	   (c-subtype?::bool ::type ::type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-less-specific? ...                                          */
@@ -62,6 +63,32 @@
       ((or (type-less-specific? t1 t2)
 	   (type-less-specific? t2 t1))
        #f)
+      ((or (find-coercer t1 t2) (find-coercer t2 t1))
+       #f)
       (else
        #t)))
+   
+;*---------------------------------------------------------------------*/
+;*    c-subtype? ...                                                   */
+;*    -------------------------------------------------------------    */
+;*    let t1 and t2 two C types, is t1 a subtype of t2?                */
+;*---------------------------------------------------------------------*/
+(define (c-subtype? t1 t2)
+   
+   (define (c-weight t)
+      (case (type-id t)
+	 ((char) 1)
+	 ((short) 2)
+	 ((int) 3)
+	 ((long) 4)
+	 ((elong) 4)
+	 ((llong) 5)
+	 ((double) -1)
+	 ((real) -2)
+	 (else -1)))
+   
+   (when (and (not (bigloo-type? t1)) (not (bigloo-type? t2)))
+      (let ((w1 (c-weight t1))
+	    (w2 (c-weight t2)))
+	 (and (>fx (*fx w1 w2) 0) (<fx w1 w2)))))
    

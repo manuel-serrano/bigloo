@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Sat Jul  7 08:41:48 2001 (serrano)                */
-;*    Copyright   :  1995-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 09:22:59 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The struct approximation management                              */
 ;*    -------------------------------------------------------------    */
@@ -96,10 +96,10 @@
 	     (approx-set-top! approx))
 	 (for-each-approx-alloc
 	  (lambda (app)
-	     (if (make-struct-app? app)
-		 (with-access::make-struct-app app (value-approx)
-		    (union-approx! approx value-approx)
-		    (approx-set-type! value-approx (approx-type approx)))))
+	     (when (make-struct-app? app)
+		(with-access::make-struct-app app (value-approx)
+		   (union-approx! approx value-approx)
+		   (approx-set-type! value-approx (approx-type approx)))))
 	  struct-approx))
       approx))
 

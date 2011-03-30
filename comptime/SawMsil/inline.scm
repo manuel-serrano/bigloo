@@ -114,14 +114,6 @@
    (store-vector me 'obj)
    'no-value )
 
-(define-inline-call-args make-el-procedure-1
-   (ldnull me) )
-
-(define-inline-call procedure-1-el-ref
-   (pop me) )
-
-;(define-inline-call procedure-1-el-set!) done in node2rtl
-
 ;;;
 ;; Generate 0 instructions (identity)
 ;;;
@@ -245,17 +237,17 @@
    (push-constant2 me "bbool" "faux")
    (if on? (bne me "L" lab) (beq me "L" lab)) )
 
-(define-inline-call c-cons
+(define-inline-call $cons
    (newobj me "bigloo.pair" '(obj obj)) )
 
-(define-inline-predicate c-pair?
+(define-inline-predicate $pair?
    (isinst me (find-type 'pair))
    (if on? (brtrue me "L" lab) (brfalse me "L" lab)) )
 
-(define-inline-call c-car
+(define-inline-call $car
    (load-field me 'obj "bigloo.pair" 'car) )
 
-(define-inline-call c-cdr
+(define-inline-call $cdr
    (load-field me 'obj "bigloo.pair" 'cdr) )
 
 (define-inline-predicate c-fixnum?
@@ -298,15 +290,15 @@
 (define-inline-predicate c-boxed-eq?
    (if on? (beq me "L" lab) (bne me "L" lab)) )
 
-(define-inline-call c-set-car!
+(define-inline-call $set-car!
    (store-field me 'obj "bigloo.pair" 'car)
    'no-value )
 
-(define-inline-call c-set-cdr!
+(define-inline-call $set-cdr!
    (store-field me 'obj "bigloo.pair" 'cdr)
    'no-value )
 
-(define-inline-predicate c-null?
+(define-inline-predicate $null?
    (push-constant me "nil")
    (if on? (beq me "L" lab) (bne me "L" lab)) )
 

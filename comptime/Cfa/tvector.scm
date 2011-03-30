@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Sun Nov 28 08:55:34 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 18:07:18 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -22,6 +22,7 @@
 	    type_type
 	    type_cache
 	    type_env
+	    type_typeof
 	    tvector_tvector
 	    tools_shape
 	    tools_speek
@@ -31,6 +32,7 @@
 	    ast_build
 	    ast_sexp
 	    ast_env
+	    ast_lvtype
 	    cfa_info
 	    cfa_info2
 	    cfa_info3
@@ -66,34 +68,32 @@
 ;*    beginning of the compilation (just after the heap restoration).  */
 ;*---------------------------------------------------------------------*/
 (define (patch-vector-set!)
-   (if (tvector-optimization?)
-       (begin
-	  (for-each (lambda (set)
-		       (let ((g (find-global set)))
-			  (if (global? g)
-			      (let ((fun (global-value g)))
-				 (cond
-				    ((cfun? fun)
-				     (set-car! (cddr (cfun-args-type fun))
-					       (get-default-type)))
-				    ((sfun? fun)
-				     (local-type-set! (caddr (sfun-args fun))
-						      (get-default-type))))))))
-		    '(vector-set! vector-set-ur! c-vector-set!
-		      $vector-set! $vector-set-ur!))
-	  (let ((g (find-global 'c-vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (set-car! (cfun-args-type f) (get-default-type)))))
-	  (let ((g (find-global '$vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (set-car! (cfun-args-type f) (get-default-type)))))
-	  (let ((g (find-global 'vector?)))
-	     (if (global? g)
-		 (let ((f (global-value g)))
-		    (local-type-set! (car (sfun-args f))
-				     (get-default-type))))))))
+   (when (tvector-optimization?)
+      (for-each (lambda (set)
+		   (let ((g (find-global set)))
+		      (if (global? g)
+			  (let ((fun (global-value g)))
+			     (cond
+				((cfun? fun)
+				 (set-car! (cddr (cfun-args-type fun))
+					   (get-default-type)))
+				((sfun? fun)
+				 (local-type-set! (caddr (sfun-args fun))
+						  (get-default-type))))))))
+		'(vector-set! vector-set-ur! c-vector-set!
+		  $vector-set! $vector-set-ur!))
+      (let ((g (find-global 'c-vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) (get-default-type)))))
+      (let ((g (find-global '$vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) (get-default-type)))))
+      (let ((g (find-global 'vector?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(local-type-set! (car (sfun-args f)) (get-default-type)))))))
 	
 ;*---------------------------------------------------------------------*/
 ;*    unpatch-vector-set! ...                                          */
@@ -143,7 +143,13 @@
 		 #\Newline)
 	  ;; we setup the inlining 
 	  (inline-setup! 'all)
-	  (let ((tvectors (get-tvectors)))
+	  (multiple-value-bind (vectors tvectors)
+	     (get-tvectors)
+	     (when *strict-node-type*
+		(for-each (lambda (v)
+			     (when (eq? (node-type v) *_*)
+				(node-type-set! v *vector*)))
+			  vectors))
 	     (show-tvector tvectors)
 	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
 	     (if (pair? tvectors)
@@ -151,6 +157,8 @@
 		    (trace (cfa 2)
 			   "additional-body: " (shape add-tree) #\Newline)
 		    (patch-tree! globals)
+		    (when *strict-node-type*
+		       (lvtype-ast! add-tree))
 		    add-tree)
 		 (begin
 		    (patch-tree! globals)
@@ -177,18 +185,18 @@
 ;*---------------------------------------------------------------------*/
 (define (get-tvectors)
    (let loop ((apps *make-vector-list*)
+	      (vectors '())
 	      (tvectors '()))
       (if (null? apps)
-	  tvectors
-	  (let* ((app  (car apps))
+	  (values vectors tvectors)
+	  (let* ((app (car apps))
 		 (type (get-vector-item-type app)))
 	     (trace (cfa 1)
 		    "vector: " (shape app) " type: " (shape type)
 		    " < " (type-class type) #\Newline)
-	     (if (and (not (eq? type *_*))
-		      (not (sub-type? type *obj*)))
-		 (loop (cdr apps) (cons app tvectors))
-		 (loop (cdr apps) tvectors))))))
+	     (if (and (not (eq? type *_*)) (not (sub-type? type *obj*)))
+		 (loop (cdr apps) vectors (cons app tvectors))
+		 (loop (cdr apps) (cons app vectors) tvectors))))))
 			   
 ;*---------------------------------------------------------------------*/
 ;*    get-vector-item-type ...                                         */
@@ -248,6 +256,8 @@
 			(let ((ast (build-ast-sans-remove (list tvector-unit))))
 			   (globalize-walk! ast 'no-remove))
 			'())))
+	    (when *strict-node-type*
+	       (lvtype-ast! res))
 	    (set-default-type! old-default-type)
 	    res))))
  
@@ -293,10 +303,12 @@
 (define-method (patch! knode::kwote/node)
    (with-access::kwote/node knode (node value)
       (let* ((approx (cfa! node))
-	     (tv     (get-approx-type approx)))
+	     (tv (get-approx-type approx)))
 	 (if (tvec? tv)
 	     (let* ((knode (shrink! knode))
-		    (n (duplicate::kwote knode (value (a-tvector tv value)))))
+		    (n (duplicate::kwote knode
+			  (type (strict-node-type tv (node-type knode)))
+			  (value (a-tvector tv value)))))
 		(widen!::kwote/Cinfo n
 		   (approx approx)))
 	     (widen!::kwote/Cinfo (shrink! knode)
@@ -482,12 +494,9 @@
 	 (if (global? v)
 	     (if (cfun? (variable-value v))
 		 (case (global-id v)
-		    ((c-vector?)
-		     (patch-vector?! node))
-		    (($vector?)
-		     (patch-vector?! node))
-		    (else
-		     node))
+		    ((c-vector?) (patch-vector?! node))
+		    (($vector?) (patch-vector?! node))
+		    (else node))
 		 (if (and (eq? (global-id v) 'vector->list)
 			  (eq? (global-module v) '__r4_vectors_6_8))
 		     (patch-vector->list! node)
@@ -501,7 +510,7 @@
    (with-access::vlength/Cinfo node (expr* loc tvector?)
       (patch*! expr*)
       (let* ((approx (cfa! (car expr*)))
-	     (tv     (get-approx-type approx)))
+	     (tv (get-approx-type approx)))
 	 (if (and (tvec? tv) (not tvector?))
 	     (let* ((length-tv (symbol-append (type-id tv) '-length))
 		    (new-node  (sexp->node `(,length-tv ,(car expr*))
@@ -519,11 +528,11 @@
    (with-access::app node (args loc)
       (patch*! args)
       (let* ((approx (cfa! (car args)))
-	     (type   (approx-type approx)))
+	     (type (approx-type approx)))
 	 (if (eq? type *vector*)
 	     (instantiate::atom
 		(loc loc)
-		(type *bool*)
+		(type (strict-node-type (get-type-atom #t) *bool*))
 		(value #t))
 	     node))))
 
@@ -567,36 +576,49 @@
 ;*    patch! ::valloc/Cinfo+optim ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::valloc/Cinfo+optim)
-   (with-access::valloc/Cinfo+optim node (value-approx expr* loc)
+   (with-access::valloc/Cinfo+optim node (value-approx expr* loc ftype)
       (patch*! expr*)
       (let* ((type (approx-type value-approx))
-	     (tv   (type-tvector type)))
-	 (if (type? tv)
+	     (tv (type-tvector type)))
+	 (if (and (type? tv) (eq? ftype *_*))
 	     (let* ((create-tv (symbol-append 'allocate- (type-id tv)))
 		    (new-node  (sexp->node `(,create-tv ,@expr*)
 					   '()
 					   loc
 					   'value)))
-		(inline-node new-node 1 '()))
-	     node))))
+		(let ((n (inline-node new-node 1 '())))
+		   (if *strict-node-type*
+		       (lvtype-node! n))
+		   n))
+	     (begin
+		(when *strict-node-type*
+		   (set! ftype (get-approx-type value-approx)))
+		node)))))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::vref/Cinfo ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::vref/Cinfo)
-   (with-access::vref/Cinfo node (expr* loc tvector? unsafe)
+   (with-access::vref/Cinfo node (expr* loc tvector? unsafe type ftype approx)
       (patch*! expr*)
-      (let* ((vec-approx (cfa! (car expr*)))
-	     (tv         (get-approx-type vec-approx)))
-	 (if (or tvector? (not (tvec? tv)))
-	     node
-	     (let* ((tv-ref (symbol-append (type-id tv) '-ref))
-		    (new-node (sexp->node `(,tv-ref ,@expr*)
- 					  '()
-					  loc
-					  'value)))
-		(node-type-set! new-node tv)
-		(inline-node new-node 1 '()))))))
+      (if tvector?
+	  (let ((ty (vref-ftype node)))
+	     (when *strict-node-type*
+		(set! type ty))
+	     node)
+	  (let* ((vec-approx (cfa! (car expr*)))
+		 (tv (get-approx-type vec-approx)))
+	     (if (not (tvec? tv))
+		 (let ((ty (get-approx-type approx)))
+		    (when *strict-node-type*
+		       (set! ftype ty)
+		       (set! type ty))
+		    node)
+		 (let* ((ty (get-approx-type approx))
+			(tv-ref (symbol-append (type-id tv) '-ref))
+			(new-node (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
+		    (node-type-set! new-node (strict-node-type tv ty))
+		    (inline-node new-node 1 '())))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::vset!/Cinfo ...                                         */
@@ -604,16 +626,15 @@
 (define-method (patch! node::vset!/Cinfo)
    (with-access::vset!/Cinfo node (expr* loc tvector? ftype)
       (patch*! expr*)
-      (let* ((vec-approx (cfa! (car expr*)))
-	     (tv         (get-approx-type vec-approx)))
-	 (if (or tvector? (not (tvec? tv)))
-	     node
-	     (let* ((tv-set!  (symbol-append (type-id tv) '-set!))
-		    (new-node (sexp->node `(,tv-set! ,@expr*)
-					  '()
-					  loc
-					  'value)))
-		(inline-node new-node 1 '()))))))
+      (if tvector?
+	  node
+	  (let* ((vec-approx (cfa! (car expr*)))
+		 (tv (get-approx-type vec-approx)))
+	     (if (not (tvec? tv))
+		 node
+		 (let* ((tv-set!  (symbol-append (type-id tv) '-set!))
+			(new-node (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
+		    (inline-node new-node 1 '())))))))
 	    
 
 

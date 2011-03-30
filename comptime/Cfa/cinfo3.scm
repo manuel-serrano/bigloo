@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Fri Mar  5 16:29:25 2004 (serrano)                */
-;*    Copyright   :  1999-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 17:48:07 2011 (serrano)                */
+;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
 ;*    requiring to many memory. I have simply slit that module.        */
@@ -48,7 +48,7 @@
 	   (wide-class valloc/Cinfo+optim::valloc
 	      ;; the approx of the make-vector (i.e. *vector*)
               approx::approx
-              ;; the approximation of the values holded by the vector
+              ;; the approximation of the values held by the vector
               (value-approx::approx read-only)
               ;; a stamp to avoid infinit loop when loosing a vector
               (lost-stamp::long (default -1))

@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Sep 10 17:22:27 2010 (serrano)                */
-;*    Copyright   :  2010 Manuel Serrano                               */
+;*    Last change :  Sun Mar 27 20:33:59 2011 (serrano)                */
+;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Introduce array bound checking                                   */
+;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 	    ast_env
 	    ast_sexp
 	    ast_private
+	    ast_lvtype
 	    backend_backend)
    (export  (abound-walk! globals)))
 
@@ -90,35 +91,44 @@
 ;*    abound-node ::app ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::app)
+   
+   (define (abound-string-access node)
+      (with-access::app node (fun args loc)
+	 (let* ((s (mark-symbol-non-user! (gensym 's)))
+		(i (mark-symbol-non-user! (gensym 'i)))
+		(l (mark-symbol-non-user! (gensym 'l)))
+		(lname (when (location? loc) (location-full-fname loc)))
+		(lpos (when (location? loc) (location-pos loc)))
+		(v (var-variable fun))
+		(name (if (eq? v *string-ref*) "string-ref" "string-set!"))
+		(types (cfun-args-type (variable-value v))))
+	    (top-level-sexp->node
+	     `(let ((,(make-typed-ident s (type-id (car types))) ,(car args))
+		    (,(make-typed-ident i (type-id (cadr types))) ,(cadr args)))
+		 (let ((,(make-typed-ident l (type-id (cadr types)))
+			($string-length ,s)))
+		    (if ($string-bound-check? ,i ,l)
+			,(duplicate::app node
+			    (args (cons* s i (cddr args))))
+			(failure
+			 ((@ index-out-of-bounds-error __error)
+			  ,lname ,lpos ,name ,i ,s)
+			 #f #f))))
+	     loc))))
+   
    (abound-node*! (app-args node))
    ;; check if we are calling string-ref/set!, or struct-ref/set!
-   (with-access::app node (fun args loc)
+   (with-access::app node (fun)
       (let ((v (var-variable fun)))
 	 (cond
 	    ((or (eq? v *string-ref*) (eq? v *string-set!*))
-	     (let* ((s (mark-symbol-non-user! (gensym 's)))
-		    (i (mark-symbol-non-user! (gensym 'i)))
-		    (l (mark-symbol-non-user! (gensym 'l)))
-		    (lname (when (location? loc) (location-full-fname loc)))
-		    (lpos (when (location? loc) (location-pos loc)))
-		    (name (if (eq? v *string-ref*) "string-ref" "string-set!"))
-		    (types (cfun-args-type (variable-value v))))
-		(top-level-sexp->node
-		 `(let ((,(make-typed-ident s (type-id (car types))) ,(car args))
-			(,(make-typed-ident i (type-id (cadr types))) ,(cadr args)))
-		     (let ((,(make-typed-ident l (type-id (cadr types)))
-			    ($string-length ,s)))
-			(if ($string-bound-check? ,i ,l)
-			    ,(duplicate::app node
-				(args (cons* s i (cddr args))))
-			    (failure
-			     ((@ index-out-of-bounds-error __error)
-			      ,lname ,lpos ,name ,i ,s)
-			     #f #f))))
-		 loc)))
+	     (let ((node (abound-string-access node)))
+		(when *strict-node-type*
+		   (lvtype-node! node))
+		node))
 	    (else
 	     node)))))
- 
+
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::app-ly ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -148,61 +158,77 @@
 ;*    abound-node ::vref ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vref)
+   
+   (define (abound-vref node)
+      (with-access::vref node (expr* loc ftype otype vtype unsafe)
+	 (let ((v (mark-symbol-non-user! (gensym 'v)))
+	       (i (mark-symbol-non-user! (gensym 'i)))
+	       (l (mark-symbol-non-user! (gensym 'l)))
+	       (lname (when (location? loc) (location-full-fname loc)))
+	       (lpos (when (location? loc) (location-pos loc))))
+	    (top-level-sexp->node
+	     `(let ((,(make-typed-ident v (type-id vtype))
+		     ,(car expr*))
+		    (,(make-typed-ident i (type-id otype))
+		     ,(cadr expr*)))
+		 (let ((,(make-typed-ident l (type-id otype))
+			,(if (eq? vtype *vector*)
+			     `($vector-length ,v)
+			     `($tvector-length ,v))))
+		    (if ($vector-bound-check? ,i ,l)
+			,(duplicate::vref node
+			    (expr* (list v i)))
+			(failure
+			 ((@ index-out-of-bounds-error __error)
+			  ,lname ,lpos "vector-ref" ,v ,i)
+			 #f #f))))
+	     loc))))
+   
    (call-next-method)
-   (with-access::vref node (expr* loc ftype otype vtype unsafe)
+   (with-access::vref node (unsafe)
       (if unsafe
 	  node
-	  (let ((v (mark-symbol-non-user! (gensym 'v)))
-		(i (mark-symbol-non-user! (gensym 'i)))
-		(l (mark-symbol-non-user! (gensym 'l)))
-		(lname (when (location? loc) (location-full-fname loc)))
-		(lpos (when (location? loc) (location-pos loc))))
-	     (top-level-sexp->node
-	      `(let ((,(make-typed-ident v (type-id vtype))
-		       ,(car expr*))
-		      (,(make-typed-ident i (type-id otype))
-		       ,(cadr expr*)))
-		  (let ((,(make-typed-ident l (type-id otype))
-			 ,(if (eq? vtype *vector*)
-			      `($vector-length ,v)
-			      `($tvector-length ,v))))
-		     (if ($vector-bound-check? ,i ,l)
-			 ,(duplicate::vref node
-			     (expr* (list v i)))
-			 (failure
-			  ((@ index-out-of-bounds-error __error)
-			   ,lname ,lpos "vector-ref" ,(cadr expr*) ,(car expr*))
-			  #f #f))))
-	      loc)))))
+	  (let ((node (abound-vref node)))
+	     (when *strict-node-type*
+		(lvtype-node! node))
+	     node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::vset! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vset!)
+   
+   (define (abound-vset node)
+      (with-access::vset! node (expr* loc ftype otype vtype unsafe)
+	 (let ((v (mark-symbol-non-user! (gensym 'v)))
+	       (i (mark-symbol-non-user! (gensym 'i)))
+	       (l (mark-symbol-non-user! (gensym 'l)))
+	       (lname (when (location? loc) (location-full-fname loc)))
+	       (lpos (when (location? loc) (location-pos loc))))
+	    (top-level-sexp->node
+	     `(let ((,(make-typed-ident v (type-id vtype)) ,(car expr*))
+		    (,(make-typed-ident i (type-id otype)) ,(cadr expr*)))
+		 (let ((,(make-typed-ident l (type-id otype))
+			,(if (eq? vtype *vector*)
+			     `($vector-length ,v)
+			     `($tvector-length ,v))))
+		    (if ($vector-bound-check? ,i ,l)
+			,(duplicate::vset! node
+			    (expr* (list v i (caddr expr*))))
+			(failure
+			 ((@ index-out-of-bounds-error __error)
+			  ,lname ,lpos "vector-set!" ,i ,v)
+			 #f #f))))
+	     loc))))
+   
    (call-next-method)
-   (with-access::vset! node (expr* loc ftype otype vtype unsafe)
+   (with-access::vset! node (unsafe)
       (if unsafe
 	  node
-	  (let ((v (mark-symbol-non-user! (gensym 'v)))
-		(i (mark-symbol-non-user! (gensym 'i)))
-		(l (mark-symbol-non-user! (gensym 'l)))
-		(lname (when (location? loc) (location-full-fname loc)))
-		(lpos (when (location? loc) (location-pos loc))))
-	     (top-level-sexp->node
-	      `(let ((,(make-typed-ident v (type-id vtype)) ,(car expr*))
-		     (,(make-typed-ident i (type-id otype)) ,(cadr expr*)))
-		  (let ((,(make-typed-ident l (type-id otype))
-			 ,(if (eq? vtype *vector*)
-			      `($vector-length ,v)
-			      `($tvector-length ,v))))
-		     (if ($vector-bound-check? ,i ,l)
-			 ,(duplicate::vset! node
-			     (expr* (list v i (caddr expr*))))
-			 (failure
-			  ((@ index-out-of-bounds-error __error)
-			   ,lname ,lpos "vector-ref" ,(cadr expr*) ,(car expr*))
-			  #f #f))))
-	      loc)))))
+	  (let ((node (abound-vset node)))
+	     (when *strict-node-type*
+		(lvtype-node! node))
+	     node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::cast ...                                           */

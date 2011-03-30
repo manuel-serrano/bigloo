@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 17:25:53 1993                          */
-;*    Last change :  Tue Dec 26 09:52:14 2000 (serrano)                */
+;*    Last change :  Wed Mar 30 08:44:30 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test l'elimination de sous expression commune.                */
 ;*=====================================================================*/
@@ -40,14 +40,14 @@
 (define (gee l::pair)
    ;; this function was badly compiled due to a bug in the cse
    ;; that propagate the binding (a (c-car l)) into the loop.
-   (let ((a (c-car l)))
+   (let ((a ($car l)))
       (let loop ((a a))
-	 (if (c-pair? a)
+	 (if ($pair? a)
 	     (begin
-		(c-set-car! l '(3))
-		(loop (c-cdr a)))
-	     (let ((a (c-car l)))
-		(c-set-cdr! a 4)
+		($set-car! l '(3))
+		(loop ($cdr a)))
+	     (let ((a ($car l)))
+		($set-cdr! a 4)
 		a))))) 
 
 ;*---------------------------------------------------------------------*/

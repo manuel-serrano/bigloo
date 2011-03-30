@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sun Mar 20 06:51:52 2011 (serrano)                */
+;*    Last change :  Tue Mar 29 20:45:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -27,7 +27,8 @@
 	    cfa_set
 	    cfa_tvector
 	    cfa_closure
-	    tvector_tvector)
+	    tvector_tvector
+	    object_class)
    (export  (type-settings! globals)
 	    (get-approx-type ::approx)))
 
@@ -42,24 +43,42 @@
 ;*---------------------------------------------------------------------*/
 (define (type-fun! var::variable)
    (let ((fun (variable-value var)))
+      (cond
+	 ((intern-sfun/Cinfo? fun)
+	  ;; if it is not an `intern-sfun/Cinfo', it means that the
+	  ;; procedure is unreachable and then we can ignore it.
+	  (with-access::intern-sfun/Cinfo fun (body args approx)
+	     ;; the formals
+	     (for-each (lambda (var)
+			  (type-variable! (local-value var) var))
+		       args)
+	     ;; and the function result
+	     (set-variable-type! var (get-approx-type approx))
+	     (shrink! fun)
+	     ;; the body
+	     (set! body (type-node! body))))
+	 ((sfun? fun)
+	  (when *strict-node-type*
+	     (with-access::sfun fun (body )
+		(set! body (type-node! body)))))
+	 (else
+	  (internal-error "type-fun!" "Unknown value" (shape var))))))
+
+;*---------------------------------------------------------------------*/
+;*    type-fun-node! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (type-fun-node! v::var)
+   (let* ((var (var-variable v))
+	  (fun (variable-value var)))
       (when (intern-sfun/Cinfo? fun)
-	 ;; if it is not an `intern-sfun/Cinfo', it means that the
-	 ;; procedure is unreachable and then we can ignore it.
-	 (with-access::intern-sfun/Cinfo fun (body args approx)
-	    ;; the formals
-	    (for-each (lambda (var)
-			 (type-variable! (local-value var) var))
-		      args)
-	    ;; the body
-	    (set! body (type-node! body))
-	    ;; and the function result
+	 (with-access::intern-sfun/Cinfo fun (approx)
 	    (set-variable-type! var (get-approx-type approx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-approx-type ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (get-approx-type approx)
-   (let ((type       (approx-type approx))
+   (let ((type (approx-type approx))
 	 (alloc-list (set->list (approx-allocs approx))))
       (cond
 	 ((not (pair? alloc-list))
@@ -67,23 +86,25 @@
 	 ((not (tvector-optimization?))
 	  type)
 	 ((make-vector-app? (car alloc-list))
-	  (let* ((app          (car alloc-list))
-		 (tv-type      (get-vector-item-type app))
+	  (let* ((app (car alloc-list))
+		 (tv-type (get-vector-item-type app))
 		 (value-approx (make-vector-app-value-approx app))
-		 (item-type    (approx-type value-approx))
-		 (tv           (type-tvector item-type)))
-	     (if (type? tv)
-		 tv
-		 type)))
+		 (item-type (approx-type value-approx))
+		 (tv (type-tvector item-type)))
+	     (cond
+		((type? tv) tv)
+		((eq? type *_*) *vector*)
+		(else type))))
 	 ((valloc/Cinfo+optim? (car alloc-list))
-	  (let* ((app          (car alloc-list))
-		 (tv-type      (get-vector-item-type app))
+	  (let* ((app (car alloc-list))
+		 (tv-type (get-vector-item-type app))
 		 (value-approx (valloc/Cinfo+optim-value-approx app))
-		 (item-type    (approx-type value-approx))
-		 (tv           (type-tvector item-type)))
-	     (if (type? tv)
-		 tv
-		 type)))
+		 (item-type (approx-type value-approx))
+		 (tv (type-tvector item-type)))
+	     (cond
+		((type? tv) tv)
+		((eq? type *_*) *vector*)
+		(else type))))
 	 (else
 	  type))))
 	 
@@ -92,9 +113,8 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (type-variable! value::value variable::variable)
    (let ((type (variable-type variable)))
-      (if (type? type)
-	  'nothing
-	  (set-variable-type! variable (get-default-type)))))
+      (unless (type? type)
+	 (set-variable-type! variable (get-default-type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::svar ...                                        */
@@ -173,16 +193,28 @@
 ;*    type-node! ::kwote ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::kwote)
+   (with-access::kwote node (type value)
+      (when (and *strict-node-type* (eq? type *_*))
+	 (set! type (get-type-kwote value))))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::var)
+   
+   (define (type-more-specific? ntype vtype)
+      (or (not (bigloo-type? vtype))
+	  (eq? ntype *obj*)
+	  (or (eq? vtype *pair*) (eq? vtype *epair*) )
+	  (and (tclass? vtype) (tclass? ntype) (type-subclass? vtype ntype))))
+   
    (with-access::var node (variable type)
       (when (and (global? variable) (eq? (global-import variable) 'static))
 	 (type-variable! (global-value variable) variable))
-      (when (or (eq? type *_*) (eq? type *vector*))
+      (when (or (eq? type *_*)
+		(eq? type *vector*)
+		(type-more-specific? type (variable-type variable)))
 	 (set! type (variable-type variable))))
    node)
 
@@ -196,8 +228,13 @@
 ;*    type-node! ::sequence ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sequence)
-   (with-access::sequence node (nodes)
+   (with-access::sequence node (type nodes)
       (type-node*! nodes)
+      (when *strict-node-type*
+	 (when (eq? type *_*)
+	    (if (pair? nodes)
+		(set! type (get-type (car (last-pair nodes))))
+		(set! type *unspec*))))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -206,7 +243,46 @@
 (define-method (type-node! node::app)
    (with-access::app node (type fun args)
       (type-node*! args)
+      (type-fun-node! fun)
+      (set! type (strict-node-type (variable-type (var-variable fun)) type))
       node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::arithmetic-app ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::arithmetic-app)
+   
+   (define (cleanup-type t)
+      (cond
+	 ((type? t)
+	  (if (eq? t *_*) *obj* t))
+	 ((local? t)
+	  (when (eq? (local-type t) *_*)
+	     (local-type-set! t *obj*))
+	  t)
+	 (else
+	  t)))
+   
+   (call-next-method)
+   
+   (when *strict-node-type*
+      (with-access::app node (fun type args)
+	 ;; cleanup the function type
+	 (let* ((v (var-variable fun))
+		(val (variable-value v)))
+	    (when (eq? (variable-type v) *_*)
+	       (variable-type-set! v *obj*))
+	    ;; cleanup the arguments type
+	    (cond
+	       ((sfun? val)
+		(map! cleanup-type (sfun-args val)))
+	       ((cfun? val)
+		(map! cleanup-type (cfun-args-type val)))))
+	 ;; cleanup the node type
+	 (when (eq? type *_*)
+	    (set! type *obj*))))
+   
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    get-procedure-approx-type ...                                    */
@@ -282,8 +358,18 @@
 ;*    type-node! ::extern ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::extern)
+   (with-access::extern node (expr*)
+      (type-node*! expr*)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::valloc ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::valloc)
+   (call-next-method)
    (with-access::extern node (expr* type)
       (type-node*! expr*)
+      (set! type (strict-node-type (if (eq? type *_*) *vector* type) type))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -291,9 +377,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::vref)
    (call-next-method)
-   (with-access::vref node (ftype)
+   (with-access::vref node (ftype type)
       (when (eq? ftype *_*)
-	 (set! ftype *obj*)))
+	 (set! ftype *obj*))
+      (when *strict-node-type*
+	 (set! type ftype)))
    node)
       
 ;*---------------------------------------------------------------------*/
@@ -325,13 +413,27 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::conditional ...                                     */
+;*    -------------------------------------------------------------    */
+;*    This computes the lub                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::conditional)
-   (with-access::conditional node (test true false)
+   (with-access::conditional node (type test true false)
        (set! test (type-node! test))
        (set! true (type-node! true))
        (set! false (type-node! false))
+       (when *strict-node-type*
+	  (set! type (get-type node)))
        node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::conditional/Cinfo ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::conditional/Cinfo)
+   (call-next-method)
+   (unless *strict-node-type*
+      (with-access::conditional/Cinfo node (type approx)
+	 (set! type (get-approx-type approx))))
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::fail ...                                            */
@@ -347,27 +449,43 @@
 ;*    type-node! ::select ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::select)
-   (with-access::select node (clauses test)
+   (with-access::select node (type clauses test)
       (set! test (type-node! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (type-node! (cdr clause))))
 		clauses)
+       (when *strict-node-type*
+	  ;; we cannot use the type of the approximation here because the
+	  ;; approximated type might be more precise that the actual
+	  ;; code generation (for instance when some procedure-el are applied)
+	  (set! type (get-type node)))
       node))
+
+;* {*---------------------------------------------------------------------*} */
+;* {*    type-node! ::select ...                                          *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define-method (type-node! node::select/Cinfo)                      */
+;*    (call-next-method)                                               */
+;*    (unless *strict-node-type*                                       */
+;*       (with-access::select/Cinfo node (type approx)                 */
+;* 	 (set! type (get-approx-type approx))))                        */
+;*    node)                                                            */
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::let-fun ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::let-fun)
-   (with-access::let-fun node (body locals)
+   (with-access::let-fun node (type body locals)
       (for-each type-fun! locals)
       (set! body (type-node! body))
+      (set! type (node-type body))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::let-var ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::let-var)
-   (with-access::let-var node (body bindings)
+   (with-access::let-var node (type body bindings)
       (for-each (lambda (binding)
 		   (let ((var (car binding))
 			 (val (cdr binding)))
@@ -375,6 +493,7 @@
 		      (type-variable! (local-value var) var)))
 		bindings)
       (set! body (type-node! body))
+      (set! type (node-type body))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -418,8 +537,9 @@
 ;*    type-node! ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::box-ref)
-   (with-access::box-ref node (var)
+   (with-access::box-ref node (var type)
       (set! var (type-node! var))
+      (set! type (get-type var))
       node))
 
 ;*---------------------------------------------------------------------*/

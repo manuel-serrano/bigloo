@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Sun Nov 28 07:10:21 2010 (serrano)                */
+;*    Last change :  Tue Mar 29 08:18:53 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 ;*    Tvector optimization check                                       */
 ;*---------------------------------------------------------------------*/
 (define *number-images* (vector #\0 #\1 #\2))
-(define *foo*           (vector "toto" "toto"))
+(define *foo* (vector "toto" "toto"))
 
 (define (prin-integer n)
    (let ((x (vector-ref *number-images* 2)))
@@ -61,13 +61,13 @@
    (test "tvector.1" (let ((t '#(1 2 3)))
 			(vector-ref t 2))
 	 3)
-   (test "tvector2"
+   (test "tvector.2"
 	 (string? (with-output-to-string
 		     (lambda ()
 			(print (make-array-of-int 1 1)))))
 	 #t)
-   (test "vector-ref" (foo 10) #\2)
-   (test "vector-ref" (vector-ref (let ((v (vector 0 1 2))) v) 2) 2)
+   (test "vector-ref.1" (foo 10) #\2)
+   (test "vector-ref.2" (vector-ref (let ((v (vector 0 1 2))) v) 2) 2)
    (test "sort-vector.1" (sort < '#(5 3 4 2 1)) '#(1 2 3 4 5))
    (test "sort-vector.2" (sort '#(5 3 4 2 1) <) '#(1 2 3 4 5))
    (test "vector-append.1" (vector-append '#() '#()) '#())

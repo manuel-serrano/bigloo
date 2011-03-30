@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Fri Sep 11 09:32:58 2009 (serrano)                */
+;*    Last change :  Sun Mar 27 07:40:25 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `labels->node' translator                                    */
 ;*=====================================================================*/
@@ -52,13 +52,10 @@
    (let ((loc (find-location/loc exp loc)))
       (match-case exp
          ((?- (and (? pair?) ?bindings) . ?body)
-          (let* ((locals    (allocate-sfuns bindings loc))
+          (let* ((locals (allocate-sfuns bindings loc))
                  (new-stack (append locals stack))
-		 (body      (sexp->node (normalize-progn body)
-					new-stack
-					loc
-					site))
-		 (loc       (find-location/loc exp loc)))
+		 (body (sexp->node (normalize-progn body) new-stack loc site))
+		 (loc (find-location/loc exp loc)))
 	     ;; we compute the ast for all local bodies
 	     (for-each (lambda (fun b) (labels-binding fun b new-stack loc))
 		       locals
@@ -66,7 +63,7 @@
 	     ;; and we allocate the let-fun node
 	     (instantiate::let-fun
 		(loc loc)
-		(type (node-type body))
+		(type (strict-node-type *_* (node-type body)))
 		(locals locals)
 		(body body))))
          (else

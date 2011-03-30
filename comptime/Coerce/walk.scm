@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:43:37 1995                          */
-;*    Last change :  Mon May 15 07:41:06 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 09:40:41 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We perform now coercions.                                        */
 ;*=====================================================================*/
@@ -25,7 +25,8 @@
 	    ast_node
 	    ast_remove
 	    coerce_pproto
-	    coerce_coerce)
+	    coerce_coerce
+	    coerce_convert)
    (export  (coerce-walk! ast)))
 
 ;*---------------------------------------------------------------------*/
@@ -45,5 +46,6 @@
 				 (or (eq? (global-import global) 'static)
 				     (eq? (global-import global) 'export)))
 			    (pvariable-proto 3 global))))
+   (verbose 2 "      type tests introduced: " (get-stack-check) #\Newline)
    (pass-postlude (remove-var 'coerce ast)))
 

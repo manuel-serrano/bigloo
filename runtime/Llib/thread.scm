@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri Feb 18 15:20:28 2011 (serrano)                */
+;*    Last change :  Tue Mar 29 08:29:10 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -163,7 +163,7 @@
 	    
 	    ;; dynamic env (per thread env)
             (inline dynamic-env?::bool ::obj)
-	    (inline current-dynamic-env)
+	    (inline current-dynamic-env::dynamic-env)
 
 	    ;; thread backend
 	    (inline current-thread-backend)

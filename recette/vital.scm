@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Mar 23 15:39:17 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 17:08:11 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */

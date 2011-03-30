@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sun Dec 12 14:52:58 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 14:55:06 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
@@ -23,14 +23,14 @@
 	    tools_shape
 	    init_main)
    (export  *nb-error-on-pass*
-	    (internal-error        <obj> <obj> <obj>)
-	    (user-warning          <obj> <obj> <obj>)
+	    (internal-error <obj> <obj> <obj>)
+	    (user-warning <obj> <obj> <obj>)
 	    (user-warning/location ::obj <obj> <obj> <obj>)
-	    (user-error-notify     ::obj ::symbol)
-	    (user-error            <obj> <obj> <obj> . <obj>)
-	    (user-error/location   ::obj <obj> <obj> <obj> . <obj>)
+	    (user-error-notify ::obj ::symbol)
+	    (user-error <obj> <obj> <obj> . <obj>)
+	    (user-error/location ::obj <obj> <obj> <obj> . <obj>)
 	    (current-function)
-	    (enter-function        ::symbol)
+	    (enter-function ::symbol)
 	    (leave-function)
 	    (no-warning thunk)))
  
@@ -58,14 +58,19 @@
 ;*    user-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (user-warning/location loc proc mes obj)
-   (if (not (location? loc))
-       (warning proc mes " -- " obj)
-       (warning/location (location-full-fname loc)
-			 (location-pos loc)
-			 proc
-			 mes
-			 " -- "
-			 obj)))
+   (let ((st (bigloo-trace-stack-depth)))
+      (unless *compiler-stack-debug?*
+	 (bigloo-trace-stack-depth-set! 0))
+      (unwind-protect
+	 (if (not (location? loc))
+	     (warning proc mes " -- " obj)
+	     (warning/location (location-full-fname loc)
+			       (location-pos loc)
+			       proc
+			       mes
+			       " -- "
+			       obj))
+	 (bigloo-trace-stack-depth-set! st))))
    
 ;*---------------------------------------------------------------------*/
 ;*    user-warning ...                                                 */

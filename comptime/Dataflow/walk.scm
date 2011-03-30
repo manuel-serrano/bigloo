@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Mon Mar 21 10:40:24 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 13:54:30 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -41,9 +41,9 @@
 (define (dataflow-walk! globals name)
    (pass-prelude name)
    (set! *isa* (find-global/module 'is-a? '__object))
-   (set! *c-null?* (find-global/module 'c-null? 'foreign))
-   (set! *c-pair?* (find-global/module 'c-pair? 'foreign))
-   (set! *c-epair?* (find-global/module 'c-epair? 'foreign))
+   (set! *$null?* (find-global/module '$null? 'foreign))
+   (set! *$pair?* (find-global/module '$pair? 'foreign))
+   (set! *$epair?* (find-global/module '$epair? 'foreign))
    (for-each dataflow-global! globals)
    (pass-postlude globals))
 
@@ -51,9 +51,9 @@
 ;*    *isa* ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define *isa* #f)
-(define *c-null?* #f)
-(define *c-pair?* #f)
-(define *c-epair?* #f)
+(define *$null?* #f)
+(define *$pair?* #f)
+(define *$epair?* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-global! ...                                             */
@@ -70,10 +70,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::var ...                                         */
 ;*    -------------------------------------------------------------    */
-;*    This function sets the most specific for the variable            */
+;*    This function sets the most specific type for the variable       */
 ;*    reference (computed according to the control flow). The          */
 ;*    stage globalize and integrate that introduce cells change        */
-;*    the type of the boxed variable references (see globalize_node    */
+;*    the types of the boxed variable references (see globalize_node   */
 ;*    and integrate_node).                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::var env)
@@ -82,6 +82,12 @@
 	 (if (pair? b)
 	     (set! type (cdr b))
 	     (set! type (variable-type variable)))))
+   env)
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-node! ::closure ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-node! node::closure env)
    env)
 
 ;*---------------------------------------------------------------------*/
@@ -369,9 +375,9 @@
 		  (var? (car args))
 		  (eq? (variable-type (var-variable (car args))) *pair-nil*))
 	     (cond
-		((eq? f *c-null?*)
+		((eq? f *$null?*)
 		 (list (cons (var-variable (car args)) *pair*)))
-		((or (eq? f *c-pair?*) (eq? f *c-epair?*))
+		((or (eq? f *$pair?*) (eq? f *$epair?*))
 		 (list (cons (var-variable (car args)) *bnil*)))
 		(else
 		 '()))

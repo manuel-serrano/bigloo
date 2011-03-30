@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Fri Nov 26 14:51:40 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 08:47:25 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -102,16 +102,17 @@
 	     "        sur le body: " (shape body) #\Newline)
       (let ((alpha-body (alphatize formals reductors loc body)))
 	 ;; we spread side effect for incoming inlines (such as
-	 ;; null? which is translated into c-null?).
+	 ;; null? which is translated into $null?).
 	 (spread-side-effect! alpha-body)
-	 (let ((inline-body (instantiate::let-var
-			       (loc loc)
-			       (type type)
-			       (side-effect (side-effect? alpha-body))
-			       (bindings bindings)
-			       (body (inline-node alpha-body
-						  new-kfactor
-						  (cons callee stack))))))
+	 (let* ((inline-node (inline-node
+			      alpha-body new-kfactor (cons callee stack)))
+		(inline-body (instantiate::let-var
+				(loc loc)
+				(type (strict-node-type
+				       (node-type inline-node) type))
+				(side-effect (side-effect? alpha-body))
+				(bindings bindings)
+				(body inline-node))))
 	    (for-each (lambda (reductor formal)
 			 (when (local? reductor)
 			    (local-user?-set! reductor (local-user? formal))))
@@ -120,7 +121,7 @@
 	    ;; if the result type of the inlined function is not *_* or
 	    ;; *obj* we use a local variable in order to ensure that the
 	    ;; type checking of the result will be implemented even after
-	    ;; inlining. This fixes a bug of the release 1.9b
+	    ;; inlining. This fixes a bug of the version 1.9b
  	    (if (or (eq? type *_*)
 		    (eq? type *obj*)
 		    (eq? type (node-type alpha-body)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Mar 23 08:36:34 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:42:54 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -211,8 +211,8 @@
     'cons
     (lambda (x::obj e::procedure)
        (match-case x
-	  ((?fun ?a ?d)
-	   `(c-cons ,(e a e) ,(e d e)))
+	  ((?- ?a ?d)
+	   `($cons ,(e a e) ,(e d e)))
 	  (else
 	   (error #f "Illegal `cons' form" x)))))
    
@@ -694,13 +694,13 @@
 	  ((?- ?x1)
 	   (e x1 e))
 	  ((?- ?x1 ?x2)
-	   `(c-cons ,(e x1 e) ,(e x2 e)))
+	   `($cons ,(e x1 e) ,(e x2 e)))
 	  ((?- ?x1 ?x2 . ?rest)
-	   `(c-cons ,(e x1 e)
-		    ,(e (epairify
-			 `(cons* ,x2 ,@rest)
-			 x)
-			e)))
+	   `($cons ,(e x1 e)
+		   ,(e (epairify
+			`(cons* ,x2 ,@rest)
+			x)
+		       e)))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
    
@@ -1149,13 +1149,13 @@
 ;*    infered as returning a pair-nil value.                           */
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
-   `(define (,%append-2-id l1 l2)
+   `(define (,%append-2-id l1::pair-nil l2)
        (let ((head (cons '() l2)))
 	  (labels ((loop (prev tail)
-			 (if (null? tail)
-			     '()
+			 (if (pair? tail)
 			     (let ((new-prev (cons (car tail) l2)))
 				(set-cdr! prev new-prev)
-				(loop new-prev (cdr tail))))))
+				(loop new-prev (cdr tail)))
+			     '())))
 	     (loop head l1)
 	     (cdr head)))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Wed Feb  4 15:36:02 2004 (serrano)                */
-;*    Copyright   :  1996-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 21:10:55 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C ptr accessors creations                                    */
 ;*=====================================================================*/
@@ -157,9 +157,8 @@
       ;; we declare the coercion operations ...
       (produce-module-clause! `(foreign ,(mk-id->bid) ,(mk-bid->id)))
       ;; and the predicate
-      (produce-module-clause! `(static
-				,(make-proto-inline `(,bid?-bool ::obj))))
-      (produce-module-clause! `(pragma (,bid? (predicate-of ,wid))))
+      (produce-module-clause! `(static ,(make-proto-inline `(,bid?-bool ::obj))))
+      (produce-module-clause! `(pragma (,bid? (predicate-of ,bid))))
       
       (cons* (make-make-id)
 	     (mk-=id)

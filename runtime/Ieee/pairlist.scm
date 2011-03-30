@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Mon Mar 21 10:26:37 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:57:14 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -37,18 +37,18 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-pair?::bool   (::obj)             "PAIRP")
-	    (macro c-epair?::bool  (::obj)             "EXTENDED_PAIRP")
-	    (macro c-cons::pair    (::obj ::obj)       "MAKE_PAIR")
-	    (macro c-s-cons::pair  (::obj ::obj)       "MAKE_S_PAIR")
-	    (macro c-econs::epair  (::obj ::obj ::obj) "MAKE_EXTENDED_PAIR")
-	    (macro c-car::obj      (::pair)            "CAR")
-	    (macro c-cdr::obj      (::pair)            "CDR")
-	    (macro c-cer::obj      (::epair)           "CER")
-	    (macro c-set-car!::obj (::pair ::obj)      "SET_CAR")
-	    (macro c-set-cdr!::obj (::pair ::obj)      "SET_CDR")
-	    (macro c-set-cer!::obj (::epair ::obj)     "SET_CER")
-	    (macro c-null?::bool   (::obj)             "NULLP")
+   (extern  (macro $pair?::bool (::obj) "PAIRP")
+	    (macro $epair?::bool (::obj) "EXTENDED_PAIRP")
+	    (macro $cons::pair (::obj ::obj) "MAKE_PAIR")
+	    (macro $s-cons::pair (::obj ::obj) "MAKE_S_PAIR")
+	    (macro $econs::epair (::obj ::obj ::obj) "MAKE_EXTENDED_PAIR")
+	    (macro $car::obj (::pair) "CAR")
+	    (macro $cdr::obj (::pair) "CDR")
+	    (macro $cer::obj (::epair) "CER")
+	    (macro $set-car!::obj (::pair ::obj) "SET_CAR")
+	    (macro $set-cdr!::obj (::pair ::obj) "SET_CDR")
+	    (macro $set-cer!::obj (::epair ::obj) "SET_CER")
+	    (macro $null?::bool (::obj) "NULLP")
 	    
 	    (export length "bgl_list_length")
 	    (export list-ref "bgl_list_ref")
@@ -59,29 +59,29 @@
 	    (export remq! "bgl_remq_bang"))
    
    (java    (class foreign
-	       (method static c-pair?::bool (::obj)
+	       (method static $pair?::bool (::obj)
 		       "PAIRP")
-	       (method static c-epair?::bool (::obj)
+	       (method static $epair?::bool (::obj)
 		       "EXTENDED_PAIRP")
-	       (method static c-cons::pair (::obj ::obj)
+	       (method static $cons::pair (::obj ::obj)
 		       "MAKE_PAIR")
-	       (method static c-s-cons::pair (::obj ::obj)
+	       (method static $s-cons::pair (::obj ::obj)
 		       "MAKE_S_PAIR")
-	       (method static c-econs::epair (::obj ::obj ::obj)
+	       (method static $econs::epair (::obj ::obj ::obj)
 		       "MAKE_EXTENDED_PAIR")
-	       (method static c-car::obj (::pair)
+	       (method static $car::obj (::pair)
 		       "CAR")
-	       (method static c-cdr::obj (::pair)
+	       (method static $cdr::obj (::pair)
 		       "CDR")
-	       (method static c-cer::obj (::epair)
+	       (method static $cer::obj (::epair)
 		       "CER")
-	       (method static c-set-car!::obj (::pair ::obj)
+	       (method static $set-car!::obj (::pair ::obj)
 		       "SET_CAR")
-	       (method static c-set-cdr!::obj (::pair ::obj)
+	       (method static $set-cdr!::obj (::pair ::obj)
 		       "SET_CDR")
-	       (method static c-set-cer!::obj (::epair ::obj)
+	       (method static $set-cer!::obj (::epair ::obj)
 		       "SET_CER")
-	       (method static c-null?::bool (::obj)
+	       (method static $null?::bool (::obj)
 		       "NULLP")))
    
    (export  (inline pair?::bool ::obj)
@@ -170,24 +170,24 @@
 	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq equal?))
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
-   (pragma  (c-cons args-safe)
-	    (c-null? (predicate-of nil) no-cfa-top nesting args-safe (effect))
+   (pragma  ($cons args-safe)
+	    ($null? (predicate-of nil) no-cfa-top nesting args-safe (effect))
 	    (null? (predicate-of nil) no-cfa-top nesting)
 	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect))
-	    (c-pair? (predicate-of pair) no-cfa-top nesting (effect))
+	    ($pair? (predicate-of pair) no-cfa-top nesting (effect))
 	    (pair? (predicate-of pair) no-cfa-top nesting)
-	    (list? side-effect-free no-cfa-top nesting)
-	    (c-car side-effect-free no-cfa-top nesting args-safe
+;* 	    (list? (predicate-of list) side-effect-free no-cfa-top nesting) */
+	    ($car side-effect-free no-cfa-top nesting args-safe
 		   (effect (read (car))))
-	    (c-set-car! (effect (write (car))))
+	    ($set-car! (effect (write (car))))
 	    (car side-effect-free no-cfa-top nesting)
-	    (c-cdr side-effect-free no-cfa-top nesting args-safe
+	    ($cdr side-effect-free no-cfa-top nesting args-safe
 		   (effect (read (cdr))))
-	    (c-set-cdr! (effect (write (cdr))))
+	    ($set-cdr! (effect (write (cdr))))
 	    (cdr side-effect-free no-cfa-top nesting)
-	    (c-cer side-effect-free no-cfa-top nesting args-safe
+	    ($cer side-effect-free no-cfa-top nesting args-safe
 		   (effect (read (cer))))
-	    (c-set-cer! (effect (write (cer))))
+	    ($set-cer! (effect (write (cer))))
 	    (cer side-effect-free no-cfa-top nesting)
 	    (length side-effect-free no-cfa-top nesting
 		    (effect (read (car cdr))))
@@ -214,13 +214,13 @@
 ;*    pair? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (pair? obj)
-   (c-pair? obj))
+   ($pair? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    epair? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (epair? obj)
-   (c-epair? obj))
+   ($epair? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn pair-or-null?@ ...                                        */
@@ -234,31 +234,31 @@
 ;*    cons ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (cons obj1 obj2)
-   (c-cons obj1 obj2))
+   ($cons obj1 obj2))
 
 ;*---------------------------------------------------------------------*/
 ;*    econs ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (econs obj1 obj2 obj3)
-   (c-econs obj1 obj2 obj3))
+   ($econs obj1 obj2 obj3))
 
 ;*---------------------------------------------------------------------*/
 ;*    car ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (car pair)
-   (c-car pair))
+   ($car pair))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdr ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (cdr pair)
-   (c-cdr pair))
+   ($cdr pair))
 
 ;*---------------------------------------------------------------------*/
 ;*    cer ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (cer obj)
-   (c-cer obj))
+   ($cer obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    caar ...                                                         */
@@ -433,25 +433,25 @@
 ;*    set-car! ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-car! pair obj)
-   (c-set-car! pair obj))
+   ($set-car! pair obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-cdr! ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-cdr! pair obj)
-   (c-set-cdr! pair obj))
+   ($set-cdr! pair obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-cer! ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-cer! epair obj)
-   (c-set-cer! epair obj)) 
+   ($set-cer! epair obj)) 
 
 ;*---------------------------------------------------------------------*/
 ;*    null? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (null? obj)
-   (c-null? obj))
+   ($null? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    list ...                                                         */

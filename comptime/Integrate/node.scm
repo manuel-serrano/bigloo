@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Mon Nov 29 08:13:49 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 14:29:49 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -89,11 +89,14 @@
 	  (instantiate::let-var
 	     (loc loc)
 	     (body body)
-	     (type *_*)
+	     (type (strict-node-type (node-type body) *_*))
 	     (bindings (map (lambda (o.n)
 			       (cons (cdr o.n)
 				     (a-make-cell (instantiate::var
-						     (type *_*)
+						     (type (strict-node-type
+							    (variable-type
+							     (car o.n))
+							     *_*))
 						     (loc loc)
 						     (variable (car o.n)))
 						  (car o.n))))
@@ -108,7 +111,10 @@
    (with-access::node node (loc)
       (local-access-set! variable 'cell-integrate)
       (svar/Iinfo-celled?-set! (variable-value variable) #t)
-      (instantiate::make-box (type *_*) (loc loc) (value node))))
+      (instantiate::make-box
+	 (type (strict-node-type *cell* *_*))
+	 (loc loc)
+	 (value node))))
     
 ;*---------------------------------------------------------------------*/
 ;*    integrate-celled? ...                                            */
@@ -221,7 +227,8 @@
 			  (var   (if (local? alpha) alpha kap)))
 		      (loop (cons (instantiate::var
 				     (loc loc)
-				     (type *_*)
+				     (type (strict-node-type
+					    (variable-type var) *_*))
 				     (variable var))
 				  new-actuals)
 			    (cdr kaptured))))))
@@ -284,15 +291,16 @@
 			     (kaptured? #f))
 			  (instantiate::let-var
 			     (loc loc)
-			     (type *_*)
+			     (type (strict-node-type *unspec* *_*))
 			     (bindings (list (cons a-var value)))
 			     (body (instantiate::box-set!
 				      (loc loc)
-				      (type *_*)
+				      (type (strict-node-type *unspec* *_*))
 				      (var (setq-var node))
 				      (value (instantiate::var
 						(loc loc)
-						(type *_*)
+						(type (strict-node-type
+						       (variable-type a-var) *_*))
 						(variable a-var)))))))
 		       node)))))))
 

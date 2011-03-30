@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Sat Mar 19 06:37:48 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:31:30 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -21,6 +21,7 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    type_typeof
 	    tvector_tvector
 	    tvector_cnst
 	    ast_var
@@ -188,13 +189,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-cnst-table-ref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (make-cnst-table-ref offset loc)
+(define (make-cnst-table-ref offset type loc)
    (instantiate::app
       (loc loc)
-      (type (get-default-type))
+      (type (strict-node-type type (get-default-type)))
       (fun (instantiate::var
 	      (loc loc)
-	      (type (variable-type *cnst-table-ref*))
+	      (type (strict-node-type (get-default-type) (variable-type *cnst-table-ref*)))
 	      (variable *cnst-table-ref*)))
       (args (list (instantiate::atom
 		     (loc loc)
@@ -211,8 +212,8 @@
 (define (cnst-alloc-string string loc)
    (define (alloc-string)
       ;; in lib-mode string are statically allocated
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'string)
-						      'bstring)
+      (let ((var (def-global-scnst!
+		    (make-typed-ident (gensym 'string) 'bstring)
 		    *module*
 		    string
 		    'sstring
@@ -238,8 +239,8 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-ucs2-string string loc)
    (define (lib-alloc-ucs2string bstring)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'ucs2string)
-						     'ucs2string)
+      (let ((var (def-global-svar!
+		    (make-typed-ident (gensym 'ucs2string) 'ucs2string)
 		    *module*
 		    'an-ucs2-string
 		    'now))
@@ -256,7 +257,7 @@
 					     (variable *string->ucs2string*)))
 				     (args (list vs)))
 				  var
-				  *obj*
+				  (strict-node-type *ucs2string* *obj*)
 				  #f)))
 	 (instantiate::var
 	    (loc loc)
@@ -267,7 +268,7 @@
 	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
 	 (set! *global-set* (cons string *global-set*))
 	 (hashtable-put! *ucs2string-env* string (cnst-info string offset))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *ucs2string* loc)))
    (let ((old (hashtable-get *ucs2string-env* string))
 	 (string-as-bstring (ucs2-string->utf8-string string)))
       (cond
@@ -275,9 +276,9 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (get-default-type))
+		 (type (strict-node-type *ucs2string* (get-default-type)))
 		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
+	      (make-cnst-table-ref (cnst-info-offset old) *ucs2string* loc)))
 	 ((or (eq? *init-mode* 'lib)
 	      (=fx (string-length string-as-bstring) 0)
 	      (char=? (string-ref string-as-bstring 0) #\;))
@@ -307,7 +308,7 @@
 					     (variable *bstring->symbol*)))
 				     (args (list vs)))
 				  var
-				  *obj*
+				  (strict-node-type *symbol* *obj*)
 				  #f)))
 	 (instantiate::var
 	    (loc loc)
@@ -318,7 +319,7 @@
 	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
 	 (set! *global-set* (cons symbol *global-set*))
 	 (hashtable-put! *symbol-env* symbol (cnst-info symbol offset))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *symbol* loc)))
    (let ((old (hashtable-get *symbol-env* symbol))
 	 (symbol-as-string (symbol->string symbol)))
       (cond
@@ -335,7 +336,7 @@
 		 (type *symbol*)
 		 (variable (cnst-info-offset old))))
 	     (else
-	      (make-cnst-table-ref (cnst-info-offset old) loc))))
+	      (make-cnst-table-ref (cnst-info-offset old) *symbol* loc))))
 	 (old
 	  (internal-error 'cnst-alloc-symbol
 			  "old should be either #f or cnst-info"
@@ -370,7 +371,7 @@
 					     (variable *bstring->keyword*)))
 				     (args (list vs)))
 				  var
-				  *obj*
+				  (strict-node-type *keyword* *obj*)
 				  #f)))
 	 (instantiate::var
 	    (loc loc)
@@ -381,7 +382,7 @@
 	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
 	 (set! *global-set* (cons keyword *global-set*))
 	 (hashtable-put! *keyword-env* keyword (cnst-info keyword offset))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *keyword* loc)))
    (let ((old (hashtable-get *keyword-env* keyword))
 	 (keyword-as-string (keyword->string keyword)))
       (cond
@@ -391,7 +392,7 @@
 		 (loc loc)
 		 (type *keyword*)
 		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
+	      (make-cnst-table-ref (cnst-info-offset old) *keyword* loc)))
 	 ((or (eq? *init-mode* 'lib)
 	      (=fx (string-length keyword-as-string) 0)
 	      (char=? (string-ref keyword-as-string 0) #\;))
@@ -413,7 +414,7 @@
 	 (set! *global-set* (cons bignum *global-set*))
 	 (set! *bignum-env* (cons (cons bignum (cnst-info bignum offset))
 				  *bignum-env*))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *bignum* loc)))
    (let ((old (assoc bignum *bignum-env*))
 	 (bignum-as-string (bignum->string bignum)))
       (cond
@@ -422,15 +423,17 @@
 	     ((variable? (cnst-info-offset (cdr old)))
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset (cdr old))))
+		 (type (strict-node-type
+			*bignum* (variable-type (cnst-info-offset (cdr old)))))
 		 (variable (cnst-info-offset (cdr old)))))
 	     ((eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset (cdr old))))
+		 (type (strict-node-type
+			*bignum* (variable-type (cnst-info-offset (cdr old)))))
 		 (variable (cnst-info-offset (cdr old)))))
 	     (else
-	      (make-cnst-table-ref (cnst-info-offset (cdr old)) loc))))
+	      (make-cnst-table-ref (cnst-info-offset (cdr old)) *bignum* loc))))
 	 ((and (pair? old) (cdr old))
 	  (internal-error 'cnst-alloc-bignum
 			  "old should be either #f or cnst-info"
@@ -580,11 +583,14 @@
       (let loop ((pair pair))
 	 (cond
 	    ((null? pair)
-	     (instantiate::atom (loc loc) (type *bnil*)  (value '())))
+	     (instantiate::atom
+		(loc loc)
+		(type (strict-node-type (get-type-atom '()) *bnil*))
+		(value '())))
 	    ((not (pair? pair))
 	     (cnst! (instantiate::kwote
 		       (loc loc)
-		       (type *pair*)
+		       (type (strict-node-type (get-type-kwote pair) *pair*))
 		       (value pair))))
 	    (else
 	     (instantiate::app
@@ -596,7 +602,9 @@
 			(variable *cons*)))
 		(args (list (cnst! (instantiate::kwote
 				      (loc loc)
-				      (type (get-default-type))
+				      (type (strict-node-type
+					     (get-type-kwote (car pair))
+					     (get-default-type)))
 				      (value (car pair))))
 			    (loop (cdr pair)))))))))
    (define (lib-alloc-list)
@@ -607,7 +615,8 @@
 	 (if *shared-cnst?*
 	     (set! *list-env* (cons (cnst-info pair var) *list-env*)))
 	 (add-cnst-sexp! `(set! (@ ,(global-id var) ,(global-module var))
-				,(coerce! (cnst-list pair) var *obj* #f)))
+				,(coerce! (cnst-list pair) var
+					  (strict-node-type *pair* *obj*) #f)))
 	 (instantiate::var
 	    (loc loc)
 	    (type (variable-type var))
@@ -618,7 +627,7 @@
 	 (set! *global-set* (cons pair *global-set*))
 	 (if *shared-cnst?*
 	     (set! *list-env* (cons (cnst-info pair offset) *list-env*)))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *pair* loc)))
    (let ((old (and *shared-cnst?*
 		   (let loop ((env *list-env*))
 		      (cond
@@ -633,9 +642,10 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type (strict-node-type
+			*pair* (variable-type (cnst-info-offset old))))
 		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
+	      (make-cnst-table-ref (cnst-info-offset old) *pair* loc)))
 	 ((eq? *init-mode* 'lib)
 	  (lib-alloc-list))
 	 (else
@@ -648,10 +658,11 @@
    (define (cnst-vector-node)
       (cnst!
        (coerce!
-	(let ((var (make-local-svar 'var *vector*)))
+	(let ((var (make-local-svar 'var *vector*))
+	      (l (vector->list vec)))
 	   (instantiate::let-var
 	      (loc loc)
-	      (type *obj*)
+	      (type (strict-node-type *vector* *obj*))
 	      (bindings
 	       (list (cons
 		      var
@@ -665,8 +676,9 @@
 			 (args (list
 				(instantiate::kwote
 				   (loc loc)
-				   (type *obj*)
-				   (value (vector->list vec)))))))))
+				   (type (strict-node-type
+					  (get-type-kwote l) *obj*))
+				   (value l))))))))
 	      (body (let ((var-body (instantiate::var
 				       (loc loc)
 				       (type (variable-type var))
@@ -692,12 +704,14 @@
 					     (variable var))
 					  (instantiate::atom
 					     (loc loc)
-					     (type *obj*)
+					     (type (strict-node-type
+						    (get-type-atom (vector-tag vec))
+						    *obj*))
 					     (value (vector-tag vec))))))
 				var-body)))
 			   var-body)))))
 	#unspecified
-	*obj*
+	(strict-node-type *vector* *obj*)
 	#f)))
    (define (read-alloc-vector)
       (let ((offset *cnst-offset*))
@@ -705,7 +719,7 @@
 	 (set! *global-set* (cons vec *global-set*))
 	 (if *shared-cnst?*
 	     (set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *vector* loc)))
    (define (lib-alloc-vector)
       (let ((var (def-global-svar! (make-typed-ident (gensym 'vector) 'vector)
 		    *module*
@@ -717,7 +731,7 @@
 				,(cnst-vector-node)))
 	 (instantiate::var
 	    (loc loc)
-	    (type (variable-type var))
+	    (type (strict-node-type *vector* (variable-type var)))
 	    (variable var))))
    (let ((old (and *shared-cnst?*
 		   (let loop ((env *vector-env*))
@@ -733,9 +747,10 @@
 	  (if (eq? *init-mode* 'lib)
 	      (instantiate::var
 		 (loc loc)
-		 (type (variable-type (cnst-info-offset old)))
+		 (type (strict-node-type
+			*vector* (variable-type (cnst-info-offset old))))
 		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
+	      (make-cnst-table-ref (cnst-info-offset old) *vector* loc)))
 	 ((eq? *init-mode* 'lib)
 	  (lib-alloc-vector))
 	 (else
@@ -767,10 +782,11 @@
       (define (cnst-vector-node)
 	 (cnst!
 	  (coerce!
-	   (let ((var (make-local-svar 'var vec-type)))
+	   (let ((var (make-local-svar 'var vec-type))
+		 (l (vector->list vec)))
 	      (instantiate::let-var
 		 (loc loc)
-		 (type *obj*)
+		 (type (strict-node-type vec-type *obj*))
 		 (bindings
 		  (list (cons
 			 var
@@ -784,14 +800,15 @@
 			    (args (list
 				   (instantiate::kwote
 				      (loc loc)
-				      (type *obj*)
-				      (value (vector->list vec)))))))))
+				      (type (strict-node-type
+					     (get-type-kwote l) *obj*))
+				      (value l))))))))
 		 (body (instantiate::var
 			  (loc loc)
 			  (type vec-type)
 			  (variable var)))))
 	   #unspecified
-	   *obj*
+	   (strict-node-type vec-type *obj*)
 	   #f)))
       
       (define (read-alloc-vector)
@@ -800,7 +817,7 @@
 	    (set! *global-set* (cons vec *global-set*))
 	    (if *shared-cnst?*
 		(set! *vector-env* (cons (cnst-info vec offset) *vector-env*)))
-	    (make-cnst-table-ref offset loc)))
+	    (make-cnst-table-ref offset vec-type loc)))
       
       (define (lib-alloc-vector)
 	 (let ((var (def-global-svar!
@@ -831,9 +848,10 @@
 	     (if (eq? *init-mode* 'lib)
 		 (instantiate::var
 		    (loc loc)
-		    (type (variable-type (cnst-info-offset old)))
+		    (type (strict-node-type
+			   vec-type (variable-type (cnst-info-offset old))))
 		    (variable (cnst-info-offset old)))
-		 (make-cnst-table-ref (cnst-info-offset old) loc)))
+		 (make-cnst-table-ref (cnst-info-offset old) vec-type loc)))
 	    ((eq? *init-mode* 'lib)
 	     (lib-alloc-vector))
 	    (else
@@ -852,7 +870,8 @@
 	 (let* ((id  (type-id (a-tvector-type tvec)))
 		(aid (cnst! (instantiate::kwote
 			       (loc loc)
-			       (type (get-default-type))
+			       (type (strict-node-type
+				      (get-type-kwote id) (get-default-type)))
 			       (value id)))))
 	    ;; we first need to compile the symbol holding the identifier
 	    ;; because this compilation modifies the *global-sexp*
@@ -871,7 +890,7 @@
       (let ((offset *cnst-offset*))
 	 (set! *cnst-offset* (+fx 1 *cnst-offset*))
 	 (set! *global-set* (cons tvec *global-set*))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset (a-tvector-type tvec) loc)))
    (if (tvector-C-static? tvec)
        (C-static-alloc-tvector)
        (read-alloc-tvector)))
@@ -883,10 +902,11 @@
    (define (cnst-struct-node)
       (cnst!
        (coerce!
-	(let ((var (make-local-svar 'var *struct*)))
+	(let ((var (make-local-svar 'var *struct*))
+	      (l (struct->list struct)))
 	   (instantiate::let-var
 	      (loc loc)
-	      (type *obj*)
+	      (type (strict-node-type *struct* *obj*))
 	      (bindings
 	       (list (cons
 		      var
@@ -900,14 +920,15 @@
 			 (args (list
 				(instantiate::kwote
 				   (loc loc)
-				   (type *obj*)
-				   (value (struct->list struct)))))))))
+				   (type (strict-node-type
+					  (get-type-kwote l) *obj*))
+				   (value l))))))))
 	      (body (instantiate::var
 		       (loc loc)
 		       (type (variable-type var))
 		       (variable var)))))
 	#unspecified
-	*obj*
+	(strict-node-type *struct* *obj*)
 	#f)))
    (define (read-alloc-struct)
       (let ((offset *cnst-offset*))
@@ -915,7 +936,7 @@
 	 (set! *global-set* (cons struct *global-set*))
 	 (if *shared-cnst?*
 	     (set! *struct-env* (cons (cnst-info struct offset) *struct-env*)))
-	 (make-cnst-table-ref offset loc)))
+	 (make-cnst-table-ref offset *struct* loc)))
    (define (lib-alloc-struct)
       (let ((var (def-global-svar! (make-typed-ident (gensym 'struct) 'struct)
 		    *module*
@@ -945,7 +966,7 @@
 		 (loc loc)
 		 (type (variable-type (cnst-info-offset old)))
 		 (variable (cnst-info-offset old)))
-	      (make-cnst-table-ref (cnst-info-offset old) loc)))
+	      (make-cnst-table-ref (cnst-info-offset old) *struct* loc)))
 	 ((eq? *init-mode* 'lib)
 	  (lib-alloc-struct))
 	 (else
@@ -980,7 +1001,7 @@
 			   (test (+fx i 1))))))))
       ((homogeneous-vector? obj1)
        (equal? obj1 obj2))
-      ((c-struct? obj1)
+      ((struct? obj1)
        (let ((lobj1 (struct-length obj1)))
 	  (and (struct? obj2)
 	       (=fx (struct-length obj2) lobj1)

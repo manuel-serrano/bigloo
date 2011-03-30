@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sat Mar 19 06:20:08 2011 (serrano)                */
+;*    Last change :  Sun Mar 27 15:46:42 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -240,7 +240,7 @@
 ;*---------------------------------------------------------------------*/
 (define (light-make-procedure!)
    (define (make-elight-procedure-app app)
-      (with-access::make-procedure-app app (fun args)
+      (with-access::make-procedure-app app (fun args type)
 	 (let* ((size (get-node-atom-value (caddr args)))
 		(ffun (var-variable (car args)))
 		(sfun (variable-value ffun)))
@@ -251,13 +251,19 @@
 			 (scnst?  (global-value (sfun-the-closure sfun))))
 		    (scnst-class-set! (global-value (sfun-the-closure sfun))
 				      'selfun))
-		(var-variable-set! fun *make-el-procedure*))
+		(var-variable-set! fun *make-el-procedure*)
+		(when *strict-node-type*
+		   (var-type-set! fun *procedure-el*)
+		   (set! type *procedure-el*)))
 	       (else
-		(var-variable-set! fun *make-el-procedure*))))
+		(var-variable-set! fun *make-el-procedure*)
+		(when *strict-node-type*
+		   (var-type-set! fun *procedure-el*)
+		   (set! type *procedure-el*)))))
 	 (set! args (cddr args))
 	 app))
    (define (make-light-procedure-app app)
-      (with-access::make-procedure-app app (fun args)
+      (with-access::make-procedure-app app (fun args type)
 	 (let* ((size (get-node-atom-value (caddr args)))
 		(ffun (var-variable (car args)))
 		(sfun (variable-value ffun)))
@@ -267,6 +273,10 @@
 		(scnst-class-set! (global-value (sfun-the-closure sfun))
 				  'slfun))
 	    (var-variable-set! fun *make-l-procedure*)
+	    (when *strict-node-type*
+	       ;; l-procedures are typed as regular procedures
+	       (var-type-set! fun *procedure*)
+	       (set! type *procedure*))
 	    (set-cdr! args (cddr args))
 	    app)))
    ;; we change the procedure allocation sites

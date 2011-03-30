@@ -40,11 +40,26 @@
 		      (block-succs b) ))
 	 r )))
 
+;* (define (mget-type e)                                               */
+;*    (let ((t (get-type e)))                                          */
+;*       (if (eq? (type-id t) 'foreign)                                */
+;* 	  (tprint "\n\n\n\n\nPAS GLOP: " (shape e)))                   */
+;*       t))                                                           */
+;*                                                                     */
+;* (define-expander get-type                                           */
+;*    (lambda (x e)                                                    */
+;*       `(mget-type ,(e (cadr x) e))))                                */
+			   
 ;;
 ;; Regs
 ;;
 (define (new-reg::rtl_reg e::node) ; ()
-   (instantiate::rtl_reg (type (get-type e)) (var #f) (name (gensym))) )
+   (if (var? e)
+       (instantiate::rtl_reg
+	  (type (variable-type (var-variable e)))
+	  (var #f)
+	  (name (gensym)))
+       (instantiate::rtl_reg (type (get-type e)) (var #f) (name (gensym)))) )
 
 (define (new-ureg::rtl_reg var::local) ; ()
    (instantiate::rtl_reg (type (local-type var)) (var var)) )
@@ -296,11 +311,6 @@
 (define (imperative? e v::global args) ; args::(list node)
    (let ( (id (global-id v)) )
       (cond
-	 ((eq? id 'procedure-1-el-set!)
-	  ;; CARE assume (local? (car args))
-	  (link (node->rtl/in (caddr args)
-			      (local->reg (var-variable (car args))) )
-		(single #f (instantiate::rtl_nop)) ))
 	 ((eq? id '__evmeaning_address)
 	  (call e
 		(instantiate::rtl_globalref (var (var-variable (car args))))) )

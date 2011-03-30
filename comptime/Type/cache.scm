@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Fri Mar 18 10:17:06 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 18:17:07 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
@@ -39,6 +39,7 @@
 	   *pair*
 	   *epair*
 	   *pair-nil*
+	   *list*
 	   *string*
 	   *bstring*
 	   *ucs2string*
@@ -49,8 +50,8 @@
 	   *unspec*
 	   *procedure*
 	   *procedure-el*
-	   *procedure-el1*
 	   *exit*
+	   *foreign*
 	   *_*
 	   (get-default-type::type)
 	   (set-default-type! ::type)
@@ -84,6 +85,7 @@
    (set! *pair*          (use-type! 'pair #f))
    (set! *epair*         (use-type! 'epair #f))
    (set! *pair-nil*      (use-type! 'pair-nil #f))
+   (set! *list*          (use-type! 'list #f))
    (set! *bnil*          (use-type! 'nil #f))
    (set! *string*        (use-type! 'string #f))
    (set! *bstring*       (use-type! 'bstring #f))
@@ -94,12 +96,12 @@
    (set! *struct*        (use-type! 'struct #f))
    (set! *procedure*     (use-type! 'procedure #f))
    (set! *procedure-el*  (use-type! 'procedure-el #f))
-   (set! *procedure-el1* (use-type! 'procedure-el1 #f))
    (set! *unspec*        (use-type! 'unspecified #f))
    (set! *exit*          (use-type! 'exit #f))
    (set! *object*        (if (type-exists? 'object)
 			     (find-type 'object)
 			     #f))
+   (set! *foreign*       (use-type! 'foreign #f))
    (set! *_*             (use-type! '_ #f))
    (set! *default-type* *_*))
 
@@ -133,15 +135,16 @@
 (define *pair*          'no-type-yet)
 (define *epair*         'no-type-yet)
 (define *pair-nil*      'no-type-yet)
+(define *list*          'no-type-yet)
 (define *bnil*          'no-type-yet)
 (define *vector*        'no-type-yet)
 (define *struct*        'no-type-yet)
 (define *procedure*     'no-type-yet)
 (define *procedure-el*  'no-type-yet)
-(define *procedure-el1* 'no-type-yet)
 (define *unspec*        'no-type-yet)
 (define *exit*          'no-type-yet)
 (define *object*        'no-type-yet)
+(define *foreign*       'no-type-yet)
 (define *_*             'no-type-yet)
 (define *default-type*  'no-type-yet)
 

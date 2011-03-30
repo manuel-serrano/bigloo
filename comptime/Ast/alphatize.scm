@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Sep  7 09:05:36 2010 (serrano)                */
+;*    Last change :  Thu Mar 24 15:16:27 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -96,7 +96,7 @@
 	  (if (fun? (variable-value alpha))
 	      (instantiate::closure
 		 (loc (get-inline-location node))
-		 (type (variable-type alpha))
+		 (type (strict-node-type *procedure* (variable-type alpha)))
 		 (variable alpha))
 	      (duplicate::var node
 		 (loc (get-inline-location node))

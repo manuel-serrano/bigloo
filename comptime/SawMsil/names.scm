@@ -69,7 +69,6 @@
      (ucs2string . "char[]")
      (string . "unsigned int8[]")
      (procedure-el . "class System.Object[]")
-     (procedure-el1 . "class System.Object")
      (dynamic-env . "class bigloo.bgldynamic")
      ;; Change names
      (struct . "class bigloo.bstruct")

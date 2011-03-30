@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  4 10:54:57 1995                          */
-;*    Last change :  Mon Sep  8 16:27:01 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 08:32:18 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define-struct' expansion                                    */
 ;*=====================================================================*/
@@ -78,7 +78,7 @@
             (cons
              (e (epairify
 		 `(define-inline (,name ,@slots-name)
-		     (let ((new (c-create-struct ',name ,len)))
+		     (let ((new ($create-struct ',name ,len)))
 			,@(let loop ((slots slots-name)
 				     (res   '()))
 			     (if (null? slots)

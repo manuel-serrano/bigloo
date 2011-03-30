@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Mar 17 06:24:29 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:23:00 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -66,6 +66,7 @@
 	    *optim-cfa-free-var-tracking?*
 	    *optim-cfa-funcall-tracking?*
 	    *optim-cfa-apply-tracking?*
+	    *optim-cfa-pair?*
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
@@ -89,6 +90,8 @@
 	    *compiler-debug-trace*
 	    *error-localization*
 	    *compiler-sharing-debug?*
+	    *compiler-type-debug?*
+	    *compiler-stack-debug?*
 	    ;; -------------------------------------------------------------
 	    *bmem-profiling*
 	    *debug-module*
@@ -588,6 +591,12 @@
 (param-define *compiler-sharing-debug?*
 	      "Compiler self sharing debug"
 	      #f)
+(param-define *compiler-type-debug?*
+	      "Compiler self type debug"
+	      #f)
+(param-define *compiler-stack-debug?*
+	      "Compiler self stack trace debug"
+	      #f)
 ;; profiling with bmem
 (param-define *bmem-profiling*
 	      "Instrument code for bmem profiling"
@@ -907,6 +916,9 @@
 	      #f)
 (param-define *optim-cfa-apply-tracking?*
 	      "Track values across apply"
+	      #f)
+(param-define *optim-cfa-pair?*
+	      "Track values across pairs"
 	      #f)
 (param-define *optim-integrate?*
 	      "Enable function integration (closure analysis)"

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sat Mar 19 06:16:49 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:07:50 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -64,14 +64,12 @@
 		   "bgl_make_procedure")
 	    
 	    (macro make-fx-procedure::procedure (::obj ::int ::int)
-		   "make_fx_procedure")		 
+		   "MAKE_FX_PROCEDURE")		 
 	    (macro make-va-procedure::procedure (::obj ::int ::int)
-		   "make_va_procedure")
+		   "MAKE_VA_PROCEDURE")
 	    
 	    (macro make-el-procedure::procedure-el (::int)
 		   "MAKE_EL_PROCEDURE")	 
-	    (macro make-el-procedure-1::procedure-el1 (::int)
-		   "MAKE_EL_PROCEDURE_1")	 
 	    
 	    (macro make-l-procedure::procedure (::obj ::int)
 		   "MAKE_L_PROCEDURE")		 
@@ -95,11 +93,6 @@
 		   "PROCEDURE_EL_SET")		 
 	    (macro procedure-el-ref::obj (::procedure-el ::int)
 		   "PROCEDURE_EL_REF")
-	    
-	    (macro procedure-1-el-set!::obj (::procedure-el1 ::int ::obj)
-		   "PROCEDURE_1_EL_SET")		 
-	    (macro procedure-1-el-ref::obj (::procedure-el1 ::int)
-		   "PROCEDURE_1_EL_REF")
 	    
 	    (macro make-cell::obj (::obj)
 		   "MAKE_CELL")
@@ -193,8 +186,6 @@
 	       
 	       (method static make-el-procedure::procedure-el (::int)
 		       "MAKE_EL_PROCEDURE")	 
-	       (method static make-el-procedure-1::procedure-el1 (::int)
-		       "MAKE_EL_PROCEDURE_1")	 
 	       
 	       (method static make-l-procedure::procedure (::obj ::int)
 		       "MAKE_L_PROCEDURE")		 
@@ -218,11 +209,6 @@
 		       "PROCEDURE_EL_SET")		 
 	       (method static procedure-el-ref::obj (::procedure-el ::int)
 		       "PROCEDURE_EL_REF")
-	       
-	       (method static procedure-1-el-set!::obj (::procedure-el1 ::int ::obj)
-		       "PROCEDURE_1_EL_SET")		 
-	       (method static procedure-1-el-ref::obj (::procedure-el1 ::int)
-		       "PROCEDURE_1_EL_REF")
 	       
 	       (method static make-cell::cell (::obj)
 		       "MAKE_CELL")
@@ -314,8 +300,6 @@
 	    (procedure-l-ref nesting args-safe)
 	    (procedure-el-set! nesting args-safe)
 	    (procedure-el-ref nesting args-safe)
-	    (procedure-1-el-set! nesting args-safe)
-	    (procedure-1-el-ref nesting args-safe)
 	    (cell? (predicate-of cell) nesting)
 	    (cell-set! nesting args-safe)
 	    (cell-ref nesting  args-safe)

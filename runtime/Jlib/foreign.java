@@ -3734,22 +3734,6 @@ public final class foreign
 	 return p.env[i];
       }
 
-   public static procedure MAKE_EL_PROCEDURE_1(int n)
-      {
-	 return new procedure(0, 0, new Object[n]);
-      }
-
-   public static Object PROCEDURE_1_EL_SET(procedure p, int i, Object o)
-      {
-	 p.env[i] = o;
-	 return unspecified.unspecified;
-      }
-
-   public static Object PROCEDURE_1_EL_REF(procedure p, int i)
-      {
-	 return p.env[i];
-      }
-
    public static Object PROCEDURE_L_REF(procedure p, int i)
       {
 	 return p.env[i];
@@ -4130,8 +4114,9 @@ public final class foreign
 	 } catch( bexception be ) {
 	    return debug_handler( be, tag );
 	 } catch( Throwable _ ) {
-	    System.err.println( "Unexpect Java Exception: " +
+	    System.err.println( "Unexpected Java Exception: " +
 				v.getClass().getName().getBytes() );
+	    v.printStackTrace( new stackwriter( System.err, true ) );
 	 }
       }
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Mar 23 11:18:20 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:23:15 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -415,6 +415,10 @@
       (("-fnocfa-tracking" (help "Disable CFA tracking"))
        (set! *optim-cfa-free-var-tracking?* #f)
        (set! *optim-cfa-funcall-tracking?* #f))
+      (("-fcfa-pair" (help "Enable CFA pairs approximations"))
+       (set! *optim-cfa-pair?* #t))
+      (("-fnocfa-pair" (help "Disable CFA pairs approximations"))
+       (set! *optim-cfa-pair?* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))
@@ -503,7 +507,9 @@
       (("-gbdb?opt" (help "-gbdb[23]" "Compile with bdb debug informations"))
        (parse-bdb-args opt))
       (("-gself" (help "Enables self compiler debug options"))
-       (set! *compiler-sharing-debug?* #t))
+       (set! *compiler-stack-debug?* #t)
+       (set! *compiler-sharing-debug?* #t)
+       (set! *compiler-type-debug?* #t))
       (("-gmodule" (help "Debug module initialization"))
        (set! *debug-module* 1)
        (bigloo-debug-module-set! 1))

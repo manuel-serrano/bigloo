@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/glo-decl.scm            */
+;*    serrano/prgm/project/bigloo/comptime/Ast/glo_decl.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Fri Sep 12 07:21:43 2008 (serrano)                */
+;*    Last change :  Sun Mar 27 07:45:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -138,7 +138,7 @@
 	  (id (car id.type))
 	  (sfun (instantiate::sfun
 		   (arity arity)
-		   (args  args-type)
+		   (args args-type)
 		   (args-name args-name)
 		   (class class)
 		   (optionals opts)

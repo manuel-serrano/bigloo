@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Wed Mar 23 08:03:26 2011 (serrano)                */
+;*    Last change :  Sat Mar 26 08:35:00 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -91,11 +91,14 @@
 	  (instantiate::let-var
 	     (loc loc)
 	     (body body)
-	     (type *_*)
+	     (type (strict-node-type (node-type body) *_*))
 	     (bindings (map (lambda (o.n)
 			       (cons (cdr o.n)
 				     (a-make-cell (instantiate::var
-						     (type *_*)
+						     (type (strict-node-type
+							    (variable-type
+							     (car o.n))
+							    *_*))
 						     (loc loc)
 						     (variable (car o.n)))
 						  (car o.n))))
@@ -108,7 +111,10 @@
    (with-access::node node (loc)
       (local-access-set! variable 'cell-globalize)
       (svar/Ginfo-celled?-set! (variable-value variable) #t)
-      (instantiate::make-box (type *_*) (loc loc) (value node))))
+      (instantiate::make-box
+	 (type (strict-node-type *cell* *_*))
+	 (loc loc)
+	 (value node))))
    
 ;*---------------------------------------------------------------------*/
 ;*    celled? ...                                                      */
@@ -155,11 +161,13 @@
 	  ;; static type of the variable, because it might be that another
 	  ;; local function changes the dynamic type of the variable
 	  ;; (same problem in the integration stage)
-	  (node-type-set! node *obj*)
-	  (instantiate::box-ref
-	     (loc (node-loc node))
-	     (type (variable-type (var-variable node)))
-	     (var node)))
+	  (let* ((vtype (variable-type variable))
+		 (ntype (strict-node-type (get-bigloo-type vtype) *obj*)))
+	     (node-type-set! node ntype)
+	     (instantiate::box-ref
+		(loc (node-loc node))
+		(type (strict-node-type (node-type node) vtype))
+		(var node))))
 	 (else
 	  node))))
 
@@ -225,7 +233,10 @@
 	     ;; we add its environement if it is a local function ...
 	     (set! args (cons (glo! (instantiate::var
 				       (loc loc)
-				       (type *_*)
+				       (type (strict-node-type
+					      (variable-type
+					       (the-closure fun loc))
+					       *_*))
 				       (variable (the-closure fun loc)))
 				    integrator)
 			      args)))
@@ -241,7 +252,8 @@
 			   (var   (if (local? alpha) alpha kap)))
 		       (loop (cons (instantiate::var
 				      (loc loc)
-				      (type *_*)
+				      (type (strict-node-type
+					     (variable-type var) *_*))
 				      (variable var))
 				   new-actuals)
 			     (cdr kaptured)))))))
@@ -305,15 +317,16 @@
 			     (kaptured? #f))
 			  (instantiate::let-var
 			     (loc loc)
-			     (type *_*)
+			     (type (strict-node-type *unspec* *_*))
 			     (bindings (list (cons a-var value)))
 			     (body (instantiate::box-set!
 				      (loc loc)
-				      (type *_*)
+				      (type (strict-node-type *unspec* *_*))
 				      (var (setq-var node))
 				      (value (instantiate::var
 						(loc loc)
-						(type *_*)
+						(type (strict-node-type
+						       (variable-type a-var) *_*))
 						(variable a-var)))))))
 		       node)))))))
 
@@ -481,13 +494,13 @@
       (if (null? ebindings)
 	  (instantiate::let-var
 	     (loc (node-loc node))
-	     (type *_*)
+	     (type (strict-node-type (node-type node) *_*))
 	     (bindings bindings)
 	     (body (if (null? sets)
 		       node
 		       (instantiate::sequence
 			  (loc (node-loc node))
-			  (type *_*)
+			  (type (strict-node-type (node-type node) *_*))
 			  (nodes (append sets (list node)))))))
 	  (let* ((local (car ebindings))
 		 (new   (the-closure local (node-loc node)))
@@ -533,25 +546,27 @@
 	  (loc      #unspecified)
 	  (make-p   (cond
 		       ((<fx arity 0) 'make-va-procedure)
-		       (else 'make-fx-procedure))))
+		       (else 'make-fx-procedure)))
+	  (v        (find-global/module make-p 'foreign)))
       (instantiate::app
 	 (loc loc)
-	 (type *_*)
+	 (type (strict-node-type (variable-type v) *_*))
 	 (fun (instantiate::var
 		 (loc loc)
-		 (type *_*)
-		 (variable (find-global/module make-p 'foreign))))
+		 (type (strict-node-type (variable-type v) *_*))
+		 (variable v)))
 	 (args (list (instantiate::var
 			(loc loc)
-			(type *_*)
+			(type (strict-node-type
+			       (variable-type (the-global local)) *_*))
 			(variable (the-global local)))
 		     (instantiate::atom
 			(loc loc)
-			(type *_*)
+			(type (strict-node-type (get-type-atom arity) *_*))
 			(value arity))
 		     (instantiate::atom
 			(loc loc)
-			(type *_*)
+			(type (strict-node-type (get-type-atom 1) *_*))
 			(value (length kaptured))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -560,22 +575,22 @@
 (define (make-sets new loc kaptured integrator)
    (if (null? kaptured)
        '()
-       (instantiate::sequence
-	  (loc loc)
-	  (type *_*)
-	  (nodes (let loop ((kaptured kaptured)
-			    (indice   0)
-			    (sets     '()))
-		    (if (null? kaptured)
-			(reverse! sets)
-			(loop (cdr kaptured)
-			      (+fx indice 1)
-			      (cons (a-procedure-set! loc
-						      new
-						      indice
-						      (car kaptured)
-						      integrator)
-				    sets))))))))
+       (let loop ((kaptured kaptured)
+		  (indice   0)
+		  (sets     '()))
+	  (if (null? kaptured)
+	      (instantiate::sequence
+		 (loc loc)
+		 (type (strict-node-type (node-type (car sets)) *_*))
+		 (nodes (reverse! sets)))
+	      (loop (cdr kaptured)
+		    (+fx indice 1)
+		    (cons (a-procedure-set! loc
+					    new
+					    indice
+					    (car kaptured)
+					    integrator)
+			  sets))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    a-procedure-set! ...                                             */
@@ -586,25 +601,28 @@
 	 (if (local? alpha)
 	     (alpha-convert alpha)
 	     var)))
-   (instantiate::app
-      (loc loc)
-      (type *_*)
-      (fun (instantiate::var
-	      (loc loc)
-	      (type *_*)
-	      (variable (find-global/module 'procedure-set! 'foreign))))
-      (args (list (instantiate::var
-		     (loc loc)
-		     (type *_*)
-		     (variable new))
-		  (instantiate::atom
-		     (loc loc)
-		     (type *_*)
-		     (value indice))
-		  (instantiate::var
-		     (loc loc)
-		     (type *_*)
-		     (variable (alpha-convert kaptured)))))))
+   (let ((vf (find-global/module 'procedure-set! 'foreign))
+	 (va (alpha-convert kaptured)))
+      (instantiate::app
+	 (loc loc)
+	 (type (strict-node-type (variable-type vf) *_*))
+	 (fun (instantiate::var
+		 (loc loc)
+		 (type (strict-node-type (variable-type vf) *_*))
+		 (variable vf)))
+	 (args (list (instantiate::var
+			(loc loc)
+			(type (strict-node-type (variable-type new) *_*))
+			(variable new))
+		     (instantiate::atom
+			(loc loc)
+			(type (strict-node-type (get-type-atom indice) *_*))
+			(value indice))
+		     (let ()
+			(instantiate::var
+			   (loc loc)
+			   (type (strict-node-type (variable-type va) *_*))
+			   (variable va))))))))
 						       
 							     
 			    

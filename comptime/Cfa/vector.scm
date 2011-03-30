@@ -3,12 +3,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Sun Nov 28 08:26:24 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 17:58:21 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The vector approximation managment                               */
+;*    The vector approximation management                              */
 ;*    -------------------------------------------------------------    */
-;*    All vectors fields approximation are merger into on single set.  */
+;*    All vectors fields approximation are merged into one single set. */
 ;*=====================================================================*/
  
 ;*---------------------------------------------------------------------*/
@@ -63,14 +63,18 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::pre-valloc/Cinfo)
    (add-make-vector! node)
-   (with-access::pre-valloc/Cinfo node (expr* owner type)
+   (with-access::pre-valloc/Cinfo node (expr* owner type ftype)
       (node-setup*! expr*)
       (let* ((owner owner)
 	     (node (shrink! node)))
 	 (let ((wnode (widen!::valloc/Cinfo+optim node
 			 (owner owner)
 			 (approx (make-empty-approx))
-			 (value-approx (make-empty-approx)))))
+			 (value-approx (if *strict-node-type*
+					   (if (eq? ftype *_*)
+					       (make-empty-approx)
+					       (make-type-approx ftype))
+					   (make-empty-approx))))))
 	    (trace (cfa 3) "  valloc(optim): " (shape node) #\Newline)
 	    (valloc/Cinfo+optim-approx-set!
 	     wnode

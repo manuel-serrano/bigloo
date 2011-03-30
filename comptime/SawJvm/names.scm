@@ -39,13 +39,12 @@
    (for-each (lambda (v i)
 		(widen!::tvec (find-type v) (item-type (find-type i))) )
 	     '(bstring string ucs2string vector cnst* procedure-el)
-	     '(char    char   ucs2       obj    obj   obj ))
+	     '(char    char   ucs2       obj    obj   obj) )
    ;; Set some names by hand
    (for-each (lambda (s) (type-name-set! (find-type (car s)) (cdr s)))
 	     '((obj           . obj)
 	       (magic         . obj)
 	       (pair-nil      . obj)
-	       (procedure-el1 . obj)
 	       (void*         . obj)
 	       (tvector       . obj)
 	       ; Not here in mklib mode

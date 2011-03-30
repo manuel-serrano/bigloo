@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo2.3/comptime/Foreign/cstruct.scm      */
+;*    serrano/prgm/project/bigloo/comptime/Foreign/cstruct.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Mon Jul 17 11:15:43 2000 (serrano)                */
-;*    Copyright   :  1996-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 21:09:53 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C ptr accessors creations                                    */
 ;*=====================================================================*/
@@ -189,7 +189,7 @@
       ;; and the predicate
       (produce-module-clause! `(static
 				,(make-proto-inline `(,bid?-bool ::obj))))
-      (produce-module-clause! `(pragma (,bid? (predicate-of ,wid))))
+      (produce-module-clause! `(pragma (,bid? (predicate-of ,bid))))
       
       (cons* (mk-make-id)
 	     (mk-id)

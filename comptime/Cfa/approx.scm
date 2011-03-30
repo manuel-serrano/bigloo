@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Wed Mar 23 17:34:18 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:57:05 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -13,8 +13,11 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_approx
+   (include "Tools/trace.sch")
    (import  type_type
 	    type_cache
+	    type_coercion
+	    type_misc
 	    tools_shape
 	    tools_error
 	    tools_misc
@@ -52,6 +55,7 @@
 ;*    declare-approx-sets! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (declare-approx-sets!)
+   (trace cfa "================== declare ===========================\n")
    (set! *alloc-set* (declare-set! (list->vector (get-allocs)))))
 
 ;*---------------------------------------------------------------------*/
@@ -111,7 +115,9 @@
 	  (approx-type-set! dst *pair*)
 	  (continue-cfa! 'approx-set-type!))
 	 ((and (eq? dtype *pair-nil*)
-	       (or (eq? type *bnil*) (eq? type *pair*) (eq? type *epair*)))
+	       (or (eq? type *bnil*)
+		   (eq? type *pair*) (eq? type *epair*)
+		   (eq? type *list*)))
 	  ;; pair-nil subtyping 2
 	  #f)
 	 ((and (bigloo-type? dtype) (eq? dtype (get-bigloo-type type)))
@@ -119,7 +125,9 @@
 	  #t)
 	 ((and (or (eq? dtype *bnil*) (eq? dtype *pair*) (eq? dtype *epair*))
 	       (or (eq? type *bnil*)
-		   (eq? type *pair*) (eq? type *epair*) (eq? type *pair-nil*)))
+		   (eq? type *pair*) (eq? type *epair*)
+		   (eq? type *pair-nil*)
+		   (eq? type *list*)))
 	  ;; pair-nil subtyping 3
 	  (approx-type-set! dst *pair-nil*)
 	  (continue-cfa! 'approx-set-type!))
@@ -137,6 +145,16 @@
 		 (continue-cfa! 'approx-set-type!)))))
 	 ((eq? dtype *obj*)
 	  #f)
+	 ((and (not (bigloo-type? dtype)) (not (bigloo-type? type)))
+	  (cond
+	     ((c-subtype? type dtype)
+	      #f)
+	     ((c-subtype? dtype type)
+	      (approx-type-set! dst type)
+	      (continue-cfa! 'approx-set-type!))
+	     (else
+	      (approx-type-set! dst *obj*)
+	      (continue-cfa! 'approx-set-type!))))
 	 ((eq? dtype *_*)
 	  (approx-type-set! dst type)
 	  (continue-cfa! 'approx-set-type!))

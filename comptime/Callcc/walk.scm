@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Sun Nov 28 17:48:14 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 24 14:02:19 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -79,11 +79,13 @@
 	  (instantiate::let-var
 	     (loc loc)
 	     (body body)
-	     (type *_*)
+	     (type (strict-node-type (node-type body) *_*))
 	     (bindings (map (lambda (o.n)
 			       (cons (cdr o.n)
 				     (a-make-cell (instantiate::var
-						     (type *_*)
+						     (type (strict-node-type
+							    (variable-type (car o.n))
+							    *_*))
 						     (loc loc)
 						     (variable (car o.n)))
 						  (car o.n))))
@@ -96,7 +98,10 @@
    (with-access::node node (loc)
       (local-access-set! variable 'cell-callcc)
       (widen!::local/cell variable)
-      (instantiate::make-box (type *_*) (loc loc) (value node))))
+      (instantiate::make-box
+	 (type (strict-node-type *cell* *_*))
+	 (loc loc)
+	 (value node))))
    
 ;*---------------------------------------------------------------------*/
 ;*    celled? ...                                                      */
@@ -218,15 +223,15 @@
 		 (let ((a-var (make-local-svar 'aux *obj*))
 		       (loc   (node-loc node)))
 		    (instantiate::let-var
-		       (type     *_*)
+		       (type     (strict-node-type *unspec* *_*))
 		       (loc      loc)
 		       (bindings (list (cons a-var (setq-value node))))
 		       (body     (instantiate::box-set!
-				    (type *_*)
+				    (type (strict-node-type *unspec* *_*))
 				    (loc loc)
 				    (var (setq-var node))
 				    (value (instantiate::var
-					      (type *_*)
+					      (type (strict-node-type (variable-type a-var) *_*))
 					      (loc loc)
 					      (variable a-var)))))))))))))
 

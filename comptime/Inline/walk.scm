@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Sun Mar 13 14:01:16 2011 (serrano)                */
+;*    Last change :  Mon Mar 28 09:40:40 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
@@ -87,8 +87,8 @@
 ;*    show-stat! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (show-stat!)
-   (verbose 2 "      (inlined calls     : " *inlined-calls* #")\n")
-   (verbose 2 "      (non inlined calls : " *non-inlined-calls* #")\n")
+   (verbose 2 "      inlined calls: " *inlined-calls* #"\n")
+   (verbose 2 "      non inlined calls: " *non-inlined-calls* #"\n")
    #t)
    
 ;*---------------------------------------------------------------------*/

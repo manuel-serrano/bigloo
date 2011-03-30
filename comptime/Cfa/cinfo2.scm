@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Wed Mar 16 17:05:58 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 09:39:58 2011 (serrano)                */
 ;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
@@ -84,6 +84,43 @@
 	      ;; A type error is detected because v is given
 	      ;; an erroneous type.
 	      (seen?::bool (default #f)))
+	       
+	   ;; pair
+	   (wide-class pre-cons-app::app
+	      ;; the allocation owner
+	      (owner::variable read-only))
+	   (wide-class pre-cons-ref-app::app
+	      (get::procedure read-only))
+	   (wide-class pre-cons-set!-app::app
+	      (get::procedure read-only))
+	   
+	   (wide-class cons-app::app
+	      ;; the approx of the cons (i.e. *pair*)
+	      approx::approx
+	      ;; the approximation of the values holded by the pair
+	      (approxes::pair read-only)
+	      ;; a stamp to avoid infinit loop when loosing a pair
+	      (lost-stamp::long (default -1))
+	      ;; an allocation owner
+	      (owner::variable read-only)
+	      ;; a stamp use for the stack loosing propagation
+	      (stack-stamp (default '()))
+	      ;; Is the cons subject to a cons-ref or a cons-set!
+	      ;; If not, this cons cannot be optimized. This is mandatory
+	      ;; otherwise this analysis fails for code like:
+	      ;; (let ((v #unspecified))
+	      ;;     (set! v (cons 1 2))
+	      ;;     (set! v #f)
+	      ;;     ...)
+	      ;; A type error is detected because v is given
+	      ;; an erroneous type.
+	      (seen?::bool (default #f)))
+	   (wide-class cons-ref-app::app
+	      (approx::approx read-only)
+	      (get::procedure read-only))
+	   (wide-class cons-set!-app::app
+	      (approx::approx read-only)
+	      (get::procedure read-only))
 	       
 	   ;; struct
 	   (wide-class pre-make-struct-app::app

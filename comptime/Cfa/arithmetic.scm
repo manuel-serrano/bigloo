@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Thu Mar 17 08:00:10 2011 (serrano)                */
+;*    Last change :  Fri Mar 25 05:55:36 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
@@ -41,7 +41,7 @@
 	    cfa_setup
 	    cfa_approx
 	    cfa_tvector)
-   (export  (cleanup-arithmetic-nodes!)))
+   (export  (cleanup-arithmetic-nodes! globals)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cleanup-arithmetic-nodes! ...                                    */
@@ -49,18 +49,14 @@
 ;*    For each arithmetic nodes that has not been allocated specific   */
 ;*    arithmetic types, we allocate generic types.                     */
 ;*---------------------------------------------------------------------*/
-(define (cleanup-arithmetic-nodes!)
+(define (cleanup-arithmetic-nodes! globals)
    (define (cleanup-type t)
       (cond
 	 ((type? t)
-	  (if (eq? t *_*)
-	      *obj*
-	      t))
+	  (if (eq? t *_*) *obj* t))
 	 ((local? t)
-	  (if (eq? (local-type t) *_*)
-	      (local-type-set!
-	       t
-	       *obj*))
+	  (when (eq? (local-type t) *_*)
+	     (local-type-set! t *obj*))
 	  t)
 	 (else
 	  t)))
@@ -69,10 +65,10 @@
 		   (let* ((f (var-variable fun))
 			  (val (variable-value f)))
 		      ;; we have first to unspecialize the function call
-		      (if (eq? (variable-type f) *_*)
-			  (variable-type-set! f *obj*))
-		      (if (eq? (node-type node) *_*)
-			  (node-type-set! node *obj*))
+		      (when (eq? (variable-type f) *_*)
+			 (variable-type-set! f *obj*))
+		      (when (eq? (node-type node) *_*)
+			 (node-type-set! node *obj*))
 		      (cond
 			 ((sfun? val)
 			  (sfun-args-set! val
@@ -83,7 +79,149 @@
 				 (begin
 				    (set-car! l (cleanup-type (car l)))
 				    (loop (cdr l))))))))))
-	     *arithmetic-nodes*))
+	     *arithmetic-nodes*)
+   ;; patch all the bodies to take into account the new computed types
+   (for-each cleanup-fun! globals)
+   globals)
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-fun! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (cleanup-fun! var)
+   (let* ((fun (variable-value var))
+	  (body (sfun-body fun)))
+      (cleanup-node! body)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::node ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (cleanup-node! node::node)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::sequence ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::sequence)
+   (with-access::sequence node (nodes type)
+      (when (pair? nodes)
+	 (for-each cleanup-node! nodes)
+	 (when (eq? type *_*)
+	    (set! type (node-type (car (last-pair nodes))))))))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::setq ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::setq)
+   (with-access::setq node (value)
+      (cleanup-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::conditional ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::conditional)
+   (with-access::conditional node (type test true false)
+      (cleanup-node! test)
+      (cleanup-node! true)
+      (cleanup-node! false)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::fail ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::fail)
+   (with-access::fail node (type proc msg obj)
+      (cleanup-node! proc)
+      (cleanup-node! msg)
+      (cleanup-node! obj)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::select ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::select)
+   (with-access::select node (clauses test)
+      (cleanup-node! test)
+      (for-each (lambda (clause) (cleanup-node! (cdr clause))) clauses)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::let-fun ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::let-fun)
+   (with-access::let-fun node (type locals body)
+      (for-each cleanup-fun! locals)
+      (cleanup-node! body)
+      (when (eq? type *_*)
+	 (set! type (node-type body)))))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::let-var ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::let-var)
+   (with-access::let-var node (type bindings body)
+      (for-each (lambda (b) (cleanup-node! (cdr b))) bindings)
+      (cleanup-node! body)
+      (when (eq? type *_*)
+	 (set! type (node-type body)))))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::set-ex-it ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::set-ex-it)
+   (with-access::set-ex-it node (type var body)
+      (cleanup-node! var)
+      (cleanup-node! body)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::jump-ex-it ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::jump-ex-it)
+   (with-access::jump-ex-it node (exit value)
+      (cleanup-node! exit)
+      (cleanup-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::make-box ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::make-box)
+   (with-access::make-box node (value)
+      (cleanup-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::box-ref ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::box-ref)
+   (with-access::box-ref node (var)
+      (cleanup-node! var)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::box-set! ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::box-set!)
+   (with-access::box-set! node (var value)
+      (cleanup-node! var)
+      (cleanup-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::app-ly ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::app-ly)
+   (with-access::app-ly node (fun arg)
+      (cleanup-node! fun)
+      (cleanup-node! arg)))
+      
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::funcall ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::funcall)
+   (with-access::funcall node (fun args)
+      (cleanup-node! fun)
+      (for-each cleanup-node! args)))
+      
+;*---------------------------------------------------------------------*/
+;*    cleanup-node! ::app ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (cleanup-node! node::app)
+   (with-access::app node (fun args)
+      (cleanup-node! fun)
+      (for-each cleanup-node! args)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *arithmetic-nodes* ...                                           */
@@ -107,12 +245,11 @@
       (let* ((f (var-variable fun))
 	     (val (variable-value f)))
 	 ;; we have first to unspecialize the function call
-	 (if (eq? (variable-type f) *obj*)
-	     ;; if the node is a predicate (such as <), the return type,
-	     ;; is bool and there is no need to introduce type inference
-	     (begin
-		(variable-type-set! f *_*)
-		(node-type-set! node *_*)))
+	 (when (eq? (variable-type f) *obj*)
+	    ;; if the node is a predicate (such as <), the return type,
+	    ;; is bool and there is no need to introduce type inference
+	    (variable-type-set! f *_*)
+	    (node-type-set! node *_*))
 	 (cond
 	  ((sfun? val)
 	   (sfun-args-set! val (map unspecified-type (sfun-args val))))
@@ -201,7 +338,3 @@
       ;; we are done
       (trace (cfa 4) "<<< arithmetic: " (shape approx) #\Newline)
       approx))
-
-
-
-

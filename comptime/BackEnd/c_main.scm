@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c-main.scm          */
+;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_main.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Tue Jul 28 17:11:09 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 27 14:55:30 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    ast_sexp
 	    ast_local
 	    ast_glo-def
+	    ast_lvtype
 	    tools_shape
 	    backend_c_prototype
 	    backend_cplib)
@@ -34,29 +35,33 @@
 ;*    make-bigloo-main ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-bigloo-main)
-   (let* ((args        (list (make-local-svar 'argv *obj*)))
-	  (main-body   (if (global? *main*)
-			   `(begin
-			       (,(module-initialization-id *module*)
-				0
-				,(symbol->string *module*))
-			       ((@ bigloo-initialized! __param))
-			       (%exit ((@ ,(global-id *main*)
-					  ,(global-module *main*))
-				       argv)))
-			   `(begin
-			       (,(module-initialization-id *module*)
-				0
-				,(symbol->string *module*))
-			       ((@ bigloo-initialized! __param))
-			       (let ((z::bint ($int->bint 0)))
-				  (%exit z))
-			       #unspecified)))
-	  (node        (let ((_ *_*))
-			  (set! *_* *obj*)
-			  (let ((node (sexp->node main-body args #f 'value)))
-			     (set! *_* _)
-			     node)))
+   (let* ((args (list (make-local-svar 'argv *obj*)))
+	  (main-body (if (global? *main*)
+			 `(begin
+			     (,(module-initialization-id *module*)
+			      0
+			      ,(symbol->string *module*))
+			     ((@ bigloo-initialized! __param))
+			     (%exit ((@ ,(global-id *main*)
+					,(global-module *main*))
+				     argv)))
+			 `(begin
+			     (,(module-initialization-id *module*)
+			      0
+			      ,(symbol->string *module*))
+			     ((@ bigloo-initialized! __param))
+			     (let ((z::bint ($int->bint 0)))
+				(%exit z))
+			     #unspecified)))
+	  (node (if *strict-node-type*
+		    (let ((node (sexp->node main-body args #f 'value)))
+		       (lvtype-node! node)
+		       node)
+		    (let ((_ *_*))
+		       (set! *_* *obj*)
+		       (let ((node (sexp->node main-body args #f 'value)))
+			  (set! *_* _)
+			  node))))
 	  (bigloo-main (def-global-sfun! 'bigloo_main::obj
 			  '(argv::obj)
 			  args

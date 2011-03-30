@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:10:09 1995                          */
-;*    Last change :  Thu Apr  3 10:26:01 2003 (serrano)                */
-;*    Copyright   :  1995-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 28 16:21:45 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of `Cn' and `Ct'.                                */
 ;*=====================================================================*/
@@ -44,6 +44,13 @@
 	     (cond
 		((global? g)
 		 (loop (cdr As) G/cn))
+		((sfun/Iinfo-forceG? gi)
+		 ;; CARE, MS 28Mar2011: fix the trick a integrate_a)
+		 (if (not (sfun/Iinfo-G? gi))
+		     (begin
+			(sfun/Iinfo-G?-set! gi #t)
+			(loop (cdr As) (cons g G/cn)))
+		     (loop (cdr As) G/cn)))
 		((eq? k 'tail)
 		 (sfun/Iinfo-Ct-set! fi (cons g (sfun/Iinfo-Ct fi)))
 		 (if (and (not (eq? f g))
@@ -52,11 +59,7 @@
 		 (loop (cdr As) G/cn))
 		((eq? k 'escape)
 		 (tprint "!!!!! SHOULD NOT BE HERE.....")
-		 (error 'Cn&Ct! "SHould not be here" A)
-;* 		 (if (not (memq g (sfun/Iinfo-kont fi)))               */
-;* 		     (sfun/Iinfo-kont-set! fi (cons g (sfun/Iinfo-kont fi)))) */
-;* 		 (loop (cdr As) G/cn)                                  */
-		 )
+		 (error 'Cn&Ct! "SHould not be here" A))
 		((sfun/Iinfo-U gi)
 		 (sfun/Iinfo-Ct-set! fi (cons g (sfun/Iinfo-Ct fi)))
 		 (if (not (memq g (sfun/Iinfo-kont fi)))

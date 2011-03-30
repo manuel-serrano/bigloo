@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Wed Oct 15 11:20:50 2008 (serrano)                */
+;*    Last change :  Thu Mar 24 09:42:24 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -67,7 +67,7 @@
 	    (if (and (var? n) (local? (var-variable n)))
 		(let ((red (assq (var-variable n) stack)))
 		   (if (pair? red)
-		       (cdr red)
+		       (duplicate::atom (cdr red))
 		       n))
 		(node-beta! n stack)))
 	 (app-args node))

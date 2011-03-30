@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Mar 22 08:49:13 2011 (serrano)                */
+;*    Last change :  Wed Mar 30 08:46:36 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -35,8 +35,8 @@
 ;*---------------------------------------------------------------------*/
 (define (reduce-type-check! globals)
    (verbose 2 #"      type check             ")
-   (set! *pair?* (find-global/module 'c-pair? 'foreign))
-   (set! *null?* (find-global/module 'c-null? 'foreign))
+   (set! *pair?* (find-global/module '$pair? 'foreign))
+   (set! *null?* (find-global/module '$null? 'foreign))
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
 		       (node (sfun-body fun))) 
@@ -295,7 +295,8 @@
 					 #unspecified
 					 type
 					 #f)))
-		       (lvtype-node! node)
+		       (unless *strict-node-type*
+			  (lvtype-node! node))
 		       node))
 		   ((type-disjoint? typec typea)
 		    (set! *type-checks-removed*
@@ -311,7 +312,8 @@
 					 #unspecified
 					 type
 					 #f)))
-		       (lvtype-node! node)
+		       (unless *strict-node-type*
+			  (lvtype-node! node))
 		       node))
 		   (else
 		    (set! *type-checks-remaining*

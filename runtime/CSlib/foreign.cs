@@ -4050,22 +4050,6 @@ namespace bigloo
 	    return p.env[i];
 	 }
 
-      public static procedure MAKE_EL_PROCEDURE_1( int n )
-	 {
-	    return new procedure( 0, 0, new Object[n] );
-	 }
-
-      public static Object PROCEDURE_1_EL_SET( procedure p, int i, Object o )
-	 {
-	    p.env[i]= o;
-	    return unspecified._unspecified;
-	 }
-
-      public static Object PROCEDURE_1_EL_REF( procedure p, int i )
-	 {
-	    return p.env[i];
-	 }
-
       public static Object PROCEDURE_L_REF( procedure p, int i )
 	 {
 	    return p.env[i];

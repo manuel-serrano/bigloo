@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Dec 16 15:42:09 2005 (serrano)                */
+;*    Last change :  Sun Mar 27 07:39:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The apply compilation                                            */
 ;*=====================================================================*/
@@ -52,9 +52,8 @@
 		 (fun proc)
 		 (arg arg)))))
       (else
-       (error-sexp->node "Illegal `apply' form"
-			 exp
-			 (find-location/loc exp loc)))))
+       (error-sexp->node
+	"Illegal `apply' form" exp (find-location/loc exp loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-fun-frame ...                                               */
@@ -148,11 +147,11 @@
 (define (fx-known-app-ly->node stack loc proc arg frame site)
    (let ((runner (make-local-svar (mark-symbol-non-user! (gensym 'runner))
 				  *_*))
-	 (type   (node-type proc)))
+	 (type (node-type proc)))
       (local-access-set! runner 'write)
       (instantiate::let-var
 	 (loc loc)
-	 (type type)
+	 (type (strict-node-type *_* type))
 	 (bindings (list (cons runner arg)))
 	 (body (let loop ((locals frame))
 		  (if (null? locals)
@@ -161,7 +160,7 @@
 				    ,@(map (lambda (local)
 					      (instantiate::var
 						 (loc loc)
-						 (type (local-type local))
+						 (type (strict-node-type *_* (local-type local)))
 						 (variable local)))
 					   frame))
 				  stack
@@ -173,7 +172,7 @@
 			      `(if (null? (cdr
 					   ,(instantiate::var
 					       (loc loc)
-					       (type (local-type runner))
+					       (type (strict-node-type *_* (local-type runner)))
 					       (variable runner))))
 				   ,app
 				   (failure "apply"
@@ -184,14 +183,14 @@
 			      site)))
 		      (instantiate::let-var
 			 (loc loc)
-			 (type type)
+			 (type (strict-node-type *_* type))
 			 (bindings (list (cons
 					  (car locals)
 					  (sexp->node
 					   `(car
 					     ,(instantiate::var
 						 (loc loc)
-						 (type (local-type runner))
+						 (type (strict-node-type *_* (local-type runner)))
 						 (variable runner)))
 					   stack
 					   loc
@@ -202,12 +201,12 @@
 				    `(begin
 					(set! ,(instantiate::var
 						  (loc loc)
-						  (type (local-type runner))
+						  (type (strict-node-type *_* (local-type runner)))
 						  (variable runner))
 					      (cdr
 					       ,(instantiate::var
 						   (loc loc)
-						   (type (local-type runner))
+						   (type (strict-node-type *_* (local-type runner)))
 						   (variable runner))))
 					,(loop (cdr locals)))
 				    stack
@@ -231,14 +230,13 @@
 ;*             (f a0 ... runner))))                                    */
 ;*---------------------------------------------------------------------*/
 (define (va-known-app-ly->node stack loc proc arg frame site)
-   (let ((runner (make-local-svar (mark-symbol-non-user! (gensym 'runner))
-				  *_*))
-	 (type   (node-type proc)))
-      (if (pair? frame)
-	  (local-access-set! runner 'write))
+   (let ((runner (make-local-svar (mark-symbol-non-user! (gensym 'runner)) *_*))
+	 (type   (strict-node-type *_* (node-type proc))))
+      (when (pair? frame)
+	 (local-access-set! runner 'write))
       (instantiate::let-var
 	 (loc loc)
-	 (type type)
+	 (type (strict-node-type *_* type))
 	 (bindings (list (cons runner arg)))
 	 (body (let loop ((locals frame)
 			  (old    '()))
@@ -249,24 +247,24 @@
 			     (set-cdr! old (cons runner '())))
 			 (instantiate::app
 			    (loc loc)
-			    (type (variable-type (var-variable proc)))
+			    (type (strict-node-type *_* (variable-type (var-variable proc))))
 			    (fun (duplicate::var proc))
 			    (args (map (lambda (local)
 					  (instantiate::var
 					     (loc loc)
-					     (type (local-type local))
+					     (type (strict-node-type *_* (local-type local)))
 					     (variable local)))
 				       frame))))
 		      (instantiate::let-var
 			 (loc loc)
-			 (type type)
+			 (type (strict-node-type *_* type))
 			 (bindings (list (cons
 					  (car locals)
 					  (sexp->node
 					   `(car
 					     ,(instantiate::var
 						 (loc loc)
-						 (type (local-type runner))
+						 (type (strict-node-type *_* (local-type runner)))
 						 (variable runner)))
 					   stack
 					   loc
@@ -275,11 +273,11 @@
 				`(begin
 				    (set! ,(instantiate::var
 					      (loc loc)
-					      (type (local-type runner))
+					      (type (strict-node-type *_* (local-type runner)))
 					      (variable runner))
 					  (cdr ,(instantiate::var
 						   (loc loc)
-						   (type (local-type runner))
+						   (type (strict-node-type *_* (local-type runner)))
 						   (variable runner))))
 				    ,(loop (cdr locals) locals))
 				stack

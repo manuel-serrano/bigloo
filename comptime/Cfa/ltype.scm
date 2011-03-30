@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Thu Sep 25 20:39:30 2003 (serrano)                */
-;*    Copyright   :  1996-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 27 15:55:08 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -112,9 +112,9 @@
 ;*    set-variable-type! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (set-variable-type! variable::variable type::type)
-   (if (not (eq? type *_*))
-       ;; we have a true type so we change the variable
-       (variable-type-set! variable type)))
+   (unless (eq? type *_*)
+      ;; we have a true type so we change the variable
+      (variable-type-set! variable type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ...                                                   */
@@ -138,8 +138,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::var) 
    (with-access::var node (variable type)
-      (if (and (global? variable) (eq? (global-import variable) 'static))
-	  (type-variable! (global-value variable) variable))))
+      (when (and (global? variable) (eq? (global-import variable) 'static))
+	 (type-variable! (global-value variable) variable))
+      (when (and *strict-node-type* (eq? (variable-type variable) *procedure-el*))
+	 (set! type *procedure-el*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::closure ...                                         */

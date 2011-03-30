@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Thu Aug  2 07:18:14 2007 (serrano)                */
-;*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 30 21:01:06 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
 ;*=====================================================================*/

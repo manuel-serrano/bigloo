@@ -3,11 +3,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Wed Sep  8 08:26:12 2010 (serrano)                */
+;*    Last change :  Tue Mar 29 19:27:46 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
-;*    We type an node (straightforward typing used by Coerce and Cnst, */
-;*    i.e. passes which occur after the Cfa). This pass only types     */
-;*    local variables introduced in let-var.                           */
+;*    This types a node (straightforward typing used by passes, i.e.,  */
+;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
+;*    propagates types information found in subnodes.                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -21,7 +21,26 @@
 	    tools_error
 	    ast_var
 	    ast_node)
-   (export  (generic lvtype-node! ::node)))
+   (export  (lvtype-ast! ::pair-nil)
+	    (lvtype-node::node ::node)
+	    (generic lvtype-node! ::node)))
+
+;*---------------------------------------------------------------------*/
+;*    lvtype-ast! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (lvtype-ast! ast)
+   (for-each (lambda (g)
+		(lvtype-node! (sfun-body (global-value g))))
+	     ast)
+   ast)
+
+;*---------------------------------------------------------------------*/
+;*    lvtype-node ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (lvtype-node::node node::node)
+   (when *strict-node-type*
+      (lvtype-node! node))
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ...                                                 */
@@ -32,19 +51,23 @@
 ;*    lvtype-node! ::atom ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::atom)
-   #unspecified)
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::kwote ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::kwote)
-   #unspecified)
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::var ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::var)
-   #unspecified)
+   (when *strict-node-type*
+      (with-access::var node (type variable)
+	 (when (eq? type *_*)
+	    (set! type (variable-type variable)))))
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::closure ...                                       */
@@ -56,15 +79,19 @@
 ;*    lvtype-node! ::sequence ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::sequence)
-   (with-access::sequence node (nodes)
-      (lvtype-node*! nodes)))
+   (with-access::sequence node (type nodes)
+      (lvtype-node*! nodes)
+      (when (and *strict-node-type* (eq? type *_*))
+	 (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::app)
-   (with-access::app node (args)
-      (lvtype-node*! args)))
+   (with-access::app node (type fun args)
+      (lvtype-node*! args)
+      (when (and *strict-node-type* (eq? type *_*))
+	 (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app-ly ...                                        */
@@ -108,10 +135,12 @@
 ;*    lvtype-node! ::conditional ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::conditional)
-   (with-access::conditional node (test true false)
+   (with-access::conditional node (type test true false)
        (lvtype-node! test)
        (lvtype-node! true)
-       (lvtype-node! false)))
+       (lvtype-node! false)
+       (when (and *strict-node-type* (eq? type *_*))
+	  (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::fail ...                                          */
@@ -136,24 +165,28 @@
 ;*    lvtype-node! ::let-fun ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::let-fun)
-   (with-access::let-fun node (body locals)
+   (with-access::let-fun node (type body locals)
       (for-each (lambda (local)
 		   (lvtype-node! (sfun-body (local-value local))))
 		locals)
-      (lvtype-node! body)))
+      (lvtype-node! body)
+      (when (and *strict-node-type* (eq? type *_*))
+	 (set! type (get-type body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::let-var ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::let-var)
-   (with-access::let-var node (body bindings)
+   (with-access::let-var node (type body bindings)
       (for-each (lambda (binding)
 		   (let ((var (car binding))
 			 (val (cdr binding)))
 		      (lvtype-node! val)
 		      (set-variable-type! var (get-type val))))
 		bindings)
-      (lvtype-node! body)))
+      (lvtype-node! body)
+      (when (and *strict-node-type* (eq? type *_*))
+	 (set! type (get-type body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::set-ex-it ...                                     */
