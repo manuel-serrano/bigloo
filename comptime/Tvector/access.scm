@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Wed Sep  8 08:48:41 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 31 16:48:02 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
 ;*=====================================================================*/
@@ -24,12 +24,12 @@
 	    tools_shape
 	    ast_ident
 	    ast_private)
-   (export  (make-tvector-accesses tvector::tvec ::obj)))
+   (export  (make-tvector-accesses tvector::tvec ::obj ::bool)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-tvector-accesses ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (make-tvector-accesses tv::tvec src)
+(define (make-tvector-accesses tv::tvec src import)
    (let* ((tv-id         (tvec-id tv))
 	  (tv-name       (tvec-name tv))
 	  (obj           (find-type 'obj))
@@ -51,12 +51,15 @@
 	  (tv-length-id  (symbol-append tv-id '-length)))
       
       (define (make-descr)
-	 `(define ,(symbol-append descr-id '::obj)
-	     ((@ declare-tvector! __tvector)
-	      ,(symbol->string tv-id)
-	      ,tv-alloc-id
-	      ,tv-ref-id
-	      ,tv-set!-id)))
+	 (if import
+	     `(define ,(symbol-append descr-id '::obj)
+		 ((@ get-tvector-descriptor __tvector) ',tv-id))
+	     `(define ,(symbol-append descr-id '::obj)
+		 ((@ declare-tvector! __tvector)
+		  ,(symbol->string tv-id)
+		  ,tv-alloc-id
+		  ,tv-ref-id
+		  ,tv-set!-id))))
       
       (define (make-c-tv?)
 	 `(define-inline (,(symbol-append tv?-id '::bool) o::obj)

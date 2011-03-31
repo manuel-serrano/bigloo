@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Wed Mar 30 08:42:11 2011 (serrano)                */
+;*    Last change :  Thu Mar 31 06:39:05 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -530,15 +530,6 @@
    (let* ((variable (var-variable var))
 	  (gname (global-name variable)))
       (case (global-id variable)
-	 (($vector?)
-	  ;; As for $VECTOR-SET in order to let the cfa specialize the
-	  ;; vector it is required to erase the type of the argument
-	  (node-type-set! (car args) *_*)
-	  (instantiate::app
-	     (loc loc)
-	     (type (strict-node-type *_* (variable-type variable)))
-	     (fun  var)
-	     (args args)))
 	 ((c-eq?)
 	  ;; As for $VECTOR-SET in order to let the cfa specialize the
 	  ;; vector it is required to erase the type of the third argument
@@ -551,6 +542,15 @@
 	      (begin
 		 (node-type-set! (car args) *_*)
 		 (node-type-set! (cadr args) *_*)))
+	  (instantiate::app
+	     (loc loc)
+	     (type (strict-node-type *_* (variable-type variable)))
+	     (fun  var)
+	     (args args)))
+	 (($vector?)
+	  ;; As for $VECTOR-SET in order to let the cfa specialize the
+	  ;; vector it is required to erase the type of the argument
+	  (node-type-set! (car args) *_*)
 	  (instantiate::app
 	     (loc loc)
 	     (type (strict-node-type *_* (variable-type variable)))

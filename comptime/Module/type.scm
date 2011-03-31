@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Wed Mar 30 14:27:14 2011 (serrano)                */
+;*    Last change :  Thu Mar 31 16:45:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
@@ -26,8 +26,8 @@
 	    (find-location tools_location))
    (export  (make-type-compiler)
 	    (tvector-finalizer)
-	    (module-tvector-clause ::symbol ::symbol ::obj)
-	    (delay-tvector! tv clause)))
+	    (module-tvector-clause ::symbol ::symbol ::obj ::obj)
+	    (delay-tvector! tv clause ::bool)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-type-compiler ...                                           */
@@ -35,17 +35,17 @@
 (define (make-type-compiler)
    (instantiate::ccomp
       (id 'type)
-      (producer type-producer/consumer)
-      (consumer (lambda (m c) (type-producer/consumer c)))
+      (producer (lambda (c) (type-producer/consumer #f c)))
+      (consumer type-producer/consumer)
       (finalizer type-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-producer/consumer ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (type-producer/consumer clause)
+(define (type-producer/consumer import clause)
    (match-case clause
       ((?- . ?protos)
-       (for-each (lambda (proto) (type-parser proto clause)) protos)
+       (for-each (lambda (proto) (type-parser import proto clause)) protos)
        '())
       (else
        (user-error "Parse error" "Illegal `type' clause" clause '()))))
@@ -53,7 +53,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (type-parser clause clauses)
+(define (type-parser import clause clauses)
    (trace (ast 2) "type-parser: " clause " " clauses #\Newline)
    (match-case clause
       (((and ?id (? symbol?)) (and ?name (? string?)))
@@ -92,7 +92,7 @@
 		     (loop (cdr walk)
 			   (type-class tparent)))))))))
       ((tvector (and (? symbol?) ?id) ((and (? symbol?) ?item-type)))
-       (delay-tvector-type! id item-type clause))
+       (delay-tvector-type! id item-type clause import))
       ((coerce (and (? symbol?) ?from) (and (? symbol?) ?to) ?check ?coerce)
        (if (and (let loop ((check check))
 		   (cond
@@ -136,11 +136,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-tvector-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module-tvector-clause id item-type clause)
-   (delay-tvector! (declare-tvector-type! id item-type clause) clause))
-;*        (let ((tvec (declare-tvector-type! id item-type clause)))    */
-;* 	  (add-tvector-accesses! (make-tvector-accesses tvec clause))  */
-;* 	  tvec))                                                       */
+(define (module-tvector-clause id item-type clause import)
+   (delay-tvector! (declare-tvector-type! id item-type clause) clause import))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-finalizer ...                                               */
@@ -159,8 +156,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    delay-tvector-type!  ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (delay-tvector-type! id item-type clause)
-   (set! *tvector-types* (cons (list id item-type clause) *tvector-types*)))
+(define (delay-tvector-type! id item-type clause import)
+   (set! *tvector-types*
+	 (cons (list id item-type clause import) *tvector-types*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *tvectors* ...                                                   */
@@ -170,8 +168,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    delay-tvector!  ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (delay-tvector! tv clause)
-   (set! *tvectors* (cons (list tv clause) *tvectors*))
+(define (delay-tvector! tv clause import)
+   (set! *tvectors* (cons (list tv clause import) *tvectors*))
    tv)
 
 ;*---------------------------------------------------------------------*/

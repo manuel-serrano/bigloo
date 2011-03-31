@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Wed Mar 30 18:07:18 2011 (serrano)                */
+;*    Last change :  Thu Mar 31 16:42:19 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -245,7 +245,7 @@
 		      (if (not (type? tvector))
 			  (let ((tv-id (symbol-append 'tv-of- id)))
 			     (set! tvector
-				   (module-tvector-clause tv-id id 'cfa)))))))
+				   (module-tvector-clause tv-id id 'cfa #f)))))))
 	     tvector)
    ;; now we just make the new ast for the typed vectors.
    (let ((old-default-type (get-default-type)))

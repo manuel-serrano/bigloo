@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Mar 30 21:52:19 2011 (serrano)                */
+;*    Last change :  Thu Mar 31 16:51:46 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -205,7 +205,7 @@
 		remember-list)
       ;; the tvector traversal
       (for-each (lambda (new)
-		   (delay-tvector! new 'heap))
+		   (delay-tvector! new 'heap #f))
 		tvector-list)
       ;; the last walk to construct the class accessors
       ;; When we load an additional heap that contains classes
