@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jan 18 15:00:26 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 07:15:20 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -429,7 +429,9 @@
 		 (string-append "Illegal start index \"" string "\"")
 		 start))
 	 ((<fx end 0)
-	  ($substring string start len))
+	  (error "substring"
+		 (string-append "Illegal end index \"" string "\"")
+		 end))
 	 ((or (<fx end start) (>fx end len))
 	  (error "substring"
 		 (string-append "Illegal end index \"" string "\"")

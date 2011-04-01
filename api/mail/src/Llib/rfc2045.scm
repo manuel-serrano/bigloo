@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Nov 26 07:40:25 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Thu Mar 31 20:27:31 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -57,7 +57,7 @@
 	  (loop (read-byte in) (+ count 3)))
 	 ((and (>=fx count 72) (or (=fx c #x20) (=fx c #x09)))	
 	  ;; space or tab
-	  (write-byte c)
+	  (write-byte c out)
 	  (display "=\r\n" out)
 	  (loop (read-byte in) 0))
 	 ((=fx c #x0d)
@@ -74,7 +74,7 @@
 	  (loop (read-byte in) 0))
 	 ((and (<=fx #x21 c) (<=fx c #x7e))
 	  ;; printable character
-	  (write-byte c)
+	  (write-byte c out)
 	  (loop (read-byte in) (+ count 1)))
 	 (else
 	  (if (<fx c #x10)

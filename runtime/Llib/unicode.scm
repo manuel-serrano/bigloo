@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Feb 18 15:19:37 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 09:21:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -165,6 +165,9 @@
 	    (inline utf8-string->ucs2-string::ucs2string ::bstring)
 	    (inverse-utf8-table ::vector)
 	    (utf8-string?::bool ::bstring)
+	    (utf8-string-length::long ::bstring)
+	    (utf8-string-ref::bstring ::bstring ::long)
+	    (utf8-substring::bstring string::bstring ::long #!optional (end::long (utf8-string-length string)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
 	    (utf8->iso-latin::bstring ::bstring)
@@ -657,6 +660,87 @@
 		    (loop (+fx r 6)))
 		   (else
 		    #f)))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-char-size ...                                               */
+;*---------------------------------------------------------------------*/
+(define (utf8-char-size c)
+   (let ((n (char->integer c)))
+      (cond
+	 ((<=fx n #x7f) 1)
+	 ((<fx n #xc2) (error "utf8-string" "Badly formed UTF8 string" c))
+	 ((<=fx n #xdf) 2)
+	 ((<=fx n #xef) 3)
+	 ((or (=fx n #xf0) (=fx n #xf4) (<=fx n #xf7)) 4)
+	 ((<=fx n #xfb) 5)
+	 ((<=fx n #xfd) 6)
+	 (else (error "utf8-string" "Badly formed UTF8 string" c)))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-length ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Return the number of characters of an UTF8 string.               */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-length str)
+   (let ((len (string-length str)))
+      (let loop ((r 0)
+		 (l 0))
+	 (if (=fx r len)
+	     l
+	     (loop (+fx r (utf8-char-size (string-ref str r))) (+fx l 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-ref ...                                              */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-ref str i)
+   (when (<fx i 0)
+      (error "utf8-string-ref" "index out of range" i))
+   (let ((len (string-length str)))
+      (let loop ((r 0))
+	 (if (=fx r len)
+	     (error "utf8-string-ref" "index out of range" i)
+	     (let* ((c (string-ref str r))
+		    (s (utf8-char-size c)))
+		(if (=fx r i)
+		    (substring s r (+fx r s))
+		    (loop (+fx r s))))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-substring ...                                               */
+;*---------------------------------------------------------------------*/
+(define (utf8-substring string::bstring start::long
+			#!optional (end::long (utf8-string-length string)))
+   (let ((len (string-length string)))
+      (cond
+	 ((or (<fx start 0) (>fx start len))
+	  (error "utf8-substring"
+		 (string-append "Illegal start index \"" string "\"")
+		 start))
+	 ((<fx end 0)
+	  (error "utf8-substring"
+		 (string-append "Illegal end index \"" string "\"")
+		 end))
+	 ((or (<fx end start) (>fx end len))
+	  (error "utf8-substring"
+		 (string-append "Illegal end index \"" string "\"")
+		 end))
+	 ((=fx start (-fx end 1))
+	  "")
+	 (else
+	  (let loop ((r 0)
+		     (n 0)
+		     (i -1))
+	     (if (=fx r len)
+		 (substring string i r)
+		 (let* ((c (string-ref string r))
+			(s (utf8-char-size c)))
+		    (cond
+		       ((=fx n start)
+			(loop (+fx r s) (+fx n 1) r))
+		       ((=fx n end)
+			(substring string i r))
+		       (else
+			(loop (+fx r s) (+fx n 1) i))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->8bits-fill! ...                                            */

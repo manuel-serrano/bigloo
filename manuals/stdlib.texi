@@ -1544,6 +1544,36 @@ Returns @code{#t} if and only if the argument @var{string} is a well formed
 UTF8 string. Otherwise returns @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} utf8-string-length string
+Returns the number of characters of an UTF8 string. It raises an error
+if the string is not a well formed UTF8 string (i.e., it does satisfies
+the @code{utf8-string?} predicate.
+@end deffn
+
+@deffn {bigloo procedure} utf8-string-ref string i
+Returns the character (represented as an UTF8 string) at the position
+@var{i} in @var{string}.
+@end deffn
+
+@deffn {library procedure} utf8-substring string start [end]
+
+@var{string} must be a string, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (string-length STRING)
+@end smallexample
+
+The optional argument @var{end} defaults to @code{(utf8-string-length STRING)}.
+
+@code{utf8-substring} returns a newly allocated string formed from the
+characters of @var{STRING} beginning with index @var{START} (inclusive) 
+and ending with index @var{END} (exclusive).
+
+If the argument @var{string} is not a well formed UTF8 string an error
+is raised. Otherwise, the result is also a well formed UTF8 string.
+@end deffn
+
 @deffn {bigloo procedure} iso-latin->utf8 string
 @deffnx {bigloo procedure} iso-latin->utf8! string
 @deffnx {bigloo procedure} utf8->iso-latin @var{string}
