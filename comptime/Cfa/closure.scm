@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sun Mar 27 15:46:42 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 10:47:58 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -37,7 +37,8 @@
 	    cfa_cfa
 	    cfa_approx
 	    cfa_set
-	    cfa_ltype)
+	    cfa_ltype
+	    cfa_type)
    (export  (closure-optimization! ::pair-nil)
 	    (closure-optimization?)
 	    (add-procedure-ref!  ::node)
@@ -106,8 +107,8 @@
       (T-fix-point! *funcall-list*)
       ;; we print the result
       (show-X-T *make-procedure-list*)
-      ;; then, we have to scan, all funcall and procedure-ref
-      ;; and procedure-set!, procedure? in order to change them according
+      ;; then, we have to scan, all FUNCALL and PROCEDURE-REF
+      ;; and PROCEDURE-SET!, PROCEDURE? in order to change them according
       ;; to procedure's classifications and free variables types.
       (light-closure! globals)))
 
@@ -302,13 +303,16 @@
 			  (trace (cfa 2) "heavy1" #\Newline)
 			  'nothing-to-do)
 		       (let ((alloc::app (car alloc-list)))
-			  (with-access::make-procedure-app alloc (X T args)
+			  (with-access::make-procedure-app alloc (X T args approx)
 			     (cond
 				(X
 				 (trace (cfa 2) "extra-light" #\Newline)
 				 (funcall-fun-set!
 				  app
-				  (duplicate::var (car args)))
+				  (duplicate::var (car args)
+				     (type (strict-node-type
+					    (get-approx-type approx)
+					    (var-type (car args))))))
 				 (funcall-strength-set! app 'elight))
 				(T
 				 (trace (cfa 2) "light" #\Newline)
