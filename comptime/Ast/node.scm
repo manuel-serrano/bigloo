@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Mar 30 17:44:03 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 14:24:18 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -86,7 +86,9 @@
 	      args
 	      ;; the strength (set by the cfa pass)
 	      ;; should be ???, LIGHT or ELIGHT
-	      (strength::symbol (default '???)))
+	      (strength::symbol (default '???))
+	      ;; the list of potentially called functions
+	      (functions::obj (default #unspecified)))
 	   
 	   ;; the extern class that describes all the primitive constructions
 	   (class extern::node/effect

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Fri Apr  1 11:56:28 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 12:18:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -58,6 +58,7 @@
    (with-access::var node (type variable)
       (let* ((vshape (shape variable))
 	     (tvshape (if (and *type-shape?*
+			       (not (sfun? (variable-value variable)))
 			       (not (eq? type (variable-type variable))))
 			  (string->symbol
 			   (string-append (symbol->string vshape)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Apr  1 10:47:58 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 14:35:32 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -313,9 +313,14 @@
 				     (type (strict-node-type
 					    (get-approx-type approx)
 					    (var-type (car args))))))
+				 (funcall-functions-set! app (list (car args)))
 				 (funcall-strength-set! app 'elight))
 				(T
 				 (trace (cfa 2) "light" #\Newline)
+				 (let ((f (map (lambda (a)
+						  (car (make-procedure-app-args a)))
+					       alloc-list)))
+				    (funcall-functions-set! app f))
 				 (funcall-strength-set! app 'light))
 				(else
 				 (trace (cfa 2) "heavy2" #\Newline)

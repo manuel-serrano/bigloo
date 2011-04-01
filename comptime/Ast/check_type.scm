@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Apr  1 11:50:59 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 12:19:23 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -107,12 +107,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::var)
    (with-access::var node (type variable)
-      (unless (subtype? type (variable-type variable))
-	 (err node type (variable-type variable)))
-      (when (and (eq? (variable-type variable) *_*)
-		 (global? variable)
-		 (not (eq? (global-import variable) 'static)))
-	 (err-no-type node))))
+      (unless (sfun? (variable-value variable))
+	 (unless (subtype? type (variable-type variable))
+	    (err node type (variable-type variable)))
+	 (when (and (eq? (variable-type variable) *_*)
+		    (global? variable)
+		    (not (eq? (global-import variable) 'static)))
+	    (err-no-type node)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::atom ...                                       */
