@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Wed Mar 30 18:18:52 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 11:50:59 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -279,8 +279,9 @@
 ;*    check-node-type ::funcall ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::funcall)
-   (with-access::funcall node (type fun args)
-      (check-node-type fun)
+   (with-access::funcall node (type fun args strength)
+      (unless (eq? strength 'elight)
+	 (check-node-type fun))
       (for-each check-node-type args)
       (call-next-method)))
       

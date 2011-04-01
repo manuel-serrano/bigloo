@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Mon Mar 14 10:58:29 2011 (serrano)                */
+#*    Last change :  Fri Apr  1 12:15:42 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -29,6 +29,7 @@ POPULATION = Makefile \
   $(POP72ALPHA4) \
   $(POP72ALPHA5) \
   sparc_linux_mach_dep.c \
+  gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
 
 POP65 = gc-6.5-gentoo.patch

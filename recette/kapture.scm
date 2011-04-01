@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Mon Nov 29 07:41:59 2010 (serrano)                */
+;*    Last change :  Fri Apr  1 11:43:03 2011 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -148,17 +148,29 @@
 				 (car x)
 				 (vector-ref x 0)))))))
 	 (f2))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    lightfuncall ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (lightfuncall)
+   (define (f1) #t)
+   (define (f2) #f)
+   (+ (lightfuncall-foo f1) (lightfuncall-foo f2)))
+
+(define (lightfuncall-foo f)
+   (if (f) 1 2))
+  
 ;*---------------------------------------------------------------------*/
 ;*    test-kapture ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (test-kapture)
    (test-module "kapture" "kapture.scm")
-   (test "kapture" ((test1 1 2 3)) 1)
-   (test "kapture" (test2) 1)
+   (test "kapture.1" ((test1 1 2 3)) 1)
+   (test "kapture.2" (test2) 1)
    (test "luc-kapture" (let ((gen-sym (luc)))
 			  (gen-sym 'a)) 'a1)
    (test "side-effect" (kapture:test) 2)
-   (test "nesting" ((plante-7 7)) 7)
-   (test "nesting" (plante-8 8) 8)
-   (test "dataflow" (dataflow '(1)) 2))
+   (test "nesting.1" ((plante-7 7)) 7)
+   (test "nesting.2" (plante-8 8) 8)
+   (test "dataflow" (dataflow '(1)) 2)
+   (test "light-funcall" (lightfuncall) 3))

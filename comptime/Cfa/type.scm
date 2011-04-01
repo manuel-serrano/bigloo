@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Mar 29 20:45:53 2011 (serrano)                */
+;*    Last change :  Fri Apr  1 12:11:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -215,7 +215,9 @@
       (when (or (eq? type *_*)
 		(eq? type *vector*)
 		(type-more-specific? type (variable-type variable)))
-	 (set! type (variable-type variable))))
+	 (set! type (variable-type variable))
+	 (if (eq? (variable-id variable) '&<anonymous:1623:/users/serrano/prgm/project/bigloo/recette/filtre.scm:136>)
+	     (tprint "VAR=" (shape variable) " type=" (shape (variable-type variable))))))
    node)
 
 ;*---------------------------------------------------------------------*/
