@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Thu Apr  7 09:32:35 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 18:26:38 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
@@ -33,7 +33,8 @@
 	    cfa_setup
 	    cfa_approx
 	    cfa_tvector)
-   (export  (set-initial-pair-approx!)
+   (export  (patch-pair-set!)
+	    (unpatch-pair-set!)
 	    (pair-optim?::bool)))
 
 ;*---------------------------------------------------------------------*/
@@ -43,16 +44,68 @@
    (and (>=fx *optim* 2) *optim-cfa-pair?*))
 
 ;*---------------------------------------------------------------------*/
-;*    set-initial-pair-approx! ...                                     */
+;*    patch-pair-set! ...                                              */
+;*    -------------------------------------------------------------    */
+;*    This function is called by (@ compiler engine) at the very       */
+;*    beginning of the compilation (just after the heap restoration).  */
 ;*---------------------------------------------------------------------*/
-(define (set-initial-pair-approx!)
+(define (patch-pair-set!)
    ;; add some extra information about the pair library functions
    ;; when the cfa traces values inside pairs
-   (for-each (lambda (id)
-		(let ((g (find-global/module id 'foreign)))
-		   (fun-top?-set! (global-value g) #f)))
-      '($set-car! $set-cdr!)))
-
+   (when (pair-optim?)
+      (for-each (lambda (id)
+		   (let* ((g (find-global/module (cadr id) (caddr id)))
+			  (fun (global-value g)))
+		      (fun-top?-set! (global-value g) #f)
+		      (if (cfun? fun)
+			  (let ((args (cfun-args-type fun)))
+			     (set-car! args (get-default-type))
+			     (set-car! (cdr args) (get-default-type)))
+			  (let ((args (sfun-args fun)))
+			     (local-type-set! (car args) (get-default-type))
+			     (local-type-set! (cadr args) (get-default-type))))))
+	 '((@ cons __r4_pairs_and_lists_6_3)
+	   (@ set-car! __r4_pairs_and_lists_6_3)
+	   (@ set-cdr! __r4_pairs_and_lists_6_3)
+	   (@ $cons foreign)
+	   (@ $set-car! foreign)
+	   (@ $set-cdr! foreign)))
+      (let ((g (find-global '$pair?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) (get-default-type)))))))
+	
+;*---------------------------------------------------------------------*/
+;*    unpatch-pair-set! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (unpatch-pair-set!)
+   (when (pair-optim?)
+      (for-each (lambda (id)
+		   (let* ((g (find-global/module (cadr id) (caddr id)))
+			  (fun (global-value g)))
+		      (if (cfun? fun)
+			  (let ((args (cfun-args-type fun)))
+			     (set-car! args *obj*)
+			     (set-car! (cdr args) *obj*))
+			  (let ((args (sfun-args fun)))
+			     (local-type-set! (car args) *obj*)
+			     (local-type-set! (cadr args) *obj*)))))
+	 '((@ cons __r4_pairs_and_lists_6_3)
+	   (@ set-car! __r4_pairs_and_lists_6_3)
+	   (@ set-cdr! __r4_pairs_and_lists_6_3)
+	   (@ $cons foreign)
+	   (@ $set-car! foreign)
+	   (@ $set-cdr! foreign)))
+      (let ((g (find-global '$pair?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(set-car! (cfun-args-type f) *obj*))))
+      (let ((g (find-global 'pair?)))
+	 (if (global? g)
+	     (let ((f (global-value g)))
+		(local-type-set! (car (sfun-args f)) *obj*)))))
+   #unspecified)
+    
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pre-cons-app ...                                   */
 ;*---------------------------------------------------------------------*/
@@ -128,7 +181,6 @@
 	 ;; then we scan the allocations.
 	 (for-each-approx-alloc
 	    (lambda (app)
-	       (trace (cfa 4) "--- cons-ref: " (shape app) #\Newline)
 	       (when (cons-app? app)
 		  (with-access::cons-app app (approxes seen?)
 		     (set! seen? #t)
@@ -153,7 +205,7 @@
 	 ;; we check the type...
 	 (unless (eq? (approx-type cons-approx) *pair*)
 	    (approx-set-type! val-approx *obj*))
-	 ;; we check if we have top on the vector
+	 ;; we check if we have top on the pair
 	 (if (approx-top? cons-approx)
 	     ;; yes, we have, hence we loose every thing.
 	     (loose! val-approx 'all)

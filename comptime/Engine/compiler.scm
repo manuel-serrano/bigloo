@@ -64,6 +64,7 @@
 	    globalize_walk
 	    cfa_walk
 	    cfa_tvector
+	    cfa_pair
 	    integrate_walk
 	    tailc_walk
 	    coerce_walk
@@ -143,9 +144,17 @@
       ;; we initialized the type caching system
       (profile itype (install-type-cache!))
       
-      ;; when the vector->tvector optimization is enable we have to
+      ;; when the vector->tvector optimization is enabled we have to
       ;; patch the types of vector-set! familly function.
       (profile vect (patch-vector-set!))
+
+      ;; when the vector->tvector optimization is enabled we have to
+      ;; patch the types of vector-set! familly function.
+      (profile vect (patch-vector-set!))
+
+      ;; when the cfa pair tracking is enabled we have to
+      ;; patch the types of vector-set! familly function.
+      (profile pair (patch-pair-set!))
 
       ;; before parsing the modules, declare that we are currently compiling
       (register-srfi! 'bigloo-compile)

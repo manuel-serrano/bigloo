@@ -48,9 +48,7 @@
 						       local))
 			     (sfun-args fun)))
 		(node-setup! (sfun-body (global-value global))))
-	     globals)
-   (when (pair-optim?)
-      (set-initial-pair-approx!)))
+	     globals))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ...                                                  */

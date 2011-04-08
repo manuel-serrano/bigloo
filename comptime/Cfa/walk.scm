@@ -44,6 +44,7 @@
 	    cfa_closure
 	    cfa_specialize
 	    cfa_tvector
+	    cfa_pair
 	    cfa_arithmetic)
    (export  (cfa-walk! <global>*)))
 
@@ -92,4 +93,5 @@
 	    ;; and we are done
 	    (pass-postlude (shrinkify! (append additional globals))
 			   stop-closure-cache
-			   unpatch-vector-set!)))))
+			   unpatch-vector-set!
+			   unpatch-pair-set!)))))
