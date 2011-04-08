@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Mar 28 14:39:13 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 06:40:46 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -101,6 +101,8 @@
 	 (set! *unsafe-range* #t))
       (unless (backend-type-check (the-backend))
 	 (set! *unsafe-type* #t)))
+   (unless (backend-typed-funcall (the-backend))
+      (set! *optim-cfa-funcall-tracking?* #f))
    
    ;; we read the source file
    (let ((src (*pre-processor* (profile read (read-src)))))
@@ -319,6 +321,14 @@
 	    ;; we change the default type from *_* to *obj*.
 	    (set-default-type! *obj*)
 	    
+	    ;; the CFA has introduced type information that the dataflow
+	    ;; analysis can used to improve type checking elimination.
+	    (when *optim-dataflow-types?*
+	       (set! ast (profile dataflow (dataflow-walk! ast "Dataflow+"))))
+	    (stop-on-pass 'dataflow+ (lambda () (write-ast ast)))
+	    (check-sharing "dataflow" ast)
+	    (check-type "dataflow" ast #t #f)
+	    
 	    ;; the integration pass
 	    (set! ast (profile integ (integrate-walk! ast)))
 	    (stop-on-pass 'integrate (lambda () (write-ast ast)))
@@ -360,8 +370,8 @@
 	    ;; now that type checks have been introduced, we recompute
 	    ;; the type dataflow analysis
 	    (when *optim-dataflow-types?*
-	       (set! ast (profile dataflow (dataflow-walk! ast "Dataflow+"))))
-	    (stop-on-pass 'dataflow+ (lambda () (write-ast ast)))
+	       (set! ast (profile dataflow (dataflow-walk! ast "Dataflow++"))))
+	    (stop-on-pass 'dataflow++ (lambda () (write-ast ast)))
 	    (check-sharing "dataflow" ast)
 	    (check-type "dataflow" ast #t #t)
 	    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Mar 20 08:27:14 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 12:17:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -818,27 +818,27 @@
 	    (double-nb-classes!))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
 		(class (make-class name
-				   num
-				   -1
-				   super
-				   '()
-				   -1
-				   allocate
-				   hash
-				   def
-				   constructor
-				   (make-class-virtual-slots-vector super virtual)
-				   creator
-				   nil
-				   predicate
-				   #f
-				   abstract)))
+			  num
+			  -1
+			  super
+			  '()
+			  -1
+			  allocate
+			  hash
+			  def
+			  constructor
+			  (make-class-virtual-slots-vector super virtual)
+			  creator
+			  nil
+			  predicate
+			  #f
+			  abstract)))
 	    ;; we set the sub field of the super class
 	    (if (class? super)
 		(begin
 		   ;; we add the class to its super subclasses list
 		   (class-subclasses-set!
-		    super (cons class (class-subclasses super)))
+		      super (cons class (class-subclasses super)))
 		   ;; and then, we renumber the tree
 		   (class-hierarchy-numbering! class super))
 		(begin

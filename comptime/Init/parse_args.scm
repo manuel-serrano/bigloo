@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Apr  1 12:23:23 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 12:10:01 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -871,6 +871,8 @@
        (set! *pass* 'dataflow))
       (("-dataflow+" (help "Stop after the second type dataflow stage"))
        (set! *pass* 'dataflow+))
+      (("-dataflow++" (help "Stop after the third type dataflow stage"))
+       (set! *pass* 'dataflow++))
       (("-fuse" (help "Stop after the fuse stage"))
        (set! *pass* 'fuse)) 
       (("-user" (help "Stop after the user pass"))

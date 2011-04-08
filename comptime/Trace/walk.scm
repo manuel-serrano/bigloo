@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sat Mar 26 07:39:17 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 15:25:45 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -81,29 +81,32 @@
 	  (lloc (if (global? var)
 		    (find-location (find-last-sexp (global-src var)))
 		    (node-loc (find-last-node body)))))
-      (if (and (not (fun-predicate-of fun))
-	       (not (memq 'no-trace (sfun-property fun)))
-	       (user-symbol? (variable-id var)))
-	  (begin
-	     (enter-function (trace-id var))
-	     (let* ((bd (if (or (>fx *compiler-debug-trace* 1)
-				(and (global? var)
-				     (eq? (global-id var)
-					  'toplevel-init)))
-			    ;; we always goes trough the first level
-			    ;; (i.e. not the nested local functions)
-			    ;; of the toplevel-init function even
-			    ;; if [*compiler-debug-trace* < 2]. That way
-			    ;; we are sure that global closures will
-			    ;; be correctly traced and not labeled
-			    ;; [toplevel-init].
-			    (trace-node body (cons var stack))
-			    body))
-		    (t (strict-node-type (node-type body) (variable-type var)))
-		    (id (trace-id var))
-		    (nbody (make-traced-node bd t id lloc stack)))
-		(sfun-body-set! fun nbody)
-		(leave-function))))))
+      (when (and (not (fun-predicate-of fun))
+		 (not (memq 'no-trace (sfun-property fun)))
+		 (user-symbol? (variable-id var)))
+	 (enter-function (trace-id var))
+	 (let* ((bd (if (or (>fx *compiler-debug-trace* 1)
+			    (and (global? var)
+				 (or (eq? (global-id var) 'toplevel-init)
+				     (eq? (global-id var) 'method-init)
+				     (eq? (global-id var) 'generic-init))))
+			;; we always goes trough the first level
+			;; (i.e. not the nested local functions)
+			;; of the toplevel-init function even
+			;; if [*compiler-debug-trace* < 2]. That way
+			;; we are sure that global closures will
+			;; be correctly traced and not labeled
+			;; [toplevel-init].
+			(if (or (eq? (global-id var) 'method-init)
+			        (eq? (global-id var) 'generic-init))
+			    (trace-node body stack)
+			    (trace-node body (cons var stack)))
+			body))
+		(t (strict-node-type (node-type body) (variable-type var)))
+		(id (trace-id var))
+		(nbody (make-traced-node bd t id lloc stack)))
+	    (sfun-body-set! fun nbody)
+	    (leave-function)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-last-sexp ...                                               */

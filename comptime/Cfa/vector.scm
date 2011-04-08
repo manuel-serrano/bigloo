@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Wed Mar 30 17:58:21 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 17:28:05 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The vector approximation management                              */
@@ -55,8 +55,7 @@
 			 (value-approx (make-empty-approx)))))
 	    (trace (cfa 3) "    make-vector-app: " (shape node) #\Newline)
 	    (make-vector-app-approx-set! wnode
-					 (make-type-alloc-approx *vector*
-								 node))))))
+	       (make-type-alloc-approx *vector* node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::pre-valloc/Cinfo ...                               */
@@ -77,8 +76,8 @@
 					   (make-empty-approx))))))
 	    (trace (cfa 3) "  valloc(optim): " (shape node) #\Newline)
 	    (valloc/Cinfo+optim-approx-set!
-	     wnode
-	     (make-type-alloc-approx type node))))))
+	       wnode
+	       (make-type-alloc-approx type node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::valloc ...                                         */
@@ -204,14 +203,12 @@
 		     (with-access::make-vector-app app (value-approx seen?)
 			(set! seen? #t)
 			(union-approx! approx value-approx)
-			(approx-set-type! value-approx
-					  (approx-type approx))))
+			(approx-set-type! value-approx (approx-type approx))))
 		    ((valloc/Cinfo+optim? app)
 		     (with-access::valloc/Cinfo+optim app (value-approx seen?)
 			(set! seen? #t)
 			(union-approx! approx value-approx)
-			(approx-set-type! value-approx
-					  (approx-type approx))))))
+			(approx-set-type! value-approx (approx-type approx))))))
 	      vec-approx))
 	    (else
 	     (loose! vec-approx 'all)))

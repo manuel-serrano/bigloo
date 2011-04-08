@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Wed Mar 23 09:20:04 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 09:47:33 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
@@ -32,8 +32,8 @@
 ;*    cfa! ::app ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::app)
-   (trace (cfa 2) " app: " (shape node) #\Newline)
    (with-access::app node (fun args)
+      (trace (cfa 2) "app " (shape fun) ": " (shape node) #\Newline)
       (app! (variable-value (var-variable fun)) fun (map cfa! args))))
 
 ;*---------------------------------------------------------------------*/
@@ -48,9 +48,9 @@
 (define-method (app! fun::intern-sfun/Cinfo var::var args-approx)
    (with-access::intern-sfun/Cinfo fun (args polymorphic?)
       (trace (cfa 3)
-	     ">>>  app(intern-sfun/Cinfo)! var=" (shape var)
+	     ">>>   app(intern-sfun/Cinfo)! var=" (shape var)
 	     " polymorphic?=" polymorphic?
-	     " args-approx=" (shape args-approx)
+	     " args-approx=" (map shape args-approx)
 	     #\Newline)
       ;; we set the new formals approximation
       (for-each (lambda (formal approx)
@@ -65,13 +65,13 @@
 	  ;; this is a unexported function 
 	  (let ((a (cfa-intern-sfun! fun (var-variable var))))
 	     (trace (cfa 3)
-		    "<<<  app(intern)! " (shape var)
+		    "<<<   app(intern)! " (shape var)
 		    " intern <- " (shape a) "\n")
 	     a)
 	  ;; this is an exported function
 	  (let ((a (cfa-export-var! fun (var-variable var))))
 	     (trace (cfa 3)
-		    "<<<  app(intern)! " (shape var)
+		    "<<<   app(intern)! " (shape var)
 		    " export <-" (shape a) "\n")
 	     a))))
 
@@ -79,7 +79,7 @@
 ;*    app! ::extern-sfun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::extern-sfun/Cinfo var::var args-approx)
-   (trace (cfa 3) ">>> app(extern-sfun/Cinfo)!: "
+   (trace (cfa 3) ">>>   app(extern-sfun/Cinfo)!: "
 	  (shape var) " " (shape args-approx)
 	  #\Newline)
    (with-access::extern-sfun/Cinfo fun (top? approx polymorphic?)
@@ -90,7 +90,7 @@
 	 (with-access::approx approx (type)
 	    (set! type (get-bigloo-type (approx-type approx)))))
       ;; and we return the global approximation
-      (trace (cfa 3) "<<< app(extern) " (shape var) " <- " (shape approx)
+      (trace (cfa 3) "<<<   app(extern) " (shape var) " <- " (shape approx)
 	     #\Newline)
       approx))
    
@@ -98,7 +98,7 @@
 ;*    app! ::cfun/Cinfo ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::cfun/Cinfo var::var args-approx)
-   (trace (cfa 3) ">>> app(cfun)!: " (shape var) #\Newline)
+   (trace (cfa 3) ">>>   app(cfun)!: " (shape var) #\Newline)
    (with-access::cfun/Cinfo fun (top? approx)
       ;; we set the new formals approximation
       (when top?

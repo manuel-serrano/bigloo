@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Wed Mar 30 09:02:33 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 16:57:59 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
@@ -62,7 +62,7 @@
    ;; first of all, we scan the global definitions in order
    ;; to collect all used types and allocations.
    (collect-all-approx! globals)
-   ;; we have collected all the approximation, we can now declare
+   ;; we have collected all the approximations, we can now declare
    ;; the approximations sets.
    (declare-approx-sets!)
    ;; we have collect all the possible approximation, we now

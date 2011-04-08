@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Mar 30 09:01:37 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 13:52:36 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -48,7 +48,9 @@
 						       local))
 			     (sfun-args fun)))
 		(node-setup! (sfun-body (global-value global))))
-	     globals))
+	     globals)
+   (when (pair-optim?)
+      (set-initial-pair-approx!)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ...                                                  */
@@ -416,12 +418,14 @@
 			 (binding-value (if (eq? (local-access var) 'read)
 					    val
 					    #f)))
-		      (trace (cfa 5) "Je vais descendre dans val: " (shape val)
+		      (trace (cfa 5) "~~~ let-var setup " (shape val)
 			     " " (find-runtime-type val)
 			     #\Newline)
 		      (trace (cfa 5) "  " (shape var) " ... " #\Newline)))
 		bindings)
-      (node-setup! body)))
+      (trace (cfa 5) "let-var body: " (shape body) #\Newline)
+      (node-setup! body)
+      (trace (cfa 5) "<<< let-var setup...\n")))
  
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::set-ex-it ...                                      */

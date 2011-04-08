@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:07:31 1994                          */
-;*    Last change :  Fri Feb 18 15:05:50 2011 (serrano)                */
+;*    Last change :  Tue Apr  5 09:10:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La normalisation des formes `begin'                              */
 ;*=====================================================================*/
@@ -52,8 +52,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-epair ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-epair a::obj b::obj)
+(define (make-epair a::obj b::obj e::obj)
    (cond
+      ((epair? e)
+       (econs a b (cer e)))
       ((epair? b)
        (econs a b (cer b)))
       ((epair? a)
@@ -136,7 +138,7 @@
 	    ((eq? (caar es) 'begin)
 	     (loop (evepairify (append (cdar es) (loop (cdr es))) (car es))))
 	    (else
-	     (make-epair (car es) (loop (cdr es)))))))
+	     (make-epair (car es) (loop (cdr es)) es)))))
    (if (null? exps)
        #unspecified
        (if (null? (cdr exps))
@@ -150,7 +152,7 @@
 		 ((null? (cdr es))
 		  (car es))
 		 (else
-		  (make-epair 'begin es)))))))
+		  (make-epair 'begin es es)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    normalize-progn ...                                              */

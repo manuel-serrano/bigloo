@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Fri Mar 25 05:55:36 2011 (serrano)                */
+;*    Last change :  Tue Apr  5 18:32:55 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
@@ -71,8 +71,7 @@
 			 (node-type-set! node *obj*))
 		      (cond
 			 ((sfun? val)
-			  (sfun-args-set! val
-					  (map cleanup-type (sfun-args val))))
+			  (sfun-args-set! val (map cleanup-type (sfun-args val))))
 			 ((cfun? val)
 			  (let loop ((l (cfun-args-type val)))
 			     (if (pair? l)

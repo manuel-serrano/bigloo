@@ -36,7 +36,8 @@
       (heap-suffix "jheap")
       (srfi0 'bigloo-.net)
       (foreign-clause-support '(java))
-      (debug-support '())))
+      (debug-support '())
+      (typed-funcall #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Compilation                                                      */

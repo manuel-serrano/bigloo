@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Feb 18 15:05:36 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 14:45:14 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -147,13 +147,10 @@
        (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f loc lkp #f))
-			    args)))
-	  (let ((proc (variable loc fun env genv)))
-	     (evcompile-application fun
-				    (evcompile-ref proc genv loc lkp)
-				    actuals
-				    tail
-				    loc))))
+			  args)))
+	  (let* ((proc (variable loc fun env genv))
+		 (ref (evcompile-ref proc genv loc lkp)))
+	     (evcompile-application fun ref actuals tail loc))))
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
        (let ((@var (@variable loc id env genv mod)))
 	  (evcompile-ref @var genv loc lkp)))
@@ -303,12 +300,9 @@
 			    args)))
 	  (cond
 	     ((symbol? fun)
-	      (let ((proc (variable loc fun env genv)))
-		 (evcompile-application fun
-					(evcompile-ref proc genv loc lkp)
-					actuals
-					tail
-					loc)))
+	      (let* ((proc (variable loc fun env genv))
+		     (ref (evcompile-ref proc genv loc lkp)))
+		 (evcompile-application fun ref actuals tail loc)))
 	     ((procedure? fun)
 	      (if lkp
 		  (evcompile-compiled-application fun actuals loc)

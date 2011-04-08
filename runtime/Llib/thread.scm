@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Tue Mar 29 08:29:10 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 14:53:14 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -213,7 +213,8 @@
 	    (inline condition-variable-signal!::bool ::condvar)
 	    (inline condition-variable-broadcast!::bool ::condvar))
 
-   (pragma  ($current-dynamic-env nesting)))
+   (pragma  ($current-dynamic-env nesting)
+            ($dynamic-env? (predicate-of dynamic-env))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-env? ...                                                 */

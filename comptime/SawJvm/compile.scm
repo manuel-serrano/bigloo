@@ -63,6 +63,7 @@
    (module-init me)
    (module-dlopen me)
    (module-functions me)
+   (module-light-funcall me)
    (close-module me) )
 
 ;;

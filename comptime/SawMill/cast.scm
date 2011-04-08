@@ -1,6 +1,7 @@
 (module saw_cast
    (import type_type ast_var ast_node
-	   type_env
+	   type_env type_cache
+	   tools_shape
 	   object_class
 	   backend_backend
 	   saw_defs )
@@ -147,7 +148,8 @@
    (cons (global-type (rtl_storeg-var fun)) '()) )
 
 (define-method (type-args fun::rtl_call);
-   (let ( (f (global-value (rtl_call-var fun))) )
+   (let* ( (g (rtl_call-var fun))
+	   (f (global-value (rtl_call-var fun))) )
       (if (cfun? f)
 	  (cfun-args-type f)
 	  (let ( (r (sfun-args f)) )

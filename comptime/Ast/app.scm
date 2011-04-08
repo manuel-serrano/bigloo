@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Thu Mar 31 06:39:05 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 17:27:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -596,6 +596,7 @@
 	     (instantiate::valloc
 		(loc loc)
 		(type (strict-node-type *_* (global-type variable)))
+		(ftype (strict-node-type *_* *obj*))
 		(c-format heap-format)
 		(otype (car (cfun-args-type (global-value variable))))
 		(expr* args))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Sun Mar 20 08:44:05 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 20:50:48 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -35,12 +35,7 @@
 	  (arity (global-arity args))
 	  (args-id (map local-id locals))
 	  (type (local-type (car locals)))
-	  ;; The name of the method is constructed using the id of the
-	  ;; associated generic function _and_ the type id of the
-	  ;; method. This has to be gensymed in order to avoid user
-	  ;; name collision
-	  (m-id (mark-symbol-non-user!
-		 (gensym (symbol-append id '- (type-id type))))))
+	  (m-id (gensym (symbol-append id '- (type-id type)))))
       (if (not (tclass? type))
 	  (method-error id "method has a non-class dispatching type arg" src)
 	  (let* ((holder (tclass-holder type))
@@ -52,10 +47,10 @@
 		(else
 		 (let* ((body `(labels ((call-next-method ()
 				  (let ((,met (find-super-class-method
-						  ,(car args-id)
-						  ,id
-						  (@ ,(global-id holder)
-						     ,module))))
+						 ,(car args-id)
+						 ,id
+						 (@ ,(global-id holder)
+						    ,module))))
 				     ,(if (>=fx arity 0)
 					  `(,met ,@args-id)
 					  `(apply ,met (cons* ,@args-id))))))
@@ -73,13 +68,13 @@
 						(backend-debug-support
 						 (the-backend))))
 				  `(pragma::void
-				   ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) "\"); ")))
+				   ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) " ::" (symbol->string (global-id holder)) "\"); ")))
 			      (generic-add-method!
 			       ,id
 			       (@ ,(global-id holder) ,module)
 			       ,m-id
 			       ,(symbol->string ident)))))))))))
- 
+
 ;*---------------------------------------------------------------------*/
 ;*    method-error ...                                                 */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 12:05:09 1996                          */
-;*    Last change :  Sun Mar 20 08:31:44 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 21:10:02 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The generic management                                           */
@@ -81,6 +81,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-non-object-generic-body ...                                 */
 ;*---------------------------------------------------------------------*/
+(define (make-non-object-generic-body.5apr2011 id locals args src)
+   (let* ((pid             (parse-id id (find-location src)))
+	  (id              (car pid))
+	  (arity           (global-arity args))
+	  (args-id         (map local-id locals))
+	  (default-body    (if (>=fx arity 0)
+			       `((generic-default
+				  (@ ,id ,*module*))
+				 ,@args-id)
+			       `(apply (generic-default
+					(@ ,id ,*module*))
+				       ((@ cons*
+					   __r4_pairs_and_lists_6_3)
+					,@args-id))))
+	  (method-arg      (car locals))
+	  (method-arg-id   (local-id method-arg))
+	  (method-arg-type (local-type method-arg))
+	  (method          (gensym 'method))
+	  (tmethod         (make-typed-ident method 'procedure))
+	  (default-name    (mark-symbol-non-user! (symbol-append id '-default)))
+	  (app-ly-method   `(let ((,tmethod (find-method ,method-arg-id
+							 (@ ,id ,*module*))))
+			       ,(if (>=fx arity 0)
+				    `(,method ,@args-id)
+				    `(apply ,method (cons* ,@args-id))))))
+      ;; we now create the body of the generic
+      `(labels ((,default-name () ,default-body))
+	  (if (object? ,method-arg-id)
+	       ,app-ly-method
+	       (,default-name)))))
+
 (define (make-non-object-generic-body id locals args src)
    (let* ((pid             (parse-id id (find-location src)))
 	  (id              (car pid))
@@ -100,16 +131,15 @@
 	  (method-arg-type (local-type method-arg))
 	  (method          (gensym 'method))
 	  (tmethod         (make-typed-ident method 'procedure))
-	  (default-name    (symbol-append id '-default))
-	  (app-ly-method   `(let ((,tmethod (find-method ,method-arg-id
-							 (@ ,id ,*module*))))
+	  (app-ly-method   `(let ((,tmethod (find-method
+					       ,method-arg-id
+					       (@ ,id ,*module*))))
 			       ,(if (>=fx arity 0)
 				    `(,method ,@args-id)
 				    `(apply ,method (cons* ,@args-id))))))
       ;; we now create the body of the generic
-      `(labels ((,default-name () ,default-body))
-	  (if (object? ,method-arg-id)
-	       ,app-ly-method
-	       (,default-name)))))
+      `(if (object? ,method-arg-id)
+	   ,app-ly-method
+	   ,default-body)))
 
    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Apr  1 14:35:32 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 12:10:20 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -105,6 +105,15 @@
       (X! *funcall-list*)
       ;; and the T one
       (T-fix-point! *funcall-list*)
+      ;; mark all the light procedure
+      (for-each (lambda (alloc)
+		   (with-access::make-procedure-app alloc (args T X)
+		      (let ((f (variable-value (var-variable (car args)))))
+			 (cond
+			    (X (sfun-strength-set! f 'elight))
+			    (T (sfun-strength-set! f 'light))
+			    (else (sfun-strength-set! f '???))))))
+	 *make-procedure-list*)
       ;; we print the result
       (show-X-T *make-procedure-list*)
       ;; then, we have to scan, all FUNCALL and PROCEDURE-REF
@@ -311,7 +320,7 @@
 				  app
 				  (duplicate::var (car args)
 				     (type (strict-node-type
-					    (get-approx-type approx)
+					    (get-approx-type approx (car args))
 					    (var-type (car args))))))
 				 (funcall-functions-set! app (list (car args)))
 				 (funcall-strength-set! app 'elight))

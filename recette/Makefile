@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Tue Mar 29 17:46:33 2011 (serrano)                */
+#*    Last change :  Wed Apr  6 13:36:50 2011 (serrano)                */
 #*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -135,6 +135,9 @@ recette-bin: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 
 new: 
 	$(MAKE) BIGLOO=bigloo.new
+
+new-jvm: 
+	$(MAKE) jvm BIGLOO=bigloo.new
 
 static: recette-static
 recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)

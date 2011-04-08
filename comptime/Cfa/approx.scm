@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Wed Mar 30 08:57:05 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 15:22:12 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -26,6 +26,7 @@
 	    ast_ident
 	    cfa_info
 	    cfa_info2
+	    cfa_info3
 	    cfa_collect
 	    cfa_set
 	    cfa_iterate
@@ -75,7 +76,7 @@
 ;*---------------------------------------------------------------------*/
 (define (union-approx!::approx dst::approx src::approx)
    ;; we make the union of the type
-   (approx-set-type! dst (approx-type src))
+   (approx-set-type! dst (get-src-approx-type src))
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
 		  (eq? (approx-type dst) *_*)))
@@ -89,6 +90,32 @@
    ;; and we return the dst
    dst)
 
+;*---------------------------------------------------------------------*/
+;*    get-src-approx-type ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Vectors are handled specially. They are assigned the type _      */
+;*    because they may be turned in tvector. This function handles     */
+;*    the special case where vectors are mixed up with other types.    */
+;*---------------------------------------------------------------------*/
+(define (get-src-approx-type src::approx)
+   
+   (define (vector-approx? x)
+      (or (make-vector-app? x) (valloc/Cinfo+optim? x)))
+   
+   (let ((type (approx-type src)))
+      (cond
+	 ((eq? type *_*)
+	  type)
+	 ((=fx (set-length (approx-allocs src)) 0)
+	  type)
+	 (else
+	  (let ((allocs (set->list (approx-allocs src))))
+	     (if (any? vector-approx? allocs)
+		 (if (and (eq? type *vector*) (every? vector-approx? allocs))
+		     *vector*
+		     *obj*)
+		 type))))))
+	     
 ;*---------------------------------------------------------------------*/
 ;*    approx-set-type! ...                                             */
 ;*    -------------------------------------------------------------    */
@@ -110,6 +137,9 @@
 	      (and (eq? dtype *bint*) (or (eq? type *int*) (eq? type *long*))))
 	  ;; integer equivalence
 	  #f)
+	 ((and (or (eq? dtype *long*) (eq? dtype *int*)) (eq? type *bint*))
+	  (approx-type-set! dst *bint*)
+	  #t)
 	 ((and (eq? dtype *epair*) (eq? type *pair*))
 	  ;; pair-nil subtyping 1
 	  (approx-type-set! dst *pair*)

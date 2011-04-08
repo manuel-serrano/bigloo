@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Sun Nov 21 06:32:57 2010 (serrano)                */
+;*    Last change :  Wed Apr  6 14:53:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -280,7 +280,9 @@ of the start of the containing expression."
             (setq method (get (intern-soft function) 'bee-indent-hook))
             (cond
 	     ((integerp method)
-	      (bee-indent-specform method state indent-point))
+	      (if (< method 0)
+		  '()
+		(bee-indent-specform method state indent-point)))
 	     (method
 	      (funcall method state indent-point))
 	     ((and (> (length function) 3)
@@ -299,7 +301,10 @@ of the start of the containing expression."
 		   (string-equal (substring function 0 8) "widen!::"))
 	      (bee-duplicate-indent state indent-point))
 	     ((string-match "<[^> \t]+>" function)
-	      (bee-instantiate-indent state indent-point))))))))
+	      (bee-instantiate-indent state indent-point))
+	     ;; MS: 5apr2011
+	     (t
+	      (bee-indent-defform state indent-point))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-indent-brace-p ...                                           */
@@ -605,6 +610,17 @@ of the start of the containing expression."
 (put 'cond                      'bee-indent-hook 0)
 (put 'when                      'bee-indent-hook 1)
 (put 'unless                    'bee-indent-hook 1)
+(put 'if                        'bee-indent-hook -1)
+(put 'or                        'bee-indent-hook -1)
+(put 'and                       'bee-indent-hook -1)
+(put 'else                      'bee-indent-hook -1)
+(put 'static                    'bee-indent-hook -1)
+(put 'import                    'bee-indent-hook -1)
+(put 'export                    'bee-indent-hook -1)
+(put 'library                   'bee-indent-hook -1)
+(put 'use                       'bee-indent-hook -1)
+(put 'from                      'bee-indent-hook -1)
+(put 'pragma                    'bee-indent-hook -1)
 
 ;; binding forms
 (put 'let                       'bee-indent-hook 'bee-let-indent)

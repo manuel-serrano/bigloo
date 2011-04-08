@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Apr  1 12:11:14 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 10:18:41 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -30,7 +30,7 @@
 	    tvector_tvector
 	    object_class)
    (export  (type-settings! globals)
-	    (get-approx-type ::approx)))
+	    (get-approx-type ::approx ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-settings! ...                                               */
@@ -53,7 +53,7 @@
 			  (type-variable! (local-value var) var))
 		       args)
 	     ;; and the function result
-	     (set-variable-type! var (get-approx-type approx))
+	     (set-variable-type! var (get-approx-type approx var))
 	     (shrink! fun)
 	     ;; the body
 	     (set! body (type-node! body))))
@@ -72,20 +72,20 @@
 	  (fun (variable-value var)))
       (when (intern-sfun/Cinfo? fun)
 	 (with-access::intern-sfun/Cinfo fun (approx)
-	    (set-variable-type! var (get-approx-type approx))))))
+	    (set-variable-type! var (get-approx-type approx v))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-approx-type ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (get-approx-type approx)
+(define (get-approx-type approx node)
    (let ((type (approx-type approx))
 	 (alloc-list (set->list (approx-allocs approx))))
       (cond
 	 ((not (pair? alloc-list))
 	  type)
-	 ((not (tvector-optimization?))
-	  type)
-	 ((make-vector-app? (car alloc-list))
+	 ((approx-top? approx)
+	  *obj*)
+	 ((every? make-vector-app? alloc-list)
 	  (let* ((app (car alloc-list))
 		 (tv-type (get-vector-item-type app))
 		 (value-approx (make-vector-app-value-approx app))
@@ -95,16 +95,20 @@
 		((type? tv) tv)
 		((eq? type *_*) *vector*)
 		(else type))))
-	 ((valloc/Cinfo+optim? (car alloc-list))
-	  (let* ((app (car alloc-list))
-		 (tv-type (get-vector-item-type app))
-		 (value-approx (valloc/Cinfo+optim-value-approx app))
-		 (item-type (approx-type value-approx))
-		 (tv (type-tvector item-type)))
-	     (cond
-		((type? tv) tv)
-		((eq? type *_*) *vector*)
-		(else type))))
+	 ((every? valloc/Cinfo+optim? alloc-list)
+	  (if (not (tvector-optimization?))
+	      (if (eq? type *_*)
+		  *vector*
+		  type)
+	      (let* ((app (car alloc-list))
+		     (tv-type (get-vector-item-type app))
+		     (value-approx (valloc/Cinfo+optim-value-approx app))
+		     (item-type (approx-type value-approx))
+		     (tv (type-tvector item-type)))
+		 (cond
+		    ((type? tv) tv)
+		    ((eq? type *_*) *vector*)
+		    (else type)))))
 	 (else
 	  type))))
 	 
@@ -121,7 +125,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-variable! value::svar/Cinfo variable)
    (with-access::svar/Cinfo value (approx)
-      (set-variable-type! variable (get-approx-type approx))))
+      (set-variable-type! variable (get-approx-type approx value))))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::scnst ...                                       */
@@ -134,7 +138,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-variable! value::cvar/Cinfo variable)
     (with-access::cvar/Cinfo value (approx)
-      (set-variable-type! variable (get-approx-type approx))))
+      (set-variable-type! variable (get-approx-type approx value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::sexit ...                                       */
@@ -215,9 +219,7 @@
       (when (or (eq? type *_*)
 		(eq? type *vector*)
 		(type-more-specific? type (variable-type variable)))
-	 (set! type (variable-type variable))
-	 (if (eq? (variable-id variable) '&<anonymous:1623:/users/serrano/prgm/project/bigloo/recette/filtre.scm:136>)
-	     (tprint "VAR=" (shape variable) " type=" (shape (variable-type variable))))))
+	 (set! type (variable-type variable))))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -289,10 +291,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-procedure-approx-type ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (get-procedure-approx-type approx)
+(define (get-procedure-approx-type approx node)
    (if (approx-procedure-el? approx)
        *procedure-el*
-       (approx-type approx)))
+       (get-approx-type approx node)))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::procedure-ref-app ...                               */
@@ -301,7 +303,7 @@
    (with-access::procedure-ref-app node (args approx type fun)
       (call-next-method)
       (if *optim-cfa-free-var-tracking?*
-	  (let ((atype (get-procedure-approx-type approx)))
+	  (let ((atype (get-procedure-approx-type approx node)))
 	     (if (and (bigloo-type? atype)
 		      (not (eq? atype *_*))
 		      (not (eq? atype (get-type node))))
@@ -318,7 +320,7 @@
    (with-access::procedure-set!-app node (args approx vapprox type fun)
       (call-next-method)
       (when *optim-cfa-free-var-tracking?*
-	 (let ((atype (get-procedure-approx-type vapprox)))
+	 (let ((atype (get-procedure-approx-type vapprox node)))
 	    (when (and (bigloo-type? atype)
 		       (not (eq? atype *_*))
 		       (not (eq? atype (get-type (caddr args)))))
@@ -329,6 +331,18 @@
       node))
 
 ;*---------------------------------------------------------------------*/
+;*    type-node! ::cons-ref-app ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::cons-ref-app)
+   (with-access::cons-ref-app node (args approx type)
+      (call-next-method)
+      (let ((atype (get-approx-type approx node)))
+	 (unless (eq? atype *_*)
+	    (when *strict-node-type*
+	       (set! type atype))))
+      node))
+   
+;*---------------------------------------------------------------------*/
 ;*    type-node! ::app-ly ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::app-ly/Cinfo)
@@ -336,7 +350,7 @@
       (set! fun (type-node! fun))
       (set! arg (type-node! arg))
       (if *optim-cfa-funcall-tracking?*
-	  (set! type (approx-type approx))
+	  (set! type (get-approx-type approx node))
 	  (set! type *obj*))
       node))
 
@@ -349,12 +363,19 @@
       (type-node*! args)
       (if *optim-cfa-funcall-tracking?*
 	  (begin
-	     (let ((typ (approx-type approx)))
+	     (let ((typ (get-approx-type approx node)))
 		(if (eq? typ *_*)
-		    (internal-error "cfa!" "Illegal type _ for funcall" (shape node))
-		    (set! type typ))))
-	  (set! type *obj*))
-      node))
+		    ;; the function is actually never called,
+		    ;; the funcall node is removed
+		    (instantiate::atom
+		       (value #unspecified)
+		       (type (get-type-atom #unspecified)))
+		    (begin
+		       (set! type typ)
+		       node))))
+	  (begin
+	     (set! type *obj*)
+	     node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::extern ...                                          */
@@ -369,9 +390,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::valloc)
    (call-next-method)
-   (with-access::extern node (expr* type)
+   (with-access::valloc node (expr* type ftype)
       (type-node*! expr*)
       (set! type (strict-node-type (if (eq? type *_*) *vector* type) type))
+      (set! ftype (if (eq? ftype *_*) *obj* ftype))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -434,7 +456,7 @@
    (call-next-method)
    (unless *strict-node-type*
       (with-access::conditional/Cinfo node (type approx)
-	 (set! type (get-approx-type approx))))
+	 (set! type (get-approx-type approx node))))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -470,7 +492,7 @@
 ;*    (call-next-method)                                               */
 ;*    (unless *strict-node-type*                                       */
 ;*       (with-access::select/Cinfo node (type approx)                 */
-;* 	 (set! type (get-approx-type approx))))                        */
+;* 	 (set! type (get-approx-type approx node))))                        */
 ;*    node)                                                            */
 
 ;*---------------------------------------------------------------------*/

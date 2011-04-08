@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Fri Sep 10 16:04:30 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Apr  8 06:37:57 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -45,7 +45,8 @@
 	      (registers::pair-nil (default '()))
 	      (pregisters::pair-nil (default '()))
 	      (bound-check::bool (default #t))
-	      (type-check::bool (default #t))))
+	      (type-check::bool (default #t))
+	      (typed-funcall::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)

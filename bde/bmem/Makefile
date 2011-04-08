@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Wed Sep 15 07:58:09 2010 (serrano)                */
-#*    Copyright   :  2003-10 Manuel Serrano                            */
+#*    Last change :  Fri Apr  8 07:33:03 2011 (serrano)                */
+#*    Copyright   :  2003-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -118,6 +118,7 @@ install:
           fi && \
 	  cp $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX) \
              $(LIBDIR)/$(FILDIR)/bmem/bmem.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem.$(SHAREDSUFFIX); \
         fi
 	cp etc/bmem.css $(LIBDIR)/$(FILDIR)/bmem/bmem.css
 	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.css

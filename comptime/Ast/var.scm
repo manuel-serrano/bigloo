@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Fri Mar 18 09:29:42 2011 (serrano)                */
+;*    Last change :  Fri Apr  8 12:10:11 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -123,7 +123,10 @@
 	      ;; key arguments (see fun-arity)
 	      (keys read-only (default '()))
 	      ;; closure field pointing to the global function
-	      (the-closure-global (default #unspecified)))
+	      (the-closure-global (default #unspecified))
+	      ;; the strength (see funcall node) set by the CFA pass
+	      ;; should be ???, LIGHT, or ELIGH
+	      (strength::symbol (default '???)))
 
 	   (final-class cfun::fun
 	      ;; the formal parameters' type

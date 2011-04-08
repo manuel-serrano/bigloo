@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Mar 30 13:51:02 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 18:00:58 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -358,25 +358,21 @@
 	    (test-node-type (get-type test)))
 	 ;; select constructions are normalized: the test should have
 	 ;; been placed in a variable. That's why this test below should
-	 ;; work. This test may fails (in strange cases that I'm currently
-	 ;; ignoring) and then, it may happens that some `correct' select
-	 ;; construction could be rejected. These forms are those where the
+	 ;; work. This test may fail (in strange cases that I'm currently
+	 ;; ignoring) and then, it may happen that some `correct' select
+	 ;; forms could be rejected. These forms are those where the
 	 ;; else clause trap objects of different types from the one tested
 	 ;; in the clauses.
-	 (if (not (coercer-exists? test-node-type test-type))
-	     (coerce! (runtime-type-error loc (type-id test-type) test)
-		      caller
-		      to
-		      safe)
+	 (if (coercer-exists? test-node-type test-type)
 	     (begin
 		(select-test-set! node (coerce! test caller test-type safe))
 		(for-each (lambda (clause)
-			     (set-cdr! clause (coerce! (cdr clause)
-						       caller
-						       to
-						       safe)))
-			  clauses)
-		node)))))
+			     (set-cdr! clause
+				(coerce! (cdr clause) caller to safe)))
+		   clauses)
+		node)
+	     (coerce! (runtime-type-error loc (type-id test-type) test)
+		caller to safe)))))
       
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::let-fun ...                                            */

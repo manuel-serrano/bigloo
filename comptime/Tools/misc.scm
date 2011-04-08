@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 16:54:25 1994                          */
-;*    Last change :  Tue Mar 22 08:03:06 2011 (serrano)                */
+;*    Last change :  Tue Apr  5 09:39:36 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Various general tools                                            */
@@ -19,6 +19,7 @@
 	   (epairify ::pair ::obj)
 	   (epairify-rec ::obj ::obj)
 	   (epairify-propagate ::obj ::obj)
+	   (epairify-propagate-loc ::obj ::obj)
 	   (epairify* def . srcs)
 	   (build-path-from-shell-variable::pair-nil ::bstring)
 	   (uncygdrive::bstring ::bstring)))
@@ -105,14 +106,22 @@
 (define (epairify-propagate p ep)
    (if (not (epair? ep))
        p
-       (let loop ((p p))
-	  (cond
-	     ((not (pair? p))
-	      p)
-	     ((epair? p)
-	      p)
-	     (else
-	      (econs (loop (car p)) (loop (cdr p)) (cer ep)))))))
+       (epairify-propagate-loc p (cer ep))))
+
+;*---------------------------------------------------------------------*/
+;*    epairify-propagate-loc ...                                       */
+;*    -------------------------------------------------------------    */
+;*    Epairfy all the elements of a list.                              */
+;*---------------------------------------------------------------------*/
+(define (epairify-propagate-loc p loc)
+   (let loop ((p p))
+      (cond
+	 ((not (pair? p))
+	  p)
+	 ((epair? p)
+	  p)
+	 (else
+	  (econs (loop (car p)) (loop (cdr p)) loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    epairify* ...                                                    */

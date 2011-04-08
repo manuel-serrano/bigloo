@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Wed Mar 23 09:07:23 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 09:28:01 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -212,7 +212,7 @@
 		"         offset: " offset #\Newline
 		"         val-ap: " (shape vapprox) #\Newline)
 	 (cfa! (cadr args))
-	 (set! vapprox (cfa! (caddr args)))
+	 (union-approx! vapprox (cfa! (caddr args)))
 	 ;; do we have top in the proc approximation ?
 	 (if (approx-top? proc-approx)
 	     ;; yes, we have, hence we loose every thing.
@@ -269,17 +269,15 @@
 ;*    vectors).                                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (loose-alloc! alloc::make-procedure-app)
-    (with-access::make-procedure-app alloc (lost-stamp)
-      (if (=fx lost-stamp *cfa-stamp*)
-	  #unspecified
-	  (begin
-	     (trace (cfa 2) "     loose-alloc::make-procedure-app: " (shape alloc) #\Newline)
-	     (set! lost-stamp *cfa-stamp*)
-	     (set-procedure-approx-polymorphic! alloc)
-	     (let* ((callee (car (make-procedure-app-args alloc)))
-		    (v (var-variable callee))
-		    (fun (variable-value v)))
-		(cfa-export-var! fun v))))))
+   (with-access::make-procedure-app alloc (lost-stamp)
+      (unless (=fx lost-stamp *cfa-stamp*)
+	 (trace (cfa 2) "     loose-alloc::make-procedure-app: " (shape alloc) #\Newline)
+	 (set! lost-stamp *cfa-stamp*)
+	 (set-procedure-approx-polymorphic! alloc)
+	 (let* ((callee (car (make-procedure-app-args alloc)))
+		(v (var-variable callee))
+		(fun (variable-value v)))
+	    (cfa-export-var! fun v)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-procedure-approx-polymorphic! ...                            */

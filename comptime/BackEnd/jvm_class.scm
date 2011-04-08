@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/jvm-class.scm       */
+;*    serrano/prgm/project/bigloo/comptime/BackEnd/jvm_class.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 28 11:46:28 2005                          */
-;*    Last change :  Mon Mar 29 17:54:06 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Wed Apr  6 13:15:37 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C backend class definition                                   */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	      (methods (default '()))
 	      (current-method (default #f))
 	      (code (default '()))
+	      (light-funcalls (default '()))
 	      (inline (default #t)))))
 
 

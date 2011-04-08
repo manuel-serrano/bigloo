@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Mar 30 13:54:30 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 18:17:53 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -297,6 +297,7 @@
 	 (cond
 	    ((eq? f *isa*)
 	     (if (and (var? (car args))
+		      (bigloo-type? (variable-type (var-variable (car args))))
 		      (var? (cadr args))
 		      (global? (var-variable (cadr args))))
 		 (let ((ty (find-type (global-id (var-variable (cadr args))))))
@@ -305,7 +306,8 @@
 	    ((and (fun? funv)
 		  (fun-predicate-of funv)
 		  (pair? args) (null? (cdr args))
-		  (var? (car args)))
+		  (var? (car args))
+		  (bigloo-type? (variable-type (var-variable (car args)))))
 	     (list (cons (var-variable (car args)) (fun-predicate-of funv))))
 	    (else
 	     '())))))

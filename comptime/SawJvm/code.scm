@@ -448,8 +448,14 @@
 		    'ok ))
 	     r ))))
 
-(define-method (gen-fun-with-args fun::rtl_lightfuncall me args);
-   (gen-funcall me args) )
+;(define-method (gen-fun-with-args fun::rtl_lightfuncall me args);
+;   (gen-funcall me args) )
+
+(define-method (gen-fun fun::rtl_lightfuncall me);
+   (with-access::rtl_lightfuncall fun (name funs)
+      (with-access::jvm me (light-funcalls)
+	 (set! light-funcalls (cons fun light-funcalls)) )
+      (code! me `(invokestatic ,name)) ))
 
 (define-method (gen-fun-with-args fun::rtl_funcall me args);
    (gen-funcall me args) )
@@ -616,27 +622,25 @@
 ;;
 (define-generic (gen-args-gen-predicate fun::rtl_fun me args on? lab);
    ;; Default case
-   (for-each (lambda (a) (gen-expr me a)) args)
+   (gen-args-gen-fun fun me args)
    (out-line me fun)
-   (gen-predicate fun me on? lab) )
-
-;;
-;; Last entry for generating predicate
-;;
-(define-generic (gen-predicate fun::rtl_fun me on? lab);
-   (default-gen-predicate fun me on? lab) )
-
-(define (default-gen-predicate fun me on? lab);
-   ;; Default case
-   (gen-fun fun me)
    (branch me (if on? 'ifne 'ifeq) lab) )
 
 ;; Call
-(define-method (gen-predicate fun::rtl_call me on? lab);
+(define-method (gen-args-gen-predicate fun::rtl_call me args on? lab);
+   (for-each (lambda (a) (gen-expr me a)) args)
+   (out-line me fun)
    (let ( (r (inline-predicate? me (rtl_call-var fun) on? lab)) )
       (if (eq? r  'not-inlined)
-	  (default-gen-predicate fun me on? lab)
+	  (begin (gen-fun-with-args fun me args)
+		 (branch me (if on? 'ifne 'ifeq) lab) )
 	  r )))
+
+;(define-method (gen-predicate fun::rtl_call args me on? lab);
+;   (let ( (r (inline-predicate? me (rtl_call-var fun) on? lab)) )
+;      (if (eq? r  'not-inlined)
+;	  (default-gen-predicate fun args me on? lab)
+;	  r )))
 
 ;;CARE isa
 

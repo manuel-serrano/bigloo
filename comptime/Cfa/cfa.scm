@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Wed Mar 23 17:33:10 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 15:15:36 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -259,20 +259,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::let-var)
    (with-access::let-var node (body bindings)
-      (trace (cfa 3) "cfa! ::let-var: " (shape node) #\Newline)
+      (trace (cfa 3) ">>> cfa! ::let-var: " (shape node) #\Newline)
       (for-each (lambda (binding)
 		   (let* ((var        (car binding))
 			  (var-approx (svar/Cinfo-approx (variable-value var)))
 			  (val-approx (cfa! (cdr binding))))
 		      (let ((vtype (variable-type var))
 			    (atype (approx-type val-approx)))
+			 (trace (cfa 4)
+			    "~~~ cfa! ::let-var var=" (shape var) "\n"
+			    "  v-type=" (shape vtype) "\n"
+			    "  va-type=" (shape (approx-type var-approx)) "\n"
+			    "  atype=" (shape atype) "\n")
 			 (union-approx! var-approx val-approx)
 			 (trace (cfa 4)
-				"   binding: " (shape binding) #\Newline
-				"       var: " (shape var-approx) #\Newline
-				"       val: " (shape val-approx) #\Newline
-				"     vtype: " (shape vtype) #\Newline
-				"     atype: " (shape atype) #\Newline)
+			    "  -> type=" (shape (approx-type var-approx)) "\n")
 			 ;; Here we explicitly check for type downcasts.
 			 ;; When one is encountered, top is propagated
 			 ;; Before version 3.5b (27 Nov 2010), this was
@@ -287,7 +288,7 @@
 			    (approx-set-top! val-approx)
 			    (loose! val-approx 'all)))))
 		bindings)
-      (trace (cfa 3) "<<< let-var: " (shape node) #\Newline)
+      (trace (cfa 3) "<<< cfa! ::let-var: " (shape node) #\Newline)
       (cfa! body)))
 
 ;*---------------------------------------------------------------------*/

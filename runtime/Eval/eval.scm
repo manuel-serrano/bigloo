@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Feb 18 15:03:27 2011 (serrano)                */
+;*    Last change :  Wed Apr  6 15:24:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -479,9 +479,9 @@
 				       (symbol? (cadr clause)))
 				  (set! mainsym (cadr clause))
 				  (evcompile-error (get-source-location sexp)
-						   "load"
-						   "Illegal main clause"
-						   clause)))
+				     "load"
+				     "Illegal main clause"
+				     clause)))
 			  ;; evaluate for the module
 			  (evalv! sexp env)
 			  (set! env ($eval-module)))
@@ -492,8 +492,8 @@
 			  (close-input-port port)
 			  (when (symbol? mainsym)
 			     (let ((iexp (econs mainsym
-						(list '(command-line))
-						loc)))
+					    (list '(command-line))
+					    loc)))
 				(eval! iexp env)))
 			  (when (and (not (eq? mod env)) (evmodule? env))
 			     (evmodule-check-unbound env #f))

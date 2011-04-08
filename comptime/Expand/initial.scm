@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Mar 30 08:42:54 2011 (serrano)                */
+;*    Last change :  Tue Apr  5 08:48:52 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -92,7 +92,7 @@
    (install-compiler-expander 'define-generic expand-generic)
    
    ;; define-method
-<(install-compiler-expander 'define-method expand-method)
+   (install-compiler-expander 'define-method expand-method)
    
    ;; define-struct
    (install-compiler-expander 'define-struct expand-struct)

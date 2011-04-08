@@ -209,7 +209,10 @@
 	     (let ( (f (rtl_call-var fun)) )
 		(rtl_ins-fun-set! ins (instantiate::tail_call (var f))) ))
 	    ((rtl_lightfuncall? fun)
-		(rtl_ins-fun-set! ins (instantiate::tail_lightfuncall)) )
+		(rtl_ins-fun-set! ins (instantiate::tail_lightfuncall
+					 (rettype (find-type 'obj))
+					 (funs (rtl_lightfuncall-funs fun))
+					 (name (rtl_lightfuncall-name fun)) )))
 	    ((rtl_funcall? fun)
 		(rtl_ins-fun-set! ins (instantiate::tail_funcall)) )
 	    ((rtl_apply? fun)

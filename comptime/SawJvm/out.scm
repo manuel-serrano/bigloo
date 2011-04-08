@@ -20,6 +20,7 @@
 	   (close-class me::jvm class::type)
 	   (open-module me::jvm)
 	   (close-module me::jvm)
+	   (declare-method me::jvm id owner mod type name args)
 	   (declare-global me::jvm var::global)
 	   (compile-slot me::jvm field::slot)
 	   (compile-global me::jvm var::global)

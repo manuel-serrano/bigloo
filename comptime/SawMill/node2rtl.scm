@@ -55,10 +55,15 @@
 ;;
 (define (new-reg::rtl_reg e::node) ; ()
    (if (var? e)
-       (instantiate::rtl_reg
-	  (type (variable-type (var-variable e)))
-	  (var #f)
-	  (name (gensym)))
+       (if (sfun? (variable-value (var-variable e)))
+	   (instantiate::rtl_reg
+	      (type (find-type 'procedure))
+	      (var #f)
+	      (name (gensym)))
+	   (instantiate::rtl_reg
+	      (type (variable-type (var-variable e)))
+	      (var #f)
+	      (name (gensym))) )
        (instantiate::rtl_reg (type (get-type e)) (var #f) (name (gensym)))) )
 
 (define (new-ureg::rtl_reg var::local) ; ()
@@ -336,7 +341,12 @@
 	     (call* e (instantiate::rtl_call (var (var-variable fun))) args) )
 	    ((light)
 	     ;; Forget fun which is always the first argument of args.
-	     (call* e (instantiate::rtl_lightfuncall) args) )
+	     (call* e
+		    (instantiate::rtl_lightfuncall
+		       (rettype (get-type e))
+		       (name (gensym))
+		       (funs (funcall-functions e)) )
+		    args) )
 	    (else
 	     ;; Forget fun which is always the first argument of args.
 	     (call* e (instantiate::rtl_funcall) args) )))))

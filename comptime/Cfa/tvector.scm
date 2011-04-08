@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Thu Mar 31 16:42:19 2011 (serrano)                */
+;*    Last change :  Thu Apr  7 17:27:48 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -97,9 +97,6 @@
 	
 ;*---------------------------------------------------------------------*/
 ;*    unpatch-vector-set! ...                                          */
-;*    -------------------------------------------------------------    */
-;*    This function is called by (@ compiler engine) at the very       */
-;*    beginning of the compilation (just after the heap restoration).  */
 ;*---------------------------------------------------------------------*/
 (define (unpatch-vector-set!)
    (if (tvector-optimization?)
@@ -192,7 +189,7 @@
 	  (let* ((app (car apps))
 		 (type (get-vector-item-type app)))
 	     (trace (cfa 1)
-		    "vector: " (shape app) " type: " (shape type)
+		    "vector: " (shape app) " item-type: " (shape type)
 		    " < " (type-class type) #\Newline)
 	     (if (and (not (eq? type *_*)) (not (sub-type? type *obj*)))
 		 (loop (cdr apps) vectors (cons app tvectors))
@@ -303,7 +300,7 @@
 (define-method (patch! knode::kwote/node)
    (with-access::kwote/node knode (node value)
       (let* ((approx (cfa! node))
-	     (tv (get-approx-type approx)))
+	     (tv (get-approx-type approx node)))
 	 (if (tvec? tv)
 	     (let* ((knode (shrink! knode))
 		    (n (duplicate::kwote knode
@@ -510,7 +507,7 @@
    (with-access::vlength/Cinfo node (expr* loc tvector?)
       (patch*! expr*)
       (let* ((approx (cfa! (car expr*)))
-	     (tv (get-approx-type approx)))
+	     (tv (get-approx-type approx node)))
 	 (if (and (tvec? tv) (not tvector?))
 	     (let* ((length-tv (symbol-append (type-id tv) '-length))
 		    (new-node  (sexp->node `(,length-tv ,(car expr*))
@@ -543,7 +540,7 @@
    (with-access::app node (args loc)
       (patch*! args)
       (let* ((approx (cfa! (car args)))
-	     (tv     (get-approx-type approx)))
+	     (tv     (get-approx-type approx node)))
 	 (if (tvec? tv)
 	     (let* ((tv->list  (symbol-append (type-id tv) '->list))
 		    (new-node  (sexp->node `(,tv->list ,@args)
@@ -592,7 +589,7 @@
 		   n))
 	     (begin
 		(when *strict-node-type*
-		   (set! ftype (get-approx-type value-approx)))
+		   (set! ftype (get-approx-type value-approx node)))
 		node)))))
 	    
 ;*---------------------------------------------------------------------*/
@@ -607,14 +604,14 @@
 		(set! type ty))
 	     node)
 	  (let* ((vec-approx (cfa! (car expr*)))
-		 (tv (get-approx-type vec-approx)))
+		 (tv (get-approx-type vec-approx node)))
 	     (if (not (tvec? tv))
-		 (let ((ty (get-approx-type approx)))
+		 (let ((ty (get-approx-type approx node)))
 		    (when *strict-node-type*
 		       (set! ftype ty)
 		       (set! type ty))
 		    node)
-		 (let* ((ty (get-approx-type approx))
+		 (let* ((ty (get-approx-type approx node))
 			(tv-ref (symbol-append (type-id tv) '-ref))
 			(new-node (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
 		    (node-type-set! new-node (strict-node-type tv ty))
@@ -629,7 +626,7 @@
       (if tvector?
 	  node
 	  (let* ((vec-approx (cfa! (car expr*)))
-		 (tv (get-approx-type vec-approx)))
+		 (tv (get-approx-type vec-approx node)))
 	     (if (not (tvec? tv))
 		 node
 		 (let* ((tv-set!  (symbol-append (type-id tv) '-set!))
