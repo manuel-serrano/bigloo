@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Mon Sep  8 12:04:41 2008 (serrano)                */
-;*    Copyright   :  1994-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Apr  9 07:21:23 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
 ;*=====================================================================*/
@@ -229,29 +229,31 @@
 (define (do-external-define-lambda e name::symbol args body src)
    (enter-function name)
    (let* ((symbol name)
-	  (O-exp  (find-O-expander symbol))
-	  (G-exp  (find-G-expander symbol))
-	  (e      (internal-begin-expander e)))
+	  (O-exp (find-O-expander symbol))
+	  (G-exp (find-G-expander symbol))
+	  (e (internal-begin-expander e)))
       ;; est-ce qu'on n'est pas en train de redefinir une fonction
       ;; librairie qui, pour etre optimisee, etait aussi une macro ?
       (if (and (expander? O-exp) (not *lib-mode*))
 	  (begin
-	     (warning "top-level"
-		      "Disabling optimization for library function -- "
-		      name)
+	     (user-warning/location (find-location src)
+		"top-level"
+		"Disabling optimization for library function"
+		name)
 	     (unbind-O-expander! symbol)))
       (if (and (expander? G-exp) (not *lib-mode*))
 	  (begin
-	     (warning "top-level"
-		      "Disabling debug information for library function -- "
-		      name)
+	     (warning/location (find-location src)
+		"top-level"
+		"Disabling debug information for library function"
+		name)
 	     (unbind-G-expander! symbol)))
       (let* ((loc (find-location/loc (cddr src) (find-location src)))
-	     (ebody  (with-lexical
-		      (args*->args-list args)
-		      '_
-		      (find-location src)
-		      (lambda () (e (normalize-progn/loc body loc) e)))))
+	     (ebody (with-lexical
+		       (args*->args-list args)
+		       '_
+		       (find-location src)
+		       (lambda () (e (normalize-progn/loc body loc) e)))))
 	 (leave-function)
 	 `(define ,(cons name (expand-args args e)) ,ebody))))
 
@@ -267,15 +269,17 @@
       ;; librairie qui, pour etre optimisee, etait aussi une macro ?
       (if (and (expander? O-exp) (not *lib-mode*))
 	  (begin
-	     (warning "define"
-		      "Disabling optimization for library function -- "
-		      name)
+	     (user-warning/location (find-location src)
+		"define"
+		"Disabling optimization for library function"
+		name)
 	     (unbind-O-expander! symbol)))
       (if (and (expander? G-exp) (not *lib-mode*))
 	  (begin
-	     (warning "define"
-		      "Disabling debug information for library function -- "
-		      name)
+	     (user-warning/location (find-location src)
+		"define"
+		"Disabling debug information for library function"
+		name)
 	     (unbind-G-expander! symbol)))
       (let* ((loc (find-location/loc (cddr src) (find-location src)))
 	     (evalue (e (normalize-progn/loc value loc) e)))
@@ -304,15 +308,17 @@
       ;; librairie qui, pour etre optimisee, etait aussi une macro ?
       (if (and (expander? O-exp) (not *lib-mode*))
 	  (begin
-	     (warning "define"
-		      "Disabling optimization for library function -- "
-		      name)
+	     (user-warning/location (find-location src)
+		"define"
+		"Disabling optimization for library function"
+		name)
 	     (unbind-O-expander! name)))
       (if (and (expander? G-exp) (not *lib-mode*))
 	  (begin
-	     (warning "define"
-		      "Disabling debug information for library function -- "
-		      name)
+	     (user-warning/location (find-location src)
+		"define"
+		"Disabling debug information for library function"
+		name)
 	     (unbind-G-expander! name)))
       (set! internal-definition? #f)
       (if (null? ebody)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Wed Apr  6 12:19:02 2011 (serrano)                */
+;*    Last change :  Sat Apr  9 07:05:56 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
@@ -127,9 +127,11 @@
 		 (pragma? (let ((tgt (backend-pragma-support backend)))
 			     (backend-pragma-support-set! backend #t)
 			     tgt))
-		 (dummy (top-level-sexp->node
-			 `($cons ',(car value) '())
-			 #f)))
+		 (exp (let loop ((v value))
+			 (if (null? v)
+			     ''()
+			     `($cons ',(car v) ,(loop (cdr v))))))
+		 (dummy (top-level-sexp->node exp #f)))
 	     (backend-pragma-support-set! backend pragma?)
 	     (bigloo-warning-set! warning)
 	     (widen!::kwote/node node (node dummy))

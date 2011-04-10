@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Mon Mar 28 14:55:06 2011 (serrano)                */
+;*    Last change :  Sat Apr  9 07:16:15 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -55,22 +55,28 @@
    (compiler-exit 1))
 
 ;*---------------------------------------------------------------------*/
+;*    with-dump-stack ...                                              */
+;*---------------------------------------------------------------------*/
+(define (with-dump-stack thunk)
+   (if *compiler-stack-debug?*
+       (thunk)
+       (let ((st (bigloo-trace-stack-depth)))
+	  (bigloo-trace-stack-depth-set! 0)
+	  (unwind-protect
+	     (thunk)
+	     (bigloo-trace-stack-depth-set! st)))))
+   
+;*---------------------------------------------------------------------*/
 ;*    user-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (user-warning/location loc proc mes obj)
-   (let ((st (bigloo-trace-stack-depth)))
-      (unless *compiler-stack-debug?*
-	 (bigloo-trace-stack-depth-set! 0))
-      (unwind-protect
+   (with-dump-stack
+      (lambda ()
 	 (if (not (location? loc))
 	     (warning proc mes " -- " obj)
 	     (warning/location (location-full-fname loc)
-			       (location-pos loc)
-			       proc
-			       mes
-			       " -- "
-			       obj))
-	 (bigloo-trace-stack-depth-set! st))))
+		(location-pos loc) proc
+		mes " -- " obj)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    user-warning ...                                                 */
@@ -117,40 +123,42 @@
 ;*    user-error/location ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (user-error/location loc proc msg obj . continue)
-   (if (output-port? *trace-port*)
-       (fprint *trace-port*  "*** ERROR:" proc ":" msg ":" obj))
-   (set! *nb-error-on-pass* (+fx *nb-error-on-pass* 1))
-   (let* ((proc-string (cond
-			  ((string? proc)
-			   proc)
-			  ((symbol? proc)
-			   (symbol->string proc))
-			  (else
-			   #f)))
-	  (fun-string  (symbol->string (current-function)))
-	  (proc        (if (and (string? proc-string)
-				(not (string=? proc-string fun-string)))
-			   (string-append fun-string ":" proc-string)
-			   fun-string))
-	  (obj-prn  (let ((port (open-output-string)))
-		       (display-circle obj port)
-		       (let ((string (close-output-port port)))
-			  (if (>fx (string-length string) 45)
-			      (string-append (substring string 0 44) " ...")
-			      string)))))
-      (bind-exit (skip)
-	 (with-exception-handler
-	    (lambda (e)
-	       (error-notify e)
-	       (if (pair? continue)
-		   (skip (car continue))
-		   (exit 1)))
-	    (lambda ()
-	       (if (location? loc)
-		   (let ((fname (location-full-fname loc))
-			 (pos (location-pos loc)))
-		      (error/location proc msg obj-prn fname pos))
-		   (error proc msg obj-prn)))))))
+   (with-dump-stack
+      (lambda ()
+	 (if (output-port? *trace-port*)
+	     (fprint *trace-port*  "*** ERROR:" proc ":" msg ":" obj))
+	 (set! *nb-error-on-pass* (+fx *nb-error-on-pass* 1))
+	 (let* ((proc-string (cond
+				((string? proc)
+				 proc)
+				((symbol? proc)
+				 (symbol->string proc))
+				(else
+				 #f)))
+		(fun-string (symbol->string (current-function)))
+		(proc (if (and (string? proc-string)
+			       (not (string=? proc-string fun-string)))
+			  (string-append fun-string ":" proc-string)
+			  fun-string))
+		(objprn (let ((port (open-output-string)))
+			   (display-circle obj port)
+			   (let ((string (close-output-port port)))
+			      (if (>fx (string-length string) 45)
+				  (string-append (substring string 0 44) " ...")
+				  string)))))
+	    (bind-exit (skip)
+	       (with-exception-handler
+		  (lambda (e)
+		     (error-notify e)
+		     (if (pair? continue)
+			 (skip (car continue))
+			 (exit 1)))
+		  (lambda ()
+		     (if (location? loc)
+			 (let ((fname (location-full-fname loc))
+			       (pos (location-pos loc)))
+			    (error/location proc msg objprn fname pos))
+			 (error proc msg objprn)))))))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    *sfun-stack*                                                     */

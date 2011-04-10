@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Mar 30 08:23:00 2011 (serrano)                */
+;*    Last change :  Sat Apr  9 06:55:31 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -108,6 +108,7 @@
 	    *module-shape?*             
 	    *key-shape?*
 	    *type-shape?*
+	    *typenode-shape?*
             *typename-shape?*
 	    *access-shape?*
 	    *location-shape?*
@@ -822,6 +823,7 @@
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)
+(define *typenode-shape?* #f)
 (define *typename-shape?* #f)
 (define *access-shape?* #f)
 (define *location-shape?* #f)

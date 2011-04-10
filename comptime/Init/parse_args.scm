@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Apr  6 12:10:01 2011 (serrano)                */
+;*    Last change :  Sat Apr  9 06:55:33 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1045,7 +1045,7 @@
 			(set! *type-shape?* #t))
 		       ((#\T)
 			(set! *type-shape?* #t)
-			(set! *typename-shape?* #t))
+			(set! *typenode-shape?* #t))
 		       ((#\a)
 			(set! *access-shape?* #t))
 		       ((#\l)
@@ -1053,6 +1053,7 @@
 		       ((#\u)
 			(set! *user-shape?* #t))
 		       ((#\n)
+			(set! *typename-shape?* #t)
 			(set! *name-shape?* #t))
 		       (else
 			(error "parse-arg" "Illegal -shape option" string)))

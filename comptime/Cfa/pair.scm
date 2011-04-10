@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Fri Apr  8 18:26:38 2011 (serrano)                */
+;*    Last change :  Sun Apr 10 07:05:23 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
@@ -163,6 +163,7 @@
 	    (get-bigloo-type (approx-type (car approxes))))
 	 (approx-set-type! (cdr approxes)
 	    (get-bigloo-type (approx-type (cdr approxes))))
+	 (trace (cfa 4) "<<< cons: " (shape node) #\Newline)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -177,6 +178,7 @@
 	    #\Newline)
 	 ;; we check for top
 	 (when (approx-top? cons-approx)
+	    (approx-set-type! approx *obj*)
 	    (approx-set-top! approx))
 	 ;; then we scan the allocations.
 	 (for-each-approx-alloc
@@ -190,7 +192,7 @@
 		     (approx-set-type! (get approxes) (approx-type approx)))))
 	    cons-approx))
       (trace (cfa 4) "<<< cons-ref: " (shape node) " "
-	 " -> " (shape approx) #\Newline)
+	 " <- " (shape approx) #\Newline)
       approx))
 
 ;*---------------------------------------------------------------------*/

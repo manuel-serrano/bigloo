@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Wed Mar 30 09:02:28 2011 (serrano)                */
+;*    Last change :  Sun Apr 10 07:01:10 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -142,21 +142,21 @@
 	    (with-access::approx approx (type)
 	       (set! type (get-bigloo-type type))))
 	 approx))
-
+   
    (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
       (if (=fx stamp *cfa-stamp*)
 	  (begin
 	     (trace (cfa 3) "--- cfa-intern-sfun!: " (shape owner) " -> "
-		    (shape approx)
-		    #\Newline)
+		(shape approx)
+		#\Newline)
 	     (polymorphic approx))
 	  (begin
 	     (trace (cfa 3) ">>> cfa-intern-sfun!: " (shape owner) #\Newline)
 	     (set! stamp *cfa-stamp*)
 	     (union-approx! approx (cfa! body))
 	     (trace (cfa 3) "<<< cfa-intern-sfun!: " (shape owner) " -> "
-		    (shape approx)
-		    #\Newline)
+		(shape approx)
+		#\Newline)
 	     (polymorphic approx)))))
 
 ;*---------------------------------------------------------------------*/
