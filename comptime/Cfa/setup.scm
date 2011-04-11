@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Apr  6 13:52:36 2011 (serrano)                */
+;*    Last change :  Mon Apr 11 08:11:00 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -68,8 +68,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::kwote)
    (with-access::kwote node (value)
-      (widen!::kwote/Cinfo node
-	 (approx (make-type-approx (get-type-kwote value))))))
+      (let ((approx (make-type-approx (get-type-kwote value))))
+	 (approx-top?-set! approx #t)
+	 (widen!::kwote/Cinfo node
+	    (approx approx)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::kwote/node ...                                     */
