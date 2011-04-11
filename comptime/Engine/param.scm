@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Apr  9 06:55:31 2011 (serrano)                */
+;*    Last change :  Sun Apr 10 07:29:31 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -67,6 +67,7 @@
 	    *optim-cfa-funcall-tracking?*
 	    *optim-cfa-apply-tracking?*
 	    *optim-cfa-pair?*
+	    *optim-cfa-pair-quote-max-length*
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
@@ -922,6 +923,9 @@
 (param-define *optim-cfa-pair?*
 	      "Track values across pairs"
 	      #f)
+(param-define *optim-cfa-pair-quote-max-length*
+	      "Maximum length for pair literal tracking"
+	      4)
 (param-define *optim-integrate?*
 	      "Enable function integration (closure analysis)"
 	      #t)

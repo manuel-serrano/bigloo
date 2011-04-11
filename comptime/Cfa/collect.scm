@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Sat Apr  9 07:05:56 2011 (serrano)                */
+;*    Last change :  Sun Apr 10 07:37:57 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
@@ -96,46 +96,53 @@
 
    (define (monomorphic-list? list)
       (monomorphic-vector? (list->vector list)))
+
+   (define (node-collect-vector! value)
+      (let* ((warning (let ((wan (bigloo-warning)))
+			 (bigloo-warning-set! 0)
+			 wan))
+	     (backend (the-backend))
+	     (pragma? (let ((tgt (backend-pragma-support backend)))
+			 (backend-pragma-support-set! backend #t)
+			 tgt))
+	     (dummy (top-level-sexp->node
+		       `($make-vector ,(vector-length value)
+			   ,(if (monomorphic-vector? value)
+				(vector-ref value 0)
+				'(pragma::obj "")))
+		       #f)))
+	 (backend-pragma-support-set! backend pragma?)
+	 (bigloo-warning-set! warning)
+	 (widen!::kwote/node node (node dummy))
+	 (node-collect! dummy owner)))
+
+   (define (node-collect-pair! value)
+      (let* ((warning (let ((wan (bigloo-warning)))
+			 (bigloo-warning-set! 0)
+			 wan))
+	     (backend (the-backend))
+	     (pragma? (let ((tgt (backend-pragma-support backend)))
+			 (backend-pragma-support-set! backend #t)
+			 tgt))
+	     (exp (let loop ((v value))
+		     (if (null? v)
+			 ''()
+			 `($cons ',(car v) ,(loop (cdr v))))))
+	     (dummy (top-level-sexp->node exp #f)))
+	 (backend-pragma-support-set! backend pragma?)
+	 (bigloo-warning-set! warning)
+	 (widen!::kwote/node node (node dummy))
+	 (node-collect! dummy owner)))      
    
    (let ((value (kwote-value node)))
       (cond
 	 ((and (vector? value) (vector-optim?))
 	  ;; vector tracking
-	  (let* ((warning (let ((wan (bigloo-warning)))
-			     (bigloo-warning-set! 0)
-			     wan))
-		 (backend (the-backend))
-		 (pragma? (let ((tgt (backend-pragma-support backend)))
-			     (backend-pragma-support-set! backend #t)
-			     tgt))
-		 (dummy (top-level-sexp->node
-			 `($make-vector ,(vector-length value)
-					,(if (monomorphic-vector? value)
-					     (vector-ref value 0)
-					     '(pragma::obj "")))
-			 #f)))
-	     (backend-pragma-support-set! backend pragma?)
-	     (bigloo-warning-set! warning)
-	     (widen!::kwote/node node (node dummy))
-	     (node-collect! dummy owner)))
-	 ((and (pair? value) (pair-optim?) (list? value))
+	  (node-collect-vector! value))
+	 ((and (pair? value) (pair-optim?) (list? value)
+	       (<fx (length value) (pair-optim-quote-maxlen)))
 	  ;; pair tracking
-	  (let* ((warning (let ((wan (bigloo-warning)))
-			     (bigloo-warning-set! 0)
-			     wan))
-		 (backend (the-backend))
-		 (pragma? (let ((tgt (backend-pragma-support backend)))
-			     (backend-pragma-support-set! backend #t)
-			     tgt))
-		 (exp (let loop ((v value))
-			 (if (null? v)
-			     ''()
-			     `($cons ',(car v) ,(loop (cdr v))))))
-		 (dummy (top-level-sexp->node exp #f)))
-	     (backend-pragma-support-set! backend pragma?)
-	     (bigloo-warning-set! warning)
-	     (widen!::kwote/node node (node dummy))
-	     (node-collect! dummy owner))))))
+	  (node-collect-pair! value)))))
 		    
 ;*---------------------------------------------------------------------*/
 ;*    node-collect! ::var ...                                          */

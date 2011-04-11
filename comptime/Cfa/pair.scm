@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Sun Apr 10 07:05:23 2011 (serrano)                */
+;*    Last change :  Sun Apr 10 07:30:01 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
@@ -35,13 +35,20 @@
 	    cfa_tvector)
    (export  (patch-pair-set!)
 	    (unpatch-pair-set!)
-	    (pair-optim?::bool)))
+	    (pair-optim?::bool)
+	    (pair-optim-quote-maxlen)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pair-optim? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (pair-optim?)
    (and (>=fx *optim* 2) *optim-cfa-pair?*))
+
+;*---------------------------------------------------------------------*/
+;*    pair-optim-quote-maxlen ...                                      */
+;*---------------------------------------------------------------------*/
+(define (pair-optim-quote-maxlen)
+   *optim-cfa-pair-quote-max-length*)
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-pair-set! ...                                              */
