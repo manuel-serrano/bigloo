@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Sun Apr 10 07:30:01 2011 (serrano)                */
+;*    Last change :  Mon Apr 11 11:17:32 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
@@ -158,19 +158,23 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa!::approx node::cons-app)
    (with-access::cons-app node (args approxes approx)
-      (trace (cfa 4) ">>> cons: " (shape node) #\Newline)
-      (cfa! (car args))
+      (trace (cfa 4) (cfa-current) ": >>> cons " (shape node) #\Newline)
       (let ((cara (cfa! (car args)))
 	    (cdra (cfa! (cadr args))))
 	 (union-approx! (car approxes) cara)
 	 (union-approx! (cdr approxes) cdra)
-	 (trace (cfa 4) "~~~ cons, car-approx=" (shape (car approxes)) "\n")
-	 (trace (cfa 4) "~~~ cons, cdr-approx=" (shape (cdr approxes)) "\n")
+	 (trace (cfa 4) (cfa-current) ": ~~~ cons, car="
+	    (shape (car approxes))
+	    " cdr=" (shape (cdr approxes)) "\n")
+	 (trace (cfa 4) (cfa-current) ": ~~~ cons, -> car-approx="
+	    (shape (car approxes))
+	    " -> cdr-approx=" (shape (cdr approxes)) "\n")
 	 (approx-set-type! (car approxes)
 	    (get-bigloo-type (approx-type (car approxes))))
 	 (approx-set-type! (cdr approxes)
 	    (get-bigloo-type (approx-type (cdr approxes))))
-	 (trace (cfa 4) "<<< cons: " (shape node) #\Newline)
+	 (trace (cfa 4) (cfa-current) ": <<< cons " (shape node)
+	    #\Newline)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -179,7 +183,7 @@
 (define-method (cfa!::approx node::cons-ref-app)
    (with-access::cons-ref-app node (args approx get)
       (let ((cons-approx (cfa! (car args))))
-	 (trace (cfa 4) ">>> cons-ref: " (shape node)
+	 (trace (cfa 4) (cfa-current) ": >>> cons-ref: " (shape node)
 	    " cons-approx=" (shape cons-approx)
 	    " current=" (shape approx)
 	    #\Newline)
@@ -193,12 +197,12 @@
 	       (when (cons-app? app)
 		  (with-access::cons-app app (approxes seen?)
 		     (set! seen? #t)
-		     (trace (cfa 4)
-			"~~~ cons-app=" (shape (get approxes)) #\Newline)
+		     (trace (cfa 4) (cfa-current) 
+			": ~~~ cons-app=" (shape (get approxes)) #\Newline)
 		     (union-approx! approx (get approxes))
 		     (approx-set-type! (get approxes) (approx-type approx)))))
 	    cons-approx))
-      (trace (cfa 4) "<<< cons-ref: " (shape node) " "
+      (trace (cfa 4) (cfa-current) ": <<< cons-ref: " (shape node) " "
 	 " <- " (shape approx) #\Newline)
       approx))
 
@@ -209,7 +213,8 @@
    (with-access::cons-set!-app node (args approx get)
       (let ((cons-approx (cfa! (car args)))
 	    (val-approx (cfa! (cadr args))))
-	 (trace (cfa 4) ">>> cons-set!: " (shape node) " "
+	 (trace (cfa 4) (cfa-current) ": >>> cons-set!: "
+	    (shape node) " "
 	    (shape cons-approx) #\Newline)
 	 ;; we check the type...
 	 (unless (eq? (approx-type cons-approx) *pair*)
@@ -226,7 +231,7 @@
 			 (set! seen? #t)
 			 (union-approx! (get approxes) val-approx))))
 		cons-approx)))
-      (trace (cfa 4) "<<< cons-set!: " (shape node) " "
+      (trace (cfa 4) (cfa-current) ": <<< cons-set!: " (shape node) " "
 	 (shape approx) #\Newline)
       approx))
       
@@ -240,7 +245,8 @@
 (define-method (loose-alloc! alloc::cons-app)
    (with-access::cons-app alloc (lost-stamp approxes)
       (unless (=fx lost-stamp *cfa-stamp*)
-	 (trace (cfa 2) " *** loose(make-cons-app): " (shape alloc) #\Newline)
+	 (trace (cfa 2) (cfa-current) ": *** loose(cons): "
+	    (shape alloc) #\Newline)
 	 (set! lost-stamp *cfa-stamp*)
 	 (for-each-approx-alloc loose-alloc! (car approxes))
 	 (for-each-approx-alloc loose-alloc! (cdr approxes))

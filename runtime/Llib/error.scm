@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Mar 29 11:26:45 2011 (serrano)                */
+;*    Last change :  Mon Apr 11 11:27:46 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -238,7 +238,9 @@
 	    (set! *optim-O-macro?* #f)
 	    (set! *unsafe-type*    #t)
 	    (set! *unsafe-arity*   #t)
-	    (set! *unsafe-range*   #t)))
+	    (set! *unsafe-range*   #t))
+
+   (pragma  (typeof no-cfa-top args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-trace-stack ...                                              */

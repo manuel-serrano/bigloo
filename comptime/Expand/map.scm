@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Tue May 11 13:45:14 2010 (serrano)                */
-;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 11 11:29:01 2011 (serrano)                */
+;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -105,18 +105,18 @@
 					       (cond
 						  (((@ pair? __r4_pairs_and_lists_6_3) ,l)
 						   (let ((,ntail 
-							  ((@ cons __r4_pairs_and_lists_6_3) (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
-											     '())))
+							    ((@ cons __r4_pairs_and_lists_6_3) (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
+											       '())))
 						      ((@ set-cdr! __r4_pairs_and_lists_6_3) ,tail ,ntail)
 						      (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)
-							      ,ntail)))
+							 ,ntail)))
 						  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 						   ,head)
 						  (else
 						   ((@ error __error)
 						    "map"
 						    "argument not a list"
-						    ,l))))))
+						    (typeof ,l)))))))
 				     (else
 				      `(let ((,head ((@ cons __r4_pairs_and_lists_6_3) '() '())))
 					  (let ,lname ((,l    ,l)
@@ -135,7 +135,7 @@
 						   ((@ error __error)
 						    "map"
 						    "argument not a list"
-						    ,l)))))))))))
+						    (typeof ,l))))))))))))
 	      (body (epairify-propagate loop x))
 	      (res (e body e)))
 	  (epairify! x res)))
@@ -205,7 +205,7 @@
 							((@ error __error)
 							 "map"
 							 "argument not a list"
-							 ,l))))))
+							 (typeof ,l)))))))
 					  (else
 					   `(let ((,head ((@ cons __r4_pairs_and_lists_6_3) '() '())))
 					       (let ,lname ((,l    ,l)
@@ -224,7 +224,7 @@
 							((@ error __error)
 							 "map"
 							 "argument not a list"
-							 ,l))))))))))))
+							 (typeof ,l)))))))))))))
 	      (body (epairify-propagate loop x))
 	      (res (e body e)))
 	  (epairify! x res)))
@@ -369,7 +369,7 @@
 				  (else
 				   ((@ error __error) "for-each"
 						      "argument not a list"
-						      ,l)))))))
+						      (typeof ,l))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
@@ -395,7 +395,7 @@
 				       (else
 					((@ error __error) "for-each"
 							   "argument not a list"
-							   ,l))))))))
+							   (typeof ,l)))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
@@ -460,7 +460,7 @@
 				  (else
 				   ((@ error __error) "any?"
 						      "argument not a list"
-						      ,l)))))))
+						      (typeof ,l))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
@@ -488,7 +488,7 @@
 				       (else
 					((@ error __error) "any?"
 							   "argument not a list"
-							   ,l))))))))
+							   (typeof ,l)))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
@@ -525,7 +525,7 @@
 				  (else
 				   ((@ error __error) "every?"
 						      "argument not a list"
-						      ,l)))))))
+						      (typeof ,l))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
@@ -553,7 +553,7 @@
 				      (else
 				       ((@ error __error) "every?"
 							  "argument not a list"
-							  ,l))))))))
+							  (typeof ,l)))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Wed Apr  6 15:15:36 2011 (serrano)                */
+;*    Last change :  Mon Apr 11 11:25:40 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -25,6 +25,7 @@
 	    cfa_info3
 	    cfa_loose
 	    cfa_approx
+	    cfa_iterate
 	    cfa_app
 	    cfa_funcall)
    (export  (generic cfa!::approx ::node)
@@ -55,8 +56,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! knode::kwote/node)
    (with-access::kwote/node knode (node)
-      (trace (cfa 3) "kwote/node: " (shape knode) " -> " (shape node)
-	     #\Newline)
+      (trace (cfa 3) (shape (cfa-current)) ": kwote/node, "
+	 (shape knode) " -> " (shape node)
+	 #\Newline)
       (cfa! node)))
 		    
 ;*---------------------------------------------------------------------*/
@@ -202,8 +204,9 @@
       (let* ((var-approx (cfa! var))
 	     (val-approx (cfa! value))
 	     (v (var-variable var)))
-	 (trace (cfa 3) "*** " (shape node) " <- " (shape val-approx)
-		#\Newline)
+	 (trace (cfa 3) (shape (cfa-current)) ": setq, " (shape node)
+	    " <- " (shape val-approx)
+	    #\Newline)
 	 (union-approx! var-approx val-approx)
 	 (when (and (global? v)
 		    (or (not (global-init v))
@@ -259,7 +262,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::let-var)
    (with-access::let-var node (body bindings)
-      (trace (cfa 3) ">>> cfa! ::let-var: " (shape node) #\Newline)
+      (trace (cfa 4) (shape (cfa-current)) ": let-var, " (shape node) #\Newline)
       (for-each (lambda (binding)
 		   (let* ((var        (car binding))
 			  (var-approx (svar/Cinfo-approx (variable-value var)))
@@ -267,13 +270,14 @@
 		      (let ((vtype (variable-type var))
 			    (atype (approx-type val-approx)))
 			 (trace (cfa 4)
-			    "~~~ cfa! ::let-var var=" (shape var) "\n"
-			    "  v-type=" (shape vtype) "\n"
-			    "  va-type=" (shape (approx-type var-approx)) "\n"
-			    "  atype=" (shape atype) "\n")
+			    (shape (cfa-current)) ": let-var, var=" (shape var) 
+			    ", v-type=" (shape vtype)
+			    ", va-type=" (shape (approx-type var-approx))
+			    ", atype=" (shape atype) "\n")
 			 (union-approx! var-approx val-approx)
 			 (trace (cfa 4)
-			    "  -> type=" (shape (approx-type var-approx)) "\n")
+			    (shape (cfa-current)) ": -> type="
+			    (shape (approx-type var-approx)) "\n")
 			 ;; Here we explicitly check for type downcasts.
 			 ;; When one is encountered, top is propagated
 			 ;; Before version 3.5b (27 Nov 2010), this was
@@ -283,13 +287,16 @@
 				    (not (eq? vtype *obj*))
 				    (not (eq? atype *_*))
 				    (eq? atype *obj*))
-			    (trace (cfa 4) "     -----> setting top "
-				   (shape val-approx) "\n")
+			    (trace (cfa 4) (shape (cfa-current))
+			       ": -----> setting top "
+			       (shape val-approx) "\n")
 			    (approx-set-top! val-approx)
 			    (loose! val-approx 'all)))))
-		bindings)
-      (trace (cfa 3) "<<< cfa! ::let-var: " (shape node) #\Newline)
-      (cfa! body)))
+	 bindings)
+      (let ((approx (cfa! body)))
+	 (trace (cfa 3) (shape (cfa-current)) ":let-var <- "
+	    (shape node) #\Newline)
+	 approx)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa! ::set-ex-it/Cinfo ...                                       */
@@ -314,7 +321,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::make-box/Cinfo)
    (with-access::make-box/Cinfo node (approx value)
-      (trace (cfa 3) "cfa!(make-box): " (shape value) #\Newline)
+      (trace (cfa 3) (shape (cfa-current)) ": make-box), "
+	 (shape value) #\Newline)
       (loose! (cfa! value) 'all)
       approx))
 

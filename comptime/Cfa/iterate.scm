@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Sun Apr 10 07:01:10 2011 (serrano)                */
+;*    Last change :  Mon Apr 11 11:08:31 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -30,6 +30,7 @@
 	    (generic cfa-export-var! ::value ::obj)
 	    (continue-cfa! reason)
 	    (cfa-iterate! globals)
+	    (cfa-current)
 	    *cfa-stamp*))
 
 ;*---------------------------------------------------------------------*/
@@ -146,17 +147,18 @@
    (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
       (if (=fx stamp *cfa-stamp*)
 	  (begin
-	     (trace (cfa 3) "--- cfa-intern-sfun!: " (shape owner) " -> "
-		(shape approx)
-		#\Newline)
+	     (trace (cfa 2) "<<< " (shape owner)
+		" <- " (shape approx) #\Newline)
 	     (polymorphic approx))
 	  (begin
-	     (trace (cfa 3) ">>> cfa-intern-sfun!: " (shape owner) #\Newline)
+	     (trace (cfa 2) ">>> " (shape owner) #\Newline)
 	     (set! stamp *cfa-stamp*)
-	     (union-approx! approx (cfa! body))
-	     (trace (cfa 3) "<<< cfa-intern-sfun!: " (shape owner) " -> "
-		(shape approx)
-		#\Newline)
+	     (let ((cur *cfa-current*))
+		(set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
+		(union-approx! approx (cfa! body))
+		(trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
+		   #\Newline)
+		(set! *cfa-current* cur))
 	     (polymorphic approx)))))
 
 ;*---------------------------------------------------------------------*/
@@ -164,13 +166,20 @@
 ;*---------------------------------------------------------------------*/
 (define *cfa-continue?* #unspecified)
 (define *cfa-stamp* -1)
+(define *cfa-current* #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    cfa-current ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (cfa-current)
+   *cfa-current*)
 
 ;*---------------------------------------------------------------------*/
 ;*    continue-cfa! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (continue-cfa! reason)
    (when (not *cfa-continue?*)
-      (trace (cfa 2) "--> continue-cfa! (" reason ")\n"))
+      (trace (cfa 2) (cfa-current) ": continue-cfa! (" reason ")\n"))
    (set! *cfa-continue?* #t))
 
 ;*---------------------------------------------------------------------*/
