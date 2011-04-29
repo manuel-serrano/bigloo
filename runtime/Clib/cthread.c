@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Feb  9 10:53:41 2011 (serrano)                */
+/*    Last change :  Mon Apr 11 18:11:09 2011 (serrano)                */
 /*    Copyright   :  2004-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -15,6 +15,7 @@
 /*    for Bigloo threads implementations.                              */
 /*=====================================================================*/
 #include <bigloo.h>
+#include <signal.h>
 
 /*---------------------------------------------------------------------*/
 /*    Default functions ...                                            */
@@ -43,6 +44,10 @@ static obj_t denv_get() { return 0; }
 /*---------------------------------------------------------------------*/
 /*    Thread registers                                                 */
 /*---------------------------------------------------------------------*/
+#if HAVE_SIGPROCMASK
+int (*bgl_sigprocmask)( int, const sigset_t *, sigset_t * ) = &sigprocmask;
+#endif
+
 static obj_t (*bgl_mutex_init)( obj_t ) = &bgl_init_default;
 static obj_t (*bgl_condvar_init)( obj_t ) = &bgl_init_default;
 
@@ -69,6 +74,10 @@ BGL_RUNTIME_DEF obj_t (*bgl_multithread_dynamic_denv)() = &denv_get;
 #define REGISTER_FUNCTION( id, res, proto ) \
   BGL_RUNTIME_DEF void id##_register( res (*f)proto ) { id = f; }
 
+#if HAVE_SIGPROCMASK							 
+REGISTER_FUNCTION( bgl_sigprocmask, int, (int, const sigset_t *, sigset_t *) )
+#endif
+							 
 REGISTER_FUNCTION( bgl_mutex_init, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_mutex_lock, bool_t, (obj_t) )
 REGISTER_FUNCTION( bgl_mutex_timed_lock, bool_t, (obj_t, long) )

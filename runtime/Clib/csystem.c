@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Fri Feb 18 15:58:22 2011 (serrano)                */
+/*    Last change :  Tue Apr 12 09:13:56 2011 (serrano)                */
 /*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -50,6 +50,13 @@ static obj_t getuid_mutex = BUNSPEC;
 DEFINE_STRING( getuid_mutex_name, _2, "getuid-mutex", 12 );
 
 /*---------------------------------------------------------------------*/
+/*    thread or process sigprocmask                                    */
+/*---------------------------------------------------------------------*/
+#if HAVE_SIGPROCMASK
+extern int (*bgl_sigprocmask)( int, const sigset_t *, sigset_t * );
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    bgl_init_signal ...                                              */
 /*---------------------------------------------------------------------*/
 void
@@ -75,7 +82,9 @@ signal_handler( int num ) {
    signal( num, (void (*)(int))(signal_handler) );
 #endif
 
-   return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
+   if( PROCEDUREP( handler ) ) {
+      return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
+   }
 }
     
 /*---------------------------------------------------------------------*/
@@ -136,24 +145,24 @@ bgl_restore_signal_handlers() {
    sigset_t set;
 
    sigemptyset( &set );
-   sigprocmask( SIG_SETMASK, &set, 0 );
+   bgl_sigprocmask( SIG_SETMASK, &set, 0 );
 #endif
 }
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_sigprocmask ...                                              */
+/*    bgl_sigsetmask ...                                               */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
-bgl_sigprocmask( int set ) {
+bgl_sigsetmask( int set ) {
 #if HAVE_SIGPROCMASK
    if( !set ) {
       sigset_t mask;
-      sigprocmask( SIG_SETMASK, 0, &mask );
+      bgl_sigprocmask( SIG_SETMASK, 0, &mask );
 
-      return sigprocmask( SIG_UNBLOCK, &mask, 0 );
+      return bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );
    } else {
-      return sigprocmask( SIG_SETMASK, (const sigset_t *)&set, 0 );
+      return bgl_sigprocmask( SIG_SETMASK, (const sigset_t *)&set, 0 );
    }
 #else
    return 0;

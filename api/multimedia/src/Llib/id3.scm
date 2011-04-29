@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Thu Dec 30 07:29:42 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Sat Apr 23 18:57:59 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -42,11 +42,20 @@
 	      (woar::obj (default #f))
 	      (wors::obj (default #f)))
 
+	   (class musicinfo
+	      (format::bstring read-only)
+	      (samplerate::long read-only)
+	      (channels::int read-only)
+	      (bps::int read-only)
+	      (duration::long read-only))
+
 	   (mp3-id3 ::bstring)
 	   (mp3-musictag ::bstring)
 	   (ogg-musictag ::bstring)
 	   (flac-musictag ::bstring)
-	   (file-musictag ::bstring)))
+	   (file-musictag ::bstring)
+	   (flac-musicinfo ::bstring)
+	   (file-musicinfo ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *id3v2-genres* ...                                               */
@@ -560,7 +569,7 @@
 (define (mp3-musictag path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'mp3-musictag "Can't find file" path)
+	  "mp3-musictag" "Can't find file" path)
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (cond
@@ -578,15 +587,26 @@
 (define (neq-input-string mm s)
    ;; consume matching input.  stop immediately upon mismatch.
    (let loop ((i 0))
-      (if (=fx i (string-length s)) #f
-	  (if (char=? (mmap-get-char mm) (string-ref s i)) (loop (+fx 1 i))
+      (if (=fx i (string-length s))
+	  #f
+	  (if (char=? (mmap-get-char mm) (string-ref s i))
+	      (loop (+fx 1 i))
 	      #t))))
+
+;*---------------------------------------------------------------------*/
+;*    ubigendian2 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ubigendian2 mm)
+   ;; read an unsigned 3 bytes big-endian integer
+   (let* ((n0 (char->integer (mmap-get-char mm)))
+	  (n1 (char->integer (mmap-get-char mm))))
+      (fixnum->elong (+fx (bit-lsh n0 8) n1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ubigendian3 ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (ubigendian3 mm)
-   ;; read an unsigned 3 byte big-endian integer
+   ;; read an unsigned 3 bytes big-endian integer
    (let* ((n0 (char->integer (mmap-get-char mm)))
 	  (n1 (char->integer (mmap-get-char mm)))
 	  (n2 (char->integer (mmap-get-char mm))))
@@ -594,6 +614,20 @@
        (+fx (bit-lsh n0 (*fx 2 8))
 	    (+fx (bit-lsh n1 8)
 		 n2)))))
+
+;*---------------------------------------------------------------------*/
+;*    ubigendian4 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ubigendian4 mm)
+   ;; read an unsigned 4 bytes big-endian integer
+   (let* ((n0 (char->integer (mmap-get-char mm)))
+	  (n1 (char->integer (mmap-get-char mm)))
+	  (n2 (char->integer (mmap-get-char mm)))
+	  (n3 (char->integer (mmap-get-char mm))))
+      (+llong (bit-lshllong n0 (*fx 3 8))
+	 (+llong (bit-lshllong n1 (*fx 2 8))
+	    (+llong (bit-lshllong n2 (*fx 1 8))
+	       (fixnum->llong n3))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utillendian4 ...                                                 */
@@ -706,7 +740,7 @@
    
    (mmap-read-position-set! mm #e0)
    (local-read-ogg-comments path mm))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    read-flac-comments ...                                           */
 ;*    -------------------------------------------------------------    */
@@ -726,7 +760,8 @@
 	     (set! block4s (append! comments block4s)))
 	  (mmap-read-position-set! mm (+fx block-length (mmap-read-position mm))))
       (let ((block-is-last (not (zerofx? (bit-and block-type #x80)))))
-	 (if block-is-last block4s
+	 (if block-is-last
+	     block4s
 	     (parse-metadata-block-headers))))
    
    (define (parse-metadata-block-headers)
@@ -745,7 +780,7 @@
 (define (flac-musictag path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'flac-musictag "Can't find file" path)
+	  "flac-musictag" "Can't find file" path)
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (ogg-comments->musictag (read-flac-comments mm))
@@ -757,7 +792,7 @@
 (define (ogg-musictag path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-		    'ogg-vorbis "Can't find file" path)
+	  "ogg-vorbis" "Can't find file" path)
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (ogg-comments->musictag (read-ogg-comments path mm))
@@ -805,4 +840,130 @@
 	     (close-input-port p))))
       (else
        (error/errno $errno-io-file-not-found-error
-		    'file-musictag "Can't find file" path))))
+	  "file-musictag" "Can't find file" path))))
+
+;*---------------------------------------------------------------------*/
+;*    read-flac-musicinfo ...                                          */
+;*---------------------------------------------------------------------*/
+(define (read-flac-musicinfo mm)
+   
+   (define (skip-id3v2-frame mm)
+      (let ((size (id3v2-size mm #e6)))
+	 (+ 11 size)))
+   
+   (define (skip-id3-frame mm)
+      (cond
+	 ((or (id3v2.4? mm) (id3v2.3? mm) (id3v2.2? mm))
+	  (-elong (skip-id3v2-frame mm) 1))
+	 ((or (id3v1.1? mm) (id3v1? mm))
+	  #e128)
+	 (else
+	  #e0)))
+   
+   (define (ubigendian20bits mm)
+      ;; read an unsigned 3 byte big-endian integer
+      (let* ((n0 (char->integer (mmap-get-char mm)))
+	     (n1 (char->integer (mmap-get-char mm))))
+	 (fixnum->elong (+fx (bit-lsh n1 8) n0))))
+   
+   (define (parse-metadata-block-streaminfo mm block-length)
+      (let* ((minbsz (ubigendian2 mm))
+	     (maxbsz (ubigendian2 mm))
+	     (minfsz (ubigendian3 mm))
+	     (maxfsz (ubigendian3 mm))
+	     (char0-1 (ubigendian2 mm))
+	     (char2 (char->integer (mmap-get-char mm)))
+	     (char3 (char->integer (mmap-get-char mm)))
+	     (char4-7 (ubigendian4 mm))
+	     (samplerate (+elong (bit-lshelong char0-1 4)
+			    (fixnum->elong (bit-rsh char2 4))))
+	     (channels (+fx 1 (bit-and (bit-rsh char2 1) 7)))
+	     (bps (+fx 1
+		     (+fx (bit-lsh (bit-and char2 1) 4)
+			(bit-rsh char3 4))))
+	     (totalsample (+llong (bit-lshllong
+				     (fixnum->llong (bit-and char3 #x0f))
+				     32)
+			     char4-7)))
+	 (instantiate::musicinfo
+	    (format "flac")
+	    (samplerate samplerate)
+	    (channels channels)
+	    (bps bps)
+	    (duration (llong->fixnum
+			 (/llong totalsample (elong->llong samplerate)))))))
+   
+   (define (parse-metadata-block-headers mm)
+      (let* ((block-type (char->integer (mmap-get-char mm)))
+	     (block-length (ubigendian3 mm)))
+	 (if (=fx (bit-and block-type #x7F) 0)
+	     ;; streaminfo is the first block
+	     (parse-metadata-block-streaminfo mm block-length)
+	     (begin
+		(mmap-read-position-set! mm 0)
+		#f))))
+   
+   (let ((i (skip-id3-frame mm)))
+      (mmap-read-position-set! mm i)
+      (if (neq-input-string mm "fLaC")
+	  (begin
+	     (mmap-read-position-set! mm 0)
+	     #f)
+	  (parse-metadata-block-headers mm))))
+   
+;*---------------------------------------------------------------------*/
+;*    flac-musicinfo ...                                               */
+;*---------------------------------------------------------------------*/
+(define (flac-musicinfo path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+	  "flac-musicinfo" "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (read-flac-musicinfo mm)
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
+;*    file-musicinfo ...                                               */
+;*---------------------------------------------------------------------*/
+(define (file-musicinfo path)
+   
+   (define (mmap-musicinfo mm)
+      (cond
+	 ((id3v2.4? mm) #f)
+	 ((id3v2.3? mm) #f)
+	 ((id3v2.2? mm) #f)
+	 ((id3v1.1? mm) #f)
+	 ((id3v1? mm) #f)
+	 ((read-flac-musicinfo mm) => (lambda (mi) mi))
+	 ((read-ogg-comments path mm) #f)
+	 (else #f)))
+   
+   (cond
+      ((file-exists? path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (mmap-musicinfo mm)
+	     (close-mmap mm))))
+      ((open-input-file path)
+       =>
+       (lambda (p)
+	  (unwind-protect
+	     (let loop ((s (read-chars 8192 p)))
+		;; reads the first 8KB and tries to find a tag
+		(let ((mm (string->mmap s)))
+		   (unwind-protect
+		      (with-handler
+			 (lambda (e)
+			    (if (&large-frame-exception? e)
+				(let ((sz (elong->fixnum
+					     (- (&large-frame-exception-size e)
+						(string-length s)))))
+				   (loop (string-append s (read-chars sz p))))))
+			 (mmap-musicinfo mm))
+		      (close-mmap mm))))
+	     (close-input-port p))))
+      (else
+       (error/errno $errno-io-file-not-found-error
+	  "file-musicinfo" "Can't find file" path))))
+   

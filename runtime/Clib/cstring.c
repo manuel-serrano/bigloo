@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Tue Jan 18 11:47:12 2011 (serrano)                */
+/*    Last change :  Mon Apr 11 15:47:30 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -229,7 +229,7 @@ integer_to_string( long x, long radix ) {
       *s = letters[ abs(ax % radix) ];
 
    if( x < 0 ) *(s+1) = '-';
-
+   
    return aux;
 }
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Mar 30 08:06:21 2011 (serrano)                */
+/*    Last change :  Mon Apr 11 18:15:43 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2978,10 +2978,6 @@ BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
    
 BGL_RUNTIME_DECL void bgl_init_trace( void );
-
-#if( HAVE_SIGPROCMASK )
-BGL_RUNTIME_DECL int bgl_sigprocmask( int );
-#endif
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 

@@ -457,7 +457,7 @@
 /*    sigsetmask                                                       */
 /*---------------------------------------------------------------------*/
 #if( HAVE_SIGPROCMASK )
-#  define BGL_SIGSETMASK( _int_ ) bgl_sigprocmask( _int_ )
+#  define BGL_SIGSETMASK( _int_ ) bgl_sigsetmask( _int_ )
 #else
 #  if( HAVE_SIGSETMASK )
 #    define BGL_SIGSETMASK( _int_ ) sigsetmask( _int_ )

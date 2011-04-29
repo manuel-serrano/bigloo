@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Fri Jun 19 07:15:33 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Sat Apr 23 17:53:19 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -31,10 +31,14 @@
 
    (eval   (export-all)
 	   (class exif)
+	   (class musictag)
 	   (class id3)
+	   (class vorbis)
 	   (class mp3frame)
+	   (class musicinfo)
 	   (class mixer)
 	   (class music)
+	   (class musicstatus)
 	   (class mpc)
 	   (class musicproc)
 	   (class mpg123)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Jun 14 09:21:13 2007 (serrano)                */
+;*    Last change :  Mon Apr 18 06:07:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee mode declaration.                                        */
 ;*=====================================================================*/
@@ -290,7 +290,7 @@ if that value is non-nil."
   (when (and (null (nth 3 state))
              (eq (char-after (nth 8 state)) ?#)
              (eq (char-after (1+ (nth 8 state))) ?\;))
-    ;; It's a sexp-comment.  Tell parse-partial-sexp where it ends.
+    ;; It's a sexp-comment. Tell parse-partial-sexp where it ends.
     (save-excursion
       (let ((pos (point))
             (end
@@ -302,6 +302,7 @@ if that value is non-nil."
                    (forward-sexp 1)
                    (point))
                (scan-error (nth 2 err)))))
+	(message-box "start: %a end: %a" pos end)
         (when (< pos (- end 2))
           (put-text-property pos (- end 2)
                              'syntax-table bee-sexp-comment-syntax-table))

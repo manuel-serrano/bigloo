@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Wed Nov 24 09:07:35 2010 (serrano)                */
-/*    Copyright   :  2004-10 Manuel Serrano                            */
+/*    Last change :  Mon Apr 11 18:23:27 2011 (serrano)                */
+/*    Copyright   :  2004-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -14,6 +14,7 @@
 #include <gc.h>
 #include <bigloo.h>
 #include <bglpthread.h>
+#include <signal.h>
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -25,9 +26,22 @@ extern void bglpth_setup_bmem();
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    bglpth_setup_signal ...                                          */
+/*---------------------------------------------------------------------*/
+static void
+bglpth_setup_signal() {
+#if HAVE_SIGPROCMASK
+   extern void bgl_sigprocmask_register( int (*)(int, const sigset_t *, sigset_t *) );
+   bgl_sigprocmask_register( &pthread_sigmask );
+#endif
+}
+
+   
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    bglpth_setup_gc ...                                              */
 /*---------------------------------------------------------------------*/
-void
+static void
 bglpth_setup_gc() {
 #if( BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_BLOCKING )
    extern void GC_start_blocking();
@@ -67,6 +81,7 @@ bglpth_setup( int argc, char *argv, char **env ) {
       pthread_win32_process_attach_np();
 #endif
 
+      bglpth_setup_signal();
       bglpth_setup_gc();
       bglpth_setup_bmem();
       bglpth_setup_mutex();

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Feb 18 15:07:31 2011 (serrano)                */
+;*    Last change :  Tue Apr 12 10:04:21 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -936,12 +936,12 @@
 		      (let ((e (eval-class-predicate loc cid)))
 			 (eval! e mod)
 			 (set! idents (cons (caadr e) idents)))
+		      ;; class-nil
+		      (let ((e (eval-class-nil loc cid super native)))
+			 (eval! e mod)
+			 (set! idents (cons (caadr e) idents)))
 		      ;; constructor
 		      (unless abstract
-			 ;; class-nil
-			 (let ((e (eval-class-nil loc cid super native)))
-			    (eval! e mod)
-			    (set! idents (cons (caadr e) idents)))
 			 ;; make
 			 (let ((e (eval-make-class
 				   loc cid slots
