@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Apr 30 06:39:34 2011 (serrano)                */
+/*    Last change :  Mon May  2 09:46:03 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -30,6 +30,9 @@
 #   include <netinet/in.h>
 #   include <arpa/inet.h>
 #   include <netdb.h>
+#   ifdef BGL_ANDROID
+#     include <linux/in.h>
+#   endif
 #   if( BGL_HAVE_SELECT )
 #     include <sys/time.h>
 #     include <unistd.h>

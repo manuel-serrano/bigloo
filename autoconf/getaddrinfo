@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Jan 14 08:48:27 2010 (serrano)                */
+#*    Last change :  Mon May  2 09:45:34 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the getaddrinfo in replacement of gethostbyname.       */
 #*=====================================================================*/
@@ -70,6 +70,9 @@ cat > $file.c <<EOF
 #include <sys/socket.h>
 #include <netdb.h>
 #include <stdio.h>
+#ifdef BGL_ANDROID
+#  include <linux/in.h>
+#endif
 
 main( int argc, char *argv[] ) {
    int status;
