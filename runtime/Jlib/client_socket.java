@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 17 16:12:56 2010 (serrano)                */
-/*    Copyright   :  2000-10 Manuel Serrano                            */
+/*    Last change :  Sat Apr 30 06:47:08 2011 (serrano)                */
+/*    Copyright   :  2000-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -14,7 +14,7 @@ import java.io.*;
 import java.net.*;
 
 /*---------------------------------------------------------------------*/
-/*    SOCKET ...                                                       */
+/*    CLIENT_SOCKET ...                                                */
 /*---------------------------------------------------------------------*/
 public class client_socket extends socket {
    /*--- public fields ---------------------------------------------------*/

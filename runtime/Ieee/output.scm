@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Mar 17 20:10:00 2011 (serrano)                */
+;*    Last change :  Fri Apr 29 14:37:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -122,6 +122,8 @@
 				 "bgl_write_process")
 	    ($write-socket::obj (::socket ::output-port)
 				 "bgl_write_socket")
+	    ($write-datagram-socket::obj (::datagram-socket ::output-port)
+				 "bgl_write_datagram_socket")
 	    ($write-mmap::obj (::mmap ::output-port)
 				 "bgl_write_mmap")
 	    ($write-opaque::obj (::obj ::output-port)
@@ -186,6 +188,8 @@
 	       (method static $write-process::obj (::obj ::output-port)
 		       "write_object")
 	       (method static $write-socket::obj (::obj ::output-port)
+		       "write_object")
+	       (method static $write-datagram-socket::obj (::obj ::output-port)
 		       "write_object")
 	       (method static $write-mmap::obj (::obj ::output-port)
 		       "write_object")
@@ -664,6 +668,8 @@
 	   ($write-process ,obj ,port))
 	  ((socket? ,obj)
 	   ($write-socket ,obj ,port))
+	  ((datagram-socket? ,obj)
+	   ($write-datagram-socket ,obj ,port))
 	  ((mmap? ,obj)
 	   ($write-mmap ,obj ,port))
 	  ((opaque? ,obj)

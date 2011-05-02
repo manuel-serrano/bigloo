@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Apr  5 08:48:52 2011 (serrano)                */
+;*    Last change :  Sun May  1 17:38:55 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -629,7 +629,7 @@
 	  ((?- ?s1 ?s2 ?o ?l)
 	   (e `($substring-at? ,s1 ,s2 ,o ,l) e))
 	  (else
-	   (error #f "Illegal `substrint-at?' form" x)))))
+	   (error #f "Illegal `substring-at?' form" x)))))
    
    ;; substring-ci-at?
    (install-O-comptime-expander

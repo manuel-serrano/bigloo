@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Wed Apr  6 14:53:29 2011 (serrano)                */
+;*    Last change :  Fri Apr 29 15:01:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -616,6 +616,7 @@ of the start of the containing expression."
 (put 'else                      'bee-indent-hook -1)
 (put 'static                    'bee-indent-hook -1)
 (put 'import                    'bee-indent-hook -1)
+(put 'extern                    'bee-indent-hook -1)
 (put 'export                    'bee-indent-hook -1)
 (put 'library                   'bee-indent-hook -1)
 (put 'use                       'bee-indent-hook -1)

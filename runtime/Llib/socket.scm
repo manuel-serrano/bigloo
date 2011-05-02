@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sun Dec 28 05:15:46 2008 (serrano)                */
+;*    Last change :  Sun May  1 06:40:35 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -40,7 +40,7 @@
 	    __evenv)
    
    (extern  (macro c-socket?::bool (::obj) "SOCKETP")
-	    (macro c-socket-hostname::obj (::socket) "SOCKET_HOSTNAME")
+            (macro c-socket-hostname::obj (::socket) "SOCKET_HOSTNAME")
 	    (macro c-socket-hostip::obj (::socket) "SOCKET_HOSTIP")
 	    (macro c-socket-down?::bool (::socket) "SOCKET_DOWNP")
 	    (macro c-socket-port-number::int (::socket) "SOCKET_PORT")
@@ -73,60 +73,105 @@
 	    ($getprotobynumber::obj (::long) "bgl_getprotobynumber")
 	    
 	    ($getsockopt::obj (::socket ::keyword) "bgl_getsockopt")
-	    ($setsockopt!::obj (::socket ::keyword ::obj) "bgl_setsockopt"))
+	    ($setsockopt!::obj (::socket ::keyword ::obj) "bgl_setsockopt")
+
+	    (macro $datagram-socket?::bool (::obj)
+		   "BGL_DATAGRAM_SOCKETP")
+	    (macro $datagram-socket-server?::bool (::obj)
+		   "BGL_DATAGRAM_SOCKET_SERVERP")
+	    (macro $datagram-socket-client?::bool (::obj)
+		   "BGL_DATAGRAM_SOCKET_CLIENTP")
+	    ($make-datagram-server-socket::datagram-socket (::int)
+	       "bgl_make_datagram_server_socket")
+	    ($make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
+	       "bgl_make_datagram_client_socket")
+	    (macro $datagram-socket-hostname::obj (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_HOSTNAME")
+	    (macro $datagram-socket-hostip::obj (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_HOSTIP")
+	    (macro $datagram-socket-port-number::int (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_PORTNUM")
+	    (macro $datagram-socket-port::output-port (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_PORT")
+	    ($datagram-socket-close::obj (::datagram-socket)
+	       "bgl_datagram_socket_close")
+	    ($datagram-socket-receive::obj (::datagram-socket ::long)
+	       "bgl_datagram_socket_receive"))
    
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
-		       "SOCKETP")
-	       
+		  "SOCKETP")
 	       (method static $make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring)
-		       "bgl_make_client_socket")
+		  "bgl_make_client_socket")
 	       (method static $make-server-socket::socket (::obj ::int ::int)
-		       "bgl_make_server_socket")
+		  "bgl_make_server_socket")
 	       
 	       (method static c-socket-hostname::obj (::socket)
-		       "SOCKET_HOSTNAME")
+		  "SOCKET_HOSTNAME")
 	       (method static c-socket-hostip::obj (::socket)
-		       "SOCKET_HOSTIP")
+		  "SOCKET_HOSTIP")
 	       (method static c-socket-down?::bool (::socket)
-		       "SOCKET_DOWNP")
+		  "SOCKET_DOWNP")
 	       (method static c-socket-port-number::int (::socket)
-		       "SOCKET_PORT")
+		  "SOCKET_PORT")
 	       (method static c-socket-input::input-port (::socket)
-		       "SOCKET_INPUT")
+		  "SOCKET_INPUT")
 	       (method static c-socket-output::output-port (::socket)
-		       "SOCKET_OUTPUT")
+		  "SOCKET_OUTPUT")
 	       
 	       (method static $socket-accept::socket (::socket ::bool ::bstring ::bstring)
-		       "bgl_socket_accept")
+		  "bgl_socket_accept")
 	       (method static c-socket-local-addr::bstring (::socket)
-		       "socket_local_addr")
+		  "socket_local_addr")
 	       (method static c-socket-shutdown::obj (::socket ::bool)
-		       "socket_shutdown")
+		  "socket_shutdown")
 	       (method static c-socket-close::obj (::socket)
-		       "socket_close")
+		  "socket_close")
 	       (method static c-socket-server?::bool (::obj)
-		       "BGL_SOCKET_SERVERP")
+		  "BGL_SOCKET_SERVERP")
 	       (method static c-socket-client?::bool (::obj)
-		       "BGL_SOCKET_CLIENTP")
+		  "BGL_SOCKET_CLIENTP")
 	       
 	       (method static c-host::bstring (::bstring)
-		       "bgl_host")
+		  "bgl_host")
 	       (method static $hostinfo::obj (::bstring)
-		       "bgl_hostinfo")
+		  "bgl_hostinfo")
 	       (method static $gethostname::bstring ()
-		       "bgl_gethostname")
+		  "bgl_gethostname")
 	       (method static $getprotoents::pair-nil ()
-		       "bgl_getprotoents")
+		  "bgl_getprotoents")
 	       (method static $getprotobyname::obj (::string)
-		       "bgl_getprotobyname")
+		  "bgl_getprotobyname")
 	       (method static $getprotobynumber::obj (::int)
-		       "bgl_getprotobynumber")
+		  "bgl_getprotobynumber")
 	       (method static $getsockopt::obj (::socket ::keyword)
-		       "bgl_getsockopt")
+		  "bgl_getsockopt")
 	       (method static $setsockopt!::obj (::socket ::keyword ::obj)
-		       "bgl_setsockopt")))
-   
+		  "bgl_setsockopt")
+	       (method static $datagram-socket?::bool (::obj)
+		  "BGL_DATAGRAM_SOCKETP")
+	       (method static $datagram-socket-server?::bool (::obj)
+		  "BGL_DATAGRAM_SOCKET_SERVERP")
+	       (method static $datagram-socket-client?::bool (::obj)
+		   "BGL_DATAGRAM_SOCKET_CLIENTP")
+	       (method static $make-datagram-server-socket::datagram-socket (::int)
+		  "bgl_make_datagram_server_socket")
+	       (method static $make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
+		  "bgl_make_datagram_client_socket")
+	       (method static $datagram-socket-hostname::obj (::datagram-socket)
+		  "BGL_DATAGRAM_SOCKET_HOSTNAME")
+	       (method static $datagram-socket-hostip::obj (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_HOSTIP")
+	       (method static $datagram-socket-port-number::int (::datagram-socket)
+		   "BGL_DATAGRAM_SOCKET_PORTNUM")
+	       (method static $datagram-socket-port::output-port (::datagram-socket)
+		  "BGL_DATAGRAM_SOCKET_PORT")
+	       
+	       (method static $datagram-socket-close::obj (::datagram-socket)
+		  "bgl_datagram_socket_close")
+	       (method static $datagram-socket-receive::obj (::datagram-socket ::long)
+		  "bgl_datagram_socket_receive")))
+	       
    (export  (%socket-init!)
 	    (inline socket?::bool ::obj)
 	    (inline socket-server?::bool ::obj)
@@ -156,7 +201,18 @@
 	    (inline get-protocols::pair-nil)
 	    (get-protocol ::obj)
 	    (inline socket-option ::socket ::keyword)
-	    (inline socket-option-set! ::socket ::keyword ::obj))
+	    (inline socket-option-set! ::socket ::keyword ::obj)
+	    (inline datagram-socket?::bool ::obj)
+	    (inline datagram-socket-server?::bool ::obj)
+	    (inline datagram-socket-client?::bool ::obj)
+	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0))
+	    (inline make-datagram-client-socket::datagram-socket ::bstring ::int #!optional broadcast)
+	    (inline datagram-socket-hostname::obj ::datagram-socket)
+	    (inline datagram-socket-host-address::obj ::datagram-socket)
+	    (inline datagram-socket-port-number::bint ::datagram-socket)
+	    (inline datagram-socket-close ::datagram-socket)
+	    (inline datagram-socket-receive ::datagram-socket ::int)
+	    (datagram-socket-output-port::output-port ::datagram-socket))
    
    (pragma  (c-socket? nesting)
 	    (c-socket-hostname nesting)
@@ -377,3 +433,73 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-option-set! socket option val)
    ($setsockopt! socket option val))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket? ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket? obj)
+   ($datagram-socket? obj))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-server? ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-server? obj)
+   ($datagram-socket-server? obj))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-client? ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-client? obj)
+   ($datagram-socket-client? obj))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-hostname ...                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-hostname socket)
+   ($datagram-socket-hostname socket))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-host-address ...                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-host-address socket)
+   ($datagram-socket-hostip socket))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-port-number ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-port-number socket)
+   ($datagram-socket-port-number socket))
+
+;*---------------------------------------------------------------------*/
+;*    make-datagram-server-socket ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (make-datagram-server-socket #!optional (port 0))
+   ($make-datagram-server-socket port))
+
+;*---------------------------------------------------------------------*/
+;*    make-datagram-client-socket ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (make-datagram-client-socket hostname port #!optional broadcast)
+   ($make-datagram-client-socket hostname port broadcast))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-close ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-close socket)
+   ($datagram-socket-close socket))
+   
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-receive ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-receive dsocket length)
+   ($datagram-socket-receive dsocket length))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-output-port ...                                  */
+;*---------------------------------------------------------------------*/
+(define (datagram-socket-output-port dsocket)
+   (let ((p ($datagram-socket-port dsocket)))
+      (unless (output-port? p)
+	 (error "datagram-socket-ouput-port" "Not a datagram-client" dsocket))
+      p))
+

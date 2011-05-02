@@ -5072,6 +5072,60 @@ namespace bigloo
 	       
       
       //////
+      // DATAGRAM_SOCKET
+      //////
+      public static bool BGL_DATAGRAM_SOCKETP(Object o) {
+	 return false;
+      }
+
+      public static bool BGL_DATAGRAM_SOCKET_SERVERP(Object o) {
+	 return false;
+      }
+
+      public static bool BGL_DATAGRAM_SOCKET_CLIENTP(Object o) {
+	 return false;
+      }
+
+      public static datagram_socket bgl_make_datagram_client_socket( byte[] hostname,
+								     int port,
+								     bool bcast ) {
+	 return new datagram_client_socket( hostname, port, bcast );
+      }
+
+      public static datagram_socket bgl_make_datagram_server_socket( int port ) {
+	 return new datagram_server_socket( port );
+   }
+
+      public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s )
+	 {
+	    return s.HOSTNAME();
+	 }
+
+      public static Object BGL_DATAGRAM_SOCKET_HOSTIP( datagram_socket s)
+	 {
+	    return s.HOSTIP();
+      }
+      
+      public static output_port BGL_DATAGRAM_SOCKET_PORT( datagram_socket s )
+	 {
+	    return s.OUTPUT_PORT();
+	 }
+      
+      public static int BGL_DATAGRAM_SOCKET_PORTNUM( datagram_socket s )
+	 {
+	    return s.PORT();
+	 }
+      
+      public static Object bgl_datagram_socket_close( datagram_socket s ) {
+	 s.close();
+	 return BUNSPEC;
+      }
+      
+      public static Object bgl_datagram_socket_receive( datagram_socket s, int len ) {
+	 return s.receive( len );
+      }
+
+      //////
       // INPUT
       //////
 

@@ -4693,7 +4693,7 @@ public final class foreign
       catch( Exception _ ) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    BGL_IO_UNKNOWN_HOST_ERROR,
-	    symbol.make_symbol("host".getBytes()),
+	    "host".getBytes(),
 	    "unknown or misspelled host name".getBytes(),
 	    hostname );
 	 return "error".getBytes();
@@ -4821,6 +4821,56 @@ public final class foreign
 	    return BUNSPEC;
 	 }
       }
+
+   //////
+   // DATAGRAM_SOCKET
+   //////
+   public static boolean BGL_DATAGRAM_SOCKETP(Object o) {
+      return (o instanceof datagram_socket);
+   }
+
+   public static boolean BGL_DATAGRAM_SOCKET_SERVERP(Object o) {
+      return (o instanceof datagram_server_socket);
+   }
+
+   public static boolean BGL_DATAGRAM_SOCKET_CLIENTP(Object o) {
+      return (o instanceof datagram_client_socket);
+   }
+
+   public static datagram_socket bgl_make_datagram_client_socket( byte[] hostname,
+								  int port,
+								  boolean bcast ) {
+      return new datagram_client_socket( hostname, port, bcast );
+   }
+
+   public static datagram_socket bgl_make_datagram_server_socket( int port ) {
+      return new datagram_server_socket( port );
+   }
+
+   public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s ) {
+	 return s.HOSTNAME();
+      }
+
+   public static Object BGL_DATAGRAM_SOCKET_HOSTIP( datagram_socket s) {
+	 return s.HOSTIP();
+      }
+
+   public static output_port BGL_DATAGRAM_SOCKET_PORT( datagram_socket s ) {
+	 return s.OUTPUT_PORT();
+      }
+
+   public static int BGL_DATAGRAM_SOCKET_PORTNUM( datagram_socket s ) {
+	 return s.PORT();
+      }
+
+   public static Object bgl_datagram_socket_close( datagram_socket s ) {
+      s.close();
+      return BUNSPEC;
+   }
+
+   public static Object bgl_datagram_socket_receive( datagram_socket s, int len ) {
+      return s.receive( len );
+   }
 
    //////
    // INPUT
@@ -5235,7 +5285,7 @@ public final class foreign
 	 if( CLOSED_RGC_BUFFER( p ) ) {
 	    bigloo.runtime.Llib.error.bgl_system_failure(
 	       BGL_IO_CLOSED_ERROR,
-	       symbol.make_symbol( "rgc-blit-string".getBytes() ),
+	       "rgc-blit-string".getBytes(),
 	       "input-port closed".getBytes(),
 	       p );
 	 }
@@ -5302,7 +5352,7 @@ public final class foreign
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    (e instanceof java.net.SocketTimeoutException ?
 	     BGL_IO_TIMEOUT_ERROR : BGL_IO_READ_ERROR),
-	    symbol.make_symbol( "read".getBytes() ),
+	    "read".getBytes(),
 	    (msg != null ? msg.getBytes() : FOREIGN_TYPE_NAME( e )),
 	    p );
 	 return false;

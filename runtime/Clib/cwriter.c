@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Wed Aug 25 10:20:27 2010 (serrano)                */
+/*    Last change :  Fri Apr 29 17:02:02 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -459,6 +459,25 @@ bgl_write_socket( obj_t o, obj_t op ) {
 	       "localhost",
 	       SOCKET( o ).portnum );
    }
+
+   return op;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_write_datagram_socket ...                                    */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_write_datagram_socket( obj_t o, obj_t op ) {
+   PRINTF2( op,
+	    40 + (STRINGP( BGL_DATAGRAM_SOCKET( o ).hostname ) ?
+		  STRING_LENGTH( BGL_DATAGRAM_SOCKET( o ).hostname ) :
+		  sizeof( "localhost" )),
+	    "#<datagram-socket:%s.%d>",
+	    STRINGP( BGL_DATAGRAM_SOCKET( o ).hostname ) ?
+	    BSTRING_TO_STRING( BGL_DATAGRAM_SOCKET( o ).hostname ) :
+	    "localhost",
+	    BGL_DATAGRAM_SOCKET( o ).portnum );
 
    return op;
 }

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Mar  9 10:44:16 2011 (serrano)                */
+#*    Last change :  Sun May  1 16:44:24 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -149,6 +149,8 @@ JLIB		= foreign buffer configure stackwriter\
 		  extended_pair binary_port \
                   output_port output_buffered_port output_pipe_port \
 		  socket client_socket server_socket input_socket_port \
+                  datagram_socket output_datagram_port \
+                  datagram_client_socket datagram_server_socket \
                   process flusher stack_trace dlopen \
                   bucs2 ucs2string bgldynamic date os \
                   input_procedure_port input_gzip_port input_resource_port \
@@ -183,6 +185,7 @@ CSLIB		= foreign buffer configure stackwriter\
 		  exit optional \
 		  extended_pair output_port binary_port \
 		  socket client_socket server_socket input_socket_port \
+                  datagram_socket datagram_client_socket datagram_server_socket \
 		  process flusher stack_trace dlopen \
 		  bucs2 ucs2string bgldynamic date \
 		  output_stream_port output_socket_port os \

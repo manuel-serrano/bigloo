@@ -77,6 +77,7 @@
      (output-port . "class bigloo.output_port")
      (input-port . "class bigloo.input_port")
      (binary-port . "class bigloo.binary_port")
+     (datagram-socket . "class bigloo.datagram_socket")
      ))
 
 (define **lib-type**

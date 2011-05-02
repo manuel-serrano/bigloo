@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Apr 11 11:27:46 2011 (serrano)                */
+;*    Last change :  Fri Apr 29 14:38:17 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -950,6 +950,8 @@
        "bcnst")
       ((socket? obj)
        "socket")
+      ((datagram-socket? obj)
+       "datagram-socket")
       ((process? obj)
        "process")
       ((custom? obj)

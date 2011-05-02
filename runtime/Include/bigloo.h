@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Apr 11 18:15:43 2011 (serrano)                */
+/*    Last change :  Fri Apr 29 17:05:35 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -461,6 +461,18 @@ typedef union scmobj {
       void *userdata;            /*   - a user data                    */
    } socket_t;
 
+   struct datagram_socket {      /* First class datagram-sockets:      */
+      header_t header;           /*   - a header for type checking     */
+      int portnum;               /*   - a port number                  */
+      union scmobj *hostname;    /*   - a host name                    */
+      union scmobj *hostip;      /*   - a host ip                      */
+      int fd;                    /*   - a file descriptor              */
+      union scmobj *port;        /*   - the associated port            */
+      int stype;                 /*   - socket type (client/server)    */
+      union scmobj *chook;       /*   - the close hook                 */
+      void *server;              /*   - socket server                  */
+   } datagram_socket_t;
+      
    struct custom {               /* Custom objects                     */
       header_t header;           /*   - a header for type checking     */
       char *identifier;          /*   - a identifier                   */
@@ -659,6 +671,7 @@ struct bgl_input_timeout {
 #define OUTPUT_PROCEDURE_PORT_TYPE  41
 #define DYNAMIC_ENV_TYPE            42
 #define BIGNUM_TYPE                 43
+#define DATAGRAM_SOCKET_TYPE        44
 /* OBJECT must be the last defined type because new classes   */
 /* will be allocated TYPE number starting at OBJECT_TYPE + 1. */
 #define OBJECT_TYPE                 100
@@ -2629,6 +2642,26 @@ struct befored {
 
 #define SOCKET_CHOOK( o ) \
    (SOCKET( o ).chook)
+
+/*---------------------------------------------------------------------*/
+/*    Datagram Socket ...                                              */
+/*---------------------------------------------------------------------*/
+#define BGL_DATAGRAM_SOCKETP( o ) \
+   (POINTERP( o ) && (TYPE( o ) == DATAGRAM_SOCKET_TYPE))
+#define BGL_DATAGRAM_SOCKET_SIZE (sizeof( struct datagram_socket ))
+#define BGL_DATAGRAM_SOCKET( o ) (CREF( o )->datagram_socket_t)
+
+#define BGL_DATAGRAM_SOCKET_HOSTNAME( o ) bgl_datagram_socket_hostname( o )
+#define BGL_DATAGRAM_SOCKET_HOSTIP( o ) (BGL_DATAGRAM_SOCKET( o ).hostip)
+#define BGL_DATAGRAM_SOCKET_PORTNUM( o ) (BGL_DATAGRAM_SOCKET( o ).portnum)
+#define BGL_DATAGRAM_SOCKET_PORT( o ) (BGL_DATAGRAM_SOCKET( o ).port)
+
+#define BGL_DATAGRAM_SOCKET_SERVERP( o ) \
+   (BGL_DATAGRAM_SOCKETP( o ) \
+    && (BGL_DATAGRAM_SOCKET( o ).stype == BGL_SOCKET_SERVER))
+#define BGL_DATAGRAM_SOCKET_CLIENTP( o ) \
+   (BGL_DATAGRAM_SOCKETP( o ) \
+    && (BGL_DATAGRAM_SOCKET( o ).stype >= BGL_SOCKET_CLIENT))
    
 /*---------------------------------------------------------------------*/
 /*    opaque                                                           */
@@ -2974,6 +3007,7 @@ BGL_RUNTIME_DECL long bgl_socket_accept_many( obj_t, bool_t, obj_t, obj_t, obj_t
    
 BGL_RUNTIME_DECL obj_t bgl_gethostname();
 BGL_RUNTIME_DECL obj_t bgl_socket_hostname();
+BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname();
 BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
    

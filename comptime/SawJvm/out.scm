@@ -241,6 +241,7 @@
      (output-port (class () "bigloo.output_port"))
      (input-port (class () "bigloo.input_port"))
      (binary-port (class () "bigloo.binary_port"))
+     (datagram-socket (class () "bigloo.datagram_socket"))
      ;; homogeneous vectors
      (s8vector (class () "class bigloo.s8vector"))
      (u8vector (class () "class bigloo.u8vector"))

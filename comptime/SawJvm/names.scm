@@ -52,6 +52,7 @@
 	       (output-port   . output-port)
 	       (input-port    . input-port)
 	       (binary-port   . binary-port)
+	       (datagram-socket . datagram-socket)
 	       (epair         . extended_pair)
 	       (dynamic-env   . bgldynamic)
 	       (procedure     . procedure) )))
