@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Wed Apr  6 15:22:12 2011 (serrano)                */
+;*    Last change :  Mon May  2 16:57:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -77,6 +77,10 @@
 (define (union-approx!::approx dst::approx src::approx)
    ;; we make the union of the type
    (approx-set-type! dst (get-src-approx-type src))
+   ;; check the consistency with *_* type
+   (unless (eq? (approx-type dst) *_*)
+      (when (any? vector-approx? (set->list (approx-allocs src)))
+	 (approx-set-type! dst *vector*)))
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
 		  (eq? (approx-type dst) *_*)))
@@ -91,25 +95,27 @@
    dst)
 
 ;*---------------------------------------------------------------------*/
+;*    vector-approx? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (vector-approx? x)
+   (or (make-vector-app? x) (valloc/Cinfo+optim? x)))
+
+;*---------------------------------------------------------------------*/
 ;*    get-src-approx-type ...                                          */
 ;*    -------------------------------------------------------------    */
 ;*    Vectors are handled specially. They are assigned the type _      */
 ;*    because they may be turned in tvector. This function handles     */
 ;*    the special case where vectors are mixed up with other types.    */
 ;*---------------------------------------------------------------------*/
-(define (get-src-approx-type src::approx)
-   
-   (define (vector-approx? x)
-      (or (make-vector-app? x) (valloc/Cinfo+optim? x)))
-   
-   (let ((type (approx-type src)))
+(define (get-src-approx-type a::approx)
+   (let ((type (approx-type a)))
       (cond
 	 ((eq? type *_*)
 	  type)
-	 ((=fx (set-length (approx-allocs src)) 0)
+	 ((=fx (set-length (approx-allocs a)) 0)
 	  type)
 	 (else
-	  (let ((allocs (set->list (approx-allocs src))))
+	  (let ((allocs (set->list (approx-allocs a))))
 	     (if (any? vector-approx? allocs)
 		 (if (and (eq? type *vector*) (every? vector-approx? allocs))
 		     *vector*

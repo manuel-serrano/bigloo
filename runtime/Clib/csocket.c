@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon May  2 09:46:03 2011 (serrano)                */
+/*    Last change :  Mon May  2 17:07:39 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -295,7 +295,7 @@ make_inet_array( char **src, int size ) {
 
    res = (char **)GC_MALLOC( sizeof( char * ) * len + 1 );
    for( run = src; *run; run++ ) {
-      char *d = (unsigned char *)GC_MALLOC_ATOMIC( size );
+      char *d = (char *)GC_MALLOC_ATOMIC( size );
       char *s = *run;
       memcpy( d, s, size );
       *res++ = d;
@@ -1989,8 +1989,11 @@ bgl_make_datagram_server_socket( int portnum ) {
    memset( &hints, 0, sizeof( hints ) );
    hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
    hints.ai_socktype = SOCK_DGRAM;
+#if( !defined( AI_NUMERICSERV ) )
+   hints.ai_flags = AI_PASSIVE;
+#else
    hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV; // use my IP and numeric port
-
+#endif
    sprintf( service, "%d", portnum );
 
    if( (rv = getaddrinfo( NULL, service, &hints, &servinfo )) != 0 ) {
