@@ -17,7 +17,7 @@
 @cindex libraries
 
 Bigloo libraries are collections of global bindings (global variables and
-global functions). Bigloo libraries are build on the top of the host
+global functions). Bigloo libraries are built on the top of the host
 operating system (e.g. Unix) libraries. Because Bigloo uses modules, a
 library is not only a bundle of compiled codes and memory locations. A
 Bigloo library is split into several files:
@@ -33,7 +33,7 @@ variables and functions to the evaluator).
 
 Let's consider, for example, a library that implements the
 @code{format} Common Lisp facility. Let's suppose we name this library
-@code{bformat} and let's suppose that the library number is
+@code{bformat} and that the library number is
 @code{1.0}. Using a Unix machine, the Bigloo library will consist of
 the following files:
 
@@ -55,7 +55,7 @@ libraries, @code{_d} debug libraries, @code{_es} and @code{_eu} eval libraries.
 @c ------------------------------------------------------------------- @c
 @section Compiling and linking with a library
 @cindex compiling and linking with a library
-From the user stand point, using a library can be made two ways:
+From the user standpoint, using a library can be made two ways:
 
 @itemize @bullet
 @item Using the Bigloo @code{-library @var{lib-name}} option where 
@@ -67,7 +67,7 @@ must be @emph{lower case}. For instance:
 $ bigloo foo.scm -library bformat
 @end display
 
-@item Using the module clause @code{library}. This second solution prevents from
+@item Using the module clause @code{library}. This second solution avoids
 using a special compilation option. For instance, this module will
 automatically compile and link with the @code{bformat} library:
 
@@ -81,13 +81,12 @@ automatically compile and link with the @code{bformat} library:
 @end itemize
 
 When a Bigloo library @code{lib} is used, Bigloo automatically
-searches if a file called @code{lib.init} exists. If such a file
-exits, it is loaded at @emph{compile-time}. For instance, that file
+searches for a file called @code{@var{lib-name}.init} (the "init file").
+If such a file exits, it is loaded at @emph{compile-time}. For instance, the init file
 may be used to specify compilation flags or to define macros used by
 the compiler. The initialization file may affect any of the global
-parameters of the Bigloo compiler. A Bigloo user library might be
-needing additional system library. For instance, a Bigloo library
-supporting SSL connections is likely to be needing the a native
+parameters of the Bigloo compiler.  For instance, a Bigloo library
+supporting SSL connections would likely need a native
 library. Setting the compiler variable @code{*ld-port-options*} has
 this effect. For instance, one may define an initialization file such
 as:
@@ -122,7 +121,7 @@ All the attributes are optional.
 @item @code{version:} the version number of the library. This defaults
 to the Bigloo version number.
 @item @code{basename:} the base of the filename containing the library.
-This default to the library name.
+This defaults to the library name.
 @item @code{srfi:} a list of symbols denoting the SRFI 0 features implemented
  by this library. Registered SRFIs may be tested by the @code{cond-expand} 
  form (@pxref{SRFIs}). This defaults to an empty list.
@@ -146,15 +145,15 @@ to @code{#f}.
 Examples:
 
 @itemize @bullet
-@item The following declares a library named @code{foo}. When loaded
+@item The following declares a library named @code{foo}. When loaded,
 the Bigloo runtime system will seek file named @code{libfoo_s-3.4a.so}, 
 @code{libfoo_u-3.4a.so}, @code{libfoo_es-3.4a.so}, and @code{libfoo_eu-3.4a.so}.
 @smalllisp
 (declare-library! 'foo) 
 @end smalllisp
 
-@item The following declares a library named @code{pthread}. When loaded
-the Bigloo runtime system will seek file named
+@item The following declares a library named @code{pthread}. When loaded,
+the Bigloo runtime system will seek a file named
 @code{libbigloopth_s-1.1a.so}, @code{libbigloopth_u-1.1a.so},
 @code{libbigloopth_es-1.1a.so}, @code{libbigloopth_eu-1.1a.so}. Once
 the library loaded, the SRFI-0 features @code{pthread} and
@@ -190,7 +189,7 @@ no longer be used in new code. It is totally subsumed by
 is still documented for enabling readers to understand old Bigloo source
 code.
 
-This function register a @var{name} for the library @var{id}. An optional
+This function registers a @var{name} for the library @var{id}. An optional
 @var{version} can be specified. The optional named argument @code{dlopen-init}
 gives the base name of the initialization entry point of a library.
 
@@ -220,7 +219,7 @@ Specifying a @code{#f} prevents the insertion of any suffix. Hence,
 (library-translation-table-add! 'bformat "bigloobformat" #f)
 @end smalllisp
 
-Instruments the compiler to look at a library named
+instructs the compiler to look at a library named
 @code{libbigloobformat_s.a}.
 
 @end deffn
@@ -232,12 +231,12 @@ Instruments the compiler to look at a library named
 @cindex Library and inline functions
 
 It is illegal for libraries to include inline functions that make use of
-new foreign types. By new foreign type, we mean foreign types that are
+new foreign types. By "new foreign type", we mean foreign types that are
 defined inside the library. A library may contain inline functions but
-these inline functions must not call function using foreign types in
+these inline functions must not call functions using foreign types in
 their prototypes. Including inline functions making use of foreign C
-type will make the compiler to fail when compiling user code. The
-compiler will fail prompting type errors. A library may contains non-inline
+types will make the compiler fail when compiling user code, prompting
+type errors. A library may contains non-inline
 functions that make use of new foreign types.
 
 @c ------------------------------------------------------------------- @c
@@ -257,21 +256,21 @@ are sent to the function.
 
 @deffn {library procedure} bigloo-library-path
 @deffnx {library procedure} bigloo-library-path-set!
-These functions gets and sets the default path, a list of strings,
+These functions get and set the default path (a list of strings)
 for loading libraries. 
 @end deffn
 
 @deffn {library procedure} library-load ident . path
 Loads a library in the interpreter. In addition to dynamically loading
-the library, this function tries to the @code{_es} if it is linked
-against the safe Bigloo library version or it tries to load the
-@code{_eu} version of the library if it is linked against the unsafe
+the library, this function tries to load the @code{_es} version of the library if it is linked
+against the safe Bigloo library version or the
+@code{_eu} version if it is linked against the unsafe
 version of the Bigloo library.
 
-Libraries are searched in regular Bigloo library paths
+Searches for libraries occur in the regular Bigloo library paths
 unless optional @var{path}s are sent to the function.
 
-This version may be used for automatically exporting binding to the
+This version may be used for automatically exporting bindings to the
 interpreter. In general, the @code{_es} and @code{_eu} libraries are
 simple libraries that contain only one module, the module that is used
 to build the heap-file. For instance, let's consider an implementation
@@ -292,11 +291,11 @@ Changing this file for:
    (eval   (export-all)))
 @end smalllisp
 
-Enables the construction of the @code{_es} and @code{_eu} libraries.
+enables the construction of the @code{_es} and @code{_eu} libraries.
 
 When the system loads a dynamic library, it @emph{initializes} it. 
 For that it expects to find @emph{initialization entry points} in the dynamic
-libraries that are named after the libraries name. More precisely, for
+libraries that are named after the library's name. More precisely, for
 the @code{LIB_s} library, the loader seeks the entry point named
 @code{"LIB_s"} and for the @code{LIB_es}, it seeks @code{"LIB_es"}.
 The name of the initialization entry of a library can be changed using
@@ -309,7 +308,8 @@ Since Bigloo 3.1a, the runtime system supports a better way for
 initializing libraries. @emph{Initialization} modules can be associated
 with a library. When loaded, these modules are automatically initialized.
 This new method fits harmoniously with the Bigloo initialization process
-and it prevents users from annotating the source code of the library.
+and it relieves users from any requirement to annotate the source code of the library.
+@c I don't really understand the original sentence.  This is my best guess. #c
 
 For instance, if a library initialization file contains the following
 declaration:
@@ -344,7 +344,7 @@ Then, the module @code{foo-eval} must be implemented in the
 @end smalllisp
 @end deffn
 
-The standard distribution contains examples of such construction. In
+The standard distribution contains examples of such constructions. In
 particular, the multi-threading libraries @code{pthread} and
 @code{fthread} use this facility.
 
@@ -788,6 +788,7 @@ clean:
 	-/bin/rm -f example example.c example.o
 	-/bin/rm -f libpoint_s-$(RELEASE).a libpoint_u-$(RELEASE).a
 @end display
+
 
 
 
