@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Dec 10 09:29:13 2010 (serrano)                */
+#*    Last change :  Tue May  3 08:03:25 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Give the alignment on the current architecture                   */
 #*=====================================================================*/
@@ -72,7 +72,7 @@ if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout"
 else
    ret_code=$?
-   \rm -f $file.*
+   \rm -rf $file.*
    exit $ret_code
 fi
 
