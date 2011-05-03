@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Thu Nov 25 16:45:13 2010 (serrano)                */
+/*    Last change :  Tue May  3 09:12:06 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -93,7 +93,7 @@ obj_t
 make_vector_uncollectable( int len, obj_t init ) {
    obj_t vector;
 
-   vector = BVECTOR( create_vector_uncollectable( len ) );
+   vector = create_vector_uncollectable( len );
    fill_vector( vector, len, init );
 	
    return vector;
@@ -107,7 +107,7 @@ obj_t
 make_vector( int len, obj_t init ) {
    obj_t vector;
 
-   vector = BVECTOR( create_vector( len ) );
+   vector = create_vector( len );
    fill_vector( vector, len, init );
 	
    return vector;
