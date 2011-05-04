@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Fri Feb 18 16:51:13 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:28:32 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -97,7 +97,7 @@
 	    (getprop ::obj ::obj)
 	    (putprop! ::obj ::obj ::obj)
 	    (remprop! ::obj ::obj)
-	    (gensym  #!optional arg)
+	    (gensym::symbol  #!optional arg)
 	    (inline keyword?::bool ::obj)
 	    (inline keyword->string::bstring ::keyword)
 	    (inline keyword->string!::bstring ::keyword)

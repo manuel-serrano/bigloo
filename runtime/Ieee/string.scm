@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Apr  1 07:15:20 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:27:10 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -154,7 +154,7 @@
    
    (export  (inline string?::bool ::obj)
 	    (inline string-null?::bool ::bstring)
-	    (inline make-string::bstring ::long . char)
+	    (inline make-string::bstring ::long #!optional (char #\space))
 	    (inline string::bstring . chars)
 	    (inline string-length::long ::bstring)
 	    (inline string-ref::uchar ::bstring ::long)
@@ -283,10 +283,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn make-string@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-string k . char)
-   (if (null? char)
-       ($make-string k #\space)
-       ($make-string k (car char))))
+(define-inline (make-string k #!optional (char #\space))
+   ($make-string k char))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string@ ...                                               */

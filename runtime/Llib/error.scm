@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Apr 29 14:38:17 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:42:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -341,7 +341,7 @@
 	     (let ((r ((car handlers) val)))
 		($set-error-handler! hdls)
 		(when (&error? val)
-		   (error/location 'raise
+		   (error/location "raise"
 				   "Handler return from error"
 				   val
 				   (&error-fname val)

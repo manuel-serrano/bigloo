@@ -80,14 +80,14 @@ automatically compile and link with the @code{bformat} library:
 @end smalllisp
 @end itemize
 
-When a Bigloo library @code{lib} is used, Bigloo automatically
-searches for a file called @code{@var{lib-name}.init} (the "init file").
+When a Bigloo library @code{@var{lib}} is used, Bigloo automatically
+searches for a file called @code{@var{lib}.init} (the "init file").
 If such a file exits, it is loaded at @emph{compile-time}. For instance, the init file
 may be used to specify compilation flags or to define macros used by
 the compiler. The initialization file may affect any of the global
 parameters of the Bigloo compiler.  For instance, a Bigloo library
 supporting SSL connections would likely need a native
-library. Setting the compiler variable @code{*ld-port-options*} has
+library. Setting the compiler variable @code{*ld-post-options*} has
 this effect. For instance, one may define an initialization file such
 as:
 

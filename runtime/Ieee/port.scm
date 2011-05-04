@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Feb 18 15:16:11 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:22:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -91,14 +91,14 @@
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
  	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
 	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
-	    ($open-input-string::obj (::bstring ::int) "bgl_open_input_string")
-	    ($open-input-string!::obj (::bstring) "bgl_open_input_string_bang")
-	    ($open-input-procedure::obj (::procedure ::bstring) "bgl_open_input_procedure")
+	    ($open-input-string::input-port (::bstring ::int) "bgl_open_input_string")
+	    ($open-input-string!::input-port (::bstring) "bgl_open_input_string_bang")
+	    ($open-input-procedure::input-port (::procedure ::bstring) "bgl_open_input_procedure")
 	    ($input-port-timeout-set!::bool (::input-port ::long) "bgl_input_port_timeout_set")
 	    ($output-port-timeout-set!::bool (::output-port ::long) "bgl_output_port_timeout_set")
 	    ($open-output-file::obj (::bstring ::bstring) "bgl_open_output_file")
 	    ($append-output-file::obj (::bstring ::bstring) "bgl_append_output_file")
-	    ($open-output-string::obj (::bstring) "bgl_open_output_string")
+	    ($open-output-string::output-port (::bstring) "bgl_open_output_string")
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
 	    ($close-input-port::obj (::obj) "bgl_close_input_port")
 	    (c-input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
@@ -222,9 +222,9 @@
 		       "bgl_open_input_c_string")
 	       (method static $reopen-input-c-string::obj (::input-port ::string)
 		       "bgl_reopen_input_c_string")
-	       (method static $open-input-string::obj (::bstring ::int)
+	       (method static $open-input-string::input-port (::bstring ::int)
 		       "bgl_open_input_string")
-	       (method static $open-input-string!::obj (::bstring)
+	       (method static $open-input-string!::input-port (::bstring)
 		       "bgl_open_input_string_bang")
 	       (method static $open-input-procedure::obj (::procedure ::bstring)
 		       "bgl_open_input_procedure")
@@ -236,7 +236,7 @@
 		       "bgl_open_output_file")
 	       (method static $append-output-file::obj (::bstring ::bstring)
 		       "bgl_append_output_file")
-	       (method static $open-output-string::obj (::bstring)
+	       (method static $open-output-string::output-port (::bstring)
 		       "bgl_open_output_string")
 	       (method static $open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring)
 		       "bgl_open_output_procedure")
@@ -364,8 +364,8 @@
 	    (with-input-from-port ::input-port ::procedure)
 	    (with-input-from-procedure ::procedure ::procedure)
 	    (with-output-to-file ::bstring ::procedure)
-	    (with-output-to-string ::procedure)
-	    (with-error-to-string ::procedure)
+	    (with-output-to-string::bstring ::procedure)
+	    (with-error-to-string::bstring ::procedure)
 	    (with-output-to-port ::output-port ::procedure)
 	    (with-output-to-procedure ::procedure ::procedure)
 	    
@@ -374,8 +374,8 @@
 	    (with-error-to-procedure ::procedure ::procedure)
 	    
 	    (open-input-file ::bstring #!optional (bufinfo #t))
-	    (open-input-string ::bstring #!optional (start 0))
-	    (inline open-input-string! ::bstring)
+	    (open-input-string::input-port ::bstring #!optional (start 0))
+	    (inline open-input-string!::input-port ::bstring)
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
 	    
@@ -384,7 +384,7 @@
 	    (inline reopen-input-c-string ::input-port ::string)
 	    (open-output-file ::bstring #!optional (bufinfo #t))
 	    (append-output-file ::bstring #!optional (bufinfo #t))
-	    (open-output-string #!optional (bufinfo #t))
+	    (open-output-string::output-port #!optional (bufinfo #t))
 	    (open-output-procedure ::procedure #!optional (flush::procedure (lambda () #f)) (bufinfo #t) (close::procedure (lambda () #f)))
 	    (inline output-port-timeout-set! ::output-port ::long)
 	    (inline closed-input-port?::bool ::input-port)

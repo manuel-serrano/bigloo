@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed Mar 30 15:00:35 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:39:36 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -45,10 +45,35 @@
 (define *check* 0)
 
 ;*---------------------------------------------------------------------*/
+;*    notified-locations ...                                           */
+;*---------------------------------------------------------------------*/
+(define notified-locations '())
+
+;*---------------------------------------------------------------------*/
+;*    notify-type-test ...                                             */
+;*---------------------------------------------------------------------*/
+(define (notify-type-test n from to loc)
+   (let ((st (bigloo-trace-stack-depth)))
+      (bigloo-trace-stack-depth-set! 0)
+      (cond
+	 ((not loc)
+	  (warning
+	     (format " ~a. Type test inserted \"~a\" -> \"~a\""
+		n (shape from) (shape to))))
+	 ((not (member loc notified-locations))
+	  (set! notified-locations (cons loc notified-locations))
+	  (warning/location (location-full-fname loc)
+	     (location-pos loc)
+	     (format " ~a. Type test inserted \"~a\" -> \"~a\""
+		n (shape from) (shape to)))))
+      (bigloo-trace-stack-depth-set! st)))
+      
+;*---------------------------------------------------------------------*/
 ;*    increment-stat-check! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (increment-stat-check!)
-   (set! *check* (+fx 1 *check*)))
+(define (increment-stat-check! from to loc)
+   (set! *check* (+fx 1 *check*))
+   (when *warning-types* (notify-type-test *check* from to loc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-stack-check ...                                              */
@@ -166,8 +191,6 @@
 			    (loop (cdr checks)
 				  (cdr coerces)
 				  (make-one-conversion (caar checks)
-						       ;; from
-						       ;; to
 						       (cdar checks)
 						       (cdar coerces)
 						       (caar checks)
@@ -220,7 +243,7 @@
 			  ,aux
 			  ,(runtime-type-error/id loc (type-id to) aux)))
 		  loc)))
-      (increment-stat-check!)
+      (increment-stat-check! from to loc)
       (unless *strict-node-type* (lvtype-node! lnode))
       (spread-side-effect! lnode)
       (let* ((var (car (car (let-var-bindings lnode))))
@@ -263,7 +286,7 @@
 				 ,aux
 				 ,(runtime-type-error/id loc (type-id to) aux))))
 		      loc)))
-	  (increment-stat-check!)
+	  (increment-stat-check! from to loc)
 	  (unless *strict-node-type* (lvtype-node! lnode))
 	  (spread-side-effect! lnode)
 	  (let* ((var (car (car (let-var-bindings lnode))))

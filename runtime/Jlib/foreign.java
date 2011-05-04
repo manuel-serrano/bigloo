@@ -4997,12 +4997,12 @@ public final class foreign
 	 return p.bufsiz;
       }
 
-   public static Object bgl_open_input_string(byte[]s, int start)
+   public static input_port bgl_open_input_string(byte[]s, int start)
       {
 	 return new input_string_port(s, start);
       }
 
-   public static Object bgl_open_input_string_bang(byte[]s)
+   public static input_port bgl_open_input_string_bang(byte[]s)
       {
 	 return new input_string_port(s, 0);
       }
@@ -5704,7 +5704,7 @@ public final class foreign
 	 return output_buffered_port.make_output_buffered_port(file, buf, true);
       }
 
-   public static Object bgl_open_output_string(byte[] buf)
+   public static output_port bgl_open_output_string(byte[] buf)
       {
 	 return new output_string_port();
       }

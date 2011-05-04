@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Apr 10 07:29:31 2011 (serrano)                */
+;*    Last change :  Wed May  4 09:39:11 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -49,6 +49,7 @@
 	    *unsafe-heap*
 	    *warning-overriden-slots*
 	    *warning-overriden-variables*
+	    *warning-types*
 	    *profile-library*
 	    *trace-name*
 	    *trace-write-length*
@@ -817,6 +818,9 @@
 	      #t)
 (param-define *warning-overriden-variables*
 	      "Set to #t to warn about variable overriding"
+	      #f)
+(param-define *warning-types*
+	      "Set to #t to warn about type checks"
 	      #f)
 (param-define *profile-library*
 	      "Use the profiled library version"
