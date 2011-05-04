@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Wed May  4 17:11:13 2011 (serrano)                */
+;*    Last change :  Wed May  4 17:14:37 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -16,6 +16,7 @@
    (include "Tools/trace.sch")
    (import  tools_shape
 	    tools_args
+	    backend_backend
 	    engine_param
 	    module_module
 	    object_method

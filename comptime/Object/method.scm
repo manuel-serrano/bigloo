@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed May  4 14:44:08 2011 (serrano)                */
+;*    Last change :  Wed May  4 17:19:09 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -60,8 +60,10 @@
 			(ebody (if (epair? src)
 				   (econs (car body) (cdr body) (cer src))
 				   body))
-			(tm-id (make-typed-ident m-id (type-id (global-type generic))))
-			(bdg   `(,m-id ,args ,ebody))
+			(tm-id (if (bigloo-type? (global-type generic))
+				   (make-typed-ident m-id (type-id (global-type generic)))
+				   m-id))
+			(bdg   `(,tm-id ,args ,ebody))
 			(ebdg  (if (epair? src)
 				   (econs (car bdg) (cdr bdg) (cer src))
 				   bdg)))

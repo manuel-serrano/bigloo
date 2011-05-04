@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed May  4 09:39:36 2011 (serrano)                */
+;*    Last change :  Wed May  4 17:27:28 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -35,7 +35,8 @@
 	    object_class
 	    coerce_coerce
 	    effect_spread)
-    (export (convert!::node ::node ::type ::type ::bool)
+    (export *notify-type-test*
+	    (convert!::node ::node ::type ::type ::bool)
 	    (runtime-type-error loc ti ::node)
 	    (get-stack-check)))
 
@@ -48,6 +49,11 @@
 ;*    notified-locations ...                                           */
 ;*---------------------------------------------------------------------*/
 (define notified-locations '())
+
+;*---------------------------------------------------------------------*/
+;*    *notify-type-test* ...                                           */
+;*---------------------------------------------------------------------*/
+(define *notify-type-test* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-type-test ...                                             */

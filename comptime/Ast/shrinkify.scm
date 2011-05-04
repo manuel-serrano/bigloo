@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo2.3/comptime/Ast/shrinkify.scm        */
+;*    serrano/prgm/project/bigloo/comptime/Ast/shrinkify.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Thu Jul 13 11:16:33 2000 (serrano)                */
+;*    Last change :  Wed May  4 17:19:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -103,14 +103,14 @@
 (define-method (shrink-node! node::extern)
    (if (wide-object? node) (shrink! node))
    (shrink-node*! (extern-expr* node))
-   node)
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    shrink-node! ::cast ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (shrink-node! node::cast)
    (shrink-node! (cast-arg node))
-   node)
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    shrink-node! ::setq ...                                          */
