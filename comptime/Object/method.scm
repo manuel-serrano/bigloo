@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Thu Apr  7 20:50:48 2011 (serrano)                */
+;*    Last change :  Wed May  4 14:44:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -16,6 +16,7 @@
    (import tools_args
 	   tools_error
 	   tools_misc
+	   tools_shape
 	   type_type
 	   ast_var
 	   ast_ident
@@ -24,7 +25,8 @@
 	   (find-location tools_location)
 	   engine_param
 	   backend_backend)
-   (export (make-method-body ::symbol ::obj ::obj ::obj ::obj)))
+   (export (make-method-body ::symbol ::obj ::obj ::obj ::obj)
+	   (local-is-method?::bool ::local)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-method-body ...                                             */
@@ -58,10 +60,12 @@
 			(ebody (if (epair? src)
 				   (econs (car body) (cdr body) (cer src))
 				   body))
+			(tm-id (make-typed-ident m-id (type-id (global-type generic))))
 			(bdg   `(,m-id ,args ,ebody))
 			(ebdg  (if (epair? src)
 				   (econs (car bdg) (cdr bdg) (cer src))
 				   bdg)))
+		    (mark-method! m-id)
 		    (list `(labels (,ebdg)
 			      ,(when (and (>=fx *debug-module* 1)
 					  (memq 'module
@@ -74,6 +78,23 @@
 			       (@ ,(global-id holder) ,module)
 			       ,m-id
 			       ,(symbol->string ident)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    *methods* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *methods* '())
+
+;*---------------------------------------------------------------------*/
+;*    mark-method! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (mark-method! id)
+   (set! *methods* (cons id *methods*)))
+
+;*---------------------------------------------------------------------*/
+;*    local-is-method? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (local-is-method? local)
+   (memq (local-id local) *methods*))
 
 ;*---------------------------------------------------------------------*/
 ;*    method-error ...                                                 */

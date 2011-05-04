@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Thu Mar 24 14:23:22 2011 (serrano)                */
+;*    Last change :  Wed May  4 17:11:13 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -18,6 +18,7 @@
 	    tools_args
 	    engine_param
 	    module_module
+	    object_method
 	    type_type
 	    type_cache
 	    ast_var
@@ -92,8 +93,9 @@
 			       new))
 			 kaptured))
 	  (new-args (map (lambda (old)
-			    (let ((new (make-local-svar (local-id old)
-							(default-type))))
+			    (let ((new (make-local-svar
+					  (local-id old)
+					  (default-type))))
 			       (local-user?-set! new (local-user? old))
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)
@@ -114,10 +116,22 @@
       (global-type-set! global (globalized-type (local-type local)))
       ;; associate the closure entry point and the function
       (sfun-the-closure-global-set! new-fun local)
-      ;; since the first argument (the procedure itself) has a correct
-      ;; (the type is the type of the `env' variable) type, we just skip it.
-      (for-each (lambda (l) (local-type-set! l *obj*))
-		(cdr (sfun-args new-fun)))
+      (let ((nargs (cdr (sfun-args new-fun))))
+	 (if (and (local-is-method? local)
+		  (backend-typed-funcall (the-backend)))
+	     (begin
+		;; since the first argument (the procedure itself) has a
+		;; correct (the type is the type of the `env' variable)
+		;; type, we just skip it.
+		(local-type-set! (car nargs) (local-type (car args)))
+		(for-each (lambda (n o)
+			     (if (and #f (bigloo-type? (local-type o)))
+				 (local-type-set! n (local-type o))
+				 (local-type-set! n *obj*)))
+		   (cdr nargs) (cdr args)))
+	     (for-each (lambda (l)
+			  (local-type-set! l *obj*))
+		nargs)))
       (global-value-set! global new-fun)
       (sfun-body-set!
        new-fun
