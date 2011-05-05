@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Wed Mar 30 21:01:27 2011 (serrano)                */
+;*    Last change :  Thu May  5 07:08:18 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
@@ -17,13 +17,16 @@
    (import type_type
 	   type_cache
 	   type_coercion
+	   type_env
 	   object_class
 	   ast_var
-	   ast_node)
+	   ast_node
+	   ast_env)
    
    (export (type-less-specific?::bool ::type ::type)
 	   (type-disjoint?::bool ::type ::type)
-	   (c-subtype?::bool ::type ::type)))
+	   (c-subtype?::bool ::type ::type)
+	   (isa-of ::node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-less-specific? ...                                          */
@@ -91,4 +94,23 @@
       (let ((w1 (c-weight t1))
 	    (w2 (c-weight t2)))
 	 (and (>fx (*fx w1 w2) 0) (<fx w1 w2)))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    *isa* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *isa* #f)
+
+;*---------------------------------------------------------------------*/
+;*    isa-of ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (isa-of node::node)
+   (when (app? node)
+      (unless (global? *isa*)
+	 (set! *isa* (find-global/module 'is-a? '__object)))
+      (with-access::app node (fun args)
+	 (when (and (eq? (var-variable fun) *isa*)
+		    (var? (car args))
+		    (bigloo-type? (variable-type (var-variable (car args))))
+		    (var? (cadr args))
+		    (global? (var-variable (cadr args))))
+	    (find-type (global-id (var-variable (cadr args))))))))

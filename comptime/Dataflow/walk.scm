@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Apr  6 18:17:53 2011 (serrano)                */
+;*    Last change :  Thu May  5 07:04:10 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -22,7 +22,9 @@
 	    type_type
 	    type_typeof
 	    type_cache
+	    type_misc
 	    type_env
+	    object_class
 	    ast_var
 	    ast_node
 	    ast_env
@@ -40,7 +42,6 @@
 ;*---------------------------------------------------------------------*/
 (define (dataflow-walk! globals name)
    (pass-prelude name)
-   (set! *isa* (find-global/module 'is-a? '__object))
    (set! *$null?* (find-global/module '$null? 'foreign))
    (set! *$pair?* (find-global/module '$pair? 'foreign))
    (set! *$epair?* (find-global/module '$epair? 'foreign))
@@ -48,9 +49,8 @@
    (pass-postlude globals))
 
 ;*---------------------------------------------------------------------*/
-;*    *isa* ...                                                        */
+;*    type predicates                                                  */
 ;*---------------------------------------------------------------------*/
-(define *isa* #f)
 (define *$null?* #f)
 (define *$pair?* #f)
 (define *$epair?* #f)
@@ -78,10 +78,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::var env)
    (with-access::var node (type variable)
-      (let ((b (assq variable env)))
-	 (if (pair? b)
-	     (set! type (cdr b))
-	     (set! type (variable-type variable)))))
+      (with-access::variable variable ((vtype type))
+	 (when (or (not (tclass? vtype)) (type-subclass? vtype type))
+	    (let ((b (assq variable env))) 
+	       (if (pair? b)
+		   (set! type (cdr b))
+		   (set! type (variable-type variable)))))))
    env)
 
 ;*---------------------------------------------------------------------*/
@@ -295,14 +297,10 @@
       (let* ((f (var-variable fun))
 	     (funv (variable-value f)))
 	 (cond
-	    ((eq? f *isa*)
-	     (if (and (var? (car args))
-		      (bigloo-type? (variable-type (var-variable (car args))))
-		      (var? (cadr args))
-		      (global? (var-variable (cadr args))))
-		 (let ((ty (find-type (global-id (var-variable (cadr args))))))
-		    (list (cons (var-variable (car args)) ty)))
-		 '()))
+	    ((isa-of node)
+	     =>
+	     (lambda (ty)
+		(list (cons (var-variable (car args)) ty))))
 	    ((and (fun? funv)
 		  (fun-predicate-of funv)
 		  (pair? args) (null? (cdr args))
@@ -342,22 +340,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-test-env ::let-var ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    We detect the pattern:                                           */
-;*      (let ((tmp exp))                                               */
-;*         (<predicate> tmp))                                          */
+;*    We detect the two patterns:                                      */
+;*      pattern 1:                                                     */
+;*        (let ((tmp exp))                                             */
+;*           (<predicate> tmp))                                        */
+;*      pattern 2:                                                     */
+;*        (let ((res::bool pattern1))                                  */
+;*           res)                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-test-env node::let-var)
    (with-access::let-var node (bindings body)
-      (if (and (pair? bindings)
-	       (null? (cdr bindings))
-	       (var? (cdar bindings)))
-	  (let ((env (dataflow-test-env body)))
-	     (if (and (pair? env)
-		      (null? (cdr env))
-		      (eq? (caar env) (caar bindings)))
-		 (list (cons (var-variable (cdar bindings))
-			     (cdar env)))
-		 '()))
+      (if (and (pair? bindings) (null? (cdr bindings)))
+	  (cond
+	     ((var? (cdar bindings))
+	      (let ((env (dataflow-test-env body)))
+		 (if (and (pair? env)
+			  (null? (cdr env))
+			  (eq? (caar env) (caar bindings)))
+		     (list (cons (var-variable (cdar bindings)) (cdar env)))
+		     '())))
+	     ((and (var? body)
+		   (eq? (var-variable body) (caar bindings))
+		   (eq? (variable-type (caar bindings)) *bool*))
+	      (dataflow-test-env (cdar bindings)))
+	     (else
+	      '()))
 	  '())))
 
 ;*---------------------------------------------------------------------*/

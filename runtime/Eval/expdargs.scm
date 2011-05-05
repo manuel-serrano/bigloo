@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Fri Feb 18 15:07:00 2011 (serrano)                */
+;*    Last change :  Thu May  5 10:40:16 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -56,7 +56,7 @@
 	    __bit)
    
    (export  (expand-args-parse ::pair-nil ::procedure)
-	    (args-parse-usage ::pair-nil)))
+	    (args-parse-usage::procedure ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-time-error ...                                            */

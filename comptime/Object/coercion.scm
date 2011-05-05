@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Tue Jan  8 15:13:12 2008 (serrano)                */
-;*    Copyright   :  2000-08 Manuel Serrano                            */
+;*    Last change :  Thu May  5 09:57:13 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
 ;*    -------------------------------------------------------------    */
@@ -72,14 +72,14 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-coercion-clause! c-id super . testing)
    (produce-module-clause!
-    (if (backend-pragma-support (the-backend))
-	(c-make-coercion-clause c-id super testing)
+    (if (and #f (backend-pragma-support (the-backend)))
+	(c-make-coercion-clause.toberemoved-5may2011 c-id super testing)
 	(nopragma-make-coercion-clause c-id super testing))))
 
 ;*---------------------------------------------------------------------*/
 ;*    c-make-coercion-clause ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (c-make-coercion-clause c-id super testing)
+(define (c-make-coercion-clause.toberemoved-5may2011 c-id super testing)
    (let* ((class->obj (class->obj-id c-id))
 	  (obj->class (obj->class-id c-id))
 	  (ttest  (if (null? testing)

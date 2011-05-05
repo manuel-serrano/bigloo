@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 26 08:14:47 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May  5 06:54:22 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -32,7 +32,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    reduce-flow-type-check! ...                                      */
 ;*    -------------------------------------------------------------    */
-;*    This stage implements a simple data flow analysis whose          */
+;*    This stage implements a simple data flow analysis which          */
 ;*    is intended to remove duplicated type checks. That is, it        */
 ;*    re-write:                                                        */
 ;*       (let ((x ...))                                                */

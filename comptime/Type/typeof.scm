@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Tue Mar 29 09:53:32 2011 (serrano)                */
+;*    Last change :  Thu May  5 06:41:35 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -142,7 +142,7 @@
 		  (eq? typen *_*)
 		  (eq? typen typev))
 	 (verbose 3 "   refining type " (shape node) ": "
-		  (shape typev) " -> " (shape typen))))
+	    (shape typev) " -> " (shape typen))))
    
    (define (type-more-specific? ntype vtype)
       (or (and (eq? vtype *obj*) (bigloo-type? ntype) (not (eq? ntype *_*)))
@@ -150,23 +150,28 @@
 	  (and (tclass? vtype) (tclass? ntype) (type-subclass? ntype vtype))))
    
    (with-access::var node (variable type)
-      (if *strict-node-type*
-	  (if (eq? type *_*)
-	      (variable-type variable)
-	      type)
-	  (let ((value (variable-value variable)))
+      (with-access::variable variable ((vtype type))
+	 (if *strict-node-type*
 	     (cond
-		((sfun? value)
-		 *procedure*)
-		((cfun? value)
-		 *obj*)
+		((eq? type *_*)
+		 vtype)
+		((and (tclass? vtype) (type-subclass? type vtype))
+		 vtype)
 		(else
-		 (if (and *optim-dataflow-types?*
-			  (type-more-specific? type (variable-type variable)))
-		     (begin
-			(verbose-type type (variable-type variable))
-			type)
-		     (variable-type variable))))))))
+		 type))
+	     (let ((value (variable-value variable)))
+		(cond
+		   ((sfun? value)
+		    *procedure*)
+		   ((cfun? value)
+		    *obj*)
+		   (else
+		    (if (and *optim-dataflow-types?*
+			     (type-more-specific? type vtype))
+			(begin
+			   (verbose-type type vtype)
+			   type)
+			vtype))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::closure ...                                           */

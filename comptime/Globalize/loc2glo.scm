@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Wed May  4 17:14:37 2011 (serrano)                */
+;*    Last change :  Wed May  4 18:02:55 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -126,7 +126,8 @@
 		;; type, we just skip it.
 		(local-type-set! (car nargs) (local-type (car args)))
 		(for-each (lambda (n o)
-			     (if (and #f (bigloo-type? (local-type o)))
+			     (if (and (bigloo-type? (local-type o))
+				      (not (eq? (local-type o) *_*)))
 				 (local-type-set! n (local-type o))
 				 (local-type-set! n *obj*)))
 		   (cdr nargs) (cdr args)))

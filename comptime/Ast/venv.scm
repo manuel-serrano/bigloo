@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Oct 20 08:17:11 2010 (serrano)                */
+;*    Last change :  Wed May  4 17:40:47 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -355,7 +355,8 @@
 					   (module->qualified-type module)))
 			(id id)
 			(value value)
-			(src src) 
+			(src src)
+			(user? #t)
 			(import import))))
 	     (cond
 		((or (not (pair? bucket)) (null? (cdr bucket)))

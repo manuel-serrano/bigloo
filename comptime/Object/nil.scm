@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Thu Oct 21 12:18:54 2010 (serrano)                */
-;*    Copyright   :  2004-10 Manuel Serrano                            */
+;*    Last change :  Thu May  5 05:33:48 2011 (serrano)                */
+;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
 ;*=====================================================================*/
@@ -62,15 +62,20 @@
 		(the-id-nil (symbol-append '%the- id-nil))
 		(the-tid-nil (make-typed-ident the-id-nil 'obj))
 		(alloc (symbol-append '%allocate- id))
-		(fill (symbol-append 'fill- id '!)))
+		(fill (symbol-append 'fill- id '!))
+		(tmp (gensym))
+		(tmpt (make-typed-ident tmp id)))
 	    (produce-module-clause! `(,import (,tid-nil)))
 	    (list
 	     `(define ,the-tid-nil #unspecified)
 	     (epairify `(define (,tid-nil)
-			   (when (eq? ,the-id-nil #unspecified)
-			      (set! ,the-id-nil (,alloc))
-			      (,fill ,the-id-nil ,@(fill-nil slots)))
-			   ,the-id-nil)
+			   ,(make-private-sexp 'unsafe id
+			       `(if (is-a? ,the-id-nil ,id)
+				    ,the-id-nil
+				    (let ((,tmpt (,alloc)))
+				       (,fill ,tmp ,@(fill-nil slots))
+				       (set! ,the-id-nil ,tmp)
+				       ,tmp))))
 		       src-def))))))
 
 ;*---------------------------------------------------------------------*/
@@ -90,27 +95,32 @@
 		(the-tid-nil (make-typed-ident the-id-nil 'obj))
 		(widening (symbol-append (tclass-widening class) '- id))
 		(super-alloc (symbol-append '%allocate- super-id))
-		(super-fill (symbol-append 'fill- super-id '!)))
+		(super-fill (symbol-append 'fill- super-id '!))
+		(id? (symbol-append id '?))
+		(tmp (gensym))
+		(tmpt (make-typed-ident tmp id)))
 	    (produce-module-clause! `(,import (,tid-nil)))
 	    (list
 	     `(define ,the-tid-nil #unspecified)
 	     (epairify `(define (,tid-nil)
-			   (when (eq? ,the-id-nil #unspecified)
-			      ;; allocate the super instance
-			      (set! ,the-id-nil (,super-alloc))
-			      ;; fill it
-			      (,super-fill ,the-id-nil
-					   ,@(fill-nil super-slots))
-			      ;; set the new class type
-			      (object-class-num-set!
-			       ,the-id-nil
-			       (class-num (@ ,(global-id holder)
-					     ,(global-module holder))))
-			      ;; set the widening property
-			      (object-widening-set! 
-			       ,the-id-nil
-			       (,widening ,@(fill-nil slots))))
-			   ,the-id-nil)
+			   ,(make-private-sexp 'unsafe id
+			       `(if (,id?  ,the-id-nil)
+				    ,the-id-nil
+				    ;; allocate the super instance
+				    (let ((,tmpt (,super-alloc)))
+				       ;; fill it
+				       (,super-fill ,tmp ,@(fill-nil super-slots))
+				       ;; set the new class type
+				       (object-class-num-set!
+					  ,tmp
+					  (class-num (@ ,(global-id holder)
+							,(global-module holder))))
+				       ;; set the widening property
+				       (object-widening-set! 
+					  ,tmp
+					  (,widening ,@(fill-nil slots)))
+				       (set! ,the-id-nil ,tmp)
+				       ,tmp))))
 		       src-def))))))
 
 ;*---------------------------------------------------------------------*/

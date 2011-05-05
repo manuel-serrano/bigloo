@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Fri Apr  1 14:24:18 2011 (serrano)                */
+;*    Last change :  Thu May  5 05:09:20 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -62,7 +62,8 @@
 
 	   ;; the sequence node
 	   (final-class sequence::node/effect
-	      (nodes::obj read-only))
+	      (nodes::obj read-only)
+	      (unsafe::bool read-only (default #f)))
 
 	   ;; the application node
 	   (final-class app::node/effect

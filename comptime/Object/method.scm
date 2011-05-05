@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed May  4 17:19:09 2011 (serrano)                */
+;*    Last change :  Wed May  4 18:46:06 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -26,6 +26,7 @@
 	   engine_param
 	   backend_backend)
    (export (make-method-body ::symbol ::obj ::obj ::obj ::obj)
+	   (mark-method! ::symbol)
 	   (local-is-method?::bool ::local)))
 
 ;*---------------------------------------------------------------------*/

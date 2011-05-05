@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Fri Apr 29 14:37:39 2011 (serrano)                */
+;*    Last change :  Thu May  5 10:22:59 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -229,7 +229,7 @@
 	    (print . obj)
 	    (fprint ::output-port . obj)
 	    (tprint ::output-port . obj)
-	    (format ::bstring . obj)
+	    (format::bstring ::bstring . obj)
 	    (printf ::bstring . obj)
 	    (fprintf ::output-port ::bstring . obj))
 

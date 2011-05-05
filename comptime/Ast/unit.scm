@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Thu Apr  7 21:12:35 2011 (serrano)                */
+;*    Last change :  Wed May  4 18:46:40 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -810,6 +810,7 @@
 	  (gbody   (make-generic-body id locals args src))
 	  (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody)))
       (trace (ast 2) "  body: " body #\Newline)
+      (mark-method! name)
       (let* ((o-unit (get-generic-unit))
 	     (type (local-type (car locals)))
 	     (gen `(register-generic!

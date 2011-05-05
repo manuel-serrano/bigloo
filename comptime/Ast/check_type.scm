@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Apr  1 12:19:23 2011 (serrano)                */
+;*    Last change :  Thu May  5 09:39:22 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -107,13 +107,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::var)
    (with-access::var node (type variable)
-      (unless (sfun? (variable-value variable))
-	 (unless (subtype? type (variable-type variable))
-	    (err node type (variable-type variable)))
-	 (when (and (eq? (variable-type variable) *_*)
-		    (global? variable)
-		    (not (eq? (global-import variable) 'static)))
-	    (err-no-type node)))))
+      (with-access::variable variable ((vtype type))
+	 (unless (sfun? (variable-value variable))
+	    (unless (or (subtype? type vtype)
+			(and (tclass? vtype) (subtype? vtype type)))
+	       (err node type vtype))
+	    (when (and (eq? vtype *_*)
+		       (global? variable)
+		       (not (eq? (global-import variable) 'static)))
+	       (err-no-type node))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::atom ...                                       */
@@ -328,8 +330,10 @@
       ((eq? t2 *obj*)
        ;; bigloo subtyping, e.g., bstring < obj
        #t)
-      ((and (eq? t2 *foreign*)
-	    (and (bigloo-type? t1) (coercer-exists? t1 t2)))
+      ((and (eq? t2 *foreign*) (coercer-exists? t1 t2))
+       ;; foreign type subtyping, XXX < foreign
+       #t)
+      ((and (eq? t1 *foreign*) (coercer-exists? t1 t2))
        ;; foreign type subtyping, XXX < foreign
        #t)
       (else

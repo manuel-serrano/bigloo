@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Apr  6 18:00:58 2011 (serrano)                */
+;*    Last change :  Thu May  5 07:49:26 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -57,15 +57,20 @@
 	  (type-safe (or type-safe type-safety-enforced)))
       (if (global? variable)
 	  (trace (coerce 2) "  type-safe=" type-safe
-		 " global=" (global? variable)
-		 " evaluable=" (global-evaluable? variable)
-		 " user=" (global-user? variable)
-		 " clo=" (global? (sfun-the-closure-global fun))
-		 "\n")
+	     " global=" (global? variable)
+	     " evaluable=" (global-evaluable? variable)
+	     " user=" (global-user? variable)
+	     " clo=" (global? (sfun-the-closure-global fun))
+	     "\n")
 	  (trace (coerce 2) "  type-safe=" type-safe "\n"))
-      (pfunction-proto 3 variable)
-      (set! the-coerced-function variable)
-      (sfun-body-set! fun (coerce! body variable tres type-safe))
+      (let ((notify *notify-type-test*))
+	 (set! *notify-type-test*
+	    (and (variable-user? variable)
+		 (not (global? (sfun-the-closure-global fun)))))
+	 (pfunction-proto 3 variable)
+	 (set! the-coerced-function variable)
+	 (sfun-body-set! fun (coerce! body variable tres type-safe))
+	 (set! *notify-type-test* notify))
       (leave-function)))
 
 ;*---------------------------------------------------------------------*/
@@ -119,17 +124,18 @@
 ;*    coerce! ::sequence ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::sequence caller to safe)
-   (with-access::sequence node (type nodes)
-      (let loop ((nodes nodes))
-	 (let ((n (car nodes)))
-	    (if (null? (cdr nodes))
-		(begin
-		   (set-car! nodes (coerce! n caller to safe))
-		   (set! type (strict-node-type to type))
-		   node)
-		(begin
-		   (set-car! nodes (coerce! n caller (get-type n) safe))
-		   (loop (cdr nodes))))))))
+   (with-access::sequence node (type nodes unsafe)
+      (let ((s (and (not unsafe) safe)))
+	 (let loop ((nodes nodes))
+	    (let ((n (car nodes)))
+	       (if (null? (cdr nodes))
+		   (begin
+		      (set-car! nodes (coerce! n caller to s))
+		      (set! type (strict-node-type to type))
+		      node)
+		   (begin
+		      (set-car! nodes (coerce! n caller (get-type n) s))
+		      (loop (cdr nodes)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::extern ...                                             */
@@ -285,37 +291,50 @@
 		     #f))))))
    (define (test-static-let-var node)
       (with-access::let-var node (bindings body)
-	 (and (pair? bindings)
-	      (null? (cdr bindings))
-	      (app? body)
-	      (let* ((fun (app-fun body))
-		     (var (let ((args (app-args body)))
-			     (and (pair? args)
-				  (null? (cdr args))
-				  (var? (car args))
-				  (var-variable (car args)))))
-		     (val (variable-value (var-variable fun)))
-		     (typec (fun-predicate-of val))
-		     (typep (variable-type (car (car bindings))))
-		     (typev (if (eq? typep *obj*)
-				(get-type (cdr (car bindings)))
-				typep)))
-		 (cond
-		    ((not (type? typec))
-		     ;; this is not a predicate
-		     #f)
-		    ((not (eq? var (car (car bindings))))
-		     ;; the predicate does not concern the let-var variable
-		     #f)
-		    ((eq? typev *obj*)
-		     ;; we have not idea of the result of the type
-		     #f)
-		    ((type-less-specific? typec typev)
-		     'true)
-		    ((type-disjoint? typec typev)
-		     'false)
-		    (else
-		     #f))))))
+	 (when (and (pair? bindings) (null? (cdr bindings)))
+	    (cond
+	       ((app? body)
+		(let* ((fun (app-fun body))
+		       (var (let ((args (app-args body)))
+			       (cond
+				  ((not (pair? args))
+				   #f)
+				  ((and (null? (cdr args)) (var? (car args)))
+				   ;; predicates
+				   (var-variable (car args)))
+				  ((not (pair? (cdr args)))
+				   #f)
+				  ((and (null? (cddr args)) (var? (car args)))
+				   ;; isa
+				   (var-variable (car args)))
+				  (else
+				   #f))))
+		       (val (variable-value (var-variable fun)))
+		       (typec (or (fun-predicate-of val) (isa-of body)))
+		       (typep (variable-type (car (car bindings))))
+		       (typev (if (eq? typep *obj*)
+				  (get-type (cdr (car bindings)))
+				  typep)))
+		   (cond
+		      ((not (type? typec))
+		       ;; this is not a predicate
+		       #f)
+		      ((not (eq? var (caar bindings)))
+		       ;; the predicate does not concern the let-var variable
+		       #f)
+		      ((eq? typev *obj*)
+		       ;; we have not idea of the result of the type
+		       #f)
+		      ((type-less-specific? typec typev)
+		       'true)
+		      ((type-disjoint? typec typev)
+		       'false)
+		      (else
+		       #f))))
+	       ((and (var? body) (eq? (var-variable body) (caar bindings)))
+		(test-static-value (cdar bindings)))
+	       (else
+		#f)))))
    (define (test-static-value node)
       (cond
 	 ((app? node)

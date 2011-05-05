@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sat Apr  9 06:55:49 2011 (serrano)                */
+;*    Last change :  Thu May  5 05:24:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -92,7 +92,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::sequence)
    (node->sexp-hook node)
-   (let ((sym (shape-typed-node 'begin (node-type node))))
+   (let ((sym (shape-typed-node
+		 (if (sequence-unsafe node) 'unsafe 'begin) (node-type node))))
       (location-shape (node-loc node)
 		      `(,sym ,@(map node->sexp (sequence-nodes node))))))
 

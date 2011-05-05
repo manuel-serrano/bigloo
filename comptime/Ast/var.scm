@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Fri Apr  8 12:10:11 2011 (serrano)                */
+;*    Last change :  Wed May  4 17:41:46 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -37,7 +37,9 @@
 	      ;; the variable number of occurrences
 	      (occurrence::long (default 0))
 	      ;; the variable number of write occurrences
-	      (occurrencew::long (default 0)))
+	      (occurrencew::long (default 0))
+	      ;; does this local variable belongs to the user ?
+	      (user?::bool (default #f)))
 	   
 	   (final-class global::variable
 	      ;; the global's module. this variable is changed only
@@ -53,11 +55,6 @@
 	      (eval?::bool (default #f))
 	      ;; The library that defines the variable (or #f)
 	      (library (default #f))
-	      ;; does this global variable belongs to the user? this field
-	      ;; is used mostly for default entry point of generic functions
-	      ;; and unit initialization functions. the user? field is only
-	      ;; used when compiling for -gbdb mode.
-	      (user?::bool (default #t))
 	      ;; a user pragma about the variable
 	      (pragma::obj (default '()))
 	      ;; declaration source
@@ -72,8 +69,6 @@
 	      (init::obj (default #unspecified)))
 
 	   (final-class local::variable
-	      ;; does this local variable belongs to the user ?
-	      (user?::bool (default #f))
 	      ;; the local's identification key
 	      (key::long read-only))
 

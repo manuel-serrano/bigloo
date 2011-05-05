@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Wed Dec 15 14:18:19 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Thu May  5 10:31:55 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
 ;*    Gallesio's IMAP Scheme library                                   */
@@ -69,7 +69,6 @@
 	   (imap-message-size::int ::socket ::int)
 	   (imap-message-flags-change! ::socket ::int ::obj)
 	   (imap-message-flags-set! ::socket ::int ::obj)
-	   (imap-message-flags-unset*! ::socket ::obj ::obj)
 	   (imap-message-flags-unset! ::socket ::int ::obj)
 	   (imap-message-delete! ::socket ::int)
 	   (imap-message-undelete! ::socket ::int)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:38:54 1996                          */
-;*    Last change :  Wed Sep 17 09:10:13 2008 (serrano)                */
-;*    Copyright   :  1996-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May  5 09:28:54 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type class definition                                        */
 ;*=====================================================================*/
@@ -51,6 +51,7 @@
 
 	   (get-aliased-type::type ::type)
 	   (bigloo-type?::bool ::type)
+	   (foreign-type?::bool ::type)
 	   (generic type-occurrence-increment! ::type)))
 
 ;*---------------------------------------------------------------------*/
@@ -67,6 +68,12 @@
 ;*---------------------------------------------------------------------*/
 (define (bigloo-type? type)
    (eq? (type-class type) 'bigloo))
+
+;*---------------------------------------------------------------------*/
+;*    foreign-type? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (foreign-type? type)
+   (eq? (type-class type) 'C))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-occurrence-increment! ...                                   */

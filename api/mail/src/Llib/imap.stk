@@ -973,7 +973,7 @@
   (%imap-doflags 'imap-message-flags-set! s num flags "+"))
 
 (define (imap-message-flags-set*! s num flags)
-  (imap-message-flags-set! s (%imap-arg num ",") flags))
+  (%imap-doflags 'imap-message-flags-set! s (%imap-arg num ",") flags "+"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-flags-unset(*)! ...
@@ -982,7 +982,7 @@
   (%imap-doflags 'imap-message-flags-unset! s num flags "-"))
 
 (define (imap-message-flags-unset*! s num flags)
-  (imap-message-flags-unset! s (%imap-arg num ",") flags))
+  (%imap-doflags 'imap-message-flags-unset! s (%imap-arg num ",") flags "-"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-delete(*)! ...
@@ -991,7 +991,7 @@
   (%imap-doflags 'imap-message-delete! s num "\\Deleted" "+"))
 
 (define (imap-message-delete*! s num)
-  (imap-message-delete! s (%imap-arg num ",")))
+  (%imap-doflags 'imap-message-delete! s (%imap-arg num ",") "\\Deleted" "+"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-undelete(*)! ...
@@ -1000,7 +1000,7 @@
   (%imap-doflags 'imap-message-undelete! s num "\\Deleted" "-"))
 
 (define (imap-message-undelete*! s num)
-  (imap-message-undelete! s (%imap-arg num ",")))
+  (%imap-doflags 'imap-message-undelete! s (%imap-arg num ",") "\\Deleted" "-"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-flagged(*)! ...
@@ -1009,7 +1009,7 @@
   (%imap-doflags 'imap-message-flagged! s num "\\Flagged" "+"))
 
 (define (imap-message-flagged*! s num)
-  (imap-message-flagged! s (%imap-arg num ",")))
+  (%imap-doflags 'imap-message-flagged! s (%imap-arg num ",") "\\Flagged" "+"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-unflagged(*)! ...
@@ -1018,7 +1018,7 @@
   (%imap-doflags 'imap-message-unflagged! s num "\\Flagged" "-"))
 
 (define (imap-message-unflagged*! s num)
-  (imap-message-unflagged! s (%imap-arg num ",")))
+  (%imap-doflags 'imap-message-unflagged! s (%imap-arg num ",") "\\Flagged" "-"))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-message-exists? ...

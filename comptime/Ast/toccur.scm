@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Mar 17 18:51:56 2011 (serrano)                */
+;*    Last change :  Thu May  5 09:51:27 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -150,8 +150,9 @@
 ;*    occur-node! ::cast ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::cast)
-   (with-access::cast node (type)
+   (with-access::cast node (type arg)
       (type-occurrence-increment! type)
+      (occur-node! arg)
       (call-next-method)))
 
 ;*---------------------------------------------------------------------*/

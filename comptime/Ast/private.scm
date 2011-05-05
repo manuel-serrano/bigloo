@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu Apr  7 17:26:32 2011 (serrano)                */
+;*    Last change :  Thu May  5 05:10:05 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -179,6 +179,12 @@
 	     (otype otype)
 	     (c-format c-heap-fmt)
 	     (expr* (sexp*->node rest stack loc 'value)))))
+      ((?- unsafe ?type ?exp)
+       (instantiate::sequence
+	  (loc loc)
+	  (type (use-type! type loc))
+	  (unsafe #t)
+	  (nodes (list (sexp->node exp stack loc 'value)))))
       (else
        (error "private-node"
 	      "Illegal private kind"
@@ -195,6 +201,6 @@
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
    [assert (kind) (memq kind '(getfield setfield new cast cast-null isa
-			       vlength vref vset! valloc
+			       vlength vref vset! valloc unsafe
 			       vref-ur vset-ur!))]
    (cons* *private-stamp* kind type-id objs))
