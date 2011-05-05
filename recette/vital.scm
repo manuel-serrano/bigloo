@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Mar 30 17:08:11 2011 (serrano)                */
+;*    Last change :  Thu May  5 14:42:35 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -324,7 +324,7 @@
     (define (cond-expand-foo x) x))
    (else
     (define (cond-expand-foo x) 4)))
-
+ 
 ;*---------------------------------------------------------------------*/
 ;*    bug-jvm ...                                                      */
 ;*---------------------------------------------------------------------*/
@@ -843,7 +843,7 @@
 	 #t)
    (test "directory?.2" (or (file-exists?
 			     (make-file-path "dummydir" "doesnotexist"))
-			    (directory?
+	 		    (directory?
 			     (make-file-path "dummydir" "doesnotexist")))
 	 #f)
    (test "make-directory.3" (make-directory (make-file-path "dummydir" "foo"))

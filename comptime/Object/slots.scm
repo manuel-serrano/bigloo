@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Jan  4 08:13:40 2011 (serrano)                */
+;*    Last change :  Thu May  5 11:31:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -208,11 +208,10 @@
 				  (car slot-id)
 				  '())))
       (let* ((ftype (find-slot-type slot-id src))
-	     (iid (gensym))
+	     (iid (gensym 'type))
 	     (itype (declare-subtype! iid
-				      (symbol->string iid)
-				      (list 'obj)
-				      'bigloo))
+		       (string-append (type-name ftype) " *")
+		       (list 'obj) 'bigloo))
 	     (sval (instantiate::slot
 		      (id (car slot-id))
 		      (name (scheme-symbol->c-string (car slot-id)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Apr  8 12:10:20 2011 (serrano)                */
+;*    Last change :  Thu May  5 14:30:36 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -125,7 +125,7 @@
 ;*    X! ...                                                           */
 ;*    -------------------------------------------------------------    */
 ;*    If type checks are omitted, a funcall which can apply            */
-;*    procedure or other types, do not prevent optimization of         */
+;*    procedure or other types does not prevent optimization of        */
 ;*    the called functions.                                            */
 ;*---------------------------------------------------------------------*/
 (define (X! funcall-list)

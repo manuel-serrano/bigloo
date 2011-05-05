@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Thu May  5 10:12:48 2011 (serrano)                */
+;*    Last change :  Thu May  5 10:43:54 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -57,15 +57,16 @@
 ;*---------------------------------------------------------------------*/
 (define (notify-type-test from to loc)
    (when *notify-type-test*
-      (set! *notify-counter* (+fx 1 *notify-counter*))
       (let ((st (bigloo-trace-stack-depth)))
 	 (bigloo-trace-stack-depth-set! 0)
 	 (cond
 	    ((not loc)
+	     (set! *notify-counter* (+fx 1 *notify-counter*))
 	     (warning
 		(format " ~a. Type test inserted \"~a\" -> \"~a\""
 		   *notify-counter* (shape from) (shape to))))
 	    ((not (member loc notified-locations))
+	     (set! *notify-counter* (+fx 1 *notify-counter*))
 	     (set! notified-locations (cons loc notified-locations))
 	     (warning/location (location-full-fname loc)
 		(location-pos loc)

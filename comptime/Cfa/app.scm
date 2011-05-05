@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Mon Apr 11 11:10:22 2011 (serrano)                */
+;*    Last change :  Thu May  5 14:42:07 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
@@ -25,7 +25,8 @@
 	    cfa_cfa
 	    cfa_iterate
 	    cfa_loose
-	    cfa_approx)
+	    cfa_approx
+	    cfa_procedure)
    (export  (generic app!::approx ::fun ::var approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -86,8 +87,11 @@
       (trace (cfa 3) (cfa-current) ": >>>   app(extern-sfun/Cinfo)!"
 	 " polymorphic?=" polymorphic? #\Newline)
       ;; we set the new formals approximation
-      (when top?
-	 (for-each (lambda (a) (loose! a 'all)) args-approx))
+      (if top?
+	  ;; calling a random extern function, loose everyting
+	  (for-each (lambda (a) (loose! a 'all)) args-approx)
+	  ;; don't loose but mark functions as not candidate to X/T optim
+	  (for-each (lambda (a) (disable-X-T! a "extern call")) args-approx))
       (when polymorphic?
 	 (with-access::approx approx (type)
 	    (set! type (get-bigloo-type (approx-type approx)))))
@@ -106,8 +110,10 @@
       #\Newline)
    (with-access::cfun/Cinfo fun (top? approx)
       ;; we set the new formals approximation
-      (when top?
-	 (for-each (lambda (a) (loose! a 'all)) args-approx))
+      (if top?
+	  (for-each (lambda (a) (loose! a 'all)) args-approx)
+	  ;; don't loose but mark functions as not candidate to X/T optim
+	  (for-each (lambda (a) (disable-X-T! a "extern call")) args-approx))
       (trace (cfa 3) (cfa-current)
 	 ": <<< app " (shape var) " <- (foreign) " (shape approx)
 	 #\Newline)
