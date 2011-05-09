@@ -733,8 +733,8 @@ must be a number and is printed with radix 16, 8 or 2.
 @item @code{~l} If the corresponding value is a proper list, its items 
 are inserted into the string without the surrounding parenthesis. If the
 corresponding value is not a list, it behaves as @code{~s}.
-@item @code{~Ndxob]} Print a number in @var{N} columns with space padding.
-@item @code{~N,[padding]} Print a number in @var{num} columns 
+@item @code{~Ndxob} Print a number in @var{N} columns with space padding.
+@item @code{~N,[padding]dxob} Print a number in @var{num} columns 
 with @var{padding} padding.
 @end itemize
 
