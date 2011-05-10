@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Mon Aug  9 14:20:38 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May 10 11:52:03 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
 ;*=====================================================================*/
@@ -188,17 +188,18 @@
 		      (macros macros)
 		      (syntaxes syntaxes)
 		      (expanders expanders)
-		      (exp* (append-map (lambda (x)
-					   (match-case x
-					      (((and (? symbol?) ?clause) . ?r)
-					       (if (compile-srfi? clause)
-						   r
-						   '()))
-					      ((bigloo-compile . ?rest)
-					       rest)
-					      (else
-					       '())))
-					exp*)))
+		      (exp* (let loop ((exp* exp*))
+			       (if (null? exp*)
+				   '()
+				   (match-case (car exp*)
+				      (((and (? symbol?) ?clause) . ?r)
+				       (if (or (compile-srfi? clause) (eq? clause 'else))
+					   r
+					   (loop (cdr exp*))))
+				      ((bigloo-compile . ?rest)
+				       rest)
+				      (else
+				       (loop (cdr exp*))))))))
 	      (if (null? exp*)
 		  inlines
 		  (multiple-value-bind (inlines macros syntaxes expanders)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Fri Mar 27 13:37:22 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue May 10 11:26:59 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
@@ -177,7 +177,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    impuse-parser ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    The syntaxe of importation clause is:                            */
+;*    The syntax of importation clause is:                             */
 ;*    import ::= module-name                                           */
 ;*            |  (module-name "file-name" *)                           */
 ;*            |  (variable module-name)                                */
