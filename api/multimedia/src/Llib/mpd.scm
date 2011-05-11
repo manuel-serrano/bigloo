@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Wed May 11 10:36:45 2011 (serrano)                */
+;*    Last change :  Wed May 11 14:11:05 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -19,7 +19,7 @@
    
    (export (class mpd-database
 	      (mpd-database-init!)
-	      (directories::pair-nil read-only)
+	      (directories::pair-nil read-only (default '()))
 	      (%base::bstring (default "music"))
 	      (%roots read-only (default (make-hashtable 10)))
 	      (%prefixes read-only (default (make-hashtable 10)))
@@ -40,6 +40,7 @@
 	   (generic mpd-database-listall ::mpd-database ::output-port)
 	   (generic mpd-database-listalbum ::mpd-database ::output-port)
 	   (generic mpd-database-listartistalbum ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-listgenreartist ::mpd-database ::output-port ::obj)
 	   (generic mpd-database-listgenrealbum ::mpd-database ::output-port ::obj)
 	   (generic mpd-database-listgenre ::mpd-database ::output-port)
 	   (generic mpd-database-listartist ::mpd-database ::output-port)
@@ -692,7 +693,9 @@
 	   (mpd-database-listartistalbum db op string2)))
        'ok)
       ((artist)
-       (mpd-database-listartist db op)
+       (if (equal? string2 "genre")
+	   (mpd-database-listartist db op)
+	   (mpd-database-listgenreartist db op string3))
        'ok)
       ((disc)
        'ok)
@@ -1206,6 +1209,19 @@ db_update: ~a\n"
 			(let ((dir (cdr c)))
 			   (string=? (basename (dirname (dirname dir))) genre)))
 		     (mpd-database-%albums o))))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-listgenreartist ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-listgenreartist o::mpd-database op genre)
+   (for-each (lambda (a)
+		(display "Artist: " op)
+		(display (car a) op)
+		(newline op))
+	     (filter (lambda (c)
+			(let ((dir (cdr c)))
+			   (string=? (basename (dirname dir)) genre)))
+		     (mpd-database-%artists o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenre ...                                       */
