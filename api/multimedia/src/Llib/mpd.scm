@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Thu Mar 18 06:33:48 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Wed May 11 10:36:45 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
 	      (%db-update (default #unspecified)))
 	   
 	   (mpd ::music ::input-port ::output-port ::mpd-database #!key log)
-	   (mpd-database-init! ::mpd-database)
+	   (generic mpd-database-init! ::mpd-database)
 
 	   (generic mpd-database-file->path ::mpd-database ::bstring)
 	   (generic mpd-database-stats ::mpd-database ::obj)
@@ -878,7 +878,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-init! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (mpd-database-init! o::mpd-database)
+(define-generic (mpd-database-init! o::mpd-database)
    (with-access::mpd-database o (directories
 				 %base %roots %prefixes
 				 %albums %artists %genres
