@@ -3,18 +3,17 @@
 # configuration and variables
 version=3.6b
 minor=
-rootdir=/users/serrano
-repodir=$rootdir/prgm/distrib
+repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
 
 if [ "$REPODIR " != " " ]; then
   repodir=$REPODIR;
 fi
 
-maemo=`pkg-config maemo-version --modversion`
 pkg=bigloo
-
 bglprefix=/opt/bigloo
+
+maemo=`pkg-config maemo-version --modversion`
 
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`
@@ -60,9 +59,11 @@ done
 
 dpkg-buildpackage -rfakeroot && 
 
-for subpkg in bigloo libbigloo-full bigloo-doc; do
-  cp ../"$subpkg"_"$version""$minor"_*.deb $repodir/$debian
-done
+if [ -d $repodir/$debian ]; then
+  for subpkg in bigloo libbigloo-full bigloo-doc; do
+    cp ../"$subpkg"_"$version""$minor"_*.deb $repodir/$debian
+  done
+fi
 
 cd $curdir
 
