@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Wed May 11 14:11:05 2011 (serrano)                */
+;*    Last change :  Fri May 13 12:41:57 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -50,7 +50,12 @@
 	   (generic mpd-database-search-artist-album ::mpd-database ::output-port ::obj ::obj)
 	   (generic mpd-database-search-artist-title ::mpd-database ::output-port ::obj ::obj)
 	   (generic mpd-database-find-title ::mpd-database ::output-port ::obj)
-	   (generic mpd-database-find-genre ::mpd-database ::output-port ::obj)))
+	   (generic mpd-database-find-genre ::mpd-database ::output-port ::obj)
+
+	   (generic mpd-database-getgenre::pair-nil ::mpd-database)
+	   (generic mpd-database-getartist::pair-nil ::mpd-database)
+	   (generic mpd-database-getgenreartist::pair-nil ::mpd-database ::obj)))
+   
 						  
 ;*---------------------------------------------------------------------*/
 ;*    mpd-version ...                                                  */
@@ -1218,10 +1223,7 @@ db_update: ~a\n"
 		(display "Artist: " op)
 		(display (car a) op)
 		(newline op))
-	     (filter (lambda (c)
-			(let ((dir (cdr c)))
-			   (string=? (basename (dirname dir)) genre)))
-		     (mpd-database-%artists o))))
+      (mpd-database-getgenreartist o genre)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenre ...                                       */
@@ -1393,3 +1395,24 @@ db_update: ~a\n"
    
    (with-access::mpd-database o (directories)
       (any find-genre directories)))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-getgenre ...                                        */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-getgenre o::mpd-database)
+   (mpd-database-%genres o))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-getartist ...                                       */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-getartist o::mpd-database)
+   (mpd-database-%artists o))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-getgenreartist ::mpd-database ...                   */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-getgenreartist o::mpd-database genre)
+   (filter (lambda (c)
+	      (let ((dir (cdr c)))
+		 (string=? (basename (dirname dir)) genre)))
+      (mpd-database-%artists o)))

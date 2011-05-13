@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed May  4 09:22:26 2011 (serrano)                */
+;*    Last change :  Fri May 13 11:24:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -124,7 +124,7 @@
 		   "BGL_OUTPUT_PORT_FILEPOS")
 	    (c-set-output-port-position!::obj (::output-port ::long) "bgl_output_port_seek")
 	    
-	    (c-close-output-port::obj (::obj) "bgl_close_output_port")
+	    ($close-output-port::obj (::output-port) "bgl_close_output_port")
 	    (c-get-output-string::bstring (::output-port)"get_output_string")
 	    (c-default-io-bufsiz::int "default_io_bufsiz")
 	    (c-reset-eof::bool (::obj) "reset_eof")
@@ -253,7 +253,7 @@
 	       
 	       (method static c-closed-input-port?::bool (::input-port)
 		       "CLOSED_RGC_BUFFER")
-	       (method static c-close-output-port::obj (::output-port)
+	       (method static $close-output-port::obj (::output-port)
 		       "bgl_close_output_port")
 	       (method static c-get-output-string::bstring (::output-port)
 		       "get_output_string")
@@ -1059,7 +1059,7 @@
 ;*    close-output-port ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (close-output-port port)
-   (c-close-output-port port))
+   ($close-output-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    flush-output-port ...                                            */
