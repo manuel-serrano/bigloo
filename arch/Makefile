@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Thu Sep 23 11:44:59 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Fri May 13 10:46:37 2011 (serrano)                */
+#*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles arch specific parts.                   */
 #*=====================================================================*/
@@ -17,7 +17,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    DIRECTORIES                                                      */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx maemo android
+DIRECTORIES= macosx debian android
 
 #*---------------------------------------------------------------------*/
 #*    Populating the ARCHs                                             */

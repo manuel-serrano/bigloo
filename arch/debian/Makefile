@@ -1,12 +1,12 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/maemo/Makefile                  */
+#*    serrano/prgm/project/bigloo/arch/debian/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Sun Feb 14 18:54:07 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Fri May 13 10:47:24 2011 (serrano)                */
+#*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The Makefile that handles maemo specific files                   */
+#*    The Makefile that handles debian specific files                  */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -24,5 +24,5 @@ POPULATION = Makefile changelog control makedeb.sh postinst.in rules.in \
 #*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
 pop:
-	@ echo $(POPULATION:%=maemo/%)
+	@ echo $(POPULATION:%=debian/%)
 

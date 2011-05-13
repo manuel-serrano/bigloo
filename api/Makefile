@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Tue Oct 12 11:43:05 2010 (serrano)                */
-#*    Copyright   :  2005-10 Manuel Serrano                            */
+#*    Last change :  Fri May 13 10:35:22 2011 (serrano)                */
+#*    Copyright   :  2005-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
