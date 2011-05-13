@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Mar 14 13:31:58 2011 (serrano)                */
+;*    Last change :  Fri May 13 08:55:49 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -606,7 +606,8 @@
 				     '(throw-trampoline run)
 				     '(catch-trampoline run s sp) )
 				(let ( (ns (make-state)) )
-				   (vector-copy! ns 2 s sp (+fx sp nbargs))
+				   (let ( (start ,(if tail? 'bp 'sp)) )
+				      (vector-copy! ns 2 s start (+fx start nbargs)) )
 				   (vector-set! ns 1 s)
 				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
 				   (unwind-protect (catch-trampoline run ns 2)
@@ -707,7 +708,8 @@
 				     '(throw-trampoline run)
 				     '(catch-trampoline run s sp) )
 				(let ( (ns (make-state)) )
-				   (vector-copy! ns 2 s sp (+fx sp ,nbargs))
+				   (let ( (start ,(if tail? 'bp 'sp)) )
+				      (vector-copy! ns 2 s start (+fx start ,nbargs)) )
 				   (vector-set! ns 1 s)
 				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
 				   (unwind-protect (catch-trampoline run ns 2)
