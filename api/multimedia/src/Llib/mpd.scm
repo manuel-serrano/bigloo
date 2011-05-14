@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sat May 14 10:57:30 2011 (serrano)                */
+;*    Last change :  Sat May 14 16:00:02 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -1206,10 +1206,10 @@ db_update: ~a\n"
 		(display "Album: " op)
 		(display (car a) op)
 		(newline op))
-	     (filter (lambda (c)
-			(let ((dir (cdr c)))
-			   (string=? (basename (dirname (dirname dir))) genre)))
-		     (mpd-database-%albums o))))
+      (filter (lambda (c)
+		 (let ((dir (cdr c)))
+		    (string=? (basename (dirname (dirname dir))) genre)))
+	 (mpd-database-%albums o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenreartist ...                                 */
@@ -1229,7 +1229,7 @@ db_update: ~a\n"
 		(display "Genre: " op)
 		(display (car a) op)
 		(newline op))
-	     (mpd-database-%genres o)))
+      (mpd-database-getgenre o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listartist ...                                      */
@@ -1239,7 +1239,7 @@ db_update: ~a\n"
 		(display "Artist: " op)
 		(display (car a) op)
 		(newline op))
-	     (mpd-database-%artists o)))
+      (mpd-database-%artists o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-lsinfo ...                                          */
