@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Fri May 13 12:41:57 2011 (serrano)                */
+;*    Last change :  Sat May 14 10:57:30 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -54,8 +54,9 @@
 
 	   (generic mpd-database-getgenre::pair-nil ::mpd-database)
 	   (generic mpd-database-getartist::pair-nil ::mpd-database)
-	   (generic mpd-database-getgenreartist::pair-nil ::mpd-database ::obj)))
-   
+	   (generic mpd-database-getartistalbum ::mpd-database ::obj)
+	   (generic mpd-database-getgenreartist::pair-nil ::mpd-database ::obj)
+	   (generic mpd-database-get-album::pair-nil ::mpd-database ::obj)))
 						  
 ;*---------------------------------------------------------------------*/
 ;*    mpd-version ...                                                  */
@@ -1195,12 +1196,7 @@ db_update: ~a\n"
 		(display "Album: " op)
 		(display (car a) op)
 		(newline op))
-	     (if (string? artist)
-		 (filter (lambda (c)
-			    (let ((dir (cdr c)))
-			       (string=? (basename (dirname dir)) artist)))
-			 (mpd-database-%albums o))
-		 (mpd-database-%albums o))))
+      (mpd-database-getartistalbum o artist)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenrealbum ...                                  */
@@ -1416,3 +1412,76 @@ db_update: ~a\n"
 	      (let ((dir (cdr c)))
 		 (string=? (basename (dirname dir)) genre)))
       (mpd-database-%artists o)))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-getartistalbum ...                                  */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-getartistalbum o::mpd-database artist)
+   (if (string? artist)
+       (filter (lambda (c)
+		  (let ((dir (cdr c)))
+		     (string=? (basename (dirname dir)) artist)))
+	  (mpd-database-%albums o))
+       (mpd-database-%albums o)))
+
+;*---------------------------------------------------------------------*/
+;*    getinfofile ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (getinfofile db file num #!optional artist album)
+   (with-access::mpd-database db (directories)
+      `((file: ,(uri->mpd file db))
+	,@(if num `((pos: ,num) (id: ,num)) '())
+	,@(let ((tag (and (file-exists? file)
+			  (not (directory? file))
+			  (file-musictag file)))
+		(dir (dirname file)))
+	     (if (musictag? tag)
+		 (with-access::musictag tag ((ar artist) (al album) title track)
+		    (let ((a (or artist
+				 (if (string-ci=? ar "unknown")
+				     (string-capitalize
+					(basename (dirname dir)))
+				     ar))))
+		       `((artist: ,a)
+			 (title: ,title)
+			 ,(let ((ab (or album
+					(if (string-ci=? al "Unknown Disc")
+					    (string-capitalize (basename dir))
+					    al))))
+			     `(album: ,ab))
+			 ,@(if (>=fx track 0) `(track: ,track) '()))))
+		 (let ((dir (dirname file)))
+		    `((artist: ,(or artist
+				    (string-capitalize
+				       (basename (dirname dir)))))
+		      (title: ,(prefix (basename file)))
+		      (album: ,(or album
+				   (string-capitalize
+				      (basename dir)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    get-music-file ...                                               */
+;*---------------------------------------------------------------------*/
+(define (get-music-file db dir artist album)
+   (let loop ((dir dir))
+      (let ((artist (or artist (basename (dirname dir))))
+	    (album (or album (basename dir))))
+	 (map (lambda (f)
+		 (let ((p (make-file-name dir f)))
+		    (cond
+		       ((directory? p)
+			(loop p))
+		       ((music-file? p)
+			(getinfofile db p #f artist album)))))
+	    (sort (lambda (s1 s2)
+		     (<fx (string-natural-compare3 s1 s2) 0))
+	       (directory->list dir))))))
+
+;*---------------------------------------------------------------------*/
+;*    mpd-database-get-album ::mpd-database ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (mpd-database-get-album o::mpd-database album)
+   (with-access::mpd-database o (%albums)
+      (let ((c (assoc album %albums)))
+	 (when (pair? c)
+	    (get-music-file o (cdr c) #f album)))))
