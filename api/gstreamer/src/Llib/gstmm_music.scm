@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Dec 20 19:49:12 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Sun May 15 15:17:56 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
 ;*    multimedia MUSIC class.                                          */
@@ -482,26 +482,27 @@
 ;*    music-play ::gstmusic ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::gstmusic . song)
-   (with-access::gstmusic o (%mutex %pipeline %audiosrc %status)
+   (with-access::gstmusic o (%mutex %pipeline %audiosrc %status %playlist)
       (with-lock %mutex
 	 (lambda ()
 	    (unless (gst-element? %pipeline)
 	       (error '|music-play ::gstmusic|
 			"Player closed (or badly initialized)"
 			o))
-	    (let ((url (if (pair? song)
-			   (if (not (integer? (car song)))
-			       (bigloo-type-error '|music-play ::gstmusic|
-						    'int
-						    (car song))
-			       (set-song! o (car song)))
-			   (set-song! o (musicstatus-song %status)))))
-	       (when (string? url)
-		  (let ((uri (gstmm-charset-convert url)))
-		     (gst-element-state-set! %pipeline 'null)
-		     (gst-element-state-set! %pipeline 'ready)
-		     (gst-object-property-set! %audiosrc :uri uri)
-		     (gst-element-state-set! %pipeline 'playing))))))))
+	    (when (pair? %playlist)
+	       (let ((url (if (pair? song)
+			      (if (not (integer? (car song)))
+				  (bigloo-type-error '|music-play ::gstmusic|
+				     'int
+				     (car song))
+				  (set-song! o (car song)))
+			      (set-song! o (musicstatus-song %status)))))
+		  (when (string? url)
+		     (let ((uri (gstmm-charset-convert url)))
+			(gst-element-state-set! %pipeline 'null)
+			(gst-element-state-set! %pipeline 'ready)
+			(gst-object-property-set! %audiosrc :uri uri)
+			(gst-element-state-set! %pipeline 'playing)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::gstmusic ...                                        */
