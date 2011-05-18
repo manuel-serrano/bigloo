@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Apr 23 18:57:59 2011 (serrano)                */
+;*    Last change :  Wed May 18 16:47:05 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-id3
 
+   (import __multimedia-mp3)
+   
    (static (class &large-frame-exception::&exception
 	      (size::elong read-only)))
 	   
@@ -924,18 +926,75 @@
 	     (close-mmap mm)))))
 
 ;*---------------------------------------------------------------------*/
+;*    read-mp3-musicinfo ...                                           */
+;*---------------------------------------------------------------------*/
+(define (read-mp3-musicinfo mm)
+   
+   (define (mp3frame->musicinfo frame duration)
+      (with-access::mp3frame frame (version layer samplerate bitrate channels)
+	 (instantiate::musicinfo
+	    (format (if (=fx layer 3)
+			"mp3"
+			(format "mpeg ~a, layer ~a" version layer)))
+	    (samplerate samplerate)
+	    (bps bitrate)
+	    (channels channels)
+	    (duration duration))))
+
+   (define (mp3frame-same-constant? f1 f2)
+      (and (=fl (mp3frame-version f1) (mp3frame-version f2))
+	   (=fx (mp3frame-layer f1) (mp3frame-layer f2))
+	   (=fx (mp3frame-crc f1) (mp3frame-crc f2))
+	   (=fx (mp3frame-samplerate f1) (mp3frame-samplerate f2))))
+   
+   (let* ((len (mmap-length mm))
+	  (f0 (read-mp3-frame mm 0 (instantiate::mp3frame)))
+	  (i0 (+elong (mp3frame-offset f0) (mp3frame-length f0))))
+      (when (mp3frame? f0)
+	 (let loop ((i (+elong 1 i0))
+		    (f (instantiate::mp3frame))
+		    (c 0))
+	    (if (mp3frame? (read-mp3-frame mm i f))
+		(if (mp3frame-same-constant? f f0)
+		    (if (=fx c 15)
+			(loop (+elong (mp3frame-offset f) (mp3frame-length f))
+			   f
+			   (-fx c 1))
+			(let ((nbframes (/fx (-fx len i0) (mp3frame-length f0)))
+			      (seconds (/fx (-fx len i0)
+					  (*fx (mp3frame-bitrate f0) 125))))
+			   (mp3frame->musicinfo f0 seconds)))
+		    (let loop ((i i)
+			       (d (*fl (fixnum->flonum c)
+				     (mp3frame-duration f))))
+		       (if (mp3frame? (read-mp3-frame mm i f))
+			   (loop (+elong (mp3frame-offset f)
+				    (mp3frame-length f))
+			      (+fl d (mp3frame-duration f)))
+			   (mp3frame->musicinfo f0
+			      (flonum->fixnum (round d)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    mp3-musicinfo ...                                                */
+;*---------------------------------------------------------------------*/
+(define (mp3-musicinfo path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+	  "mp3-musicinfo" "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (read-mp3-musicinfo mm)
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
 ;*    file-musicinfo ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (file-musicinfo path)
    
    (define (mmap-musicinfo mm)
       (cond
-	 ((id3v2.4? mm) #f)
-	 ((id3v2.3? mm) #f)
-	 ((id3v2.2? mm) #f)
-	 ((id3v1.1? mm) #f)
-	 ((id3v1? mm) #f)
 	 ((read-flac-musicinfo mm) => (lambda (mi) mi))
+	 ((read-mp3-musicinfo mm) => (lambda (mi) mi))
 	 ((read-ogg-comments path mm) #f)
 	 (else #f)))
    

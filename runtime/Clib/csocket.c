@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon May  2 17:07:39 2011 (serrano)                */
+/*    Last change :  Mon May 16 17:09:42 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1882,9 +1882,13 @@ datagram_socket_write( void *s, void *buf, size_t len ) {
    if( (n = sendto( fd, buf, len, 0,
 		    (struct sockaddr *)&BGL_DATAGRAM_SOCKET( sock ).server,
 		    sizeof( struct sockaddr_in ) )) == -1 ) {
+      char buffer[ 512 ];
+      
+      sprintf( buffer, "%s (%d)", strerror( errno ), errno );
+
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"datagram-socket-write",
-			"Cannot send msg",
+			buffer,
 			sock );
    } else {
       return (long)n;
