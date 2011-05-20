@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Thu May  5 07:04:10 2011 (serrano)                */
+;*    Last change :  Fri May 20 16:49:36 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -145,14 +145,20 @@
 ;*    dataflow-node! ::setq ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::setq env)
+   
+   (define (remove-variable-from-env variable env)
+      (filter (lambda (b)
+		 (not (eq? (car b) variable)))
+	 env))
+   
    (with-access::setq node (var value)
       (let ((nenv (dataflow-node! value env)))
 	 (with-access::var var (variable)
 	    (if (global? variable)
-		nenv
+		(remove-variable-from-env variable nenv)
 		(let ((typ (get-type value)))
 		   (if (or (eq? typ *_*) (eq? typ *obj*))
-		       nenv
+		       (remove-variable-from-env variable nenv)
 		       (cons (cons variable typ) nenv))))))))
 
 ;*---------------------------------------------------------------------*/
