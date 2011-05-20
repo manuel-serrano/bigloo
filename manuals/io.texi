@@ -626,7 +626,7 @@ is raised.
 @end deffn
 
 @deffn {bigloo procedure} send-chars input-port output-port [len] [offset]
-@deffnx {bigloo procedure} send-file filename output-port len offset
+@deffnx {bigloo procedure} send-file filename output-port [len] [offset]
 Transfer the characters from @var{input-port} to @var{output-port}. This
 procedure is sometimes mapped to a system call (such as @code{sendfile} under
 Linux) and might thus be more efficient than copying the ports by hand. The
@@ -635,13 +635,12 @@ optional argument @var{offset} specifies an offset from which characters of
 of characters sent.
 
 The function @code{send-file} opens the file @var{filename} in order to
-get its input port. On some backend, @code{send-file} might be more efficient
+get its input port. On some backends, @code{send-file} might be more efficient
 than @code{send-chars} because it may avoid creating a full-fledged Bigloo
 @code{input-port}.
 
-Note that for efficiency purpose, @code{send-file} accept a fixed number
-of arguments and the type of @var{len} and @var{offset} arguments is
-@code{elong} (i.e., exact long) such as given by @code{file-size}.
+Note that the type of @var{len} and @var{offset} is
+@code{elong} (i.e., exact long), which is also returned by @code{file-size}.
 @end deffn
 
 @deffn {bigloo procedure} read-fill-string! s o len [input-port]
