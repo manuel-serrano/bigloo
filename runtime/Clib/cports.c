@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Nov 24 09:58:49 2010 (serrano)                */
+/*    Last change :  Sat May 21 07:39:45 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -222,6 +222,7 @@ struct sendfile_info_t {
    off_t *off;
    long res;
    obj_t port;
+   int errnum;
 };
 
 /*---------------------------------------------------------------------*/
@@ -1919,6 +1920,8 @@ gc_sendfile( struct sendfile_info_t *si ) {
 
    while( sz > 0 ) {
       if( (n = BGL_SENDFILE( si->out, si->in, offset, sz )) < 0 ) {
+	 si->errnum = errno;
+	 
 	 if( errno == EAGAIN || errno == EINTR ) {
 	    FD_ZERO( &writefds );
 	    FD_SET( si->out, &writefds );
@@ -2153,6 +2156,17 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
       n = BGL_SENDFILE( fd, in, (offset > 0 ? (off_t *)(&offset) : 0), sz );
 
       bgl_gc_stop_blocking();
+      
+      if( n < 0 ) {
+	 var errnum = errno;
+	 
+	 close( in );
+	 
+	 C_SYSTEM_FAILURE( bglerror( errnum ), "send-file",
+			   strerror( errnum ), MAKE_PAIR( name, op ) );
+      }
+   }
+   
 #  else
 #    if( BGL_GC_HAVE_DO_BLOCKING )
       {
@@ -2166,6 +2180,13 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 bgl_gc_do_blocking( &gc_sendfile, &si );
 
 	 n = si.res;
+	 
+	 if( n < 0 ) {
+	    close( in );
+	    
+	    C_SYSTEM_FAILURE( bglerror( si.errnum ), "send-file",
+			      strerror( si.errnum ), MAKE_PAIR( name, op ) );
+	 }
       }
 #    else
       -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
@@ -2176,12 +2197,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 #endif
 
    close( in );
-
-   if( n < 0 )
-      C_SYSTEM_FAILURE( bglerror( errno ),
-			"send-file",
-			strerror( errno ),
-			MAKE_PAIR( name, op ) );
+   
    return BINT( n );
 }
 

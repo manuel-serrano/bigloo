@@ -38,6 +38,12 @@ cd bigloo-$version
 dh_make -C gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz <<EOF
 
 EOF
+
+if [ !-f $basedir/makedeb.sh ]; then
+  echo "ERROR: Cannot find \"$basedir/makedeb.sh\"" >&2 
+  echo "current directory is: $PWD" >&2
+  echo "exiting..." >&2;
+fi
   
 # debian specific
 for p in control rules postinst changelog; do
