@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon May 16 17:09:42 2011 (serrano)                */
+/*    Last change :  Sun May 22 06:31:51 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1867,7 +1867,7 @@ datagram_socket_write( void *s, void *buf, size_t len ) {
 
    if( BGL_DATAGRAM_SOCKET( sock ).stype == BGL_SOCKET_SERVER ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			"datagram-socket-receive",
+			"datagram-socket-write",
 			"server socket",
 			sock );
    }
@@ -1908,11 +1908,11 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    obj_t oport;
    struct sockaddr_in *server;
 
-   /* Determine port to use */
+   /* determine port to use */
    if( port < 0 )
       socket_error( "make-datagram-client-socket", "bad port number", BINT( port ) );
 
-   /* Locate the host IP address */
+   /* locate the host IP address */
    if( (hp = bglhostbyname( hostname, 0 )) == NULL ) {
       C_SYSTEM_FAILURE( BGL_IO_UNKNOWN_HOST_ERROR,
 			"make-datagram-client-socket",
@@ -1920,12 +1920,12 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 			hostname );
    }
 
-   /* Get a socket */
+   /* get a socket */
    if( BAD_SOCKET( s = (int)socket( AF_INET, SOCK_DGRAM, 0 ) ) ) {
       datagram_client_socket_error( hostname, port, "cannot create socket", errno );
    }
 
-   // Configure the socket
+   // configure the socket
    if( broadcast ) {
       int bcast = 1;
       if( setsockopt( s, SOL_SOCKET, SO_BROADCAST, &bcast, sizeof( bcast ) ) == -1) {
@@ -1938,7 +1938,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    a_socket = GC_MALLOC( BGL_DATAGRAM_SOCKET_SIZE + sizeof( struct sockaddr_in ) );
    server = (struct sockaddr_in *)&(a_socket->datagram_socket_t.server);
    
-   /* Setup a connect address */
+   /* setup a connect address */
    memset( server, 0, sizeof( struct sockaddr_in ) );
    memcpy( (char *)&(server->sin_addr), hp->h_addr, hp->h_length );
    server->sin_family = AF_INET;
@@ -2083,18 +2083,18 @@ bgl_datagram_socket_close( obj_t sock ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void *                                                    */
-/*    get_in_addr ...                                                  */
+/*    static const char *                                              */
+/*    get_hostip ...                                                   */
 /*---------------------------------------------------------------------*/
-static void *
-get_in_addr( struct sockaddr *sa ) {
-   if( sa->sa_family == AF_INET ) {
-      return &(((struct sockaddr_in*)sa)->sin_addr);
-   } else {
-      return &(((struct sockaddr_in6*)sa)->sin6_addr);
-   }
+static const char *
+get_hostip( struct sockaddr *sa ) {
+   char s[ INET6_ADDRSTRLEN ];
+   
+   return inet_ntop( sa->sa_family,
+		     &(((struct sockaddr_in *)sa)->sin_addr),
+		     s, sizeof( s ) );
 }
-
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_datagram_socket_receive ...                                  */
@@ -2104,7 +2104,6 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
    struct sockaddr_storage their_addr;
    char buf[ sz ];
    socklen_t addr_len;
-   char s[ INET6_ADDRSTRLEN ];
    int n;
    int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
 
@@ -2128,10 +2127,9 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
       socket_error( "datagram-socket-receive", "cannot receive datagram", sock );
    } else {
       obj_t env = BGL_CURRENT_DYNAMIC_ENV();
-      const char *c = inet_ntop( their_addr.ss_family,
-				 get_in_addr( (struct sockaddr *)&their_addr ),
-				 s, sizeof( s ) );
-
+      struct sockaddr *sa = (struct sockaddr *)&their_addr;
+      const char *c = get_hostip( sa );
+      
       BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
       BGL_ENV_MVALUES_VAL_SET( env, 1, string_to_bstring( (char *)c ) );
       
