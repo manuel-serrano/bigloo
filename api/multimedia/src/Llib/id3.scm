@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed May 18 16:47:05 2011 (serrano)                */
+;*    Last change :  Fri May 27 11:44:51 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -946,33 +946,44 @@
 	   (=fx (mp3frame-layer f1) (mp3frame-layer f2))
 	   (=fx (mp3frame-crc f1) (mp3frame-crc f2))
 	   (=fx (mp3frame-samplerate f1) (mp3frame-samplerate f2))))
+
+   ;; skip the ID3 frame
+   (cond
+      ((id3v2.4? mm) (mp3-id3v2.4 mm))
+      ((id3v2.3? mm) (mp3-id3v2.3 mm))
+      ((id3v2.2? mm) (mp3-id3v2.2 mm))
+      ((id3v1.1? mm) (mp3-id3v1.1 mm))
+      ((id3v1? mm) (mp3-id3v1 mm)))
    
    (let* ((len (mmap-length mm))
-	  (f0 (read-mp3-frame mm 0 (instantiate::mp3frame)))
-	  (i0 (+elong (mp3frame-offset f0) (mp3frame-length f0))))
+	  (i0 (mmap-read-position mm))
+	  (f0 (read-mp3-frame mm i0 (instantiate::mp3frame))))
       (when (mp3frame? f0)
-	 (let loop ((i (+elong 1 i0))
-		    (f (instantiate::mp3frame))
-		    (c 0))
-	    (if (mp3frame? (read-mp3-frame mm i f))
-		(if (mp3frame-same-constant? f f0)
-		    (if (=fx c 15)
-			(loop (+elong (mp3frame-offset f) (mp3frame-length f))
-			   f
-			   (-fx c 1))
-			(let ((nbframes (/fx (-fx len i0) (mp3frame-length f0)))
-			      (seconds (/fx (-fx len i0)
-					  (*fx (mp3frame-bitrate f0) 125))))
-			   (mp3frame->musicinfo f0 seconds)))
-		    (let loop ((i i)
-			       (d (*fl (fixnum->flonum c)
-				     (mp3frame-duration f))))
-		       (if (mp3frame? (read-mp3-frame mm i f))
-			   (loop (+elong (mp3frame-offset f)
-				    (mp3frame-length f))
-			      (+fl d (mp3frame-duration f)))
-			   (mp3frame->musicinfo f0
-			      (flonum->fixnum (round d)))))))))))
+	 (let ((i0 (+elong (mp3frame-offset f0) (mp3frame-length f0))))
+	    (let loop ((i (+elong 1 i0))
+		       (f (instantiate::mp3frame))
+		       (c 0))
+	       (if (mp3frame? (read-mp3-frame mm i f))
+		   (if (mp3frame-same-constant? f f0)
+		       (if (=fx c 15)
+			   (loop (+elong
+				    (mp3frame-offset f) (mp3frame-length f))
+			      f
+			      (-fx c 1))
+			   (let ((nbframes (/fx (-fx len i0)
+					      (mp3frame-length f0)))
+				 (seconds (/fx (-fx len i0)
+					     (*fx (mp3frame-bitrate f0) 125))))
+			      (mp3frame->musicinfo f0 seconds)))
+		       (let loop ((i i)
+				  (d (*fl (fixnum->flonum c)
+					(mp3frame-duration f))))
+			  (if (mp3frame? (read-mp3-frame mm i f))
+			      (loop (+elong (mp3frame-offset f)
+				       (mp3frame-length f))
+				 (+fl d (mp3frame-duration f)))
+			      (mp3frame->musicinfo f0
+				 (flonum->fixnum (round d))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-musicinfo ...                                                */
