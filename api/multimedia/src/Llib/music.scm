@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Wed Mar 10 07:49:23 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Sun May 29 08:31:38 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -16,9 +16,8 @@
 
    (import __multimedia-music-event-loop)
    
-   (export (abstract-class music
+   (export (class music
 	      (music-init)
-
 	      (%mutex::mutex (default (make-mutex)))
 	      (%loop-mutex::mutex (default (make-mutex)))
 	      (%loop-condv::condvar (default (make-condition-variable)))
@@ -91,11 +90,12 @@
 
 (define-generic (music-closed? m::music))
 (define-generic (music-reset! m::music))
+
 (define-generic (music-playlist-get::pair-nil m::music))
 
 (define-generic (music-playlist-add! m::music s::bstring)
    (unless (utf8-string? s)
-      (error 'music-playlist-add! "Illegal UTF8 song name" s)))
+      (error "music-playlist-add!" "Illegal UTF8 song name" s)))
 
 (define-generic (music-playlist-delete! m::music n::int))
 (define-generic (music-playlist-clear! m::music))
@@ -114,7 +114,7 @@
 	 (if (>=fx song (-fx playlistlength 1))
 	     (raise
 	      (instantiate::&io-error
-		 (proc 'music-next)
+		 (proc "music-next")
 		 (msg "No next soung")
 		 (obj (musicstatus-song %status))))
 	     (music-play m (+fx song 1))))))
@@ -125,7 +125,7 @@
 	 (if (or (<fx song 0) (=fx playlistlength 0))
 	     (raise
 	      (instantiate::&io-error
-		 (proc 'music-prev)
+		 (proc "music-prev")
 		 (msg "No previous soung")
 		 (obj (musicstatus-song %status))))
 	     (music-play m (-fx song 1))))))

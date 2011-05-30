@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri May 13 08:55:49 2011 (serrano)                */
+;*    Last change :  Mon Mar 14 13:31:58 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -81,6 +81,12 @@
    `(let ( (**res** ,e) )
        (begin ,@l
 	      **res** )))
+
+(define-macro (foo_unwind-protect e1 e2)
+   (if #t
+       `(unwind-protect ,e1 ,e2)
+       `(let ( (____r ,e1) )
+	   (begin ,e2 ____r) )))
 
 (define-macro (step s bp size . l)
    (if #f
@@ -198,6 +204,7 @@
 	  s )) )
 
 (define (push-state s)
+   (print "PUSHSTATE")
    (let ( (stk (make-vector **size-stack** "")) )
       (vector-set! s 1 stk)
       (vector-set! s 0 2)
@@ -484,6 +491,7 @@
 			      (rec (cdr l) (+fx i 1)) ))
 			(EVC body) )))))))
 
+
 (define-method (comp e::ev_bind-exit stk);
    (with-access::ev_bind-exit e (var body)
       (let ( (size (length stk)) (nstk (append stk (cons var '()))) )
@@ -512,6 +520,79 @@
 		 (let ( (saved-bp bp) )
 		    (prog1 (with-handler h (EVC body))
 			   (vector-set! s 0 saved-bp) )))))))
+
+;;
+(define-struct label-tag)
+(define **a-label** (label-tag))
+
+(define-method (comp e::ev_labels stk);
+   (define (conv f)
+      (procedure-attr-set! f **a-label**)
+      f )
+   (with-access::ev_labels e (vars vals env body)
+      ;(print "compile labels stk=" (map uncompile stk))
+      (ev_labels-stk-set! e stk)
+      (let ( (env (map (lambda (v) (cons v 'notyet)) vars)) )
+	 (ev_labels-env-set! e env)
+	 (for-each (lambda (slot val)
+		      ;(print "compile " (uncompile (car slot)) " " (uncompile (cdr val)))
+		      (set-cdr! slot 
+				(conv (comp (cdr val) (append stk (car val)))) ))
+		   env
+		   vals ))
+      ;(print "compile body " (uncompile body))
+      (let ( (body (comp body stk)) )
+	 (EVA '(labels) ()
+	      (catch-goto-trampoline body s) ))))
+
+(define (catch-goto-trampoline f s)
+   ;(print "Start goto trampoline @" (vector-ref s 0))
+   (let rec ( (f f) )
+      ;(print "compute for " f)
+      (let ( (r (f s)) )
+	 ;(print "result " r " " (and (procedure? r) (label-tag? (procedure-attr r))))
+	 (if (and (procedure? r) (label-tag? (procedure-attr r)))
+	     (rec r)
+	     r ))))
+
+;;
+(define-method (comp e::ev_goto stk)
+   (with-access::ev_goto e (label labels args)
+      ;(print "compile goto stk" (map uncompile stk))
+      (let ( (slot (assq label (ev_labels-env labels))) (size (length stk)) (lstk (ev_labels-stk labels)) )
+	 ;(print "stk at labels " (map uncompile lstk))
+	 (let ( (llstk (length lstk)) (substk (sub-stk lstk stk)) (boxes (cdr (assq label (ev_labels-boxes labels)))) )
+	    ;(print "sub-stk " (map uncompile substk))
+	    (if (need-shift args substk)
+		(let ( (args (comp-with-push args stk)) (nbargs (length args)) )
+		   (EVA (goto shift) ()
+			(let ( (sp (+fx bp size)) (lsp (+fx bp llstk)) )
+			   (push-boxes-args-on-sp s args boxes sp)
+			   (vector-copy! s lsp s sp (+fx sp nbargs))
+			   (throw-goto-trampoline (cdr slot)) )))
+		(let ( (args (comp-in-place args stk (-fx size llstk))) )
+		   (EVA (goto direct) ()
+			(push-boxes-args-on-sp s args boxes (+fx bp llstk))
+			(throw-goto-trampoline (cdr slot)) )))))))
+
+(define (push-boxes-args-on-sp s args boxes sp)
+   (let rec ( (l args) (bs boxes) (sp sp) )
+      (unless (null? l)
+	 (vector-set! s sp
+		      (let ( (v (EVC (car l))) )
+			 (if (car bs)
+			     (mcell v)
+			     v )))
+	 (rec (cdr l) (cdr bs) (+fx sp 1)) )))
+
+(define (throw-goto-trampoline f)
+   f )
+
+(define (sub-stk l1 l2)
+   (cond ((null? l1) l2)
+	 ((not (eq? (car l1) (car l2)))
+	  (error 'eval 'internal 'impossible) )
+	 (else (sub-stk (cdr l1) (cdr l2))) ))
 
 ;;
 ;; Call
@@ -610,7 +691,7 @@
 				      (vector-copy! ns 2 s start (+fx start nbargs)) )
 				   (vector-set! ns 1 s)
 				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
-				   (unwind-protect (catch-trampoline run ns 2)
+				   (foo_unwind-protect (catch-trampoline run ns 2)
 						   ($evmeaning-evstate-set! (current-dynamic-env) s) )))))))))))
 
 (define (need-shift args stk)
@@ -712,7 +793,7 @@
 				      (vector-copy! ns 2 s start (+fx start ,nbargs)) )
 				   (vector-set! ns 1 s)
 				   ($evmeaning-evstate-set! (current-dynamic-env) ns)
-				   (unwind-protect (catch-trampoline run ns 2)
+				   (foo_unwind-protect (catch-trampoline run ns 2)
 						   ($evmeaning-evstate-set! (current-dynamic-env) s) )))))))))))
 
 (define-macro (generate-comp-calli from to)
@@ -873,7 +954,7 @@
 									,extra
 									loc))) )
 					       (step s bp size '(entry main cont2))
-					       (unwind-protect (catch-trampoline run s bp)
+					       (foo_unwind-protect (catch-trampoline run s bp)
 							       (vector-set! s 0 bp) ))
 					    (let ( (ns (make-state)) )
 					       (vector-set! ns 1 s)
@@ -888,7 +969,7 @@
 									,extra
 									loc))) )
 					       ($evmeaning-evstate-set! (current-dynamic-env) ns)
-					       (unwind-protect (catch-trampoline run ns 2)
+					       (foo_unwind-protect (catch-trampoline run ns 2)
 							       ($evmeaning-evstate-set! (current-dynamic-env) s) ))))))) )
 					       
 		     (procedure-attr-set! run **a-bounce**)

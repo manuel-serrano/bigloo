@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Fri Feb 18 15:09:01 2011 (serrano)                */
+;*    Last change :  Mon May 30 13:48:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -57,9 +57,11 @@
 	    __everror
 	    __evmodule
 	    
+	    __evaluate_uncomp
 	    __evaluate_types)
 
-   (export  (frame-size::int ::ev_expr)))
+   (export  (frame-size::int ::ev_expr)
+	    (extract-loops::ev_expr ::ev_expr)))
 
 (define (frame-size::int e::ev_expr);
    (fsize e 0) )
@@ -127,6 +129,20 @@
 	    (if (null? l)
 		(max (fsize body n) r)
 		(rec (cdr l) (max (fsize (car l) n) r)) )))))
+	 
+(define-method (fsize::int e::ev_labels n);
+   (with-access::ev_labels e (vars vals body)
+      (let rec ( (l vals) (r n) )
+	 (if (null? l)
+	     (max (fsize body n) r)
+	     (rec (cdr l) (max (fsize (cdar l) (+fx n (length (caar l)))) r)) ))))
+	 
+(define-method (fsize::int e::ev_goto n);
+   (with-access::ev_goto e (args)
+      (let rec ( (l args) (n n) (r n) )
+	 (if (null? l)
+	     (max n r)
+	     (rec (cdr l) (+fx n 1) (max (fsize (car l) n) r)) ))))
 
 (define-method (fsize::int e::ev_app n::int);
    (with-access::ev_app e (fun args)
@@ -142,4 +158,367 @@
 	 n )))
 
 
+
+;;;
+(define (extract-loops::ev_expr e::ev_expr)
+   (if #f
+       (search-letrec e)
+       e ))
+
+(define (search-letrec* l)
+   (let rec ( (l l) )
+      (unless (null? l)
+	 (set-car! l (search-letrec (car l)))
+	 (rec (cdr l)) )))
+
+(define-generic (search-letrec e::ev_expr)
+   (error 'search-letrec "not defined for" e) )
+
+(define-method (search-letrec e::ev_var);
+   e )
+
+(define-method (search-letrec e::ev_global);
+   e )
+
+(define-method (search-letrec e::ev_litt);
+   e )
+
+(define-method (search-letrec expr::ev_if);
+   (with-access::ev_if expr (p t e)
+      (set! p (search-letrec p))
+      (set! t (search-letrec t))
+      (set! e (search-letrec e))
+      expr ))
+
+(define-method (search-letrec e::ev_list);
+   (with-access::ev_list e (args)
+      (search-letrec* args)
+      e ))
+
+(define-method (search-letrec e::ev_prog2);
+   (with-access::ev_prog2 e (e1 e2)
+      (set! e1 (search-letrec e1))
+      (set! e2 (search-letrec e2))
+      e ))
+
+(define-method (search-letrec expr::ev_hook);
+   (with-access::ev_trap expr (e)
+      (set! e (search-letrec e))
+      expr ))
+      
+(define-method (search-letrec e::ev_bind-exit);
+   (with-access::ev_bind-exit e (var body)
+      (set! body (search-letrec body))
+      e ))
+      
+(define-method (search-letrec expr::ev_unwind-protect);
+   (with-access::ev_unwind-protect expr (e body)
+      (set! e (search-letrec e))
+      (set! body (search-letrec body))
+      expr ))
+
+(define-method (search-letrec e::ev_with-handler);
+   (with-access::ev_with-handler e (handler body)
+      (set! handler (search-letrec handler))
+      (set! body (search-letrec body))
+      e ))
+
+(define-method (search-letrec e::ev_binder);
+   (with-access::ev_binder e (vars vals body)
+      (search-letrec* vals)
+      (set! body (search-letrec body))
+      e ))
+
+(define-method (search-letrec e::ev_letrec);
+   (with-access::ev_letrec e (vars vals body)
+      (search-letrec* vals)
+      (set! body (search-letrec body))
+      (let ( (ok? (letrectail? vars vals body)) )
+	 ;;(tprint "FOUND LETREC " ok?)
+	 ;(pp (uncompile e))
+	 (if ok?
+	  (modify-letrec vars vals body)
+	  e ))))
+
+(define-method (search-letrec e::ev_app);
+   (with-access::ev_app e (fun args)
+      (set! fun (search-letrec fun))
+      (search-letrec* args)
+      e ))
+
+(define-method (search-letrec e::ev_abs);
+   (with-access::ev_abs e (arity vars body)
+      (set! body (search-letrec body))
+      e ))
+
+
+;;;
+
+(define (modify-letrec vars vals body)
+   (let ( (r (instantiate::ev_labels (vars vars) (vals '())
+				     (body (instantiate::ev_litt (value 0))) )) )
+      (ev_labels-body-set! r (subst_goto body vars r))
+      (ev_labels-vals-set! r
+			   (map (lambda (val)
+				   (cons (ev_abs-vars val)
+					 (subst_goto (ev_abs-body val) vars r) ))
+				vals ))
+      r ))
+ 
+(define (letrectail? vars vals body)
+   (every? (lambda (v)
+	      (and (tailpos body v)
+		   (every? (lambda (e) (and (ev_abs? e)
+					    (>=fx (ev_abs-arity e) 0)
+					    (tailpos (ev_abs-body e) v) ))
+			   vals )))
+	   vars ))
+
+
+;;
+(define (subst_goto* l vars lbls)
+   (let rec ( (l l) )
+      (unless (null? l)
+	 (set-car! l (subst_goto (car l) vars lbls))
+	 (rec (cdr l)) )))
+
+(define-generic (subst_goto e::ev_expr vars lbls)
+   (error 'subst_goto "not defined for" e) )
+
+(define-method (subst_goto e::ev_var vars lbls);
+   e )
+
+(define-method (subst_goto e::ev_global vars lbls);
+   e )
+
+(define-method (subst_goto e::ev_litt vars lbls);
+   e )
+
+(define-method (subst_goto expr::ev_if vars lbls);
+   (with-access::ev_if expr (p t e)
+      (set! p (subst_goto p vars lbls))
+      (set! t (subst_goto t vars lbls))
+      (set! e (subst_goto e vars lbls))
+      expr ))
+
+(define-method (subst_goto e::ev_list vars lbls);
+   (with-access::ev_list e (args)
+      (subst_goto* args vars lbls)
+      e ))
+
+(define-method (subst_goto e::ev_prog2 vars lbls);
+   (with-access::ev_prog2 e (e1 e2)
+      (set! e1 (subst_goto e1 vars lbls))
+      (set! e2 (subst_goto e2 vars lbls))
+      e ))
+
+(define-method (subst_goto expr::ev_hook vars lbls);
+   (with-access::ev_trap expr (e)
+      (set! e (subst_goto e vars lbls))
+      expr ))
+      
+(define-method (subst_goto e::ev_bind-exit vars lbls);
+   (with-access::ev_bind-exit e (var body)
+      (set! body (subst_goto body vars lbls))
+      e ))
+      
+(define-method (subst_goto expr::ev_unwind-protect vars lbls);
+   (with-access::ev_unwind-protect expr (e body)
+      (set! e (subst_goto e vars lbls))
+      (set! body (subst_goto body vars lbls))
+      expr ))
+
+(define-method (subst_goto e::ev_with-handler vars lbls);
+   (with-access::ev_with-handler e (handler body)
+      (set! handler (subst_goto handler vars lbls))
+      (set! body (subst_goto body vars lbls))
+      e ))
+
+(define-method (subst_goto e::ev_binder vars lbls);
+   (with-access::ev_binder e (vals body)
+      (subst_goto* vals vars lbls)
+      (set! body (subst_goto body vars lbls))
+      e ))
+
+(define-method (subst_goto e::ev_labels vars lbls);
+   (with-access::ev_labels e (vals body)
+      (let rec ( (l vals) )
+	 (unless (null? l)
+	    (set-cdr! (car l) (subst_goto (cdar l) vars lbls))
+	    (rec (cdr l)) ))
+      (set! body (subst_goto body vars lbls))
+      e ))
+
+(define-method (subst_goto e::ev_goto vars lbls);
+   (with-access::ev_goto e (args)
+      (subst_goto* args vars lbls)
+      e ))
+
+(define-method (subst_goto e::ev_app vars lbls);
+   (with-access::ev_app e (fun args)
+      (subst_goto* args vars lbls)
+      (if (memq fun vars)
+	  (instantiate::ev_goto (label fun) (args args) (labels lbls))
+	  (begin (set! fun (subst_goto fun vars lbls))
+		 e ))))
+
+(define-method (subst_goto e::ev_abs vars lbls);
+   (with-access::ev_abs e (arity body)
+      (set! body (subst_goto body vars lbls))
+      e ))
+
+
+;;; (TAILPOS e x) x must appear only in functional position (x ...) in
+;; a direct tail position (not closed under a lambda)
+
+(define-generic (tailpos e::ev_expr v::ev_var)
+   (error 'tailpos "not defined for" e) )
+
+(define-method (tailpos e::ev_var v::ev_var);
+   (not (eq? e v)) )
+
+(define-method (tailpos e::ev_global v::ev_var);
+   #t )
+
+(define-method (tailpos e::ev_litt v::ev_var);
+   #t )
+
+(define-method (tailpos e::ev_if v::ev_var);
+   (with-access::ev_if e (p t e)
+      (and (not (hasvar? p v)) (tailpos t v) (tailpos e v)) ))
+
+(define-method (tailpos e::ev_list v::ev_var);
+   (with-access::ev_list e (args)
+      (let rec ( (l args) )
+	 (if (null? (cdr l))
+	     (tailpos (car l) v)
+	     (and (not (hasvar? (car l) v))
+		  (rec (cdr l)) )))))
+
+(define-method (tailpos e::ev_prog2 v::ev_var);
+   (with-access::ev_prog2 e (e1 e2)
+      (and (not (hasvar? e1 v)) (tailpos e2 v)) ))
+
+(define-method (tailpos e::ev_hook v::ev_var);
+   (with-access::ev_trap e (e)
+      (not (hasvar? e v)) ))
+
+(define-method (tailpos e::ev_setlocal var::ev_var);
+   (with-access::ev_setlocal e (v e)
+      (and (not (eq? v var)) (not (hasvar? e var))) ))
+      
+(define-method (tailpos e::ev_bind-exit v::ev_var);
+   (with-access::ev_bind-exit e (var body)
+      (not (hasvar? body v)) ))
+      
+(define-method (tailpos e::ev_unwind-protect v::ev_var);
+   (with-access::ev_unwind-protect e (e body)
+      (and (not (hasvar? e v)) (not (hasvar? body v))) ))
+      
+(define-method (tailpos e::ev_with-handler v::ev_var);
+   (with-access::ev_with-handler e (handler body)
+      (and (not (hasvar? handler v)) (not (hasvar? body v))) ))
+
+(define-method (tailpos e::ev_let v::ev_var);
+   (with-access::ev_let e (vars vals body)
+      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+	   (tailpos body v) )))
+
+(define-method (tailpos e::ev_let* v::ev_var);
+   (with-access::ev_let* e (vars vals body)
+      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+	   (tailpos body v) )))
+
+(define-method (tailpos e::ev_letrec v::ev_var);
+   (with-access::ev_letrec e (vars vals body)
+      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+	   (tailpos body v) )))
+
+(define-method (tailpos e::ev_labels v::ev_var);
+   (with-access::ev_labels e (vals body)
+      (and (every? (lambda (e) (tailpos (cdr e) v)) vals)
+	   (tailpos body v) )))
+
+(define-method (tailpos e::ev_goto v::ev_var);
+   (with-access::ev_goto e (args)
+      (every? (lambda (e) (not (hasvar? e v))) args) ))
+
+(define-method (tailpos e::ev_app v::ev_var);
+   (with-access::ev_app e (fun args)
+      (and (every? (lambda (e) (not (hasvar? e v))) args)
+	   (or (eq? fun v)
+	       (not (hasvar? fun v)) ))))
+
+(define-method (tailpos e::ev_abs v::ev_var);
+   (with-access::ev_abs e (arity vars body)
+      (not (hasvar? body v)) ))
+
+;;; (hasvar? e x) return true iff x appear as a subexpression of e
+
+(define-generic (hasvar? e::ev_expr v::ev_var))
+
+(define-method (hasvar? e::ev_var v::ev_var);
+   (eq? e v) )
+
+(define-method (hasvar? e::ev_global v::ev_var);
+   #f )
+
+(define-method (hasvar? e::ev_litt v::ev_var);
+   #f )
+
+(define-method (hasvar? e::ev_if v::ev_var);
+   (with-access::ev_if e (p t e)
+      (or (hasvar? p v) (hasvar? t v) (hasvar? e v)) ))
+
+(define-method (hasvar? e::ev_list v::ev_var);
+   (with-access::ev_list e (args)
+      (any? (lambda (a) (hasvar? a v)) args) ))
+
+(define-method (hasvar? e::ev_prog2 v::ev_var);
+   (with-access::ev_prog2 e (e1 e2)
+      (or (hasvar? e1 v) (hasvar? e2 v)) ))
+
+(define-method (hasvar? e::ev_hook v::ev_var);
+   (with-access::ev_trap e (e)
+      (hasvar? e v) ))
+
+(define-method (hasvar? e::ev_setlocal var::ev_var);
+   (with-access::ev_setlocal e (v e)
+      (or (eq? v var) (hasvar? e var)) ))
+      
+(define-method (hasvar? e::ev_bind-exit v::ev_var);
+   (with-access::ev_bind-exit e (var body)
+      (hasvar? body v) ))
+      
+(define-method (hasvar? e::ev_unwind-protect v::ev_var);
+   (with-access::ev_unwind-protect e (e body)
+      (or (hasvar? e v) (hasvar? body v)) ))
+      
+(define-method (hasvar? e::ev_with-handler v::ev_var);
+   (with-access::ev_with-handler e (handler body)
+      (or (hasvar? handler v) (hasvar? body v)) ))
+
+(define-method (hasvar? e::ev_binder v::ev_var);
+   (with-access::ev_binder e (vals body)
+      (or (any? (lambda (e) (hasvar? e v)) vals)
+	  (hasvar? body v) )))
+
+(define-method (hasvar? e::ev_labels v::ev_var);
+   (with-access::ev_labels e (vals body)
+      (or (any? (lambda (e) (hasvar? (cdr e) v)) vals)
+	  (hasvar? body v) )))
+
+(define-method (hasvar? e::ev_goto v::ev_var);
+   (with-access::ev_goto e (args)
+      (any? (lambda (e) (hasvar? e v)) args) ))
+
+(define-method (hasvar? e::ev_app v::ev_var);
+   (with-access::ev_app e (fun args)
+      (or (hasvar? fun v) (any? (lambda (e) (hasvar? e v)) args)) ))
+
+(define-method (hasvar? e::ev_abs v::ev_var);
+   (with-access::ev_abs e (vars body)
+      (hasvar? body v) ))
+
+;;;
 

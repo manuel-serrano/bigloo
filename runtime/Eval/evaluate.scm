@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu May 12 15:54:30 2011 (serrano)                */
+;*    Last change :  Wed Mar  9 18:00:10 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -98,7 +98,7 @@
 	   (if (evmodule? env)
 	       (evmodule-name env)
 	       "???"))
-   (let ( (ast (convert sexp env loc)) )
+   (let ( (ast (extract-loops (convert sexp env loc))) )
       (when (> (bigloo-debug) 10) (pp (uncompile ast)))
       (analyse-vars ast)
       (let ( (n (frame-size ast)) )

@@ -133,6 +133,17 @@
    (with-access::ev_letrec e (vars vals body)
       `(letrec ,(map (lambda (v a) `(,(uncomp v) ,(uncomp a))) vars vals) ,(uncomp body)) ))
 
+(define-method (uncomp e::ev_labels);
+   (with-access::ev_labels e (vars vals body)
+      `(letrec ,(map (lambda (v a) `(,(uncomp v) (lambda ,(map uncomp (car a))
+						    ,(uncomp (cdr a)) )))
+		     vars vals )
+	  ,(uncomp body)) ))
+
+(define-method (uncomp e::ev_goto);
+   (with-access::ev_goto e (label args)
+      `(,(uncomp label) ,@(map uncomp args)) ))
+
 (define-method (uncomp e::ev_app);
    (with-access::ev_app e (fun args)
       `(,(uncomp fun) ,@(map uncomp args)) ))

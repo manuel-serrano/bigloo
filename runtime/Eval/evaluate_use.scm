@@ -114,6 +114,21 @@
    (with-access::ev_binder e (vals body)
       (use body (use* vals done)) ))
 
+(define-method (use e::ev_binder done);
+   (with-access::ev_binder e (vals body)
+      (use body (use* vals done)) ))
+
+(define-method (use e::ev_labels done);
+   (with-access::ev_labels e (vals body)
+      (let rec ( (l vals) (done done) )
+	 (if (null? l)
+	     (use body done)
+	     (rec (cdr l) (use (cadr l) done)) ))))
+
+(define-method (use e::ev_goto done);
+   (with-access::ev_goto e (args)
+      (use* args done) ))
+
 (define-method (use e::ev_app done);
    (with-access::ev_app e (fun args)
       (use fun (use* args done)) ))

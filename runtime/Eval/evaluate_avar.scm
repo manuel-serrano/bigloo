@@ -193,6 +193,22 @@
 	 (avar body local abs)
 	 (ev_abs-bind-set! abs (append vars (ev_abs-bind abs)))
 	 (for-each (lambda (v) (ev_var-eff-set! v #t)) vars) )))
+	 
+(define-method (avar e::ev_labels local abs);
+   (with-access::ev_labels e (vars vals body)
+      (let ( (local (append vars local)) )
+	 (for-each
+	  (lambda (s)
+	     (avar (cdr s) (append (car s) local) abs)
+	     (bind-and-reset-effect abs (car s)) )
+	  vals )
+	 (ev_labels-boxes-set! e
+			       (map (lambda (var s) (cons var (map ev_var-eff (car s)))) vars vals) )
+	 (avar body local abs) )))
+	 
+(define-method (avar e::ev_goto local abs);
+   (with-access::ev_goto e (args)
+      (for-each (lambda (e) (avar e local abs)) args) ))
 
 (define-method (avar e::ev_app local abs);
    (with-access::ev_app e (fun args)

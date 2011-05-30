@@ -98,6 +98,18 @@
 	   (class ev_let*::ev_binder
 	      (boxes (default '())))
 	   (class ev_letrec::ev_binder)
+	   (class ev_labels::ev_expr
+	      vars
+	      vals ; cons (list var) expr
+	      (env (default '())) ; list (cons var code)
+	      (stk (default '()))
+	      body::ev_expr
+	      (boxes (default '()))
+	      )
+	   (class ev_goto::ev_expr
+	      label::ev_var
+	      labels::ev_labels
+	      args )
 	   (class ev_app::ev_expr
 	      (loc read-only)
 	      fun::ev_expr args tail?)
