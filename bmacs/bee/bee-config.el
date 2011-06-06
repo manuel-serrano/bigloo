@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Mon May  9 09:00:48 2011 (serrano)                */
+;*    Last change :  Mon May 30 14:28:47 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -127,7 +127,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
 		 "\\|define-service\\|define-parameter\\|define-preferences"
-		 "\\|define-markup"
+		 "\\|define-tag"
 		 "\\|define-command\\)[ ]+\\(\(.*\)\\|[^ \n]+\\)\\)[ \n]")
 	 1
 	 'font-lock-function-name-face)
