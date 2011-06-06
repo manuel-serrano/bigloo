@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Mar 29 20:08:56 2011 (serrano)                */
+#*    Last change :  Mon Jun  6 11:08:42 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -172,8 +172,8 @@ boot: checkgmake
 	  $(MAKE) -C runtime .afile && \
 	  $(MAKE) -C runtime heap && \
 	  $(MAKE) -C runtime boot && \
-	  $(MAKE) -C comptime && \
-	  $(MAKE) -C comptime boot; \
+	  $(MAKE) -C comptime bigloo && \
+	  $(MAKE) -C comptime doboot; \
 	else \
 	  $(MAKE) -C runtime boot && \
 	  $(MAKE) -C comptime boot && \
