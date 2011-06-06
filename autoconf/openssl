@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Feb 18 18:09:15 2011 (serrano)                */
+#*    Last change :  Mon Jun  6 15:25:47 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -77,6 +77,7 @@ main( int argc, char *argv[] ) {
     SSL_load_error_strings();
 
     ctx = SSL_CTX_new( SSLv23_client_method() );
+    ctx = SSL_CTX_new( SSLv2_client_method() );
  
     sbio = BIO_new_socket( 0, BIO_NOCLOSE );
     BIO_free( sbio );
