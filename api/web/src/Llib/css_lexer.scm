@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Sun Dec 12 11:18:22 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Tue Jun  7 09:42:53 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/
@@ -232,7 +232,7 @@
 	      c
 	      (let ((e (extension c (the-port))))
 		 (cond
-		    ((eq? e #unspecified)
+		    ((or (not e) (eq? e #unspecified))
 		     (ignore))
 		    ((string? e)
 		     (return 'EXTENSION e))
