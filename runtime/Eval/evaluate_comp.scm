@@ -603,6 +603,15 @@
 (define-inline (throw-trampoline f);
    f )
 
+;(define-macro (throw-trampoline f);
+;   `(,f s) )
+
+;(define-inline (catch-trampoline f s bp)
+;   (let ( (saved-bp (vector-ref s 0)) )
+;      (vector-set! s 0 bp)
+;      (prog1 (f s)
+;	     (vector-set! s 0 saved-bp) )))
+
 (define (catch-trampoline f s bp)
    (let ( (saved-bp (vector-ref s 0)) )
       (vector-set! s 0 bp)
@@ -859,8 +868,8 @@
 			    (inline ((pair pair? car cdr) (pair cadr? cadr)) loc val (a1) stk) ))
 		      (when (=fx n 2)
 			 (let ( (a1 (car args)) (a2 (cadr args)) )
-			    (inline ((number number? + - * / < > <= >= =
-					     +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
+			    (inline ((number number? + - * / < > <= >= =)
+				     (fixnum fixnum? +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
 				     (#f #f eq? cons)) loc val (a1 a2) stk ))))))))))
 
 (define (cadr? l)
@@ -923,7 +932,7 @@
       `(EVA '(lambda ,arity) ("nbfree " (vector-length ifrees))
 	    (prof (list 'closing (vector-length ifrees)))
 	    (let ( ,@(if hasfree `((val* (free-collect s bp ifrees))) '()) )
-	       (let ( (run (EVA '(entry) ("param" (map lname vars)
+	       (let ( (run (EVA (list 'entry (vector-length ifree)) ("param" (map lname vars)
 				         "stk " (map lname nstk)
 					 "nbbox " iboxes
 					 "nbfree " ifrees)
@@ -1007,7 +1016,9 @@
 	     (size-frame (+fx size (length free)))
 	     (nstk (append vars free)) )
 	 (let ( (body (comp body nstk)) )
-	    (generate-case-arity (a b c d)) ))))
+	    ; (generate-case-arity ())
+	    (generate-case-arity (a b c d))
+	    ))))
 
 (define (make-boxes s ib* bp)
    (let ( (n (vector-length ib*)) )
@@ -1032,6 +1043,7 @@
 	 (when (<fx sp stop)
 	    (vector-set! s sp (vector-ref val* i))
 	    (rec (+fx i 1) (+fx sp 1)) ))))
+
 
 
 

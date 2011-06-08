@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Feb 18 15:05:15 2011 (serrano)                */
+;*    Last change :  Tue Jun  7 20:25:33 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -861,23 +861,23 @@
 	   ((155)
 	    (%inline2 = code stack denv number))
 	   ((166)
-	    (%inline2 +fx code stack denv number))
+	    (%inline2 +fx code stack denv fixnum))
 	   ((167)
-	    (%inline2 -fx code stack denv number))
+	    (%inline2 -fx code stack denv fixnum))
 	   ((168)
-	    (%inline2 *fx code stack denv number))
+	    (%inline2 *fx code stack denv fixnum))
 	   ((169)
-	    (%inline2 /fx code stack denv number))
+	    (%inline2 /fx code stack denv fixnum))
 	   ((170)
-	    (%inline2 <fx code stack denv number))
+	    (%inline2 <fx code stack denv fixnum))
 	   ((171)
-	    (%inline2 >fx code stack denv number))
+	    (%inline2 >fx code stack denv fixnum))
 	   ((172)
-	    (%inline2 <=fx code stack denv number))
+	    (%inline2 <=fx code stack denv fixnum))
 	   ((173)
-	    (%inline2 >=fx code stack denv number))
+	    (%inline2 >=fx code stack denv fixnum))
 	   ((174)
-	    (%inline2 =fx code stack denv number))
+	    (%inline2 =fx code stack denv fixnum))
 	   ((156)
 	    (%inline2 eq? code stack denv))
 	   ((157)

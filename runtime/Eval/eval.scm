@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Tue Apr 12 09:16:02 2011 (serrano)                */
+;*    Last change :  Wed Jun  8 10:08:12 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -490,15 +490,16 @@
 		      (cond
 			 ((eof-object? sexp)
 			  (close-input-port port)
-			  (when (symbol? mainsym)
-			     (let ((iexp (econs mainsym
-					    (list '(command-line))
-					    loc)))
-				(eval! iexp env)))
-			  (when (and (not (eq? mod env)) (evmodule? env))
-			     (evmodule-check-unbound env #f))
-			  ($env-pop-trace denv)
-			  path)
+			  (let ((v (if (symbol? mainsym)
+				       (let ((iexp (econs mainsym
+						      (list '(command-line))
+						      loc)))
+					  (eval! iexp env))
+				       0)))
+			     (when (and (not (eq? mod env)) (evmodule? env))
+				(evmodule-check-unbound env #f))
+			     ($env-pop-trace denv)
+			     v))
 			 (else
 			  (when (epair? sexp)
 			     ($env-set-trace-location denv (cer sexp)))
