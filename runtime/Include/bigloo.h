@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 29 17:05:35 2011 (serrano)                */
+/*    Last change :  Thu Jun  9 10:08:42 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1837,6 +1837,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_IOFBF 2 /* fully buffered */
 #define BGL_IOEBF 3 /* extensibe buffered */
 
+#define BGL_DISPLAY_STRING( o, op ) \
+   bgl_write( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) )
+
+#define BGL_DISPLAY_SUBSTRING( o, start, end, op ) \
+   bgl_write( op, &STRING_REF( o, start ), end - start )
+
 /*---------------------------------------------------------------------*/
 /*    Les OUTPUT_STRING_PORTs                                          */
 /*---------------------------------------------------------------------*/
@@ -2961,6 +2967,7 @@ BGL_RUNTIME_DECL obj_t bgl_display_symbol( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_display_fixnum( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_display_char( char, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_output_flush( obj_t, char *, size_t );
+BGL_RUNTIME_DECL obj_t bgl_write( obj_t, unsigned char *, size_t );
    
 BGL_RUNTIME_DECL obj_t bgl_make_date();
    

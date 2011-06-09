@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu May  5 10:22:59 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 10:05:00 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -82,10 +82,10 @@
 				"bgl_display_ucs2")
 	    ($write-string::obj (::bstring ::bool ::output-port)
 				"bgl_write_string")
-	    ($display-string::obj (::bstring ::output-port)
-				  "bgl_display_string")
-	    ($display-substring::obj (::bstring ::long ::long ::output-port)
-				  "bgl_display_substring")
+	    (macro $display-string::obj (::bstring ::output-port)
+		   "BGL_DISPLAY_STRING")
+	    (macro $display-substring::obj (::bstring ::long ::long ::output-port)
+		   "BGL_DISPLAY_SUBSTRING")
 	    ($display-fixnum::obj (::bint ::output-port)
 				  "bgl_display_fixnum")
 	    ($write-elong::obj (::elong ::output-port)

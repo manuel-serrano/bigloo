@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Fri Apr 29 17:02:02 2011 (serrano)                */
+/*    Last change :  Thu Jun  9 10:07:24 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -145,8 +145,6 @@ bgl_write_string( obj_t o, bool_t esc, obj_t op ) {
 BGL_RUNTIME_DEF
 obj_t
 bgl_display_fixnum( obj_t o, obj_t op ) {
-   void *ostream = PORT_STREAM( op );
-   
    PRINTF1( op, 32, "%ld", CINT( o ) );
    
    return op;
@@ -237,7 +235,6 @@ bgl_display_char( char c, obj_t op ) {
 obj_t
 bgl_write_char( obj_t o, obj_t op ) {
    int c = CCHAR( o );
-   void *ostream = PORT_STREAM( op );
    
    if( (c > 0) && (c < 128) && char_name[ c ][ 0 ] ) {
       unsigned char *name = char_name[ c ];
@@ -261,8 +258,6 @@ bgl_write_char( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_ucs2( obj_t o, obj_t op ) {
-   void *ostream = PORT_STREAM( op );
-   
    PRINTF1( op, 7, "#u%04x", CUCS2( o ) );
    
    return op;
