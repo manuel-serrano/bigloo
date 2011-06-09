@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat May 21 07:39:45 2011 (serrano)                */
+/*    Last change :  Thu Jun  9 10:45:54 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -629,10 +629,10 @@ bgl_write( obj_t op, unsigned char *str, size_t sz ) {
       if( OUTPUT_PORT( op ).bufmode == BGL_IOLBF ) {
 	 while( sz-- > 0 ) {
 	    char c = *str++;
-	    
+
 	    *OUTPUT_PORT( op ).ptr++ = c;
 	    OUTPUT_PORT( op ).cnt--;
-	    
+
 	    if( c == '\n' ) bgl_output_flush( op, 0, 0 );
 	 }
       } else {
@@ -1539,13 +1539,27 @@ bgl_init_io() {
    default_io_bufsiz = BUFSIZ * _SBFSIZ;
 
    stdout_mutex = bgl_make_mutex( stdout_mutex_name );
-   _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
-				   (void *)_FILENO( stdout ),
-				   KINDOF_CONSOLE,
-				   make_string_sans_fill( 512 ),
-				   (size_t (*)())_WRITE,
-				   (long (*)())_LSEEK,
-				   _CLOSE );
+
+   if( isatty( _FILENO( stdout ) ) ) {
+      _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
+				      (void *)_FILENO( stdout ),
+				      KINDOF_CONSOLE,
+				      make_string_sans_fill( 512 ),
+				      (size_t (*)())_WRITE,
+				      (long (*)())_LSEEK,
+				      _CLOSE );
+      /* in order for the flush to work (with concurrent reads) */
+      /* bufmode must never be BGL_IOEBF.                       */
+      OUTPUT_PORT( _stdout ).bufmode = BGL_IOLBF;
+   } else {
+      _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
+				      (void *)_FILENO( stdout ),
+				      KINDOF_FILE,
+				      make_string_sans_fill( 8192 ),
+				      (size_t (*)())_WRITE,
+				      (long (*)())_LSEEK,
+				      _CLOSE );
+   }
    _stderr = bgl_make_output_port( string_to_bstring( "stderr" ),
 				   (void *)_FILENO( stderr ),
 				   KINDOF_CONSOLE,
@@ -1558,10 +1572,6 @@ bgl_init_io() {
 				 KINDOF_CONSOLE,
 				 make_string_sans_fill( default_io_bufsiz ) );
 
-   /* in order for the flush to work (with concurrent reads) */
-   /* bufmode must never be BGL_IOEBF.                       */
-   OUTPUT_PORT( _stdout ).bufmode = BGL_IOLBF;
-   
    BGL_ENV_CURRENT_OUTPUT_PORT_SET( denv, _stdout );
    BGL_ENV_CURRENT_ERROR_PORT_SET( denv, _stderr );
    BGL_ENV_CURRENT_INPUT_PORT_SET( denv, _stdin );
