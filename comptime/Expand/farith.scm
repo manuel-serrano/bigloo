@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 16:05:55 1995                          */
-;*    Last change :  Mon Mar 21 08:39:21 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 06:49:37 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The flonum expanders.                                            */
@@ -17,7 +17,11 @@
 	   ast_ident)
    (export (expand-fmax  ::obj ::procedure)
 	   (expand-fmin  ::obj ::procedure)
-	   (expand-fatan ::obj ::procedure)))
+	   (expand-fatan ::obj ::procedure)
+	   (expand-+fl ::obj ::procedure)
+	   (expand--fl ::obj ::procedure)
+	   (expand-*fl ::obj ::procedure)
+	   (expand-/fl ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-fmax ...                                                  */
@@ -68,5 +72,59 @@
 	   (e `(atan-2fl ,x ,y) e)))
       (else
        (error '() "Too many arguments provided" x))))
-      
 
+;*---------------------------------------------------------------------*/
+;*    expand-+fl ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (expand-+fl x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (flonum? x) (flonum? y))
+	   (+fl x y))
+	  (else
+	   `(+fl ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `+fl'" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand---fl ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand--fl x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (flonum? x) (flonum? y))
+	   (-fl x y))
+	  (else
+	   `(-fl ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `-fl'" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand--*fl ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-*fl x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (flonum? x) (flonum? y))
+	   (*fl x y))
+	  (else
+	   `(*fl ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `*fl'" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand--/fl ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-/fl x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (flonum? x) (flonum? y) (not (=fl y 0.)))
+	   (/fl x y))
+	  (else
+	   `(/fl ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `/fl'" x))))

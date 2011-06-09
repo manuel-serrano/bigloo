@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Sat Nov 27 07:16:37 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  9 06:49:39 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -25,6 +25,8 @@
 	   (expand-i>= ::obj ::procedure)
 	   (expand-+fx ::obj ::procedure)
 	   (expand--fx ::obj ::procedure)
+	   (expand-*fx ::obj ::procedure)
+	   (expand-/fx ::obj ::procedure)
 	   (expand-maxfx ::obj ::procedure)
 	   (expand-minfx ::obj ::procedure))
    (import tools_error))
@@ -234,6 +236,34 @@
 	   `(-fx ,(e x e) ,(e y e)))))
       (else
        (error #f "Incorrect number of arguments for `-fx'" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand--*fx ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-*fx x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (fixnum? x) (fixnum? y))
+	   (*fx x y))
+	  (else
+	   `(*fx ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `*fx'" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand--/fx ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-/fx x e)
+   (match-case x
+      ((?- ?x . (?y . ()))
+       (cond
+	  ((and (fixnum? x) (fixnum? y) (not (=fx y 0)))
+	   (/fx x y))
+	  (else
+	   `(/fx ,(e x e) ,(e y e)))))
+      (else
+       (error #f "Incorrect number of arguments for `/fx'" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-maxfx ...                                                 */

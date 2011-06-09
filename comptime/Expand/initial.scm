@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun May  1 17:38:55 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 06:57:53 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -396,25 +396,21 @@
    ;; eq?
    (install-O-comptime-expander 'eq? expand-eq?)
    
-   ;; +fx
+   ;; fx
    (install-O-comptime-expander '+fx expand-+fx)
-   
-   ;; -fx
    (install-O-comptime-expander '-fx expand--fx)
-   
-   ;; maxfx
+;*    (install-O-comptime-expander '*fx expand-*fx)                    */
+;*    (install-O-comptime-expander '/fx expand-/fx)                    */
    (install-O-comptime-expander 'maxfx expand-maxfx)
-   
-   ;; minfx
    (install-O-comptime-expander 'minfx expand-minfx)
-   
-   ;; maxfl
+
+   ;; fl
+   (install-O-comptime-expander '+fl expand-+fl)
+   (install-O-comptime-expander '-fl expand--fl)
+   (install-O-comptime-expander '*fl expand-*fl)
+   (install-O-comptime-expander '/fl expand-/fl)
    (install-O-comptime-expander 'maxfl expand-fmax)
-   
-   ;; minfl
    (install-O-comptime-expander 'minfl expand-fmin)
-   
-   ;; atanfl
    (install-O-comptime-expander 'atanfl expand-fatan)
    
    ;; sqrtfl
@@ -685,6 +681,30 @@
 	   `(char->integer ,(e n e)))
 	  (else
 	   (error #f "Illegal `integer->char' call" x)))))
+   
+   ;; fixnum->flonum
+   (install-O-comptime-expander
+      'fixnum->flonum
+      (lambda (x::obj e::procedure)
+	 (match-case x
+	    ((?- (and (? fixnum?) ?n))
+	     (fixnum->flonum n))
+	    ((?- ?n)
+	     `(fixnum->flonum ,(e n e)))
+	    (else
+	     (error #f "Illegal `fixnum->flonum' call" x)))))
+
+   ;; flonum->fixnum
+   (install-O-comptime-expander
+      'flonum->fixnum
+      (lambda (x::obj e::procedure)
+	 (match-case x
+	    ((?- (and (? flonum?) ?n))
+	     (flonum->fixnum n))
+	    ((?- ?n)
+	     `(flonum->fixnum ,(e n e)))
+	    (else
+	     (error #f "Illegal `flonum->fixnum' call" x)))))
    
    ;; cons*
    (install-O-comptime-expander
