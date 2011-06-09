@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Mar 14 13:31:58 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 16:40:12 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -870,6 +870,7 @@
 			 (let ( (a1 (car args)) (a2 (cadr args)) )
 			    (inline ((number number? + - * / < > <= >= =)
 				     (fixnum fixnum? +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
+				     (flonum flonum? +fl -fl *fl /fl <fl >fl <=fl >=fl =fl)
 				     (#f #f eq? cons)) loc val (a1 a2) stk ))))))))))
 
 (define (cadr? l)
