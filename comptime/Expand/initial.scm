@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Thu Jun  9 06:57:53 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 09:51:28 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -741,9 +741,7 @@
 			x)
 		       e)))
 	  (else
-	   (error #f
-		  "Illegal `apply' form"
-		  x)))))
+	   (error #f "Illegal `apply' form" x)))))
    
    ;; newline
    (install-O-comptime-expander
@@ -771,6 +769,18 @@
 	   `(,(disp o) ,(e o e) ,(e port e)))
 	  (else
 	   (map (lambda (x) (e x e)) x)))))
+   
+   ;; display-substring
+   (install-O-comptime-expander
+    'display-substring
+    (lambda (x::obj e::procedure)
+       (match-case x
+	  ((?- ?s ?i ?j ?p)
+	   (if *unsafe-range*
+	       `($display-substring ,(e s e) ,(e i e) ,(e j e) ,(e p e))
+	       (map (lambda (x) (e x e)) x)))
+	  (else
+	   (error #f "Illegal `display-substring' call" x)))))
    
    ;; write-char
    (install-O-comptime-expander

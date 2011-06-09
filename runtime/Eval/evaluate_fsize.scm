@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Mon May 30 13:48:41 2011 (serrano)                */
+;*    Last change :  Thu Jun  9 09:46:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -161,7 +161,7 @@
 
 ;;;
 (define (extract-loops::ev_expr e::ev_expr)
-   (if #f
+   (if #t
        (search-letrec e)
        e ))
 
