@@ -399,8 +399,8 @@
    ;; fx
    (install-O-comptime-expander '+fx expand-+fx)
    (install-O-comptime-expander '-fx expand--fx)
-;*    (install-O-comptime-expander '*fx expand-*fx)                    */
-;*    (install-O-comptime-expander '/fx expand-/fx)                    */
+   (install-O-comptime-expander '*fx expand-*fx)
+   (install-O-comptime-expander '/fx expand-/fx)
    (install-O-comptime-expander 'maxfx expand-maxfx)
    (install-O-comptime-expander 'minfx expand-minfx)
 
