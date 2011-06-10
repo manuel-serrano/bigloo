@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Jun 10 10:52:36 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 17:06:21 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -24,7 +24,7 @@
 		      "BGL_ENV_EVSTATE")
 	      (method static $evmeaning-evstate-set!::obj (::dynamic-env ::obj)
 		      "BGL_ENV_EVSTATE_SET")))
-   
+
    (import  __type
 	    __error
 	    __bigloo
@@ -315,6 +315,14 @@
 		     (mcell-value-set! (vector-ref s (+fx bp i)) (EVC e)) )
 		(EVA '(var write direct) ((ev_var-name v) i)
 		     (vector-set! s (+fx bp i) (EVC e))) )))))
+
+;;
+(define (global-fun-value e::ev_expr);
+   (when (ev_global? e)
+      (with-access::ev_global e (name mod)
+	 (let ( (g (evmodule-find-global mod name)) )
+	    (when g
+	       (eval-global-value g) )))))
 
 (define-method (comp var::ev_global stk);
    (with-access::ev_global var (name mod loc)
@@ -834,6 +842,65 @@
 				(correct-arity? val nbargs) )
 			val ))))))))
 
+;; expression arithmetique
+(define (compile-float-arith expr stk)
+   (define (CF e) (compile-float-arith e stk))
+   ;(print "compile " (uncompile expr))
+   (cond
+      ((ev_litt? expr)
+       (let ( (value (ev_litt-value expr)) )
+	  (cond ((fixnum? value) (vector 1 (fixnum->flonum value)))
+		((flonum? value) (vector 1 value))
+		(else (vector 0 (comp expr stk))) )))
+      ((ev_var? expr)
+       (if (ev_var-eff expr)
+	   (vector 3 (_index expr stk))
+	   (vector 2 (_index expr stk)) ))
+      ((ev_global? expr)
+       (with-access::ev_global expr (name mod loc)
+	  (let ( (g (evmodule-find-global mod name)) )
+	     (if g
+		 (if (eq? (eval-global-tag g) 1)
+		     (vector 4 g)
+		     (vector 5 g) )
+		 (vector 0 (comp expr stk)) ))))
+      ((ev_app? expr)
+       (with-access::ev_app expr (loc fun args tail?)
+	  (let ( (fval (global-fun-value fun)) )
+	     (cond
+		((eq? fval +fl) (vector 6 (CF (car args)) (CF (cadr args))))
+		((eq? fval -fl) (vector 7 (CF (car args)) (CF (cadr args))))
+		((eq? fval *fl) (vector 8 (CF (car args)) (CF (cadr args))))
+		((eq? fval /fl) (vector 9 (CF (car args)) (CF (cadr args))))
+		((eq? fval fixnum->flonum) (vector 10 (comp (car args) stk)))
+		(else (vector 0 (comp expr stk))) ))))
+      (else (vector 0 (comp expr stk))) ))
+
+(define (eval-float-arith::double bc s);
+   (define (E::double bc)
+      (case (vector-ref bc 0)
+	 ((0) (EVC (vector-ref bc 1)))
+	 ((1) (vector-ref bc 1))
+	 ((2) (vector-ref s (+fx (vector-ref s 0) (vector-ref bc 1))))
+	 ((3) (mcell-value (vector-ref s (+fx (vector-ref s 0) (vector-ref s 1)))))
+	 ((4) (__evmeaning_address-ref (eval-global-value (vector-ref bc 1))))
+	 ((5) (eval-global-value (vector-ref bc 1)))
+	 ((6) (+fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
+	 ((7) (-fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
+	 ((8) (*fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
+	 ((9) (/fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
+	 ((10) (fixnum->flonum (EVC (vector-ref bc 1))))
+	 (else (error 'internal "invalid byte code" (vector-ref bc 0))) ))
+    (E bc) )
+
+(define (arith-expression expr::ev_app stk);
+   (with-access::ev_app expr (loc fun args tail?)
+      (let ( (fval (global-fun-value fun)) )
+	 (if (or (eq? fval +fl) (eq? fval -fl) (eq? fval *fl) (eq? fval /fl))
+	     (let ( (bc (compile-float-arith expr stk)) )
+		(EVA '(call float-arith) () (eval-float-arith bc s)) )
+	     #f ))))
+
 ;; inline
 (define-macro (inline fun* loc fun vars stk);
    (let rec ( (l fun*) )
@@ -858,20 +925,18 @@
 			    ,(rec2 (cdr names)) ))))))))
 
 (define (inline-call loc fun args stk);
-   (when (ev_global? fun)
-      (with-access::ev_global fun (name mod)
-	 (let ( (g (evmodule-find-global mod name)) )
-	    (when g
-	       (let ( (val (eval-global-value g)) (n (length args)) )
-		  (or (when (=fx n 1)
-			 (let ( (a1 (car args)) )
-			    (inline ((pair pair? car cdr) (pair cadr? cadr)) loc val (a1) stk) ))
-		      (when (=fx n 2)
-			 (let ( (a1 (car args)) (a2 (cadr args)) )
-			    (inline ((number number? + - * / < > <= >= =)
-				     (fixnum fixnum? +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
-				     (flonum flonum? +fl -fl *fl /fl <fl >fl <=fl >=fl =fl)
- 				     (#f #f eq? cons)) loc val (a1 a2) stk ))))))))))
+   (let ( (val (global-fun-value fun)) )
+      (when val
+	 (let ( (n (length args)) )
+	    (or (when (=fx n 1)
+		   (let ( (a1 (car args)) )
+		      (inline ((pair pair? car cdr) (pair cadr? cadr)) loc val (a1) stk) ))
+		(when (=fx n 2)
+		   (let ( (a1 (car args)) (a2 (cadr args)) )
+		      (inline ((number number? + - * / < > <= >= =)
+			       (fixnum fixnum? +fx -fx *fx /fx <fx >fx <=fx >=fx =fx)
+			       (flonum flonum? +fl -fl *fl /fl <fl >fl <=fl >=fl =fl)
+			       (#f #f eq? cons)) loc val (a1 a2) stk ))))))))
 
 (define (cadr? l)
    (and (pair? l) (pair? (cdr l))) )
@@ -890,7 +955,8 @@
 
 (define-method (comp e::ev_app stk);
    (with-access::ev_app e (loc fun args tail?)
-      (or (inline-call loc fun args stk)
+      (or (and #t (arith-expression e stk))
+	  (and #t (inline-call loc fun args stk))
 	  (if (>fx (length args) 4)
 	      (comp-old-call e stk)
 	      (let ( (f (comp fun stk)) (size (length stk)) (symb-fun (uncompile fun)) )
