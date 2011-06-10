@@ -1612,26 +1612,6 @@ namespace bigloo
 	 return -n;
       }
 
-      public static real PLUS_FL_BANG(real t, real n1, real n2 ) {
-	 t.value = n1.value + n2.value;
-	 return t;
-      }
-
-      public static real MINUS_FL_BANG(real t, real n1, real n2 ) {
-	 t.value = n1.value - n2.value;
-	 return t;
-      }
-
-      public static real MUL_FL_BANG(real t, real n1, real n2 ) {
-	 t.value = n1.value * n2.value;
-	 return t;
-      }
-
-      public static real DIV_FL_BANG(real t, real n1, real n2 ) {
-	 t.value = n1.value / n2.value;
-	 return t;
-      }
-
       public static double fmod( double n1,
 				 double n2 )
 	 {

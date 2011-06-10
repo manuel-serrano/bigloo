@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Mar  4 15:35:32 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 10:54:14 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -219,8 +219,7 @@
    ;; TODO: special case for denormals.
    
    (let* ((e+len_f-1 (fixnum->flonum (+fx e 51))))
-      (flonum->fixnum (ceilingfl (-fl (*fl e+len_f-1 *1/log2_10*)
-				      1e-10)))))
+      (flonum->fixnum (ceilingfl (-fl (*fl e+len_f-1 *1/log2_10*) 1e-10)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-shift! ...                                                */
