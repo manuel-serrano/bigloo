@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Jun 10 07:35:49 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 10:01:59 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -442,7 +442,7 @@
       (if (memq x '(+fl -fl *fl /fl))
 	  (symbol-append x '!)
 	  x))
-   
+
    (match-case x
       ((?op (and ?a (fixnum->flonum ?-)) ?b)
        (let* ((tmp (gensym))

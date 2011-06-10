@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Jun 10 06:55:30 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 10:03:15 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -874,7 +874,7 @@
  				     (#f #f eq? cons)) loc val (a1 a2) stk )))
 		      (when (=fx n 3)
 			 (let ( (a1 (car args)) (a2 (cadr args)) (a3 (caddr args)) )
-			    (inline ((#f #f +fl! -fl! *fl! /fl!)) loc val (a1 a2 a3) stk ))))))))))
+			    (inline ((flonum flonum? +fl! -fl! *fl! /fl!)) loc val (a1 a2 a3) stk ))))))))))
 
 (define (cadr? l)
    (and (pair? l) (pair? (cdr l))) )
