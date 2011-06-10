@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Feb 18 15:03:52 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 07:35:49 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -418,7 +418,61 @@
    ;; trace
    (install-eval-expander 'when-trace (make-expand-when-trace 'eval))
    (install-eval-expander 'with-trace (make-expand-with-trace 'eval))
-   (install-eval-expander 'trace-item (make-expand-trace-item 'eval)))
+   (install-eval-expander 'trace-item (make-expand-trace-item 'eval))
+
+   ;; floating point arithmetic
+   (when #t
+      (install-eval-expander '+fl eval-expand-fl)
+      (install-eval-expander '-fl eval-expand-fl)
+      (install-eval-expander '*fl eval-expand-fl)
+      (install-eval-expander '/fl eval-expand-fl)))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-fl ...                                               */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-fl x e)
+   
+   (define (opfl? x)
+      (match-case x
+	 (((? (lambda (x) (memq x '(+fl -fl *fl /fl)))) ?- ?-) #t)
+	 (((? (lambda (x) (memq x '(+fl! -fl! *fl! /fl!)))) ?- ?- ?-) #t)
+	 (else #f)))
+   
+   (define (op! x)
+      (if (memq x '(+fl -fl *fl /fl))
+	  (symbol-append x '!)
+	  x))
+   
+   (match-case x
+      ((?op (and ?a (fixnum->flonum ?-)) ?b)
+       (let* ((tmp (gensym))
+	      (exp (if (opfl? b)
+		       `(,(op! op) ,tmp ,tmp (,(op! (car b)) ,tmp ,@(cdr b)))
+		       `(,(op! op) ,tmp ,tmp ,b))))
+	  (e `(let ((,tmp ,a)) ,exp) e)))
+      ((?op ?a (and ?b (fixnum->flonum ?-)))
+       (let* ((tmp (gensym))
+	      (exp (if (opfl? a)
+		       `(,(op! op) ,tmp (,(op! (car a)) ,tmp ,@(cdr a)) ,tmp)
+		       `(,(op! op) ,tmp ,a ,tmp))))
+	  (e `(let ((,tmp ,b)) ,exp) e)))
+      ((?op ?a ?b)
+       (cond
+	  ((opfl? a)
+	   (let* ((tmp (gensym))
+		  (exp (if (opfl? b)
+			   `(,(op! op) ,tmp ,tmp (,(op! (car b)) ,tmp ,@(cdr b)))
+			   `(,(op! op) ,tmp ,tmp ,b))))
+	      (e `(let ((,tmp ,a)) ,exp) e)))
+	  ((opfl? b)
+	   (let ((tmp (gensym)))
+	      (e `(let ((,tmp ,b))
+		     (,(op! op) ,tmp ,a ,tmp))
+		 e)))
+	  (else
+	   (map (lambda (x) (e x e)) x))))
+      (else
+       (expand-error (car x) "Illegal call" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-if ...                                                    */

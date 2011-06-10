@@ -4,11 +4,11 @@ namespace bigloo
 {
   public sealed class real: numeral
   {
-    public readonly double value;
+    public double value;
 
     public real( double  value )
     {
-      this.value= value;
+      this.value = value;
     }
 
     public override void write( output_port  p )

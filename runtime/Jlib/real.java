@@ -2,11 +2,11 @@ package bigloo;
 
 public class real extends numeral
 {
-  public final double value;
+  public double value;
 
   public real( final double  value )
   {
-    this.value= value;
+    this.value = value;
   }
 
   public void write( final output_port  p )

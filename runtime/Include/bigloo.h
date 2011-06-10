@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jun  9 10:08:42 2011 (serrano)                */
+/*    Last change :  Fri Jun 10 05:56:49 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2126,7 +2126,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
 #endif
 
-#define REAL( o )  CREAL( o )->real_t
+#define REAL( o ) (CREAL( o )->real_t)
 
 #define NEG( x ) (- (x))
 
@@ -2181,6 +2181,18 @@ BGL_RUNTIME_DECL int FLOAT_TO_INT_BITS( float );
 BGL_RUNTIME_DECL float INT_BITS_TO_FLOAT( int );
 #endif
 
+#if( defined( TAG_REAL ) )
+#  define PLUSFL( o, a, b ) REAL_TO_DOUBLE( REAL_TO_DOUBLE( a ) + REAL_TO_DOUBLE( b ) )
+#  define MINUSFL( o, a, b ) REAL_TO_DOUBLE( REAL_TO_DOUBLE( a ) - REAL_TO_DOUBLE( b ) )
+#  define MULFL( o, a, b ) REAL_TO_DOUBLE( REAL_TO_DOUBLE( a ) * REAL_TO_DOUBLE( b ) )
+#  define DIVFL( o, a, b ) REAL_TO_DOUBLE( REAL_TO_DOUBLE( a ) / REAL_TO_DOUBLE( b ) )
+#else
+#  define PLUSFL( o, a, b ) ((REAL_TO_DOUBLE( o ) = (REAL_TO_DOUBLE( a ) + REAL_TO_DOUBLE( b ))), o)
+#  define MINUSFL( o, a, b ) ((REAL_TO_DOUBLE( o ) = (REAL_TO_DOUBLE( a ) - REAL_TO_DOUBLE( b ))), o)
+#  define MULFL( o, a, b ) ((REAL_TO_DOUBLE( o ) = (REAL_TO_DOUBLE( a ) * REAL_TO_DOUBLE( b ))), o)
+#  define DIVFL( o, a, b ) ((REAL_TO_DOUBLE( o ) = (REAL_TO_DOUBLE( a ) / REAL_TO_DOUBLE( b ))), o)
+#endif   
+   
 #if BGL_ISOC99 || defined( __USE_ISOC99 )
 #  define BGL_SIGNBIT( a ) signbit( a ) 
 #  define BGL_NAN ((double) NAN)

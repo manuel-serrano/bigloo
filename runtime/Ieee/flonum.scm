@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Fri Feb 18 15:45:58 2011 (serrano)                */
+;*    Last change :  Fri Jun 10 07:01:43 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -41,6 +41,10 @@
 	    (infix macro c--fl::double (::double ::double) "-")
 	    (infix macro c-*fl::double (::double ::double) "*")
 	    (infix macro c-/fl::double (::double ::double) "/")
+	    (macro $+fl!::real (::real ::real ::real) "PLUSFL")
+	    (macro $-fl!::real (::real ::real ::real) "MINUSFL")
+	    (macro $*fl!::real (::real ::real ::real) "MULFL")
+	    (macro $/fl!::real (::real ::real ::real) "DIVFL")
 	    (macro c-negfl::double (::double) "NEG")
 	    (macro c-floor::double (::double) "floor")
 	    (macro c-ceiling::double (::double) "ceil")
@@ -99,6 +103,14 @@
 		       "MUL_FL")
 	       (method static c-/fl::double (::double ::double)
 		       "DIV_FL")
+	       (method static $+fl!::real (::real ::real ::real)
+		       "PLUS_FL_BANG")
+	       (method static $-fl!::real (::real ::real ::real)
+		       "MINUS_FL_BANG")
+	       (method static $*fl!::real (::real ::real ::real)
+		       "MUL_FL_BANG")
+	       (method static $/fl!::real (::real ::real ::real)
+		       "DIV_FL_BANG")
 	       (method static c-negfl::double (::double)
 		       "NEG_FL")
 	       (method static c-fmod::double (::double ::double)
@@ -182,6 +194,10 @@
 	    (inline -fl::double ::double ::double)
 	    (inline *fl::double ::double ::double)
 	    (inline /fl::double ::double ::double)
+	    (inline +fl!::real ::real ::real ::real)
+	    (inline -fl!::real ::real ::real ::real)
+	    (inline *fl!::real ::real ::real ::real)
+	    (inline /fl!::real ::real ::real ::real)
 	    (inline negfl::double ::double)
 	    (inline absfl::double ::double)
 	    (inline floorfl::double ::double)
@@ -352,28 +368,28 @@
    (<fl r 0.0))
 
 ;*---------------------------------------------------------------------*/
-;*    +fl ...                                                          */
+;*    opfl ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (+fl r1 r2)
    (c-+fl r1 r2))
-	    
-;*---------------------------------------------------------------------*/
-;*    -fl ...                                                          */
-;*---------------------------------------------------------------------*/
 (define-inline (-fl r1 r2)
    (c--fl r1 r2))
-
-;*---------------------------------------------------------------------*/
-;*    *fl ...                                                          */
-;*---------------------------------------------------------------------*/
 (define-inline (*fl r1 r2)
    (c-*fl r1 r2))
-
-;*---------------------------------------------------------------------*/
-;*    /fl ...                                                          */
-;*---------------------------------------------------------------------*/
 (define-inline (/fl r1 r2)
    (c-/fl r1 r2))
+
+;*---------------------------------------------------------------------*/
+;*    opfl! ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (+fl! t r1 r2)
+   ($+fl! t r1 r2))
+(define-inline (-fl! t r1 r2)
+   ($-fl! t r1 r2))
+(define-inline (*fl! t r1 r2)
+   ($*fl! t r1 r2))
+(define-inline (/fl! t r1 r2)
+   ($/fl! t r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    negfl ...                                                        */

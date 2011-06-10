@@ -1592,34 +1592,45 @@ namespace bigloo
 	    return (n1 >= n2);
 	 }
 
-      public static double PLUS_FL( double  n1,
-				    double  n2 )
-	 {
-	    return (n1 + n2);
-	 }
+      public static double PLUS_FL( double n1, double n2 ) {
+	 return (n1 + n2);
+      }
 
-      public static double MINUS_FL( double  n1,
-				     double  n2 )
-	 {
-	    return (n1 - n2);
-	 }
+      public static double MINUS_FL( double n1, double n2 ) {
+	 return (n1 - n2);
+      }
 
-      public static double MUL_FL( double  n1,
-				   double  n2 )
-	 {
-	    return (n1 * n2);
-	 }
+      public static double MUL_FL( double n1, double n2 ) {
+	 return (n1 * n2);
+      }
 
-      public static double DIV_FL( double  n1,
-				   double  n2 )
-	 {
-	    return (n1 / n2);
-	 }
+      public static double DIV_FL( double n1, double n2 ) {
+	 return (n1 / n2);
+      }
 
-      public static double NEG_FL( double  n )
-	 {
-	    return -n;
-	 }
+      public static double NEG_FL( double n ) {
+	 return -n;
+      }
+
+      public static real PLUS_FL_BANG(real t, real n1, real n2 ) {
+	 t.value = n1.value + n2.value;
+	 return t;
+      }
+
+      public static real MINUS_FL_BANG(real t, real n1, real n2 ) {
+	 t.value = n1.value - n2.value;
+	 return t;
+      }
+
+      public static real MUL_FL_BANG(real t, real n1, real n2 ) {
+	 t.value = n1.value * n2.value;
+	 return t;
+      }
+
+      public static real DIV_FL_BANG(real t, real n1, real n2 ) {
+	 t.value = n1.value / n2.value;
+	 return t;
+      }
 
       public static double fmod( double n1,
 				 double n2 )
