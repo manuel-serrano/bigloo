@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Thu May  5 14:42:35 2011 (serrano)                */
+;*    Last change :  Sat Jun 11 07:51:27 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -32,9 +32,9 @@
 (set! bar 'toto)
 
 ;*---------------------------------------------------------------------*/
-;*    foo ...                                                          */
+;*    fooo ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (foo x)
+(define (fooo x)
    (if (integer? x)
        (begin
 	  (set! x #f)
@@ -388,7 +388,7 @@
    (test "define" bar 'toto)
    (test "application" ((lambda args 2)) 2)
    (test "application" ((lambda args 2) 1 2 3 4) 2)
-   (test "set!" (foo 5) #f)
+   (test "set!" (fooo 5) #f)
    (test "set!" (let ((v (integer? var))) (set! var 4) (set! var 'toto) v) #f)
    (test "if.1" (if #t #t #f) #t)
    (test "if.2" (let ((if (lambda (x y z) z))) (if #t #t #f)) #f)
@@ -881,3 +881,4 @@
    (test "let" (vital:let 10 +) 11)
    (test "let*" (vital:let*) 2)
    (test "bug-jvm" (procedure? bug-jvm) #t))
+     

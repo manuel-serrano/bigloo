@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Mon May  2 16:57:08 2011 (serrano)                */
+;*    Last change :  Sat Jun 11 07:56:18 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -37,6 +37,7 @@
 	    (inline node-key-set! ::node/effect ::obj)
 	    (declare-approx-sets!)
 	    (union-approx!::approx ::approx ::approx)
+	    (union-approx-filter!::approx ::approx ::approx)
 	    (approx-set-type! ::approx ::type)
 	    (approx-set-top! ::approx)
 	    (make-empty-approx::approx)
@@ -95,10 +96,93 @@
    dst)
 
 ;*---------------------------------------------------------------------*/
+;*    union-approx/type! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (union-approx/type! dst::approx src::approx ty::type)
+   
+   (define (set-union/type! dst src pred)
+      ;; as set-union! but only copy values satisfying pred
+      (let ((res #f)
+	    (set (approx-allocs dst)))
+	 (for-each (lambda (v)
+		      (when (and (pred v) (not (set-member? set v)))
+			 (set-extend! set v)
+			 (set! res #t)))
+	    (set->list (approx-allocs src)))
+	 res))
+   
+   (when (approx-top? src)
+      (approx-set-top! dst))
+   (when (bigloo-type? ty)
+      (cond
+	 ((eq? ty *vector*)
+	  (when (set-union/type! dst src vector-approx?)
+	     (continue-cfa! 'union)))
+	 ((eq? ty *procedure*)
+	  (when (set-union/type! dst src procedure-approx?)
+	     (continue-cfa! 'union)))
+	 ((or (eq? ty *pair*)
+	      (eq? ty *epair*)
+	      (eq? ty *pair-nil*)
+	      (eq? ty *list*))
+	  (when (set-union/type! dst src cons-approx?)
+	     (continue-cfa! 'union)))
+	 ((eq? ty *struct*)
+	  (when (set-union/type! dst src struct-approx?)
+	     (continue-cfa! 'union)))
+	 ((not (or (eq? ty *symbol*)
+		   (eq? ty *keyword*)
+		   (eq? ty *unspec*)
+		   (eq? ty *bstring*)
+		   (eq? ty *bint*)
+		   (eq? ty *belong*)
+		   (eq? ty *bllong*)
+		   (eq? ty *bignum*)
+		   (eq? ty *real*)
+		   (eq? ty *bchar*)
+		   (eq? ty *nil*)
+		   (eq? ty *bbool*)))
+	  (when (set-union! (approx-allocs dst) (approx-allocs src))
+	     (continue-cfa! 'union)))))
+   dst)
+
+;*---------------------------------------------------------------------*/
+;*    union-approx-filter! ...                                         */
+;*    -------------------------------------------------------------    */
+;*    This unification is used for function that are pre-assigned a    */
+;*    type. Because the type will be enforced by latter stage, the     */
+;*    union here must only copy values that are compatible with that   */
+;*    destination type. See cfa-intern-sfun! and cfa! ::let-var        */
+;*---------------------------------------------------------------------*/
+(define (union-approx-filter!::approx dst::approx src::approx)
+   (let ((ty (approx-type dst)))
+      (if (or (not (approx-type-locked? dst)) (eq? ty *_*) (eq? ty *obj*))
+	  (union-approx! dst src)
+	  (union-approx/type! dst src ty))))
+
+;*---------------------------------------------------------------------*/
 ;*    vector-approx? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (vector-approx? x)
    (or (make-vector-app? x) (valloc/Cinfo+optim? x)))
+
+;*---------------------------------------------------------------------*/
+;*    procedure-approx? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (procedure-approx? x)
+   (make-procedure-app? x))
+
+;*---------------------------------------------------------------------*/
+;*    cons-approx? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (cons-approx? x)
+   (cons-app? x))
+
+;*---------------------------------------------------------------------*/
+;*    struct-approx? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (struct-approx? x)
+   (make-struct-app? x))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-src-approx-type ...                                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Fri Jun 10 17:47:17 2011 (serrano)                */
+;*    Last change :  Sat Jun 11 06:31:03 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -155,12 +155,7 @@
 	     (set! stamp *cfa-stamp*)
 	     (let ((cur *cfa-current*))
 		(set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
-		(let ((abody (cfa! body)))
-		   (when (bigloo-type? (variable-type owner))
-		      ;; MS 10jun2011. I'm not totally sure of this optimization
-		      ;; which consists in not merging the results of the CFA
-		      ;; when the function is typed with a C type!
-		      (union-approx! approx abody)))
+		(union-approx-filter! approx (cfa! body))
 		(trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
 		   #\Newline)
 		(set! *cfa-current* cur))

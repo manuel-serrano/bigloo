@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 17:02:23 1995                          */
-;*    Last change :  Wed Nov 11 18:38:31 2009 (serrano)                */
-;*    Copyright   :  1995-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 11 06:54:48 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `set' package.                                               */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    (make-set! <set>)
 	    (set?::bool <obj>)
 	    (set-extend! <set> <obj>)
+	    (set-member? <set> <obj>)
 	    (set-union! <set> . <set>*)
 	    (set-for-each ::procedure <set>)
 	    (set-length <set>)
@@ -45,11 +46,7 @@
    (let* ((cardinal  (vector-length table))
 	  (quotient  (quotientfx cardinal 8))
 	  (remainder (remainderfx cardinal 8))
-	  (size      (cond
-			((=fx remainder 0)
-			 (+fx quotient 1))
-			(else
-			 (+fx quotient 2)))))
+	  (size      (if (=fx remainder 0) (+fx quotient 1) (+fx quotient 2))))
       (let loop ((i         0)
 		 (quotient  0)
 		 (mask      1))
@@ -96,7 +93,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    set-member? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (set-member? set obj)
+(define (set-member? set obj)
    (let* ((key       (node-key obj))
 	  (the-set   (large-set-the-set set))
 	  (quotient  (car key))

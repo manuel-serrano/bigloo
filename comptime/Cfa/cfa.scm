@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Mon May  2 16:58:05 2011 (serrano)                */
+;*    Last change :  Sat Jun 11 07:51:10 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -274,7 +274,7 @@
 			    ", v-type=" (shape vtype)
 			    ", va-type=" (shape (approx-type var-approx))
 			    ", atype=" (shape atype) "\n")
-			 (union-approx! var-approx val-approx)
+			 (union-approx-filter! var-approx val-approx)
 			 (trace (cfa 4)
 			    (shape (cfa-current)) ": -> type="
 			    (shape (approx-type var-approx)) "\n")
