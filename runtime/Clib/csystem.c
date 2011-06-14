@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Wed Jun  8 09:51:08 2011 (serrano)                */
+/*    Last change :  Tue Jun 14 11:10:52 2011 (serrano)                */
 /*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -321,7 +321,8 @@ bgl_time( obj_t thunk ) {
 #  define BTICK( v ) BINT( (v) * 1000 / ctick )
    BGL_ENV_MVALUES_VAL_SET( env, 1, BTICK( t2 - t1 ) );
    BGL_ENV_MVALUES_VAL_SET( env, 2, BTICK( buf2.tms_stime - buf1.tms_stime ) );
-   BGL_ENV_MVALUES_VAL_SET( env, 3, BTICK( buf2.tms_cutime - buf1.tms_cutime ) );
+   BGL_ENV_MVALUES_VAL_SET( env, 3, BTICK( (buf2.tms_cutime - buf1.tms_cutime)
+					   + (buf2.tms_utime - buf1.tms_utime) ) );
 #  undef BTICK   
 
    return res;
