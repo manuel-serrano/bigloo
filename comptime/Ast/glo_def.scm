@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/glo-def.scm             */
+;*    serrano/prgm/project/bigloo/comptime/Ast/glo_def.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Fri Sep 11 13:22:16 2009 (serrano)                */
+;*    Last change :  Tue Jun 14 14:23:08 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */

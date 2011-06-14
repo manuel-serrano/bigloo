@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sun Mar 20 16:51:51 2011 (serrano)                */
+;*    Last change :  Tue Jun 14 14:20:17 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -185,13 +185,12 @@
 (define (funcall-type-error node type)
    (trace (cfa 3) " *** type error *** " (shape node) #\Newline)
    (with-access::funcall/Cinfo node (type-error-noticed? loc)
-      (if (not type-error-noticed?)
-	  (begin
-	     (set! type-error-noticed? #t)
-	     (user-warning/location loc
-				    "cfa"
-				    "Possible funcall type error"
-				    (shape type))))))
+      (unless type-error-noticed?
+	 (set! type-error-noticed? #t)
+	 (user-warning/location loc
+	    "cfa"
+	    "Possible funcall type error"
+	    (shape type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    funcall-arity-error ...                                          */

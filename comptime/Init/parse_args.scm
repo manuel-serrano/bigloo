@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun May  8 19:00:58 2011 (serrano)                */
+;*    Last change :  Tue Jun 14 14:26:16 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -157,6 +157,7 @@
 ;*    do-parse-args ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (do-parse-args args)
+   
    (define (environment-usage manual?)
       (print "Shell Variables:")
       (for-each (lambda (var)
@@ -596,9 +597,8 @@
       (("-no-hello" (help "Dont' say hello even in verbose mode"))
        (set! *hello* #f))
       ;; warning
-      (pass lib-dir
-       (("-w" (help "Inhibit all warning messages"))
-	(bigloo-warning-set! 0)))
+      (("-w" (help "Inhibit all warning messages"))
+       (bigloo-warning-set! 0))
       (("-wslots" (help "Inhibit overriden slots warning messages"))
        (set! *warning-overriden-slots* #f))
       (("-Wvariables" (help "Enable overriden variable warning messages"))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sat Apr 30 06:25:58 2011 (serrano)                */
+;*    Last change :  Tue Jun 14 14:23:25 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -70,13 +70,14 @@
 ;*    user-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (user-warning/location loc proc mes obj)
-   (with-dump-stack
-      (lambda ()
-	 (if (not (location? loc))
-	     (warning proc mes " -- " obj)
-	     (warning/location (location-full-fname loc)
-		(location-pos loc) proc
-		mes " -- " obj)))))
+   (when (>fx (bigloo-warning) 0)
+      (with-dump-stack
+	 (lambda ()
+	    (if (not (location? loc))
+		(warning proc mes " -- " obj)
+		(warning/location (location-full-fname loc)
+		   (location-pos loc) proc
+		   mes " -- " obj))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    user-warning ...                                                 */
