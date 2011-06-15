@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Fri May 29 07:39:21 2009 (serrano)                */
+;*    Last change :  Tue Jun 14 17:01:12 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -101,9 +101,13 @@
    (test "+.1" (+ 1 2 3 4) 10)
    (test "+.2" (+ #e1 #e2) #e3)
    (test "+.3" (+ #l1 #e2) #l3)
+   (test "+.4" (+ 1 2 3) 6)
+   (test "+.5" (let ((x 1)) (+ x 2 3 4)) 10)
    (test "-.1" (- 1 2 3 4) -8)
    (test "-.2" (let ((x 4.0)) (- x)) -4.0)
    (test "-.3" (- #l2 #e1) #l1)
+   (test "-.4" (- 1 2 3 4) -8)
+   (test "-.5" (let ((x 1)) (- x 2 3 4)) -8)
    (test "*.1" (* 1 2 3 4) 24)
    (test "*.2" (* #l2 #e2) #l4)
    (test "*.3" (* (car (list 0)) 0) 0)

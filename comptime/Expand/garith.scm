@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Sun Aug  6 21:35:21 2006 (serrano)                */
-;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 15 08:25:54 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/
@@ -32,6 +32,26 @@
    (or (fixnum? x) (flonum? x)))
 
 ;*---------------------------------------------------------------------*/
+;*    expand-g2 ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (expand-g2 x e op)
+   (match-case x
+      ((?id (? expand-g-number?) (expand-g-number? y))
+       (apply op x))
+;*       ((?id (and ?a (? fixnum?)) (and ?b (? symbol?)))              */
+;*        (let ((nx `(if (fixnum? ,b)                                  */
+;* 		      (,(symbol-append id 'fx) ,a ,b)                  */
+;* 		      (,(symbol-append '|2| id) ,a ,b))))              */
+;* 	  (e nx e)))                                                   */
+;*       ((?id (and ?a (? symbol?)) (and ?b (? fixnum?)))              */
+;*        (let ((nx `(if (fixnum? ,a)                                  */
+;* 		      (,(symbol-append id 'fx) ,a ,b)                  */
+;* 		      (,(symbol-append '|2| id) ,a ,b))))              */
+;* 	  (e nx e)))                                                   */
+      ((?id ?a ?b)
+       (e `(,(symbol-append '|2| id) ,a ,b) e))))
+
+;*---------------------------------------------------------------------*/
 ;*    expand-g+ ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (expand-g+ x e)
@@ -40,14 +60,10 @@
        0)
       ((?- . (?x . ()))
        (e x e))
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (+ x y))
-	  (else
-	   (e `(2+ ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e +))
       ((?- ?x . ?y)
-       (e `(2+ ,x (+ ,@y)) e)))) 
+       (expand-g2 `(+ ,x ,(e `(+ ,@y) e)) e +))))
       
 ;*---------------------------------------------------------------------*/
 ;*    expand-g- ...                                                    */
@@ -62,14 +78,10 @@
 	   (negfl x))
 	  (else
 	   `(- ,(e x e)))))
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (- x y))
-	  (else
-	   (e `(2- ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e -))
       ((?- ?x . ?y)
-       (e `(2- ,x (+ ,@y)) e))))
+       (expand-g2 `(- ,x ,(e `(+ ,@y) e)) e -))))
        
 ;*---------------------------------------------------------------------*/
 ;*    expand-g* ...                                                    */
@@ -80,14 +92,10 @@
        1)
       ((?- . (?x . ()))
        (e x e))
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (* x y))
-	  (else
-	   (e `(2* ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e *))
       ((?- ?x . ?y)
-       (e `(2* ,x (* ,@y)) e)))) 
+       (expand-g2 `(* ,x ,(e `(* ,@y) e)) e *))))
       
 ;*---------------------------------------------------------------------*/
 ;*    expand-g/ ...                                                    */
@@ -96,28 +104,24 @@
    (match-case x
       ((?- . (?x . ()))
        `(2/ 1 ,(e x e)))
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (if (= y 0)
-	       (e `(2/ ,x ,y) e)
-	       (/ x y)))
+	  ((and (expand-g-number? a) (expand-g-number? b))
+	   (if (= b 0)
+	       (e `(2/ ,a ,b) e)
+	       (/ a b)))
 	  (else
-	   (e `(2/ ,x ,y) e))))
-      ((?- ?x . ?y)
-       (e `(2/ ,x (* ,@y)) e))))
+	   (e `(2/ ,a ,b) e))))
+      ((?- ?a . ?b)
+       (e `(2/ ,a (* ,@b)) e))))
       
 ;*---------------------------------------------------------------------*/
 ;*    expand-g= ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (expand-g= x e)
    (match-case x
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (= x y))
-	  (else
-	   (e `(2= ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e =))
       ((?- ?-)
        (error "=" "Illegal form" x))
       ((?- ?x . ?y)
@@ -128,12 +132,8 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-g< x e)
    (match-case x
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (< x y))
-	  (else
-	   (e `(2< ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e <))
       ((?- ?-)
        (error "<" "Illegal form" x))
       ((?- ?x . ?y)
@@ -144,12 +144,8 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-g> x e)
     (match-case x
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (> x y))
-	  (else
-	   (e `(2> ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e >))
       ((?- ?-)
        (error ">" "Illegal form" x))
       ((?- ?x . ?y)
@@ -160,12 +156,8 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-g<= x e)
    (match-case x
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (<= x y))
-	  (else
-	   (e `(2<= ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e <=))
       ((?- ?-)
        (error "<=" "Illegal form" x))
       ((?- ?x . ?y)
@@ -176,12 +168,8 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-g>= x e)
     (match-case x
-      ((?- ?x . (?y . ()))
-       (cond
-	  ((and (expand-g-number? x) (expand-g-number? y))
-	   (>= x y))
-	  (else
-	   (e `(2>= ,x ,y) e))))
+      ((?- ?- . (?- . ()))
+       (expand-g2 x e >=))
       ((?- ?-)
        (error ">=" "Illegal form" x))
       ((?- ?x . ?y)
