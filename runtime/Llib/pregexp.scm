@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Jun 15 08:44:48 2011 (serrano)                */
+;*    Last change :  Wed Jun 15 10:39:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions for Scheme                          */
 ;*    Dorai Sitaram                                                    */
@@ -547,7 +547,7 @@
                   (if (>= i n) (fk)
                       (sub (cadr re) i 
                            (lambda (i1) (fk))
-                           (lambda () (sk (+fx i 1))))))
+                           (lambda () (sk (+ i 1))))))
                  ((:seq)
                   (let loup-seq ((res (cdr re)) (i i))
                     (if (null? res) (sk i )
