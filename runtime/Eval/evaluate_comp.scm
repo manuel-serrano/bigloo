@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sat Jun 11 06:55:35 2011 (serrano)                */
+;*    Last change :  Thu Jun 16 06:39:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -40,6 +40,7 @@
 	    __bexit
 	    __object
 	    __thread
+	    __srfi4
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -868,12 +869,20 @@
        (with-access::ev_app expr (loc fun args tail?)
 	  (let ( (fval (global-fun-value fun)) )
 	     (cond
-		((eq? fval +fl) (vector 6 (CF (car args)) (CF (cadr args))))
-		((eq? fval -fl) (vector 7 (CF (car args)) (CF (cadr args))))
-		((eq? fval *fl) (vector 8 (CF (car args)) (CF (cadr args))))
-		((eq? fval /fl) (vector 9 (CF (car args)) (CF (cadr args))))
-		((eq? fval fixnum->flonum) (vector 10 (comp (car args) stk)))
-		(else (vector 0 (comp expr stk))) ))))
+		((eq? fval +fl)
+		 (vector 6 (CF (car args)) (CF (cadr args))))
+		((eq? fval -fl)
+		 (vector 7 (CF (car args)) (CF (cadr args))))
+		((eq? fval *fl)
+		 (vector 8 (CF (car args)) (CF (cadr args))))
+		((eq? fval /fl)
+		 (vector 9 (CF (car args)) (CF (cadr args))))
+		((eq? fval fixnum->flonum)
+		 (vector 10 (comp (car args) stk)))
+		((eq? fval f64vector-ref)
+		 (vector 11 (comp (car args) stk) (comp (cadr args) stk)))
+		(else
+		 (vector 0 (comp expr stk))) ))))
       (else (vector 0 (comp expr stk))) ))
 
 (define (eval-float-arith::double bc s);
@@ -890,6 +899,7 @@
 	 ((8) (*fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
 	 ((9) (/fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
 	 ((10) (fixnum->flonum (EVC (vector-ref bc 1))))
+	 ((11) (f64vector-ref (EVC (vector-ref bc 1)) (EVC (vector-ref bc 2))))
 	 (else (error 'internal "invalid byte code" (vector-ref bc 0))) ))
     (E bc) )
 

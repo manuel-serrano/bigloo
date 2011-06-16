@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Sat Nov 20 05:57:57 2010 (serrano)                */
+/*    Last change :  Wed Jun 15 13:48:33 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -197,7 +197,7 @@ alloc_make_real( double d ) {
    obj_t real;
 
    real = (obj_t)GC_MALLOC_ATOMIC( REAL_SIZE );
-   
+
 #if( !defined( TAG_REAL ) )
    real->real_t.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE );
 #endif

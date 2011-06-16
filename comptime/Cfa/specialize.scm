@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Tue Mar 29 11:04:31 2011 (serrano)                */
+;*    Last change :  Thu Jun 16 07:20:30 2011 (serrano)                */
 ;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -321,8 +321,11 @@
 ;*    patch! ::sequence ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::sequence)
-   (with-access::sequence node (nodes)
+   (with-access::sequence node (type nodes)
       (patch*! nodes)
+      (when (and *strict-node-type* (eq? type *obj*))
+	 (set! type *_*)
+	 (set! type (get-type node)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -372,17 +375,20 @@
 ;*    patch! ::conditional ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::conditional)
-   (with-access::conditional node (test true false)
+   (with-access::conditional node (type test true false)
        (set! test (patch! test))
        (set! true (patch! true))
        (set! false (patch! false))
+       (when (and *strict-node-type* (eq? type *obj*))
+	  (set! type *_*)
+	  (set! type (get-type node)))
        node))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::fail ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::fail)
-   (with-access::fail node (type proc msg obj)
+   (with-access::fail node (proc msg obj)
       (set! proc (patch! proc))
       (set! msg (patch! msg))
       (set! obj (patch! obj))
@@ -403,21 +409,27 @@
 ;*    patch! ::let-fun ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::let-fun)
-   (with-access::let-fun node (body locals)
+   (with-access::let-fun node (type body locals)
       (for-each patch-fun! locals)
       (set! body (patch! body))
+      (when (and *strict-node-type* (eq? type *obj*))
+	 (set! type *_*)
+	 (set! type (get-type node)))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch! ::let-var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::let-var)
-   (with-access::let-var node (body bindings)
+   (with-access::let-var node (type body bindings)
       (for-each (lambda (binding)
 		   (let ((val (cdr binding)))
 		      (set-cdr! binding (patch! val))))
 		bindings)
       (set! body (patch! body))
+       (when (and *strict-node-type* (eq? type *obj*))
+	  (set! type *_*)
+	  (set! type (get-type node)))
       node))
 
 ;*---------------------------------------------------------------------*/

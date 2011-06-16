@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/gc/Makefile-gc-7_2alpha5-20110107        */
+#*    .../prgm/project/bigloo/gc/Makefile-bdwgc-7_2alpha5-20110313     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Sat Mar  5 07:22:01 2011 (serrano)                */
+#*    Last change :  Wed Jun 15 13:34:15 2011 (serrano)                */
 #*    Copyright   :  2009-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.2alpha5 specific entries                                    */
@@ -36,6 +36,6 @@ $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
              LDLIBS=$(EXTRAGCLIBS) \
              OBJECTS="$(OUTDIR)/*.o"
 
-$(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a:
+$(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a: $(OUTDIR)/libgc.a
 	cp $(OUTDIR)/libgc.a $@
 	$(RANLIB) $@

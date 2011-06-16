@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Fri May 20 16:49:36 2011 (serrano)                */
+;*    Last change :  Thu Jun 16 07:28:48 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -79,7 +79,8 @@
 (define-method (dataflow-node! node::var env)
    (with-access::var node (type variable)
       (with-access::variable variable ((vtype type))
-	 (when (or (not (tclass? vtype)) (type-subclass? vtype type))
+	 (when (and (bigloo-type? vtype)
+		    (or (not (tclass? vtype)) (type-subclass? vtype type)))
 	    (let ((b (assq variable env))) 
 	       (if (pair? b)
 		   (set! type (cdr b))
