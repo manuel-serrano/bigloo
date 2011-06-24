@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Wed Mar 10 07:51:15 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Thu Jun 23 15:51:07 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPG123 Bigloo binding                                        */
 ;*=====================================================================*/
@@ -95,7 +95,7 @@
 (define mpg123-grammar
    (regular-grammar ((int (+ digit))
 		     (float (: (+ digit) #\. (* digit)))
-		     mpg123 onstate onmeta onerror onvolume)
+		     mpg123 onstate onmeta onerror onvolume armed)
       ("@E"
        (let ((reason (read-line (the-port)))
 	     (terr #f))
@@ -142,6 +142,7 @@
 	      (err (read (the-port)))
 	      (emphasis (read (the-port)))
 	      (bitrate (read (the-port))))
+	  (set! armed #t)
 	  (read-line (the-port))
 	  (with-access::mpg123 mpg123 (%mutex %status)
 	     (mutex-lock! %mutex)
@@ -155,7 +156,8 @@
 	  (case (integer->char (the-byte-ref 3))
 	     ((#\0)
 	      (mutex-lock! %mutex)
-	      (musicstatus-state-set! %status 'stop)
+	      (musicstatus-state-set! %status (if armed 'ended 'stop))
+	      (set! armed #f)
 	      (mutex-unlock! %mutex)
 	      (when onstate (onstate %status))
 	      (when (eq? %user-state 'play)
@@ -239,9 +241,7 @@
       (let loop ()
 	 (if (process? %process)
 	     (let ((p (process-output-port %process)))
-		(with-lock %loop-mutex
-		   (lambda ()
-		      (read/rp mpg123-grammar p o onstate onmeta onerror onvol))))
+		(read/rp mpg123-grammar p o onstate onmeta onerror onvol #f))
 	     (begin
 		(mutex-lock! %mutex)
 		(let ((abort %abort-loop))

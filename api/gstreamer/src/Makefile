@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Aug  6 08:09:24 2010 (serrano)                */
+#*    Last change :  Sun Jun 19 07:56:44 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -39,11 +39,8 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) \
-                  -I Llib -lib-dir $(BOOTLIBDIR) \
-                  -srfi $(API) \
-                  -unsafe -safee \
-                  -copt "$(GSTREAMERCFLAGS)"
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee \
+                  -srfi $(API) -copt "$(GSTREAMERCFLAGS)"
 CAPIFLAGS       = $(GSTREAMERCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \

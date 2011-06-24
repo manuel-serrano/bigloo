@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri May 13 10:35:10 2011 (serrano)                */
+#*    Last change :  Fri Jun 24 05:25:00 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -173,6 +173,11 @@ gstreameraudio=
 gstreameraudiolibs=
 gstreameraudiocflags=
 gstusethread=1
+
+#*--- alsa (left blank for autoconfiguration) -------------------------*/
+alsa=
+gstreamerlibs=
+gstreamercflags=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
@@ -2024,6 +2029,25 @@ if [ "$gstreamer " != " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    alsa                                                             */
+#*---------------------------------------------------------------------*/
+# find out the C library for alsa
+if [ "$alsa " = " " ]; then
+   alsa=`$autoconf alsa --cflags="$cflags"` || exit 1;
+fi
+
+if [ "$alsa " != " " ]; then
+  alsacflags=`pkg-config --cflags alsa`
+  alsalibs="`pkg-config --libs alsa`"
+
+  if [ "alsacflags " = " " -o "alsalibs " = " " ]; then
+    echo "*** ERROR: Cannot configure alsa, cflags are empty";
+    echo "Running the command \"pkg-config --cflags alsa\" might help understanding what's wrong"
+    exit 1;
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Multimedia                                                       */
 #*---------------------------------------------------------------------*/
 havemixer=`$autoconf mixer` || exit 1
@@ -3210,6 +3234,35 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GSTREAMER=" >> $makefile_cfg
     echo "GSTREAMERLIBS=" >> $makefile_cfg
     echo "GSTREAMERFLAGS=" >> $makefile_cfg
+  fi
+
+  # ALSA
+  if [ "$alsa " != " " ]; then
+    echo "ALSA=$alsa" >> $makefile_cfg
+    echo "ALSALIBS=$alsalibs" >> $makefile_cfg
+    echo "ALSACFLAGS=$alsacflags" >> $makefile_cfg
+
+    # Patch the code of the ALSA init file
+    echo ";; automatically generated. Don't edit" >  api/alsa/src/Misc/alsa.init
+    cat api/alsa/src/Misc/alsa.init.in \
+      | sed -e "s|@ALSALIBS@|$alsalibs|g" \
+            -e "s|@ALSACFLAGS@|$alsacflags|g" \
+      >>  api/alsa/src/Misc/alsa.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "alsa" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "ALSA=" >> $makefile_cfg
+    echo "ALSALIBS=" >> $makefile_cfg
+    echo "ALSAFLAGS=" >> $makefile_cfg
   fi
 
   # DBUS

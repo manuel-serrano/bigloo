@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Sun May 15 15:17:56 2011 (serrano)                */
+;*    Last change :  Mon Jun 20 14:42:33 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -365,12 +365,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-event-loop-abort! o::gstmusic)
    (with-access::gstmusic o (%loop-mutex %loop-condv %abort-loop)
-      (mutex-lock! %loop-mutex)
+      #;(mutex-lock! %loop-mutex)
       (unless %abort-loop
 	 (set! %abort-loop #t)
 	 (reset-sans-lock! o)
-	 (condition-variable-wait! %loop-condv %loop-mutex))
-      (mutex-unlock! %loop-mutex)))
+	 #;(condition-variable-wait! %loop-condv %loop-mutex))
+      #;(mutex-unlock! %loop-mutex)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-close ::gstmusic ...                                       */

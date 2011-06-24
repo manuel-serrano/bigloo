@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Sat Jan  3 19:50:49 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Mon Jun 20 14:42:07 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
 ;*=====================================================================*/
@@ -46,7 +46,6 @@
    (when (and (process? proc) (process-alive? proc))
       (let ((p (process-input-port proc)))
 	 (display command p)
-	 (tprint "* " command " " (if arg arg ""))
 	 (when arg
 	    (display " " p) 
 	    (display arg p))
@@ -357,14 +356,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-event-loop-abort! o::musicproc)
    (with-access::musicproc o (%process %mutex %abort-loop %loop-mutex %loop-condv)
-      (mutex-lock! %loop-mutex)
+      #;(mutex-lock! %loop-mutex)
       (with-lock %mutex
 	 (lambda ()
 	    (set! %abort-loop #t)
 	    (when (process? %process)
 	       (process-kill %process)
 	       (set! %process #f))))
-      (condition-variable-wait! %loop-condv %loop-mutex)
-      (mutex-unlock! %loop-mutex)))
+      #;(condition-variable-wait! %loop-condv %loop-mutex)
+      #;(mutex-unlock! %loop-mutex)))
       
    
