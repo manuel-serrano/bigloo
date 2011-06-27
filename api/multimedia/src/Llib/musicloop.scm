@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Jun 20 14:42:14 2011 (serrano)                */
+;*    Last change :  Sun Jun 26 14:50:36 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -99,10 +99,7 @@
 			 (onstate stat2))
 		      (with-access::musicstatus stat2 (song playlistlength)
 			 (when (<fx song (-fx playlistlength 1))
-			    (mutex-lock! %mutex)
-			    (set! song (+fx 1 song))
-			    (mutex-unlock! %mutex)
-			    (music-play m))))
+			    (music-next m))))
 		     (else
 		      ;; onstate
 		      (when onstate

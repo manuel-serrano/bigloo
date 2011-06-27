@@ -1,0 +1,38 @@
+;*=====================================================================*/
+;*    .../project/bigloo/api/mpg123/src/Misc/mpg123.init.in            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The MPG123 init file.                                            */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'mpg123
+		  :srfi '(mpg123)
+		  :basename "bigloompg123"
+		  :module-init '__mpg123_mpg123
+		  :module-eval '__mpg123_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; mpg123 includes
+    (set! *additional-include-foreign*
+	  (cons "mpg123.h" *additional-include-foreign*))
+    ;; required multimedia
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
+    ;; mpg123 C compilation options
+    (set! *cc-options*
+	  (string-append "@MPG123CFLAGS@ " *cc-options*))
+    ;; mpg123 libraries
+    (set! *ld-post-options*
+	  (string-append "@MPG123LIBS@ " *ld-post-options*))))
+

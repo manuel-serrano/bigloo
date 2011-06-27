@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jun 24 05:25:00 2011 (serrano)                */
+#*    Last change :  Sat Jun 25 06:20:36 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -176,8 +176,13 @@ gstusethread=1
 
 #*--- alsa (left blank for autoconfiguration) -------------------------*/
 alsa=
-gstreamerlibs=
-gstreamercflags=
+alsalibs=
+alsacflags=
+
+#*--- alsa (left blank for autoconfiguration) -------------------------*/
+mpg123=
+mpg123libs=
+mpg123cflags=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
@@ -2048,6 +2053,14 @@ if [ "$alsa " != " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    mpg123                                                           */
+#*---------------------------------------------------------------------*/
+# find out the C library for mpg123
+if [ "$mpg123 " = " " ]; then
+   mpg123libs=`$autoconf mpg123 --cflags="$cflags"` || exit 1;
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Multimedia                                                       */
 #*---------------------------------------------------------------------*/
 havemixer=`$autoconf mixer` || exit 1
@@ -3263,6 +3276,34 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "ALSA=" >> $makefile_cfg
     echo "ALSALIBS=" >> $makefile_cfg
     echo "ALSAFLAGS=" >> $makefile_cfg
+  fi
+
+  # MPG123
+  if [ "$mpg123libs " != "no " ]; then
+    echo "MPG123=$mpg123" >> $makefile_cfg
+    echo "MPG123LIBS=$mpg123libs" >> $makefile_cfg
+
+    # Patch the code of the MPG123 init file
+    echo ";; automatically generated. Don't edit" >  api/mpg123/src/Misc/mpg123.init
+    cat api/mpg123/src/Misc/mpg123.init.in \
+      | sed -e "s|@MPG123LIBS@|$mpg123libs|g" \
+            -e "s|@MPG123CFLAGS@|$mpg123cflags|g" \
+      >>  api/mpg123/src/Misc/mpg123.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "mpg123" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "MPG123=" >> $makefile_cfg
+    echo "MPG123LIBS=" >> $makefile_cfg
+    echo "MPG123FLAGS=" >> $makefile_cfg
   fi
 
   # DBUS
