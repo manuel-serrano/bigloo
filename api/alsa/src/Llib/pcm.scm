@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Jun 28 11:25:12 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 17:42:22 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -31,6 +31,7 @@
 
 	   (%$snd-pcm-nil)
 	   
+	   (alsa-snd-pcm-open ::alsa-snd-pcm)
 	   (alsa-snd-pcm-close ::alsa-snd-pcm)
 	   (alsa-snd-pcm-get-state ::alsa-snd-pcm)
 	   (alsa-snd-pcm-set-params! ::alsa-snd-pcm

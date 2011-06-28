@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Jun 24 16:12:45 2011 (serrano)                */
+#*    Last change :  Tue Jun 28 15:45:22 2011 (serrano)                */
 #*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -48,7 +48,8 @@ POPULATION	= Makefile \
                   gcflags mmap macosx openssl openssl-dtls sqlite \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
-                  gstreamer gstreameraudio alsa mpg123 dbus gmp limbs signbit \
+                  gstreamer gstreameraudio alsa mpg123 flac \
+                  dbus gmp limbs signbit \
                   getuid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv androidmkdir
 

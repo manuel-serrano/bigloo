@@ -1,0 +1,38 @@
+;*=====================================================================*/
+;*    .../project/bigloo/api/flac/src/Misc/flac.init.in                */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The FLAC init file.                                              */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'flac
+		  :srfi '(flac)
+		  :basename "biglooflac"
+		  :module-init '__flac_flac
+		  :module-eval '__flac_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; flac includes
+    (set! *additional-include-foreign*
+	  (cons "FLAC/stream_decoder.h" *additional-include-foreign*))
+    ;; required multimedia
+    (set! *additional-bigloo-libraries*
+	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
+    ;; flac C compilation options
+    (set! *cc-options*
+	  (string-append "@FLACCFLAGS@ " *cc-options*))
+    ;; flac libraries
+    (set! *ld-post-options*
+	  (string-append "@FLACLIBS@ " *ld-post-options*))))
+

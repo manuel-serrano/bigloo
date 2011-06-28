@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jun 28 11:41:11 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 19:04:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -28,8 +28,8 @@
 	      (%port::obj (default #f))
 	      (%toseek::long (default 0))
 	      (%volume::long (default 100))
-	      (inbuf::bstring read-only (default (make-string 16384)))
-	      (outbuf::bstring read-only (default (make-string 16384)))
+	      (inbuf::bstring read-only (default (make-string (*fx 2 16384))))
+	      (outbuf::bstring read-only (default (make-string (*fx 2 16384))))
 	      (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	      (decoders::pair read-only))
 
@@ -262,21 +262,17 @@
 ;*    stop ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (stop o::alsamusic)
-   (with-access::alsamusic o (%thmutex %port %status %decoder pcm)
+   (with-access::alsamusic o (%thmutex %port %status)
       (when (input-port? %port)
 	 (close-input-port %port)
-	 (alsa-snd-pcm-drop pcm)
-	 (alsa-snd-pcm-reset pcm)
-	 (alsa-snd-pcm-prepare pcm)
-	 (alsa-snd-pcm-start pcm)
-	 (alsadecoder-reset! %decoder)
+	 (musicstatus-songpos-set! %status 0)
 	 (set! %port #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    play ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (play o::alsamusic d::alsadecoder p::input-port)
-   (with-access::alsamusic o (%thmutex %thcondv %status %port %decoder %status)
+   (with-access::alsamusic o (%thmutex %thcondv %status %port %decoder pcm)
       (let loop ()
 	 (mutex-lock! %thmutex)
 	 (if (eq? (musicstatus-state %status) 'init)
@@ -288,7 +284,17 @@
 		(stop o)
 		(set! %port p)
 		(set! %decoder d)
-		(musicstatus-songpos-set! %status 0)
+		(alsadecoder-reset! %decoder)
+		(tprint "play state=" (alsa-snd-pcm-get-state pcm))
+		(when (eq? (alsa-snd-pcm-get-state pcm) 'running)
+		   '(alsa-snd-pcm-drop pcm)
+		   (tprint "play, after drop")
+		   (alsa-snd-pcm-reset pcm)
+		   (tprint "play, after reset")
+		   '(alsa-snd-pcm-prepare pcm)
+		   (tprint "play, after prepare")
+		   '(alsa-snd-pcm-start pcm)
+		   (tprint "play, after start"))
 		(condition-variable-signal! %thcondv)
 		(mutex-unlock! %thmutex))))))
 
@@ -352,6 +358,8 @@
 			  (loop))
 			 ((or (eq? status 'done) (and (=fx sz 0) (=fx size 0)))
 			  (musicstatus-state-set! %status 'ended)
+			  (tprint "ENDED..." (alsa-snd-pcm-get-state pcm)
+			     " " (current-seconds))
 			  (mutex-unlock! %thmutex))
 			 ((eq? (musicstatus-state %status) 'pause)
 			  (condition-variable-wait! %thcondv %thmutex)

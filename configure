@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jun 25 06:20:36 2011 (serrano)                */
+#*    Last change :  Tue Jun 28 15:47:46 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -179,10 +179,15 @@ alsa=
 alsalibs=
 alsacflags=
 
-#*--- alsa (left blank for autoconfiguration) -------------------------*/
+#*--- mpg123 (left blank for autoconfiguration) -----------------------*/
 mpg123=
 mpg123libs=
 mpg123cflags=
+
+#*--- flac (left blank for autoconfiguration) -------------------------*/
+flac=
+flaclibs=
+flaccflags=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
@@ -2061,6 +2066,14 @@ if [ "$mpg123 " = " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    flac                                                             */
+#*---------------------------------------------------------------------*/
+# find out the C library for flac
+if [ "$flac " = " " ]; then
+   flaclibs=`$autoconf flac --cflags="$cflags"` || exit 1;
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Multimedia                                                       */
 #*---------------------------------------------------------------------*/
 havemixer=`$autoconf mixer` || exit 1
@@ -3304,6 +3317,34 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "MPG123=" >> $makefile_cfg
     echo "MPG123LIBS=" >> $makefile_cfg
     echo "MPG123FLAGS=" >> $makefile_cfg
+  fi
+
+  # FLAC
+  if [ "$flaclibs " != "no " ]; then
+    echo "FLAC=$flac" >> $makefile_cfg
+    echo "FLACLIBS=$flaclibs" >> $makefile_cfg
+
+    # Patch the code of the FLAC init file
+    echo ";; automatically generated. Don't edit" >  api/flac/src/Misc/flac.init
+    cat api/flac/src/Misc/flac.init.in \
+      | sed -e "s|@FLACLIBS@|$flaclibs|g" \
+            -e "s|@FLACCFLAGS@|$flaccflags|g" \
+      >>  api/flac/src/Misc/flac.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "flac" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "FLAC=" >> $makefile_cfg
+    echo "FLACLIBS=" >> $makefile_cfg
+    echo "FLACFLAGS=" >> $makefile_cfg
   fi
 
   # DBUS
