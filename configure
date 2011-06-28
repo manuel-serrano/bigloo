@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 28 20:29:04 2011 (serrano)                */
+#*    Last change :  Tue Jun 28 21:11:09 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3263,7 +3263,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # ALSA
-  if [ "$alsa " != " " ]; then
+  if [ "$alsa " != "no " ]; then
     echo "ALSA=$alsa" >> $makefile_cfg
     echo "ALSALIBS=$alsalibs" >> $makefile_cfg
     echo "ALSACFLAGS=$alsacflags" >> $makefile_cfg
