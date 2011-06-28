@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:03:11 2011                          */
-;*    Last change :  Sun Jun 26 06:26:46 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 08:23:44 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    pcm-min, an extra small demo sends a random samples to your      */
@@ -14,7 +14,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module pcm-min
-   (library alsa)
+   (library pthread alsa)
    (main main))
 
 ;*---------------------------------------------------------------------*/
@@ -47,6 +47,8 @@
    ;; open the pcm device
    (let ((pcm (instantiate::alsa-snd-pcm
 		 (device device))))
+
+      (print "device=" (alsa-snd-pcm-name pcm))
       
       (alsa-snd-pcm-set-params! pcm :format 'u8
 	 :access 'rw-interleaved

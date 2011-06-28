@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Sat Jun 25 07:12:50 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 11:24:52 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -20,6 +20,17 @@
 
       ;; misc
       (macro $snd-lib-version::int "SND_LIB_VERSION")
+      (macro $snd-asoundlib-version::string () "snd_asoundlib_version")
+
+      ;; snd-card
+      (macro $snd-card-load::bool
+	 (::int) "snd_card_load")
+      (macro $bgl-snd-card-get-name::string
+	 (::int) "bgl_snd_card_get_name")
+      (macro $bgl-snd-card-get-longname::string (::int)
+	     "bgl_snd_card_get_longname")
+      (macro $bgl-snd-devices-list::pair-nil (::string)
+	     "bgl_snd_devices_list")
       
       ;; snd-pcm
       (type $snd-pcm void* "snd_pcm_t *")
@@ -37,6 +48,17 @@
       (macro $snd-pcm-writei::$snd-pcm-sframes
 	 (::$snd-pcm ::string ::$snd-pcm-uframes)
 	 "snd_pcm_writei")
+      (macro $snd-pcm-pause::int
+	 (::$snd-pcm ::int)
+	 "snd_pcm_pause")
+      (macro $snd-pcm-drop::int
+	 (::$snd-pcm) "snd_pcm_drop")
+      (macro $snd-pcm-reset::int
+	 (::$snd-pcm) "snd_pcm_reset")
+      (macro $snd-pcm-prepare::int
+	 (::$snd-pcm) "snd_pcm_prepare")
+      (macro $snd-pcm-start::int
+	 (::$snd-pcm) "snd_pcm_start")
 
       ;; snd-pcm-stream
       (type $snd-pcm-stream long "snd_pcm_stream_t")

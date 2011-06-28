@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri May 27 11:44:51 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 11:56:29 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -57,6 +57,7 @@
 	   (flac-musictag ::bstring)
 	   (file-musictag ::bstring)
 	   (flac-musicinfo ::bstring)
+	   (mp3-musicinfo ::bstring)
 	   (file-musicinfo ::bstring)))
 
 ;*---------------------------------------------------------------------*/
@@ -952,8 +953,7 @@
       ((id3v2.4? mm) (mp3-id3v2.4 mm))
       ((id3v2.3? mm) (mp3-id3v2.3 mm))
       ((id3v2.2? mm) (mp3-id3v2.2 mm))
-      ((id3v1.1? mm) (mp3-id3v1.1 mm))
-      ((id3v1? mm) (mp3-id3v1 mm)))
+      (else (mmap-read-position-set! mm 0)))
    
    (let* ((len (mmap-length mm))
 	  (i0 (mmap-read-position mm))

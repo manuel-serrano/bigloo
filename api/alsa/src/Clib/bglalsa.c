@@ -3,12 +3,13 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Fri Jun 24 14:41:48 2011 (serrano)                */
+/*    Last change :  Tue Jun 28 09:23:16 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
 #include <alsa/asoundlib.h>
+#include <bigloo.h>
 #include "bglalsa.h"
 #include "bglpcm.h"
 
@@ -23,8 +24,8 @@
 /*    bgl_snd_pcm_open ...                                             */
 /*---------------------------------------------------------------------*/
 int
-bgl_snd_pcm_open( obj_t o, char *name, snd_pcm_stream_t stream, int mode) {
-   return snd_pcm_open( &(OBJ_TO_SND_PCM( o )), name, stream, mode);
+bgl_snd_pcm_open( obj_t o, char *name, snd_pcm_stream_t stream, int mode ) {
+   return snd_pcm_open( &(OBJ_TO_SND_PCM( o )), name, stream, mode );
 }
 
 /*---------------------------------------------------------------------*/
@@ -163,3 +164,69 @@ bgl_snd_pcm_flush( obj_t o ) {
    snd_pcm_drop( pcm );
    snd_pcm_prepare( pcm );
 }
+
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_snd_card_get_name ...                                        */
+/*---------------------------------------------------------------------*/
+char *
+bgl_snd_card_get_name( int i ) {
+   char *name;
+   int err = snd_card_get_name( i, &name );
+
+   if( !err ) {
+      return name;
+   } else {
+      bgl_alsa_error( "alsa-get-cards",
+		      (char *)snd_strerror( err ),
+		      BINT( i ) );
+      return 0L;
+   }
+}      
+   
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_snd_card_get_longname ...                                    */
+/*---------------------------------------------------------------------*/
+char *
+bgl_snd_card_get_longname( int i ) {
+   char *longname;
+   int err = snd_card_get_longname( i, &longname );
+
+   if( !err ) {
+      return longname;
+   } else {
+      bgl_alsa_error( "alsa-get-cards",
+		      (char *)snd_strerror( err ),
+		      BINT( i ) );
+      return 0L;
+   }
+}      
+
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_snd_devices_list ...                                         */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_snd_devices_list( char *iface ) {
+   void **hints;
+   int err = snd_device_name_hint( -1, (const char*)iface, &hints );
+   obj_t acc = BNIL;
+
+   if( err >= 0 ) {
+      void **h = hints;
+      while( *h ) {
+	 char *s = snd_device_name_get_hint( *h++, "NAME" );
+	 acc = MAKE_PAIR( string_to_bstring( s ), acc );
+	 free( s );
+      }
+
+      snd_device_name_free_hint( hints );
+      
+      return acc;
+   } else {
+      return BNIL;
+   }
+}      
+   

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:11:10 2011                          */
-;*    Last change :  Sun Jun 26 07:53:42 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 07:42:34 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Alsa object wrapper                                              */
@@ -14,16 +14,20 @@
 ;*---------------------------------------------------------------------*/
 (module __alsa_alsa
    
+   (include "alsa.sch")
+
    (extern (export alsa-error "bgl_alsa_error"))
    
    (export (abstract-class alsa-object
 	      (alsa-init))
-	   
+
 	   (generic alsa-init ::alsa-object)
 	   
 	   (class &alsa-error::&error)
 	   
-	   (alsa-error::int ::string ::string ::obj)))
+	   (alsa-error::int ::string ::string ::obj)
+	   (alsa-snd-version::bstring)
+	   (alsa-snd-devices-list::pair-nil ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-init ...                                                    */
@@ -40,3 +44,15 @@
 	     (msg msg)
 	     (obj obj)))
    0)
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-version ...                                             */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-version)
+   ($snd-asoundlib-version))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-devices-list ...                                        */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-devices-list iface)
+   ($bgl-snd-devices-list iface))

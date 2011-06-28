@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sun Jun 26 07:53:23 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 11:25:12 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -23,17 +23,23 @@
 	      "bgl_snd_pcm_open"))
 
    (export (class alsa-snd-pcm::alsa-object
-	      ($builtin::$snd-pcm read-only (default ($snd-pcm-nil)))
+	      ($builtin::$snd-pcm read-only (default (%$snd-pcm-nil)))
 	      (name::bstring (default ""))
 	      (device::string read-only (default "default"))
 	      (stream::symbol read-only (default 'playback))
 	      (mode::symbol read-only (default 'default)))
+
+	   (%$snd-pcm-nil)
 	   
 	   (alsa-snd-pcm-close ::alsa-snd-pcm)
 	   (alsa-snd-pcm-get-state ::alsa-snd-pcm)
 	   (alsa-snd-pcm-set-params! ::alsa-snd-pcm
 	      #!key format access channels rate soft-resample latency)
 	   (alsa-snd-pcm-writei ::alsa-snd-pcm ::string ::long)
+	   (alsa-snd-pcm-reset ::alsa-snd-pcm)
+	   (alsa-snd-pcm-prepare ::alsa-snd-pcm)
+	   (alsa-snd-pcm-start ::alsa-snd-pcm)
+	   (alsa-snd-pcm-drop ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-set-params! ::alsa-snd-pcm . rest)
 	   (alsa-snd-pcm-sw-set-params! ::alsa-snd-pcm . rest)
 
@@ -45,6 +51,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsa-init o::alsa-snd-pcm)
    (alsa-snd-pcm-open o))
+
+;*---------------------------------------------------------------------*/
+;*    %$snd-pcm-nil ...                                                */
+;*---------------------------------------------------------------------*/
+(define (%$snd-pcm-nil)
+   ($snd-pcm-nil))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-open ...                                            */
@@ -218,6 +230,58 @@
 	 (if (<fx err 0)
 	     (raise (instantiate::&alsa-error
 		       (proc "alsa-snd-pcm-writei")
+		       (msg ($snd-strerror err))
+		       (obj pcm)))
+	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-reset ...                                           */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-reset pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-reset $builtin)))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-reset")
+		       (msg ($snd-strerror err))
+		       (obj pcm)))
+	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-prepare ...                                         */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-prepare pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-prepare $builtin)))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-prepare")
+		       (msg ($snd-strerror err))
+		       (obj pcm)))
+	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-start ...                                           */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-start pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-start $builtin)))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-start")
+		       (msg ($snd-strerror err))
+		       (obj pcm)))
+	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-drop ...                                            */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-drop pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-drop $builtin)))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-drop")
 		       (msg ($snd-strerror err))
 		       (obj pcm)))
 	     err))))

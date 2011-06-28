@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sun Jun 26 15:50:31 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 11:35:22 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -20,23 +20,38 @@
    
    (export (class mpg123-handle
 	      (mpg123-handle-init)
-	      ($builtin::$mpg123-handle read-only (default ($bgl-mpg123-new $string-null))))
+	      ($builtin::$mpg123-handle (default (%$mpg123-handle-nil)))
+	      (decoder read-only (default #f)))
 	   
 	   (class &mpg123-error::&error)
 
 	   (generic mpg123-handle-init::mpg123-handle ::mpg123-handle)
+	   (%$mpg123-handle-nil)
 	   
 	   (mpg123-handle-close ::mpg123-handle)
+	   (mpg123-handle-reset! ::mpg123-handle)
 	   (mpg123-get-format ::mpg123-handle)
 	   (mpg123-error::int ::string ::string ::obj)
 	   (mpg123-decode ::mpg123-handle ::bstring ::long ::bstring ::long)
-	   (mpg123-position::long ::mpg123-handle ::bstring)))
+	   (mpg123-position::long ::mpg123-handle ::bstring)
+	   (mpg123-info::long ::mpg123-handle)
+	   (mpg123-seek::long ::mpg123-handle ::long)
+	   (mpg123-volume-get::obj ::mpg123-handle)
+	   (mpg123-volume-set! ::mpg123-handle ::obj)))
+
+;*---------------------------------------------------------------------*/
+;*    %$mpg123-handle-nil ...                                          */
+;*---------------------------------------------------------------------*/
+(define (%$mpg123-handle-nil)
+   $mpg123-handle-nil)
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-handle-init ::mpg123-handle ...                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpg123-handle-init o::mpg123-handle)
-   (with-access::mpg123-handle o ($builtin)
+   (with-access::mpg123-handle o ($builtin decoder)
+      (let ((d::string (if (string? decoder) decoder $string-null)))
+	 (set! $builtin ($bgl-mpg123-new d)))
       ($mpg123-open-feed $builtin))
    o)
 
@@ -48,6 +63,14 @@
       ($mpg123-delete $builtin)
       o))
 
+;*---------------------------------------------------------------------*/
+;*    mpg123-handle-reset! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (mpg123-handle-reset! o::mpg123-handle)
+   (with-access::mpg123-handle o ($builtin)
+      ($mpg123-close $builtin)
+      ($mpg123-open-feed $builtin)))
+      
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-error ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -131,3 +154,44 @@
 		(proc "mpg123")
 		(msg ($mpg123-plain-strerror err))
 		(obj #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    mpg123-info ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (mpg123-info m::mpg123-handle)
+   (with-access::mpg123-handle m ($builtin)
+      ($bgl-mpg123-info $builtin)))
+   
+;*---------------------------------------------------------------------*/
+;*    mpg123-seek ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (mpg123-seek m::mpg123-handle ms)
+   (with-access::mpg123-handle m ($builtin)
+      (let ((f ($mpg123-timeframe $builtin (/fl (fixnum->flonum ms) 1000.))))
+	 ($mpg123-seek-frame $builtin f $mpg123-seek-set))))
+   
+;*---------------------------------------------------------------------*/
+;*    mpg123-volume-get ...                                            */
+;*---------------------------------------------------------------------*/
+(define (mpg123-volume-get m::mpg123-handle)
+   (with-access::mpg123-handle m ($builtin)
+      (let ((vol ($bgl-mpg123-getvolume $builtin)))
+	 (if (<fx vol 0)
+	     (raise (instantiate::&mpg123-error
+		   (proc "mpg123")
+		   (msg ($mpg123-plain-strerror vol))
+		   (obj m)))
+	     vol))))
+
+;*---------------------------------------------------------------------*/
+;*    mpg123-volume-set! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (mpg123-volume-set! m::mpg123-handle vol)
+   (with-access::mpg123-handle m ($builtin)
+      (let ((err ($mpg123-volume $builtin (/ (fixnum->flonum vol) 100.))))
+	 (when (<fx err 0)
+	    (raise (instantiate::&mpg123-error
+		      (proc "mpg123")
+		      (msg ($mpg123-plain-strerror err))
+		      (obj m)))))))
+

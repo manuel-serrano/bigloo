@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Fri Jun 24 05:47:14 2011 (serrano)                */
+#*    Last change :  Mon Jun 27 19:44:27 2011 (serrano)                */
 #*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Alsa examples                          */
@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = pcm-min
+SOURCES = pcm-min cards
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -36,6 +36,9 @@ POPULATION = $(SOURCES:%=%.scm) Makefile
 all: $(SOURCES)
 
 pcm-min: pcm-min.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+cards: cards.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

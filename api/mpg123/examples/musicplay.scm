@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Sun Jun 26 15:59:25 2011 (serrano)                */
+;*    Last change :  Tue Jun 28 09:07:03 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -52,6 +52,27 @@
       (mpg123-position handle buf)))
 
 ;*---------------------------------------------------------------------*/
+;*    alsadecoder-info ::mpg123decoder ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-info o::mpg123decoder)
+   (with-access::mpg123decoder o (handle)
+      (mpg123-info handle)))
+
+;*---------------------------------------------------------------------*/
+;*    alsadecoder-volume-set! ::mpg123decoder ...                      */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-volume-set! o::mpg123decoder vol)
+   (with-access::mpg123decoder o (handle)
+      (mpg123-volume-set! handle vol)))
+
+;*---------------------------------------------------------------------*/
+;*    alsadecoder-seek ::mpg123decoder ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-seek o::mpg123decoder ms)
+   (with-access::mpg123decoder o (handle)
+      (mpg123-seek handle ms)))
+
+;*---------------------------------------------------------------------*/
 ;*    directory->files ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (directory->files path)
@@ -67,36 +88,56 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (let* ((files (append-map directory->files (cdr args)))
-	  (pcm (instantiate::alsa-snd-pcm))
-	  (decoder (instantiate::mpg123decoder))
-	  (player (instantiate::alsamusic
-		     (decoders (list decoder))
-		     (pcm pcm))))
-      (alsa-snd-pcm-sw-set-params! pcm :start-threshold 1 :avail-min 1)
-      (music-playlist-clear! player)
-      (for-each (lambda (p) (music-playlist-add! player p)) (reverse files))
-      (music-play player)
-      (music-event-loop player
-	 :frequency 20000
-	 :onstate (lambda (status)
-		     (with-access::musicstatus status (state song volume
-							 songpos
-							 songlength)
-			(print "state: " state)
-			(print "song : " song
-			   " [" songpos "/" songlength "]")
-			(newline)))
-	 :onmeta (lambda (meta)
-		    (print "meta    : " meta)
-		    (print "playlist: ")
-		    (for-each (lambda (s) (print "  " s))
-		       (music-playlist-get player))
-		    (newline))
-	 :onerror (lambda (err)
-		     (print "error   : " err)
-		     (newline))
-	 :onvolume (lambda (volume)
-		      (print "volume: " volume)
-		      (newline)))))
+   
+   (let ((files '())
+	 (volume 100)
+	 (device "default"))
+      
+      (args-parse (cdr args)
+	 ((("-h" "--help") (help "This message"))
+	  (print "musicplay")
+	  (print "usage: musicplay [options] file1 file2 ...")
+	  (newline)
+	  (args-parse-usage #f)
+	  (exit 0))
+	 ((("-v" "--volume") ?vol (help "Set volume"))
+	  (set! volume (string->integer vol)))
+	 ((("-d" "--device") ?dev (help "Select device"))
+	  (set! device dev))
+	 (else
+	  (set! files (append (directory->files else) files))))
+
+      (let* ((pcm (instantiate::alsa-snd-pcm
+		     (device device)))
+	     (decoder (instantiate::mpg123decoder))
+	     (player (instantiate::alsamusic
+			(decoders (list decoder))
+			(pcm pcm))))
+	 (music-volume-set! player volume)
+	 (alsa-snd-pcm-sw-set-params! pcm :start-threshold 1 :avail-min 1)
+	 (music-playlist-clear! player)
+	 (for-each (lambda (p) (music-playlist-add! player p)) (reverse files))
+	 (music-play player)
+	 (music-event-loop player
+	    :frequency 20000
+	    :onstate (lambda (status)
+			(with-access::musicstatus status (state song volume
+							    songpos
+							    songlength)
+			   (print "state: " state)
+			   (print "song : " (list-ref (music-playlist-get player)  song)
+			      " [" songpos "/" songlength "]")
+			   (newline)))
+	    :onmeta (lambda (meta)
+		       (print "meta    : " meta)
+		       (print "playlist: ")
+		       (for-each (lambda (s) (print "  " s))
+			  (music-playlist-get player))
+		       (newline))
+	    :onerror (lambda (err)
+			(print "error   : " err)
+			(newline))
+	    :onvolume (lambda (volume)
+			 (print "volume: " volume)
+			 (newline))))))
 

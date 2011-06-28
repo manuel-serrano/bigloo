@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sun Jun 26 15:56:10 2011 (serrano)                */
+/*    Last change :  Tue Jun 28 08:55:37 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -87,14 +87,58 @@ bgl_mpg123_getformat( mpg123_handle *m ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_mpg123_position( mpg123_handle *m ) {
-   off_t current_frame, frames_left;
-   double current_seconds, seconds_left;
-   long cs, sl;
+   off_t frame = mpg123_tellframe( m );
+   double tpf = mpg123_tpf( m );
 
-   mpg123_position( m,
-		    0, 0,
-		    &current_frame, &frames_left,
-		    &current_seconds, &seconds_left );
+   return (long)(tpf * 1000.) * frame;
+/*    off_t current_frame, frames_left;                                */
+/*    double current_seconds, seconds_left;                            */
+/*    long cs, sl;                                                     */
+/*                                                                     */
+/*    mpg123_position( m,                                              */
+/* 		    0, 0,                                              */
+/* 		    &current_frame, &frames_left,                      */
+/* 		    &current_seconds, &seconds_left );                 */
+/*                                                                     */
+/*    return (long)(current_seconds * 1000.);                          */
+}
 
-   return (long)(current_seconds * 1000.);
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_mpg123_info ...                                              */
+/*---------------------------------------------------------------------*/
+long
+bgl_mpg123_info( mpg123_handle *m ) {
+   struct mpg123_frameinfo mi;
+   int err = mpg123_info( m, &mi );
+   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+
+   if( err < 0 ) {
+      bgl_mpg123_error( "mpg123-info", mpg123_plain_strerror( err ), m );
+   }
+
+   BGL_ENV_MVALUES_NUMBER_SET( env, 1 );
+   BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( mi.rate ) );
+
+   return mi.bitrate;
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_mpg123_getvolume ...                                         */
+/*---------------------------------------------------------------------*/
+long
+bgl_mpg123_getvolume( mpg123_handle *m ) {
+   double base, really, rva_db;
+   int err;
+
+   err = mpg123_getvolume( m, &base, &really, &rva_db );
+
+   if( err < 0 ) {
+      return err;
+   } else {
+      fprintf( stderr, "vol base=%d really=%d rva_db=%d\n",
+	       (int)(base * 100), (int)(really * 100), (int)(rva_db * 100) );
+      return (long)(base * 100);
+   }
 }
