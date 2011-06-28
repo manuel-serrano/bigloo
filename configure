@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 28 15:47:46 2011 (serrano)                */
+#*    Last change :  Tue Jun 28 20:29:04 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2046,7 +2046,7 @@ if [ "$alsa " = " " ]; then
    alsa=`$autoconf alsa --cflags="$cflags"` || exit 1;
 fi
 
-if [ "$alsa " != " " ]; then
+if [ "$alsa " != "no " ]; then
   alsacflags=`pkg-config --cflags alsa`
   alsalibs="`pkg-config --libs alsa`"
 
