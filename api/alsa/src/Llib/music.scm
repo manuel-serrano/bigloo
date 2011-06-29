@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jun 28 19:04:41 2011 (serrano)                */
+;*    Last change :  Wed Jun 29 05:58:47 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -240,14 +240,14 @@
 ;*    music-pause ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::alsamusic)
-   (with-access::alsamusic o (%thmutex %thcondv %status)
+   (with-access::alsamusic o (%thmutex %thcondv %status pcm)
       (with-lock %thmutex
 	 (lambda ()
-	    (if (eq? (musicstatus-state %status) 'pause)
+	    (if (eq? (alsa-snd-pcm-get-state pcm) 'paused)
 		(begin
-		   (musicstatus-state-set! %status 'play)
+		   (alsa-snd-pcm-pause pcm #f)
 		   (condition-variable-broadcast! %thcondv))
-		(musicstatus-state-set! %status 'pause))))))
+		(alsa-snd-pcm-pause pcm #t))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
@@ -285,16 +285,8 @@
 		(set! %port p)
 		(set! %decoder d)
 		(alsadecoder-reset! %decoder)
-		(tprint "play state=" (alsa-snd-pcm-get-state pcm))
 		(when (eq? (alsa-snd-pcm-get-state pcm) 'running)
-		   '(alsa-snd-pcm-drop pcm)
-		   (tprint "play, after drop")
-		   (alsa-snd-pcm-reset pcm)
-		   (tprint "play, after reset")
-		   '(alsa-snd-pcm-prepare pcm)
-		   (tprint "play, after prepare")
-		   '(alsa-snd-pcm-start pcm)
-		   (tprint "play, after start"))
+		   (alsa-snd-pcm-reset pcm))
 		(condition-variable-signal! %thcondv)
 		(mutex-unlock! %thmutex))))))
 
@@ -361,7 +353,8 @@
 			  (tprint "ENDED..." (alsa-snd-pcm-get-state pcm)
 			     " " (current-seconds))
 			  (mutex-unlock! %thmutex))
-			 ((eq? (musicstatus-state %status) 'pause)
+			 ((eq? status 'pause)
+			  (musicstatus-state-set! %status 'pause)
 			  (condition-variable-wait! %thcondv %thmutex)
 			  (mutex-unlock! %thmutex)
 			  (loop))

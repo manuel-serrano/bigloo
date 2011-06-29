@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Jun 28 17:42:22 2011 (serrano)                */
+;*    Last change :  Wed Jun 29 05:55:34 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -37,6 +37,7 @@
 	   (alsa-snd-pcm-set-params! ::alsa-snd-pcm
 	      #!key format access channels rate soft-resample latency)
 	   (alsa-snd-pcm-writei ::alsa-snd-pcm ::string ::long)
+	   (alsa-snd-pcm-pause ::alsa-snd-pcm ::bool)
 	   (alsa-snd-pcm-reset ::alsa-snd-pcm)
 	   (alsa-snd-pcm-prepare ::alsa-snd-pcm)
 	   (alsa-snd-pcm-start ::alsa-snd-pcm)
@@ -231,6 +232,19 @@
 	 (if (<fx err 0)
 	     (raise (instantiate::&alsa-error
 		       (proc "alsa-snd-pcm-writei")
+		       (msg ($snd-strerror err))
+		       (obj pcm)))
+	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-pause ...                                           */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-pause pcm::alsa-snd-pcm v::bool)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-pause $builtin (if v 1 0))))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-pause")
 		       (msg ($snd-strerror err))
 		       (obj pcm)))
 	     err))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Tue Jun 28 11:56:29 2011 (serrano)                */
+;*    Last change :  Wed Jun 29 05:48:53 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -588,13 +588,15 @@
 ;*    neq-input-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (neq-input-string mm s)
-   ;; consume matching input.  stop immediately upon mismatch.
-   (let loop ((i 0))
-      (if (=fx i (string-length s))
-	  #f
-	  (if (char=? (mmap-get-char mm) (string-ref s i))
-	      (loop (+fx 1 i))
-	      #t))))
+   ;; Consume matching input. Stop immediately upon mismatch.
+   (if (<fx (-fx (mmap-length mm) (mmap-read-position mm)) (string-length s))
+       #t
+       (let loop ((i 0))
+	  (if (=fx i (string-length s))
+	      #f
+	      (if (char=? (mmap-get-char mm) (string-ref s i))
+		  (loop (+fx 1 i))
+		  #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ubigendian2 ...                                                  */
@@ -905,7 +907,7 @@
 	     (begin
 		(mmap-read-position-set! mm 0)
 		#f))))
-   
+
    (let ((i (skip-id3-frame mm)))
       (mmap-read-position-set! mm i)
       (if (neq-input-string mm "fLaC")
@@ -954,7 +956,7 @@
       ((id3v2.3? mm) (mp3-id3v2.3 mm))
       ((id3v2.2? mm) (mp3-id3v2.2 mm))
       (else (mmap-read-position-set! mm 0)))
-   
+
    (let* ((len (mmap-length mm))
 	  (i0 (mmap-read-position mm))
 	  (f0 (read-mp3-frame mm i0 (instantiate::mp3frame))))
