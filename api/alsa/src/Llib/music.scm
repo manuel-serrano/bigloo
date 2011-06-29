@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Jun 29 05:58:47 2011 (serrano)                */
+;*    Last change :  Wed Jun 29 08:22:29 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -27,6 +27,7 @@
 	      (%thcondv::condvar read-only (default (make-condition-variable)))
 	      (%port::obj (default #f))
 	      (%toseek::long (default 0))
+	      (%pause::bool (default #f))
 	      (%volume::long (default 100))
 	      (inbuf::bstring read-only (default (make-string (*fx 2 16384))))
 	      (outbuf::bstring read-only (default (make-string (*fx 2 16384))))
@@ -50,10 +51,10 @@
 ;*    music-init ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-init o::alsamusic)
-   (with-access::alsamusic o (%thread %thmutex %status)
+   (with-access::alsamusic o (%thread %thmutex %status pcm)
       (with-lock %thmutex
 	 (lambda ()
-	    (musicstatus-state-set! %status 'init)
+	    (musicstatus-state-set! %status 'uninitialized)
 	    (unless (thread? %thread)
 	       (set! %thread (make-alsamusic-thread o))
 	       (thread-start! %thread))))))
@@ -169,9 +170,11 @@
 ;*    music-play ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::alsamusic . s)
-   (with-access::alsamusic o (%mutex %status %playlist)
+   (with-access::alsamusic o (%mutex %status %playlist %pause)
       (with-access::musicstatus %status (song playlistlength)
 	 (cond
+	    (%pause
+	     (music-pause o))
 	    ((pair? s)
 	     (unless (integer? (car s))
 		(bigloo-type-error "music-play ::alsamusic" 'int (car s)))
@@ -240,14 +243,14 @@
 ;*    music-pause ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::alsamusic)
-   (with-access::alsamusic o (%thmutex %thcondv %status pcm)
+   (with-access::alsamusic o (%thmutex %thcondv %pause pcm)
       (with-lock %thmutex
 	 (lambda ()
-	    (if (eq? (alsa-snd-pcm-get-state pcm) 'paused)
+	    (if %pause
 		(begin
-		   (alsa-snd-pcm-pause pcm #f)
+		   (set! %pause #f)
 		   (condition-variable-broadcast! %thcondv))
-		(alsa-snd-pcm-pause pcm #t))))))
+		(set! %pause #t))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
@@ -272,10 +275,10 @@
 ;*    play ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (play o::alsamusic d::alsadecoder p::input-port)
-   (with-access::alsamusic o (%thmutex %thcondv %status %port %decoder pcm)
+   (with-access::alsamusic o (%thmutex %thcondv %status %port %decoder %pause pcm)
       (let loop ()
 	 (mutex-lock! %thmutex)
-	 (if (eq? (musicstatus-state %status) 'init)
+	 (if (eq? (musicstatus-state %status) 'uninitialized)
 	     (begin
 		(mutex-unlock! %thmutex)
 		(sleep 1000000)
@@ -285,6 +288,7 @@
 		(set! %port p)
 		(set! %decoder d)
 		(alsadecoder-reset! %decoder)
+		(set! %pause #f)
 		(when (eq? (alsa-snd-pcm-get-state pcm) 'running)
 		   (alsa-snd-pcm-reset pcm))
 		(condition-variable-signal! %thcondv)
@@ -294,7 +298,7 @@
 ;*    decode ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (decode o::alsamusic)
-   (with-access::alsamusic o (pcm %thmutex %thcondv %port %decoder inbuf outbuf %status %toseek)
+   (with-access::alsamusic o (pcm %thmutex %thcondv %port %decoder inbuf outbuf %status %toseek %pause)
       (with-handler
 	 (lambda (e)
 	    (exception-notify e)
@@ -326,6 +330,11 @@
 			 (alsa-snd-pcm-write pcm outbuf size))
 		      (mutex-lock! %thmutex)
 		      (cond
+			 (%pause
+			  (musicstatus-state-set! %status 'pause)
+			  (condition-variable-wait! %thcondv %thmutex)
+			  (mutex-unlock! %thmutex)
+			  (loop))
 			 ((eq? status 'ok)
 			  (musicstatus-songpos-set! %status
 			     (alsadecoder-position %decoder inbuf))
@@ -353,11 +362,6 @@
 			  (tprint "ENDED..." (alsa-snd-pcm-get-state pcm)
 			     " " (current-seconds))
 			  (mutex-unlock! %thmutex))
-			 ((eq? status 'pause)
-			  (musicstatus-state-set! %status 'pause)
-			  (condition-variable-wait! %thcondv %thmutex)
-			  (mutex-unlock! %thmutex)
-			  (loop))
 			 ((eq? status 'need-more)
 			  (mutex-unlock! %thmutex)
 			  (loop))
