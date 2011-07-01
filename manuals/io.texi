@@ -648,7 +648,7 @@ Fills the string @var{s} starting at offset @var{o} with at
 most @var{len} characters read from the input port @var{input-port}
 (or from @code{(current-input-port)} if @var{input-port} is not provided).
 This function returns the number of read characters (which may be smaller
-than @var{len} if less characters are available).
+than @var{len} if less characters are available) or the end of file object.
 
 Example:
 @smalllisp

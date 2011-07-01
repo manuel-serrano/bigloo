@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Sun May 30 16:50:29 2010 (serrano)                */
+/*    Last change :  Fri Jul  1 15:32:43 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -145,6 +145,7 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
 	 printf( "    fillarrier == 0\n" );
       }
 #endif
+      INPUT_PORT( port ).bufpos = bufpos;
       return 0;
    }
    
@@ -159,7 +160,7 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
 	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "read", strerror( errno ), port );
       }
    }
-   
+
    buf[ bufpos - 1 + r ] = 0;
 #if defined( RGC_DEBUG )
    if( bgl_debug() >= 1 ) {
@@ -168,13 +169,13 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
    }
 #endif
 
-   if( fb > 0 )
+   if( fb > 0 ) {
       INPUT_PORT( port ).fillbarrier = (fb - r);
+   }
    
    bufpos += r;
 
    INPUT_PORT( port ).bufpos = bufpos;
-
    assert( INPUT_PORT( port ).bufpos <= BGL_INPUT_PORT_BUFSIZ( port ) );
 
 #if defined( RGC_DEBUG )
@@ -1028,7 +1029,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
    } else {
       int o0 = o;
       int bufl = INPUT_PORT( p ).bufpos - INPUT_PORT( p ).matchstart - 1;
-      int ml = ((l <= (bufl - o)) ? l : (bufl - o));
+      int ml = (l <= bufl ? l : bufl);
 
       if( ml > 0 ) {
 	 memmove( &s[ o ],
@@ -1054,7 +1055,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 	    while( (l > 0) && !(INPUT_PORT( p ).eof) ) {
 	       int m = (bsz <= l ? bsz : l);
 	       int r; 
-	    
+
 	       rgc_size_fill_buffer( p, &s[ o ], 1, m );
 	       r = INPUT_PORT( p ).bufpos - 1;
 
@@ -1063,8 +1064,6 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 	       l -= r;
 	       o += r;
 
-/* 	    {* we have failed to read m characters *}                  */
-/* 	    if( r < m ) break;                                         */
 	       /* MS 28 march 2006: we cannot read more */
 	       if( r <= 0 ) break;
 	    }

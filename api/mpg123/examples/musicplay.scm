@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Tue Jun 28 09:07:03 2011 (serrano)                */
+;*    Last change :  Fri Jul  1 07:40:52 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module musicplay
    (library multimedia pthread alsa mpg123)
-   (static (class mpg123decoder::alsadecoder
+   (static (class mpg123decoder::alsadecoder-host
 	      (handle::mpg123-handle read-only (default (instantiate::mpg123-handle)))))
    (main main))
 
@@ -32,12 +32,12 @@
    (string=? mime "audio/mpeg"))
 
 ;*---------------------------------------------------------------------*/
-;*    alsadecoder-decode ::mpg123-decoder ...                          */
+;*    alsadecoder-decode-buffer ::mpg123-decoder ...                   */
 ;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-decode o::mpg123decoder inbuf insz outbuf)
+(define-method (alsadecoder-decode-buffer o::mpg123decoder inbuf inoff insz outbuf)
    (with-access::mpg123decoder o (handle)
       (multiple-value-bind (status size)
-	 (mpg123-decode handle inbuf insz outbuf (string-length outbuf))
+	 (mpg123-decode handle inbuf inoff insz outbuf (string-length outbuf))
 	 (if (eq? status 'new-format)
 	     (multiple-value-bind (rate channels encoding)
 		(mpg123-get-format handle)
@@ -91,7 +91,7 @@
    
    (let ((files '())
 	 (volume 100)
-	 (device "default"))
+	 (device "plughw:0,0"))
       
       (args-parse (cdr args)
 	 ((("-h" "--help") (help "This message"))
@@ -112,6 +112,7 @@
 	     (decoder (instantiate::mpg123decoder))
 	     (player (instantiate::alsamusic
 			(decoders (list decoder))
+			(mkthread (lambda (b) (instantiate::pthread (body b))))
 			(pcm pcm))))
 	 (music-volume-set! player volume)
 	 (alsa-snd-pcm-sw-set-params! pcm :start-threshold 1 :avail-min 1)
@@ -127,7 +128,10 @@
 			   (print "state: " state)
 			   (print "song : " (list-ref (music-playlist-get player)  song)
 			      " [" songpos "/" songlength "]")
-			   (newline)))
+			   (newline)
+			   (when (and (eq? state 'ended)
+				      (=fx song (-fx (length files) 1)))
+			      (exit 0))))
 	    :onmeta (lambda (meta)
 		       (print "meta    : " meta)
 		       (print "playlist: ")

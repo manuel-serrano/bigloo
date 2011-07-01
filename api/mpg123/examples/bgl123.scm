@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Tue Jun 28 08:22:59 2011 (serrano)                */
+;*    Last change :  Thu Jun 30 21:04:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both MPG123 *and* ALSA libs.    */
@@ -43,7 +43,7 @@
       (let loop ()
 	 (let ((sz (read-chars! inbuf (string-length inbuf) p)))
 	    (multiple-value-bind (status size)
-	       (mpg123-decode m inbuf sz outbuf (string-length outbuf))
+	       (mpg123-decode m inbuf 0 sz outbuf (string-length outbuf))
 	       (when (eq? status 'new-format)
 		  (multiple-value-bind (rate channels encoding)
 		     (mpg123-get-format m)

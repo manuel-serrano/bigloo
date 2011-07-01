@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Jun 28 11:24:52 2011 (serrano)                */
+;*    Last change :  Thu Jun 30 11:39:45 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -262,9 +262,9 @@
       (macro $snd-pcm-frames-to-bytes::long
 	 (::$snd-pcm ::$snd-pcm-sframes) "snd_pcm_frames_to_bytes")
       (macro $bgl-sframes->uframes::$snd-pcm-uframes
-	 (::$snd-pcm-sframes) "(snd_pcm_uframes)")
+	 (::$snd-pcm-sframes) "(snd_pcm_uframes_t)")
       (macro $bgl-uframes->sframes::$snd-pcm-sframes
-	 (::$snd-pcm-uframes) "(snd_pcm_sframes)")
+	 (::$snd-pcm-uframes) "(snd_pcm_sframes_t)")
 
       ;; bigloo functions
       (macro $bgl-snd-pcm-write::long

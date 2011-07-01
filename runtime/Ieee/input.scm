@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Fri Feb 18 15:16:36 2011 (serrano)                */
+;*    Last change :  Thu Jun 30 16:23:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -73,7 +73,7 @@
 	    (read-of-strings::obj #!optional (ip (current-input-port)))
 	    (read-chars::obj ::obj #!optional (ip (current-input-port)))
 	    (read-chars!::obj ::bstring ::obj #!optional (ip (current-input-port)))
-	    (read-fill-string!::int ::bstring ::long ::long #!optional (ip (current-input-port)))
+	    (read-fill-string!::obj ::bstring ::long ::long #!optional (ip (current-input-port)))
 	    (unread-char! ::char #!optional (ip (current-input-port)))
 	    (unread-string! ::bstring #!optional (ip (current-input-port)))
 	    (unread-substring! ::bstring ::long ::long #!optional (ip (current-input-port)))
@@ -380,7 +380,8 @@
 	       (msg "Illegal negative length")
 	       (obj len)))))
       (else
-       ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o))))))
+       (let ((n ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o)))))
+	  (if (and (=fx n 0) (rgc-buffer-eof? ip)) beof n)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unread-char! ...                                                 */

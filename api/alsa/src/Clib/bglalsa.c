@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Tue Jun 28 09:23:16 2011 (serrano)                */
+/*    Last change :  Thu Jun 30 18:04:12 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -126,6 +126,17 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
    }
    written = snd_pcm_writei( pcm, buf, frames );
 
+/*    if( written == -EINTR ) {                                        */
+/*       fprintf( stderr, "%s:%d, snd_pcm_writei sz=%d frames=%d -> EINTR\n", */
+/* 	       __FILE__, __LINE__, sz, frames, written );              */
+/*    } else if( written == -EPIPE ) {                                 */
+/*       fprintf( stderr, "%s:%d snd_pcm_writei sz=%d frames=%d -> EPIPE\n", */
+/* 	       __FILE__, __LINE__, sz, frames, written );              */
+/*    } else {                                                         */
+/*       fprintf( stderr, "%s:%dsnd_pcm_writei sz=%d frames=%d -> %d\n", */
+/* 	       __FILE__, __LINE__, sz, frames, written );              */
+/*    }                                                                */
+   
    if( written == -EINTR )
        written = 0;
    else if( written == -EPIPE ) {

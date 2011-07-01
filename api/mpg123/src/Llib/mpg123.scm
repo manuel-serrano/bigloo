@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jun 28 11:35:22 2011 (serrano)                */
+;*    Last change :  Thu Jun 30 17:46:44 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -32,7 +32,7 @@
 	   (mpg123-handle-reset! ::mpg123-handle)
 	   (mpg123-get-format ::mpg123-handle)
 	   (mpg123-error::int ::string ::string ::obj)
-	   (mpg123-decode ::mpg123-handle ::bstring ::long ::bstring ::long)
+	   (mpg123-decode ::mpg123-handle ::bstring ::long ::long ::bstring ::long)
 	   (mpg123-position::long ::mpg123-handle ::bstring)
 	   (mpg123-info::long ::mpg123-handle)
 	   (mpg123-seek::long ::mpg123-handle ::long)
@@ -84,10 +84,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-decode ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (mpg123-decode m::mpg123-handle inbuf insz outbuf outsz)
+(define (mpg123-decode m::mpg123-handle inbuf inoff insz outbuf outsz)
    (with-access::mpg123-handle m ($builtin)
       (multiple-value-bind (status size)
-	 ($bgl-mpg123-decode $builtin inbuf insz outbuf outsz)
+	 ($bgl-mpg123-decode $builtin inbuf inoff insz outbuf outsz)
 	 (values (mpg123-decode-status->symbol status) size))))
 
 ;*---------------------------------------------------------------------*/

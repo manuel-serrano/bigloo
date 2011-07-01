@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Aug 24 11:46:03 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Fri Jul  1 08:09:02 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -309,7 +309,8 @@
 		 (L '()))
 	 ;; fill the string
 	 (string-fill! buf #a000)
-	 (let* ((l (read-fill-string! buf 0 64 ip))
+	 (let* ((c (read-fill-string! buf 0 64 ip))
+		(l (if (eof-object? c) 0 c))
 		(nlen (+fx l len))
 		(vec (make-u32vector 16 0)))
 	    (when (<fx l 64) (string-set! buf l #a128))
