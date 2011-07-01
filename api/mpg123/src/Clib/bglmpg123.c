@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Thu Jun 30 19:21:13 2011 (serrano)                */
+/*    Last change :  Fri Jul  1 18:21:23 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -54,7 +54,7 @@ bgl_mpg123_decode( mpg123_handle *m, char *inbuf, long offset, long insz, char *
    int ret;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
 
-   ret = mpg123_decode( m, inbuf + offset, insz, outbuf, outsz, &size );
+   ret = mpg123_decode( m, insz ? inbuf + offset : 0, insz, outbuf, outsz, &size );
 
    BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
    BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( size ) );

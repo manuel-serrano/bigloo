@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Jul  1 17:09:25 2011 (serrano)                */
+;*    Last change :  Fri Jul  1 21:24:34 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -31,8 +31,8 @@
 	      (%volume::long (default 100))
 	      (%buffer::obj (default #f))
 	      (mkthread::procedure read-only)
-	      (inbuf::bstring read-only (default (make-string (*fx 1024 1024))))
-	      (outbuf::bstring read-only (default (make-string (*fx 16 1024))))
+	      (inbuf::bstring read-only (default (make-string (*fx 64 1024))))
+	      (outbuf::bstring read-only (default (make-string (*fx 32 1024))))
 	      (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	      (decoders::pair read-only))
 
@@ -69,8 +69,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug-buffer 2)
-(define debug-decode 2)
+(define debug-buffer 0)
+(define debug-decode 0)
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -398,8 +398,15 @@
 	 (let ((outlen (string-length outbuf))
 	       (inlen (string-length inbuf))
 	       (d (current-microseconds)))
-	    (let loop ()
+	    (let loop ((sz 0))
 	       (mutex-lock! mutex)
+	       (set! outoff (+fx outoff sz))
+	       (when (=fx outoff inlen) (set! outoff 0))
+	       (when (and (>fx sz 0) (=fx count inlen))
+		  (when (>fx debug-decode 3)
+		     (tprint "decode: signal not full"))
+		  (condition-variable-signal! condv))
+	       (set! count (-fx count sz))
 	       (case state
 		  ((stop)
 		   (when (eq? (alsa-snd-pcm-get-state pcm) 'running)
@@ -417,99 +424,96 @@
 		   (musicstatus-state-set! %status 'pause)
 		   (condition-variable-wait! %acondv %amutex)
 		   (mutex-unlock! %amutex)
-		   (loop))
+		   (loop 0))
 		  (else
 		   ;; get new bytes from the buffer
 		   (let ((sz (let liip ()
 				(cond
 				   ((>fx count 0)
-				    (when (=fx count inlen)
-				       (when (>fx debug-decode 2)
-					  (tprint "decode: signal not full"))
-				       (condition-variable-signal! condv))
-				    (minfx (/fx outlen 10) count))
+				    (minfx outlen count))
 				   (eof 0)
 				   (else
-				    (when (>fx debug-decode 2)
-				       (tprint "decode: wait empty"))
+				    (when (>fx debug-decode 3)
+				       (tprint "decode: wait empty count=" count
+					  " inoff=" inoff " outoff=" outoff))
 				    (condition-variable-wait! condv mutex)
 				    (liip))))))
 		      (let ((o outoff))
-			 (set! count (-fx count sz))
-			 (set! outoff (+fx outoff sz))
-			 (when (=fx outoff inlen) (set! outoff 0))
-			 (when (>fx debug-decode 2)
+			 (when (>fx debug-decode 1)
 			    (tprint "decode: count=" count " sz=" sz
 			       " ratio=" (/fx (*fx count 100) inlen) "%"))
 			 (mutex-unlock! mutex)
-			 (multiple-value-bind (status size rate channels encoding)
-			    (alsadecoder-decode-buffer decoder inbuf o sz outbuf)
-			    (when (eq? status 'new-format)
-			       (alsa-snd-pcm-set-params! pcm
-				  :format encoding
-				  :access 'rw-interleaved
-				  :channels channels
-				  :rate rate
-				  :soft-resample 1
-				  :latency 500000)
-			       (alsa-snd-pcm-hw-set-params! pcm :channels channels
-				  :format encoding
-				  :rate-near rate
-				  :buffer-size-near (/fx rate 2)
-				  :period-size-near (/fx rate 8)))
-			    (when (>fx debug-decode 2)
-			       (tprint "decode, alsa-write: sz=" sz
-				  " size=" size " rate=" rate " status="
-				  status))
-			    (when (>fx size 0)
-			       (let ((d2 (current-microseconds)))
-				  (when (>fx debug-decode 0)
-				     (tprint "decode, play size=" size
-					" (" (/llong (-llong d2 d) #l1000)
-					"ms)"))
-				  (set! d d2))
-			       (alsa-snd-pcm-write pcm outbuf size))
-			    (cond
-			       ((eq? status 'ok)
-				(mutex-lock! %amutex)
-				(with-access::musicstatus %status
-				      (state songpos songlength)
-				   (set! songpos (alsadecoder-position decoder inbuf))
-				   (when (<fx songlength songpos)
-				      (set! songlength songpos))
-				   (set! state 'play))
-				(mutex-unlock! %amutex)
-				(loop))
-			       ((eq? status 'new-format)
-				(mutex-lock! %amutex)
-				(with-access::musicstatus %status
-				      (state songpos songlength bitrate khz)
-				   (set! songpos (alsadecoder-position decoder inbuf))
-				   (set! songlength 0)
-				   (when (<fx songlength songpos)
-				      (set! songlength songpos))
-				   (multiple-value-bind (bitrate rate)
-				      (alsadecoder-info decoder)
-				      (set! bitrate bitrate)
-				      (set! khz rate))
-				   (when (>fx %toseek 0)
-				      (alsadecoder-seek decoder %toseek)
-				      (set! songpos %toseek)
-				      (set! %toseek 0))
-				   (set! state 'play))
-				(mutex-unlock! %amutex)
-				(loop))
-			       ((or (eq? status 'done)
-				    (and (=fx sz 0) (=fx size 0))
-				    (and (eq? status 'need-more) eof))
-				(mutex-lock! %amutex)
-				(musicstatus-state-set! %status 'ended)
-				(mutex-unlock! %amutex))
-			       ((eq? status 'need-more)
-				(loop))
-			       (else
-				(musicstatus-state-set! %status 'error)
-				(musicstatus-err-set! %status "decoding error")))))))))))))
+			 (let flush ((z sz))
+			    (multiple-value-bind (status size rate channels encoding)
+			       (alsadecoder-decode-buffer decoder inbuf o z outbuf)
+			       (when (eq? status 'new-format)
+				  (alsa-snd-pcm-set-params! pcm
+				     :format encoding
+				     :access 'rw-interleaved
+				     :channels channels
+				     :rate rate
+				     :soft-resample 1
+				     :latency 500000)
+				  (alsa-snd-pcm-hw-set-params! pcm :channels channels
+				     :format encoding
+				     :rate-near rate
+				     :buffer-size-near (/fx rate 2)
+				     :period-size-near (/fx rate 8)))
+			       (when (>fx debug-decode 1)
+				  (tprint "decode, alsa-write: sz=" sz
+				     " size=" size " status="
+				     status))
+			       (when (>fx size 0)
+				  (alsa-snd-pcm-write pcm outbuf size))
+			       (cond
+				  ((eq? status 'ok)
+				   (mutex-lock! %amutex)
+				   (with-access::musicstatus %status
+					 (state songpos songlength)
+				      (set! songpos (alsadecoder-position decoder inbuf))
+				      (when (<fx songlength songpos)
+					 (set! songlength songpos))
+				      (set! state 'play))
+				   (mutex-unlock! %amutex)
+				   (let ((d2 (current-microseconds)))
+				      (when (>fx debug-decode 0)
+					 (tprint "decode, play size=" size
+					    " sz=" sz " (" (/llong (-llong d2 d) #l1000)
+					    "ms)"))
+				      (set! d d2))
+				   (flush 0))
+				  ((eq? status 'new-format)
+				   (mutex-lock! %amutex)
+				   (with-access::musicstatus %status
+					 (state songpos songlength bitrate khz)
+				      (set! songpos (alsadecoder-position decoder inbuf))
+				      (set! songlength 0)
+				      (when (<fx songlength songpos)
+					 (set! songlength songpos))
+				      (multiple-value-bind (bitrate rate)
+					 (alsadecoder-info decoder)
+					 (set! bitrate bitrate)
+					 (set! khz rate))
+				      (when (>fx %toseek 0)
+					 (alsadecoder-seek decoder %toseek)
+					 (set! songpos %toseek)
+					 (set! %toseek 0))
+				      (set! state 'play))
+				   (mutex-unlock! %amutex)
+				   (flush 0))
+				  ((or (eq? status 'done)
+				       ;(and (=fx sz 0) (=fx size 0))
+				       (and (eq? status 'need-more)
+					    eof
+					    (=fx count 0)))
+				   (mutex-lock! %amutex)
+				   (musicstatus-state-set! %status 'ended)
+				   (mutex-unlock! %amutex))
+				  ((eq? status 'need-more)
+				   (loop sz))
+				  (else
+				   (musicstatus-state-set! %status 'error)
+				   (musicstatus-err-set! %status "decoding error"))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::alsamusic ...                                 */
