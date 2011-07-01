@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Thu Jun 30 18:04:12 2011 (serrano)                */
+/*    Last change :  Fri Jul  1 16:37:01 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -124,6 +124,7 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
 	 (char *)snd_strerror( written ),
 	 o );
    }
+
    written = snd_pcm_writei( pcm, buf, frames );
 
 /*    if( written == -EINTR ) {                                        */
@@ -142,9 +143,11 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
    else if( written == -EPIPE ) {
       if( snd_pcm_prepare( pcm ) >= 0 )
 	 written = snd_pcm_writei( pcm, buf, frames );
-   } else if( written >= 0 )
+   }
+
+   if( written >= 0 ) {
       return snd_pcm_frames_to_bytes( pcm, written );
-   else {
+   } else {
       if( snd_pcm_state( pcm ) == SND_PCM_STATE_SUSPENDED ) {
 	 snd_pcm_resume( pcm );
 	 

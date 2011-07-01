@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Jul  1 15:50:45 2011 (serrano)                */
+;*    Last change :  Fri Jul  1 17:09:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -32,7 +32,7 @@
 	      (%buffer::obj (default #f))
 	      (mkthread::procedure read-only)
 	      (inbuf::bstring read-only (default (make-string (*fx 1024 1024))))
-	      (outbuf::bstring read-only (default (make-string (*fx 8 1024))))
+	      (outbuf::bstring read-only (default (make-string (*fx 16 1024))))
 	      (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	      (decoders::pair read-only))
 
@@ -69,7 +69,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug-buffer 1)
+(define debug-buffer 2)
 (define debug-decode 2)
 
 ;*---------------------------------------------------------------------*/
@@ -348,7 +348,7 @@
       (let ((inlen (string-length inbuf)))
 	 ;; fill the buffer and enter the loop
 	 (flush-output-port (current-error-port))
-	 (let loop ((i (read-fill-string! inbuf 0 (minfx inlen (*fx 4 outlen)) port)))
+	 (let loop ((i (read-fill-string! inbuf 0 (minfx inlen (*fx outlen 2)) port)))
 	    (flush-output-port (current-error-port))
 	    (mutex-lock! mutex)
 	    (if (eof-object? i)
@@ -363,8 +363,8 @@
 		      (tprint "fill: c=" c " count=" count " inlen=" inlen))
 		   (when (and (=fx c 0) (>fx i 0))
 		      ;; non empty buffer
-		      (when (>fx debug-buffer 1)
-			 (tprint "fill: signal not empty"))
+		      (when (>fx debug-buffer 2)
+			 (tprint "fill: signal not empty count=" count))
 		      (condition-variable-signal! condv))
 		   (when (=fx count inlen)
 		      ;; buffer full
@@ -373,10 +373,13 @@
 		      (condition-variable-wait! condv mutex))
 		   (let ((sz (minfx outlen (-fx inlen count))))
 		      (mutex-unlock! mutex)
-		      (let ((i (read-fill-string! inbuf inoff sz port)))
-			 (when (>fx debug-buffer 0)
-			    (tprint "fill, write: sz=" sz " -> i=" i))
-			 (loop i)))))))))
+		      (let ((d0 (current-microseconds)))
+			 (let ((i (read-fill-string! inbuf inoff sz port)))
+			    (when (>fx debug-buffer 0)
+			       (tprint "fill, write: sz=" sz " -> i=" i " ("
+				  (/llong (-llong (current-microseconds) d0) 1000)
+				  "ms)"))
+			    (loop i))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::alsadecoder ...                             */
@@ -393,7 +396,8 @@
    (with-access::alsamusic o (pcm %amutex %acondv outbuf %status %toseek)
       (with-access::alsabuffer buffer (mutex condv inbuf inoff outoff eof state count)
 	 (let ((outlen (string-length outbuf))
-	       (inlen (string-length inbuf)))
+	       (inlen (string-length inbuf))
+	       (d (current-microseconds)))
 	    (let loop ()
 	       (mutex-lock! mutex)
 	       (case state
@@ -423,10 +427,10 @@
 				       (when (>fx debug-decode 2)
 					  (tprint "decode: signal not full"))
 				       (condition-variable-signal! condv))
-				    (minfx outlen count))
+				    (minfx (/fx outlen 10) count))
 				   (eof 0)
 				   (else
-				    (when (>fx debug-decode 0)
+				    (when (>fx debug-decode 2)
 				       (tprint "decode: wait empty"))
 				    (condition-variable-wait! condv mutex)
 				    (liip))))))
@@ -434,8 +438,9 @@
 			 (set! count (-fx count sz))
 			 (set! outoff (+fx outoff sz))
 			 (when (=fx outoff inlen) (set! outoff 0))
-			 (when (>fx debug-decode 1)
-			    (tprint "decode: count=" count " sz=" sz))
+			 (when (>fx debug-decode 2)
+			    (tprint "decode: count=" count " sz=" sz
+			       " ratio=" (/fx (*fx count 100) inlen) "%"))
 			 (mutex-unlock! mutex)
 			 (multiple-value-bind (status size rate channels encoding)
 			    (alsadecoder-decode-buffer decoder inbuf o sz outbuf)
@@ -454,9 +459,15 @@
 				  :period-size-near (/fx rate 8)))
 			    (when (>fx debug-decode 2)
 			       (tprint "decode, alsa-write: sz=" sz
-				  " size=" size " status="
+				  " size=" size " rate=" rate " status="
 				  status))
 			    (when (>fx size 0)
+			       (let ((d2 (current-microseconds)))
+				  (when (>fx debug-decode 0)
+				     (tprint "decode, play size=" size
+					" (" (/llong (-llong d2 d) #l1000)
+					"ms)"))
+				  (set! d d2))
 			       (alsa-snd-pcm-write pcm outbuf size))
 			    (cond
 			       ((eq? status 'ok)

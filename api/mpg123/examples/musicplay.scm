@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Fri Jul  1 07:40:52 2011 (serrano)                */
+;*    Last change :  Fri Jul  1 16:38:54 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
