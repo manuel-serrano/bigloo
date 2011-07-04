@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Tue Jun 28 15:45:44 2011 (serrano)                */
+#*    Last change :  Mon Jul  4 13:46:04 2011 (serrano)                */
 #*    Copyright   :  2007-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if ALSA is available.                                      */
@@ -47,7 +47,7 @@ cflags=`pkg-config --cflags --libs alsa` > /dev/null
 if [ $? != 0 ]; then
   cflags=`pkg-config --cflags --libs alsa` > /dev/null
   if [ $? != 0 ]; then
-    echo ""
+    echo "no"
     exit 0
   fi
 fi
