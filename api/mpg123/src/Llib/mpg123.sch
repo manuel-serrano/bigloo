@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Thu Jun 30 17:45:48 2011 (serrano)                */
+;*    Last change :  Mon Jul  4 16:34:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -79,8 +79,8 @@
     (macro $mpg123-enc-ulaw-8::long "MPG123_ENC_ULAW_8")
     (macro $mpg123-enc-signed-32::long "MPG123_ENC_SIGNED_32")
     (macro $mpg123-enc-unsigned-32::long "MPG123_ENC_UNSIGNED_32")
-    (macro $mpg123-enc-signed-24::long "MPG123_ENC_SIGNED_24")
-    (macro $mpg123-enc-unsigned-24::long "MPG123_ENC_UNSIGNED_24")
+;*     (macro $mpg123-enc-signed-24::long "MPG123_ENC_SIGNED_24")      */
+;*     (macro $mpg123-enc-unsigned-24::long "MPG123_ENC_UNSIGNED_24")  */
     (macro $mpg123-enc-float-32::long "MPG123_ENC_FLOAT_32")
     (macro $mpg123-enc-float-64::long "MPG123_ENC_FLOAT_64")
 

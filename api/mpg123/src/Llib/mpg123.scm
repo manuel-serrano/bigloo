@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Thu Jun 30 17:46:44 2011 (serrano)                */
+;*    Last change :  Mon Jul  4 16:35:22 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -134,10 +134,10 @@
       ((=fx f $mpg123-enc-ulaw-8) 'mu-law)
       ((=fx f $mpg123-enc-signed-32) 's32)
       ((=fx f $mpg123-enc-unsigned-32) 'u32)
-      ((=fx f $mpg123-enc-signed-24)
-       (if (eq? (bigloo-config 'endianess) 'little-endian) 's24-3le 's24-3be))
-      ((=fx f $mpg123-enc-unsigned-24)
-       (if (eq? (bigloo-config 'endianess) 'little-endian) 'u24-3le 'u24-3be))
+;*       ((=fx f $mpg123-enc-signed-24)                                */
+;*        (if (eq? (bigloo-config 'endianess) 'little-endian) 's24-3le 's24-3be)) */
+;*       ((=fx f $mpg123-enc-unsigned-24)                              */
+;*        (if (eq? (bigloo-config 'endianess) 'little-endian) 'u24-3le 'u24-3be)) */
       ((=fx f $mpg123-enc-float-32) 'float)
       ((=fx f $mpg123-enc-float-64) 'float64)
       (else (raise (instantiate::&mpg123-error
