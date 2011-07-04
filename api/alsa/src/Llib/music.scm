@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Jul  1 21:24:34 2011 (serrano)                */
+;*    Last change :  Sun Jul  3 07:38:14 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -203,7 +203,7 @@
 ;*    music-play ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::alsamusic . s)
-   (with-access::alsamusic o (%amutex %status %playlist %amutex)
+   (with-access::alsamusic o (%amutex %status %playlist %amutex %buffer)
       (with-access::musicstatus %status (song playlistlength state)
 	 (mutex-lock! %amutex)
 	 (cond
@@ -277,30 +277,6 @@
 			 (loop (cdr decoders))))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    music-pause ...                                                  */
-;*---------------------------------------------------------------------*/
-(define-method (music-pause o::alsamusic)
-   (with-access::alsamusic o (%amutex %acondv %buffer pcm)
-      (with-lock %amutex
-	 (lambda ()
-	    (when (alsabuffer? %buffer)
-	       (with-access::alsabuffer %buffer (state)
-		  (if (eq? state 'pause)
-		      (begin
-			 (set! state 'play)
-			 (condition-variable-broadcast! %acondv))
-		      (set! state 'pause))))))))
-
-;*---------------------------------------------------------------------*/
-;*    music-stop ::alsamusic ...                                       */
-;*---------------------------------------------------------------------*/
-(define-method (music-stop o::alsamusic)
-   (with-access::alsamusic o (%amutex pcm)
-      (with-lock %amutex
-	 (lambda ()
-	    (stop o)))))
-
-;*---------------------------------------------------------------------*/
 ;*    play ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (play o::alsamusic d::alsadecoder p::input-port)
@@ -328,34 +304,60 @@
 		  (alsadecoder-decode d o %buffer)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    music-pause ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-method (music-pause o::alsamusic)
+   (with-access::alsamusic o (%buffer %amutex)
+      (with-lock %amutex
+	 (lambda ()
+	    (when (alsabuffer? %buffer)
+	       (with-access::alsabuffer %buffer (state condv mutex)
+		  (with-lock mutex
+		     (lambda ()
+			(if (eq? state 'pause)
+			    (begin
+			       (set! state 'play)
+			       (condition-variable-broadcast! condv))
+			    (set! state 'pause))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    music-stop ::alsamusic ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (music-stop o::alsamusic)
+   (with-access::alsamusic o (%amutex)
+      (with-lock %amutex
+	 (lambda ()
+	    (stop o)))))
+
+;*---------------------------------------------------------------------*/
 ;*    stop ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (stop o::alsamusic)
    (with-access::alsamusic o (%amutex %buffer)
       (when (alsabuffer? %buffer)
-	 (with-access::alsabuffer %buffer (mutex eof port state)
+	 (with-access::alsabuffer %buffer (mutex eof port state condv)
 	    (mutex-lock! mutex)
-	    (set! eof #t)
 	    (set! state 'stop)
-	    (close-input-port port)
+	    (condition-variable-signal! condv)
 	    (mutex-unlock! mutex)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-fill! buffer::alsabuffer outlen::long)
-   (with-access::alsabuffer buffer (mutex condv port inbuf inoff outoff eof count)
+   (with-access::alsabuffer buffer (mutex condv port inbuf inoff outoff eof count state)
       (let ((inlen (string-length inbuf)))
 	 ;; fill the buffer and enter the loop
-	 (flush-output-port (current-error-port))
 	 (let loop ((i (read-fill-string! inbuf 0 (minfx inlen (*fx outlen 2)) port)))
-	    (flush-output-port (current-error-port))
 	    (mutex-lock! mutex)
-	    (if (eof-object? i)
+	    (if (or (eof-object? i) (eq? state 'close))
 		(begin
 		   (set! eof #t)
+		   (close-input-port port)
+		   (condition-variable-signal! condv)
 		   (mutex-unlock! mutex))
 		(let ((c count))
+		   (mutex-unlock! mutex)
 		   (set! count (+fx count i))
 		   (set! inoff (+fx inoff i))
 		   (when (=fx inoff inlen) (set! inoff 0))
@@ -366,11 +368,13 @@
 		      (when (>fx debug-buffer 2)
 			 (tprint "fill: signal not empty count=" count))
 		      (condition-variable-signal! condv))
-		   (when (=fx count inlen)
-		      ;; buffer full
-		      (when (>fx debug-buffer 2)
-			 (tprint "fill: wait full"))
-		      (condition-variable-wait! condv mutex))
+		   (let waitfull ()
+		      (when (=fx count inlen)
+			 ;; buffer full
+			 (when (>fx debug-buffer 2)
+			    (tprint "fill: wait full"))
+			 (condition-variable-wait! condv mutex)
+			 (waitfull)))
 		   (let ((sz (minfx outlen (-fx inlen count))))
 		      (mutex-unlock! mutex)
 		      (let ((d0 (current-microseconds)))
@@ -420,14 +424,14 @@
 		   (mutex-unlock! mutex))
 		  ((pause)
 		   (mutex-lock! %amutex)
-		   (mutex-unlock! mutex)
 		   (musicstatus-state-set! %status 'pause)
-		   (condition-variable-wait! %acondv %amutex)
 		   (mutex-unlock! %amutex)
+		   (condition-variable-wait! condv mutex)
+		   (mutex-unlock! mutex)
 		   (loop 0))
 		  (else
 		   ;; get new bytes from the buffer
-		   (let ((sz (let liip ()
+		   (let ((sz (let waitempty ()
 				(cond
 				   ((>fx count 0)
 				    (minfx outlen count))
@@ -437,7 +441,7 @@
 				       (tprint "decode: wait empty count=" count
 					  " inoff=" inoff " outoff=" outoff))
 				    (condition-variable-wait! condv mutex)
-				    (liip))))))
+				    (waitempty))))))
 		      (let ((o outoff))
 			 (when (>fx debug-decode 1)
 			    (tprint "decode: count=" count " sz=" sz

@@ -3,21 +3,27 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jun 28 17:38:29 2011 (serrano)                */
+/*    Last change :  Mon Jul  4 08:04:55 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
 /*=====================================================================*/
 #include <FLAC/stream_decoder.h>
 #include <bigloo.h>
-#include "bglflac.h"
 #include "bgldecoder.h"
+#include "bglflac.h"
+
+/*---------------------------------------------------------------------*/
+/*    Imports                                                          */
+/*---------------------------------------------------------------------*/
+extern int bgl_flac_error( char *, char *, obj_t );
+extern obj_t bgl_flac_decoder_read( BgL_flaczd2decoderzd2_bglt, long );
 
 /*---------------------------------------------------------------------*/
 /*    decoder bigloo object                                            */
 /*---------------------------------------------------------------------*/
-#define BGL_DECODER_READ( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_readz00)
+#define BGL_DECODER_PORT( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_portdz00)
 #define BGL_DECODER_SEEK( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_seekz00)
 #define BGL_DECODER_TELL( o ) \
@@ -32,6 +38,8 @@
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_metadataz00)
 #define BGL_DECODER_ERROR( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_errorz00)
+#define BGL_DECODER_FLACBUFFER( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52flacbufferz52)
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */
@@ -106,20 +114,18 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__byte buffer[],
 		   size_t *size,
 		   void *client_data ) {
-   obj_t obj = (obj_t)client_data;
-   obj_t proc = BGL_DECODER_READ( obj );
+   obj_t dec = (obj_t)client_data;
+   obj_t res;
+   
+   res = bgl_flac_decoder_read( (BgL_flaczd2decoderzd2_bglt)dec, *size );
 
-   if( 1 ) {
-      return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
-   }
-   if( 2 ) {
+   if( EOF_OBJECTP( res ) ) {
+      *size = 0;
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
-   }
-   if( 3 ) {
+   } else {
+      *size = CINT( res );
       return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
    }
-
-   return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
 }
 
 /*---------------------------------------------------------------------*/

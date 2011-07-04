@@ -454,8 +454,10 @@
 (define-method (gen-fun fun::rtl_lightfuncall me);
    (with-access::rtl_lightfuncall fun (name funs)
       (with-access::jvm me (light-funcalls)
-	 (set! light-funcalls (cons fun light-funcalls)) )
+         (unless (memq fun light-funcalls)
+            (set! light-funcalls (cons fun light-funcalls)) ))
       (code! me `(invokestatic ,name)) ))
+
 
 (define-method (gen-fun-with-args fun::rtl_funcall me args);
    (gen-funcall me args) )

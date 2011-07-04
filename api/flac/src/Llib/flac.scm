@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jun 28 17:27:58 2011 (serrano)                */
+;*    Last change :  Mon Jul  4 08:00:37 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -16,26 +16,30 @@
 
    (include "flac.sch")
    
-   (extern (export flac-error "bgl_flac_error"))
+   (extern (export flac-error "bgl_flac_error")
+	   (export flac-decoder-read "bgl_flac_decoder_read"))
    
    (export (class flac-decoder
 	      (flac-decoder-init)
 	      ($builtin::$flac-decoder read-only (default (%$flac-decoder-new)))
+	      (%port (default #f))
+	      (%flacbuffer::string (default (string-nil)))
 	      (md5check::bool read-only (default #f))
-	      (read::procedure read-only)
-	      (seek::procedure read-only)
-	      (tell::procedure read-only)
-	      (length::procedure read-only)
-	      (eof::procedure read-only)
-	      (write::procedure read-only)
-	      (metadata read-only (default #f))
-	      (error read-only (default #f)))
-	   
+	      (seek (default #f))
+	      (tell (default #f))
+	      (length (default #f))
+	      (eof (default #f))
+	      (write (default #f))
+	      (metadata (default #f))
+	      (error (default #f)))
+
 	   (class &flac-error::&error)
 
 	   (%$flac-decoder-new::$flac-decoder)
-	   
-	   (flac-handle-close ::flac-decoder)
+
+	   (generic flac-decoder-init ::flac-decoder)
+	   (generic flac-decoder-close ::flac-decoder)
+	   (generic flac-decoder-read ::flac-decoder ::long)
 	   (flac-error::int ::string ::string ::obj)
 	   ))
 
@@ -60,13 +64,12 @@
 (define-generic (flac-decoder-init o::flac-decoder)
    (with-access::flac-decoder o ($builtin md5check)
       ($flac-decoder-set-md5-checking
-	 $builtin (if md5check $flac-true $flac-false))
-      o))
+	 $builtin (if md5check $flac-true $flac-false))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-close ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (flac-handle-close o::flac-decoder)
+(define-generic (flac-decoder-close o::flac-decoder)
    (with-access::flac-decoder o ($builtin)
       ($flac-decoder-delete $builtin)
       o))
@@ -82,23 +85,14 @@
    0)
 
 ;*---------------------------------------------------------------------*/
-;*    decoder-init-status->symbol ...                                  */
+;*    flac-decoder-read ::flac-decoder ...                             */
 ;*---------------------------------------------------------------------*/
-(define (decoder-init-status->symbol s::$flac-decoder-init-status)
-   (cond
-      ((=fx s $flac-decoder-init-status-ok)
-       'ok)
-      ((=fx s $flac-decoder-init-status-unsupported-container)
-       'unsupported-container)
-      ((=fx s $flac-decoder-init-status-invalid-callbacks)
-       'invalid-callbacks)
-      ((=fx s $flac-decoder-init-status-allocation-error)
-       'allocation-error)
-      ((=fx s $flac-decoder-init-status-opening-file)
-       'opening-file)
-      ((=fx s $flac-decoder-init-status-initialized)
-       'initialized)))
-      
+(define-generic (flac-decoder-read o::flac-decoder size::long)
+   (with-access::flac-decoder o (%port %flacbuffer)
+      ;; Don't use any regular input functions because they take as
+      ;; input ::bstring argument while flacbuffer is a ::string
+      ($rgc-blit-string! %port %flacbuffer 0 size)))
+
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    flac-handle-reset! ...                                           *} */
 ;* {*---------------------------------------------------------------------*} */
