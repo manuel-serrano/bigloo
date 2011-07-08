@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Thu Jun 30 11:39:45 2011 (serrano)                */
+;*    Last change :  Thu Jul  7 10:21:00 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -21,6 +21,8 @@
       ;; misc
       (macro $snd-lib-version::int "SND_LIB_VERSION")
       (macro $snd-asoundlib-version::string () "snd_asoundlib_version")
+      (macro $snd-blit-string!::void
+	 (::string ::long ::string ::long ::long) "BGL_SND_BLIT_STRING")
 
       ;; snd-card
       (macro $snd-card-load::bool
@@ -230,12 +232,21 @@
       (macro $snd-pcm-hw-params-set-channels!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "snd_pcm_hw_params_set_channels")
+      (macro $snd-pcm-hw-params-set-rate!::int
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int ::int)
+	 "snd_pcm_hw_params_set_rate")
       (macro $bgl-snd-pcm-hw-params-set-rate-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_rate_near")
+      (macro $snd-pcm-hw-params-set-buffer-size!::int
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
+	 "snd_pcm_hw_params_set_buffer_size")
       (macro $bgl-snd-pcm-hw-params-set-buffer-size-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_buffer_size_near")
+      (macro $snd-pcm-hw-params-set-period-size!::int
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int ::int)
+	 "snd_pcm_hw_params_set_period_size")
       (macro $bgl-snd-pcm-hw-params-set-period-size-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_period_size_near")

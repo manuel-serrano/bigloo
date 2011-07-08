@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Thu Jun 30 21:04:39 2011 (serrano)                */
+;*    Last change :  Tue Jul  5 15:40:50 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both MPG123 *and* ALSA libs.    */
@@ -47,6 +47,7 @@
 	       (when (eq? status 'new-format)
 		  (multiple-value-bind (rate channels encoding)
 		     (mpg123-get-format m)
+		     (tprint "rate=" rate " channels=" channels " encoding=" encoding)
 		     (alsa-snd-pcm-set-params! pcm
 			:format encoding
 			:access 'rw-interleaved

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Thu Jun 30 11:46:34 2011 (serrano)                */
+;*    Last change :  Thu Jul  7 08:43:06 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -75,7 +75,10 @@
 		       (proc "alsa-snd-pcm-open")
 		       (msg ($snd-strerror err))
 		       (obj device)))
-	     (set! name ($snd-pcm-name $builtin))))))
+	     (begin
+		(set! name ($snd-pcm-name $builtin))
+		(alsa-snd-pcm-sw-set-params! o
+		   :start-threshold 1 :avail-min 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-close ...                                           */
@@ -139,16 +142,26 @@
       ((unknown) $snd-pcm-format-unknown)
       ((s8) $snd-pcm-format-s8)
       ((u8) $snd-pcm-format-u8)
+      ((s16) $snd-pcm-format-s16)
       ((s16-le) $snd-pcm-format-s16-le)
       ((s16-be) $snd-pcm-format-s16-be)
+      ((u16) $snd-pcm-format-u16)
       ((u16-le) $snd-pcm-format-u16-le)
       ((u16-be) $snd-pcm-format-u16-be)
+      ((s24) $snd-pcm-format-s24)
       ((s24-le) $snd-pcm-format-s24-le)
       ((s24-be) $snd-pcm-format-s24-be)
+      ((s24-3le) $snd-pcm-format-s24-3le)
+      ((s24-3be) $snd-pcm-format-s24-3be)
+      ((u24) $snd-pcm-format-u24)
       ((u24-le) $snd-pcm-format-u24-le)
       ((u24-be) $snd-pcm-format-u24-be)
+      ((u24-3le) $snd-pcm-format-u24-3le)
+      ((u24-3be) $snd-pcm-format-u24-3be)
+      ((s32) $snd-pcm-format-s32)
       ((s32-le) $snd-pcm-format-s32-le)
       ((s32-be) $snd-pcm-format-s32-be)
+      ((u32) $snd-pcm-format-u32)
       ((u32-le) $snd-pcm-format-u32-le)
       ((u32-be) $snd-pcm-format-u32-be)
       ((float-le) $snd-pcm-format-float-le)
@@ -163,10 +176,6 @@
       ((mpeg) $snd-pcm-format-mpeg)
       ((gsm) $snd-pcm-format-gsm)
       ((special) $snd-pcm-format-special)
-      ((s24-3le) $snd-pcm-format-s24-3le)
-      ((s24-3be) $snd-pcm-format-s24-3be)
-      ((u24-3le) $snd-pcm-format-u24-3le)
-      ((u24-3be) $snd-pcm-format-u24-3be)
       ((s20-3le) $snd-pcm-format-s20-3le)
       ((s20-3be) $snd-pcm-format-s20-3be)
       ((u20-3le) $snd-pcm-format-u20-3le)
@@ -175,12 +184,6 @@
       ((s18-3be) $snd-pcm-format-s18-3be)
       ((u18-3le) $snd-pcm-format-u18-3le)
       ((u18-3be) $snd-pcm-format-u18-3be)
-      ((s16) $snd-pcm-format-s16)
-      ((u16) $snd-pcm-format-u16)
-      ((s24) $snd-pcm-format-s24)
-      ((u24) $snd-pcm-format-u24)
-      ((s32) $snd-pcm-format-s32)
-      ((u32) $snd-pcm-format-u32)
       ((float) $snd-pcm-format-float)
       ((float64) $snd-pcm-format-float64)
       ((iec958-subframe) $snd-pcm-format-iec958-subframe)
@@ -335,12 +338,21 @@
 			((:channels)
 			 ($snd-pcm-hw-params-set-channels!
 			    $builtin $hw (cadr rest)))
+			((:rate)
+			 ($snd-pcm-hw-params-set-rate!
+			    $builtin $hw (cadr rest) 0))
 			((:rate-near)
 			 ($bgl-snd-pcm-hw-params-set-rate-near!
+			    $builtin $hw (cadr rest)))
+			((:buffer-size)
+			 ($snd-pcm-hw-params-set-buffer-size!
 			    $builtin $hw (cadr rest)))
 			((:buffer-size-near)
 			 ($bgl-snd-pcm-hw-params-set-buffer-size-near!
 			    $builtin $hw (cadr rest)))
+			((:period-size)
+			 ($snd-pcm-hw-params-set-period-size!
+			    $builtin $hw (cadr rest) 0))
 			((:period-size-near)
 			 ($bgl-snd-pcm-hw-params-set-period-size-near!
 			    $builtin $hw (cadr rest)))

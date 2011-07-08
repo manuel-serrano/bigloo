@@ -5,6 +5,6 @@ In order to build a MacOS dmg file, proceed as follows:
 
   % tar xvfz bigloo<VERSION>.tar.gz
   % cd bigloo<VERSION>
-  % make -f macosx/Makefile.macosx all
+  % make -f arch/macosx/Makefile.macosx all
 
 

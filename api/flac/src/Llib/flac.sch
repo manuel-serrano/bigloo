@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Jul  4 08:04:44 2011 (serrano)                */
+;*    Last change :  Fri Jul  8 12:08:27 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C flac functions                                                 */
@@ -16,7 +16,11 @@
    (extern
     (include "FLAC/stream_decoder.h")
     (include "bglflac.h")
-
+    
+    ;; misc
+    (macro $flac-max-block-size::long "FLAC__MAX_BLOCK_SIZE")
+    (macro $flac-max-channels::long "FLAC__MAX_CHANNELS")
+    
     ;; flac-decoder
     (type $flac-decoder void* "FLAC__StreamDecoder *")
     (macro $flac-decoder-new::$flac-decoder
@@ -25,14 +29,24 @@
        (::$flac-decoder) "FLAC__stream_decoder_delete")
     (macro $flac-decoder-set-md5-checking::$flac-bool
        (::$flac-decoder ::$flac-bool) "FLAC__stream_decoder_set_md5_checking")
+    (macro $flac-decoder-process-until-end-of-stream::$flac-bool
+       (::$flac-decoder) "FLAC__stream_decoder_process_until_end_of_stream")
+    (macro $flac-decoder-finish::$flac-bool
+       (::$flac-decoder) "FLAC__stream_decoder_finish")
+    (macro $flac-decoder-flush::$flac-bool
+       (::$flac-decoder) "FLAC__stream_decoder_flush")
+    (macro $flac-decoder-reset::$flac-bool
+       (::$flac-decoder) "FLAC__stream_decoder_reset")
     (macro $bgl-flac-decoder-init-stream::$flac-decoder-init-status
        (::$flac-decoder ::obj) "bgl_FLAC__stream_decoder_init_stream")
-
+    (macro $flac-decoder-get-state::$flac-decoder-state
+       (::$flac-decoder) "FLAC__stream_decoder_get_state")
+    
     ;; flac-bool
     (type $flac-bool long "FLAC__bool")
     (macro $flac-true::$flac-bool "true")
     (macro $flac-false::$flac-bool "false")
-
+    
     (type $flac-decoder-init-status long "FLAC__StreamDecoderInitStatus")
     (macro $flac-decoder-init-status-ok::$flac-decoder-init-status
        "FLAC__STREAM_DECODER_INIT_STATUS_OK")
@@ -46,5 +60,26 @@
        "FLAC__STREAM_DECODER_INIT_STATUS_OPENING_FILE")
     (macro $flac-decoder-init-status-initialized::$flac-decoder-init-status
        "FLAC__STREAM_DECODER_INIT_STATUS_INITIALIZED")
-    ))
+    
+    (type $flac-decoder-state long "FLAC__StreamDecoderState")
+    (macro $flac-decoder-search-for-metata::$flac-decoder-state
+       "FLAC__STREAM_DECODER_SEARCH_FOR_METADATA")
+    (macro $flac-stream-decoder-read-metadata::$flac-decoder-state
+       "FLAC__STREAM_DECODER_READ_METADATA")
+    (macro $flac-stream-decoder-search-for-frame-sync::$flac-decoder-state
+       "FLAC__STREAM_DECODER_SEARCH_FOR_FRAME_SYNC")
+    (macro $flac-stream-decoder-read-frame::$flac-decoder-state
+       "FLAC__STREAM_DECODER_READ_FRAME")
+    (macro $flac-stream-decoder-end-of-stream::$flac-decoder-state
+       "FLAC__STREAM_DECODER_END_OF_STREAM")
+    (macro $flac-STREAM-DECODER-OGG-ERROR::$flac-decoder-state
+       "FLAC__STREAM_DECODER_OGG_ERROR")
+    (macro $flac-stream-decoder-seek-error::$flac-decoder-state
+       "FLAC__STREAM_DECODER_SEEK_ERROR")
+    (macro $flac-stream-decoder-aborted::$flac-decoder-state
+       "FLAC__STREAM_DECODER_ABORTED")
+    (macro $flac-stream-decoder-memory-allocation-error::$flac-decoder-state
+       "FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR")
+    (macro $flac-stream-decoder-uninitialized::$flac-decoder-state
+       "FLAC__STREAM_DECODER_UNINITIALIZED")))
 

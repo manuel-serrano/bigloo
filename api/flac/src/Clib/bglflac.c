@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Jul  4 08:04:55 2011 (serrano)                */
+/*    Last change :  Fri Jul  8 12:12:57 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -18,28 +18,30 @@
 /*---------------------------------------------------------------------*/
 extern int bgl_flac_error( char *, char *, obj_t );
 extern obj_t bgl_flac_decoder_read( BgL_flaczd2decoderzd2_bglt, long );
+extern obj_t bgl_flac_decoder_write( BgL_flaczd2decoderzd2_bglt, long, long, long, long );
+extern obj_t bgl_flac_decoder_meta( BgL_flaczd2decoderzd2_bglt, FLAC__uint64, long, long, long );
+extern obj_t bgl_flac_decoder_tell( BgL_flaczd2decoderzd2_bglt );
 
 /*---------------------------------------------------------------------*/
 /*    decoder bigloo object                                            */
 /*---------------------------------------------------------------------*/
 #define BGL_DECODER_PORT( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_portdz00)
+#define BGL_DECODER_EOF( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52eofz52)
+
 #define BGL_DECODER_SEEK( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_seekz00)
-#define BGL_DECODER_TELL( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_tellz00)
 #define BGL_DECODER_LENGTH( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_lengthz00)
-#define BGL_DECODER_EOF( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_eofz00)
-#define BGL_DECODER_WRITE( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_writez00)
 #define BGL_DECODER_METADATA( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_metadataz00)
 #define BGL_DECODER_ERROR( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_errorz00)
-#define BGL_DECODER_FLACBUFFER( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52flacbufferz52)
+#define BGL_DECODER_INBUF( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52inbufz52)
+#define BGL_DECODER_OUTBUF( o ) \
+   (BSTRING_TO_STRING( (((BgL_flaczd2decoderzd2_bglt)o)->BgL_outbufz00) ))
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */
@@ -95,10 +97,10 @@ bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
    return FLAC__stream_decoder_init_stream(
       decoder,
       bgl_read_callback,
-      bgl_seek_callback,
-      bgl_tell_callback,
-      bgl_length_callback,
-      bgl_eof_callback,
+      0L, //bgl_seek_callback,//
+      0L, //bgl_tell_callback,//
+      0L, //bgl_length_callback,//
+      0L, //bgl_eof_callback,//
       bgl_write_callback,
       bgl_metadata_callback,
       bgl_error_callback,
@@ -114,12 +116,14 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__byte buffer[],
 		   size_t *size,
 		   void *client_data ) {
-   obj_t dec = (obj_t)client_data;
+   obj_t obj = (obj_t)client_data;
    obj_t res;
-   
-   res = bgl_flac_decoder_read( (BgL_flaczd2decoderzd2_bglt)dec, *size );
+
+   BGL_DECODER_INBUF( obj ) = buffer;
+   res = bgl_flac_decoder_read( (BgL_flaczd2decoderzd2_bglt)obj, *size );
 
    if( EOF_OBJECTP( res ) ) {
+      BGL_DECODER_EOF( obj ) = true;
       *size = 0;
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
@@ -137,13 +141,12 @@ bgl_seek_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 offset,
 		   void *client_data ) {
    obj_t obj = (obj_t)client_data;
-   obj_t proc = BGL_DECODER_SEEK( obj );
 
-   PROCEDURE_ENTRY( proc )( proc, obj, BEOA );
+   fprintf( stderr, "seek\n" );
 
+   return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
    if( 1 ) return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
    if( 2 ) return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
-   return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 }
 
 /*---------------------------------------------------------------------*/
@@ -154,14 +157,19 @@ static FLAC__StreamDecoderTellStatus
 bgl_tell_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 *offset,
 		   void *client_data ) {
-   if( 1 ) 
-     return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
-   if( 2 )
-      return FLAC__STREAM_DECODER_TELL_STATUS_ERROR;
-   if( 3 ) {
-      *offset = 28;
+   obj_t obj = (obj_t)client_data;
+
+   *offset = CINT( bgl_flac_decoder_tell( (BgL_flaczd2decoderzd2_bglt)obj ) );
+
+   fprintf( stderr, "tell: %d\n", *offset );
+
+   if( *offset > 0 ) {
       return FLAC__STREAM_DECODER_TELL_STATUS_OK;
+   } else {
+      return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
    }
+
+   return FLAC__STREAM_DECODER_TELL_STATUS_ERROR;
 }
    
 /*---------------------------------------------------------------------*/
@@ -172,6 +180,7 @@ static FLAC__StreamDecoderLengthStatus
 bgl_length_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 *offset,
 		   void *client_data ) {
+   fprintf( stderr, "length\n" );
    if( 1 ) 
      return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
    if( 2 )
@@ -190,9 +199,10 @@ static FLAC__bool
 bgl_eof_callback( const FLAC__StreamDecoder *decoder,
 		  void *client_data ) {
    obj_t obj = (obj_t)client_data;
-   obj_t proc = BGL_DECODER_EOF( obj );
-
-   return CBOOL( PROCEDURE_ENTRY( proc )( proc, obj, BEOA ) ) ? true : false;
+   if( BGL_DECODER_EOF( obj ) ) {
+      fprintf( stderr, "EOF...\n" );
+   }
+   return BGL_DECODER_EOF( obj ) ? true : false;
 }
 
 /*---------------------------------------------------------------------*/
@@ -204,10 +214,57 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 		    const FLAC__Frame *frame,
 		    const FLAC__int32 *const buffer[],
 		    void *client_data ) {
+   FLAC__FrameHeader h = frame->header;
    obj_t obj = (obj_t)client_data;
-   obj_t proc = BGL_DECODER_WRITE( obj );
+   FLAC__uint32 decoded_size = h.blocksize * h.channels * (h.bits_per_sample / 8);
+   long i = 0;
 
-   if( CBOOL( PROCEDURE_ENTRY( proc )( proc, obj, BEOA ) ) ) {
+   switch( h.bits_per_sample ) {
+      case 16: {
+	 long sample;
+	 FLAC__uint16 *buf = (FLAC__uint16 *)BGL_DECODER_OUTBUF( obj );
+
+	 for( sample = 0; sample < h.blocksize; sample++ ) {
+	    long channel;
+
+	    for( channel = 0; channel < h.channels; channel++ ) {
+	       buf[ i++ ] = buffer[ channel ][ sample ];
+	    }
+	 }
+
+	 i *= 2;
+	 break;
+      }
+      case 24: {
+	 long sample;
+	 unsigned char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
+
+	 for( sample = 0; sample < h.blocksize; sample++ ) {
+	    long channel;
+
+	    for( channel = 0; channel < h.channels; channel++ ) {
+	       FLAC__uint32 l = buffer[ channel ][ sample ];
+	       buf[ i++ ] = (l >> 0) & 0xff;
+	       buf[ i++ ] = (l >> 8) & 0xff;
+	       buf[ i++ ] = (l >> 16) & 0xff;
+	    }
+	 }
+	 break;
+      }
+	 
+      default: {
+	 char msg[ 128 ];
+
+	 sprintf( msg, "Bit rate unsupported: %d\n", h.bits_per_sample );
+	 bgl_flac_error( "flac-decoder-decode", msg, obj );
+      }
+   }
+	 
+   if( CBOOL( bgl_flac_decoder_write( (BgL_flaczd2decoderzd2_bglt)obj,
+				      i, 
+				      h.sample_rate,
+				      h.channels,
+				      h.bits_per_sample ) ) ) {
       return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
    } else {
       return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
@@ -223,10 +280,13 @@ bgl_metadata_callback( const FLAC__StreamDecoder *decoder,
 		       const FLAC__StreamMetadata *metadata,
 		       void *client_data ) {
    obj_t obj = (obj_t)client_data;
-   obj_t proc = BGL_DECODER_METADATA( obj );
 
-   if( PROCEDUREP( proc ) ) {
-      PROCEDURE_ENTRY( proc )( proc, obj, BEOA );
+   if( metadata->type == FLAC__METADATA_TYPE_STREAMINFO )  {
+      bgl_flac_decoder_metadata( (BgL_flaczd2decoderzd2_bglt)obj,
+				 metadata->data.stream_info.total_samples,
+				 metadata->data.stream_info.sample_rate,
+				 metadata->data.stream_info.channels,
+				 metadata->data.stream_info.bits_per_sample );
    }
 }
 
@@ -241,6 +301,7 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t proc = BGL_DECODER_ERROR( obj );
 
+   fprintf( stderr, "error\n" );
    if( PROCEDUREP( proc ) ) {
       PROCEDURE_ENTRY( proc )( proc, obj, BEOA );
    }

@@ -370,7 +370,7 @@ calculus. Example:
                         (x 10)
                         (y 20)
                         (o1 o1))))
-   (+ (c2-x (c1-o2 o1)) (c2-y (c1-o2 x))))
+   (+ (c2-x (c1-o2 o1)) (c2-y (c1-o2 o1))))
                                        @result{} 30
 @end smalllisp
 @end deffn

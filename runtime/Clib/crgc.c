@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Jul  1 15:32:43 2011 (serrano)                */
+/*    Last change :  Fri Jul  8 10:32:06 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -125,7 +125,7 @@ shift_buffer( obj_t port ) {
 /*    rgc_size_fill_buffer ...                                         */
 /*---------------------------------------------------------------------*/
 static bool_t
-rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
+rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark ) {
    long r;
    int fb = INPUT_PORT( port ).fillbarrier;
    
@@ -161,7 +161,7 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
       }
    }
 
-   buf[ bufpos - 1 + r ] = 0;
+   if( mark ) buf[ bufpos - 1 + r ] = 0;
 #if defined( RGC_DEBUG )
    if( bgl_debug() >= 1 ) {
       printf( "    sysread res=%d\n", r );
@@ -191,8 +191,8 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size ) {
 #endif
 
    if( bufpos > 0 ) {
-      buf[ bufpos - 1 ] = '\0';
-
+/* MS, 8 jul 2011, redundant with buf[ bufps -1 + r ] = 0; */
+/*       buf[ bufpos - 1 ] = '\0';                                     */
 #if defined( RGC_DEBUG )
       if( bgl_debug() >= 1 ) {
 	 printf( "      return 1\n" );
@@ -249,7 +249,7 @@ rgc_fill_buffer( obj_t port ) {
    } else {
       if( bufpos < bufsize )
 	 /* the buffer is not full, we fill it */
-	 return rgc_size_fill_buffer( port, buf, bufpos, bufsize - bufpos );
+	 return rgc_size_fill_buffer( port, buf, bufpos, bufsize - bufpos, 1 );
       else {
 	 if( matchstart > 0 ) {
 	    shift_buffer( port );
@@ -260,7 +260,7 @@ rgc_fill_buffer( obj_t port ) {
 #endif
 	    bufpos = INPUT_PORT( port ).bufpos;
 	    
-	    return rgc_size_fill_buffer( port, buf, bufpos, bufsize - bufpos );
+	    return rgc_size_fill_buffer( port, buf, bufpos, bufsize - bufpos, 1 );
 	 } else {
 	    /* the current token is too large for the buffer */
 	    /* we have to enlarge it.                        */
@@ -1056,7 +1056,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 	       int m = (bsz <= l ? bsz : l);
 	       int r; 
 
-	       rgc_size_fill_buffer( p, &s[ o ], 1, m );
+	       rgc_size_fill_buffer( p, &s[ o ], 1, m, 0 );
 	       r = INPUT_PORT( p ).bufpos - 1;
 
 	       INPUT_PORT( p ).filepos += r;
