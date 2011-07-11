@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jul  4 16:35:22 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 08:14:35 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -31,6 +31,7 @@
 	   (mpg123-handle-close ::mpg123-handle)
 	   (mpg123-handle-reset! ::mpg123-handle)
 	   (mpg123-get-format ::mpg123-handle)
+	   (mpg123-param-get ::mpg123-handle ::symbol)
 	   (mpg123-error::int ::string ::string ::obj)
 	   (mpg123-decode ::mpg123-handle ::bstring ::long ::long ::bstring ::long)
 	   (mpg123-position::long ::mpg123-handle ::bstring)
@@ -145,6 +146,74 @@
 		      (msg "Unknown format")
 		      (obj f))))))
 
+;*---------------------------------------------------------------------*/
+;*    mpg123-param-get ...                                             */
+;*---------------------------------------------------------------------*/
+(define (mpg123-param-get m::mpg123-handle type)
+   (with-access::mpg123-handle m ($builtin)
+      ($bgl-mpg123-getparam $builtin (symbol->mpg123-param type))))
+
+;*---------------------------------------------------------------------*/
+;*    mpg123-param-set! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (mpg123-param-set! m::mpg123-handle type val)
+   (with-access::mpg123-handle m ($builtin)
+      ($bgl-mpg123-param $builtin (mpg123-param->symbol type)
+	 (if (fixnum? val) val 0)
+	 (if (flonum? val) val 0.))))
+
+;*---------------------------------------------------------------------*/
+;*    mpg123-param->symbol ...                                         */
+;*---------------------------------------------------------------------*/
+(define (mpg123-param->symbol::symbol p::$mpg123-params)
+   (cond
+      ((=fx p $mpg123-verbose) 'verbose)
+      ((=fx p $mpg123-flags) 'flags)
+      ((=fx p $mpg123-add-flags) 'add-flags)
+      ((=fx p $mpg123-force-rate) 'force-rate)
+      ((=fx p $mpg123-down-sample) 'down-sample)
+      ((=fx p $mpg123-rva) 'rva)
+      ((=fx p $mpg123-downspeed) 'downspeed)
+      ((=fx p $mpg123-upspeed) 'upspeed)
+      ((=fx p $mpg123-start-frame) 'start-frame)
+      ((=fx p $mpg123-decode-frames) 'decode-frames)
+      ((=fx p $mpg123-icy-interval) 'icy-interval)
+      ((=fx p $mpg123-outscale) 'outscale)
+      ((=fx p $mpg123-timeout) 'timeout)
+      ((=fx p $mpg123-remove-flags) 'remove-flags)
+      ((=fx p $mpg123-resync-limit) 'resync-limit)
+      ((=fx p $mpg123-index-size) 'index-size)
+      ((=fx p $mpg123-preframes) 'preframes)
+;*       ((=fx p $mpg123-feedpool) 'feedpool)                          */
+;*       ((=fx p $mpg123-feedbuffer) 'feedbuffer)                      */
+      (else (error "mpg123-param->symbol" "unknown param" p))))
+     
+;*---------------------------------------------------------------------*/
+;*    symbol->mpg123-param ...                                         */
+;*---------------------------------------------------------------------*/
+(define (symbol->mpg123-param::$mpg123-params p::symbol)
+   (case p
+      ((verbose) $mpg123-verbose)
+      ((flags) $mpg123-flags)
+      ((add-flags) $mpg123-add-flags)
+      ((force-rate) $mpg123-force-rate)
+      ((down-sample) $mpg123-down-sample)
+      ((rva) $mpg123-rva)
+      ((downspeed) $mpg123-downspeed)
+      ((upspeed) $mpg123-upspeed)
+      ((start-frame) $mpg123-start-frame)
+      ((decode-frames) $mpg123-decode-frames)
+      ((icy-interval) $mpg123-icy-interval)
+      ((outscale) $mpg123-outscale)
+      ((timeout) $mpg123-timeout)
+      ((remove-flags) $mpg123-remove-flags)
+      ((resync-limit) $mpg123-resync-limit)
+      ((index-size) $mpg123-index-size)
+      ((preframes) $mpg123-preframes)
+;*       ((feedpool) $mpg123-feedpool)                                 */
+;*       ((feedbuffer) $mpg123-feedbuffer)                             */
+      (else (error "mpg123-param->symbol" "unknown param" p))))
+     
 ;*---------------------------------------------------------------------*/
 ;*    Force the initialization                                         */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Fri Jul  1 18:21:23 2011 (serrano)                */
+/*    Last change :  Mon Jul 11 08:01:43 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -141,4 +141,25 @@ bgl_mpg123_getvolume( mpg123_handle *m ) {
 	       (int)(base * 100), (int)(really * 100), (int)(rva_db * 100) );
       return (long)(base * 100);
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_mpg123_getparam ...                                          */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_mpg123_getparam( mpg123_handle *m, enum mpg123_parms type ) {
+   long val;
+   double fval;
+   int err = mpg123_getparam( m, type, &val, &fval );
+   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+
+   if( err < 0 ) {
+      bgl_mpg123_error( "mpg123-getparam", mpg123_plain_strerror( err ), m );
+   }
+
+   BGL_ENV_MVALUES_NUMBER_SET( env, 1 );
+   BGL_ENV_MVALUES_VAL_SET( env, 1, DOUBLE_TO_REAL( fval ) );
+
+   return BINT( val );
 }

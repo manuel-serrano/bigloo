@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Jun 27 19:34:57 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 15:24:50 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -28,6 +28,7 @@
 	    (class alsa-snd-pcm)
 	    (class alsa-card)
 
+	    (class alsabuffer)
 	    (class alsamusic)
 	    (class alsadecoder)))
 

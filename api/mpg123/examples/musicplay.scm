@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Thu Jul  7 09:54:16 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 17:11:38 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -76,13 +76,22 @@
 ;*    directory->files ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (directory->files path)
-   (if (directory? path)
+   (cond
+      ((directory? path)
        (append-map (lambda (p)
 		      (directory->files (make-file-name path p)))
 	  (sort (lambda (s1 s2)
 		   (>fx (string-natural-compare3 s1 s2) 0))
-	     (directory->list path)))
-       (list path)))
+	     (reverse (directory->list path)))))
+      ((string-suffix? ".m3u" path)
+       (filter-map (lambda (p)
+		      (let ((path (car p)))
+			 (with-handler
+			    (lambda (e) #f)
+			    (call-with-input-file path (lambda (ip) path)))))
+	  (reverse (call-with-input-file path read-m3u))))
+      (else
+       (list path))))
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
@@ -107,38 +116,42 @@
 	 (else
 	  (set! files (append (directory->files else) files))))
 
-      (let* ((pcm (instantiate::alsa-snd-pcm
-		     (device device)))
-	     (decoder (instantiate::mpg123decoder))
-	     (player (instantiate::alsamusic
-			(decoders (list decoder))
-			(mkthread (lambda (b) (instantiate::pthread (body b))))
-			(pcm pcm))))
-	 (music-volume-set! player volume)
-	 (music-playlist-clear! player)
-	 (for-each (lambda (p) (music-playlist-add! player p)) (reverse files))
-	 (music-play player)
-	 (music-event-loop player
-	    :frequency 20000
-	    :onstate (lambda (status)
-			(with-access::musicstatus status (state song volume
-							    songpos
-							    songlength)
-			   (print "state: " state)
-			   (print "song : " (list-ref (music-playlist-get player)  song)
-			      " [" songpos "/" songlength "]")
-			   (newline)
-			   (when (and (eq? state 'ended)
-				      (=fx song (-fx (length files) 1)))
-			      (exit 0))))
-	    :onmeta (lambda (meta)
-		       (print "meta    : " meta)
-		       (print "playlist: " (length (music-playlist-get player)))
-		       (newline))
-	    :onerror (lambda (err)
-			(print "error   : " err)
-			(newline))
-	    :onvolume (lambda (volume)
-			 (print "volume: " volume)
-			 (newline))))))
+      (when (pair? files)
+	 (let* ((pcm (instantiate::alsa-snd-pcm
+			(device device)))
+		(decoder (instantiate::mpg123decoder))
+		(player (instantiate::alsamusic
+			   (decoders (list decoder))
+			   (mkthread (lambda (b) (instantiate::pthread (body b))))
+			   (pcm pcm))))
+	    (music-volume-set! player volume)
+	    (music-playlist-clear! player)
+	    (print "playing: ")
+	    (for-each (lambda (p)
+			 (print "  " p)
+			 (music-playlist-add! player p))
+	       (reverse files))
+	    (music-play player)
+	    (music-event-loop player
+	       :frequency 20000
+	       :onstate (lambda (status)
+			   (with-access::musicstatus status (state song volume
+							       songpos
+							       songlength)
+			      (print "state: " state)
+			      (case state
+				 ((play)
+				  (print "song: " (list-ref (music-playlist-get player)  song)
+				     " [" songpos "/" songlength "]"))
+				 ((ended)
+				  (newline)
+				  (when (=fx song (-fx (length files) 1))
+				     (exit 0))))))
+	       :onmeta (lambda (meta)
+			  (print "meta: " meta)
+			  (print "playlist: " (length (music-playlist-get player))))
+	       :onerror (lambda (err)
+			   (print "error: " err))
+	       :onvolume (lambda (volume)
+			    (print "volume: " volume)))))))
 

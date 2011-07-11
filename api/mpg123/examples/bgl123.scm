@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Tue Jul  5 15:40:50 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 18:14:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both MPG123 *and* ALSA libs.    */
@@ -28,6 +28,7 @@
 (define (main argv)
    (let ((m (instantiate::mpg123-handle))
 	 (pcm (instantiate::alsa-snd-pcm)))
+      (alsa-snd-pcm-open pcm)
       (alsa-snd-pcm-sw-set-params! pcm :start-threshold 1 :avail-min 1)
       (let ((inbuf (make-string inbufsiz))
 	    (outbuf (make-string outbufsiz)))

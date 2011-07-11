@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Jul  8 12:10:36 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 14:18:03 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -44,6 +44,7 @@
 	   (generic flac-decoder-write ::flac-decoder ::long ::long ::long ::long)
 	   (generic flac-decoder-metadata ::flac-decoder ::llong ::long ::long ::long)
 	   (generic flac-decoder-tell ::flac-decoder)
+	   (generic flac-decoder-info::long ::flac-decoder)
 	   
 	   (generic flac-decoder-decode ::flac-decoder)
 	   (generic flac-decoder-reset! ::flac-decoder)
@@ -54,7 +55,6 @@
 ;* 	   (flac-get-format ::flac-handle)                             */
 ;* 	   (flac-decode ::flac-handle ::bstring ::long ::bstring ::long) */
 ;* 	   (flac-position::long ::flac-handle ::bstring)               */
-;* 	   (flac-info::long ::flac-handle)                             */
 ;* 	   (flac-seek::long ::flac-handle ::long)                      */
 ;* 	   (flac-volume-get::obj ::flac-handle)                        */
 ;* 	   (flac-volume-set! ::flac-handle ::obj)))                    */
@@ -168,6 +168,14 @@
       (if (input-port? port)
 	  (input-port-position port)
 	  -1)))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-info ::flac-decoder ...                             */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-decoder-info o::flac-decoder)
+   (with-access::flac-decoder o ($builtin)
+      (values ($flac-decoder-get-bits-per-sample $builtin)
+	 ($flac-decoder-get-sample-rate $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-state->symbol ...                                   */

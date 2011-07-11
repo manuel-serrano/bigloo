@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Sun Jun 26 14:50:36 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 13:54:42 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -56,10 +56,11 @@
 (define-generic (music-event-loop-inner m::music frequency onstate onmeta onerror onvol)
    
    (define (newstate? stat2 stat1)
-      (with-access::musicstatus stat2 (state song playlistid)
+      (with-access::musicstatus stat2 (state song songid playlistid)
 	 (or (not (eq? (musicstatus-state stat1) state))
 	     (not (eq? (musicstatus-playlistid stat1) playlistid))
-	     (not (eq? (musicstatus-song stat1) song)))))
+	     (not (eq? (musicstatus-song stat1) song))
+	     (not (eq? (musicstatus-songid stat1) songid)))))
    
    (define (newvolume? stat2 stat1)
       (with-access::musicstatus stat2 (volume)
@@ -97,6 +98,11 @@
 		      ;; onstate
 		      (when onstate
 			 (onstate stat2))
+		      (with-access::musicstatus stat2 (song playlistlength)
+			 (when (<fx song (-fx playlistlength 1))
+			    (music-next m))))
+		     ((skip)
+		      ;; as ended but do not raise the onstate event
 		      (with-access::musicstatus stat2 (song playlistlength)
 			 (when (<fx song (-fx playlistlength 1))
 			    (music-next m))))

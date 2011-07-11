@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Sun May 29 08:31:38 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 13:51:01 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -26,6 +26,7 @@
 	      (%reset-loop::bool (default #f)))
 
 	   (class musicstatus
+	      ;; init, stop, ended, play, pause, skip
 	      (state::symbol (default 'stop))
 	      (volume::obj (default 0))
 	      (repeat::bool (default #f))

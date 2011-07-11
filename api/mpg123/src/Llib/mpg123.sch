@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Jul  4 16:34:25 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 08:14:56 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -48,6 +48,8 @@
        (::$mpg123-handle ::long ::int) "mpg123_seek_frame")
     (macro $mpg123-volume::int
        (::$mpg123-handle ::double) "mpg123_volume")
+    (macro $mpg123-param::int
+       (::$mpg123-handle ::$mpg123-params ::long ::double) "mpg123_param")
     
     ($bgl-mpg123-decode::int
        (::$mpg123-handle ::string ::long ::long ::string ::long)
@@ -64,6 +66,10 @@
        (::$mpg123-handle) "bgl_mpg123_info")
     ($bgl-mpg123-getvolume::long
        (::$mpg123-handle) "bgl_mpg123_getvolume")
+    ($bgl-mpg123-param::obj
+       (::$mpg123-handle ::$mpg123-params ::long ::double) "bgl_mpg123_param")
+    ($bgl-mpg123-getparam::obj
+       (::$mpg123-handle ::$mpg123-params) "bgl_mpg123_getparam")
 
     (macro $mpg123-new-format::int "MPG123_NEW_FORMAT")
     (macro $mpg123-err::int "MPG123_ERR")
@@ -83,6 +89,27 @@
 ;*     (macro $mpg123-enc-unsigned-24::long "MPG123_ENC_UNSIGNED_24")  */
     (macro $mpg123-enc-float-32::long "MPG123_ENC_FLOAT_32")
     (macro $mpg123-enc-float-64::long "MPG123_ENC_FLOAT_64")
+
+    (type $mpg123-params long "enum mpg123_parms")
+    (macro $mpg123-verbose::$mpg123-params "MPG123_VERBOSE")
+    (macro $mpg123-flags::$mpg123-params "MPG123_FLAGS")
+    (macro $mpg123-add-flags::$mpg123-params "MPG123_ADD_FLAGS")
+    (macro $mpg123-force-rate::$mpg123-params "MPG123_FORCE_RATE")
+    (macro $mpg123-down-sample::$mpg123-params "MPG123_DOWN_SAMPLE")
+    (macro $mpg123-rva::$mpg123-params "MPG123_RVA")
+    (macro $mpg123-downspeed::$mpg123-params "MPG123_DOWNSPEED")
+    (macro $mpg123-upspeed::$mpg123-params "MPG123_UPSPEED")
+    (macro $mpg123-start-frame::$mpg123-params "MPG123_START_FRAME")
+    (macro $mpg123-decode-frames::$mpg123-params "MPG123_DECODE_FRAMES")
+    (macro $mpg123-icy-interval::$mpg123-params "MPG123_ICY_INTERVAL")
+    (macro $mpg123-outscale::$mpg123-params "MPG123_OUTSCALE")
+    (macro $mpg123-timeout::$mpg123-params "MPG123_TIMEOUT")
+    (macro $mpg123-remove-flags::$mpg123-params "MPG123_REMOVE_FLAGS")
+    (macro $mpg123-resync-limit::$mpg123-params "MPG123_RESYNC_LIMIT")
+    (macro $mpg123-index-size::$mpg123-params "MPG123_INDEX_SIZE")
+    (macro $mpg123-preframes::$mpg123-params "MPG123_PREFRAMES")
+;*     (macro $mpg123-feedpool::$mpg123-params "MPG123_FEEDPOOL")      */
+;*     (macro $mpg123-feedbuffer::$mpg123-params "MPG123_FEEDBUFFER")        */
 
     (macro $mpg123-seek-set::int "SEEK_SET")))
 

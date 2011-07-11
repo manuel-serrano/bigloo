@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Thu Jul  7 10:21:00 2011 (serrano)                */
+;*    Last change :  Mon Jul 11 18:11:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -37,6 +37,7 @@
       ;; snd-pcm
       (type $snd-pcm void* "snd_pcm_t *")
       (infix macro $snd-pcm-nil::$snd-pcm () "0L")
+      (infix macro $snd-pcm-nil?::bool (::$snd-pcm) " == 0L")
 
       (macro $snd-pcm-name::string
 	 (::$snd-pcm) "snd_pcm_name")
@@ -53,14 +54,24 @@
       (macro $snd-pcm-pause::int
 	 (::$snd-pcm ::int)
 	 "snd_pcm_pause")
+      (macro $snd-pcm-wait::int
+	 (::$snd-pcm ::int) "snd_pcm_wait")
       (macro $snd-pcm-drop::int
 	 (::$snd-pcm) "snd_pcm_drop")
+      (macro $snd-pcm-drain::int
+	 (::$snd-pcm) "snd_pcm_drain")
+      (macro $snd-pcm-recover::int
+	 (::$snd-pcm ::int ::int) "snd_pcm_recover")
       (macro $snd-pcm-reset::int
 	 (::$snd-pcm) "snd_pcm_reset")
       (macro $snd-pcm-prepare::int
 	 (::$snd-pcm) "snd_pcm_prepare")
       (macro $snd-pcm-start::int
 	 (::$snd-pcm) "snd_pcm_start")
+      (macro $snd-pcm-avail::$snd-pcm-sframes
+	 (::$snd-pcm) "snd_pcm_avail")
+      (macro $snd-pcm-avail-update::$snd-pcm-sframes
+	 (::$snd-pcm) "snd_pcm_avail_update")
 
       ;; snd-pcm-stream
       (type $snd-pcm-stream long "snd_pcm_stream_t")
