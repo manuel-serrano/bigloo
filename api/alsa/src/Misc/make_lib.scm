@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Jul 11 15:24:50 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 10:30:46 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -19,14 +19,19 @@
    (import  __alsa_alsa
 	    __alsa_pcm
 	    __alsa_music
-	    __alsa_card)
+	    __alsa_card
+	    __alsa_control
+	    __alsa_mixer)
 
    (eval    (export-all)
 
             (class &alsa-error)
             (class alsa-object)
 	    (class alsa-snd-pcm)
-	    (class alsa-card)
+	    (class alsa-snd-card)
+	    (class alsa-snd-ctl)
+	    (class alsa-snd-ctl-card-info)
+	    (class alsa-snd-mixer)
 
 	    (class alsabuffer)
 	    (class alsamusic)

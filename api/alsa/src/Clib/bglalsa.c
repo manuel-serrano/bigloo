@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Wed Jul  6 07:41:27 2011 (serrano)                */
+/*    Last change :  Tue Jul 12 10:26:54 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -12,6 +12,8 @@
 #include <bigloo.h>
 #include "bglalsa.h"
 #include "bglpcm.h"
+#include "bglctl.h"
+#include "bglmixer.h"
 
 /*---------------------------------------------------------------------*/
 /*    OBJ_TO_SND_PCM                                                   */
@@ -20,12 +22,95 @@
    (((BgL_alsazd2sndzd2pcmz00_bglt)o)->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
+/*    OBJ_TO_SND_CTL                                                   */
+/*---------------------------------------------------------------------*/
+#define OBJ_TO_SND_CTL( o ) \
+   (((BgL_alsazd2sndzd2ctlz00_bglt)o)->BgL_z42builtinz42)
+
+/*---------------------------------------------------------------------*/
+/*    OBJ_TO_SND_MIXER                                                 */
+/*---------------------------------------------------------------------*/
+#define OBJ_TO_SND_MIXER( o ) \
+   (((BgL_alsazd2sndzd2mixerz00_bglt)o)->BgL_z42builtinz42)
+
+/*---------------------------------------------------------------------*/
+/*    alsa-snd-card-info bigloo object                                 */
+/*---------------------------------------------------------------------*/
+#define BGL_SND_CTL_CARD_INFO_CTL( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_ctlz00
+#define BGL_SND_CTL_CARD_INFO_CARD( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_cardz00
+#define BGL_SND_CTL_CARD_INFO_ID( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_idz00
+#define BGL_SND_CTL_CARD_INFO_DRIVER( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_driverz00
+#define BGL_SND_CTL_CARD_INFO_NAME( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_namez00
+#define BGL_SND_CTL_CARD_INFO_LONGNAME( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_longnamez00
+#define BGL_SND_CTL_CARD_INFO_MIXERNAME( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_mixernamez00
+#define BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_componentsz00
+
+/*---------------------------------------------------------------------*/
 /*    int                                                              */
 /*    bgl_snd_pcm_open ...                                             */
 /*---------------------------------------------------------------------*/
 int
 bgl_snd_pcm_open( obj_t o, char *name, snd_pcm_stream_t stream, int mode ) {
    return snd_pcm_open( &(OBJ_TO_SND_PCM( o )), name, stream, mode );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_ctl_open ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_ctl_open( obj_t o, char *card, int mode ) {
+   return snd_ctl_open( &(OBJ_TO_SND_CTL( o )), card, mode );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_mixer_open ...                                           */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_mixer_open( obj_t o ) {
+   return snd_mixer_open( &(OBJ_TO_SND_MIXER( o )), 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_snd_ctl_card_info_init ...                                   */
+/*---------------------------------------------------------------------*/
+void
+bgl_snd_ctl_card_info_init( obj_t o ) {
+   int err;
+   snd_ctl_card_info_t *info;
+   snd_ctl_card_info_alloca( &info );
+   snd_ctl_t *handle = OBJ_TO_SND_CTL( BGL_SND_CTL_CARD_INFO_CTL( o ) );
+   
+   if( (err = snd_ctl_card_info( handle, info )) < 0 ) {
+      bgl_alsa_error( "alsa-snd-ctl-card-info",
+		      (char *)snd_strerror( err ),
+		      o );
+   }
+   
+   BGL_SND_CTL_CARD_INFO_CARD( o ) =
+      snd_ctl_card_info_get_card( info );
+   BGL_SND_CTL_CARD_INFO_ID( o ) =
+      string_to_bstring( snd_ctl_card_info_get_id( info ) );
+   BGL_SND_CTL_CARD_INFO_DRIVER( o ) =
+      string_to_bstring( snd_ctl_card_info_get_driver( info ) );
+   BGL_SND_CTL_CARD_INFO_NAME( o ) =
+      string_to_bstring( snd_ctl_card_info_get_name( info ) );
+   BGL_SND_CTL_CARD_INFO_LONGNAME( o ) =
+      string_to_bstring( snd_ctl_card_info_get_longname( info ) );
+   BGL_SND_CTL_CARD_INFO_MIXERNAME( o ) =
+      string_to_bstring( snd_ctl_card_info_get_mixername( info ) );
+   BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) =
+      string_to_bstring( snd_ctl_card_info_get_components( info ) );
 }
 
 /*---------------------------------------------------------------------*/

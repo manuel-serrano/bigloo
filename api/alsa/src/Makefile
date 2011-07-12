@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jun 27 19:17:39 2011 (serrano)                */
+#*    Last change :  Tue Jul 12 10:30:56 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -60,7 +60,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= alsa pcm card music
+_BGL_OBJECTS	= alsa pcm card control mixer music
 
 ifeq "$(ALSALIBS) " " "
 _C_OBJECTS	= 
@@ -149,6 +149,18 @@ $(C_SRC_DIR)/bglpcm.h: Llib/pcm.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
 
 #*---------------------------------------------------------------------*/
+#*    bglctl.h                                                         */
+#*---------------------------------------------------------------------*/
+$(C_SRC_DIR)/bglctl.h: Llib/control.scm
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+#*---------------------------------------------------------------------*/
+#*    bglmixer.h                                                         */
+#*---------------------------------------------------------------------*/
+$(C_SRC_DIR)/bglmixer.h: Llib/mixer.scm
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+#*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
 pop:
@@ -158,7 +170,9 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm $(C_SRC_DIR)/bglpcm.h
+	/bin/rm -f $(C_SRC_DIR)/bglpcm.h
+	/bin/rm -f $(C_SRC_DIR)/bglctl.h
+	/bin/rm -f $(C_SRC_DIR)/bglmixer.h
 
 cleanall: api-cleanall
 
@@ -172,7 +186,9 @@ include ../../Makefile.api
 #*---------------------------------------------------------------------*/
 #*    explicit depencies                                               */
 #*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglalsa.c: $(C_SRC_DIR)/bglpcm.h
+$(C_SRC_DIR)/bglalsa.c: $(C_SRC_DIR)/bglpcm.h \
+  $(C_SRC_DIR)/bglctl.h \
+  $(C_SRC_DIR)/bglmixer.h
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

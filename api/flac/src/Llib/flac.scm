@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jul 11 14:18:03 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 08:49:19 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -20,7 +20,9 @@
 	   (export flac-decoder-read "bgl_flac_decoder_read")
 	   (export flac-decoder-write "bgl_flac_decoder_write")
 	   (export flac-decoder-metadata "bgl_flac_decoder_metadata")
-	   (export flac-decoder-tell "bgl_flac_decoder_tell"))
+	   (export flac-decoder-tell "bgl_flac_decoder_tell")
+	   (export flac-decoder-seek "bgl_flac_decoder_seek")
+	   (export flac-decoder-length "bgl_flac_decoder_length"))
    
    (export (class flac-decoder
 	      (flac-decoder-init)
@@ -28,11 +30,9 @@
 	      (%inbuf::string (default ""))
 	      (outbuf::bstring (default ""))
 	      (%eof::bool (default #f))
+	      (%sample::long (default 0))
 	      (port (default #f))
-	      (md5check::bool read-only (default #f))
-	      (seek (default #f))
-	      (length (default #f))
-	      (error (default #f)))
+	      (md5check::bool read-only (default #f)))
 
 	   (class &flac-error::&error)
 
@@ -44,18 +44,16 @@
 	   (generic flac-decoder-write ::flac-decoder ::long ::long ::long ::long)
 	   (generic flac-decoder-metadata ::flac-decoder ::llong ::long ::long ::long)
 	   (generic flac-decoder-tell ::flac-decoder)
+	   (generic flac-decoder-seek ::flac-decoder ::llong)
+	   (generic flac-decoder-length ::flac-decoder)
 	   (generic flac-decoder-info::long ::flac-decoder)
+	   (generic flac-decoder-position::long ::flac-decoder)
 	   
 	   (generic flac-decoder-decode ::flac-decoder)
 	   (generic flac-decoder-reset! ::flac-decoder)
-	   (flac-error::int ::string ::string ::obj)
-	   ))
+	   
+	   (flac-error::int ::string ::string ::obj)))
 
-;*  	   (flac-handle-reset! ::flac-handle)                          */
-;* 	   (flac-get-format ::flac-handle)                             */
-;* 	   (flac-decode ::flac-handle ::bstring ::long ::bstring ::long) */
-;* 	   (flac-position::long ::flac-handle ::bstring)               */
-;* 	   (flac-seek::long ::flac-handle ::long)                      */
 ;* 	   (flac-volume-get::obj ::flac-handle)                        */
 ;* 	   (flac-volume-set! ::flac-handle ::obj)))                    */
 
@@ -117,8 +115,7 @@
 (define-generic (flac-decoder-reset! o::flac-decoder)
    (unless (eq? (flac-decoder-get-state o) 'stream-decoder-uninitialized) 
       (with-access::flac-decoder o ($builtin)
-	 ($flac-decoder-reset $builtin)))
-   (tprint "reset, state=" (flac-decoder-get-state o)))
+	 ($flac-decoder-reset $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-get-state ...                                       */
@@ -167,7 +164,29 @@
    (with-access::flac-decoder o (port)
       (if (input-port? port)
 	  (input-port-position port)
-	  -1)))
+	  #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-seek ::flac-decoder ...                             */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-decoder-seek o::flac-decoder pos)
+   (with-access::flac-decoder o (port)
+      (if (input-port? port)
+	  (begin
+	     (set-input-port-position! port (llong->fixnum pos))
+	     #t)
+	  #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-length ::flac-decoder ...                           */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-decoder-length o::flac-decoder)
+   (with-access::flac-decoder o (port)
+      (if (input-port? port)
+	  (if (file-exists? (input-port-name port))
+	      (file-size (input-port-name port))
+	      #t)
+	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-info ::flac-decoder ...                             */
@@ -205,64 +224,31 @@
       (else
        'unknown)))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-handle-reset! ...                                           *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-handle-reset! o::flac-handle)                         */
-;*    (with-access::flac-handle o ($builtin)                           */
-;*       ($flac-close $builtin)                                        */
-;*       ($flac-open-feed $builtin)))                                  */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-decode ...                                                  *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-decode m::flac-handle inbuf insz outbuf outsz)        */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       (multiple-value-bind (status size)                            */
-;* 	 ($bgl-flac-decode $builtin inbuf insz outbuf outsz)           */
-;* 	 (values (flac-decode-status->symbol status) size))))          */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-get-format ...                                              *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-get-format m::flac-handle)                            */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       (multiple-value-bind (rate channels encoding)                 */
-;* 	 ($bgl-flac-get-format $builtin)                               */
-;* 	 (values rate channels (flac-format->symbol encoding)))))      */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-position ...                                                *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-position m::flac-handle buf::bstring)                 */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       ($bgl-flac-position $builtin)))                               */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    Force the initialization                                         *} */
-;* {*---------------------------------------------------------------------*} */
-;* (let ((err ($flac-init)))                                           */
-;*    (unless (=fx err $flac-ok)                                       */
-;*       (raise (instantiate::&flac-error                              */
-;* 		(proc "flac")                                          */
-;* 		(msg ($flac-plain-strerror err))                       */
-;* 		(obj #f)))))                                           */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-info ...                                                    *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-info m::flac-handle)                                  */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       ($bgl-flac-info $builtin)))                                   */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-seek ...                                                    *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-seek m::flac-handle ms)                               */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       (let ((f ($flac-timeframe $builtin (/fl (fixnum->flonum ms) 1000.)))) */
-;* 	 ($flac-seek-frame $builtin f $flac-seek-set))))               */
-;*                                                                     */
+;*---------------------------------------------------------------------*/
+;*    flac-error-status ...                                            */
+;*---------------------------------------------------------------------*/
+(define (flac-error-status s)
+   (cond
+      ((=fx s $flac-stream-decoder-error-status-lost-sync)
+       'lost-sync)
+      ((=fx s $flac-stream-decoder-error-status-bad-header)
+       'bad-header)
+      ((=fx s $flac-stream-decoder-error-status-frame-crc-mismatch)
+       'crc-mismatch)
+      ((=fx s $flac-stream-decoder-error-status-unparseable-stream)
+       'unparseable-stream)
+      (else
+       'unknown-error)))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-position ...                                        */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-decoder-position m::flac-decoder)
+   (with-access::flac-decoder m ($builtin %sample)
+      (if (<fx %sample 0)
+	  0
+	  (/fx %sample ($flac-decoder-get-sample-rate $builtin)))))
+
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    flac-volume-get ...                                              *} */
 ;* {*---------------------------------------------------------------------*} */

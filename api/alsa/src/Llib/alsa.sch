@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Mon Jul 11 18:11:33 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 10:41:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -39,6 +39,9 @@
       (infix macro $snd-pcm-nil::$snd-pcm () "0L")
       (infix macro $snd-pcm-nil?::bool (::$snd-pcm) " == 0L")
 
+      (macro $bgl-snd-pcm-open::int
+	 (::obj ::string ::$snd-pcm-stream ::int)
+	 "bgl_snd_pcm_open")
       (macro $snd-pcm-name::string
 	 (::$snd-pcm) "snd_pcm_name")
       (macro $snd-pcm-close::int
@@ -72,7 +75,13 @@
 	 (::$snd-pcm) "snd_pcm_avail")
       (macro $snd-pcm-avail-update::$snd-pcm-sframes
 	 (::$snd-pcm) "snd_pcm_avail_update")
-
+      (macro $bgl-snd-pcm-write::long
+	 (::obj ::string ::long)
+	 "bgl_snd_pcm_write")
+      (macro $bgl-snd-pcm-flush::void
+	 (::obj)
+	 "bgl_snd_pcm_flush")
+      
       ;; snd-pcm-stream
       (type $snd-pcm-stream long "snd_pcm_stream_t")
       (macro $snd-pcm-stream-playback::$snd-pcm-stream
@@ -288,13 +297,44 @@
       (macro $bgl-uframes->sframes::$snd-pcm-sframes
 	 (::$snd-pcm-uframes) "(snd_pcm_sframes_t)")
 
-      ;; bigloo functions
-      (macro $bgl-snd-pcm-write::long
-	 (::obj ::string ::long)
-	 "bgl_snd_pcm_write")
-      (macro $bgl-snd-pcm-flush::void
-	 (::obj)
-	 "bgl_snd_pcm_flush")
+      ;; snd-ctl
+      (type $snd-ctl void* "snd_ctl_t *")
+      (infix macro $snd-ctl-nil::$snd-ctl () "0L")
+      (infix macro $snd-ctl-nil?::bool (::$snd-ctl) " == 0L")
+
+      (macro $bgl-snd-ctl-open::int
+	 (::obj ::string ::int) "bgl_snd_ctl_open")
+      (macro $snd-ctl-close::int
+	 (::$snd-ctl) "snd_ctl_close")
+
+      ;; snd-ctl-mode
+      (macro $snd-ctl-nonblock::int
+	 "SND_CTL_NONBLOCK")
+      (macro $snd-ctl-async::int
+	 "SND_CTL_ASYNC")
+
+      ;; snd-ctl
+      (type $snd-ctl-card-info void* "snd_ctl_card_info_t *")
+      (infix macro $snd-ctl-card-info-nil::$snd-ctl-card-info () "0L")
+
+      (macro $bgl-snd-ctl-card-info-init::void
+	 (::obj) "bgl_snd_ctl_card_info_init")
+
+      ;; snd-mixer
+      (type $snd-mixer void* "snd_mixer_t *")
+      (infix macro $snd-mixer-nil::$snd-mixer () "0L")
+      (infix macro $snd-mixer-nil?::bool (::$snd-mixer) " == 0L")
+      
+      (macro $bgl-snd-mixer-open::int
+	 (::obj) "bgl_snd_mixer_open")
+      (macro $snd-mixer-close::int
+	 (::$snd-mixer) "snd_mixer_close")
+      (macro $snd-mixer-attach::int
+	 (::$snd-mixer ::string)  "snd_mixer_attach")
+      (macro $snd-mixer-load::int
+	 (::$snd-mixer) "snd_mixer_load")
+      (macro $snd-mixer-get-count::uint
+	 (::$snd-mixer) "snd_mixer_get_count")
       
       ;; snd-error
       (macro $snd-strerror::string

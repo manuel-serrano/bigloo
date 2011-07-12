@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Jul 11 14:18:54 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 08:28:27 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C flac functions                                                 */
@@ -45,6 +45,10 @@
        (::$flac-decoder) "FLAC__stream_decoder_get_bits_per_sample")
     (macro $flac-decoder-get-sample-rate::ulong
        (::$flac-decoder) "FLAC__stream_decoder_get_sample_rate")
+    (macro $flac-decoder-get-total-samples::llong
+       (::$flac-decoder) "FLAC__stream_decoder_get_total_samples")
+    (macro $flac-decoder-get-blocksize::ulong
+       (::$flac-decoder) "FLAC__stream_decoder_get_blocksize")
     
     ;; flac-bool
     (type $flac-bool long "FLAC__bool")
@@ -85,5 +89,15 @@
     (macro $flac-stream-decoder-memory-allocation-error::$flac-decoder-state
        "FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR")
     (macro $flac-stream-decoder-uninitialized::$flac-decoder-state
-       "FLAC__STREAM_DECODER_UNINITIALIZED")))
+       "FLAC__STREAM_DECODER_UNINITIALIZED")
+    
+    (type $flac-decoder-error-status long "FLAC__StreamDecoderErrorStatus")
+    (macro $flac-stream-decoder-error-status-lost-sync::$flac-decoder-error-status
+       "FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC")
+    (macro $flac-stream-decoder-error-status-bad-header::$flac-decoder-error-status
+       "FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER")
+    (macro $flac-stream-decoder-error-status-frame-crc-mismatch::$flac-decoder-error-status
+       "FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH")
+    (macro $flac-stream-decoder-error-status-unparseable-stream::$flac-decoder-error-status
+       "FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM")))
 

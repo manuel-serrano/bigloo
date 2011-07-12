@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Mon Jul 11 18:09:56 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 09:33:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -17,10 +17,6 @@
    (include "alsa.sch")
 
    (import __alsa_alsa)
-
-   (extern (macro $bgl-snd-pcm-open::int
-	      (::obj ::string ::$snd-pcm-stream ::int)
-	      "bgl_snd_pcm_open"))
 
    (export (class alsa-snd-pcm::alsa-object
 	      ($builtin::$snd-pcm read-only (default (%$snd-pcm-nil)))
@@ -54,12 +50,6 @@
 	   (alsa-snd-pcm-flush ::alsa-snd-pcm)))
 
 ;*---------------------------------------------------------------------*/
-;*    alsa-init ::alsa-snd-pcm ...                                     */
-;*---------------------------------------------------------------------*/
-(define-method (alsa-init o::alsa-snd-pcm)
-   o)
-
-;*---------------------------------------------------------------------*/
 ;*    %$snd-pcm-nil ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%$snd-pcm-nil)
@@ -75,7 +65,7 @@
 			o
 			device
 			(symbol->stream stream)
-			(symbol->mode mode))))
+			(symbol->pcm-mode mode))))
 	     (if (<fx err 0)
 		 (raise (instantiate::&alsa-error
 			   (proc "alsa-snd-pcm-open")
@@ -94,9 +84,10 @@
 ;*    alsa-snd-pcm-close ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-close pcm::alsa-snd-pcm)
-   (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)
-      (with-access::alsa-snd-pcm pcm ($builtin)
-	 ($snd-pcm-close $builtin))))
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (unless ($snd-pcm-nil? $builtin)
+	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)
+	    ($snd-pcm-close $builtin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-get-state ...                                       */
@@ -148,9 +139,9 @@
 		      (obj s))))))
 
 ;*---------------------------------------------------------------------*/
-;*    symbol->mode ...                                                 */
+;*    symbol->pcm-mode ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (symbol->mode::int s::symbol)
+(define (symbol->pcm-mode::int s::symbol)
    (case s
       ((default) 0)
       ((nonblock) $snd-pcm-nonblock)
