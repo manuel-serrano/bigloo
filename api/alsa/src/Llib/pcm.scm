@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Jul 12 14:50:51 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 18:27:46 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -43,6 +43,7 @@
 	   (alsa-snd-pcm-start ::alsa-snd-pcm)
 	   (alsa-snd-pcm-drop ::alsa-snd-pcm)
 	   (alsa-snd-pcm-drain ::alsa-snd-pcm)
+	   (alsa-snd-pcm-cleanup ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-set-params! ::alsa-snd-pcm . rest)
 	   (alsa-snd-pcm-sw-set-params! ::alsa-snd-pcm . rest)
 
@@ -359,6 +360,27 @@
 		       (msg ($snd-strerror err))
 		       (obj pcm)))
 	     err))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-cleanup ...                                         */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-cleanup pcm::alsa-snd-pcm)
+   (let loop ()
+      (let ((state (alsa-snd-pcm-get-state pcm)))
+	 (case state
+	    ((open prepared)
+	     #f)
+	    ((setup)
+	     (alsa-snd-pcm-prepare pcm)
+	     (loop))
+	    ((xrun)
+	     (alsa-snd-pcm-drop pcm)
+	     (loop))
+	    (else
+	     (with-handler
+		(lambda (e) #f)
+		(alsa-snd-pcm-wait pcm 200))
+	     (loop))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-set-params! ...                                  */

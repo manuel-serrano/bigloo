@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jul 12 17:07:17 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 18:28:57 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -60,6 +60,7 @@
 	    (generic alsadecoder-close ::alsadecoder)
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
+	    (generic alsadecoder-stop ::obj ::alsamusic)
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::bstring)
 	    (generic alsadecoder-info::long ::alsadecoder)
@@ -209,7 +210,7 @@
 ;*    music-play ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::alsamusic . s)
-   (with-access::alsamusic o (%amutex %status %playlist %amutex)
+   (with-access::alsamusic o (%amutex %status %playlist %amutex %decoder)
       (with-access::musicstatus %status (song playlistlength state)
 	 (mutex-lock! %amutex)
 	 (cond
@@ -221,13 +222,13 @@
 		(bigloo-type-error "music-play ::alsamusic" 'int (car s)))
 	     (unwind-protect
 		(begin
-		   (stop-sans-lock o)
+		   (alsadecoder-stop %decoder o)
 		   (playlist-play! o (car s)))
 		(mutex-unlock! %amutex)))
 	    ((and (>=fx song 0) (<fx song playlistlength))
 	     (unwind-protect
 		(begin
-		   (stop-sans-lock o)
+		   (alsadecoder-stop %decoder o)
 		   (playlist-play! o song))
 		(mutex-unlock! %amutex)))))))
 
@@ -325,16 +326,22 @@
 ;*    music-stop ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::alsamusic)
-   (with-access::alsamusic o (%amutex pcm)
+   (with-access::alsamusic o (%amutex %decoder pcm)
       (with-lock %amutex
 	 (lambda ()
 	    (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
-	       (stop-sans-lock o))))))
+	       (alsadecoder-stop %decoder o))))))
 
 ;*---------------------------------------------------------------------*/
-;*    stop-sans-lock ...                                               */
+;*    alsadecoder-stop ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (stop-sans-lock o::alsamusic)
+(define-generic (alsadecoder-stop dec::obj o)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    alsadecoder-stop ::alsadecoder-host ...                          */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-stop dec::alsadecoder-host o)
    (with-access::alsamusic o (%amutex %buffer %status pcm)
       (when (alsabuffer? %buffer)
 	 (with-access::alsabuffer %buffer (mutex eof port condv condvs astate)
@@ -351,6 +358,12 @@
 		      (set! songpos 0)
 		      (set! songlength 0))
 		   (set! %buffer #f)))))))
+
+;*---------------------------------------------------------------------*/
+;*    alsadecoder-stop ::alsadecoder-client ...                        */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-stop dec::alsadecoder-client o)
+   (alsadecoder-close o))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
@@ -467,28 +480,6 @@
 		  am::alsamusic
 		  buffer::alsabuffer)
 
-   (define (pcm-reset pcm)
-      (let loop ()
-	 (let ((state (alsa-snd-pcm-get-state pcm)))
-	    (case state
-	       ((open prepared)
-		#f)
-	       ((setup)
-		(alsa-snd-pcm-prepare pcm)
-		(tprint "pcm-reset.setup state=" state)
-		(loop))
-	       ((xrun)
-		(alsa-snd-pcm-drop pcm)
-		(tprint "pcm-reset.xrun state=" state)
-		(loop))
-	       (else
-		(unless (eq? state 'running)
-		   (tprint "pcm-reset state=" state))
-		(with-handler
-		   (lambda (e) #f)
-		   (alsa-snd-pcm-wait pcm 200))
-		(loop))))))
-   
    (define (alsadecoder-do-stop dec am buffer)
       (with-access::alsabuffer buffer (mutex astate condvs)
 	 (with-lock mutex
@@ -497,7 +488,7 @@
 		  (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
 		     (when (memq pcm-state '(running prepared))
 			(alsa-snd-pcm-drop pcm)))
-		  (pcm-reset pcm)
+		  (alsa-snd-pcm-cleanup pcm)
 		  (set! astate 'stopped)
 		  (condition-variable-signal! condvs))))))
    
@@ -549,7 +540,7 @@
    (define (alsadecoder-done dec am buffer)
       (with-access::alsamusic am (pcm %amutex %status)
 	 ;; wait for the PCM interface to be done
-	 (pcm-reset pcm)
+	 (alsa-snd-pcm-cleanup pcm)
 	 (mutex-lock! %amutex)
 	 (musicstatus-state-set! %status 'ended)
 	 (mutex-unlock! %amutex)
@@ -718,8 +709,3 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-host-decode-buffer o::alsadecoder-host
 		   inbuf offset insz outbuf))
-
-;*---------------------------------------------------------------------*/
-;*    alsadecoder-client-decode ::alsadecoder-client ...               */
-;*---------------------------------------------------------------------*/
-(define-generic (alsadecoder-client-decode o::alsadecoder-client))
