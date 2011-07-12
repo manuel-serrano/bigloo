@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Thu Aug 26 12:13:52 2010 (serrano)                */
-;*    Copyright   :  2002-10 Dorai Sitaram, Manuel Serrano             */
+;*    Last change :  Tue Jul 12 17:23:34 2011 (serrano)                */
+;*    Copyright   :  2002-11 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
 ;*    -------------------------------------------------------------    */
@@ -40,8 +40,6 @@
 	    __evenv
 	    __macro)
 
-;*    (use __r4_output_6_10_3 __r4_ports_6_10_1 __param __r4_numbers_6_5) */
-
    (export  (install-syntax-expander ::symbol ::procedure)
 	    (syntax-rules->expander ::symbol ::pair-nil ::pair-nil)
 	    
@@ -60,13 +58,6 @@
 (define syntax-mutex (make-mutex))
 (define syntax-expanders-mutex (make-mutex))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    debug ...                                                        *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (debug . args)                                              */
-;*    (when (>fx (bigloo-debug) 0)                                     */
-;*       (apply print args)))                                          */
-;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    get-syntax-expander ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -325,13 +316,9 @@
 		       ((?pattern ?template)
 			(if (syntax-matches-pattern? keyword pattern x k)
 			    (begin
-;* 			       (debug "** x=" x "\n     p="            */
-;* 				      pattern "\n     t=" template)    */
 			       (let* ((fs (syntax-get-frames pattern x k))
 				      (t (syntax-expand-pattern template fs k))
 				      (te (syntax-expand t)))
-;* 				  (debug "\n     te=" te)              */
-;* 				  (debug "-- nx=" (hygienize te '()))  */
 				  (e (hygienize te '()) e)))
 			    (loop (cdr rules))))
 		       (else
@@ -387,7 +374,6 @@
    (define (syntax-expand-ellipsis p0 env k)
       (let* ((vars (get-ellipsis-variables p0 k))
 	     (frames (get-ellipsis-frames vars env)))
-;* 	 (debug "    p.e=" p0 " nest=" nestings "\n      frames=" frames) */
 	 (if (not (list? frames))
 	     '()
 	     (map (lambda (f)
@@ -405,7 +391,6 @@
        (if (memq p k)
 	   p
 	   (let ((x (assq p env)))
-;* 	      (debug "    p.s=" p " -> " (if (pair? x) (cdr x)))       */
 	      (if (pair? x)
 		  (cdr x)
 		  p))))
@@ -431,8 +416,6 @@
 			       (nvars '()))
 		       (cond
 			  ((null? ovars)
-;* 			   (debug "   F=" f)                           */
-;* 			   (debug "   RES=" res)                       */
 			   (if (null? res)
 			       (loop nvars f)
 			       (loop nvars (map append f res))))
