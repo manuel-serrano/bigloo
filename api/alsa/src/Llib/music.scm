@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jul 11 18:21:01 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 17:07:17 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -466,6 +466,28 @@
 		  dec::alsadecoder-host
 		  am::alsamusic
 		  buffer::alsabuffer)
+
+   (define (pcm-reset pcm)
+      (let loop ()
+	 (let ((state (alsa-snd-pcm-get-state pcm)))
+	    (case state
+	       ((open prepared)
+		#f)
+	       ((setup)
+		(alsa-snd-pcm-prepare pcm)
+		(tprint "pcm-reset.setup state=" state)
+		(loop))
+	       ((xrun)
+		(alsa-snd-pcm-drop pcm)
+		(tprint "pcm-reset.xrun state=" state)
+		(loop))
+	       (else
+		(unless (eq? state 'running)
+		   (tprint "pcm-reset state=" state))
+		(with-handler
+		   (lambda (e) #f)
+		   (alsa-snd-pcm-wait pcm 200))
+		(loop))))))
    
    (define (alsadecoder-do-stop dec am buffer)
       (with-access::alsabuffer buffer (mutex astate condvs)
@@ -475,16 +497,7 @@
 		  (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
 		     (when (memq pcm-state '(running prepared))
 			(alsa-snd-pcm-drop pcm)))
-		  (let prepare ((state (alsa-snd-pcm-get-state pcm)))
-		     (case state
-			((open prepared)
-			 #f)
-			((setup)
-			 (alsa-snd-pcm-prepare pcm)
-			 (prepare (alsa-snd-pcm-get-state pcm)))
-			(else
-			 (alsa-snd-pcm-wait pcm 200)
-			 (prepare (alsa-snd-pcm-get-state pcm)))))
+		  (pcm-reset pcm)
 		  (set! astate 'stopped)
 		  (condition-variable-signal! condvs))))))
    
@@ -536,12 +549,7 @@
    (define (alsadecoder-done dec am buffer)
       (with-access::alsamusic am (pcm %amutex %status)
 	 ;; wait for the PCM interface to be done
-	 (let drain ()
-	    (let ((state (alsa-snd-pcm-get-state pcm)))
-	       (unless (eq? state 'xrun)
-		  (sleep 10000)
-		  (drain))))
-	 (alsa-snd-pcm-drop pcm)
+	 (pcm-reset pcm)
 	 (mutex-lock! %amutex)
 	 (musicstatus-state-set! %status 'ended)
 	 (mutex-unlock! %amutex)
@@ -597,6 +605,7 @@
 			   (tprint "decode, alsa-write: sz=" sz
 			      " size=" size " status="
 			      status))
+			;;(tprint "status=" status " sz=" sz " z=" z " size=" size)
 			(case status
 			   ((ok)
 			    ;; this assumes that reading a point is atomic
@@ -614,11 +623,14 @@
 				   (alsa-snd-pcm-write pcm outbuf size))
 				(flush 0))))
 			   ((need-more)
-			    (when (>fx size 0)
-			       (alsa-snd-pcm-write pcm outbuf size))
-			    (if (or eof (=fx count 0))
-				(alsadecoder-done dec am buffer)
-				(loop sz)))
+			    (cond
+			       ((>fx size 0)
+				(alsa-snd-pcm-write pcm outbuf size)
+				(flush 0))
+			       ((and eof (=fx count 0))
+				(alsadecoder-done dec am buffer))
+			       (else
+				(loop sz))))
 			   ((new-format)
 			    (alsa-snd-pcm-set-params! pcm
 			       :format encoding
@@ -637,6 +649,8 @@
 			       (alsa-snd-pcm-write pcm outbuf size))
 			    (flush 0))
 			   ((done)
+			    (when (>fx size 0)
+			       (alsa-snd-pcm-write pcm outbuf size))
 			    (alsadecoder-done dec am buffer))
 			   (else
 			    (alsadecoder-error dec am buffer)))))))))))

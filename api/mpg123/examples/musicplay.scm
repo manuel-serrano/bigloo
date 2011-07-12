@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Mon Jul 11 17:11:38 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 16:23:55 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -30,6 +30,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-can-play-type? o::mpg123decoder mime)
    (string=? mime "audio/mpeg"))
+
+;*---------------------------------------------------------------------*/
+;*    alsadecoder-reset! ::mpg123decoder ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-reset! o::mpg123decoder)
+   (with-access::mpg123decoder o (mpg123)
+      (mpg123-handle-reset! mpg123)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-host-decode-buffer ::mpg123-decoder ...              */

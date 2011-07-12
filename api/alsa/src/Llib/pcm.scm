@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Jul 12 09:33:25 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 14:50:51 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -21,7 +21,7 @@
    (export (class alsa-snd-pcm::alsa-object
 	      ($builtin::$snd-pcm read-only (default (%$snd-pcm-nil)))
 	      (name::bstring (default ""))
-	      (device::string read-only (default "default"))
+	      (device::bstring read-only (default "default"))
 	      (stream::symbol read-only (default 'playback))
 	      (mode::symbol read-only (default 'default)))
 
