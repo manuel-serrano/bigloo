@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:46:40 1995                          */
-;*    Last change :  Sat Mar 19 06:25:22 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 11:31:44 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `constant compilation'                                       */
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cnst_walk
-   (include "Engine/pass.sch")
+   (include "Engine/pass.sch"
+            "Tools/trace.sch")
    (import  tools_shape
 	    tools_error
 	    engine_param
@@ -34,6 +35,7 @@
    (pass-prelude "Cnst" start-cnst-cache! start-cnst-alloc! unsafe!)
    (verbose 2 "      [" *init-mode* #\] #\Newline)
    (for-each (lambda (global)
+		(trace cnst (shape global) #\Newline)
 		(enter-function (global-id global))
 		(let* ((fun (global-value global))
 		       (new-body (cnst! (sfun-body fun))))

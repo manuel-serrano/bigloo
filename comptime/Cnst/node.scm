@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Sun Mar 27 16:08:29 2011 (serrano)                */
+;*    Last change :  Tue Jul 12 11:39:11 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -87,6 +87,12 @@
 	     (loc loc)
 	     (type (strict-node-type (get-type-atom value) type))
 	     (value value)))
+	 ((bignum? value)
+	  (or (cnst-alloc-bignum value loc)
+	      (instantiate::atom
+		 (loc loc)
+		 (type (strict-node-type (get-type-atom value) type))
+		 (value value))))
 	 ((struct? value)
 	  (cnst-alloc-struct value loc))
 	 (else
