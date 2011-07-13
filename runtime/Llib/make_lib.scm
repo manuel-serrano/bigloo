@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Fri Feb 18 14:48:23 2011 (serrano)                */
+;*    Last change :  Wed Jul 13 07:56:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -52,11 +52,11 @@
 	    __srfi4
 	    __bignum
 	    __aes
-;* 	    __rsa                                                      */
 	    __url
 	    __http
 	    __ftp
 	    __uuid
+	    __custom
 	    
 	    __reader
 

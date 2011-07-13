@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 21 08:20:23 2011                          */
-/*    Last change :  Mon Jul  4 08:04:57 2011 (serrano)                */
+/*    Last change :  Wed Jul 13 07:58:06 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac C prototypes                                                */

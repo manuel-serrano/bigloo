@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jul 12 10:30:56 2011 (serrano)                */
+#*    Last change :  Wed Jul 13 12:23:58 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -40,8 +40,6 @@ BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee \
-                  -srfi $(API) -copt "$(ALSACFLAGS)"
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -safee \
                   -srfi $(API) -copt "$(ALSACFLAGS)"
 CAPIFLAGS       = $(ALSACFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jul 12 08:49:19 2011 (serrano)                */
+;*    Last change :  Wed Jul 13 14:27:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -27,7 +27,7 @@
    (export (class flac-decoder
 	      (flac-decoder-init)
 	      ($builtin::$flac-decoder read-only (default (%$flac-decoder-new)))
-	      (%inbuf::string (default ""))
+	      (%inbuf::custom (default (%$flac-make-custom)))
 	      (outbuf::bstring (default ""))
 	      (%eof::bool (default #f))
 	      (%sample::long (default 0))
@@ -37,6 +37,7 @@
 	   (class &flac-error::&error)
 
 	   (%$flac-decoder-new::$flac-decoder)
+	   (%$flac-make-custom::custom)
 
 	   (generic flac-decoder-init ::flac-decoder)
 	   (generic flac-decoder-close ::flac-decoder)
@@ -68,6 +69,12 @@
 ;*---------------------------------------------------------------------*/
 (define (%$flac-decoder-new)
    ($flac-decoder-new))
+
+;*---------------------------------------------------------------------*/
+;*    %$flac-make-custom ...                                           */
+;*---------------------------------------------------------------------*/
+(define (%$flac-make-custom)
+   ($flac-make-custom 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-init ::flac-decoder ...                             */
@@ -131,7 +138,7 @@
    (with-access::flac-decoder o (port %inbuf)
       ;; Don't use any regular input functions because they
       ;; take ::bstring argument while inbuf is a ::string
-      ($rgc-blit-string! port %inbuf 0 size)))
+      ($rgc-blit-string! port (custom-identifier %inbuf) 0 size)))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-write ::flac-decoder ...                            */

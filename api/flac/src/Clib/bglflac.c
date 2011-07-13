@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jul 12 08:48:57 2011 (serrano)                */
+/*    Last change :  Wed Jul 13 13:25:48 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -115,7 +115,7 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t res;
 
-   BGL_DECODER_INBUF( obj ) = buffer;
+   CUSTOM_IDENTIFIER( BGL_DECODER_INBUF( obj ) ) = buffer;
    res = bgl_flac_decoder_read( (BgL_flaczd2decoderzd2_bglt)obj, *size );
 
    if( EOF_OBJECTP( res ) ) {
@@ -123,8 +123,14 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
       *size = 0;
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
-      *size = CINT( res );
-      return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+      int cres = CINT( res );
+      if( cres >= 0 ) {
+	 *size = cres;
+	 return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+      } else {
+	 *size = 0;
+	 return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+      }
    }
 }
 
@@ -323,5 +329,5 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
 	 msg = "unknown error"; break;
    }
    
-   bgl_flac_error( "flac", msg, obj );
+   bgl_flac_error( "flac-decoder", msg, obj );
 }

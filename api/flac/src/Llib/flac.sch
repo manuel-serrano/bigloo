@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Tue Jul 12 08:28:27 2011 (serrano)                */
+;*    Last change :  Wed Jul 13 07:59:07 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C flac functions                                                 */
@@ -20,6 +20,7 @@
     ;; misc
     (macro $flac-max-block-size::long "FLAC__MAX_BLOCK_SIZE")
     (macro $flac-max-channels::long "FLAC__MAX_CHANNELS")
+    (macro $flac-make-custom::custom (::long) "create_custom")
     
     ;; flac-decoder
     (type $flac-decoder void* "FLAC__StreamDecoder *")

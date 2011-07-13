@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jul 12 18:28:57 2011 (serrano)                */
+;*    Last change :  Wed Jul 13 14:32:06 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -31,7 +31,7 @@
 	       (inbuf::bstring read-only (default (make-string (*fx 64 1024))))
 	       (outbuf::bstring read-only (default (make-string (+fx 4 (*fx 32 1024)))))
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
-	       (decoders::pair read-only))
+	       (decoders::pair-nil (default '())))
 	    
 	    (class alsabuffer
 	       (mutex::mutex read-only (default (make-mutex)))
@@ -39,7 +39,6 @@
 	       (condvs::condvar read-only (default (make-condition-variable)))
 	       (astate::symbol (default 'ready))
 	       (inbuf::bstring read-only)
-	       (outbuf::string (default ""))
 	       (inoff::long (default 0))
 	       (outoff::long (default 0))
 	       (port::input-port read-only)
@@ -47,13 +46,14 @@
 	       (eof::bool (default #f)))
 	    
 	    (class alsadecoder
-	       (alsadecoder-init))
+	       (alsadecoder-init)
+	       (mimetypes::pair-nil (default '())))
 	    
 	    (class alsadecoder-host::alsadecoder)
 	    (class alsadecoder-client::alsadecoder)
 	    
 	    (generic alsabuffer-fill! ::alsabuffer ::long)
-	    (generic alsabuffer-blit-string!::long ::alsabuffer ::long ::long)
+	    (generic alsabuffer-blit-string!::long ::alsabuffer ::long ::custom ::long)
 	    
 	    (generic alsadecoder-init ::alsadecoder)
 	    (generic alsadecoder-reset! ::alsadecoder)
@@ -266,8 +266,10 @@
 (define (playlist-play! o::alsamusic n)
    
    (define (play o::alsamusic d::alsadecoder p::input-port)
-      (alsadecoder-reset! d)
-      (with-access::alsamusic o (%amutex %buffer inbuf outbuf mkthread)
+      (with-access::alsamusic o (%buffer %decoder inbuf outbuf mkthread)
+	 (when (alsadecoder? %decoder)
+	    (alsadecoder-reset! %decoder))
+	 (set! %decoder d)
 	 (let ((buffer (instantiate::alsabuffer
 			  (port p)
 			  (inbuf inbuf))))
@@ -288,7 +290,21 @@
 			      (musicstatus-state-set! %status 'error)
 			      (musicstatus-err-set! %status e)
 			      (mutex-unlock! %amutex)))
-			(alsadecoder-decode d o buffer))))))))
+			(with-access::alsamusic o (%amutex %status)
+			   
+			   (with-access::alsabuffer buffer (astate mutex condvs)
+			      (mutex-lock! mutex)
+			      (set! astate 'play)
+			      (mutex-unlock! mutex)
+			      (alsadecoder-decode d o buffer)
+			      (with-access::musicstatus %status (state songpos songlength)
+				 (mutex-lock! %amutex)
+				 (if (eq? astate 'stop)
+				     (set! state 'stop)
+				     (set! state 'ended))
+				 (set! songpos 0)
+				 (set! songlength 0)
+				 (mutex-unlock! %amutex)))))))))))
 
    (with-access::alsamusic o (%playlist %status %decoder decoders pcm)
       (when (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
@@ -363,7 +379,19 @@
 ;*    alsadecoder-stop ::alsadecoder-client ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-stop dec::alsadecoder-client o)
-   (alsadecoder-close o))
+   (with-access::alsamusic o (%amutex %buffer %status pcm)
+      (when (alsabuffer? %buffer)
+	 (with-access::alsabuffer %buffer (mutex eof port condv condvs astate)
+	    (mutex-lock! mutex)
+	    (when (eq? astate 'play)
+	       (set! astate 'stop)
+	       (condition-variable-signal! condv)
+	       (condition-variable-wait! condvs mutex))
+	    (mutex-unlock! mutex)
+	    (with-access::musicstatus %status (state songpos songlength)
+	       (set! state 'stop)
+	       (set! songpos 0)
+	       (set! songlength 0))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
@@ -434,15 +462,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-blit-string! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsabuffer-blit-string! buffer::alsabuffer o::long outlen::long)
-   (with-access::alsabuffer buffer (mutex condv inbuf inoff outoff eof count outbuf)
+(define-generic (alsabuffer-blit-string! buffer::alsabuffer o::long outbuf::custom outlen::long)
+   (with-access::alsabuffer buffer (mutex condv inbuf inoff outoff eof count astate)
       (let ((inlen (string-length inbuf)))
 	 (mutex-lock! mutex)
 	 (let ((sz (let waitempty ()
 		      (cond
+			 ((eq? astate 'stop)
+			  -1)
 			 ((>fx count 0)
 			  (minfx outlen (minfx count (-fx inlen outoff))))
-			 (eof 0)
+			 (eof
+			  0)
 			 (else
 			  (when (>fx debug-decode 3)
 			     (tprint "alsabuffer-blit-string.1: wait empty count=" count
@@ -456,7 +487,7 @@
 	       (when (>fx debug-buffer 1)
 		  (display-substring inbuf outoff (+fx outoff sz) p2)
 		  (flush-output-port p2))
-	       ($snd-blit-string! inbuf outoff outbuf o sz)
+	       ($snd-blit-string! inbuf outoff (custom-identifier outbuf) o sz)
 	       (set! outoff (+fx outoff sz))
 	       (when (=fx outoff inlen) (set! outoff 0))
 	       (when (=fx count inlen)
@@ -647,6 +678,17 @@
 			    (alsadecoder-error dec am buffer)))))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    alsadecoder-decode ::alsadecoder-client ...                      */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-decode dec::alsadecoder-client o buf)
+   (with-access::alsabuffer buf (astate mutex condvs condv)
+      (mutex-lock! mutex)
+      (unless (eq? astate 'stop)
+	 (set! astate 'ended))
+      (condition-variable-signal! condvs)
+      (mutex-unlock! mutex)))
+
+;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::alsamusic ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-get o::alsamusic)
@@ -682,7 +724,8 @@
 ;*    alsadecoder-can-play-type? ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-can-play-type? o::alsadecoder mime::bstring)
-   #t)
+   (with-access::alsadecoder o (mimetypes)
+      (member mime mimetypes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
