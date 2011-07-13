@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Jul 12 18:27:46 2011 (serrano)                */
+;*    Last change :  Wed Jul 13 15:45:21 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -376,10 +376,15 @@
 	    ((xrun)
 	     (alsa-snd-pcm-drop pcm)
 	     (loop))
+	    ((running)
+	     (with-handler
+		(lambda (e) #f)
+		(alsa-snd-pcm-drain pcm))
+	     (loop))
 	    (else
 	     (with-handler
 		(lambda (e) #f)
-		(alsa-snd-pcm-wait pcm 200))
+		(alsa-snd-pcm-wait pcm 1000))
 	     (loop))))))
 
 ;*---------------------------------------------------------------------*/
