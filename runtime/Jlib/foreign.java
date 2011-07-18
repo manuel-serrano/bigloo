@@ -1055,7 +1055,7 @@ public final class foreign
 
    public static Object BGL_SAFE_BX_TO_FX(Object o)
       {
-	 if( ((bignum)o).value.bitCount() < 32 ) {
+	 if( ((bignum)o).value.bitLength() < 32 ) {
 	    return BINT( ((bignum)o).value.intValue() );
 	 }
 	 else
