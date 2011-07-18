@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Apr 20 07:13:38 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Mon Jul 18 09:08:22 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of the Crypto-library.   */
 ;*=====================================================================*/

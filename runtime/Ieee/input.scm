@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Thu Jun 30 16:23:45 2011 (serrano)                */
+;*    Last change :  Mon Jul 18 08:51:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -354,34 +354,30 @@
 		 ((llong? l) (llong->fixnum l))
 		 (else (bigloo-type-error
 			'read-chars! "integer" (find-runtime-type l))))))
-      (cond
-	 ((<=fx len 0)
+      (if (<=fx len 0)
 	  (if (=fx len 0)
 	      0
 	      (raise
-	       (instantiate::&io-error
-		  (proc 'read-chars)
-		  (msg "Illegal negative length")
-		  (obj len)))))
-	 (else
-	  ($rgc-blit-string! ip buf 0 (minfx (string-length buf) len))))))
+		 (instantiate::&io-error
+		    (proc 'read-chars)
+		    (msg "Illegal negative length")
+		    (obj len))))
+	  ($rgc-blit-string! ip buf 0 (minfx (string-length buf) len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-fill-string! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (read-fill-string! s o len::long #!optional (ip (current-input-port)))
-   (cond
-      ((<=fx len 0)
+   (if (<=fx len 0)
        (if (=fx len 0)
 	   0
 	   (raise
-	    (instantiate::&io-error
-	       (proc 'read-chars)
-	       (msg "Illegal negative length")
-	       (obj len)))))
-      (else
+	      (instantiate::&io-error
+		 (proc 'read-chars)
+		 (msg "Illegal negative length")
+		 (obj len))))
        (let ((n ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o)))))
-	  (if (and (=fx n 0) (rgc-buffer-eof? ip)) beof n)))))
+	  (if (and (=fx n 0) (rgc-buffer-eof? ip)) beof n))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unread-char! ...                                                 */

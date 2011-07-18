@@ -2,7 +2,7 @@
 #*    serrano/prgm/project/bigloo/api/crypto/recette/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Copyright   :  2002-07 Manuel Serrano                            */
+#*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -60,6 +60,7 @@ clean:
 	@- $(RM) -f *~ '#*#' core
 	@- $(RM) -f *.escm *.ast recette.c recette$(EXE_SUFFIX)
 	@- $(RM) -f recette.o
+	@- $(RM) -f recette.scm.encrypted recette.scm.decrypted
 	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
 	@- $(RM) -f recette.obj recette.il
 	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)

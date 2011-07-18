@@ -163,7 +163,10 @@
 				 (mmap-ref mmap (+fx mmap-pos i)))
 		    (loop (+fx i 1)))))))))
 (define (read-port-at! p p-pos to-str to-pos len)
-   (read-fill-string! to-str to-pos len p))
+   (let ((n (read-fill-string! to-str to-pos len p)))
+      (if (eof-object? n)
+	  0
+	  n)))
 
 (define (write-port-at! from from-pos p p-pos len)
    (let loop ((i 0))
