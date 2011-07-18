@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Jul 13 14:32:06 2011 (serrano)                */
+;*    Last change :  Mon Jul 18 07:16:03 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -38,6 +38,7 @@
 	       (condv::condvar read-only (default (make-condition-variable)))
 	       (condvs::condvar read-only (default (make-condition-variable)))
 	       (astate::symbol (default 'ready))
+	       (endstate::symbol (default 'stop))
 	       (inbuf::bstring read-only)
 	       (inoff::long (default 0))
 	       (outoff::long (default 0))
@@ -292,16 +293,15 @@
 			      (mutex-unlock! %amutex)))
 			(with-access::alsamusic o (%amutex %status)
 			   
-			   (with-access::alsabuffer buffer (astate mutex condvs)
+			   (with-access::alsabuffer buffer (astate endstate mutex condvs)
 			      (mutex-lock! mutex)
 			      (set! astate 'play)
+			      (set! endstate 'ended)
 			      (mutex-unlock! mutex)
 			      (alsadecoder-decode d o buffer)
 			      (with-access::musicstatus %status (state songpos songlength)
 				 (mutex-lock! %amutex)
-				 (if (eq? astate 'stop)
-				     (set! state 'stop)
-				     (set! state 'ended))
+				 (set! state endstate)
 				 (set! songpos 0)
 				 (set! songlength 0)
 				 (mutex-unlock! %amutex)))))))))))
@@ -360,19 +360,16 @@
 (define-method (alsadecoder-stop dec::alsadecoder-host o)
    (with-access::alsamusic o (%amutex %buffer %status pcm)
       (when (alsabuffer? %buffer)
-	 (with-access::alsabuffer %buffer (mutex eof port condv condvs astate)
+	 (with-access::alsabuffer %buffer (mutex condv condvs astate endstate)
 	    (mutex-lock! mutex)
 	    (if (eq? astate 'stopped)
 		(mutex-unlock! mutex)
 		(begin
 		   (set! astate 'stop)
+		   (set! endstate 'stop)
 		   (condition-variable-signal! condv)
 		   (condition-variable-wait! condvs mutex)
 		   (mutex-unlock! mutex)
-		   (with-access::musicstatus %status (state songpos songlength)
-		      (set! state 'stop)
-		      (set! songpos 0)
-		      (set! songlength 0))
 		   (set! %buffer #f)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -381,17 +378,14 @@
 (define-method (alsadecoder-stop dec::alsadecoder-client o)
    (with-access::alsamusic o (%amutex %buffer %status pcm)
       (when (alsabuffer? %buffer)
-	 (with-access::alsabuffer %buffer (mutex eof port condv condvs astate)
+	 (with-access::alsabuffer %buffer (mutex condv condvs astate endstate)
 	    (mutex-lock! mutex)
 	    (when (eq? astate 'play)
 	       (set! astate 'stop)
+	       (set! endstate 'stop)
 	       (condition-variable-signal! condv)
 	       (condition-variable-wait! condvs mutex))
-	    (mutex-unlock! mutex)
-	    (with-access::musicstatus %status (state songpos songlength)
-	       (set! state 'stop)
-	       (set! songpos 0)
-	       (set! songlength 0))))))
+	    (mutex-unlock! mutex)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
@@ -572,9 +566,6 @@
       (with-access::alsamusic am (pcm %amutex %status)
 	 ;; wait for the PCM interface to be done
 	 (alsa-snd-pcm-cleanup pcm)
-	 (mutex-lock! %amutex)
-	 (musicstatus-state-set! %status 'ended)
-	 (mutex-unlock! %amutex)
 	 (with-access::alsabuffer buffer (mutex astate)
 	    (mutex-lock! mutex)
 	    (set! astate 'stopped)
@@ -684,7 +675,7 @@
    (with-access::alsabuffer buf (astate mutex condvs condv)
       (mutex-lock! mutex)
       (unless (eq? astate 'stop)
-	 (set! astate 'ended))
+	 (set! astate 'stop))
       (condition-variable-signal! condvs)
       (mutex-unlock! mutex)))
 
