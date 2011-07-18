@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Thu May  5 14:40:23 2011 (serrano)                */
+;*    Last change :  Mon Jul 18 11:02:08 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -424,10 +424,6 @@
 					      safe)))
 		bindings)
       (set! body (coerce! body caller to safe))
-      (unless (eq? (node-type body) (get-type body))
-	 (tprint "let-var to=" (shape to) " ntype=" (shape (node-type body))
-		 " gtype=" (shape (get-type body)) "\n"
-		 "node=" (shape node)))
       (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))

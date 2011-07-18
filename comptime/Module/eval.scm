@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sun Mar 13 14:46:54 2011 (serrano)                */
+;*    Last change :  Mon Jul 18 16:34:42 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -221,7 +221,7 @@
 				       (symbol->string (libinfo-module_e info)))
 				      (symbol->string *module*)))
 		     ((@ library-mark-loaded! __library) ',lib))
-		 `((@ library-mark-loaded! __library) ',lib)))
+		 `((@ library-load __library) ',lib)))
 	  (warning lib "cannot initialize library for eval"))))
       
 ;*---------------------------------------------------------------------*/

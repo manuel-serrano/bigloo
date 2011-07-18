@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Wed Jun 15 08:44:26 2011 (serrano)                */
+;*    Last change :  Mon Jul 18 16:11:03 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -35,17 +35,23 @@
 ;*    expand-g2 ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (expand-g2 x e op)
+   
+   (define (fx id)
+      (if (memq id '(+ - / *))
+	  (symbol-append id 'fx-safe)
+	  (symbol-append id 'fx)))
+   
    (match-case x
       ((?id (? expand-g-number?) (expand-g-number? y))
        (apply op x))
       ((?id (and ?a (? fixnum?)) (and ?b (? symbol?)))
        (let ((nx `(if (fixnum? ,b)
-		      (,(symbol-append id 'fx) ,a ,b)
+		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id (and ?a (? symbol?)) (and ?b (? fixnum?)))
        (let ((nx `(if (fixnum? ,a)
-		      (,(symbol-append id 'fx) ,a ,b)
+		      (,(fx id) ,a ,b)
 		      (,(symbol-append '|2| id) ,a ,b))))
 	  (e nx e)))
       ((?id ?a ?b)
