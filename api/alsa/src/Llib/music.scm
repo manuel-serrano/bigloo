@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jul 18 07:16:03 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:30:28 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -28,8 +28,8 @@
 	       (%toseek::long (default 0))
 	       (%buffer::obj (default #f))
 	       (mkthread::procedure read-only)
-	       (inbuf::bstring read-only (default (make-string (*fx 64 1024))))
-	       (outbuf::bstring read-only (default (make-string (+fx 4 (*fx 32 1024)))))
+	       (inbuf::bstring read-only (default (make-string (*fx 128 1024))))
+	       (outbuf::bstring read-only (default (make-string (*fx 32 1024))))
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil (default '())))
 	    
@@ -380,10 +380,10 @@
       (when (alsabuffer? %buffer)
 	 (with-access::alsabuffer %buffer (mutex condv condvs astate endstate)
 	    (mutex-lock! mutex)
-	    (when (eq? astate 'play)
+	    (when (memq astate '(play pause))
 	       (set! astate 'stop)
 	       (set! endstate 'stop)
-	       (condition-variable-signal! condv)
+	       (condition-variable-signal! condvs)
 	       (condition-variable-wait! condvs mutex))
 	    (mutex-unlock! mutex)))))
 
@@ -391,19 +391,21 @@
 ;*    music-pause ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::alsamusic)
-   (with-access::alsamusic o (%buffer %amutex pcm)
+   (with-access::alsamusic o (%buffer %amutex pcm %status)
       (with-lock %amutex
 	 (lambda ()
-	    (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
-	       (when (alsabuffer? %buffer)
-		  (with-access::alsabuffer %buffer (condv mutex astate)
+	    (when (alsabuffer? %buffer)
+	       (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
+		  (with-access::alsabuffer %buffer (condvs mutex astate)
 		     (with-lock mutex
 			(lambda ()
 			   (if (eq? astate 'pause)
 			       (begin
 				  (set! astate 'play)
-				  (condition-variable-broadcast! condv))
-			       (set! astate 'pause)))))))))))
+				  (condition-variable-broadcast! condvs))
+			       (with-access::musicstatus %status (state)
+				  (set! astate 'pause)
+				  (set! state 'pause))))))))))))
 
 (define p (when (>fx debug-buffer 1) (open-output-file "/tmp/READ.log")))
 (define p2 (when (>fx debug-buffer 1) (open-output-file "/tmp/READ.flac")))
@@ -457,9 +459,13 @@
 ;*    alsabuffer-blit-string! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-blit-string! buffer::alsabuffer o::long outbuf::custom outlen::long)
-   (with-access::alsabuffer buffer (mutex condv inbuf inoff outoff eof count astate)
+   (with-access::alsabuffer buffer (mutex condv condvs inbuf inoff outoff eof count astate)
       (let ((inlen (string-length inbuf)))
 	 (mutex-lock! mutex)
+	 (let loop ()
+	    (when (eq? astate 'pause)
+	       (condition-variable-wait! condvs mutex)
+	       (loop)))
 	 (let ((sz (let waitempty ()
 		      (cond
 			 ((eq? astate 'stop)

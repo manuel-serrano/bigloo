@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Mon Jul 18 16:29:52 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:05:04 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -284,7 +284,6 @@
 ;*    library-load ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (library-load lib . path)
-   (fprint (current-error-port) "library-load lib=" lib " path=" path)
    (let ((mod (eval-module)))
       ($eval-module-set! (interaction-environment))
       (unwind-protect
@@ -294,7 +293,6 @@
 	    ((not (symbol? lib))
 	     (bigloo-type-error 'library-load "string or symbol" lib))
 	    ((library-loaded? lib)
-	     (tprint "loaded...")
 	     #unspecified)
 	    (else
 	     (let* ((path (if (pair? path)
@@ -343,7 +341,6 @@
 				      (cond-expand
 					 (bigloo-c (libinfo-module_e info))
 					 (else (libinfo-class_e info))))))
-		   (tprint "library load libs=" libs " libe=" libe " init_s=" init_s " init_e=" init_e)
 		   (cond
 		      ((and (not (string? rsc)) (not (string? libs)))
 		       (error 'library-load

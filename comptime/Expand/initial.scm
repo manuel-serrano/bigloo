@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Jun 15 10:42:35 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:37:03 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -320,27 +320,38 @@
    ;; arithmetic procedures
    ;; +
    (install-O-comptime-expander '+
-      (lambda (x e) (if *genericity* (expand-g+ x e) (expand-i+ x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g+ x e) (expand-i+ x e))))
    (install-O-comptime-expander '-
-      (lambda (x e) (if *genericity* (expand-g- x e) (expand-i- x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g- x e) (expand-i- x e))))
    (install-O-comptime-expander '*
-      (lambda (x e) (if *genericity* (expand-g* x e) (expand-i* x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g* x e) (expand-i* x e))))
    (install-O-comptime-expander '/
-      (lambda (x e) (if *genericity* (expand-g/ x e) (expand-i/ x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g/ x e) (expand-i/ x e))))
    (install-O-comptime-expander '=
-      (lambda (x e) (if *genericity* (expand-g= x e) (expand-i= x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g= x e) (expand-i= x e))))
    (install-O-comptime-expander '<
-      (lambda (x e) (if *genericity* (expand-g< x e) (expand-i< x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g< x e) (expand-i< x e))))
    (install-O-comptime-expander '>
-      (lambda (x e) (if *genericity* (expand-g> x e) (expand-i> x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g> x e) (expand-i> x e))))
    (install-O-comptime-expander '<=
-      (lambda (x e) (if *genericity* (expand-g<= x e) (expand-i<= x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g<= x e) (expand-i<= x e))))
    (install-O-comptime-expander '>=
-      (lambda (x e) (if *genericity* (expand-g>= x e) (expand-i>= x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-g>= x e) (expand-i>= x e))))
    (install-O-comptime-expander 'max
-      (lambda (x e) (if *genericity* (expand-gmax x e) (expand-maxfx x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-gmax x e) (expand-maxfx x e))))
    (install-O-comptime-expander 'min
-      (lambda (x e) (if *genericity* (expand-gmin x e) (expand-minfx x e))))
+      (lambda (x e)
+	 (if *arithmetic-genericity* (expand-gmin x e) (expand-minfx x e))))
    
    (install-G-comptime-expander '+ (lambda (x::obj e::procedure)
 				      (call-check x 'number? "number" e)))

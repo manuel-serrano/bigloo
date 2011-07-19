@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed May  4 09:39:11 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:36:06 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -83,7 +83,8 @@
 	    *optim-symbol-case*
 	    *purify*
 	    *jvm-env*
-	    *genericity*
+	    *arithmetic-genericity*
+	    *arithmetic-overflow*
 	    *shared-cnst?*
 	    ;; -------------------------------------------------------------
 	    ;; warning, any change about this variable name must be reported
@@ -834,7 +835,8 @@
 (define *location-shape?* #f)
 (define *user-shape?* #f)
 (define *name-shape?* #f)
-(define *genericity* #t)
+(define *arithmetic-genericity* #t)
+(define *arithmetic-overflow* #t)
 (param-define *shared-cnst?*
 	      "Shared constant compilation?"
 	      #t)

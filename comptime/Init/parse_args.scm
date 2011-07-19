@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jun 14 14:26:16 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:35:34 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -376,7 +376,10 @@
        (set! *class-nil?* #t))
       ;; arithmetic
       (("-farithmetic" (help "Suppress genericity of arithmetic operators"))
-       (set! *genericity* #f))
+       (set! *arithmetic-genericity* #f))
+      ;; arithmetic-overflow
+      (("-farithmetic-overflow" (help "Suppress arithmetic overflow checks"))
+       (set! *arithmetic-overflow* #f))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))

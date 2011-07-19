@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Jun 15 10:39:39 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:51:03 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions for Scheme                          */
 ;*    Dorai Sitaram                                                    */
@@ -51,7 +51,8 @@
 	   (pregexp-replace*::bstring pat ::bstring ins::bstring)
 	   (pregexp-quote::bstring ::bstring))
 	   
-   (option (set! *genericity* #f)))
+   (option (set! *arithmetic-genericity* #f)
+           (set! *arithmetic-overflow* #f)))
 
 (define (pregexp-error msg . opt)
    (error "pregexp" msg (if (pair? opt) (car opt) #unspecified)))

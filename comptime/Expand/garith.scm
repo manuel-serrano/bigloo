@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Mon Jul 18 16:11:03 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 08:37:40 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
@@ -13,6 +13,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module expand_garithmetique
+   (import engine_param)
    (export (expand-g+ ::obj ::procedure)
 	   (expand-g- ::obj ::procedure)
 	   (expand-g* ::obj ::procedure)
@@ -37,7 +38,7 @@
 (define (expand-g2 x e op)
    
    (define (fx id)
-      (if (memq id '(+ - / *))
+      (if (and *arithmetic-overflow* (memq id '(+ - / *)))
 	  (symbol-append id 'fx-safe)
 	  (symbol-append id 'fx)))
    
