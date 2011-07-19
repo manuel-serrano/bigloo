@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jul 19 08:30:28 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 10:02:28 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -368,6 +368,7 @@
 		   (set! astate 'stop)
 		   (set! endstate 'stop)
 		   (condition-variable-signal! condv)
+		   (condition-variable-signal! condvs)
 		   (condition-variable-wait! condvs mutex)
 		   (mutex-unlock! mutex)
 		   (set! %buffer #f)))))))
@@ -383,6 +384,7 @@
 	    (when (memq astate '(play pause))
 	       (set! astate 'stop)
 	       (set! endstate 'stop)
+	       (condition-variable-signal! condv)
 	       (condition-variable-signal! condvs)
 	       (condition-variable-wait! condvs mutex))
 	    (mutex-unlock! mutex)))))
@@ -525,7 +527,7 @@
    
    (define (alsadecoder-do-pause dec am buffer)
       (with-access::alsamusic am (%status %amutex)
-	 (with-access::alsabuffer buffer (condv mutex astate)
+	 (with-access::alsabuffer buffer (condvs mutex astate)
 	    (mutex-lock! mutex)
 	    (let loop ()
 	       (if (eq? astate 'pause)
@@ -533,7 +535,7 @@
 		      (mutex-lock! %amutex)
 		      (musicstatus-state-set! %status 'pause)
 		      (mutex-unlock! %amutex)
-		      (condition-variable-wait! condv mutex)
+		      (condition-variable-wait! condvs mutex)
 		      (loop))
 		   (mutex-unlock! mutex))))))
    
