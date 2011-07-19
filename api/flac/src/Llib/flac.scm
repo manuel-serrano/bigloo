@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jul 19 08:28:11 2011 (serrano)                */
+;*    Last change :  Tue Jul 19 09:37:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -31,6 +31,7 @@
 	      (outbuf::bstring (default ""))
 	      (%eof::bool (default #f))
 	      (%sample::long (default 0))
+	      (%volume::double (default 1.))
 	      (port (default #f))
 	      (md5check::bool read-only (default #f)))
 
@@ -53,10 +54,10 @@
 	   (generic flac-decoder-decode ::flac-decoder)
 	   (generic flac-decoder-reset! ::flac-decoder)
 	   
-	   (flac-error::int ::string ::string ::obj)))
+	   (generic flac-volume-get::obj ::flac-decoder)
+	   (generic flac-volume-set! ::flac-decoder ::obj)
 
-;* 	   (flac-volume-get::obj ::flac-handle)                        */
-;* 	   (flac-volume-set! ::flac-handle ::obj)))                    */
+	   (flac-error::int ::string ::string ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::flac-decoder ...                                  */
@@ -93,16 +94,6 @@
    (with-access::flac-decoder o ($builtin)
       ($flac-decoder-delete $builtin)
       o))
-
-;*---------------------------------------------------------------------*/
-;*    flac-error ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (flac-error proc msg obj)
-   (raise (instantiate::&flac-error
-	     (proc proc)
-	     (msg msg)
-	     (obj obj)))
-   0)
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-decode ::flac-decoder ...                           */
@@ -256,28 +247,27 @@
 	  0
 	  (/fx %sample ($flac-decoder-get-sample-rate $builtin)))))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-volume-get ...                                              *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-volume-get m::flac-handle)                            */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       (let ((vol ($bgl-flac-getvolume $builtin)))                   */
-;* 	 (if (<fx vol 0)                                               */
-;* 	     (raise (instantiate::&flac-error                          */
-;* 		   (proc "flac")                                       */
-;* 		   (msg ($flac-plain-strerror vol))                    */
-;* 		   (obj m)))                                           */
-;* 	     vol))))                                                   */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    flac-volume-set! ...                                             *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (flac-volume-set! m::flac-handle vol)                       */
-;*    (with-access::flac-handle m ($builtin)                           */
-;*       (let ((err ($flac-volume $builtin (/ (fixnum->flonum vol) 100.)))) */
-;* 	 (when (<fx err 0)                                             */
-;* 	    (raise (instantiate::&flac-error                           */
-;* 		      (proc "flac")                                    */
-;* 		      (msg ($flac-plain-strerror err))                 */
-;* 		      (obj m)))))))                                    */
-;*                                                                     */
+;*---------------------------------------------------------------------*/
+;*    flac-volume-get ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-volume-get m::flac-decoder)
+   (with-access::flac-decoder m (%volume)
+      (flonum->fixnum (*fl %volume 100.))))
+
+;*---------------------------------------------------------------------*/
+;*    flac-volume-set! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (flac-volume-set! m::flac-decoder vol)
+   (with-access::flac-decoder m (%volume)
+      (when (and (>=fx vol 0) (<=fx vol 100))
+	 (set! %volume (/fl (fixnum->flonum vol) 100.)))))
+
+;*---------------------------------------------------------------------*/
+;*    flac-error ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (flac-error proc msg obj)
+   (raise (instantiate::&flac-error
+	     (proc proc)
+	     (msg msg)
+	     (obj obj)))
+   0)

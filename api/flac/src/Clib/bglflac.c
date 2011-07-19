@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Jul 13 13:25:48 2011 (serrano)                */
+/*    Last change :  Tue Jul 19 09:32:57 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -38,6 +38,8 @@ extern obj_t bgl_flac_decoder_length( BgL_flaczd2decoderzd2_bglt );
    (BSTRING_TO_STRING( (((BgL_flaczd2decoderzd2_bglt)o)->BgL_outbufz00) ))
 #define BGL_DECODER_SAMPLE( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52samplez52)
+#define BGL_DECODER_VOLUME( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52volumez52)
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */
@@ -224,6 +226,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 		    void *client_data ) {
    FLAC__FrameHeader h = frame->header;
    obj_t obj = (obj_t)client_data;
+   float vol = BGL_DECODER_VOLUME( obj );
    FLAC__uint32 decoded_size = h.blocksize * h.channels * (h.bits_per_sample / 8);
    long i = 0;
 
@@ -236,7 +239,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	    long channel;
 
 	    for( channel = 0; channel < h.channels; channel++ ) {
-	       buf[ i++ ] = buffer[ channel ][ sample ];
+	       buf[ i++ ] = vol * buffer[ channel ][ sample ];
 	    }
 	 }
 
@@ -251,7 +254,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	    long channel;
 
 	    for( channel = 0; channel < h.channels; channel++ ) {
-	       FLAC__uint32 l = buffer[ channel ][ sample ];
+	       FLAC__uint32 l = vol * buffer[ channel ][ sample ];
 	       buf[ i++ ] = (l >> 0) & 0xff;
 	       buf[ i++ ] = (l >> 8) & 0xff;
 	       buf[ i++ ] = (l >> 16) & 0xff;
