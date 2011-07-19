@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue Jul 19 12:24:44 2011 (serrano)                */
+#*    Last change :  Tue Jul 19 12:46:31 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -37,8 +37,6 @@ OBJECTS = $(OBJECTS_5_0_2)
 boot: boot-gmp
 
 boot-gmp: $(OUTDIR)/libgmp.a
-	mkdir -p $(OBJDIR)
-	(cd $(OBJDIR) && cp $(OBJECTS:%=$(GMP)/%) .)
 	$(MAKE) $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX)
 	$(MAKE) $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a
 
@@ -55,7 +53,7 @@ $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX):
              CLOSELIBS= -lm -lc \
              EXTRALIBS= \
              LDLIBS= -lm -lc \
-             OBJECTS="$(OBJDIR)/*.o"
+             OBJECTS="$(OBJECTS:%=$(GMP)/%)"
 
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a:
 	cp $(OUTDIR)/libgmp.a $@
