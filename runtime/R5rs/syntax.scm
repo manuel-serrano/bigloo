@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Tue Jul 12 17:23:34 2011 (serrano)                */
+;*    Last change :  Fri Jul 22 09:59:04 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
@@ -39,6 +39,8 @@
 	    __eval
 	    __evenv
 	    __macro)
+
+   (import  __r4_output_6_10_3 __r4_numbers_6_5 __r4_ports_6_10_1 __r4_numbers_6_5_flonum_dtoa)
 
    (export  (install-syntax-expander ::symbol ::procedure)
 	    (syntax-rules->expander ::symbol ::pair-nil ::pair-nil)
@@ -82,7 +84,7 @@
    
    (define (define-syntax-expander id literals rules)
       (install-syntax-expander id (syntax-rules->expander id literals rules)))
-			       
+
    (with-lock syntax-expanders-mutex
       (lambda ()
 	 (unless syntaxes
@@ -246,7 +248,7 @@
 (define (expand-define-syntax x e)
    (match-case x
       ((?- (and (? symbol?) ?macroname) (syntax-rules ?literals . ?rules))
-       (let ((ex (syntax-rules->expander macroname literals rules)))
+       (let ((ex (syntax-rules->expander/init macroname literals rules)))
 	  (install-syntax-expander macroname ex)
 	  (install-expander macroname ex)
 	  #unspecified))
@@ -264,7 +266,7 @@
 			e
 			(match-case (car bs)
 			   (((and (? symbol?) ?m) (syntax-rules ?ls . ?rules))
-			    (let ((e3 (syntax-rules->expander m ls rules))
+			    (let ((e3 (syntax-rules->expander/init m ls rules))
 				  (e4 (loop (cdr bs))))
 			       (lambda (x e2)
 				  (if (and (pair? x) (hygiene-eq? m (car x)))
@@ -288,7 +290,7 @@
 			e
 			(match-case (car bs)
 			   (((and (? symbol?) ?m) (syntax-rules ?ls . ?rules))
-			    (let ((e3 (syntax-rules->expander m ls rules))
+			    (let ((e3 (syntax-rules->expander/init m ls rules))
 				  (e4 (loop (cdr bs))))
 			       (lambda (x e2)
 				  (if (and (pair? x) (hygiene-eq? m (car x)))
@@ -302,10 +304,16 @@
        (error "let-syntax" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
+;*    syntax-rules->expander/init ...                                  */
+;*---------------------------------------------------------------------*/
+(define (syntax-rules->expander/init keyword literals rules)
+   (init-syntax-expanders!)
+   (syntax-rules->expander keyword literals rules))
+
+;*---------------------------------------------------------------------*/
 ;*    syntax-rules->expander ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (syntax-rules->expander keyword literals rules)
-   (init-syntax-expanders!)
    (let ((k (cons keyword literals)))
       (if (list? rules)
 	  (lambda (x e)
@@ -326,7 +334,7 @@
 	  (error keyword "Illegal declaration" rules))))
 
 ;*---------------------------------------------------------------------*/
-;*    syntax-matches-pattern? ...                                       */
+;*    syntax-matches-pattern? ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (syntax-matches-pattern? keyword p e k)
    (cond

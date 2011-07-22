@@ -2384,7 +2384,7 @@ public final class foreign
 
 	 for (int i = 0; i < len; ++i)
 	 {
-	    final byte cn = src[i];
+	    final int cn = src[i] & 0xff;
 
 	    switch (cn)
 	    {
@@ -2402,7 +2402,7 @@ public final class foreign
 		  w += (symbolp ? 2 : 1);
 	       break;
 	       default:
-		  w += (((32 <= cn) && (cn <= 126)) ? 1 : 4);
+		  w += ((32 <= cn) ? 1 : 4);
 		  break;
 	    }
 	 }
@@ -2412,10 +2412,9 @@ public final class foreign
 	 w = 0;
 	 for (int i = 0; i < len; ++i)
 	 {
-	    final byte cn = src[i];
+	    final int cn = src[i] & 0xff;
 
-	    switch (cn)
-	    {
+	    switch (cn) {
 	       case (byte) '\n':
 		  res[w++] = (byte) '\\';
 	       res[w++] = (byte) 'n';
@@ -2443,7 +2442,7 @@ public final class foreign
 	       case (byte) '"':
 	       case (byte) '\\':
 		  res[w++] = (byte) '\\';
-	       res[w++] = cn;
+		  res[w++] = (byte)cn;
 	       break;
 	       case (byte) '|':
 		  if (symbolp)
@@ -2451,16 +2450,13 @@ public final class foreign
 	       res[w++] = (byte) '|';
 	       break;
 	       default:
-		  if ((32 <= cn) && (cn <= 126))
-		     res[w++] = cn;
-		  else
-		  {
-		     final int icn = cn & 0xFF;
-
+		  if( 32 <= cn ) {
+		     res[w++] = (byte)cn;
+		  } else {
 		     res[w++] = (byte) '\\';
-		     res[w++] = (byte) ('0' + ((icn >> 6) & 0x7));
-		     res[w++] = (byte) ('0' + ((icn >> 3) & 0x7));
-		     res[w++] = (byte) ('0' + (icn & 0x7));
+		     res[w++] = (byte) ('0' + ((cn >> 6) & 0x7));
+		     res[w++] = (byte) ('0' + ((cn >> 3) & 0x7));
+		     res[w++] = (byte) ('0' + (cn & 0x7));
 		  }
 		  break;
 	    }

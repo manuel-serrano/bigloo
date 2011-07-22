@@ -2669,12 +2669,12 @@ namespace bigloo
       public static byte[] create_string_for_read( byte[]  src,
 						   bool    symbolp )
 	 {
-	    int               len= src.Length;
-	    int               w= 0;
+	    int len= src.Length;
+	    int w= 0;
 
 	    for ( int i= 0 ; i < len ; ++i )
 	    {
-	       byte            cn= src[i];
+	       int cn= src[i] & 0xFF;
 
 	       switch (cn)
 	       {
@@ -2692,17 +2692,17 @@ namespace bigloo
 		     w+= (symbolp ? 2 : 1);
 		  break;
 		  default:
-		     w+= (((32 <= cn) && (cn <= 126)) ? 1 : 4);
+		     w+= ((32 <= cn) ? 1 : 4);
 		     break;
 	       }
 	    }
 
-	    byte[]            res= new byte[w];
+	    byte[] res= new byte[w];
 
 	    w= 0;
 	    for ( int i= 0 ; i < len ; ++i )
 	    {
-	       byte            cn= src[i];
+	       int cn= src[i] & 0xFF;
 
 	       switch (cn) 
 	       {
@@ -2733,7 +2733,7 @@ namespace bigloo
 		  case (byte)'"':
 		  case (byte)'\\':
 		     res[w++]= (byte)'\\';
-		  res[w++]= cn;
+		     res[w++]= (byte)cn;
 		  break;
 		  case (byte)'|':
 		     if (symbolp)
@@ -2741,16 +2741,13 @@ namespace bigloo
 		  res[w++] = (byte)'|';
 		  break;
 		  default:
-		     if ((32 <= cn) && (cn <= 126))
-			res[w++]= cn;
-		     else 
-		     {
-			int       icn= cn & 0xFF;
-
+		     if( 32 <= cn ) {
+			res[w++]= (byte)cn;
+		     } else {
 			res[w++]= (byte)'\\';
-			res[w++]= (byte)('0' + ((icn >> 6) & 0x7));
-			res[w++]= (byte)('0' + ((icn >> 3) & 0x7));
-			res[w++]= (byte)('0' + (icn  & 0x7));
+			res[w++]= (byte)('0' + ((cn >> 6) & 0x7));
+			res[w++]= (byte)('0' + ((cn >> 3) & 0x7));
+			res[w++]= (byte)('0' + (cn  & 0x7));
 		     }
 		     break;
 	       }

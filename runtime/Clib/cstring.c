@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Mon Apr 11 15:47:30 2011 (serrano)                */
+/*    Last change :  Fri Jul 22 10:18:40 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1167,10 +1167,10 @@ create_string_for_read( obj_t bstring, int symbolp ) {
 	    break;
 		    
          default :
-	    if( isprint( src[ r ] ) )
+	    /* MS 22 Jul 2011, used to be isprint( src[ r ] ) */
+	    if( ( src[ r ] >= ' ' ) ) {
 	       dst[ w++ ] = src[ r ];
-	    else
-	    {
+	    } else {
 	       esc = 1;
 	       sprintf( (char *)&dst[ w ],
 			"\\%03o",

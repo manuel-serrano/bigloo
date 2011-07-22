@@ -302,6 +302,14 @@ following an @code{else}-clause.
              (loop (cdr l)))))         @result{} (2 3 4)
 @end smalllisp
 
+If a @var{binding} is a symbol, then, it introduces a variable bound
+to the @code{#unspecified} value.
+
+@smalllisp
+(let (x)
+   x)                                 @result{} #unspecified
+@end smalllisp
+
 Bigloo's named let differs from R5Rs named let because @var{name}
 is bound in @var{binding}. That is,
 
