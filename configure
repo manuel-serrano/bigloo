@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 28 21:11:09 2011 (serrano)                */
+#*    Last change :  Fri Jul 22 11:12:21 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -158,6 +158,8 @@ pthreadlocalstorage=
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
 openssldtls=
+opensslv2=
+opensslv23=
 
 #*--- sqlite library (left blank for autoconfiguration) ---------------*/
 sqlitelibs=
@@ -1975,6 +1977,8 @@ fi
 
 if [ "$openssllibs" != "no" ]; then
   openssldtls=`$autoconf openssl-dtls --lib="$openssllibs"` || exit 1;
+  opensslv2=`$autoconf openssl-v2 --lib="$openssllibs"` || exit 1;
+  opensslv23=`$autoconf openssl-v23 --lib="$openssllibs"` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3185,12 +3189,23 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         >>  api/ssl/src/Misc/ssl.init
 
     dtls=1
+    sslv2=1
+    sslv23=1
     if [ "$openssldtls" = "no" ]; then
       dtls=0;
     fi
+    if [ "$opensslv2" = "no" ]; then
+      sslv2=0;
+    fi
+    if [ "$opensslv23" = "no" ]; then
+      sslv23=0;
+    fi
 
     echo "/* automatically generated, Don't edit */" >  api/ssl/src/C/bglssl.h
-    cat api/ssl/src/C/bglssl.h.in | sed -e "s|@HAVEDTLS@|$dtls|g" \
+    cat api/ssl/src/C/bglssl.h.in \
+      | sed -e "s|@HAVEDTLS@|$dtls|g" \
+            -e "s|@HAVEV2@|$sslv2|g" \
+            -e "s|@HAVEV23@|$sslv23|g" \
         >>  api/ssl/src/C/bglssl.h
   else
     napis=;
@@ -3613,7 +3628,7 @@ fi
 if [ "$openssllibs" = "no" ]; then
   echo "  Open SSL support...................... no" >> $configurelog
 else
-  echo "  Open SSL support...................... yes (dtls $openssldtls)" >> $configurelog
+  echo "  Open SSL support...................... yes (dtls:$openssldtls, v2:$opensslv2, v23:$opensslv23)" >> $configurelog
 fi
 if [ "$sqlitelibs " = " " ]; then
   echo "  Sqlite ............................... sqltiny" >> $configurelog
@@ -3757,7 +3772,7 @@ if [ "$summary" = "yes" ]; then
   if [ "$openssllibs" = "no" ]; then
     echo "  openssl support............. no"
   else
-    echo "  openssl support............. yes (dtls $openssldtls)"
+    echo "  openssl support............. yes (dtls:$openssldtls, v2:$opensslv2, v23:$opensslv23)"
   fi
   if [ "$sqlitelibs " = " " ]; then
     echo "  sqlite support ............. sqltiny"

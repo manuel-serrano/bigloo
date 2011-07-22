@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Jun 28 15:45:22 2011 (serrano)                */
+#*    Last change :  Fri Jul 22 11:04:03 2011 (serrano)                */
 #*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -44,8 +44,8 @@ POPULATION	= Makefile \
                   emacsbrand emacslisppath stacksize gcstd \
                   thread pthread pthreadlock pthreadlocalstorage \
                   processor dotnettest sendfile sleep posixfileops \
-                  timezone timeval \
-                  gcflags mmap macosx openssl openssl-dtls sqlite \
+                  timezone timeval gcflags mmap macosx sqlite \
+                  openssl openssl-dtls openssl-v2 openssl-v23 \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking rdynamic \
                   gstreamer gstreameraudio alsa mpg123 flac \
