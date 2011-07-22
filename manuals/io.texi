@@ -547,14 +547,14 @@ input-port, that is invoked when the reader hits an unparsed character.
 Example:
 
 @smalllisp
-(set-read-syntax! #\{
+(set-read-syntax! #\@{
    (lambda (port)
       (let loop ((c (peek-char port)) (exps '()))
 	 (cond ((eof-object? c)
-		(error "{" "EOF encountered while parsing { ... } clause" port))
-	       ((char=? c #\})
+		(error "@{" "EOF encountered while parsing @{ ... @} clause" port))
+	       ((char=? c #\@})
 		(read-char port)   ; discard
-		`(begin ,@(reverse exps)))
+		`(begin ,@@(reverse exps)))
 	       ((char-whitespace? c)
 		(read-char port)   ; discard whitespace
 		(loop (peek-char port) exps))
