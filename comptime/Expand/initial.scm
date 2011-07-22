@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Jul 19 08:37:03 2011 (serrano)                */
+;*    Last change :  Fri Jul 22 14:57:12 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -164,11 +164,13 @@
    (install-O-comptime-expander
     'append-2
     (lambda (x::obj e::procedure)
-       (match-case x
-	  ((?- ?l1 ?l2)
-	   (e `(,%append-2-id ,l1 ,l2) e))
-	  (else
-	   (error #f "Illegal `append-2' form" x)))))
+	  (match-case x
+	     ((?- ?l1 ?l2)
+	      (if (>=fx *optim* 2)
+		  (e `(,%append-2-id ,l1 ,l2) e)
+		  (map (lambda (x) (e x e)) x)))
+	     (else
+	      (error #f "Illegal `append-2' form" x)))))
    
    ;; append!
    (install-O-comptime-expander
