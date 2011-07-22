@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Tue Mar  1 08:18:25 2011 (serrano)                */
+;*    Last change :  Fri Jul 22 13:54:38 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -79,7 +79,9 @@
 	    (read-case-insensitive . port)
 	    (reader-reset!)
 	    (port->list::pair-nil ::procedure ::input-port)
-	    (port->sexp-list::pair-nil ::input-port #!optional location)))
+	    (port->sexp-list::pair-nil ::input-port #!optional location)
+	    (set-read-syntax!::unspecified ::bchar ::procedure)
+	    (define-reader-ctor::unspecified ::symbol ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-case-sensitivity ...                                      */
@@ -367,6 +369,16 @@
       ((: "<" (= 4 (or digit (uncase (in ("AF"))))) ">")
        (make-cnst (string->integer (the-substring 1 5) 16)))
 
+      ;; SRFI-10 reader macros
+      ((: ",")
+       (let ((f (read (the-port))))
+	  (if (pair? f)
+	      (let ((p (get-reader-ctor (car f))))
+		 (if (procedure? p)
+		     (apply p (cdr f))
+		     (read-error "Unknown SRFI-10 extension" (car f) (the-port))))
+	      (read-error "Bad SRFI-10 form" f (the-port)))))
+      
       (else
        (let ((c (the-failure)))
 	  (if (char? c)
@@ -408,8 +420,8 @@
       
       ;; multi-line comment (SRFI-30)
       ("#|"
-       (read-multi-line-comment (the-port))
-       (ignore))
+	 (read-multi-line-comment (the-port))
+	 (ignore))
       
       ;; #; expression comments
       ("#;"
@@ -440,8 +452,8 @@
        (string-ref (the-string) 2))
       ((: "#\\" (>= 2 letter))
        (let ((char-name (string->symbol
-			 (string-upcase!
-			  (the-substring 2 (the-length))))))
+			   (string-upcase!
+			      (the-substring 2 (the-length))))))
 	  (cond
 	     ((eq? char-name 'NEWLINE)
 	      #\Newline)
@@ -463,7 +475,7 @@
       ;; in order to increment the line-num variable strings
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
        (the-escape-substring 1 (-fx (the-length) 1) (bigloo-strict-r5rs-strings)))
-
+      
       ;; fixnums
       ((: (? (in "+-")) (+ digit))
        (the-integer))
@@ -473,19 +485,19 @@
 	  (or float
 	      (: (or float (+ digit)) (in "eE") (? (in "+-")) (+ digit))))
        (the-flonum))
-
+      
       ("+nan.0"
-       $nan)
+	 $nan)
       ("+inf.0"
-       $infinity)
+	 $infinity)
       ("-inf.0"
-       (negfl $infinity))
+	 (negfl $infinity))
       
       ;; doted pairs
       ("."
-       (if (<=fx par-open 0)
-	   (read-error "Illegal token" #\. (the-port))
-	   *dotted-mark*))
+	 (if (<=fx par-open 0)
+	     (read-error "Illegal token" #\. (the-port))
+	     *dotted-mark*))
       
       ;; booleans
       ((: "#" (uncase #\t))
@@ -502,8 +514,8 @@
       
       ;; identifiers
       (id
-       ;; this rule has to be placed after the rule matching the `.' char
-       (the-symbol))
+	 ;; this rule has to be placed after the rule matching the `.' char
+	 (the-symbol))
       ((: "|" (* (or (out #a000 #\\ #\|) (: #\\ all))) "|")
        (if (=fx (the-length) 2)
 	   (string->symbol "")
@@ -511,20 +523,20 @@
       
       ;; quotations 
       ("'"
-       (read-quote 'quote (the-port) ignore posp))
+	 (read-quote 'quote (the-port) ignore posp))
       ("`"
-       (read-quote 'quasiquote (the-port) ignore posp))
+	 (read-quote 'quasiquote (the-port) ignore posp))
       (","
-       (read-quote 'unquote (the-port) ignore posp))
+	 (read-quote 'unquote (the-port) ignore posp))
       (",@"
-       (read-quote 'unquote-splicing (the-port) ignore posp))
+	 (read-quote 'unquote-splicing (the-port) ignore posp))
       
       ;; lists
       ((in "([")
        ;; we increment the number of open parenthesis
        (set! par-open (+fx 1 par-open))
        (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
-			     par-poses))
+			  par-poses))
        ;; and then, we compute the result list...
        (make-list! (collect-up-to ignore "list" (the-port) posp) (the-port)))
       ((in ")]")
@@ -533,11 +545,11 @@
        (if (<fx par-open 0)
 	   (begin
 	      (warning/location (input-port-name (the-port))
-				(input-port-last-token-position (the-port))
-				'read
-				"Superfluous closing parenthesis `"
-				(the-string)
-				"'")
+		 (input-port-last-token-position (the-port))
+		 'read
+		 "Superfluous closing parenthesis `"
+		 (the-string)
+		 "'")
 	      (set! par-open 0)
 	      (ignore))
 	   (begin
@@ -546,107 +558,107 @@
       
       ;; vectors
       ("#("
-       ;; we increment the number of open parenthesis
-       (set! par-open (+fx 1 par-open))
-       (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
-			     par-poses))
-       (list->vector
-	(reverse! (collect-up-to ignore "vector" (the-port) posp))))
-
+	 ;; we increment the number of open parenthesis
+	 (set! par-open (+fx 1 par-open))
+	 (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
+			    par-poses))
+	 (list->vector
+	    (reverse! (collect-up-to ignore "vector" (the-port) posp))))
+      
       ;; typed homogeneous vectors
       ((: "#" letterid "(")
        ;; we increment the number of open parenthesis
        (set! par-open (+fx 1 par-open))
        (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
-			     par-poses))
+			  par-poses))
        (let ((s (the-substring 1 -1)))
 	  (cond
 	     ((string=? s "s8")
 	      (list->s8vector
-	       (reverse! (collect-up-to ignore "s8vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "s8vector" (the-port) posp))))
 	     ((string=? s "u8")
 	      (list->u8vector
-	       (reverse! (collect-up-to ignore "u8vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "u8vector" (the-port) posp))))
 	     ((string=? s "s16")
 	      (list->s16vector
-	       (reverse! (collect-up-to ignore "s16vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "s16vector" (the-port) posp))))
 	     ((string=? s "u16")
 	      (list->u16vector
-	       (reverse! (collect-up-to ignore "u16vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "u16vector" (the-port) posp))))
 	     ((string=? s "s32")
 	      (list->s32vector
-	       (reverse! (collect-up-to ignore "s32vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "s32vector" (the-port) posp))))
 	     ((string=? s "u32")
 	      (list->u32vector
-	       (reverse! (collect-up-to ignore "u32vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "u32vector" (the-port) posp))))
 	     ((string=? s "s64")
 	      (list->s64vector
-	       (reverse! (collect-up-to ignore "s64vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "s64vector" (the-port) posp))))
 	     ((string=? s "u64")
 	      (list->u64vector
-	       (reverse! (collect-up-to ignore "u64vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "u64vector" (the-port) posp))))
 	     ((string=? s "f32")
 	      (list->f32vector
-	       (reverse! (collect-up-to ignore "f32vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "f32vector" (the-port) posp))))
 	     ((string=? s "f64")
 	      (list->f64vector
-	       (reverse! (collect-up-to ignore "f64vector" (the-port) posp))))
+		 (reverse! (collect-up-to ignore "f64vector" (the-port) posp))))
 	     (else
 	      (let* ((id (string->symbol
-			  (case (bigloo-case-sensitivity)
-			     ((upcase)
-			      (string-upcase! s))
-			     ((downcase)
-			      (string-downcase! s))
-			     ((sensitive)
-			      s)
-			     (else
-			      (string-upcase! s)))))
+			    (case (bigloo-case-sensitivity)
+			       ((upcase)
+				(string-upcase! s))
+			       ((downcase)
+				(string-downcase! s))
+			       ((sensitive)
+				s)
+			       (else
+				(string-upcase! s)))))
 		     (l (reverse! (collect-up-to ignore "vector" (the-port) posp))))
 		 (list->tvector id l))))))
-
+      
       ;; tagged vectors (Camloo backward compatibility)
       ((: #\# digit digit digit #\()
        (let ((open-key par-open)
 	     (tag (string->integer (the-substring 1 4))))
 	  (set! par-open (+fx 1 par-open))
 	  (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
-				par-poses))
+			     par-poses))
 	  (list->vector
-	   (reverse!
-	    (cons tag (collect-up-to ignore "vector" (the-port) posp))))))
+	     (reverse!
+		(cons tag (collect-up-to ignore "vector" (the-port) posp))))))
       
       ;; structures
       ("#{"
-       ;; then, we compute the structure
-       ;; we increment the number of open parenthesis
-       (set! bra-open (+fx 1 bra-open))
-       (set! bra-poses (cons (-fx (input-port-position (the-port)) 1)
-			     bra-poses))
-       (let* ((l (reverse! (collect-up-to ignore "structure" (the-port) posp)))
-	      (len (length l))
-	      (r (make-struct (car l) (-fx len 1) #unspecified)))
-	  (let loop ((i 0)
-		     (l (cdr l)))
-	     (when (pair? l)
-		(struct-set! r i (car l))
-		(loop (+fx i 1) (cdr l))))
-	  r))
+	 ;; then, we compute the structure
+	 ;; we increment the number of open parenthesis
+	 (set! bra-open (+fx 1 bra-open))
+	 (set! bra-poses (cons (-fx (input-port-position (the-port)) 1)
+			    bra-poses))
+	 (let* ((l (reverse! (collect-up-to ignore "structure" (the-port) posp)))
+		(len (length l))
+		(r (make-struct (car l) (-fx len 1) #unspecified)))
+	    (let loop ((i 0)
+		       (l (cdr l)))
+	       (when (pair? l)
+		  (struct-set! r i (car l))
+		  (loop (+fx i 1) (cdr l))))
+	    r))
       ("}"
-       (set! bra-open (-fx bra-open 1))
-       (if (<fx bra-open 0)
-	   (begin
-	      (warning/location (input-port-name (the-port))
-				(input-port-last-token-position (the-port))
-				'read
-				"Superfluous closing bracket `"
-				(the-string))
-	      (set! bra-open 0)
-	      (ignore))
-	   (begin
-	      (set! bra-poses (cdr bra-poses))
-	      *end-of-list*)))
-       
+	 (set! bra-open (-fx bra-open 1))
+	 (if (<fx bra-open 0)
+	     (begin
+		(warning/location (input-port-name (the-port))
+		   (input-port-last-token-position (the-port))
+		   'read
+		   "Superfluous closing bracket `"
+		   (the-string))
+		(set! bra-open 0)
+		(ignore))
+	     (begin
+		(set! bra-poses (cdr bra-poses))
+		*end-of-list*)))
+      
       ;; cyclic target mark
       ((: #\# (+ digit) "=")
        (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1))))
@@ -667,29 +679,34 @@
       
       ;; special tokens
       ("#"
-	(read/rp *sharp-grammar* (the-port)))
+	 (read/rp *sharp-grammar* (the-port)))
       
       ;; error or eof
       (else
        (let ((char (the-failure)))
-	  (if (eof-object? char)
+	  (cond
+	     ((eof-object? char)
 	      (cond
 		 ((>fx par-open 0)
 		  (read-error/loc (car par-poses)
-				  "Unexpected end-of-file"
-				  "Unclosed list"
-				  (the-port)))
+		     "Unexpected end-of-file"
+		     "Unclosed list"
+		     (the-port)))
 		 ((>fx bra-open 0)
 		  (read-error/loc (car par-poses)
-				  "Unexpected end-of-file"
-				  "Unclosed vector or structure"
-				  (the-port)))
+		     "Unexpected end-of-file"
+		     "Unclosed vector or structure"
+		     (the-port)))
 		 (else
 		  (reset-eof (the-port))
-		  char))
+		  char)))
+	     ((get-reader-extension char)
+	      =>
+	      (lambda (e) e (the-port)))
+	     (else
 	      (read-error "Illegal char"
-			  (illegal-char-rep char)
-			  (the-port)))))))
+		 (illegal-char-rep char)
+		 (the-port))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-regular-grammar ...                                       */
@@ -752,4 +769,48 @@
 ;*---------------------------------------------------------------------*/
 (define (port->sexp-list ip #!optional location)
    (port->list (lambda (ip) (read ip location)) ip))
-   
+
+;*---------------------------------------------------------------------*/
+;*    *reader-ctors* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *reader-ctors* '())
+
+;*---------------------------------------------------------------------*/
+;*    get-reader-ctor ...                                              */
+;*---------------------------------------------------------------------*/
+(define (get-reader-ctor f)
+   (let ((p (assq f *reader-ctors*)))
+      (when (pair? p)
+	 (cdr p))))
+
+;*---------------------------------------------------------------------*/
+;*    define-reader-ctor ...                                           */
+;*---------------------------------------------------------------------*/
+(define (define-reader-ctor sym proc)
+   (let ((c (assq sym *reader-ctors*)))
+      (if (pair? c)
+	  (set-cdr! c proc)
+	  (set! *reader-ctors* (cons `(,sym . ,proc) *reader-ctors*)))))
+
+;*---------------------------------------------------------------------*/
+;*    *reader-extensions* ...                                          */
+;*---------------------------------------------------------------------*/
+(define *reader-extensions* '())
+
+;*---------------------------------------------------------------------*/
+;*    set-read-syntax! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (set-read-syntax! char proc)
+   (let ((c (assq char *reader-extensions*)))
+      (if (pair? c)
+	  (set-cdr! c proc)
+	  (set! *reader-extensions*
+	     (cons `(,char . ,proc) *reader-extensions*)))))
+ 
+;*---------------------------------------------------------------------*/
+;*    get-reader-extension ...                                         */
+;*---------------------------------------------------------------------*/
+(define (get-reader-extension sym)
+   (let ((c (assq sym *reader-extensions*)))
+      (when (pair? c)
+	 (cdr c))))

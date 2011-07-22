@@ -507,6 +507,65 @@ These functions are fully explained in @ref{Regular Parsing},
 and @ref{Lalr Parsing}.
 @end deffn
 
+@deffn {bigloo procedure} define-reader-ctor symbol procedure
+@cindex SRFI-10
+
+Note: This feature is experimental and might be removed in feature versions.
+
+The present SRFI-10
+(@url{http://srfi.schemers.org/srfi-10/srfi-10.html}) proposes an
+extensible external representation of Scheme values, a notational
+convention for future SRFIs. This SRFI adds @code{#,(} as a new token and
+extends production rules of the grammar for a Scheme reader. The @code{#,()}
+form can be used for example to denote values that do not have a
+convenient printed representation, as well for conditional code
+compilation. It is proposed that future SRFIs that contain new read
+syntax for values use the @code{#,()} notation with an appropriate tag
+symbol.
+
+As a particular example and the reference implementation for the @code{#,()}
+convention, this SRFI describes an interpretation of the @code{#,()} external
+form as a read-time application.
+
+Examples:
+@smalllisp
+(define-reader-ctor 'list list) 
+(with-input-from-string "#,(list 1 2 #f \"4 5\")" read) @result{} (1 2 #f "4 5")
+
+(define-reader-ctor '+ +)
+(with-input-from-string "#,(+ 1 2)" read) @result{} 3
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} set-read-syntax! char procedure
+
+Note: This feature is experimental and might be removed in feature versions.
+
+Registers a function @var{procedure} to be invoked with one argument, an
+input-port, that is invoked when the reader hits an unparsed character.
+
+Example:
+
+@smalllisp
+(set-read-syntax! #\{
+   (lambda (port)
+      (let loop ((c (peek-char port)) (exps '()))
+	 (cond ((eof-object? c)
+		(error "{" "EOF encountered while parsing { ... } clause" port))
+	       ((char=? c #\})
+		(read-char port)   ; discard
+		`(begin ,@(reverse exps)))
+	       ((char-whitespace? c)
+		(read-char port)   ; discard whitespace
+		(loop (peek-char port) exps))
+	       (else
+		(let ((exp (read port)))
+		   (loop (peek-char port)
+                      (cons exp exps))))))))
+@end smalllisp
+
+@end deffn
+
 @deffn {procedure} read-char [port]
 @deffnx {procedure} read-byte [port]
 @deffnx {procedure} peek-char [port]

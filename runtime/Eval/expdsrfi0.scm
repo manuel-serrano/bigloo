@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Fri Feb 18 15:06:40 2011 (serrano)                */
+;*    Last change :  Fri Jul 22 13:53:02 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -122,6 +122,7 @@
 		     srfi-6
 		     srfi-8
 		     srfi-9
+		     srfi-10
 		     srfi-22
 		     srfi-28
 		     srfi-30))))
