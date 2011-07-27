@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Thu Jun 16 06:39:39 2011 (serrano)                */
+;*    Last change :  Wed Jul 27 10:43:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -566,7 +566,7 @@
 
 ;;
 (define-method (comp e::ev_goto stk)
-   (with-access::ev_goto e (label labels args)
+   (with-access::ev_goto e (label labels args loc)
       ;(print "compile goto stk" (map uncompile stk))
       (let ( (slot (assq label (ev_labels-env labels))) (size (length stk)) (lstk (ev_labels-stk labels)) )
 	 ;(print "stk at labels " (map uncompile lstk))
@@ -576,23 +576,32 @@
 		(let ( (args (comp-with-push args stk)) (nbargs (length args)) )
 		   (EVA (goto shift) ()
 			(let ( (sp (+fx bp size)) (lsp (+fx bp llstk)) )
-			   (push-boxes-args-on-sp s args boxes sp)
+			   (push-boxes-args-on-sp s args boxes sp loc)
 			   (vector-copy! s lsp s sp (+fx sp nbargs))
 			   (throw-goto-trampoline (cdr slot)) )))
 		(let ( (args (comp-in-place args stk (-fx size llstk))) )
 		   (EVA (goto direct) ()
-			(push-boxes-args-on-sp s args boxes (+fx bp llstk))
+			(push-boxes-args-on-sp s args boxes (+fx bp llstk) loc)
 			(throw-goto-trampoline (cdr slot)) )))))))
 
-(define (push-boxes-args-on-sp s args boxes sp)
+(define (push-boxes-args-on-sp s args boxes sp loc)
    (let rec ( (l args) (bs boxes) (sp sp) )
-      (unless (null? l)
-	 (vector-set! s sp
-		      (let ( (v (EVC (car l))) )
-			 (if (car bs)
-			     (mcell v)
-			     v )))
-	 (rec (cdr l) (cdr bs) (+fx sp 1)) )))
+      (if (null? l)
+	  (unless (null? bs)
+	     (everror loc "eval" "wrong number of argument"
+		(format "expecting ~a, got ~a"
+		   (length boxes) (length args))))
+	  (if (null? bs)
+	      (everror loc "eval" "wrong number of argument"
+		 (format "expecting ~a, got ~a"
+		    (length boxes) (length args)))
+	      (begin
+		 (vector-set! s sp
+		    (let ( (v (EVC (car l))) )
+		       (if (car bs)
+			   (mcell v)
+			   v )))
+		 (rec (cdr l) (cdr bs) (+fx sp 1)) )))))
 
 (define (throw-goto-trampoline f)
    f )
@@ -600,7 +609,7 @@
 (define (sub-stk l1 l2)
    (cond ((null? l1) l2)
 	 ((not (eq? (car l1) (car l2)))
-	  (error 'eval 'internal 'impossible) )
+	  (error "eval" 'internal 'impossible) )
 	 (else (sub-stk (cdr l1) (cdr l2))) ))
 
 ;;
@@ -900,7 +909,7 @@
 	 ((9) (/fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
 	 ((10) (fixnum->flonum (EVC (vector-ref bc 1))))
 	 ((11) (f64vector-ref (EVC (vector-ref bc 1)) (EVC (vector-ref bc 2))))
-	 (else (error 'internal "invalid byte code" (vector-ref bc 0))) ))
+	 (else (error "eval" "invalid byte code" (vector-ref bc 0))) ))
     (E bc) )
 
 (define (arith-expression expr::ev_app stk);

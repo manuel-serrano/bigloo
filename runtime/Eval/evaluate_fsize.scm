@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Thu Jun  9 09:46:33 2011 (serrano)                */
+;*    Last change :  Wed Jul 27 10:41:31 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -355,10 +355,10 @@
       e ))
 
 (define-method (subst_goto e::ev_app vars lbls);
-   (with-access::ev_app e (fun args)
+   (with-access::ev_app e (fun args loc)
       (subst_goto* args vars lbls)
       (if (memq fun vars)
-	  (instantiate::ev_goto (label fun) (args args) (labels lbls))
+	  (instantiate::ev_goto (label fun) (args args) (labels lbls) (loc loc))
 	  (begin (set! fun (subst_goto fun vars lbls))
 		 e ))))
 
