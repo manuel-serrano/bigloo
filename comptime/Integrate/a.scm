@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Tue Mar 29 09:14:19 2011 (serrano)                */
+;*    Last change :  Sat Jul 30 07:06:39 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
@@ -102,7 +102,10 @@
 (define (tail-type-compatible? t1 t2)
    (or (eq? t1 t2)
        (and (eq? t1 *int*) (eq? t2 *long*))
-       (and (eq? t1 *long*) (eq? t2 *int*))))
+       (and (eq? t1 *long*) (eq? t2 *int*))
+       ;; MS: 30jul2011, I have added that new test but I'm not fully
+       ;; sure it's correct. I will have to keep an eye on that.
+       (and (bigloo-type? t1) (bigloo-type? t2))))
        
 ;*---------------------------------------------------------------------*/
 ;*    tail-coercion ...                                                */
