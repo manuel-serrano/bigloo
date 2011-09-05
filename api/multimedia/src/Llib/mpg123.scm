@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Thu Jun 23 15:51:07 2011 (serrano)                */
+;*    Last change :  Mon Aug 22 10:24:30 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPG123 Bigloo binding                                        */
@@ -95,7 +95,8 @@
 (define mpg123-grammar
    (regular-grammar ((int (+ digit))
 		     (float (: (+ digit) #\. (* digit)))
-		     mpg123 onstate onmeta onerror onvolume armed)
+		     mpg123 onstate onmeta onerror onvolume onplaylist
+		     armed playlistid)
       ("@E"
        (let ((reason (read-line (the-port)))
 	     (terr #f))
@@ -149,6 +150,10 @@
 	     (musicstatus-state-set! %status 'start)
 	     (mutex-unlock! %mutex)
 	     (when onstate (onstate %status))
+	     (when (and onplaylist
+			(not (eq? playlistid (musicstatus-playlistid %status))))
+		(set! playlistid (musicstatus-playlistid %status))
+		(onplaylist playlistid))
 	     (ignore))))
       ((: "@P " digit)
        ;; Playing status
@@ -236,12 +241,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop ::mpg123 ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (music-event-loop-inner o::mpg123 frequency::long onstate onmeta onerror onvol)
+(define-method (music-event-loop-inner o::mpg123 frequency::long onstate onmeta onerror onvol onplaylist)
    (with-access::mpg123 o (%process %mutex %loop-mutex %abort-loop %status)
       (let loop ()
 	 (if (process? %process)
 	     (let ((p (process-output-port %process)))
-		(read/rp mpg123-grammar p o onstate onmeta onerror onvol #f))
+		(read/rp mpg123-grammar p o onstate onmeta onerror onvol
+		   onplaylist #f
+		   (musicstatus-playlistid %status)))
 	     (begin
 		(mutex-lock! %mutex)
 		(let ((abort %abort-loop))

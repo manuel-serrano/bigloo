@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Jul 11 13:54:42 2011 (serrano)                */
+;*    Last change :  Sun Sep  4 19:01:37 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -18,7 +18,7 @@
 	   __multimedia-id3)
    
    (export (generic music-event-loop ::music . ::obj)
-	   (generic music-event-loop-inner ::music ::long ::obj ::obj ::obj ::obj)
+	   (generic music-event-loop-inner ::music ::long ::obj ::obj ::obj ::obj ::obj)
 	   (generic music-event-loop-reset! ::music)
 	   (generic music-event-loop-abort! ::music)
 
@@ -33,16 +33,15 @@
       (set! %abort-loop #f)
       (set! %reset-loop #f)
       (mutex-unlock! %loop-mutex)
-      (multiple-value-bind (onstate onmeta onerror onvol frequency)
+      (multiple-value-bind (onstate onmeta onerror onvol onplaylist frequency)
 	 (music-event-loop-parse-opt obj)
 	 ;; setup state
 	 (with-access::musicstatus %status (state volume)
-	    (set! volume 0)
 	    (set! state 'init))
 	 ;; enter the loop
 	 (unwind-protect
 	    ;; the event loop is protected against timeout errors
-	    (music-event-loop-inner o frequency onstate onmeta onerror onvol)
+	    (music-event-loop-inner o frequency onstate onmeta onerror onvol onplaylist)
 	    ;; signal that the loop is done
 	    (begin
 	       (mutex-lock! %loop-mutex)
@@ -53,34 +52,35 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-inner ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-generic (music-event-loop-inner m::music frequency onstate onmeta onerror onvol)
+(define-generic (music-event-loop-inner m::music frequency onstate onmeta onerror onvol onplaylist)
    
    (define (newstate? stat2 stat1)
-      (with-access::musicstatus stat2 (state song songid playlistid)
+      (with-access::musicstatus stat2 (state songid)
 	 (or (not (eq? (musicstatus-state stat1) state))
-	     (not (eq? (musicstatus-playlistid stat1) playlistid))
-	     (not (eq? (musicstatus-song stat1) song))
-	     (not (eq? (musicstatus-songid stat1) songid)))))
-   
-   (define (newvolume? stat2 stat1)
-      (with-access::musicstatus stat2 (volume)
-	 (not (eq? (musicstatus-volume stat1) volume))))
-   
+	     (newsong? stat2 stat1))))
+
    (define (newplaylist? stat2 stat1)
       (with-access::musicstatus stat2 (playlistid)
 	 (not (eq? (musicstatus-playlistid stat1) playlistid))))
+
+   (define (newsong? stat2 stat1)
+      (with-access::musicstatus stat2 (songid)
+	 (not (eq? (musicstatus-songid stat1) songid))))
+
+   (define (newvolume? stat2 stat1)
+      (with-access::musicstatus stat2 (volume)
+	 (not (eq? (musicstatus-volume stat1) volume))))
    
    (with-access::music m (%loop-mutex %abort-loop %reset-loop %status %mutex)
       (mutex-lock! %loop-mutex)
       (let loop ((stat1 (duplicate::musicstatus %status
 			   (state 'unspecified)))
-		 (stat2 (instantiate::musicstatus
+		 (stat2 (duplicate::musicstatus %status
 			   (state 'init))))
 	 (let ((stop (or (music-closed? m) (music-%abort-loop m))))
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
 	       (music-update-status! m stat2)
-
 	       (when (newstate? stat2 stat1)
 		  (case (musicstatus-state stat2)
 		     ((error)
@@ -89,6 +89,7 @@
 			 (onerror (musicstatus-err stat2))))
 		     ((play)
 		      ;; onstate
+		      (tprint "ONPLAY..." (musicstatus-songid stat2))
 		      (when onstate
 			 (onstate stat2))
 		      ;; onmeta
@@ -96,6 +97,7 @@
 			 (onmeta (music-get-meta stat2 m))))
 		     ((ended)
 		      ;; onstate
+		      (tprint "ONENDED..." (musicstatus-songid stat2))
 		      (when onstate
 			 (onstate stat2))
 		      (with-access::musicstatus stat2 (song playlistlength)
@@ -110,11 +112,15 @@
 		      ;; onstate
 		      (when onstate
 			 (onstate stat2)))))
-		      
+	    
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume
 		  (onvol (musicstatus-volume stat2)))
-	       
+
+	       (when (and onplaylist (newplaylist? stat2 stat1))
+		  ;; onplaylist
+		  (onplaylist stat2))
+		  
 	       ;; wait a little bit
 	       (sleep frequency)
 	       
@@ -203,6 +209,7 @@
 	   (get-proc-opt :onmeta 1)
 	   (get-proc-opt :onerror 1)
 	   (get-proc-opt :onvolume 1)
+	   (get-proc-opt :onplaylist 1)
 	   (get-opt :frequency 2000000)))
 
 

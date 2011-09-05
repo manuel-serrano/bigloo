@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri May 13 11:24:07 2011 (serrano)                */
+;*    Last change :  Tue Aug 23 06:16:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -373,7 +373,7 @@
 	    (with-error-to-port ::output-port ::procedure)
 	    (with-error-to-procedure ::procedure ::procedure)
 	    
-	    (open-input-file ::bstring #!optional (bufinfo #t))
+	    (open-input-file ::bstring #!optional (bufinfo #t) (timeout 5000000))
 	    (open-input-string::input-port ::bstring #!optional (start 0))
 	    (inline open-input-string!::input-port ::bstring)
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
@@ -762,7 +762,7 @@
 ;*---------------------------------------------------------------------*/
 (define *input-port-protocols*
    `(("file:" . ,%open-input-file)
-     ("string:" . ,(lambda (s p) (open-input-string s)))
+     ("string:" . ,(lambda (s p tmt) (open-input-string s)))
      ("| " . ,%open-input-pipe)
      ("pipe:" . ,%open-input-pipe)
      ("http://" . ,%open-input-http-socket)
@@ -798,6 +798,10 @@
 ;*---------------------------------------------------------------------*/
 (define (input-port-protocol-set! protocol open)
    (mutex-lock! *input-port-protocols-mutex*)
+   (unless (and (procedure? open) (correct-arity? open 3))
+      (error "input-port-protocol-set!"
+	 "Illegal open procedure for protocol"
+	 protocol))
    (let ((c (assoc protocol *input-port-protocols*)))
       (if (pair? c)
 	  (set-cdr! c open)
@@ -827,55 +831,39 @@
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-file ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (%open-input-file string buf)
+(define (%open-input-file string buf tmt)
    ($open-input-file string buf))
 
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-pipe ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (%open-input-pipe string bufinfo)
+(define-inline (%open-input-pipe string bufinfo tmt)
    (let ((buf (get-port-buffer 'open-input-pipe bufinfo 1024)))
       ($open-input-pipe string buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-resource ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (%open-input-resource file bufinfo)
+(define (%open-input-resource file bufinfo tmt)
    (let ((buf (get-port-buffer 'open-input-file bufinfo c-default-io-bufsiz)))
       ($open-input-resource file buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-http-socket ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (%open-input-http-socket string bufinfo)
+(define (%open-input-http-socket string bufinfo timeout)
    
    (define (parser ip status-code header clen tenc)
-      (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
-	  (case status-code
-	     ((401)
-	      (raise (instantiate::&io-port-error
-			(proc 'open-input-file)
-			(msg "Cannot open URL, authentication required")
-			(obj (string-append "http://" string)))))
-	     ((404)
-	      (raise (instantiate::&io-file-not-found-error
-			(proc 'open-input-file)
-			(msg "Cannot open URL")
-			(obj (string-append "http://" string)))))
-	     (else
-	      (raise (instantiate::&io-port-error
-			(proc 'open-input-file)
-			(msg (format "Cannot open URL (~a)" status-code))
-			(obj (string-append "http://" string))))))
-	  (cond
-	     ((not (input-port? ip))
-	      (open-input-string ""))
-	     (clen
-	      (input-port-fill-barrier-set! ip (elong->fixnum clen))
-	      ($input-port-length-set! ip clen)
-	      ip)
-	     (else
-	      ip))))
+      (when (and (>=fx status-code 200) (<=fx status-code 299))
+	 (cond
+	    ((not (input-port? ip))
+	     (open-input-string ""))
+	    (clen
+	     (input-port-fill-barrier-set! ip (elong->fixnum clen))
+	     ($input-port-length-set! ip clen)
+	     ip)
+	    (else
+	     ip))))
    
    (multiple-value-bind (protocol login host port abspath)
       (url-sans-protocol-parse string "http")
@@ -883,6 +871,7 @@
 		      :port port
 		      :login login
 		      :path abspath
+		      :timeout timeout
 		      :header '()))
 	     (ip (socket-input sock))
 	     (op (socket-output sock)))
@@ -890,9 +879,8 @@
 	 (with-handler
 	    (lambda (e)
 	       (socket-close sock)
-	       (if (&http-redirection? e)
-		   (open-input-file (&http-redirection-url e) bufinfo)
-		   (raise e)))
+	       (when (&http-redirection? e)
+		  (open-input-file (&http-redirection-url e) bufinfo)))
 	    (http-parse-response ip op parser)))))
 
 ;*---------------------------------------------------------------------*/
@@ -915,19 +903,20 @@
 ;*    thus, (STRING-LENGTH <a-constant-string>) is replaced with the   */
 ;*    actual length of the constant.                                   */
 ;*---------------------------------------------------------------------*/
-(define (open-input-file string #!optional (bufinfo #t))
+(define (open-input-file string #!optional (bufinfo #t) (timeout 5000000))
    (let ((buffer (get-port-buffer 'open-input-file bufinfo c-default-io-bufsiz)))
       (let loop ((protos *input-port-protocols*))
 	 (if (null? protos)
 	     ;; a plain file
-	     (%open-input-file string buffer)
+	     (%open-input-file string buffer timeout)
 	     (let* ((cell (car protos))
 		    (ident (car cell))
 		    (l (string-length ident))
 		    (open (cdr cell)))
 		(if (substring=? string ident l)
 		    ;; we have found the open function
-		    (open (substring string l (string-length string)) buffer)
+		    (let ((name (substring string l (string-length string))))
+		       (open name buffer timeout))
 		    (loop (cdr protos))))))))
 
 ;*---------------------------------------------------------------------*/

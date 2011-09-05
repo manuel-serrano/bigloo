@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Wed Mar 23 16:46:42 2011 (serrano)                */
+;*    Last change :  Thu Aug 18 19:51:45 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -70,9 +70,9 @@
    (export (port->gzip-port::input-port ::input-port #!optional (bufinfo #t))
 	   (port->zlib-port::input-port ::input-port #!optional (bufinfo #t))
 	   (port->inflate-port::input-port ::input-port #!optional (bufinfo #t))
-	   (open-input-gzip-file ::bstring #!optional (bufinfo #t))
-	   (open-input-zlib-file ::bstring #!optional (bufinfo #t))
-	   (open-input-inflate-file ::bstring #!optional (bufinfo #t))
+	   (open-input-gzip-file ::bstring #!optional (bufinfo #t) (timeout 1000000))
+	   (open-input-zlib-file ::bstring #!optional (bufinfo #t) (timeout 1000000))
+	   (open-input-inflate-file ::bstring #!optional (bufinfo #t) (timeout 1000000))
 	   (gunzip-sendchars ::input-port ::output-port)
 	   (inflate-sendchars ::input-port ::output-port)
 	   (gunzip-parse-header in)))
@@ -1082,7 +1082,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-file ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-gzip-file name #!optional (bufinfo #t))
+(define (open-input-gzip-file name #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo)))
       (and (input-port? p)
 	   (let ((pi (port->gzip-port p #t)))
@@ -1092,7 +1092,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-inflate-file ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (open-input-inflate-file name #!optional (bufinfo #t))
+(define (open-input-inflate-file name #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo))
 	 (b (get-port-buffer 'open-input-deflate-file #t c-default-io-bufsiz)))
       (and (input-port? p)
@@ -1126,7 +1126,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-zlib-file ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-zlib-file name #!optional (bufinfo #t))
+(define (open-input-zlib-file name #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo)))
       (and (input-port? p)
 	   (let ((pi (port->zlib-port p)))

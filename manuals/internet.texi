@@ -197,6 +197,10 @@ Example:
    ...)
 @end smalllisp
 
+An http connection blocks until the connection is established. If the
+optional argument @code{timeout} is provided, the connection must be
+established before the specified time interval elapses. The timeout
+is expressed in microseconds.
 @end deffn
 
 @deffn {bigloo procedure} http-read-line input-port

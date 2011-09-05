@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Jun 20 14:42:33 2011 (serrano)                */
+;*    Last change :  Mon Aug 22 10:40:04 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -208,7 +208,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-inner ::gstmusic ...                            */
 ;*---------------------------------------------------------------------*/
-(define-method (music-event-loop-inner o::gstmusic frequency::long onstate onmeta onerror onvol)
+(define-method (music-event-loop-inner o::gstmusic frequency::long onstate onmeta onerror onvol onplaylist)
    (with-access::gstmusic o (%mutex %loop-mutex %pipeline %status %abort-loop)
       (when %pipeline
 	 (mutex-lock! %loop-mutex)
@@ -237,8 +237,9 @@
 			 ((not (=fx vol nvol))
 			  (when onvol (onvol nvol)))
 			 ((not (=fx pid npid))
-			  (when onstate (onstate %status)))
-			  (sleep 10))
+			  (when onplaylist
+			     (onplaylist %status))
+			  (sleep 10)))
 		      #f)
 		     ((gst-message-eos? msg)
 		      ;; end of stream
@@ -440,9 +441,8 @@
       (with-lock %mutex
 	 (lambda ()
 	    (set! %playlist '())
-	    (with-access::musicstatus %status (playlistlength song songid)
+	    (with-access::musicstatus %status (playlistlength song)
 	       (set! song 0)
-	       (set! songid 0)
 	       (set! playlistlength 0))))))
 
 ;*---------------------------------------------------------------------*/

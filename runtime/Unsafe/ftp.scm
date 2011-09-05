@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Fri Feb 18 15:15:28 2011 (serrano)                */
+;*    Last change :  Thu Aug 18 19:55:27 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -65,7 +65,7 @@
 	   (class &ftp-error::&error)
 	   (class &ftp-parse-error::&io-parse-error)
 
-	   (ftp-connect::bool ::ftp)
+	   (ftp-connect::bool ::ftp #!optional (timeout 0))
 	   
 	   ;; Access control commands
 	   (ftp-logout::bool ::ftp)
@@ -101,7 +101,7 @@
 	   (ftp-noop::bool ::ftp)
 
 	   ;; unified IO api
-	   (open-input-ftp-file ::bstring #!optional (bufinfo #t))
+	   (open-input-ftp-file ::bstring #!optional (bufinfo #t) (timeout 1000000))
 	   (ftp-directory->list ::ftp ::bstring)
 	   (ftp-directory->path-list ::ftp ::bstring)
 	   (ftp-make-directory::bool ::ftp ::bstring)
@@ -402,9 +402,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    ftp-connect ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ftp-connect ftp::ftp)
+(define (ftp-connect ftp::ftp #!optional (timeout 0))
    (with-access::ftp ftp (host port cmd)
-      (set! cmd (make-client-socket host port))
+      (set! cmd (make-client-socket host port :timeout timeout))
       (%ftp-engine-cmd ftp #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -663,7 +663,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-ftp-file ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (open-input-ftp-file string #!optional (bufinfo #t))
+(define (open-input-ftp-file string #!optional (bufinfo #t) (timeout 1000000))
+   
    (define (parser ip status-code header clen tenc)
       (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
 	  (case status-code
@@ -704,7 +705,7 @@
 		     (pass (cond
 			      (i (substring login (+fx i 1)))
 			      (else "foo@bar.net"))))))
-	 (when (ftp-connect ftp)
+	 (when (ftp-connect ftp timeout)
 	    (let ((pi (ftp-retrieve ftp abspath)))
 	       (when (input-port? pi)
 		  (input-port-close-hook-set! pi (lambda (v) (%ftp-close ftp)))
