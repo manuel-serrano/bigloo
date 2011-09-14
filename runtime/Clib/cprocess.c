@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Wed Sep  1 10:20:00 2010 (serrano)                */
+/*    Last change :  Wed Sep 14 14:46:24 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -36,12 +36,6 @@ typedef int intptr_t;
 
 #define MSG_SIZE 1024
 
-#if( HAVE_SIGCHLD )
-#   define PURGE_PROCESS_TABLE()	/* Nothing to do */
-#else
-#   define PURGE_PROCESS_TABLE() process_terminate_handler( 0 )
-#endif
-
 #ifdef _BGL_WIN32_VER
 #  define close _close
 #  define dup _dup
@@ -72,6 +66,9 @@ BGL_RUNTIME_DECL char *bgl_get_last_error_message( char * );
 #endif
 
 static void process_terminate_handler( int );
+static void purge_process_table();
+static void c_unregister_process_with_lock( obj_t, int );
+static bool_t c_process_alivep_with_lock( obj_t, int );
 
 /*---------------------------------------------------------------------*/
 /*    Process mutex                                                    */
@@ -85,6 +82,8 @@ DEFINE_STRING( process_mutex_name, _1, "process-mutex", 13 );
 #define DEFAULT_MAX_PROC_NUM 255
 static int max_proc_num = 0;               /* (simultaneous processes) */
 static obj_t *proc_arr;                    /* process table            */
+static int first_free_index;               /* first proc free index    */
+static int terminate_counter = 0;          /* end proc counter         */
 
 static char *std_streams[ 3 ] = {
   "input",	
@@ -115,6 +114,7 @@ bgl_init_process_table() {
 
    /* we first initialize the process table */
    for( i = 0; i < max_proc_num; i++ ) proc_arr[ i ] = BUNSPEC;
+   first_free_index = 0;
 
 #if HAVE_SIGCHLD
    /* On systems which support SIGCHLD, the processes table is cleaned */
@@ -149,7 +149,16 @@ bgl_init_process_table() {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-c_process_alivep( obj_t process )
+c_process_alivep( obj_t process ) {
+  return c_process_alivep_with_lock( process, 1 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    c_process_alivep_with_lock ...                                   */
+/*---------------------------------------------------------------------*/
+static bool_t
+c_process_alivep_with_lock( obj_t process, int lock )
 #ifndef _BGL_WIN32_VER
 {
    if( PROCESS( process ).exited || (PROCESS( process ).pid == 0) )
@@ -162,18 +171,18 @@ c_process_alivep( obj_t process )
       
       if( res == 0 ) 
 	 /* process is still running */
-	 return 1;
-      else
-      {
-	 if( res == PROCESS_PID( process ) )
-	 {
-	    /* process has terminated and we must save this information */
-	    PROCESS(process).exited      = 1;
-	    PROCESS(process).exit_status = info;
-	    return 0;
-	 }
-	 else
-	    return 0;
+        return 1;
+      else {
+        if( res == PROCESS_PID( process ) ) {
+          /* process has terminated and we must save this information */
+          PROCESS(process).exited      = 1;
+          if( PROCESS(process).index != -1 )
+            c_unregister_process_with_lock( process, lock );
+          PROCESS(process).exit_status = info;
+          return 0;
+        }
+        else
+          return 0;
       }
    }
 }
@@ -199,6 +208,8 @@ c_process_alivep( obj_t process )
 
       /* process is now terminated */
       PROCESS( process ).exited      = 1;
+      if( PROCESS(process).index != -1 )
+        c_unregister_process_with_lock( process, lock );
       PROCESS( process ).exit_status = exit_code;
       CloseHandle( PROCESS( process ).hProcess );
       PROCESS( process ).hProcess= INVALID_HANDLE_VALUE;
@@ -210,14 +221,23 @@ c_process_alivep( obj_t process )
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    c_unregister_process ...                                         */
-/*    -------------------------------------------------------------    */
-/*    When this function is called, the process_mutex is already       */
-/*    acquired.                                                        */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 void
 c_unregister_process( obj_t proc ) {
+  c_unregister_process_with_lock( proc, 1 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    c_unregister_process_with_lock ...                               */
+/*---------------------------------------------------------------------*/
+static void
+c_unregister_process_with_lock( obj_t proc , int lock ) {
    int i;
+
+  if( lock )
+    bgl_mutex_lock( process_mutex );
 
    for( i = 0; i < 3; i++ ) {
       obj_t p = PROCESS( proc ).stream[ i ];
@@ -238,6 +258,12 @@ c_unregister_process( obj_t proc ) {
 #endif
 
    proc_arr[ PROCESS( proc ).index ] = BUNSPEC;
+   if ( PROCESS( proc ).index < first_free_index )
+     first_free_index = PROCESS( proc ).index;
+   PROCESS( proc ).index = -1;
+
+   if( lock )
+     bgl_mutex_unlock( process_mutex );
 }
    
 /*---------------------------------------------------------------------*/
@@ -246,45 +272,24 @@ c_unregister_process( obj_t proc ) {
 /*---------------------------------------------------------------------*/
 static void
 process_terminate_handler( int sig ) {
+  terminate_counter++;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    purge_process_table ...                                          */
+/*---------------------------------------------------------------------*/
+static void
+purge_process_table() {
   register int i;
   obj_t proc;
 
-#if( HAVE_SIGCHLD && !HAVE_SIGACTION )
-  static int in_handler = 0;
+  for( i = 0; i < max_proc_num; i++ ) {
+    proc = proc_arr[ i ];
 
-  /* Necessary on System V */
-  signal( SIGCHLD, process_terminate_handler ); 
-  if( in_handler++ ) /* Execution is re-entrant */ return;
-  
-  do {
-#endif
-     /* Find the process which is terminated                          */
-     /* Note that this loop can find:                                 */
-     /*      - nobody: if the process has been destroyed by GC        */
-     /*      - 1 process: This is the normal case                     */
-     /*	    - more than one process: This can arise when:             */
-     /*		- we use signal rather than sigaction                 */
-     /*		- we don't have SIGCHLD and this function is called   */
-     /*		  by PURGE_PROCESS_TABLE                              */
-     /* Sometimes I think that life is a little bit complicated (ndrl */
-     /* sic Erick Gallesio :-)                                        */
-     bgl_mutex_lock( process_mutex );
-     for( i = 0; i < max_proc_num; i++ ) {
-	proc = proc_arr[ i ];
-
-	if( PROCESSP( proc ) && (!c_process_alivep( proc )) ) {
-	   /* This process has exited. We can delete it from the table*/
-	   c_unregister_process( proc );
-	}
-     }
-     bgl_mutex_unlock( process_mutex );
-
-#if( HAVE_SIGCHLD && !HAVE_SIGACTION )
-     /* Since we can be called recursively, we have perhaps forgot to */
-     /* delete some dead process from the table. So, we have perhaps  */
-     /* to scan the process array another time                        */
-  } while ( --in_handler > 0 );
-#endif
+    if( PROCESSP( proc ) )
+      c_process_alivep_with_lock( proc, 0 );
+  }
 }
 
 /*---------------------------------------------------------------------*/
@@ -332,8 +337,6 @@ make_process() {
    int   i;
    obj_t a_proc;
 
-   PURGE_PROCESS_TABLE();
-
    a_proc = GC_MALLOC( PROCESS_SIZE );
    a_proc->process_t.header = MAKE_HEADER( PROCESS_TYPE, 0 );
    a_proc->process_t.stream[ 0 ] = BFALSE;
@@ -344,9 +347,11 @@ make_process() {
 
    /* Enter this process in the process table */
    bgl_mutex_lock( process_mutex );
-   for( i = 0; (i < max_proc_num) && (proc_arr[ i ] != BUNSPEC); i++ );
    
-   if( i == max_proc_num ) {
+   if( first_free_index == max_proc_num )
+     purge_process_table();
+   
+   if( first_free_index == max_proc_num ) {
       bgl_mutex_unlock( process_mutex );
       C_SYSTEM_FAILURE( BGL_PROCESS_EXCEPTION,
 			"make-process",
@@ -354,9 +359,14 @@ make_process() {
 			BUNSPEC );
    }
    else {
+      a_proc->process_t.index = first_free_index;
+      proc_arr[ first_free_index ] = BREF( a_proc );
+      
+      while( (first_free_index < max_proc_num) &&
+	     (proc_arr[ first_free_index ] != BUNSPEC) )
+	 first_free_index++;
+      
       bgl_mutex_unlock( process_mutex );
-      a_proc->process_t.index = i;
-      proc_arr[ i ] = BREF( a_proc );
    }
 
    return BREF( a_proc );
@@ -373,9 +383,7 @@ bgl_process_nil() {
 
    if( !proc_nil ) {
       proc_nil = make_process();
-      bgl_mutex_lock( process_mutex );
       c_unregister_process( proc_nil );
-      bgl_mutex_unlock( process_mutex );
    }
    return proc_nil;
 }
@@ -655,6 +663,8 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    } else {
 	       PROCESS( proc ).exit_status = info;
 	       PROCESS( proc ).exited = 1;
+         if( PROCESS(proc).index != -1 )
+           c_unregister_process( proc );
 	    }
 	 }
    }
@@ -967,6 +977,8 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
           }
 
           PROCESS( proc ).exited = 1;
+          if( PROCESS(proc).index != -1 )
+            c_unregister_process( proc );
           PROCESS( proc ).exit_status = exit_code;
 
           CloseHandle( PROCESS( proc ).hProcess );
@@ -989,13 +1001,13 @@ c_process_list() {
    int   i;
    obj_t lst = BNIL;
 
-   PURGE_PROCESS_TABLE();
-
+   bgl_mutex_lock( process_mutex );
    for( i = 0; i < max_proc_num; i++ ) {
       obj_t p = proc_arr[ i ];
-      if( PROCESSP( p ) && c_process_alivep( proc_arr[ i ] ) )
-	 lst = MAKE_PAIR( p, lst );
+      if( PROCESSP( p ) && c_process_alivep_with_lock( proc_arr[ i ], 0 ) )
+        lst = MAKE_PAIR( p, lst );
    }
+   bgl_mutex_unlock( process_mutex );
    
    return lst;
 }
@@ -1009,21 +1021,19 @@ obj_t
 c_process_wait( obj_t proc )
 #ifndef _BGL_WIN32_VER
 {
-   PURGE_PROCESS_TABLE();
-
    if( PROCESS( proc ).exited )
       return BFALSE;
    else {
       int ret = waitpid( PROCESS_PID(proc), &(PROCESS(proc).exit_status), 0 );
 
       PROCESS( proc ).exited = 1;
+      if( PROCESS(proc).index != -1 )
+        c_unregister_process( proc );
       return (ret == 0) ? BFALSE : BTRUE;
    }
 }
 #else
 {
-   PURGE_PROCESS_TABLE();
-
    if( PROCESS( proc ).exited )
       return BFALSE;
    else
@@ -1047,6 +1057,8 @@ c_process_wait( obj_t proc )
          }
 
          PROCESS( proc ).exited = 1;
+         if( PROCESS(proc).index != -1 )
+           c_unregister_process( proc );
          PROCESS( proc ).exit_status = exit_code;
          CloseHandle( PROCESS( proc ).hProcess );
          PROCESS( proc ).hProcess= INVALID_HANDLE_VALUE;
@@ -1068,49 +1080,49 @@ c_process_xstatus( obj_t proc )
 {
    int info;
 
-   PURGE_PROCESS_TABLE();
-
    if( PROCESS(proc).exited )
-      info = PROCESS(proc).exit_status;
+     info = PROCESS(proc).exit_status;
    else
-   {
-      if( waitpid( PROCESS_PID( proc ), &info, WNOHANG ) == 0 )
-      {
-	 /* process is still running */
-	 return BFALSE;
-      }
-      else
-      {
-	 /* process is now terminated */
-	 PROCESS( proc ).exited = 1;
-	 PROCESS( proc ).exit_status = info;
-      }
-   }
+     {
+       if( waitpid( PROCESS_PID( proc ), &info, WNOHANG ) == 0 )
+         {
+           /* process is still running */
+           return BFALSE;
+         }
+       else
+         {
+           /* process is now terminated */
+           PROCESS( proc ).exited = 1;
+           if( PROCESS(proc).index != -1 )
+             c_unregister_process( proc );
+           PROCESS( proc ).exit_status = info;
+         }
+     }
    
    return BINT( WEXITSTATUS( info ) );
 }
 #else 
 {
-   PURGE_PROCESS_TABLE();
-
-   if( PROCESS(proc).exited )
-      return BINT( PROCESS(proc).exit_status );
-   else
-   {
+  if( PROCESS(proc).exited )
+    return BINT( PROCESS(proc).exit_status );
+  else
+    {
       DWORD exit_code;
-
+      
       if( !GetExitCodeProcess( PROCESS( proc ).hProcess, &exit_code ) )
-	 C_SYSTEM_FAILURE( BGL_PROCESS_EXCEPTION,
-			   "process-exit-status",
-			   bgl_get_last_error_message( "Could neither determine process exit code nor get the error message." ),
-			   BFALSE );
-
+        C_SYSTEM_FAILURE( BGL_PROCESS_EXCEPTION,
+                          "process-exit-status",
+                          bgl_get_last_error_message( "Could neither determine process exit code nor get the error message." ),
+                          BFALSE );
+      
       if( exit_code == STILL_ACTIVE )
-         /* process is still running */
-         return BFALSE;
+        /* process is still running */
+        return BFALSE;
 
       /* process is now terminated */
       PROCESS( proc ).exited = 1;
+      if( PROCESS(proc).index != -1 )
+        c_unregister_process( proc );
       PROCESS( proc ).exit_status = exit_code;
       CloseHandle( PROCESS( proc ).hProcess );
       PROCESS( proc ).hProcess= INVALID_HANDLE_VALUE;
@@ -1126,8 +1138,6 @@ c_process_xstatus( obj_t proc )
 BGL_RUNTIME_DEF
 obj_t
 c_process_send_signal( obj_t proc, int signal ) {
-   PURGE_PROCESS_TABLE();
-   
 #ifndef WIN32
    kill( PROCESS_PID( proc ), signal );
 #else
@@ -1180,4 +1190,14 @@ c_process_continue( obj_t proc ) {
 #else
    return BUNSPEC;
 #endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    c_process_terminate_counter ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+c_process_terminate_counter() {
+  return terminate_counter;
 }
