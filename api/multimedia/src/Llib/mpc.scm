@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Mar 18 06:42:07 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Thu Sep  8 08:42:19 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
 ;*=====================================================================*/
@@ -114,6 +114,8 @@
    (with-access::mpc mpc (%mutex)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
       (let ((po (socket-output (mpc-%socket mpc))))
+	 (when debug-mpc
+	    (tprint "display-string cmd=[" cmd "]"))
 	 (display-string cmd po)
 	 (newline po)
 	 (flush-output-port po)
@@ -154,6 +156,8 @@
    (with-access::mpc mpc (%socket %status host port)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
       ;; the player is already closed
+      (when debug-mpc
+	 (tprint "mpc-cmd closed?: " (music-closed? mpc) " socket=" %socket))
       (unless (music-closed? mpc)
 	 (set! _c_ (+fx _c_ 1))
 	 (let retry ((count 3))
@@ -161,23 +165,28 @@
 	    (unless %socket
 	       (with-handler
 		  (lambda (e)
-		     (tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     (when debug-mpc
+			(tprint "init-socket! error (" _c_ "), count=" count " cmd=" cmd " -> " e))
 		     (raise (instantiate::&io-error
 			       (proc 'mpc-cmpd)
 			       (msg (format "~a:~a unreachable" host port))
 			       (obj mpc))))
-		  '(tprint "init-socket... (" _c_ ") cmd=" cmd)
+		  (when debug-mpc
+		     (tprint "init-socket... (" _c_ ") cmd=" cmd))
 		  (init-socket! mpc))
 	       (with-handler
 		  (lambda (e)
-		     (tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e)
+		     (when debug-mpc
+			(tprint "ack-parser error (" _c_ "), count=" count " cmd=" cmd " -> " e))
 		     (raise e))
-		  '(tprint "ack-parser...(" _c_ ") cmd=" cmd)
+		  (when debug-mpc
+		     (tprint "ack-parser...(" _c_ ") cmd=" cmd))
 		  (ack-parser mpc)))
 	    ;; we can now emit our command if we have a socket
 	    ;; (still possibly closed by the server)
 	    (when %socket
-	       '(tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date) " " (current-thread))
+	       (when debug-mpc
+		  (tprint "exec...(" _c_ ") cmd=" cmd " time=" (current-date) " " (current-thread)))
 	       (let ((v (with-handler
 			   (lambda (e)
 			      (tprint "exec error (" _c_ "), count=" count " cmd=" cmd " -> " e)
@@ -187,10 +196,12 @@
 				     (retry (-fx count 1)))
 				  (raise e)))
 			   (exec mpc cmd))))
-		  '(tprint "parser...(" _c_ ") cmd=" cmd)
+		  (when debug-mpc
+		     (tprint "parser...(" _c_ ") cmd=" cmd))
 		  (parser mpc)))))))
 
 (define _c_ 0)
+(define debug-mpc #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-error-msg ...                                              */
