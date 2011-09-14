@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # configuration and variables
-version=@VERSION@
+version=3.7a
 minor=
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
