@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Thu Aug 18 19:55:27 2011 (serrano)                */
+;*    Last change :  Wed Sep 14 10:17:59 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -15,8 +15,7 @@
 (module __ftp
 
    (import __error
-	   __object
-	   __pregexp)
+	   __object)
    
    (use    __type
 	   __bigloo
@@ -272,9 +271,9 @@
 		;; Entering Passive Mode (h1,h2,h3,h4,p1,p2).
 		(multiple-value-bind (host port)
 		   (ftpport->hostport
-		    (map string->number
-			 (cdr (pregexp-match "\\((\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)\\)"
-					     mesg))))
+                    (map string->number
+                         (string-split
+			    (substring mesg 1 (-fx (string-length mesg) 1)) ",")))
 		   (%ftp-dtp-pasv-init ftp host port)
 		   (%ftp-dtp-pasv-setup ftp)))
 	       ((230)
