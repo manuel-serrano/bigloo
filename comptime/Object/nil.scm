@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Thu May  5 05:33:48 2011 (serrano)                */
+;*    Last change :  Wed Sep 14 09:44:30 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -73,8 +73,8 @@
 			       `(if (is-a? ,the-id-nil ,id)
 				    ,the-id-nil
 				    (let ((,tmpt (,alloc)))
-				       (,fill ,tmp ,@(fill-nil slots))
 				       (set! ,the-id-nil ,tmp)
+				       (,fill ,tmp ,@(fill-nil slots))
 				       ,tmp))))
 		       src-def))))))
 
@@ -108,6 +108,7 @@
 				    ,the-id-nil
 				    ;; allocate the super instance
 				    (let ((,tmpt (,super-alloc)))
+				       (set! ,the-id-nil ,tmp)
 				       ;; fill it
 				       (,super-fill ,tmp ,@(fill-nil super-slots))
 				       ;; set the new class type
@@ -119,7 +120,6 @@
 				       (object-widening-set! 
 					  ,tmp
 					  (,widening ,@(fill-nil slots)))
-				       (set! ,the-id-nil ,tmp)
 				       ,tmp))))
 		       src-def))))))
 

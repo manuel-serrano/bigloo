@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Thu Nov 18 15:25:26 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Wed Sep 14 09:44:38 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the classes indexed slots and the introspection          */
 ;*    facilities within the evaluator.                                 */
@@ -21,6 +21,7 @@
    (export (class object6 (rec (default (object6-nil)))))
    (export (class object7 (host (default #t)))
 	   (final-class object8 value::byte))
+   (static (class recursive-dog name next::recursive-dog))
    (eval (class object5)
 	 (class object6)
 	 (class object7)
@@ -173,5 +174,6 @@
    (test "eval.generic-apply.6"
 	 (eval '(apply show4 (list #f #f 5))) 5)
    (test "eval.generic-apply.7"
-	 (eval '(apply show4 (list (instantiate::object6) 1 3))) 10))
+	 (eval '(apply show4 (list (instantiate::object6) 1 3))) 10)
+   (test "recursive class" (object? (recursive-dog-nil)) #t))
 
