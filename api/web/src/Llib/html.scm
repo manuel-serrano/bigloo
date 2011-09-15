@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Wed Jan 19 10:28:31 2011 (serrano)                */
+;*    Last change :  Thu Sep 15 10:30:25 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -110,87 +110,7 @@
 ;*    html-string-decode ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (html-string-decode str)
-   (define (count str ol)
-      (let loop ((i 0)
-		 (c 0))
-	 (cond
-	    ((=fx i ol)
-	     c)
-	    ((char=? (string-ref str i) #\&)
-	     (cond
-		((substring-at? str "&lt;" i)
-		 (loop (+fx i 4) (+fx c 1)))
-		((substring-at? str "&gt;" i)
-		 (loop (+fx i 4) (+fx c 1)))
-		((substring-at? str "&amp;" i)
-		 (loop (+fx i 5) (+fx c 1)))
-		((substring-at? str "&quot;" i)
-		 (loop (+fx i 6) (+fx c 1)))
-		((substring-at? str "&nbsp;" i)
-		 (loop (+fx i 6) (+fx c 1)))
-		((substring-at? str "&#" i)
-		 (let liip ((i (+fx i 2)))
-		    (cond
-		       ((=fx i ol)
-			c)
-		       ((char-numeric? (string-ref str i))
-			(liip (+fx i 1)))
-		       (else
-			(loop (+fx i 1) (+fx c 1))))))
-		(else
-		 (loop (+fx i 1) (+fx c 1)))))
-	    (else
-	     (loop (+fx i 1) (+fx c 1))))))
-   (define (decode str ol nl)
-      (if (=fx ol nl)
-	  str
-	  (let ((res (make-string nl)))
-	     (let loop ((i 0)
-			(j 0))
-		(cond
-		   ((=fx i ol)
-		    res)
-		   ((char=? (string-ref str i) #\&)
-		    (cond
-		       ((substring-at? str "&lt;" i)
-			(string-set! res j #\<)
-			(loop (+fx i 4) (+fx j 1)))
-		       ((substring-at? str "&gt;" i)
-			(string-set! res j #\>)
-			(loop (+fx i 4) (+fx j 1)))
-		       ((substring-at? str "&amp;" i)
-			(string-set! res j #\&)
-			(loop (+fx i 5) (+fx j 1)))
-		       ((substring-at? str "&quot;" i)
-			(string-set! res j #\")
-			(loop (+fx i 6) (+fx j 1)))
-		       ((substring-at? str "&nbsp;" i)
-			(string-set! res j #\space)
-			(loop (+fx i 6) (+fx j 1)))
-		       ((substring-at? str "&#" i)
-			(let liip ((i (+fx i 2))
-				   (n 0))
-			   (if (=fx i ol)
-			       res
-			       (let ((c (string-ref str i)))
-				  (if (char-numeric? c)
-				      (liip (+fx i 1)
-					    (+fx (*fx n 10)
-						 (-fx (char->integer c)
-						      (char->integer #\0))))
-				      (begin
-					 (string-set! res j (integer->char n))
-					 (loop (+fx i 1) (+fx j 1))))))))
-		       (else
-			(string-set! res j (string-ref str i))
-			(loop (+fx i 1) (+fx j 1)))))
-		   (else
-		    (string-set! res j (string-ref str i))
-		    (loop (+fx i 1) (+fx j 1))))))))
-   (let ((ol (string-length str)))
-      (if (>=fx ol 3)
-	  (decode str ol (count str ol))
-	  str)))
+   (xml-string-decode str))
 
 ;*---------------------------------------------------------------------*/
 ;*    html-string-encode ...                                           */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Sep 20 13:51:41 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Thu Sep 15 10:37:07 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -400,21 +400,86 @@
 		       (loop (+fx i 1) (+fx j 1)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    xml-decode-count ...                                             */
+;*    xml-count ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (xml-decode-count str ol)
-   (let loop ((i (-fx ol 3))
+(define (xml-count str ol)
+   (let loop ((i 0)
 	      (c 0))
       (cond
-	 ((=fx i -1)
+	 ((=fx i ol)
 	  c)
-	 ((char=? (string-ref str i) #\%)
-	  (if (and (char-hexnumeric? (string-ref str (+fx i 1)))
-		   (char-hexnumeric? (string-ref str (+fx i 2))))
-	      (loop (-fx i 1) (+fx c 1))
-	      (loop (-fx i 1) c)))
+	 ((char=? (string-ref str i) #\&)
+	  (cond
+	     ((substring-at? str "&lt;" i)
+	      (loop (+fx i 4) (+fx c 1)))
+	     ((substring-at? str "&gt;" i)
+	      (loop (+fx i 4) (+fx c 1)))
+	     ((substring-at? str "&amp;" i)
+	      (loop (+fx i 5) (+fx c 1)))
+	     ((substring-at? str "&quot;" i)
+	      (loop (+fx i 6) (+fx c 1)))
+	     ((substring-at? str "&nbsp;" i)
+	      (loop (+fx i 6) (+fx c 1)))
+	     ((substring-at? str "&#" i)
+	      (let liip ((i (+fx i 2)))
+		 (cond
+		    ((=fx i ol)
+		     c)
+		    ((char-numeric? (string-ref str i))
+		     (liip (+fx i 1)))
+		    (else
+		     (loop (+fx i 1) (+fx c 1))))))
+	     (else
+	      (loop (+fx i 1) (+fx c 1)))))
 	 (else
-	  (loop (-fx i 1) c)))))
+	  (loop (+fx i 1) (+fx c 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-decode ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (xml-decode! str res ol nl)
+   (let loop ((i 0)
+	      (j 0))
+      (cond
+	 ((=fx i ol)
+	  res)
+	 ((char=? (string-ref str i) #\&)
+	  (cond
+	     ((substring-at? str "&lt;" i)
+	      (string-set! res j #\<)
+	      (loop (+fx i 4) (+fx j 1)))
+	     ((substring-at? str "&gt;" i)
+	      (string-set! res j #\>)
+	      (loop (+fx i 4) (+fx j 1)))
+	     ((substring-at? str "&amp;" i)
+	      (string-set! res j #\&)
+	      (loop (+fx i 5) (+fx j 1)))
+	     ((substring-at? str "&quot;" i)
+	      (string-set! res j #\")
+	      (loop (+fx i 6) (+fx j 1)))
+	     ((substring-at? str "&nbsp;" i)
+	      (string-set! res j #\space)
+	      (loop (+fx i 6) (+fx j 1)))
+	     ((substring-at? str "&#" i)
+	      (let liip ((i (+fx i 2))
+			 (n 0))
+		 (if (=fx i ol)
+		     res
+		     (let ((c (string-ref str i)))
+			(if (char-numeric? c)
+			    (liip (+fx i 1)
+			       (+fx (*fx n 10)
+				  (-fx (char->integer c)
+				     (char->integer #\0))))
+			    (begin
+			       (string-set! res j (integer->char n))
+			       (loop (+fx i 1) (+fx j 1))))))))
+	     (else
+	      (string-set! res j (string-ref str i))
+	      (loop (+fx i 1) (+fx j 1)))))
+	 (else
+	  (string-set! res j (string-ref str i))
+	  (loop (+fx i 1) (+fx j 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-string-decode ...                                            */
@@ -422,27 +487,26 @@
 (define (xml-string-decode str)
    (let ((ol (string-length str)))
       (if (>=fx ol 3)
-	  (let ((count (xml-decode-count str ol)))
-	     (if (=fx count 0)
+	  (let ((nl (xml-count str ol)))
+	     (if (=fx nl ol)
 		 (string-copy str)
-		 (let* ((nl (-fx ol (*fx count 2)))
-			(res (make-string nl)))
-		    (xml-string-decode-inner! str ol nl res))))
+		 (let ((res (make-string nl)))
+		    (xml-decode! str res ol nl)
+		    res)))
 	  (string-copy str))))
-
+   
 ;*---------------------------------------------------------------------*/
 ;*    xml-string-decode! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (xml-string-decode! str)
    (let ((ol (string-length str)))
       (if (>=fx ol 3)
-	  (let ((count (xml-decode-count str ol)))
-	     (if (=fx count 0)
+	  (let ((nl (xml-count str ol)))
+	     (if (=fx nl ol)
 		 str
-		 (let ((nl (-fx ol (*fx count 2))))
-		    (string-shrink!
-		     (xml-string-decode-inner! str ol nl str)
-		     nl))))
+		 (begin
+		    (xml-decode! str str ol nl)
+		    (string-shrink! str nl))))
 	  str)))
 
 ;*---------------------------------------------------------------------*/

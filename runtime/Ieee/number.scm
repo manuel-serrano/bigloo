@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Sep 14 20:18:04 2011 (serrano)                */
+;*    Last change :  Thu Sep 15 09:13:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -132,7 +132,7 @@
 	    (inline exact->inexact          z)
 	    (inline inexact->exact          z)
 	    (number->string::bstring        x #!optional (radix 10))
-	    (string->number                 x #!optional (radix 10)))
+	    (string->number                 ::bstring #!optional (radix 10)))
 
    (pragma  ($fixnum->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    ($flonum->fixnum side-effect-free args-safe (effect) no-cfa-top)
