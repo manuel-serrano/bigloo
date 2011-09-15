@@ -28,7 +28,17 @@ arguments and call @code{make-hashtable} with no argument at all. The argument
 @var{eqtest} enables the specification of a comparison function. The first
 argument of this function is the keys contained in the table. The second
 argument is the searched key. By default
-hash tables rely on @code{equal?}. The argument @var{hashn} specifies an
+hash tables rely on @code{hashtable-equal?}, which is defined as:
+
+@smalllisp
+(define (hashtable-equal? table obj1 obj2)
+   (or (eq? obj1 obj2)
+       (and (string? obj1)
+            (string? obj2)
+            (string=? obj1 obj2))))
+@end smalllisp
+
+The argument @var{hashn} specifies an
 hashing function. It defaults to @var{get-hashnumber}. 
 The arguments @var{weak-keys} and @var{weak-data} specify respectively whether
 the hash table should use weak pointers to store the keys and/or the data.

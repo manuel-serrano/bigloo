@@ -1578,9 +1578,12 @@ is raised. Otherwise, the result is also a well formed UTF8 string.
 @deffnx {bigloo procedure} iso-latin->utf8! string
 @deffnx {bigloo procedure} utf8->iso-latin @var{string}
 @deffnx {bigloo procedure} utf8->iso-latin! @var{string}
-Encode and decode iso-latin strings into utf8. The functions 
-@code{iso-latin->utf8-string!} and @code{utf8->iso-latin!} may return,
-as result, the string they receive as argument.
+@deffnx {bigloo procedure} utf8->iso-latin-15 @var{string}
+@deffnx {bigloo procedure} utf8->iso-latin-15! @var{string}
+Encode and decode iso-latin strings into utf8. The functions
+@code{iso-latin->utf8-string!}, @code{utf8->iso-latin!} and
+@code{utf8->iso-latin-15!} may return, as result, the string they
+receive as argument.
 @end deffn
 
 @deffn {bigloo procedure} cp1252->utf8 string

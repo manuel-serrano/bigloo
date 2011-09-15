@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 15 07:24:23 2007                          */
-;*    Last change :  Thu Feb 15 07:42:33 2007 (serrano)                */
-;*    Copyright   :  2007 Manuel Serrano                               */
+;*    Last change :  Thu Sep 15 15:24:11 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Hastable structure                                               */
 ;*=====================================================================*/
@@ -31,12 +31,14 @@
       (cond
 	 ((procedure? eqt)
 	  (eqt obj1 obj2))
+	 ((eq? obj1 obj2)
+	  #t)
 	 ((string? obj1)
 	  (if (string? obj2)
 	      (string=? obj1 obj2)
 	      #f))
 	 (else
-	  (equal? obj1 obj2)))))
+	  #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Some constants                                                   */

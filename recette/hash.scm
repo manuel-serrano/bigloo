@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 26 11:50:50 1994                          */
-;*    Last change :  Sun Nov 28 10:06:56 2010 (serrano)                */
+;*    Last change :  Thu Sep 15 16:06:33 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    On test les tables de hash                                       */
 ;*=====================================================================*/
@@ -108,7 +108,7 @@
 	  (s2::obj (date->seconds d))
 	  (l1::obj (string->llong "124"))
 	  (l2::obj (string->llong "124"))
-	  (t (make-hashtable)))
+	  (t (create-hashtable :eqtest equal?)))
       (hashtable-put! t s1 'foo)
       (hashtable-put! t l1 'bar)
       (list (not (eq? s1 s2))

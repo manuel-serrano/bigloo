@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Apr  1 09:21:44 2011 (serrano)                */
+;*    Last change :  Thu Sep 15 16:36:09 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -172,6 +172,8 @@
 	    (utf8->8bits!::bstring ::bstring ::obj)
 	    (utf8->iso-latin::bstring ::bstring)
 	    (utf8->iso-latin!::bstring ::bstring)
+	    (utf8->iso-latin-15::bstring ::bstring)
+	    (utf8->iso-latin-15!::bstring ::bstring)
 	    (utf8->cp1252::bstring ::bstring)
 	    (utf8->cp1252!::bstring ::bstring)
 	    (8bits->utf8::bstring ::bstring ::obj)
@@ -494,8 +496,44 @@
 	    (#xb9 . #\<)
 	    (#xba . #\>))
       (#x81 (#x83 . #\*))
-      (#x82 (#x8d .#\()
-	    (#x8e .#\))))))
+      (#x82 (#x8d . #\()
+	    (#x8e . #\))))))
+
+(define 8bits-inv-latin-15
+   '((#xe2
+	(#x80 (#x90 . #\-)
+	   (#x91 . #\-)
+	   (#x92 . #\-)
+	   (#x93 . #\-)
+	   (#x94 . #\-)
+	   (#x95 . #\-)
+	   (#x98 . #\`)
+	   (#x99 . #\')
+	   (#x9a . #\,)
+	   (#x9b . #\`)
+	   (#xa4 . #\.)
+	   (#xa7 . #\.)
+	   (#xb2 . #\')
+	   (#xb3 . #\")
+	   (#xb5 . #\`)
+	   (#xbb . #\")
+	   (#xb8 . #\^)
+	   (#xb9 . #\<)
+	   (#xba . #\>))
+	(#x81 (#x83 . #\*))
+	(#x82 (#x8d . #\()
+	   (#x8e . #\))
+	   (#xac . #a164) ; euro currency sign
+	   ))
+     (#xc5
+	(#x93 . #a189) ;xbd oe ligature
+	(#x92 . #a188) ;xbc OE ligature
+	(#xb8 . #a190) ;xbe Y diaeresis
+	(#xa1 . #a168) ;xa8 s with caron
+	(#xa0 . #a166) ;xa6 S with caron
+	(#xbe . #a184) ;xb8 z with caron
+	(#xbd . #a180) ;xb4 Z with caron
+	)))
    
 ;*---------------------------------------------------------------------*/
 ;*    cp1252 ...                                                       */
@@ -827,6 +865,18 @@
 ;*---------------------------------------------------------------------*/
 (define (utf8->iso-latin! str)
    (utf8->8bits! str 8bits-inv))
+
+;*---------------------------------------------------------------------*/
+;*    utf8->iso-latin-15 ...                                           */
+;*---------------------------------------------------------------------*/
+(define (utf8->iso-latin-15 str)
+   (utf8->8bits str 8bits-inv-latin-15))
+
+;*---------------------------------------------------------------------*/
+;*    utf8->iso-latin-15! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (utf8->iso-latin-15! str)
+   (utf8->8bits! str 8bits-inv-latin-15))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->cp1252 ...                                                 */
