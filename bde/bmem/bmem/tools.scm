@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:11:09 2003                          */
-;*    Last change :  Fri Sep 16 10:48:25 2011 (serrano)                */
+;*    Last change :  Fri Sep 16 15:57:38 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various facilities                                               */
@@ -13,7 +13,6 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module bmem_tools
-   (library multimedia)
    (import  html
 	    bmem_param)
    (include "html.sch")
@@ -68,6 +67,78 @@
 	 ((inexact? n) (inexact->exact n))
 	 ((bignum? n) (bignum->fixnum n))
 	 (else n))))
+
+;*---------------------------------------------------------------------*/
+;*    hsv->rgb ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (hsv->rgb h s v)
+   (let ((r 0)
+         (g 0)
+         (b 0))
+      (if (> s 0)
+          (let* ((h/60 (/fl (fixnum->flonum h) 60.))
+                 (fh/60 (floor h/60))
+                 (hi (modulo (flonum->fixnum fh/60) 6))
+                 (f (-fl h/60 fh/60))
+                 (s/100 (/fl (fixnum->flonum s) 100.))
+                 (v/100 (/fl (fixnum->flonum v) 100.))
+                 (p (flonum->fixnum
+                     (*fl 255. (*fl v/100 (-fl 1. s/100)))))
+                 (q (flonum->fixnum
+                     (*fl 255. (*fl v/100 (-fl 1. (*fl f s/100))))))
+                 (t (flonum->fixnum
+                     (*fl 255. (* v/100 (-fl 1. (*fl (-fl 1. f) s/100))))))
+                 (v*255 (flonum->fixnum
+                         (roundfl (*fl v/100 255.))))
+                 (r 0)
+                 (g 0)
+                 (b 0))
+             (case hi
+                ((0) (set! r v*255) (set! g t) (set! b p))
+                ((1) (set! r q) (set! g v*255) (set! b p))
+                ((2) (set! r p) (set! g v*255) (set! b t))
+                ((3) (set! r p) (set! g q) (set! b v*255))
+                ((4) (set! r t) (set! g p) (set! b v*255))
+                ((5) (set! r v*255) (set! g p) (set! b q)))
+             (values r g b))
+          (let ((v (flonum->fixnum
+                    (roundfl (*fl (/fl (fixnum->flonum v) 100.) 255.)))))
+             (values v v v)))))
+
+;*---------------------------------------------------------------------*/
+;*    h ...                                                            */
+;*---------------------------------------------------------------------*/
+(define (h max::double min::double r::double g::double b::double)
+   (cond
+      ((=fl max min)
+       0)
+      ((=fl max r)
+       (modulofx
+        (flonum->fixnum
+         (roundfl (+fl (*fl 60. (/fl (-fl g b) (-fl max min))) 360.))) 360))
+      ((=fl max g)
+       (flonum->fixnum
+        (roundfl (+fl (* 60. (/fl (-fl b r) (-fl max min))) 120.))))
+      (else
+       (flonum->fixnum
+        (roundfl (+fl (*fl 60. (/fl (-fl r g) (-fl max min))) 240.))))))
+
+;*---------------------------------------------------------------------*/
+;*    rgb->hsv ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (rgb->hsv r g b)
+   (define (s max::double min::double r::double g::double b::double)
+      (if (=fl max 0.)
+          0
+          (flonum->fixnum (roundfl (* 100 (/ (- max min) max))))))
+   (let* ((r (/fl (fixnum->flonum r) 255.))
+          (g (/fl (fixnum->flonum g) 255.))
+          (b (/fl (fixnum->flonum b) 255.))
+          (max (max r g b))
+          (min (min r g b)))
+      (values (h max min r g b)
+              (s max min r g b)
+              (flonum->fixnum (roundfl (* 100 max))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-color ...                                                    */
