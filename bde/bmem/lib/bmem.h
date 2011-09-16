@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Wed Aug 11 10:58:08 2010 (serrano)                */
-/*    Copyright   :  2003-10 Manuel Serrano                            */
+/*    Last change :  Fri Sep 16 10:32:58 2011 (serrano)                */
+/*    Copyright   :  2003-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -89,6 +89,7 @@ extern void *(*____make_cell)( void * );
 extern void *(*____GC_malloc)( size_t );
 extern void *(*____GC_realloc)( void *, size_t );
 extern void *(*____GC_malloc_atomic)( size_t );
+extern void *(*____GC_malloc_uncollectable)( size_t );
 extern void *(*____GC_add_gc_hook)( void (*)() );
 
 extern void (*____bgl_init_objects)();
@@ -109,7 +110,9 @@ extern void *(*____string_to_llong)( char * );
 extern void *(*____string_to_elong)( char * );
 
 extern void *(*____create_vector)( int );
+extern void *(*____create_vector_uncollectable)( int );
 extern void *(*____make_vector)( int, void * );
+extern void *(*____make_vector_uncollectable)( int, void * );
 
 extern void *(*____make_fx_procedure)( void *(*)(), int, int );
 extern void *(*____make_va_procedure)( void *(*)(), int, int );
@@ -234,3 +237,5 @@ extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 #define UNKNOWN_REALLOC_TYPE_NUM       32
 #define HOSTENT_TYPE_NUM               33
 #define PORT_TIMEOUT_TYPE_NUM          34
+/* a fake type */
+#define CLASS_TYPE_NUM                 99

@@ -5,6 +5,7 @@ version=3.7a
 minor=
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
+bglconfigureopt=$1
 
 if [ "$REPODIR " != " " ]; then
   repodir=$REPODIR;
@@ -51,6 +52,7 @@ for p in control rules postinst changelog; do
     cat $basedir/$p.in \
       | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
       | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
+      | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
       > debian/$p
   elif [ -f $basedir/$p.$pkg ]; then
     cat $basedir/$p.$pkg \

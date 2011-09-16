@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:11:09 2003                          */
-;*    Last change :  Wed Aug 11 14:26:36 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Sep 16 10:48:25 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various facilities                                               */
 ;*=====================================================================*/
@@ -13,14 +13,16 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module bmem_tools
+   (library multimedia)
    (import  html
 	    bmem_param)
    (include "html.sch")
    (export  (word->mb ::int)
 	    (word->kb::int ::int)
+	    (word->size::bstring ::int)
 	    (mapv::pair-nil ::procedure ::vector)
 	    (%::int ::int ::int)
-	    (css-color::bstring ::int)
+	    (css-color::bstring ::int ::int ::int ::int)
 	    (html-row-gauge ::pair-nil ::obj ::obj)
 	    (html-profile ::pair-nil ::bstring ::bstring ::pair ::pair . ::obj)
 	    (html-legend ::int ::obj ::pair-nil ::obj ::obj)
@@ -38,6 +40,14 @@
 (define (word->kb v)
    (/fx v (/fx 1024 *sizeof-word*)))
 
+;*---------------------------------------------------------------------*/
+;*    word->size ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (word->size v)
+   (if (>fx v (/fx (* 1024 1024) *sizeof-word*))
+       (format "~aMB" (word->mb v))
+       (format "~aKB" (word->kb v))))
+       
 ;*---------------------------------------------------------------------*/
 ;*    mapv ...                                                         */
 ;*---------------------------------------------------------------------*/
@@ -60,37 +70,14 @@
 	 (else n))))
 
 ;*---------------------------------------------------------------------*/
-;*    Colors                                                           */
-;*---------------------------------------------------------------------*/
-(define *css-colors* '#("#ff0000"
-			"#6a5acd"
-			"#ffc125"
-			"#008b00"
-			"#ff00ff"
-			"#007fff"
-			"#00dd00"
-			"#be55d7"
-			"#ffba08"
-			"#7924cf"
-			"#51ff9e"
-			"#ff3030"
-			"#c71486"
-			"#ff34b6"
-			"#efd3ef"
-			"#ff7d00"
-			"#b6ef38"
-			"#6959cf"
-			"#d72096"
-			"#ff8271"
-			"#00ddd0"
-			"#70dd00"))
-
-;*---------------------------------------------------------------------*/
 ;*    css-color ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (css-color i)
-   (let ((r (remainderfx i (vector-length *css-colors*))))
-      (vector-ref *css-colors* r)))
+(define (css-color i r g b)
+   (multiple-value-bind (h s v)
+      (rgb->hsv r g b)
+      (multiple-value-bind (r g b)
+	 (hsv->rgb (+ h (*fx i 59)) s v)
+	 (format "rgb(~a,~a,~a)" r g b))))
    
 ;*---------------------------------------------------------------------*/
 ;*    html-row-gauge ...                                               */
@@ -125,7 +112,7 @@
 				  (if (=fx (+fx sum val) total)
 				      val
 				      (-fx total sum)))))
-		    (let ((td (html-td :id id :title help :colspan aval " ")))
+		    (let ((td (html-td :class id :title help :colspan aval " ")))
 		       (loop (cdr cell*) (cons td td*) (+fx sum aval)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -180,8 +167,9 @@
 			       (apply append
 				      (map (lambda (v)
 					      (if v
-						  (list (html-td :class "sample"
-								 :id (car v)
+						  (list (html-td :class
+							   (format "sample ~a"
+							      (car v))
 								 " ")
 							(html-td (cadr v)))
 						  (list (html-td " ")
@@ -216,7 +204,7 @@
 			:colgroup? (list (html-colgroup :width "10px")
 					 (html-colgroup))
 			(list (html-tr
-			       (list (html-td :id id " ")
+			       (list (html-td :class id "&nbsp;")
 				     (html-td :class "legend"
 					      :align "left"
 					      legend)))))))

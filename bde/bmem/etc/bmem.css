@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 15 10:37:40 2003                          */
-/*    Last change :  Fri Aug 22 11:10:08 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Fri Sep 16 09:29:23 2011 (serrano)                */
+/*    Copyright   :  2003-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Profalloc css                                                    */
 /*=====================================================================*/
@@ -136,9 +136,27 @@ div.profile table.color-item {
   font-size: 100%;
 }
 
+td[colspan="102"] { 
+  font-size: 2px; 
+}
+
 /*---------------------------------------------------------------------*/
 /*    Ident                                                            */
 /*---------------------------------------------------------------------*/
+div.function-ident,
+div.type-ident {
+  width: 15em;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: default;
+}
+
+div.function-ident:hover,
+div.type-ident:hover {
+  font-weight: bold;
+  overflow: visible;
+}
+
 div.function-ident span.function-index {
   font-size: 90%;
   font-style: italic;

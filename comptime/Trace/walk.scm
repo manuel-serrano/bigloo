@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Wed Apr  6 15:25:45 2011 (serrano)                */
+;*    Last change :  Fri Sep 16 11:15:46 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -66,13 +66,15 @@
        (symbol-append (string->symbol "%toplevel@") (global-module v)))
       ((and (global? v) (eq? (global-id v) 'imported-modules-init))
        (symbol-append (string->symbol "%import@") (global-module v)))
+      ((global? v)
+       (symbol-append (global-id v) '@ (global-module v)))
       (else
        (variable-id v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-fun! ...                                                   */
 ;*    -------------------------------------------------------------    */
-;*    We don't trace predicates. It is useless and make the code       */
+;*    We don't trace predicates. It is useless and makes the code      */
 ;*    much bigger in safe modes.                                       */
 ;*---------------------------------------------------------------------*/
 (define (trace-fun! var stack)
@@ -445,9 +447,8 @@
 			     (var? value)
 			     (kwote? value)
 			     (pragma? value))))
-	    (let* ((id (global-id variable))
-		   (t (strict-node-type (node-type value) (global-type variable)))
-		   (trace (make-traced-node value t id loc '())))
+	    (let* ((t (strict-node-type (node-type value) (global-type variable)))
+		   (trace (make-traced-node value t (trace-id variable) loc '())))
 	       (set! value trace)))))
    node)
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Wed Aug 11 14:15:53 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Sep 16 10:51:15 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -262,7 +262,7 @@
 			(html-span :class "function-index" (match 0))))
 		 (else
 		  (html-string i))))
-	  (hid (html-div :class "function-ident" id)))
+	  (hid (html-div :class "function-ident" :title id id)))
       (if (not (http-request?))
 	  hid
 	  (let ((url (format "http://~a:~a/~a?fun=~a"
@@ -276,15 +276,17 @@
 ;*    type-ref ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (type-ref ident)
-   (let ((ident (html-string ident)))
+   (let* ((ident (html-string ident))
+	  (hid (html-div :class "type-ident" :title ident ident)))
       (if (not (http-request?))
-	  ident
+	  hid
 	  (let ((url (format "http://~a:~a/~a?type=~a"
-			     *hostname*
-			     *port*
-			     *file*
-			     ident)))
-	     (html-a :class "type-ref" :href url ident)))))
+			*hostname*
+			*port*
+			*file*
+			ident)))
+	     (html-a :class "type-ref" :href url
+		hid)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmem-all ...                                                     */
@@ -384,11 +386,11 @@
       (let loop ((i (length gcmon))
 		 (res '()))
 	 (if (>=fx i 0)
-	     (let* ((selector (string-append "div.profile td#gc"
+	     (let* ((selector (string-append "div.profile td.gc"
 					     (integer->string i)))
 		    (color (if (=fx i 0)
-			       "#eeeeee"
-			       (css-color i)))
+			       "#ddf"
+			       (css-color i 117 128 162)))
 		    (entry `(,selector background: ,color
 				       cursor: help)))
 		(loop (-fx i 1)
@@ -397,18 +399,18 @@
    (define (function-css fun)
       (map (lambda (f)
 	      (let* ((i (funinfo-num f))
-		     (selector (string-append "div.profile td#function"
+		     (selector (string-append "div.profile td.function"
 					      (integer->string i)))
-		     (color (css-color i)))
+		     (color (css-color i 143 255 128)))
 		 `(,selector background: ,color
 			     cursor: help)))
 	   fun))
    (define (type-css types)
       (map (lambda (t)
 	      (let* ((i (car t))
-		     (selector (string-append "div.profile td#type"
+		     (selector (string-append "div.profile td.type"
 					      (integer->string i)))
-		     (color (css-color i)))
+		     (color (css-color i #xff 0 0)))
 		 `(,selector background: ,color
 			     cursor: help)))
 	   types))

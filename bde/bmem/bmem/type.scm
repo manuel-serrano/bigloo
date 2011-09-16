@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
-;*    Last change :  Wed Aug 11 14:27:43 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Sep 16 09:08:47 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
 ;*=====================================================================*/
@@ -100,10 +100,10 @@
 			  (string-append "function"
 					 (integer->string 
 					  (funinfo-num f)))
-			  (format "~a: ~ak (~a%)"
+			  (format "~a: ~a (~a%)"
 				  (function-ident-pp
 				   (funinfo-ident f))
-				  (word->kb size)
+				  (word->size size)
 				  (inexact->exact (*fl 100. rper.))))))
 	      fun*)))
    (let* ((type* (filter (lambda (ty)
@@ -122,11 +122,11 @@
 				     (type-ref (caddr ty))))
 			       (tds (html-td :class "size"
 					     :align "left"
-					     (format "~a% (~ak)"
+					     (format "~a% (~a)"
 						     size%
-						     (word->kb size)))))
+						     (word->size size)))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 ""))))))
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		     type* cell*)))
       (html-profile (apply append row*)
 		    "type-function" "Type (functions)"
@@ -187,11 +187,11 @@
 				     (type-ref (caddr ty))))
 			       (tds (html-td :class "size"
 					     :align "left"
-					     (format "~a% (~ak)"
+					     (format "~a% (~a)"
 						     size%
-						     (word->kb size)))))
+						     (word->size size)))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 ""))))))
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		     type* cell*)))
       (html-profile (apply append row*)
 		    "type-function" "Type (gcs)"

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Nov 19 12:14:18 2010 (serrano)                */
-/*    Copyright   :  2003-10 Manuel Serrano                            */
+/*    Last change :  Fri Sep 16 10:33:42 2011 (serrano)                */
+/*    Copyright   :  2003-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -43,6 +43,7 @@ pthread_mutex_t bmem_mutex;
 void *(*____GC_malloc)( size_t ) = 0;
 void *(*____GC_realloc)( void *, size_t ) = 0;
 void *(*____GC_malloc_atomic)( size_t ) = 0;
+void *(*____GC_malloc_uncollectable)( size_t ) = 0;
 void (*____GC_gcollect)() = 0;
 void *(*____GC_add_gc_hook)( void (*)() ) = 0;
 char **____executable_name = 0;
@@ -72,7 +73,9 @@ void *(*____bstring_to_keyword)( void * ) = 0;
 
 /* vector */
 void *(*____create_vector)( int ) = 0;
+void *(*____create_vector_uncollectable)( int ) = 0;
 void *(*____make_vector)( int, void * ) = 0;
+void *(*____make_vector_uncollectable)( int, void * ) = 0;
 
 /* procedure */
 void *(*____make_fx_procedure)( void *(*)(), int, int );
@@ -330,6 +333,7 @@ bmem_init_inner() {
    ____GC_malloc = get_function( hdl, "GC_malloc" );
    ____GC_realloc = get_function( hdl, "GC_realloc" );
    ____GC_malloc_atomic = get_function( hdl, "GC_malloc_atomic" );
+   ____GC_malloc_uncollectable = get_function( hdl, "GC_malloc_uncollectable" );
    ____GC_add_gc_hook = get_function( hdl, "GC_add_gc_hook" );
    ____GC_gcollect = (void (*)())get_function( hdl, "GC_gcollect" );
    ____make_pair = get_function( hdl, "make_pair" );
@@ -363,7 +367,9 @@ bmem_init_inner() {
    ____bstring_to_keyword = get_function( hdl, "bstring_to_keyword" );
    /* vector */
    ____create_vector = get_function( hdl, "create_vector" );
+   ____create_vector_uncollectable = get_function( hdl, "create_vector_uncollectable" );
    ____make_vector = get_function( hdl, "make_vector" );
+   ____make_vector_uncollectable = get_function( hdl, "make_vector_uncollectable" );
    /* procedure */
    ____make_fx_procedure = get_function( hdl, "make_fx_procedure" );
    ____make_va_procedure = get_function( hdl, "make_va_procedure" );
@@ -442,6 +448,7 @@ bmem_init_inner() {
    declare_type( PAIR_TYPE_NUM, "pair" );
    declare_type( HOSTENT_TYPE_NUM, "hostent" );
    declare_type( PORT_TIMEOUT_TYPE_NUM, "port-timeout" );
+   declare_type( CLASS_TYPE_NUM, "class" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -533,7 +540,7 @@ bglpth_setup_bmem() {
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
    } else {
-      sprintf( bigloothread_lib, "%s/libbigloopth_s-%s.%s",
+      sprintf( bigloothread_lib, "%s/libbigloopthread_s-%s.%s",
 	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Wed Aug 11 14:29:29 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Sep 16 09:09:17 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -63,10 +63,10 @@
 			       (set! per (+fx per (% size maxhsize)))
 			       (list (% size maxhsize)
 				     id
-				     (format "~a: ~ak (~a%)"
+				     (format "~a: ~a (~a%)"
 					     (function-ident-pp
 					      (funinfo-ident f))
-					     (word->kb size)
+					     (word->size size)
 					     (% size asize)))))
 			 fun*)))
 	 (if (>=fx (absfx (-fx asize sum)) 1024)
@@ -77,8 +77,8 @@
 	 (append cell*
 		 (list (list (-fx (% hsize maxhsize) per)
 			     "gc0"
-			     (format "heap size: ~ak"
-				     (word->kb (caddr gc))))))))
+			     (format "heap size: ~a"
+				     (word->size (caddr gc))))))))
    (let* ((gc* (filter (lambda (gc)
 			  (>fx (cadr gc) 0))
 		       gc*))
@@ -98,7 +98,7 @@
 						     (word->kb size)
 						     (word->kb msize)))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 ""))))))
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		     gc* cell*))
 	  (srow (html-tr (list (html-td "")
 			       (html-td :colspan 100
@@ -107,12 +107,7 @@
 					"overall allocated memory:")
 			       (html-td :align "left"
 					:class "osize"
-					(if (>fx allsize 1024)
-					    (format "~aKB (~aMB)"
-						    (word->kb allsize)
-						    (word->mb allsize))
-					    (format "~aKB"
-						    (word->kb allsize))))))))
+					(word->size allsize))))))
       (html-profile (append (apply append row*) (list srow))
 		    "gc-function" "Gc (functions)"
 		    '("gc" "8%")
@@ -156,8 +151,8 @@
 	    (append cell*
 		    (list (list (-fx (% hsize maxhsize) per)
 				"gc0"
-				(format "heap size: ~ak"
-					(word->kb (caddr gc)))))))))
+				(format "heap size: ~a"
+					(word->size (caddr gc)))))))))
    (let* ((gc* (filter (lambda (gc)
 			  (>fx (cadr gc) 0))
 		       gc*))
@@ -177,7 +172,7 @@
 						     (word->kb size)
 						     (word->kb msize)))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 ""))))))
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		     gc* cell*)))
       (html-profile (apply append row*)
 		    "gc-function" "Gc (types)"

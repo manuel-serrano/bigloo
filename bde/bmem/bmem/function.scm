@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
-;*    Last change :  Wed Aug 11 14:27:58 2010 (serrano)                */
-;*    Copyright   :  2003-10 Manuel Serrano                            */
+;*    Last change :  Fri Sep 16 09:09:04 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
 ;*=====================================================================*/
@@ -186,9 +186,9 @@
 					   (id (string-append "gc" n)))
 				       (list per
 					     id 
-					     (format "gc ~a: ~ak (~a%)"
+					     (format "gc ~a: ~a (~a%)"
 						     n
-						     (word->kb gcsize)
+						     (word->size gcsize)
 						     rsize))))
 				 (funinfo-gc* f))))
 		      fun*))
@@ -203,11 +203,11 @@
 				     (function-ref (funinfo-ident f))))
 			       (tds (html-td :class "size"
 					     :align "left"
-					     (format "~a% (~ak)"
+					     (format "~a% (~a)"
 						     size%
-						     (word->kb size)))))
+						     (word->size size)))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 ""))))))
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		     fun* cell*)))
       (html-profile (apply append row*)
 		    class caption
@@ -314,9 +314,9 @@
 			 (list (inexact->exact (* tr size%))
 			       (string-append "type"
 					      (integer->string i))
-			       (format "~a: ~ak (~a%)" 
+			       (format "~a: ~a (~a%)" 
 				       (vector-ref tvecnames i)
-				       (word->kb t)
+				       (word->size t)
 				       tp)))))
 	       tvec)))
    (let* ((fun* (filter (lambda (f)
@@ -339,11 +339,11 @@
 				  (function-ref (funinfo-ident f))))
 			    (tds (html-td :class "size"
 					  :align "left"
-					  (format "~a% (~ak)"
+					  (format "~a% (~a)"
 						  size%
-						  (word->kb size)))))
+						  (word->size size)))))
 			(list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 ""))))))
+			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		  fun* cell*)))
       (html-profile (apply append r)
 		    class caption
@@ -416,7 +416,7 @@
 						  size%
 						  size))))
 			(list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 ""))))))
+			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
 		  cell*)))
       (html-profile (apply append r)
 		    class caption
