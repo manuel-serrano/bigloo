@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Mar 31 20:27:31 2011 (serrano)                */
+;*    Last change :  Fri Sep 16 14:02:34 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -135,6 +135,13 @@
       (#\?
        (write-char #\? out)
        (ignore))
+      ((: "?=" (? #\Return) #\Newline)
+       (if rfc2047
+	   #unspecified
+	   (begin
+	      (display "?" out)
+	      (display (the-substring 2 (the-length)) out)
+	      (ignore))))
       ("?="
        (if rfc2047
 	   #unspecified
