@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Sep 15 16:36:09 2011 (serrano)                */
+;*    Last change :  Sat Sep 17 05:58:10 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -706,6 +706,7 @@
    (let ((n (char->integer c)))
       (cond
 	 ((<=fx n #x7f) 1)
+	 ((<=fx n #xc0) 2)
 	 ((<fx n #xc2) (error "utf8-string" "Badly formed UTF8 string" c))
 	 ((<=fx n #xdf) 2)
 	 ((<=fx n #xef) 3)
@@ -852,7 +853,7 @@
 	  (nlen (utf8->8bits-length str len)))
       (if (=fx len nlen)
 	  str
-	  (utf8->8bits-fill! (make-string nlen) str len #f))))
+	  (utf8->8bits-fill! (make-string nlen) str len table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin ...                                              */
