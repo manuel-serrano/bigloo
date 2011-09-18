@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed Jul 13 06:43:55 2011 (serrano)                */
+;*    Last change :  Sun Sep 18 07:37:12 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -36,6 +36,5 @@
 	    (class alsabuffer)
 	    (class alsamusic)
 	    (class alsadecoder)
-	    (class alsadecoder-host)
 	    (class alsadecoder-client)))
 

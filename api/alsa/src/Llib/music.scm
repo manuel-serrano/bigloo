@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Sep  2 18:42:52 2011 (serrano)                */
+;*    Last change :  Sun Sep 18 18:58:07 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -27,34 +27,36 @@
 	       (%acondv::condvar read-only (default (make-condition-variable)))
 	       (%toseek::long (default 0))
 	       (%buffer::obj (default #f))
-	       (mkthread::procedure read-only)
+	       (mkthread::procedure read-only (default make-thread))
 	       (inbuf::bstring read-only (default (make-string (*fx 128 1024))))
 	       (outbuf::bstring read-only (default (make-string (*fx 32 1024))))
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil (default '())))
-	    
+
 	    (class alsabuffer
-	       (mutex::mutex read-only (default (make-mutex)))
-	       (condv::condvar read-only (default (make-condition-variable)))
-	       (condvs::condvar read-only (default (make-condition-variable)))
-	       (astate::symbol (default 'ready))
-	       (endstate::symbol (default 'stop))
-	       (inbuf::bstring read-only)
-	       (inoff::long (default 0))
-	       (outoff::long (default 0))
 	       (port::input-port read-only)
-	       (count::long (default 0))
-	       (eof::bool (default #f)))
+	       (readsz::long read-only (default 8192))
+	       ;; the state is either empty:0, filled:1, full:2, stop:3, or ended:4
+	       (%!bstate::int (default 0))
+	       (%eof::bool (default #f))
+	       (%bcondv::condvar read-only (default (make-condition-variable)))
+	       (%bmutex::mutex read-only (default (make-mutex)))
+	       (%inbuf::bstring read-only)
+	       (%head::long (default 0))
+	       (%!tail::long (default 0)))
 	    
 	    (class alsadecoder
 	       (alsadecoder-init)
-	       (mimetypes::pair-nil (default '())))
+	       (mimetypes::pair-nil (default '()))
+	       (%!pause::bool (default #f))
+	       (%dmutex::mutex read-only (default (make-mutex)))
+	       (%dcondv::condvar read-only (default (make-condition-variable))))
 	    
-	    (class alsadecoder-host::alsadecoder)
 	    (class alsadecoder-client::alsadecoder)
 	    
 	    (generic alsabuffer-fill! ::alsabuffer ::long)
 	    (generic alsabuffer-blit-string!::long ::alsabuffer ::long ::custom ::long)
+	    (generic alsabuffer-debug buffer::alsabuffer ::bstring)
 	    
 	    (generic alsadecoder-init ::alsadecoder)
 	    (generic alsadecoder-reset! ::alsadecoder)
@@ -66,16 +68,12 @@
 	    (generic alsadecoder-position::long ::alsadecoder ::bstring)
 	    (generic alsadecoder-info::long ::alsadecoder)
 	    (generic alsadecoder-seek::long ::alsadecoder ::long)
-	    (generic alsadecoder-volume-set! ::alsadecoder ::long)
-	    
-	    (generic alsadecoder-host-decode-buffer ::alsadecoder-host
-	       ::bstring ::long ::long ::bstring)))
+	    (generic alsadecoder-volume-set! ::alsadecoder ::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug-buffer 0)
-(define debug-decode 0)
+(define debug 1)
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -213,6 +211,7 @@
    (with-access::alsamusic o (%amutex %status %playlist %amutex %decoder)
       (with-access::musicstatus %status (song playlistlength state)
 	 (mutex-lock! %amutex)
+	 (tprint "MUSIC-PLAY state=" state " s=" s)
 	 (cond
 	    ((eq? state 'pause)
 	     (mutex-unlock! %amutex)
@@ -222,14 +221,20 @@
 		(bigloo-type-error "music-play ::alsamusic" 'int (car s)))
 	     (unwind-protect
 		(begin
+		   (tprint ">>> decoder-stop.1")
 		   (alsadecoder-stop %decoder o)
-		   (playlist-play! o (car s)))
+		   (tprint "--- playlist-play.1 " (car s))
+		   (playlist-play! o (car s))
+		   (tprint "<<< playlist-play.1 " (car s)))
 		(mutex-unlock! %amutex)))
 	    ((and (>=fx song 0) (<fx song playlistlength))
 	     (unwind-protect
 		(begin
+		   (tprint ">>> decoder-stop.2")
 		   (alsadecoder-stop %decoder o)
-		   (playlist-play! o song))
+		   (tprint "--- decoder-play.2 " song)
+		   (playlist-play! o song)
+		   (tprint "<<< decoder-play.2 " song))
 		(mutex-unlock! %amutex)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -283,31 +288,20 @@
 	 (set! %decoder d)
 	 (let ((buffer (instantiate::alsabuffer
 			  (port p)
-			  (inbuf inbuf))))
+			  (%inbuf inbuf))))
 	    (set! %buffer buffer)
 	    (thread-start!
 	       (mkthread
 		  (lambda ()
-		     (alsabuffer-fill! buffer (string-length outbuf)))))
+		     (alsabuffer-fill! buffer (string-length outbuf)))
+		  (gensym 'alsamusic-buffer)))
 	    (thread-start!
 	       (mkthread
 		  (lambda ()
 		     (with-handler
 			ehandler
-			(with-access::alsamusic o (%amutex %status)
-			   
-			   (with-access::alsabuffer buffer (astate endstate mutex condvs)
-			      (mutex-lock! mutex)
-			      (set! astate 'play)
-			      (set! endstate 'ended)
-			      (mutex-unlock! mutex)
-			      (alsadecoder-decode d o buffer)
-			      (with-access::musicstatus %status (state songpos songlength)
-				 (mutex-lock! %amutex)
-				 (set! state endstate)
-				 (set! songpos 0)
-				 (set! songlength 0)
-				 (mutex-unlock! %amutex)))))))))))
+			(alsadecoder-decode d o buffer)))
+		  (gensym 'alsamusic-decoder))))))
    
    (with-access::alsamusic o (%playlist %status %decoder decoders pcm)
       (when (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
@@ -319,7 +313,7 @@
 	       (set! songpos 0)
 	       (set! songlength 0)
 	       (set! song n)
-	       (set! songid (+fx playlistid n))
+	       (set! songid (+fx (* 10000 playlistid) n))
 	       (let loop ((decoders decoders))
 		  (if (pair? decoders)
 		      (let ((d (car decoders)))
@@ -358,116 +352,150 @@
 ;*    alsadecoder-stop ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-stop dec::obj o)
-   #f)
-
-;*---------------------------------------------------------------------*/
-;*    alsadecoder-stop ::alsadecoder-host ...                          */
-;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-stop dec::alsadecoder-host o)
    (with-access::alsamusic o (%amutex %buffer %status pcm)
+      (tprint "alsadecoder-stop.1")
       (when (alsabuffer? %buffer)
-	 (with-access::alsabuffer %buffer (mutex condv condvs astate endstate)
-	    (mutex-lock! mutex)
-	    (if (eq? astate 'stopped)
-		(mutex-unlock! mutex)
-		(begin
-		   (set! astate 'stop)
-		   (set! endstate 'stop)
-		   (condition-variable-signal! condv)
-		   (condition-variable-signal! condvs)
-		   (condition-variable-wait! condvs mutex)
-		   (mutex-unlock! mutex)
-		   (set! %buffer #f)))))))
-
-;*---------------------------------------------------------------------*/
-;*    alsadecoder-stop ::alsadecoder-client ...                        */
-;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-stop dec::alsadecoder-client o)
-   (with-access::alsamusic o (%amutex %buffer %status pcm)
-      (when (alsabuffer? %buffer)
-	 (with-access::alsabuffer %buffer (mutex condv condvs astate endstate)
-	    (mutex-lock! mutex)
-	    (when (memq astate '(play pause))
-	       (set! astate 'stop)
-	       (set! endstate 'stop)
-	       (condition-variable-signal! condv)
-	       (condition-variable-signal! condvs)
-	       (condition-variable-wait! condvs mutex))
-	    (mutex-unlock! mutex)))))
+	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
+	    (tprint "alsadecoder-stop.2")
+	    (mutex-lock! %bmutex)
+	    (tprint "alsadecoder-stop.3 bs=" %!bstate)
+	    (unless (>=fx %!bstate 3)
+	       (set! %!bstate 3)
+	       (tprint "alsadecoder-stop.4")
+	       (condition-variable-broadcast! %bcondv)
+	       (tprint "alsadecoder-stop.5")
+	       (condition-variable-wait! %bcondv %bmutex))
+	    (tprint "alsadecoder-stop.6")
+	    (mutex-unlock! %bmutex)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::alsamusic)
-   (with-access::alsamusic o (%buffer %amutex pcm %status)
-      (with-lock %amutex
-	 (lambda ()
-	    (when (alsabuffer? %buffer)
-	       (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
-		  (with-access::alsabuffer %buffer (condvs mutex astate)
-		     (with-lock mutex
-			(lambda ()
-			   (if (eq? astate 'pause)
-			       (begin
-				  (set! astate 'play)
-				  (condition-variable-broadcast! condvs))
-			       (with-access::musicstatus %status (state)
-				  (set! astate 'pause)
-				  (set! state 'pause))))))))))))
+   (with-access::alsamusic o (%decoder)
+      (with-access::alsadecoder %decoder (%dmutex %dcondv %!pause)
+	 (mutex-lock! %dmutex)
+	 (if %!pause
+	     (begin
+		(set! %!pause #f)
+		(condition-variable-broadcast! %dcondv))
+	     (set! %!pause #t))
+	 (mutex-unlock! %dmutex))))
 
-(define p (when (>fx debug-buffer 1) (open-output-file "/tmp/READ.log")))
-(define p2 (when (>fx debug-buffer 1) (open-output-file "/tmp/READ.flac")))
-(define p3 (when (>fx debug-buffer 1) (open-output-file "/tmp/READ.mp3")))
+(define p (when (>fx debug 1) (open-output-file "/tmp/READ.log")))
+(define p2 (when (>fx debug 1) (open-output-file "/tmp/READ.flac")))
+(define p3 (when (>fx debug 1) (open-output-file "/tmp/READ.mp3")))
 
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-debug ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-debug buffer::alsabuffer proc)
+   (with-access::alsabuffer buffer (%!tail %head %inbuf)
+      (define inlen (string-length %inbuf))
+      (define (err msg)
+	 (error proc msg `(%!tail: ,%!tail %head: ,%head inlen: ,inlen)))
+      (cond
+	 ((<fx %!tail 0)
+	  (err "negative %!tail"))
+	 ((<fx %head 0)
+	  (err "negative %head"))
+	 ((>=fx %!tail inlen)
+	  (err "tail >= buffer.length"))
+	 ((>=fx %head inlen)
+	  (err "head >= buffer.length")))))
+	 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-fill! buffer::alsabuffer outlen::long)
-   (with-access::alsabuffer buffer (mutex condv astate port inbuf inoff outoff eof count)
-      (let ((inlen (string-length inbuf)))
-	 ;; fill the buffer and enter the loop
-	 (let loop ((i (read-fill-string! inbuf 0 (minfx inlen (*fx outlen 2)) port)))
-	    (mutex-lock! mutex)
-	    (if (or (eof-object? i) (eq? astate 'stopped))
-		(begin
-		   (set! eof #t)
-		   (close-input-port port)
-		   (condition-variable-signal! condv)
-		   (mutex-unlock! mutex))
-		(let ((c count))
-		   (when (>fx debug-buffer 1)
-		      (display-substring inbuf inoff (+fx inoff i) p)
-		      (flush-output-port p))
-		   (set! count (+fx count i))
-		   (set! inoff (+fx inoff i))
-		   (when (=fx inoff inlen) (set! inoff 0))
-		   [assert (buffer inlen) (<fx (alsabuffer-inoff buffer) inlen)]
-		   [assert (buffer inlen) (<=fx (alsabuffer-count buffer) inlen)]
-		   (when (>fx debug-buffer 2)
-		      (tprint "aslabuffer-fill.1: i=" i " count=" count " inoff=" inoff))
-		   (when (and (=fx c 0) (>fx i 0))
-		      ;; non empty buffer
-		      (when (>fx debug-buffer 2)
-			 (tprint "aslabuffer-fill.2: signal not empty count=" count))
-		      (condition-variable-signal! condv))
-		   (let waitfull ()
-		      (when (=fx count inlen)
-			 ;; buffer full
-			 (when (>fx debug-buffer 2)
-			    (tprint "aslabuffer-fill.3: wait full"))
-			 (condition-variable-wait! condv mutex)
-			 (waitfull)))
-		   (let ((sz (minfx outlen (-fx inlen count))))
-		      (when (>fx debug-buffer 1)
-			 (tprint "aslabuffer-fill.4: inoff=" inoff " sz=" sz " count=" count))
-		      (mutex-unlock! mutex)
-		      (loop (read-fill-string! inbuf inoff sz port)))))))))
+   (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate %head %!tail %inbuf %eof readsz port)
+      
+      (define inlen (string-length %inbuf))
+      
+      (define (available)
+	 (cond
+	    ((>fx %head %!tail) (-fx %head %!tail))
+	    ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
+	    (else inlen)))
+
+      (define (empty-state?)
+	 (and (eq? %!bstate 0) (>fx (*fx (available) 2) inlen)))
+      
+      (define (fill sz)
+	 (let* ((sz (minfx sz readsz))
+		(i (read-fill-string! %inbuf %head sz port)))
+	    (if (eof-object? i)
+		(set! %eof #t)
+		(let ((nhead (+fx %head i)))
+		   (if (=fx nhead inlen)
+		       (set! %head 0)
+		       (set! %head nhead))
+		   (cond
+		      ((=fx %head %!tail)
+		       ;; set state full
+		       (mutex-lock! %bmutex)
+		       (when (>fx debug 0)
+			  (tprint "fill.2, set full (2)"))
+		       (set! %!bstate 2)
+		       (condition-variable-broadcast! %bcondv)
+		       (condition-variable-wait! %bcondv %bmutex)
+		       (mutex-unlock! %bmutex))
+		      ((empty-state?)
+		       ;; set state filled
+		       (mutex-lock! %bmutex)
+		       (when (>fx debug 0)
+			  (tprint "fill.2, set filled (1)"))
+		       (set! %!bstate 1)
+		       (condition-variable-broadcast! %bcondv)
+		       (mutex-unlock! %bmutex))))))
+	 (alsabuffer-debug buffer "fill"))
+      
+      (let loop ()
+	 (when (>fx debug 1)
+	    (with-lock %bmutex
+	       (lambda ()
+		  (tprint "fill.1 %!bstate=" %!bstate
+		     " tl=" %!tail " hd=" %head " eof=" %eof))))
+	 (cond
+	    ((or (>=fx %!bstate 3) %eof)
+	     (mutex-lock! %bmutex)
+	     (condition-variable-broadcast! %bcondv)
+	     (mutex-unlock! %bmutex))
+	    ((=fx %!bstate 2)
+	     ;; buffer full, wait to be flushed
+	     (mutex-lock! %bmutex)
+	     (when (=fx %!bstate 2)
+		;; a kind of double check locking, correct, is
+		;; ptr read/write are atomic
+		(condition-variable-wait! %bcondv %bmutex)
+		(mutex-unlock! %bmutex))
+	     (loop))
+	    ((<fx %head %!tail)
+	     ;; free space before the tail
+	     (fill (-fx %!tail %head))
+	     (loop))
+	    (else
+	     ;; free space after the tail (>=fx %head %!tail)
+	     (fill (-fx inlen %head))
+	     (loop))))))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-reset! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (alsabuffer-reset! buffer)
+   (with-access::alsabuffer buffer (%!bstate %bmutex %head %!tail %eof)
+      (with-lock %bmutex
+	 (lambda ()
+	    (set! %!bstate 0)
+	    (set! %head 0)
+	    (set! %!tail 0)
+	    (set! %eof #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-blit-string! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-blit-string! buffer::alsabuffer o::long outbuf::custom outlen::long)
-   (with-access::alsabuffer buffer (mutex condv condvs inbuf inoff outoff eof count astate)
+   '(with-access::alsabuffer buffer (mutex condv condvs inbuf inoff outoff eof count astate)
       (let ((inlen (string-length inbuf)))
 	 (mutex-lock! mutex)
 	 (let loop ()
@@ -483,16 +511,17 @@
 			 (eof
 			  0)
 			 (else
-			  (when (>fx debug-decode 3)
+			  (when (>fx debug 3)
 			     (tprint "alsabuffer-blit-string.1: wait empty count=" count
 				" inoff=" inoff " outoff=" outoff))
+			  (tprint "ALSABUFFER-BLIT-STRING!, wait empty")
 			  (condition-variable-wait! condv mutex)
 			  (waitempty))))))
 	    (when (>fx sz 0)
-	       (when (>fx debug-buffer 2)
+	       (when (>fx debug 2)
 		  (tprint "alsabuffer-blit-string.2: count="
 		     count " outoff=" outoff " sz=" sz))
-	       (when (>fx debug-buffer 1)
+	       (when (>fx debug 1)
 		  (display-substring inbuf outoff (+fx outoff sz) p2)
 		  (flush-output-port p2))
 	       ($snd-blit-string! inbuf outoff (custom-identifier outbuf) o sz)
@@ -500,8 +529,8 @@
 	       (when (=fx outoff inlen) (set! outoff 0))
 	       (when (=fx count inlen)
 		  (when (>fx debug-decode 3)
-		     (tprint "alsabuffer-blit-string.3: signal not full"))
-		  (condition-variable-signal! condv))
+		     (tprint "alsabuffer-blit-string.3: broadcast not full"))
+		  (condition-variable-broadcast! condv))
 	       (set! count (-fx count sz)))
 	    (mutex-unlock! mutex)
 	    sz))))
@@ -512,189 +541,14 @@
 (define-generic (alsadecoder-decode d::alsadecoder o::alsamusic b::alsabuffer))
 
 ;*---------------------------------------------------------------------*/
-;*    decode ...                                                       */
-;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-decode
-		  dec::alsadecoder-host
-		  am::alsamusic
-		  buffer::alsabuffer)
-
-   (define (alsadecoder-do-stop dec am buffer)
-      (with-access::alsabuffer buffer (mutex astate condvs)
-	 (with-lock mutex
-	    (lambda ()
-	       (with-access::alsamusic am (%status %amutex pcm)
-		  (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
-		     (when (memq pcm-state '(running prepared))
-			(alsa-snd-pcm-drop pcm)))
-		  (alsa-snd-pcm-cleanup pcm)
-		  (set! astate 'stopped)
-		  (condition-variable-signal! condvs))))))
-   
-   (define (alsadecoder-do-pause dec am buffer)
-      (with-access::alsamusic am (%status %amutex)
-	 (with-access::alsabuffer buffer (condvs mutex astate)
-	    (mutex-lock! mutex)
-	    (let loop ()
-	       (if (eq? astate 'pause)
-		   (begin
-		      (mutex-lock! %amutex)
-		      (musicstatus-state-set! %status 'pause)
-		      (mutex-unlock! %amutex)
-		      (condition-variable-wait! condvs mutex)
-		      (loop))
-		   (mutex-unlock! mutex))))))
-   
-   (define (alsadecoder-play dec am buffer)
-      (with-access::alsamusic am (%status %amutex)
-	 (mutex-unlock! %amutex)
-	 (with-access::musicstatus %status (state songpos songlength)
-	    (with-access::alsabuffer buffer (inbuf)
-	       (set! songpos (alsadecoder-position dec inbuf))
-	       (when (<fx songlength songpos)
-		  (set! songlength songpos))
-	       (set! state 'play)))
-	 (mutex-unlock! %amutex)))
-
-   (define (alsadecoder-new-format dec am buffer)
-      (with-access::alsamusic am (%status %amutex %toseek)
-	 (mutex-lock! %amutex)
-	 (with-access::musicstatus %status (state songpos songlength bitrate khz)
-	    (with-access::alsabuffer buffer (inbuf)
-	       (set! songpos (alsadecoder-position dec inbuf)))
-	    (set! songlength 0)
-	    (when (<fx songlength songpos)
-	       (set! songlength songpos))
-	    (multiple-value-bind (bitrate rate)
-	       (alsadecoder-info dec)
-	       (set! bitrate bitrate)
-	       (set! khz rate))
-	    (when (>fx %toseek 0)
-	       (alsadecoder-seek dec %toseek)
-	       (set! songpos %toseek)
-	       (set! %toseek 0))
-	    (set! state 'play))
-	 (mutex-unlock! %amutex)))
-
-   (define (alsadecoder-done dec am buffer)
-      (with-access::alsamusic am (pcm %amutex %status)
-	 ;; wait for the PCM interface to be done
-	 (alsa-snd-pcm-cleanup pcm)
-	 (with-access::alsabuffer buffer (mutex astate)
-	    (mutex-lock! mutex)
-	    (set! astate 'stopped)
-	    (mutex-unlock! mutex))))
-
-   (define (alsadecoder-error dec am buffer)
-      (with-access::alsamusic am (%status %amutex)
-	 (mutex-lock! %amutex)
-	 (musicstatus-state-set! %status 'error)
-	 (musicstatus-err-set! %status "decoding error")
-	 (mutex-unlock! %amutex)))
-
-   (with-handler
-      (lambda (e)
-	 (alsadecoder-do-stop dec am buffer)
-	 (raise e))
-      (with-access::alsamusic am (pcm %amutex %acondv outbuf %status)
-	 (with-access::alsabuffer buffer (mutex condv astate inbuf inoff outoff eof count)
-	    (let ((outlen (string-length outbuf))
-		  (inlen (string-length inbuf)))
-	       (let loop ((sz 0))
-		  (mutex-lock! mutex)
-		  (set! outoff (+fx outoff sz))
-		  (when (=fx outoff inlen) (set! outoff 0))
-		  (when (and (>fx sz 0) (=fx count inlen))
-		     (when (>fx debug-decode 3)
-			(tprint "decode: signal not full"))
-		     (condition-variable-signal! condv))
-		  (set! count (-fx count sz))
-		  ;; get new bytes from the buffer
-		  (let* ((o outoff)
-			 (sz (let waitempty ()
-				(cond
-				   ((>fx count 0)
-				    (minfx outlen (minfx count (-fx inlen outoff))))
-				   ((or eof (eq? astate 'stop)) 0)
-				   (else
-				    (when (>fx debug-decode 3)
-				       (tprint "decode: wait empty count=" count
-					  " inoff=" inoff " outoff=" outoff))
-				    (condition-variable-wait! condv mutex)
-				    (waitempty))))))
-		     (when (>fx debug-decode 1)
-			(tprint "decode: count=" count " sz=" sz
-			   " ratio=" (/fx (*fx count 100) inlen) "%"))
-		     (mutex-unlock! mutex)
-		     (let flush ((z sz))
-			(when (>fx debug-buffer 1)
-			   (display-substring inbuf o (+fx o z) p3)
-			   (flush-output-port p3))
-			(multiple-value-bind (status size rate channels encoding)
-			   (alsadecoder-host-decode-buffer dec inbuf o z outbuf)
-			   (when (>fx debug-decode 1)
-			      (tprint "decode, alsa-write: sz=" sz
-				 " size=" size " status="
-				 status))
-			   ;;(tprint "status=" status " sz=" sz " z=" z " size=" size)
-			   (case status
-			      ((ok)
-			       ;; this assumes that reading a point is atomic
-			       ;; othwerwise should be
-			       ;; (with-lock mutex (lambda () astate))
-			       (case astate
-				  ((stop)
-				   (alsadecoder-do-stop dec am buffer))
-				  ((pause)
-				   (alsadecoder-do-pause dec am buffer)
-				   (flush 0))
-				  (else
-				   (alsadecoder-play dec am buffer)
-				   (when (>fx size 0)
-				      (alsa-snd-pcm-write pcm outbuf size))
-				   (flush 0))))
-			      ((need-more)
-			       (cond
-				  ((>fx size 0)
-				   (alsa-snd-pcm-write pcm outbuf size)
-				   (flush 0))
-				  ((and eof (=fx count 0))
-				   (alsadecoder-done dec am buffer))
-				  (else
-				   (loop sz))))
-			      ((new-format)
-			       (alsa-snd-pcm-set-params! pcm
-				  :format encoding
-				  :access 'rw-interleaved
-				  :channels channels
-				  :rate rate
-				  :soft-resample 1
-				  :latency 500000)
-			       (alsa-snd-pcm-hw-set-params! pcm :channels channels
-				  :format encoding
-				  :rate-near rate
-				  :buffer-size-near (/fx rate 2)
-				  :period-size-near (/fx rate 8))
-			       (alsadecoder-new-format dec am buffer)
-			       (when (>fx size 0)
-				  (alsa-snd-pcm-write pcm outbuf size))
-			       (flush 0))
-			      ((done)
-			       (when (>fx size 0)
-				  (alsa-snd-pcm-write pcm outbuf size))
-			       (alsadecoder-done dec am buffer))
-			      (else
-			       (alsadecoder-error dec am buffer))))))))))))
-
-;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::alsadecoder-client ...                      */
 ;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-decode dec::alsadecoder-client o buf)
+#;(define-method (alsadecoder-decode dec::alsadecoder-client o buf)
    (with-access::alsabuffer buf (astate mutex condvs condv)
       (mutex-lock! mutex)
       (unless (eq? astate 'stop)
 	 (set! astate 'stop))
-      (condition-variable-signal! condvs)
+      (condition-variable-broadcast! condvs)
       (mutex-unlock! mutex)))
 
 ;*---------------------------------------------------------------------*/
@@ -755,9 +609,3 @@
 ;*    alsadecoder-volume-set! ::alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-volume-set! o::alsadecoder v::long))
-   
-;*---------------------------------------------------------------------*/
-;*    alsadecoder-host-decode-buffer ::alsadecoder ...                 */
-;*---------------------------------------------------------------------*/
-(define-generic (alsadecoder-host-decode-buffer o::alsadecoder-host
-		   inbuf offset insz outbuf))
