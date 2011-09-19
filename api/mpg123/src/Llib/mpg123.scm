@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jul 11 08:14:35 2011 (serrano)                */
+;*    Last change :  Mon Sep 19 05:23:53 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -21,7 +21,8 @@
    (export (class mpg123-handle
 	      (mpg123-handle-init)
 	      ($builtin::$mpg123-handle (default (%$mpg123-handle-nil)))
-	      (decoder read-only (default #f)))
+	      (decoder read-only (default #f))
+	      (size::long (default 0)))
 	   
 	   (class &mpg123-error::&error)
 
@@ -86,9 +87,8 @@
 ;*    mpg123-decode ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (mpg123-decode m::mpg123-handle inbuf inoff insz outbuf outsz)
-   (with-access::mpg123-handle m ($builtin)
-      (multiple-value-bind (status size)
-	 ($bgl-mpg123-decode $builtin inbuf inoff insz outbuf outsz)
+   (with-access::mpg123-handle m (size)
+      (let ((status ($bgl-mpg123-decode m inbuf inoff insz outbuf outsz)))
 	 (values (mpg123-decode-status->symbol status) size))))
 
 ;*---------------------------------------------------------------------*/

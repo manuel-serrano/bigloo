@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Jul 11 08:01:43 2011 (serrano)                */
+/*    Last change :  Mon Sep 19 05:24:53 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -11,6 +11,16 @@
 #include <mpg123.h>
 #include <bigloo.h>
 #include "bglmpg123.h"
+#include "bglhandle.h"
+
+/*---------------------------------------------------------------------*/
+/*    decoder bigloo object                                            */
+/*---------------------------------------------------------------------*/
+#define BGL_HANDLE_BUILTIN( o ) \
+   (((BgL_mpg123zd2handlezd2_bglt)o)->BgL_z42builtinz42)
+
+#define BGL_HANDLE_SIZE( o ) \
+   (((BgL_mpg123zd2handlezd2_bglt)o)->BgL_siza7eza7)
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -49,15 +59,15 @@ bgl_mpg123_new( const char *decoder ) {
 /*    bgl_mpg123_decode ...                                            */
 /*---------------------------------------------------------------------*/
 int
-bgl_mpg123_decode( mpg123_handle *m, char *inbuf, long offset, long insz, char *outbuf, long outsz ) {
+bgl_mpg123_decode( obj_t o, char *inbuf, long offset, long insz, char *outbuf, long outsz ) {
    size_t size;
    int ret;
    obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+   mpg123_handle *m = BGL_HANDLE_BUILTIN( o );
 
    ret = mpg123_decode( m, insz ? inbuf + offset : 0, insz, outbuf, outsz, &size );
 
-   BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
-   BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( size ) );
+   BGL_HANDLE_SIZE( o ) = size;
    
    return ret;
 }

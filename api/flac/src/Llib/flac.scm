@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jul 19 09:37:41 2011 (serrano)                */
+;*    Last change :  Mon Sep 19 09:52:08 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -27,7 +27,7 @@
    (export (class flac-decoder
 	      (flac-decoder-init)
 	      ($builtin::$flac-decoder read-only (default (%$flac-decoder-new)))
-	      (%inbuf::custom (default (%$flac-make-custom)))
+	      (%flacbuf::custom (default (%$flac-make-custom)))
 	      (outbuf::bstring (default ""))
 	      (%eof::bool (default #f))
 	      (%sample::long (default 0))
@@ -125,11 +125,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-read ::flac-decoder ...                             */
 ;*---------------------------------------------------------------------*/
-(define-generic (flac-decoder-read o::flac-decoder size::long)
-   (with-access::flac-decoder o (port %inbuf)
-      ;; Don't use any regular input functions because they
-      ;; take ::bstring argument while inbuf is a ::string
-      ($rgc-blit-string! port (custom-identifier %inbuf) 0 size)))
+(define-generic (flac-decoder-read o::flac-decoder
+		   size::long))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-write ::flac-decoder ...                            */
@@ -138,10 +135,7 @@
 		   blocksize::long
 		   srate::long
 		   channels::long
-		   bps::long)
-   (tprint "write blocksize=" blocksize " sample-rate=" srate " channels="
-      channels " bps=" bps)
-   #t)
+		   bps::long))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-decoder ...                         */
@@ -150,10 +144,7 @@
 		   total::llong
 		   srate::long
 		   channels::long
-		   bps::long)
-   (tprint "meta total" total " sample-rate=" srate " channels="
-      channels " bps=" bps)
-   #t)
+		   bps::long))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-tell ::flac-decoder ...                             */

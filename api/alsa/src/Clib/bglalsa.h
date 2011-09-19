@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:06:29 2011                          */
-/*    Last change :  Thu Jul  7 10:58:22 2011 (serrano)                */
+/*    Last change :  Mon Sep 19 09:43:18 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Prototype of the Bigloo specific alsa functions                  */
@@ -33,8 +33,5 @@ extern char *bgl_snd_card_get_name( int );
 extern char *bgl_snd_card_get_longname( int );
 
 extern obj_t bgl_snd_devices_list( char * );
-
-#define BGL_SND_BLIT_STRING( s1, o1, s2, o2, len ) \
-   memcpy( ((char *)s2) + o2, ((char *)s1) + o1, len )
 
 #endif

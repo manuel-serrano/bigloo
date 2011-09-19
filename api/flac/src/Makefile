@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jul 13 12:23:55 2011 (serrano)                */
+#*    Last change :  Mon Sep 19 05:14:35 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -58,7 +58,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= flac
+_BGL_OBJECTS	= flac flac_alsadec
 
 ifeq "$(FLACLIBS) " " "
 _C_OBJECTS	= 
@@ -148,7 +148,7 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm $(C_SRC_DIR)/bgldecoder.h
+	/bin/rm -f $(C_SRC_DIR)/bgldecoder.h
 
 cleanall: api-cleanall
 

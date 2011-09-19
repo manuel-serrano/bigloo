@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Jul 12 10:41:41 2011 (serrano)                */
+;*    Last change :  Mon Sep 19 09:42:20 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -21,8 +21,6 @@
       ;; misc
       (macro $snd-lib-version::int "SND_LIB_VERSION")
       (macro $snd-asoundlib-version::string () "snd_asoundlib_version")
-      (macro $snd-blit-string!::void
-	 (::string ::long ::string ::long ::long) "BGL_SND_BLIT_STRING")
 
       ;; snd-card
       (macro $snd-card-load::bool

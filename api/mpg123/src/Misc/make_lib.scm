@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Sep 18 09:10:43 2011 (serrano)                */
+;*    Last change :  Sun Sep 18 19:26:03 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -15,6 +15,7 @@
 (module __mpg123_makelib
 
    (library multimedia)
+   
    (cond-expand ((library alsa) (library alsa)))
    
    (import __mpg123_mpg123)

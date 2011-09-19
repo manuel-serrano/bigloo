@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Thu Sep  1 12:51:18 2011 (serrano)                */
+/*    Last change :  Mon Sep 19 10:20:17 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -32,8 +32,8 @@ extern obj_t bgl_flac_decoder_length( BgL_flaczd2decoderzd2_bglt );
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_portdz00)
 #define BGL_DECODER_EOF( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52eofz52)
-#define BGL_DECODER_INBUF( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52inbufz52)
+#define BGL_DECODER_FLACBUF( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52flacbufz52)
 #define BGL_DECODER_OUTBUF( o ) \
    (BSTRING_TO_STRING( (((BgL_flaczd2decoderzd2_bglt)o)->BgL_outbufz00) ))
 #define BGL_DECODER_SAMPLE( o ) \
@@ -117,7 +117,7 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t res;
 
-   CUSTOM_IDENTIFIER( BGL_DECODER_INBUF( obj ) ) = buffer;
+   CUSTOM_IDENTIFIER( BGL_DECODER_FLACBUF( obj ) ) = buffer;
    res = bgl_flac_decoder_read( (BgL_flaczd2decoderzd2_bglt)obj, *size );
 
    if( EOF_OBJECTP( res ) ) {

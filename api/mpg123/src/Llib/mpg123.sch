@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Jul 11 08:14:56 2011 (serrano)                */
+;*    Last change :  Mon Sep 19 05:20:56 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -52,7 +52,7 @@
        (::$mpg123-handle ::$mpg123-params ::long ::double) "mpg123_param")
     
     ($bgl-mpg123-decode::int
-       (::$mpg123-handle ::string ::long ::long ::string ::long)
+       (::obj ::string ::long ::long ::string ::long)
        "bgl_mpg123_decode")
     ($bgl-mpg123-new::$mpg123-handle
        (::string) "bgl_mpg123_new")
