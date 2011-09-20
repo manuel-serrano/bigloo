@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Sep 19 11:50:49 2011 (serrano)                */
+;*    Last change :  Tue Sep 20 16:04:58 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -113,18 +113,18 @@
 			    ((16) 's16)
 			    ((24) 's24-3le)
 			    ((32) 's32))))
-	    (alsa-snd-pcm-set-params! pcm
-	       :format encoding
+	    (alsa-snd-pcm-hw-set-params! pcm
+	       :rate-resample 1
 	       :access 'rw-interleaved
-	       :channels channels
-	       :rate rate
-	       :soft-resample 1
-	       :latency 500000)
-	    (alsa-snd-pcm-hw-set-params! pcm :channels channels
 	       :format encoding
+	       :channels channels
 	       :rate-near rate
+	       :latency 500000
 	       :buffer-size-near (/fx rate 2)
-	       :period-size-near (/fx rate 8))))))
+	       :period-size-near (/fx rate 8))
+	    (alsa-snd-pcm-sw-set-params! pcm
+	       :start-threshold 1
+	       :avail-min 1)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-write ::flac-alsa ...                               */

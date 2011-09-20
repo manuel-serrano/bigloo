@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Mon Sep 19 09:42:20 2011 (serrano)                */
+;*    Last change :  Tue Sep 20 16:02:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -48,7 +48,7 @@
 	 (::$snd-pcm) "snd_pcm_state")
       (macro $snd-pcm-set-params!::int
 	 (::$snd-pcm ::$snd-pcm-format ::$snd-pcm-access ::int ::int ::int ::int)
-	 "snd_pcm_set_params")
+	 "bgl_snd_pcm_set_params")
       (macro $snd-pcm-writei::$snd-pcm-sframes
 	 (::$snd-pcm ::string ::$snd-pcm-uframes)
 	 "snd_pcm_writei")
@@ -239,6 +239,8 @@
 	 () "bgl_snd_pcm_hw_params_malloc")
       (macro $bgl-snd-pcm-hw-params-free::void
 	 (::$snd-pcm-hw-params) "bgl_snd_pcm_hw_params_free")
+      (macro $snd-pcm-hw-params::int
+	 (::$snd-pcm ::$snd-pcm-hw-params) "snd_pcm_hw_params")
       (macro $snd-pcm-hw-params-any::int
 	 (::$snd-pcm ::$snd-pcm-hw-params) "snd_pcm_hw_params_any")
       (macro $snd-pcm-hw-params-set-access!::int
@@ -256,15 +258,30 @@
       (macro $bgl-snd-pcm-hw-params-set-rate-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_rate_near")
+      (macro $snd-pcm-hw-params-set-rate-resample!::int
+	 (::$snd-pcm ::$snd-pcm-hw-params ::uint)
+	 "snd_pcm_hw_params_set_rate_resample")
       (macro $snd-pcm-hw-params-set-buffer-size!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "snd_pcm_hw_params_set_buffer_size")
+      (macro $bgl-snd-pcm-hw-params-get-buffer-size::int
+	 (::$snd-pcm)
+	 "bgl_snd_pcm_hw_params_get_buffer_size")
+      (macro $bgl-snd-pcm-hw-params-get-buffer-time::int
+	 (::$snd-pcm)
+	 "bgl_snd_pcm_hw_params_get_buffer_time")
       (macro $bgl-snd-pcm-hw-params-set-buffer-size-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_buffer_size_near")
+      (macro $bgl-snd-pcm-hw-params-set-buffer-time-near!::int
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
+	 "bgl_snd_pcm_hw_params_set_buffer_time_near")
       (macro $snd-pcm-hw-params-set-period-size!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int ::int)
 	 "snd_pcm_hw_params_set_period_size")
+      (macro $bgl-snd-pcm-hw-params-get-period-size::int
+	 (::$snd-pcm-hw-params)
+	 "bgl_snd_pcm_hw_params_get_period_size")
       (macro $bgl-snd-pcm-hw-params-set-period-size-near!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_period_size_near")
@@ -276,14 +293,16 @@
 	 () "bgl_snd_pcm_sw_params_malloc")
       (macro $bgl-snd-pcm-sw-params-free::void
 	 (::$snd-pcm-sw-params) "bgl_snd_pcm_sw_params_free")
+      (macro $snd-pcm-sw-params::int
+	 (::$snd-pcm ::$snd-pcm-sw-params) "snd_pcm_sw_params")
       (macro $snd-pcm-sw-params-set-start-threshold!::int
 	 (::$snd-pcm ::$snd-pcm-sw-params ::$snd-pcm-uframes)
 	 "snd_pcm_sw_params_set_start_threshold")
+      (macro $snd-pcm-sw-params-current::int
+	 (::$snd-pcm ::$snd-pcm-sw-params) "snd_pcm_sw_params_current")
       (macro $snd-pcm-sw-params-set-avail-min!::int
 	 (::$snd-pcm ::$snd-pcm-sw-params ::$snd-pcm-uframes)
 	 "snd_pcm_sw_params_set_avail_min")
-      (macro $snd-pcm-sw-params::int
-	 (::$snd-pcm ::$snd-pcm-sw-params) "snd_pcm_sw_params")
 
       ;; helper functions
       (macro $snd-pcm-bytes-to-frames::$snd-pcm-sframes

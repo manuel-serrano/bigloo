@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Tue Jul 12 10:26:54 2011 (serrano)                */
+/*    Last change :  Tue Sep 20 16:03:25 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -100,17 +100,17 @@ bgl_snd_ctl_card_info_init( obj_t o ) {
    BGL_SND_CTL_CARD_INFO_CARD( o ) =
       snd_ctl_card_info_get_card( info );
    BGL_SND_CTL_CARD_INFO_ID( o ) =
-      string_to_bstring( snd_ctl_card_info_get_id( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_id( info ) );
    BGL_SND_CTL_CARD_INFO_DRIVER( o ) =
-      string_to_bstring( snd_ctl_card_info_get_driver( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_driver( info ) );
    BGL_SND_CTL_CARD_INFO_NAME( o ) =
-      string_to_bstring( snd_ctl_card_info_get_name( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_name( info ) );
    BGL_SND_CTL_CARD_INFO_LONGNAME( o ) =
-      string_to_bstring( snd_ctl_card_info_get_longname( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_longname( info ) );
    BGL_SND_CTL_CARD_INFO_MIXERNAME( o ) =
-      string_to_bstring( snd_ctl_card_info_get_mixername( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_mixername( info ) );
    BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) =
-      string_to_bstring( snd_ctl_card_info_get_components( info ) );
+      string_to_bstring( (char *)snd_ctl_card_info_get_components( info ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -161,6 +161,63 @@ bgl_snd_pcm_hw_params_set_buffer_size_near( snd_pcm_t *pcm,
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
+/*    bgl_snd_pcm_hw_params_set_buffer_time_near ...                   */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_pcm_hw_params_set_buffer_time_near( snd_pcm_t *pcm,
+					    snd_pcm_hw_params_t *hw,
+					    unsigned int val ) {
+   return snd_pcm_hw_params_set_buffer_time_near( pcm, hw, &val, NULL );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_pcm_hw_params_get_buffer_size ...                        */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_pcm_hw_params_get_buffer_size( snd_pcm_t *pcm ) {
+   snd_pcm_hw_params_t *hw;
+   int err;
+
+   snd_pcm_hw_params_alloca( &hw );
+
+   err = snd_pcm_hw_params_any( pcm, hw );
+
+   if( err < 0 ) {
+      return err;
+   } else {
+      snd_pcm_uframes_t uframes;
+      err = snd_pcm_hw_params_get_buffer_size( hw, &uframes );
+
+      return err < 0 ? err : uframes;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_pcm_hw_params_get_buffer_time ...                        */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_pcm_hw_params_get_buffer_time( snd_pcm_t *pcm ) {
+   snd_pcm_hw_params_t *hw;
+   int err;
+
+   snd_pcm_hw_params_alloca( &hw );
+
+   err = snd_pcm_hw_params_any( pcm, hw );
+
+   if( err < 0 ) {
+      return err;
+   } else {
+      unsigned int latency;
+      err = snd_pcm_hw_params_get_buffer_time( hw, &latency, NULL );
+
+      return err < 0 ? err : latency;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
 /*    bgl_snd_pcm_hw_params_set_period_size_near ...                   */
 /*---------------------------------------------------------------------*/
 int
@@ -168,6 +225,18 @@ bgl_snd_pcm_hw_params_set_period_size_near( snd_pcm_t *pcm,
 					    snd_pcm_hw_params_t *hw,
 					    snd_pcm_uframes_t val ) {
    return snd_pcm_hw_params_set_period_size_near( pcm, hw, &val, 0L );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_pcm_hw_params_get_period_size ...                        */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_pcm_hw_params_get_period_size( snd_pcm_hw_params_t *hw ) {
+   snd_pcm_uframes_t uframes;
+   int err = snd_pcm_hw_params_get_period_size( hw, &uframes, NULL );
+
+   return err < 0 ? err : uframes;
 }
 
 /*---------------------------------------------------------------------*/
@@ -212,17 +281,6 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
 
    written = snd_pcm_writei( pcm, buf, frames );
 
-/*    if( written == -EINTR ) {                                        */
-/*       fprintf( stderr, "%s:%d, snd_pcm_writei sz=%d frames=%d -> EINTR\n", */
-/* 	       __FILE__, __LINE__, sz, frames, written );              */
-/*    } else if( written == -EPIPE ) {                                 */
-/*       fprintf( stderr, "%s:%d snd_pcm_writei sz=%d frames=%d -> EPIPE\n", */
-/* 	       __FILE__, __LINE__, sz, frames, written );              */
-/*    } else {                                                         */
-/*       fprintf( stderr, "%s:%dsnd_pcm_writei sz=%d frames=%d -> %d\n", */
-/* 	       __FILE__, __LINE__, sz, frames, written );              */
-/*    }                                                                */
-   
    if( written == -EINTR )
        written = 0;
    else if( written == -EPIPE ) {
@@ -328,4 +386,3 @@ bgl_snd_devices_list( char *iface ) {
       return BNIL;
    }
 }      
-   

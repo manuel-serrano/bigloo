@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Fri Sep  2 16:23:01 2011 (serrano)                */
+;*    Last change :  Tue Sep 20 16:02:47 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -45,6 +45,8 @@
 	   (alsa-snd-pcm-drain ::alsa-snd-pcm)
 	   (alsa-snd-pcm-cleanup ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-set-params! ::alsa-snd-pcm . rest)
+	   (alsa-snd-pcm-hw-params-get-buffer-size::int ::alsa-snd-pcm)
+	   (alsa-snd-pcm-hw-params-get-buffer-time::int ::alsa-snd-pcm)
 	   (alsa-snd-pcm-sw-set-params! ::alsa-snd-pcm . rest)
 
 	   (alsa-snd-pcm-write::long ::alsa-snd-pcm ::string ::long)
@@ -73,9 +75,7 @@
 			   (msg ($snd-strerror err))
 			   (obj device)))
 		 (begin
-		    (set! name ($snd-pcm-name $builtin))
-		    (alsa-snd-pcm-sw-set-params! o
-		       :start-threshold 1 :avail-min 1))))
+		    (set! name ($snd-pcm-name $builtin)))))
 	  (raise (instantiate::&alsa-error
 		    (proc "alsa-snd-pcm-open")
 		    (msg "pcm device already open")
@@ -392,17 +392,20 @@
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-hw-set-params! pcm::alsa-snd-pcm . rest)
    
-   (define (check-error err)
+   (define (check-error arg err)
       (when (<fx err 0)
 	 (raise (instantiate::&alsa-error
 		   (proc "alsa-snd-pcm-hw-set-params!")
-		   (msg ($snd-strerror err))
+		   (msg (if (keyword? arg)
+			    (string-append (keyword->string arg)
+			       ": " ($snd-strerror err))
+			    ($snd-strerror err)))
 		   (obj pcm)))))
 
    (let (($hw::$snd-pcm-hw-params ($bgl-snd-pcm-hw-params-malloc)))
       (unwind-protect
 	 (with-access::alsa-snd-pcm pcm ($builtin)
-	    (check-error ($snd-pcm-hw-params-any $builtin $hw))
+	    ($snd-pcm-hw-params-any $builtin $hw)
 	    (let loop ((rest rest))
 	       (when (pair? rest)
 		  (when (null? (cdr rest))
@@ -411,13 +414,17 @@
 			       (msg (format "Missing value for param \"~a\"" (car rest)))
 			       (obj pcm))))
 		  (check-error
+		     (car rest)
 		     (case (car rest)
-			((:format)
-			 ($snd-pcm-hw-params-set-format!
-			    $builtin $hw (symbol->format (cadr rest))))
+			((:rate-resample)
+			 ($snd-pcm-hw-params-set-rate-resample!
+			    $builtin $hw (cadr rest)))
 			((:access)
 			 ($snd-pcm-hw-params-set-access!
 			    $builtin $hw (symbol->access (cadr rest))))
+			((:format)
+			 ($snd-pcm-hw-params-set-format!
+			    $builtin $hw (symbol->format (cadr rest))))
 			((:channels)
 			 ($snd-pcm-hw-params-set-channels!
 			    $builtin $hw (cadr rest)))
@@ -425,13 +432,22 @@
 			 ($snd-pcm-hw-params-set-rate!
 			    $builtin $hw (cadr rest) 0))
 			((:rate-near)
-			 ($bgl-snd-pcm-hw-params-set-rate-near!
-			    $builtin $hw (cadr rest)))
+			 (let ((r ($bgl-snd-pcm-hw-params-set-rate-near!
+				     $builtin $hw (cadr rest))))
+			    (unless (=fx r (cadr rest))
+			       (raise (instantiate::&alsa-error
+					 (proc "alsa-snd-pcm-hw-set-params!")
+					 (msg (format "Rate doesn't match (requested ~aHz, get ~aHz" (cadr rest) r))
+					 (obj pcm))))
+			    r))
 			((:buffer-size)
 			 ($snd-pcm-hw-params-set-buffer-size!
 			    $builtin $hw (cadr rest)))
 			((:buffer-size-near)
 			 ($bgl-snd-pcm-hw-params-set-buffer-size-near!
+			    $builtin $hw (cadr rest)))
+			((:buffer-time-near)
+			 ($bgl-snd-pcm-hw-params-set-buffer-time-near!
 			    $builtin $hw (cadr rest)))
 			((:period-size)
 			 ($snd-pcm-hw-params-set-period-size!
@@ -444,25 +460,60 @@
 				   (proc "alsa-snd-pcm-hw-set-params!")
 				   (msg (format "Unknown parameter \"~a\"" (car rest)))
 				   (obj pcm))))))
-		  (loop (cddr rest)))))
+		  (loop (cddr rest))))
+	    ($snd-pcm-hw-params $builtin $hw))
 	 ($bgl-snd-pcm-hw-params-free $hw))
       #unspecified))
+		       
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-params-get-buffer-size ...                       */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-params-get-buffer-size pcm::alsa-snd-pcm)
+   
+   (define (check-error err)
+      (when (<fx err 0)
+	 (raise (instantiate::&alsa-error
+		   (proc "alsa-snd-pcm-hw-params-get-buffer-size")
+		   (msg ($snd-strerror err))
+		   (obj pcm)))))
+   
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (check-error ($bgl-snd-pcm-hw-params-get-buffer-size $builtin))))
+		       
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-params-get-buffer-time ...                       */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-params-get-buffer-time pcm::alsa-snd-pcm)
+   
+   (define (check-error err)
+      (when (<fx err 0)
+	 (raise (instantiate::&alsa-error
+		   (proc "alsa-snd-pcm-hw-params-get-buffer-time")
+		   (msg ($snd-strerror err))
+		   (obj pcm)))))
+
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (check-error ($bgl-snd-pcm-hw-params-get-buffer-time $builtin))))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-sw-set-params! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-sw-set-params! pcm::alsa-snd-pcm . rest)
    
-   (define (check-error err)
+   (define (check-error arg err)
       (when (<fx err 0)
 	 (raise (instantiate::&alsa-error
 		   (proc "alsa-snd-pcm-sw-set-params!")
-		   (msg ($snd-strerror err))
+		   (msg (if (keyword? arg)
+			    (string-append (keyword->string arg)
+			       ":" ($snd-strerror err))
+			    ($snd-strerror err)))
 		   (obj pcm)))))
 
    (let (($sw::$snd-pcm-sw-params ($bgl-snd-pcm-sw-params-malloc)))
       (unwind-protect
 	 (with-access::alsa-snd-pcm pcm ($builtin)
+	    ($snd-pcm-sw-params-current $builtin $sw)
 	    (let loop ((rest rest))
 	       (when (pair? rest)
 		  (when (null? (cdr rest))
@@ -471,10 +522,11 @@
 			       (msg (format "Missing value for param \"~a\"" (car rest)))
 			       (obj pcm))))
 		  (check-error
+		     (car rest)
 		     (case (car rest)
 			((:start-threshold)
 			 ($snd-pcm-sw-params-set-start-threshold!
-			    $builtin $sw (cadr rest)))
+ 			    $builtin $sw (cadr rest)))
 			((:avail-min)
 			 ($snd-pcm-sw-params-set-avail-min!
 			    $builtin $sw (cadr rest)))
@@ -483,8 +535,9 @@
 				   (proc "alsa-snd-pcm-sw-set-params!")
 				   (msg (format "Unknown parameter \"~a\"" (car rest)))
 				   (obj pcm))))))
-		  (loop (cddr rest)))))
-	 ($bgl-snd-pcm-sw-params-free $sw))
+		  (loop (cddr rest))))
+	    (check-error #f ($snd-pcm-sw-params $builtin $sw)))
+	 (check-error #f ($bgl-snd-pcm-sw-params-free $sw)))
       #unspecified))
 		       
 ;*---------------------------------------------------------------------*/

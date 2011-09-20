@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Sep 19 11:51:01 2011 (serrano)                */
+;*    Last change :  Tue Sep 20 08:01:20 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -29,7 +29,7 @@
 	       (%buffer::obj (default #f))
 	       (mkthread::procedure read-only (default make-thread))
 	       (inbuf::bstring read-only (default (make-string (*fx 512 1024))))
-	       (outbuf::bstring read-only (default (make-string (*fx 32 1024))))
+	       (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil (default '())))
 
@@ -87,10 +87,10 @@
       (with-lock %amutex
 	 (lambda ()
 	    (cond
-	       ((<fx (string-length outbuf) 8192)
+	       ((<fx (string-length outbuf) 1024)
 		(raise (instantiate::&alsa-error
 			  (proc "alsamusic")
-			  (msg "outbuf must be at least 8192 bytes")
+			  (msg "outbuf must be at least 1024 bytes")
 			  (obj (string-length inbuf)))))
 	       ((<fx (string-length inbuf) (string-length outbuf))
 		(raise (instantiate::&alsa-error

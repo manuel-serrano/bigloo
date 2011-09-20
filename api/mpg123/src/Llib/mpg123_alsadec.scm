@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Sep 19 11:19:01 2011 (serrano)                */
+;*    Last change :  Tue Sep 20 16:01:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -251,19 +251,18 @@
       (with-access::mpg123-alsadecoder dec (%mpg123)
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
-	    (alsa-snd-pcm-set-params! pcm
-	       :format encoding
-	       :access 'rw-interleaved
-	       :channels channels
-	       :rate rate
-	       :soft-resample 1
-	       :latency 500000)
 	    (alsa-snd-pcm-hw-set-params! pcm
-	       :channels channels
+	       :rate-resample 1
+	       :access 'rw-interleaved
 	       :format encoding
+	       :channels channels
 	       :rate-near rate
+	       :buffer-time-near 500000
 	       :buffer-size-near (/fx rate 2)
-	       :period-size-near (/fx rate 8))))
+	       :period-size-near (/fx rate 8))
+	    (alsa-snd-pcm-sw-set-params! pcm
+	       :start-threshold 1
+	       :avail-min 1)))
       (with-access::musicstatus %status (songpos songlength bitrate khz)
 	 (with-access::alsabuffer buffer (%inbuf)
 	    (set! songpos (alsadecoder-position dec %inbuf)))
