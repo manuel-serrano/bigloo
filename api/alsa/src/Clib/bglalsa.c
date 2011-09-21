@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Tue Sep 20 16:03:25 2011 (serrano)                */
+/*    Last change :  Wed Sep 21 16:47:14 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -149,25 +149,43 @@ bgl_snd_pcm_hw_params_set_rate_near( snd_pcm_t *pcm,
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    unsigned long                                                    */
 /*    bgl_snd_pcm_hw_params_set_buffer_size_near ...                   */
 /*---------------------------------------------------------------------*/
-int
+unsigned long
 bgl_snd_pcm_hw_params_set_buffer_size_near( snd_pcm_t *pcm,
 					    snd_pcm_hw_params_t *hw,
 					    snd_pcm_uframes_t uframes ) {
-   return snd_pcm_hw_params_set_buffer_size_near( pcm, hw, &uframes );
+   int err = snd_pcm_hw_params_set_buffer_size_near( pcm, hw, &uframes );
+
+   if( err < 0 ) {
+      bgl_alsa_error( "snd-pcm-hw-params-set-buffer-size-near",
+		      (char *)snd_strerror( err ),
+		      BINT( uframes ) );
+   } else {
+      fprintf( stderr, "bgl_snd_pcm_hw_params_set_buffer_size_near: %d\n",
+	       uframes );
+      return (unsigned long)uframes;
+   }
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    unsigned int                                                     */
 /*    bgl_snd_pcm_hw_params_set_buffer_time_near ...                   */
 /*---------------------------------------------------------------------*/
-int
+unsigned int
 bgl_snd_pcm_hw_params_set_buffer_time_near( snd_pcm_t *pcm,
 					    snd_pcm_hw_params_t *hw,
 					    unsigned int val ) {
-   return snd_pcm_hw_params_set_buffer_time_near( pcm, hw, &val, NULL );
+   int err = snd_pcm_hw_params_set_buffer_time_near( pcm, hw, &val, NULL );
+   
+   if( err < 0 ) {
+      bgl_alsa_error( "snd-pcm-hw-params-set-buffer-time-near",
+		      (char *)snd_strerror( err ),
+		      BINT( val ) );
+   } else {
+      return val;
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -217,14 +235,21 @@ bgl_snd_pcm_hw_params_get_buffer_time( snd_pcm_t *pcm ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    unsigned long                                                    */
 /*    bgl_snd_pcm_hw_params_set_period_size_near ...                   */
 /*---------------------------------------------------------------------*/
-int
+unsigned long
 bgl_snd_pcm_hw_params_set_period_size_near( snd_pcm_t *pcm,
 					    snd_pcm_hw_params_t *hw,
 					    snd_pcm_uframes_t val ) {
-   return snd_pcm_hw_params_set_period_size_near( pcm, hw, &val, 0L );
+   int err = snd_pcm_hw_params_set_period_size_near( pcm, hw, &val, 0L );
+   if( err < 0 ) {
+      bgl_alsa_error( "snd-pcm-hw-params-set-period-size-near",
+		      (char *)snd_strerror( err ),
+		      BINT( val ) );
+   } else {
+      return (unsigned long)val;
+   }
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Wed Sep 21 16:18:42 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:56:59 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -411,7 +411,9 @@
 			    ($snd-strerror err)))
 		   (obj pcm)))))
 
-   (let (($hw::$snd-pcm-hw-params ($bgl-snd-pcm-hw-params-malloc)))
+   (let (($hw::$snd-pcm-hw-params ($bgl-snd-pcm-hw-params-malloc))
+	 (rate 0)
+	 (bufsize 0))
       (unwind-protect
 	 (with-access::alsa-snd-pcm pcm ($builtin)
 	    ($snd-pcm-hw-params-any $builtin $hw)
@@ -422,7 +424,7 @@
 			       (proc "alsa-snd-pcm-hw-set-params!")
 			       (msg (format "Missing value for param \"~a\"" (car rest)))
 			       (obj pcm))))
-		  (tprint "hw params " (car rest) ": " (cadr rest))
+;* 		  (tprint "hw params " (car rest) ": " (cadr rest))    */
 		  (check-error
 		     (car rest)
 		     (case (car rest)
@@ -430,22 +432,24 @@
 			 ($snd-pcm-hw-params-set-rate-resample!
 			    $builtin $hw (cadr rest)))
 			((:access)
-			 (tprint (symbol->access (cadr rest)))
+;* 			 (tprint (symbol->access (cadr rest)))         */
 			 ($snd-pcm-hw-params-set-access!
 			    $builtin $hw (symbol->access (cadr rest))))
 			((:format)
-			 (tprint (symbol->format (cadr rest)))
+;* 			 (tprint (symbol->format (cadr rest)))         */
 			 ($snd-pcm-hw-params-set-format!
 			    $builtin $hw (symbol->format (cadr rest))))
 			((:channels)
 			 ($snd-pcm-hw-params-set-channels!
 			    $builtin $hw (cadr rest)))
 			((:rate)
+			 (set! rate (cadr rest))
 			 ($snd-pcm-hw-params-set-rate!
 			    $builtin $hw (cadr rest) 0))
 			((:rate-near)
 			 (let ((r ($bgl-snd-pcm-hw-params-set-rate-near!
 				     $builtin $hw (cadr rest))))
+			    (set! rate r)
 			    (unless (=fx r (cadr rest))
 			       (raise (instantiate::&alsa-error
 					 (proc "alsa-snd-pcm-hw-set-params!")
@@ -458,15 +462,24 @@
 			((:buffer-size-near)
 			 ($bgl-snd-pcm-hw-params-set-buffer-size-near!
 			    $builtin $hw (cadr rest)))
-			((:buffer-time-near)
-			 ($bgl-snd-pcm-hw-params-set-buffer-time-near!
-			    $builtin $hw (cadr rest)))
+			((:buffer-size-near-ratio)
+;* 			 (tprint "size-near: " (/fx rate (cadr rest))) */
+			 (set! bufsize
+			    ($bgl-snd-pcm-hw-params-set-buffer-size-near!
+			       $builtin $hw (/fx rate (cadr rest)))))
 			((:period-size)
 			 ($snd-pcm-hw-params-set-period-size!
 			    $builtin $hw (cadr rest) 0))
+			((:buffer-time-near)
+			 ($bgl-snd-pcm-hw-params-set-buffer-time-near!
+			    $builtin $hw (cadr rest)))
 			((:period-size-near)
 			 ($bgl-snd-pcm-hw-params-set-period-size-near!
 			    $builtin $hw (cadr rest)))
+			((:period-size-near-ratio)
+			 (print "period-near: bufsize=" bufsize " -> " (/ bufsize (cadr rest)))
+			 ($bgl-snd-pcm-hw-params-set-period-size-near!
+			    $builtin $hw (/fx bufsize (cadr rest))))
 			(else
 			 (raise (instantiate::&alsa-error
 				   (proc "alsa-snd-pcm-hw-set-params!")

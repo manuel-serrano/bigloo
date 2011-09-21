@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Sep 21 16:29:02 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:55:40 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -267,8 +267,8 @@
 	       :channels channels
 	       :rate-near rate
 ;* 	       :buffer-time-near buffer-time-near                          */
-	       :buffer-size-near (/fx rate buffer-size-near-ratio)
-	       :period-size-near (/fx rate period-size-near-ratio))
+	       :buffer-size-near-ratio buffer-size-near-ratio
+	       :period-size-near-ratio period-size-near-ratio)
 	    (alsa-snd-pcm-sw-set-params! pcm
 	       :start-threshold 1
 	       :avail-min 1)))
