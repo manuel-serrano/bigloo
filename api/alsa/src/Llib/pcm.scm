@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Wed Sep 21 11:10:48 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 15:03:41 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -57,9 +57,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-print o::alsa-snd-pcm port print-slot)
    (display "#|alsa-snd-pcm name=" port)
-   (print-slot port (alsa-snd-pcm-name o))
+   (print-slot (alsa-snd-pcm-name o) port)
    (display " device=" port)
-   (print-slot port (alsa-snd-pcm-device o))
+   (print-slot (alsa-snd-pcm-device o) port)
    (display "|" port))
    
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 21 11:06:56 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 15:06:16 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -140,7 +140,7 @@
 	       :format encoding
 	       :channels channels
 	       :rate-near rate
-	       :latency 500000
+	       :buffer-time-near 500000
 	       :buffer-size-near (/fx rate 2)
 	       :period-size-near (/fx rate 8))
 	    (alsa-snd-pcm-sw-set-params! pcm
