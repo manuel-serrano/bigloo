@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep 14 16:17:46 2011 (serrano)                */
+#*    Last change :  Wed Sep 21 20:09:08 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2066,7 +2066,12 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for mpg123
 if [ "$mpg123 " = " " ]; then
-   mpg123libs=`$autoconf mpg123 --cflags="$cflags"` || exit 1;
+   mpg123libs=`$autoconf mpg123 --cflags="$cflags $mpg123cflags"` || exit 1;
+
+   if [ "$mpg123libs " = "no " -a "$mpg123cflags " = " " ]; then
+     mpg123cflags="-D_FILE_OFFSET_BITS=64"
+     mpg123libs=`$autoconf mpg123 --cflags="$cflags $mpg123cflags"` || exit 1;
+   fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3310,6 +3315,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$mpg123libs " != "no " ]; then
     echo "MPG123=$mpg123" >> $makefile_cfg
     echo "MPG123LIBS=$mpg123libs" >> $makefile_cfg
+    echo "MPG123CFLAGS=$mpg123cflags" >> $makefile_cfg
 
     # Patch the code of the MPG123 init file
     echo ";; automatically generated. Don't edit" >  api/mpg123/src/Misc/mpg123.init
