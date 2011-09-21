@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Sep 21 11:08:06 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:29:02 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -254,18 +254,21 @@
 ;*---------------------------------------------------------------------*/
 (define (new-format dec am buffer)
    (with-access::alsamusic am (%toseek %status pcm)
-      (with-access::mpg123-alsadecoder dec (%mpg123)
+      (with-access::mpg123-alsadecoder dec (%mpg123
+					      buffer-time-near
+					      buffer-size-near-ratio
+					      period-size-near-ratio)
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
 	    (alsa-snd-pcm-hw-set-params! pcm
-	       :rate-resample 1
+;* 	       :rate-resample 1                                        */
 	       :access 'rw-interleaved
 	       :format encoding
 	       :channels channels
 	       :rate-near rate
-	       :buffer-time-near 500000
-	       :buffer-size-near (/fx rate 2)
-	       :period-size-near (/fx rate 8))
+;* 	       :buffer-time-near buffer-time-near                          */
+	       :buffer-size-near (/fx rate buffer-size-near-ratio)
+	       :period-size-near (/fx rate period-size-near-ratio))
 	    (alsa-snd-pcm-sw-set-params! pcm
 	       :start-threshold 1
 	       :avail-min 1)))

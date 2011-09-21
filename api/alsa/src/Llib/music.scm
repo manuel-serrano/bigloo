@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Sep 21 14:59:00 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:23:49 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -49,6 +49,9 @@
 	    (class alsadecoder
 	       (alsadecoder-init)
 	       (mimetypes::pair-nil (default '()))
+	       (buffer-time-near::int (default 500000))
+	       (buffer-size-near-ratio::int (default 2))
+	       (period-size-near-ratio::int (default 8))
 	       (%!pause::bool (default #f))
 	       (%dmutex::mutex read-only (default (make-mutex)))
 	       (%dcondv::condvar read-only (default (make-condition-variable))))

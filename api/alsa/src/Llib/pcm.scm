@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Wed Sep 21 16:14:05 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:18:42 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -430,9 +430,11 @@
 			 ($snd-pcm-hw-params-set-rate-resample!
 			    $builtin $hw (cadr rest)))
 			((:access)
+			 (tprint (symbol->access (cadr rest)))
 			 ($snd-pcm-hw-params-set-access!
 			    $builtin $hw (symbol->access (cadr rest))))
 			((:format)
+			 (tprint (symbol->format (cadr rest)))
 			 ($snd-pcm-hw-params-set-format!
 			    $builtin $hw (symbol->format (cadr rest))))
 			((:channels)
