@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Wed Sep 21 15:03:41 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:14:05 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -422,6 +422,7 @@
 			       (proc "alsa-snd-pcm-hw-set-params!")
 			       (msg (format "Missing value for param \"~a\"" (car rest)))
 			       (obj pcm))))
+		  (tprint "hw params " (car rest) ": " (cadr rest))
 		  (check-error
 		     (car rest)
 		     (case (car rest)

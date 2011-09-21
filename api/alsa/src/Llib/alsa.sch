@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Sep 20 16:02:39 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 16:12:36 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -48,7 +48,7 @@
 	 (::$snd-pcm) "snd_pcm_state")
       (macro $snd-pcm-set-params!::int
 	 (::$snd-pcm ::$snd-pcm-format ::$snd-pcm-access ::int ::int ::int ::int)
-	 "bgl_snd_pcm_set_params")
+	 "snd_pcm_set_params")
       (macro $snd-pcm-writei::$snd-pcm-sframes
 	 (::$snd-pcm ::string ::$snd-pcm-uframes)
 	 "snd_pcm_writei")
