@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Wed Jul 13 07:59:07 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 09:17:47 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C flac functions                                                 */
@@ -38,6 +38,8 @@
        (::$flac-decoder) "FLAC__stream_decoder_flush")
     (macro $flac-decoder-reset::$flac-bool
        (::$flac-decoder) "FLAC__stream_decoder_reset")
+    (macro $flac-decoder-seek-absolute::$flac-bool
+       (::$flac-decoder ::ullong) "FLAC__stream_decoder_seek_absolute")
     (macro $bgl-flac-decoder-init-stream::$flac-decoder-init-status
        (::$flac-decoder ::obj) "bgl_FLAC__stream_decoder_init_stream")
     (macro $flac-decoder-get-state::$flac-decoder-state

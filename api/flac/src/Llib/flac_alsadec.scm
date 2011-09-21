@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Sep 20 16:04:58 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 11:06:56 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -34,6 +34,12 @@
 (define-macro ($compiler-debug)
    (bigloo-compiler-debug))
 
+;*---------------------------------------------------------------------*/
+;*    object-print ::flac-alsadecoder ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::flac-alsadecoder port print-slot)
+   (display "#|flac-alsadecoder|" port))
+   
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
@@ -85,6 +91,18 @@
       (flac-decoder-seek %flac ms)))
 
 ;*---------------------------------------------------------------------*/
+;*    alsadecoder-stop ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsadecoder-stop o::flac-alsadecoder am::alsamusic)
+   (with-access::flac-alsadecoder o (%flac)
+      (with-access::alsamusic am (%buffer)
+	 (when (alsabuffer? %buffer)
+	    (with-access::alsabuffer %buffer (%bmutex %!bstate)
+	       (with-lock %bmutex
+		  (lambda ()
+		     (set! %!bstate 3))))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::flac-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-decode dec::flac-alsadecoder
@@ -98,9 +116,12 @@
 	    (with-access::musicstatus %status (state songpos songlength)
 	       (flac-decoder-decode %flac)
 	       (alsa-snd-pcm-cleanup pcm)
-	       (set! state 'ended)))
-	 (with-access::alsabuffer %buffer (%!bstate)
-	    (set! %!bstate 4)))))
+	       (with-access::alsabuffer %buffer (%!bstate)
+		  (if (=fx %!bstate 3)
+		      (set! state 'stop)
+		      (begin
+			 (set! %!bstate 4)
+			 (set! state 'ended)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
@@ -229,8 +250,8 @@
 			 (musicstatus-state-set! %status 'play))
 		      ($flac-blit-string! %inbuf %!tail flacbuf 0 sz))
 		   (when (>fx debug 0)
-		      (tprint ">>> inc-tail sz=" sz))
+		      (tprint ">>> read.inc-tail sz=" sz))
 		   (inc-tail! sz)
 		   (when (>fx debug 0)
-		      (tprint "<<< inc-tail sz=" sz))
+		      (tprint "<<< read.inc-tail sz=" sz))
 		   sz)))))))

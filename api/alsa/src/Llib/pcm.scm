@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Sep 20 16:02:47 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 11:10:48 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -53,6 +53,16 @@
 	   (alsa-snd-pcm-flush ::alsa-snd-pcm)))
 
 ;*---------------------------------------------------------------------*/
+;*    object-print ::alsa-snd-pcm ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::alsa-snd-pcm port print-slot)
+   (display "#|alsa-snd-pcm name=" port)
+   (print-slot port (alsa-snd-pcm-name o))
+   (display " device=" port)
+   (print-slot port (alsa-snd-pcm-device o))
+   (display "|" port))
+   
+;*---------------------------------------------------------------------*/
 ;*    %$snd-pcm-nil ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%$snd-pcm-nil)
@@ -74,8 +84,7 @@
 			   (proc "alsa-snd-pcm-open")
 			   (msg ($snd-strerror err))
 			   (obj device)))
-		 (begin
-		    (set! name ($snd-pcm-name $builtin)))))
+		 (set! name ($snd-pcm-name $builtin))))
 	  (raise (instantiate::&alsa-error
 		    (proc "alsa-snd-pcm-open")
 		    (msg "pcm device already open")

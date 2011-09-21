@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Thu Jun 16 07:28:48 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 09:43:07 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -166,15 +166,24 @@
 ;*    dataflow-node! ::conditional ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::conditional env)
+   
+   (define (lub env1 env2)
+      (filter (lambda (c)
+		 (let* ((v (car c))
+			(t (cdr c))
+			(c2 (assq v env2)))
+		    (and (pair? c2) (eq? (cdr c2) t))))
+	 env1))
+
    (with-access::conditional node (test true false)
       (let* ((tenv (dataflow-node! test env))
 	     (true-env (append (dataflow-test-env test) tenv))
 	     (false-env (append (dataflow-test-false-env test) tenv)))
-	 (dataflow-node! false false-env)
-	 (dataflow-node! true true-env)
+	 (let ((tenv (dataflow-node! false false-env))
+	       (fenv (dataflow-node! true true-env)))
 	 (if (abort? false)
-	     true-env
-	     env))))
+	     tenv
+	     (lub tenv fenv))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::fail ...                                        */

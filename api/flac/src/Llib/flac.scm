@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Sep 19 09:52:08 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 09:16:11 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -102,17 +102,18 @@
    (with-access::flac-decoder o ($builtin %eof)
       (unwind-protect
 	 (begin
-	    (set! %eof #f)
 	    ($bgl-flac-decoder-init-stream $builtin o)
 	    ($flac-decoder-process-until-end-of-stream $builtin))
-	 ($flac-decoder-reset $builtin))))
+	 (flac-decoder-reset! o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-reset! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-reset! o::flac-decoder)
    (unless (eq? (flac-decoder-get-state o) 'stream-decoder-uninitialized) 
-      (with-access::flac-decoder o ($builtin)
+      (with-access::flac-decoder o ($builtin %eof)
+	 (set! %eof #f)
+	 ($flac-decoder-seek-absolute $builtin 0)
 	 ($flac-decoder-reset $builtin))))
 
 ;*---------------------------------------------------------------------*/

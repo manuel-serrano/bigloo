@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sat Jun 11 07:51:27 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 09:46:17 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -337,6 +337,18 @@
       (labels ((try-120 (g-119) (try-120 8)))
 	 (try-120 9))
       6))
+
+;*---------------------------------------------------------------------*/
+;*    bug-dataflow-lub ...                                             */
+;*---------------------------------------------------------------------*/
+(define (bug-dataflow-lub x)
+   (when (string? x)
+      (cond
+	 ((string-prefix? "/" x)
+	  (set! x #f)))
+      (cond
+	 (x 111)
+	 (else 222))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-vital ...                                                   */
@@ -880,5 +892,8 @@
    (test "labels" (vital:labels map '(1 2 3)) '(1 2 3))
    (test "let" (vital:let 10 +) 11)
    (test "let*" (vital:let*) 2)
-   (test "bug-jvm" (procedure? bug-jvm) #t))
+   (test "bug-jvm" (procedure? bug-jvm) #t)
+   (test "dataflow-lub.1" (bug-dataflow-lub "foo") 111)
+   (test "dataflow-lub.2" (bug-dataflow-lub #f) #f)
+   (test "dataflow-lub.3" (bug-dataflow-lub "/foo") 222))
      

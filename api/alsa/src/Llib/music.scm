@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Sep 20 08:01:20 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 11:09:55 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -224,7 +224,9 @@
 		(bigloo-type-error "music-play ::alsamusic" 'int (car s)))
 	     (unwind-protect
 		(begin
+		   (tprint "music-play.1")
 		   (alsadecoder-stop %decoder o)
+		   (tprint "music-play.2")
 		   (playlist-play! o (car s)))
 		(mutex-unlock! %amutex)))
 	    ((and (>=fx song 0) (<fx song playlistlength))
