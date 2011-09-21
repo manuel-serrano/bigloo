@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jul 19 08:35:34 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 19:18:39 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -306,7 +306,8 @@
        (("-lib-dir" ?dir (help "Set lib-path to DIR"))
 	(process-lib-dir-parameter dir)))
       (("-L" ?name (help "Set additional library path"))
-       (set! *lib-dir* (cons name *lib-dir*)))
+       (set! *lib-dir* (cons name *lib-dir*))
+       (bigloo-library-path-set! (cons name (bigloo-library-path))))
       (("-lib-version" ?version (help "Set the Bigloo library version"))
        (library-translation-table-add! 'bigloo "bigloo" version))
       (("-libgc-version" ?version (help "Set the Bigloo GC library version"))

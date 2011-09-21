@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/lib-dir.scm            */
+;*    serrano/prgm/project/bigloo/comptime/Init/lib_dir.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Tue Oct 13 20:06:11 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Wed Sep 21 19:22:38 2011 (serrano)                */
+;*    Copyright   :  2009-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Processes the lib-dir-compilation parameter.                     */
 ;*=====================================================================*/
@@ -81,4 +81,5 @@
 	 (when (file-exists? config_sch)
 	    (read-config_sch config_sch))
 	 ;; TODO: in the future we might want to require a bigloo_config.sch.
-	 (set! *lib-dir* (cons dir *lib-dir*)))))
+	 (set! *lib-dir* (cons dir *lib-dir*))
+	 (bigloo-library-path-set! (cons dir (bigloo-library-path))))))
