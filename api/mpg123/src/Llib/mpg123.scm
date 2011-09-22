@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Sep 19 05:23:53 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 20:39:44 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -183,7 +183,7 @@
       ((=fx p $mpg123-remove-flags) 'remove-flags)
       ((=fx p $mpg123-resync-limit) 'resync-limit)
       ((=fx p $mpg123-index-size) 'index-size)
-      ((=fx p $mpg123-preframes) 'preframes)
+;*       ((=fx p $mpg123-preframes) 'preframes)                        */
 ;*       ((=fx p $mpg123-feedpool) 'feedpool)                          */
 ;*       ((=fx p $mpg123-feedbuffer) 'feedbuffer)                      */
       (else (error "mpg123-param->symbol" "unknown param" p))))
@@ -209,7 +209,7 @@
       ((remove-flags) $mpg123-remove-flags)
       ((resync-limit) $mpg123-resync-limit)
       ((index-size) $mpg123-index-size)
-      ((preframes) $mpg123-preframes)
+;*       ((preframes) $mpg123-preframes)                               */
 ;*       ((feedpool) $mpg123-feedpool)                                 */
 ;*       ((feedbuffer) $mpg123-feedbuffer)                             */
       (else (error "mpg123-param->symbol" "unknown param" p))))

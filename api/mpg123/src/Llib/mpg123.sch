@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Sep 19 05:20:56 2011 (serrano)                */
+;*    Last change :  Wed Sep 21 20:38:43 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -107,7 +107,7 @@
     (macro $mpg123-remove-flags::$mpg123-params "MPG123_REMOVE_FLAGS")
     (macro $mpg123-resync-limit::$mpg123-params "MPG123_RESYNC_LIMIT")
     (macro $mpg123-index-size::$mpg123-params "MPG123_INDEX_SIZE")
-    (macro $mpg123-preframes::$mpg123-params "MPG123_PREFRAMES")
+;*     (macro $mpg123-preframes::$mpg123-params "MPG123_PREFRAMES")    */
 ;*     (macro $mpg123-feedpool::$mpg123-params "MPG123_FEEDPOOL")      */
 ;*     (macro $mpg123-feedbuffer::$mpg123-params "MPG123_FEEDBUFFER")        */
 
