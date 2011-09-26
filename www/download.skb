@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Mon Sep 26 08:38:38 2011 (serrano)                */
+;*    Last change :  Mon Sep 26 09:37:32 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -27,7 +27,7 @@ The current version has been compiled and tested on:
 		       ("x86/MacOS" . ">= 10.5")
 		       ("x86-64/MacOS" . ">= 10.5")
 		       ("x86-win32" . "Windows 2000, XP")
-		       ("x86-FreeBSD" . "4.0")
+;* 		       ("x86-FreeBSD" . "4.0")                         */
 		       ("x86-NetBSD" . "1.6")
 		       ("x86-MinGW" "")
 		       ("powerpc G4" . "MacOS X xnu-201.5, 10.2, 10.3, 10.4")
