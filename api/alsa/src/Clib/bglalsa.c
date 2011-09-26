@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Wed Sep 21 16:47:14 2011 (serrano)                */
+/*    Last change :  Sun Sep 25 05:35:28 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -163,8 +163,6 @@ bgl_snd_pcm_hw_params_set_buffer_size_near( snd_pcm_t *pcm,
 		      (char *)snd_strerror( err ),
 		      BINT( uframes ) );
    } else {
-      fprintf( stderr, "bgl_snd_pcm_hw_params_set_buffer_size_near: %d\n",
-	       uframes );
       return (unsigned long)uframes;
    }
 }

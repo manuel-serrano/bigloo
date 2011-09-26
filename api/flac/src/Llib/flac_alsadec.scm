@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 21 15:06:16 2011 (serrano)                */
+;*    Last change :  Sun Sep 25 17:25:57 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -80,7 +80,7 @@
 ;*    alsadecoder-volume-set! ::flac-alsadecoder ...                   */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-volume-set! o::flac-alsadecoder vol)
-   '(with-access::flac-alsadecoder o (%flac)
+   (with-access::flac-alsadecoder o (%flac)
       (flac-volume-set! %flac vol)))
 
 ;*---------------------------------------------------------------------*/

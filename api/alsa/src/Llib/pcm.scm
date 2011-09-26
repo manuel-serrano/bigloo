@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Wed Sep 21 16:56:59 2011 (serrano)                */
+;*    Last change :  Sun Sep 25 05:35:51 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -477,7 +477,6 @@
 			 ($bgl-snd-pcm-hw-params-set-period-size-near!
 			    $builtin $hw (cadr rest)))
 			((:period-size-near-ratio)
-			 (print "period-near: bufsize=" bufsize " -> " (/ bufsize (cadr rest)))
 			 ($bgl-snd-pcm-hw-params-set-period-size-near!
 			    $builtin $hw (/fx bufsize (cadr rest))))
 			(else
