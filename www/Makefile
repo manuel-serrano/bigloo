@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Mon Sep 26 07:35:02 2011 (serrano)                */
+#*    Last change :  Mon Sep 26 08:32:54 2011 (serrano)                */
 #*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -68,6 +68,9 @@ BIGLOODEB	= http://packages.qa.debian.org/b/bigloo.html
 MAEMOFTP	= ftp://ftp-sop.inria.fr/indes/fp/Hop/maemo/dists/freemantle/free/binary-armel/
 BIGLOOMAEMO	= $(MAEMOFTP)/bigloo_$(OFFICIALRELEASE)_armel.deb \
                   $(MAEMOFTP)/libbigloo-full_$(OFFICIALRELEASE)_armel.deb
+ARMFTP		= ftp://ftp-sop.inria.fr/indes/fp/binary-armel
+BIGLOOARM	= $(ARMFTP)/bigloo_$(OFFICIALRELEASE)_armel.deb \
+                  $(ARMFTP)/libbigloo-full_$(OFFICIALRELEASE)_armel.deb
 MACOSXFTP	= ftp://ftp-sop.inria.fr/indes/fp/Bigloo
 BIGLOOMACOSX	= $(MACOSXFTP)/macosx/bigloo-$(OFFICIALRELEASE).dmg
 BIGLOOFDR	= fedora
@@ -139,6 +142,7 @@ SKRIBEVARS	= --eval "(define *bigloo-version* \"$(OFFICIALRELEASE)\")" \
                   --eval "(define *bigloo.rpm* \"$(BIGLOORPM)\")" \
                   --eval "(define *bigloo.deb* \"$(BIGLOODEB)\")" \
                   --eval "(define *bigloo.maemo* \"$(BIGLOOMAEMO)\")" \
+                  --eval "(define *bigloo.arm* \"$(BIGLOOARM)\")" \
                   --eval "(define *bigloo.fdr* \"$(BIGLOOFDR)\")" \
                   --eval "(define *bigloo.zip* \"$(BIGLOOZIP)\")" \
                   --eval "(define *bigloo.winzip* \"$(BIGLOOWINZIP)\")" \

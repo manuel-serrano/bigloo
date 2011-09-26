@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Fri Nov  5 17:47:29 2010 (serrano)                */
-;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    Last change :  Mon Sep 26 08:23:56 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
 ;*=====================================================================*/
@@ -196,7 +196,7 @@ You may download the Bigloo distribution in
       :text "tar.gz") format.
 
 ,(paragraph [You may download pre-compiled versions (MacOS X bundle,
-Debian package, Win32 installer, JVM), old distributions or get
+Debian package, Win32 installer, JVM), old distributions, or get
 information on systems where Bigloo has been ported to by following
 this ,(ref :ident "Downloading" :text "link").])])
 

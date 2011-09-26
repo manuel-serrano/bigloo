@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Tue Sep 28 05:18:42 2010 (serrano)                */
-;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    Last change :  Mon Sep 26 08:38:38 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
 ;*=====================================================================*/
@@ -22,8 +22,8 @@ The current version has been compiled and tested on:
 		       (item (tt (car p)) " (" (cdr p) ")"))
 		     '(("x86/linux" . "Linux 2.6, JDK >= 1.4.1")
 		       ("x86-64/linux" . "Linux 2.6, JDK >= 1.4.1")
-		       ("arm/maemo" . "maemo >= 4")
 		       ("arm/android" . "Android >= 2.0")
+		       ("arm/maemo" . "maemo >= 4")
 		       ("x86/MacOS" . ">= 10.5")
 		       ("x86-64/MacOS" . ">= 10.5")
 		       ("x86-win32" . "Windows 2000, XP")
@@ -70,6 +70,8 @@ Bigloo is available on the ftp server
 	      ": "
 	      ,(itemize (map (lambda (file)
  				(cond
+				   ((pair? file)
+				    (item file))
 				   ((or (substring-at? file "http://" 0)
 					(substring-at? file "ftp://" 0))
 				    (item (ref :url file :text (basename file))))
@@ -92,10 +94,14 @@ Bigloo is available on the ftp server
 	 ,*bigloo.macosx*)
 	(,[,(bold "Win32") installer version (full back-ends support)]
 	 ,*bigloo.win32b* ,*bigloo.win32*)
-	(,[,(bold "Maemo") package]
-	 ,@(string-split *bigloo.maemo* " \n"))
+	(,[,(bold "Arm(el)") package]
+	 ,@(string-split *bigloo.arm* " \n"))
 	(,[,(bold "GNU-Linux Debian") package]
 	 ,*bigloo.deb*)
 	(,[,(bold "Fedora") package]
 	 ,*bigloo.fdr*)
+	(,[,(bold "Android")]
+	 [Providing and Android for Bigloo won't make much sense. However, the process 
+the compiling the compiler and the libraries is described in a README file that is
+included in the source file package.])
 	))]))
