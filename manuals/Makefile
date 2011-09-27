@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Tue Aug 31 13:16:55 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Sep 27 08:28:26 2011 (serrano)                */
+#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
 #*=====================================================================*/
@@ -386,7 +386,7 @@ do-install-info-bee:
               if [ "`grep "bdb.info" $(INFODIR)/dir` " = " " ]; then \
                 echo "* bdb: (bdb.info). The Bdb documentation." >> \
                 $(INFODIR)/dir; \
-              fi && \
+              fi \
             else \
               $(INSTALLINFO) bdb.info $(INSTALLINFODIROPT) $(INFODIR)/dir; \
             fi \

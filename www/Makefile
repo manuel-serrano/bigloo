@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Mon Sep 26 08:32:54 2011 (serrano)                */
+#*    Last change :  Mon Sep 26 12:45:08 2011 (serrano)                */
 #*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -68,7 +68,7 @@ BIGLOODEB	= http://packages.qa.debian.org/b/bigloo.html
 MAEMOFTP	= ftp://ftp-sop.inria.fr/indes/fp/Hop/maemo/dists/freemantle/free/binary-armel/
 BIGLOOMAEMO	= $(MAEMOFTP)/bigloo_$(OFFICIALRELEASE)_armel.deb \
                   $(MAEMOFTP)/libbigloo-full_$(OFFICIALRELEASE)_armel.deb
-ARMFTP		= ftp://ftp-sop.inria.fr/indes/fp/binary-armel
+ARMFTP		= ftp://ftp-sop.inria.fr/indes/fp/Bigloo/armel-debian
 BIGLOOARM	= $(ARMFTP)/bigloo_$(OFFICIALRELEASE)_armel.deb \
                   $(ARMFTP)/libbigloo-full_$(OFFICIALRELEASE)_armel.deb
 MACOSXFTP	= ftp://ftp-sop.inria.fr/indes/fp/Bigloo
@@ -223,7 +223,7 @@ POPULATION	= $(SOURCES) $(EXAMPLES) $(SCREENSHOTS) $(STYLES) \
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
 all: $(BIGLOOHTML) $(DOC)
-$(BIGLOOHTML): $(SOURCES) $(EXAMPLES) $(STYLES) $(CHANGELOG) # $(BENCHGIF)
+$(BIGLOOHTML): $(SOURCES) $(EXAMPLES) $(STYLES) $(CHANGELOG) Makefile # $(BENCHGIF)
 	$(SKRIBE) $(DOCUMENT) $(SKRIBEVARS) -o $(BIGLOOHTML)
 
 old: old-bigloo.html
