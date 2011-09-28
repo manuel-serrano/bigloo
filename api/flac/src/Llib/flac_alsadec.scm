@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 28 07:24:58 2011 (serrano)                */
+;*    Last change :  Wed Sep 28 09:53:46 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -98,7 +98,7 @@
       (with-access::alsamusic am (%buffer)
 	 (when (alsabuffer? %buffer)
 	    (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
-	       (unless (=fx %!bstate 3)
+	       (when (<fx %!bstate 3)
 		  (set! %!bstate 3)
 		  (mutex-lock! %bmutex)
 		  (condition-variable-wait! %bcondv %bmutex)
@@ -157,11 +157,9 @@
 ;*    flac-decoder-write ::flac-alsa ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-write o::flac-alsa size rate channels bps)
-   (with-access::flac-alsa o (outbuf %alsamusic)
-      (with-access::alsamusic %alsamusic (pcm %status %amutex)
-	 (mutex-lock! %amutex)
+   (with-access::flac-alsa o (outbuf %alsamusic %buffer)
+      (with-access::alsamusic %alsamusic (pcm %status)
 	 (musicstatus-state-set! %status 'play)
-	 (mutex-unlock! %amutex)
 	 (when (>fx size 0)
 	    (alsa-snd-pcm-write pcm outbuf size)
 	    #t))))
