@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 28 09:53:46 2011 (serrano)                */
+;*    Last change :  Wed Sep 28 12:48:24 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -23,7 +23,8 @@
    
    (static (class flac-alsa::flac-decoder
 	      (%alsamusic (default #f))
-	      (%buffer (default #f))))
+	      (%buffer (default #f))
+	      (%decoder (default #f))))
 
    (export (class flac-alsadecoder::alsadecoder
 	      (%flac::obj (default #unspecified)))))
@@ -111,9 +112,10 @@
 		  am::alsamusic
 		  buffer::alsabuffer)
    (with-access::flac-alsadecoder dec (%flac)
-      (with-access::flac-alsa %flac (%buffer %alsamusic)
+      (with-access::flac-alsa %flac (%buffer %alsamusic %decoder)
 	 (set! %buffer buffer)
 	 (set! %alsamusic am)
+	 (set! %decoder dec)
 	 (with-access::alsamusic am (%amutex %status pcm)
 	    (with-access::musicstatus %status (state songpos songlength)
 	       (unwind-protect
@@ -168,7 +170,7 @@
 ;*    flac-decoder-read ::flac-alsa ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
-   (with-access::flac-alsa o (port %flacbuf %buffer %alsamusic)
+   (with-access::flac-alsa o (port %flacbuf %buffer %alsamusic %decoder)
       (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate %inbuf
 					  %!tail %head %eof)
 
@@ -244,6 +246,17 @@
 			     (tprint "<<< read.2 bs=" 0))
 			  (mutex-unlock! %bmutex))
 		       (loop))))
+	       ((alsadecoder-%!pause %decoder)
+		;;; user request pause, swith to pause state and wait
+		;;; to be awaken
+		(with-access::alsamusic %alsamusic (%status)
+		   (musicstatus-state-set! %status 'pause)
+		   (with-access::alsadecoder %decoder (%dmutex %dcondv %!pause)
+		      (mutex-lock! %dmutex)
+		      (condition-variable-wait! %dcondv %dmutex)
+		      (mutex-unlock! %dmutex))
+		   (musicstatus-state-set! %status 'play))
+		(loop))
 	       (else
 		(let ((sz (minfx size
 			     (if (>fx %head %!tail)
