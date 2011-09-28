@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Sep 25 17:25:57 2011 (serrano)                */
+;*    Last change :  Wed Sep 28 07:24:58 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -97,10 +97,12 @@
    (with-access::flac-alsadecoder o (%flac)
       (with-access::alsamusic am (%buffer)
 	 (when (alsabuffer? %buffer)
-	    (with-access::alsabuffer %buffer (%bmutex %!bstate)
-	       (with-lock %bmutex
-		  (lambda ()
-		     (set! %!bstate 3))))))))
+	    (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
+	       (unless (=fx %!bstate 3)
+		  (set! %!bstate 3)
+		  (mutex-lock! %bmutex)
+		  (condition-variable-wait! %bcondv %bmutex)
+		  (mutex-unlock! %bmutex)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::flac-alsadecoder ...                        */
@@ -114,14 +116,18 @@
 	 (set! %alsamusic am)
 	 (with-access::alsamusic am (%amutex %status pcm)
 	    (with-access::musicstatus %status (state songpos songlength)
-	       (flac-decoder-decode %flac)
-	       (alsa-snd-pcm-cleanup pcm)
-	       (with-access::alsabuffer %buffer (%!bstate)
-		  (if (=fx %!bstate 3)
-		      (set! state 'stop)
-		      (begin
-			 (set! %!bstate 4)
-			 (set! state 'ended)))))))))
+	       (unwind-protect
+		  (flac-decoder-decode %flac)
+		  (with-access::alsabuffer %buffer (%!bstate  %bcondv %bmutex)
+		     (alsa-snd-pcm-cleanup pcm)
+		     (if (=fx %!bstate 3)
+			 (set! state 'stop)
+			 (begin
+			    (set! %!bstate 4)
+			    (set! state 'ended)))
+		     (mutex-lock! %bmutex)
+		     (condition-variable-broadcast! %bcondv)
+		     (mutex-unlock! %bmutex))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
