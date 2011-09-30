@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  8 11:03:03 1994                          */
-;*    Last change :  Mon Aug 25 13:52:46 2008 (serrano)                */
+;*    Last change :  Fri Sep 30 07:35:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Quelques tests d'rgc                                             */
 ;*=====================================================================*/
@@ -218,6 +218,15 @@
 		(loop (read-chars 2) buf))))))
 
 ;*---------------------------------------------------------------------*/
+;*    test-unread ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (test-unread)
+   (string-case ",1"
+      ((: #\, #\1)
+       (unread-char! (string-ref (the-string) 1) (the-port))
+       (read (the-port)))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-rgc ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (test-rgc)
@@ -273,4 +282,5 @@
 	    (test-read-chars4 20 3 0))
       (test "read-chars.10" (test-read-chars5 "123") "3")
       (test "read-chars.11" (test-read-chars5 "12") "12")
-      (test "read-chars.12" (test-read-chars5 "1") "1")))
+      (test "read-chars.12" (test-read-chars5 "1") "1"))
+   (test "unread-chars" (test-unread) 1))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep 28 07:27:21 2011 (serrano)                */
+#*    Last change :  Fri Sep 30 07:40:02 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -16,8 +16,8 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=3.7a
-version=-2
+release=3.7b
+version=
 bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -193,7 +193,8 @@ flaccflags=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=bdwgc-7_2alpha5-20110313
+gccustom=gc-7.2alpha6
+#gccustom=bdwgc-7_2alpha5-20110313
 #gccustom=bdwgc-7_2alpha5-20110107
 gcversion=
 # the following  variable is relevant only when using

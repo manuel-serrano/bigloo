@@ -5413,7 +5413,7 @@ namespace bigloo
 	 {
 	    if ( from < 0 ) return false;
 	    if ( to > s.Length ) return false;
-	    if ( p.bufsiz == 2) return false; // unbuffered port
+	    if ( (p.bufsiz == 2) && !(p is input_string_port)) return false; // unbuffered port
 	    if ( CLOSED_RGC_BUFFER( p )) return false;
 	    if ( from >= to ) return true;
 
@@ -5439,6 +5439,8 @@ namespace bigloo
       public static bool rgc_buffer_insert_char(input_port p, int c)
       {
 	 rgc_buffer_reserve_space(p, 1);
+
+	 if( p.bufsiz == 2 && !(p is input_string_port)) return false;
 
 	 int matchstop = p.matchstop;
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Mon Jul 18 08:51:04 2011 (serrano)                */
+;*    Last change :  Fri Sep 30 06:48:31 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -383,12 +383,12 @@
 ;*    unread-char! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (unread-char! c::char #!optional (ip (current-input-port)))
-   (when (not (rgc-buffer-insert-char! ip (char->integer c)))
+   (unless (rgc-buffer-insert-char! ip (char->integer c))
       (raise
-       (instantiate::&io-error
-	  (proc 'unread-char!)
-	  (msg "Unread char failed")
-	  (obj c)))))
+	 (instantiate::&io-error
+	    (proc 'unread-char!)
+	    (msg "Unread char failed")
+	    (obj c)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unread-string! ...                                               */

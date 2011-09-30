@@ -2,7 +2,7 @@
 
 # configuration and variables
 version=3.7a
-minor=
+minor=-2
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
 bglconfigureopt=$1

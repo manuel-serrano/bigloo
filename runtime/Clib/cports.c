@@ -2048,6 +2048,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 #endif /* BGL_HAVE_SENDFILE */
       if( sz != 0 ) {
 	 n = copyfile( op, ip, sz, INPUT_PORT( ip ).sysread );
+      } else {
+	 n = 0;
       }
       if( n < 0 ) {
 	 C_SYSTEM_FAILURE( bglerror( errno ), 
@@ -2092,6 +2094,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
 #  endif  /* BGL_HAVE_DO_BLOCKING */
 #endif  /* BGL_HAVE_BLOCKING */
+      } else {
+	 n = 0;
       }
 
       if( n < 0 )
@@ -2136,6 +2140,13 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 
    bgl_output_flush( op, 0, 0 );
 
+   if( !(in = open( BSTRING_TO_STRING( name ), O_RDONLY, OMOD )) ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"send-file",
+			strerror( errno ),
+			name );
+   }
+
    if( sz == -1 ) {
       if( fstat( in, &sin ) ) {
 	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -2144,13 +2155,6 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 			   name );
       }
       sz = sin.st_size;
-   }
-
-   if( !(in = open( BSTRING_TO_STRING( name ), O_RDONLY, OMOD )) ) {
-      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			"send-file",
-			strerror( errno ),
-			name );
    }
 
 #if( !BGL_HAVE_SENDFILE )
@@ -2202,7 +2206,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
       -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
 #    endif
 #  endif /* BGL_HAVE_BLOCKING */
-
+   } else {
+      n = 0;
    }
 #endif
 

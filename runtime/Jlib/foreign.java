@@ -5167,7 +5167,8 @@ public final class foreign
       {
 	 if ( from < 0 ) return false;
 	 if ( to > s.length ) return false;
-	 if ( p.bufsiz == 2) return false; // unbuffered port
+	 if ( (p.bufsiz == 2) && !(p instanceof input_string_port))
+	    return false; // unbuffered port
 	 if ( CLOSED_RGC_BUFFER( p )) return false;
 	 if ( from >= to ) return true;
 
@@ -5191,6 +5192,9 @@ public final class foreign
       }
    public static boolean rgc_buffer_insert_char(input_port p, int c)
       {
+	 if ( (p.bufsiz == 2) && !(p instanceof input_string_port))
+	    return false;
+	    
 	 rgc_buffer_reserve_space(p, 1);
 
 	 int matchstop = p.matchstop;

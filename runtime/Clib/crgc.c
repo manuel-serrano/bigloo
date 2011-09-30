@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Jul  8 10:32:06 2011 (serrano)                */
+/*    Last change :  Fri Sep 30 07:37:51 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -724,7 +724,8 @@ rgc_buffer_insert_substring( obj_t ip, obj_t str, long from, long to ) {
    long len = to - from;
    long matchstop;
 
-   if( BGL_INPUT_PORT_BUFSIZ( ip ) == 2 )
+   if( (BGL_INPUT_PORT_BUFSIZ( ip ) == 2) &&
+       (PORT( ip ).kindof != KINDOF_STRING) )
       /* unbuffered port */
       return 0;
    
@@ -760,10 +761,11 @@ rgc_buffer_insert_substring( obj_t ip, obj_t str, long from, long to ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 bool_t
-rgc_buffer_insert_char( obj_t ip, int c) {
+rgc_buffer_insert_char( obj_t ip, int c ) {
    long matchstop;
 
-   if( BGL_INPUT_PORT_BUFSIZ( ip ) == 2 )
+   if( (BGL_INPUT_PORT_BUFSIZ( ip ) == 2) &&
+       (PORT( ip ).kindof != KINDOF_STRING) )
       /* unbuffered port */
       return 0;
    
@@ -774,7 +776,7 @@ rgc_buffer_insert_char( obj_t ip, int c) {
    matchstop = INPUT_PORT( ip ).matchstop;
 
    /* we insert the given buffer */
-   RGC_BUFFER_SET( ip, matchstop - 1, c);
+   RGC_BUFFER_SET( ip, matchstop - 1, c );
 
    if( INPUT_PORT( ip ).filepos >= 1 )
       INPUT_PORT( ip ).filepos--;
