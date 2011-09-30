@@ -2,7 +2,7 @@
 #*    serrano/prgm/project/bigloo/api/crypto/recette/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Copyright   :  2002-10 Manuel Serrano                            */
+#*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -32,7 +32,7 @@ POPULATION	= recette.scm Makefile \
 		  symmetricCAST5_pwd_foobar.msg \
 		  symmetricCAST5_noAlgoInfo_pwd_foobar.msg \
 		  publicTesty_elgamal.encrypted publicTesty_rsa_rsa.encrypted \
-		  pwd:foobar_public:testy.encrypted rsa_testy_abcd_sig \
+		  pwd_foobar_public_testy.encrypted rsa_testy_abcd_sig \
 		  testy_abcd_sig rsa_testy_abcd_efgh_sig testy_abcd_efgh_sig
 
 #*---------------------------------------------------------------------*/

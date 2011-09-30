@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # configuration and variables
-version=3.7a
-minor=-2
+version=3.7b
+minor=
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
 bglconfigureopt=$1
