@@ -369,7 +369,7 @@
 
 (test-add! 'decrypt/pwd/public1
 	   (lambda ()
-	      (let ((msg (pgp-read-file "pwd:foobar_public:testy.encrypted"))
+	      (let ((msg (pgp-read-file "pwd_foobar_public_testy.encrypted"))
 		    (key (car (pgp-read-file "testy_rsa_rsa_pwd_xyz.key"))))
 		 (pgp-decrypt msg
 			      :passkey-provider (lambda () "foobar"))))
@@ -377,7 +377,7 @@
 
 (test-add! 'decrypt/pwd/public2
 	   (lambda ()
-	      (let ((msg (pgp-read-file "pwd:foobar_public:testy.encrypted"))
+	      (let ((msg (pgp-read-file "pwd_foobar_public_testy.encrypted"))
 		    (key (car (pgp-read-file "testy_dsa_elgamal_pwd_xyz.key")))
 		    (db (pgp-make-key-db)))
 		 (pgp-add-key-to-db db key)
