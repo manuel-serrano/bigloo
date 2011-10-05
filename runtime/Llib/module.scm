@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Feb 18 15:21:03 2011 (serrano)                */
+;*    Last change :  Fri Sep 30 19:31:15 2011 (serrano)                */
 ;*    Copyright   :  2009-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -167,11 +167,11 @@
 	     (if (not cell)
 		 (set-cdr! base (cons (cons module files) (cdr base)))
 		 (unless (equal? (cdr cell) files)
-		    (set-cdr! cell files)
 		    (warning 'add-access!
 			     "access redefinition -- " module " ["
 			     (cdr cell) " " files "] for directory \"" abase
-			     "\"")))))))
+			     "\"")
+		    (set-cdr! cell files)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-add-access! ...                                           */

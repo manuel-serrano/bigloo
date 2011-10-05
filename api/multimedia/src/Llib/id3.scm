@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Tue Aug 23 06:49:17 2011 (serrano)                */
+;*    Last change :  Sat Oct  1 11:41:51 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -671,7 +671,7 @@
 	 (if (pair? c)
 	     (cdr c)
 	     def)))
-   
+
    (when (pair? lst)
       (instantiate::vorbis
 	 (title (get 'title lst "unknown"))

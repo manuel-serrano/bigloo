@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 28 12:48:24 2011 (serrano)                */
+;*    Last change :  Wed Oct  5 14:47:31 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -95,13 +95,16 @@
 ;*    alsadecoder-stop ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-stop o::flac-alsadecoder am::alsamusic)
-   (with-access::flac-alsadecoder o (%flac)
+   (with-access::flac-alsadecoder o (%flac %!pause %dcondv)
       (with-access::alsamusic am (%buffer)
 	 (when (alsabuffer? %buffer)
 	    (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
 	       (when (<fx %!bstate 3)
 		  (set! %!bstate 3)
 		  (mutex-lock! %bmutex)
+		  (when %!pause
+		     (set! %!pause #f)
+		     (condition-variable-broadcast! %dcondv))
 		  (condition-variable-wait! %bcondv %bmutex)
 		  (mutex-unlock! %bmutex)))))))
    

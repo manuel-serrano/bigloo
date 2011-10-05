@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Sep 21 16:23:49 2011 (serrano)                */
+;*    Last change :  Sun Oct  2 21:10:52 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -302,7 +302,7 @@
 			ehandler
 			(alsadecoder-decode d o buffer)))
 		  (gensym 'alsamusic-decoder))))))
-   
+
    (with-access::alsamusic o (%playlist %status %decoder decoders pcm)
       (when (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
 	 (alsa-snd-pcm-open pcm))
