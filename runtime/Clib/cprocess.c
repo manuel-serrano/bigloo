@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Wed Sep 14 14:46:24 2011 (serrano)                */
+/*    Last change :  Wed Oct  5 19:30:15 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -1199,5 +1199,5 @@ c_process_continue( obj_t proc ) {
 BGL_RUNTIME_DEF
 obj_t
 c_process_terminate_counter() {
-  return terminate_counter;
+   return BINT( terminate_counter );
 }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan 20 11:51:19 2002                          */
-;*    Last change :  Tue Sep 20 08:42:41 2005 (serrano)                */
-;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    Last change :  Thu Oct  6 07:01:54 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The XEmacs specific file.                                        */
 ;*=====================================================================*/
@@ -175,6 +175,21 @@
     (if (and (consp lst) (null (cdr lst)))
 	(kill-emacs)
       (delete-window))))
+
+;*---------------------------------------------------------------------*/
+;*    file-installed-p ...                                             */
+;*---------------------------------------------------------------------*/
+(defun file-installed-p (file &optional paths)
+  "Return absolute-path of FILE if FILE exists in PATHS.
+If PATHS is omitted, `load-path' is used."
+  (if (null paths) (setq paths load-path))
+  (catch 'tag
+    (let (path)
+      (while paths
+	(setq path (expand-file-name file (car paths)))
+	(if (file-exists-p path)
+	    (throw 'tag path))
+	(setq paths (cdr paths))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    frame-parameter ...                                              */
