@@ -4641,7 +4641,7 @@ namespace bigloo
 	    }
 	 }
 
-      public static bool directoryp( byte[]  file )
+      public static bool bgl_directoryp( byte[]  file )
 	 {
 	    return Directory.Exists( newstring( file ) );
 	 }
@@ -4657,7 +4657,7 @@ namespace bigloo
 			   - date.EPOCH_in_seconds);
 	 }
 
-      public static Object directory_to_list( byte[]  name )
+      public static Object bgl_directory_to_list( byte[]  name )
 	 {
 	    FileInfo[] files= new DirectoryInfo( newstring( name ) ).GetFiles();
 	    Object result= BNIL;
@@ -4668,6 +4668,21 @@ namespace bigloo
 	    return result;
 	 }
 
+      public static symbol bgl_file_type( byte[]file )
+	 {
+	    String f = newstring( file );
+
+	    if( !File.Exists( f ) ) {
+	       return string_to_symbol( "does-not-exist" );
+	    }
+
+	    if( Directory.Exists( f ) ) {
+		  return string_to_symbol( "directory" );
+	    }
+
+	    return string_to_symbol( "regular" );
+	 }
+	 
       //////
       // SYSTEM and OS
       //////

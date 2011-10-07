@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Jun 14 11:10:52 2011 (serrano)                */
+/*    Last change :  Fri Oct  7 07:40:37 2011 (serrano)                */
 /*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -252,6 +252,69 @@ bgl_file_mode( char *file ) {
       return -1;
    else
       return _stat.st_mode;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_file_type ...                                                */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_file_type( char *file ) {
+   struct stat _stat;
+
+   if( stat( file, &_stat ) ) {
+      return string_to_symbol( "does-not-exist" );
+   }
+
+#if( defined( S_ISLNK ) )
+   if( S_ISLNK( _stat.st_mode ) ) {
+      return string_to_symbol( "link" );
+   }
+#endif   
+
+#if( defined( S_ISREG ) )
+   if( S_ISREG( _stat.st_mode ) ) {
+      static obj_t reg = 0L;
+
+      if( !reg ) reg = string_to_symbol( "regular" );
+      return reg;
+   }
+#endif   
+
+#if( defined( S_ISDIR ) )
+   if( S_ISDIR( _stat.st_mode ) ) {
+      static obj_t dir = 0L;
+
+      if( !dir ) dir = string_to_symbol( "directory" );
+      return dir;
+   }
+#endif   
+
+#if( defined( S_ISBLK ) )
+   if( S_ISBLK( _stat.st_mode ) ) {
+      return string_to_symbol( "block" );
+   }
+#endif   
+
+#if( defined( S_ISCHR ) )
+   if( S_ISCHR( _stat.st_mode ) ) {
+      return string_to_symbol( "character" );
+   }
+#endif   
+
+#if( defined( S_ISFIFO ) )
+   if( S_ISFIFO( _stat.st_mode ) ) {
+      return string_to_symbol( "fifo" );
+   }
+#endif   
+
+#if( defined( S_ISSOCK ) )
+   if( S_ISSOCK( _stat.st_mode ) ) {
+      return string_to_symbol( "socket" );
+   }
+#endif
+
+   return string_to_symbol( "unknown" );
 }
 
 /*---------------------------------------------------------------------*/

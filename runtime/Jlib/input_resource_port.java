@@ -52,7 +52,7 @@ public class input_resource_port extends input_port {
       }
    }
       
-   public static Object directory_to_list( String name ) {
+   public static Object bgl_directory_to_list( String name ) {
       try {
 	 String dir = name.replace( '\\', '/' );
 	 String cname = dir + "/.list";
@@ -78,7 +78,7 @@ public class input_resource_port extends input_port {
       }
    }
 
-   public static boolean directoryp( String name ) {
+   public static boolean bgl_directoryp( String name ) {
       String dir = name.replace( '\\', '/' );
       String cname = dir + "/.list";
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Aug 23 06:16:21 2011 (serrano)                */
+;*    Last change :  Fri Oct  7 07:31:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -170,15 +170,16 @@
 	    (macro $output-port-buffer-set!::void (::output-port ::bstring)
 		   "bgl_output_port_buffer_set")
 	    
-	    ($directory?::bool (::string) "directoryp")
-	    ($directory->list::obj (::string) "directory_to_list")
+	    ($directory?::bool (::string) "bgl_directoryp")
+	    ($directory->list::obj (::string) "bgl_directory_to_list")
 	    ($directory->path-list::obj (::string ::int ::char)
 					"bgl_directory_to_path_list")
-	    (c-modification-time::elong (::string) "bgl_last_modification_time")
-	    (c-file-size::elong (::string) "bgl_file_size")
-	    (c-file-uid::int (::string) "bgl_file_uid")
-	    (c-file-gid::int (::string) "bgl_file_gid")
-	    (c-file-mode::int (::string) "bgl_file_mode"))
+	    ($modification-time::elong (::string) "bgl_last_modification_time")
+	    ($file-size::elong (::string) "bgl_file_size")
+	    ($file-uid::int (::string) "bgl_file_uid")
+	    ($file-gid::int (::string) "bgl_file_gid")
+	    ($file-mode::int (::string) "bgl_file_mode")
+	    ($file-type::symbol (::string) "bgl_file_type"))
 
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)
@@ -326,20 +327,22 @@
 		       "BGL_INPUT_GZIP_PORT_INPUT_PORT")
 	       
 	       (method static $directory?::bool (::string)
-		       "directoryp")
+		       "bgl_directoryp")
 	       (method static $directory->list::obj (::string)
-		       "directory_to_list")
-	       (method static c-modification-time::elong (::string)
+		       "bgl_directory_to_list")
+	       (method static $modification-time::elong (::string)
 		       "bgl_last_modification_time")
-	       (method static c-file-size::elong (::string)
+	       (method static $file-size::elong (::string)
 		       "bgl_file_size")
 	       
-	       (method static c-file-uid::int (::string)
+	       (method static $file-uid::int (::string)
 		       "bgl_file_uid")
-	       (method static c-file-gid::int (::string)
+	       (method static $file-gid::int (::string)
 		       "bgl_file_gid")
-	       (method static c-file-mode::int (::string)
-		       "bgl_file_mode")))
+	       (method static $file-mode::int (::string)
+		       "bgl_file_mode")
+	       (method static $file-type::symbol (::string)
+		       "bgl_file_type")))
 	    
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
@@ -429,11 +432,12 @@
 	    (inline directory?::bool ::string)
 	    (inline directory->list ::string)
 	    (directory->path-list ::bstring)
-	    (file-modification-time::elong ::string)
-	    (file-size::elong ::string)
-	    (file-uid::int ::string)
-	    (file-gid::int ::string)
-	    (file-mode::int ::string)
+	    (inline file-modification-time::elong ::string)
+	    (inline file-size::elong ::string)
+	    (inline file-uid::int ::string)
+	    (inline file-gid::int ::string)
+	    (inline file-mode::int ::string)
+	    (inline file-type::symbol ::string)
 	    (input-port-protocol prototcol)
 	    (input-port-protocol-set! protocol open)
 
@@ -1356,29 +1360,35 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-modification-time@ ...                               */
 ;*---------------------------------------------------------------------*/
-(define (file-modification-time file)
-   (c-modification-time file))
+(define-inline (file-modification-time file)
+   ($modification-time file))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-size@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (file-size file)
-   (c-file-size file))
+(define-inline (file-size file)
+   ($file-size file))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-uid@ ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (file-uid file)
-   (c-file-uid file))
+(define-inline (file-uid file)
+   ($file-uid file))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-gid@ ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (file-gid file)
-   (c-file-gid file))
+(define-inline (file-gid file)
+   ($file-gid file))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-mode@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (file-mode file)
-   (c-file-mode file))
+(define-inline (file-mode file)
+   ($file-mode file))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn file-type@ ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (file-type file)
+   ($file-type file))

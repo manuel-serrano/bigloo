@@ -4403,10 +4403,10 @@ public final class foreign
 	 return (new File(new String(path))).mkdir();
       }
 
-   public static boolean directoryp(byte[]file)
+   public static boolean bgl_directoryp(byte[]file)
       {
 	 if( is_resourcep( file ) ) {
-	    return bigloo.input_resource_port.directoryp(resource_name(file));
+	    return bigloo.input_resource_port.bgl_directoryp(resource_name(file));
 	 } else {
 	    return (new File(new String(file))).isDirectory();
 	 }
@@ -4430,10 +4430,10 @@ public final class foreign
 	 }
       }
 
-   public static Object directory_to_list(byte[]name)
+   public static Object bgl_directory_to_list(byte[]name)
       {
 	 if( is_resourcep( name ) ) {
-	    return bigloo.input_resource_port.directory_to_list( resource_name( name ) );
+	    return bigloo.input_resource_port.bgl_directory_to_list( resource_name( name ) );
 	 } else {
 	    final String[] files = (new File(new String(name))).list();
 	    Object result = BNIL;
@@ -4449,6 +4449,25 @@ public final class foreign
 	 }
       }
 
+   public static symbol bgl_file_type( byte[]file )
+      {
+	 if( is_resourcep( file ) ) {
+	    return string_to_symbol( "resource" );
+	 } else {
+	    File f = (new File(new String(file)));
+
+	    if( !f.exists() ) {
+	       return string_to_symbol( "does-not-exist" );
+	    }
+
+	    if( f.isDirectory() ) {
+	       return string_to_symbol( "directory" );
+	    }
+
+	    return string_to_symbol( "regular" );
+	 }
+      }
+	 
    //////
    // SYSTEM and OS
    //////

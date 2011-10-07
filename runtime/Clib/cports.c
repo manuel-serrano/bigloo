@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Sep  8 08:39:19 2011 (serrano)                */
+/*    Last change :  Fri Oct  7 05:42:12 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1665,7 +1665,7 @@ pipe_name( char *pipe_name ) {
 /*    Is a file a directory?                                           */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-directoryp( char *name ) { 
+bgl_directoryp( char *name ) { 
    struct stat buf;
 
    if( stat( name, &buf ) == -1 )
@@ -1685,7 +1685,7 @@ directoryp( char *name ) {
 /*    directory_to_list ...                                            */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-directory_to_list( char *name ) {
+bgl_directory_to_list( char *name ) {
    obj_t res = BNIL;
 #ifndef _MSC_VER
    DIR *dir;
