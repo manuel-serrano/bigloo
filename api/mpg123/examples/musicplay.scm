@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Sun Sep 18 09:12:08 2011 (serrano)                */
+;*    Last change :  Mon Oct 24 16:33:31 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -14,7 +14,19 @@
 ;*---------------------------------------------------------------------*/
 (module musicplay
    (library multimedia pthread alsa mpg123)
+   (static (class mpg123-alsadecode2::mpg123-alsadecoder))
    (main main))
+
+(define debug 0)
+
+;*---------------------------------------------------------------------*/
+;*    pcm-cleanup ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (pcm-cleanup pcm)
+   (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
+      (when (memq pcm-state '(running prepared))
+	 (alsa-snd-pcm-drop pcm)))
+   (alsa-snd-pcm-cleanup pcm))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->files ...                                             */
@@ -44,7 +56,7 @@
    
    (let ((files '())
 	 (volume 80)
-	 (device "plughw:0,0"))
+	 (device (or (getenv "ALSADEVICE") "default")))
       
       (args-parse (cdr args)
 	 ((("-h" "--help") (help "This message"))
@@ -59,13 +71,15 @@
 	  (set! device dev))
 	 (else
 	  (set! files (append (directory->files else) files))))
-
+      
       (when (pair? files)
 	 (let* ((pcm (instantiate::alsa-snd-pcm
 			(device device)))
 		(decoder (instantiate::mpg123-alsadecoder
 			    (mimetypes '("audio/mpeg"))))
 		(player (instantiate::alsamusic
+			   (outbuf (make-string (* 16 1024)))
+			   (inbuf (make-string (* 16 1024)))
 			   (decoders (list decoder))
 			   (pcm pcm))))
 	    (music-volume-set! player volume)
@@ -77,7 +91,7 @@
 	       (reverse files))
 	    (music-play player)
 	    (music-event-loop player
-	       :frequency 20000
+	       :frequency 2000000
 	       :onstate (lambda (status)
 			   (with-access::musicstatus status (state song volume
 							       songpos

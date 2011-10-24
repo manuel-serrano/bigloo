@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Mon Oct 24 07:25:33 2011 (serrano)                */
+;*    Last change :  Mon Oct 24 15:31:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both MPG123 *and* ALSA libs.    */
@@ -43,6 +43,7 @@
 (define (new-format dec pcm)
    (multiple-value-bind (rate channels encoding)
       (mpg123-get-format dec)
+      (tprint "near=" rate " channels=" channels " encoding=" encoding " size-near-ratio=" 2 " period-size-near-ratio=" 8)
       (alsa-snd-pcm-hw-set-params! pcm
 	 :access 'rw-interleaved
 	 :format encoding
@@ -59,14 +60,34 @@
 ;*---------------------------------------------------------------------*/
 (define (play-mp3 path m pcm inbuf outbuf)
    (print "playing " path "... pcm=" pcm)
-   (let ((p (open-input-file path)))
-      (let loop ()
-	 (let ((sz (read-chars! inbuf (string-length inbuf) p)))
-	    (multiple-value-bind (status size)
-	       (mpg123-decode m inbuf 0 sz outbuf (string-length outbuf))
-	       (when (eq? status 'new-format)
-		  (new-format m pcm))
-	       (when (>fx size 0)
-		  (alsa-snd-pcm-write pcm outbuf size))
-	       (unless (or (eq? status 'done) (and (=fx sz 0) (=fx size 0)))
-		  (loop)))))))
+   (let ((p (open-input-file path))
+	 (debug-port (open-output-file "/tmp/bgl123-dec.log"))
+	 (debug-port2 (open-output-file "/tmp/bgl123-out.log")))
+      (unwind-protect
+	 (let loop ()
+	    (let ((sz (read-chars! inbuf (string-length inbuf) p)))
+	       (when (output-port? debug-port)
+		  (display-substring inbuf 0 sz debug-port))
+	       (let liip ((sz sz))
+		  (multiple-value-bind (status size)
+		     (mpg123-decode m inbuf 0 sz outbuf (string-length outbuf))
+		     (tprint "status=" status)
+		     (when (eq? status 'new-format)
+			(new-format m pcm))
+		     (when (>fx size 0)
+			(tprint "size." status "=" size " sz=" sz " len=" (string-length inbuf))
+			(when (output-port? debug-port2)
+			   (display-substring outbuf 0 size debug-port2))
+			(alsa-snd-pcm-write pcm outbuf size))
+		     (cond
+			((eq? status 'done)
+			 'done)
+			((eq? status 'need-more)
+			 (loop))
+			(else
+			 (liip 0)))))))
+	 (begin
+	    (when (output-port? debug-port)
+	       (close-output-port debug-port))
+	    (when (output-port? debug-port2)
+	       (close-output-port debug-port2))))))

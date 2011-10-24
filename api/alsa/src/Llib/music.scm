@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sun Oct  2 21:10:52 2011 (serrano)                */
+;*    Last change :  Mon Oct 24 16:27:23 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -27,6 +27,7 @@
 	       (%acondv::condvar read-only (default (make-condition-variable)))
 	       (%toseek::long (default 0))
 	       (%buffer::obj (default #f))
+	       (%close::bool (default #f))
 	       (mkthread::procedure read-only (default make-thread))
 	       (inbuf::bstring read-only (default (make-string (*fx 512 1024))))
 	       (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
@@ -108,17 +109,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-close o::alsamusic)
    (unless (music-closed? o)
-      (with-access::alsamusic o (pcm decoders)
-	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
-	    (alsa-snd-pcm-close pcm)
-	    (for-each alsadecoder-close decoders)))))
+      (with-access::alsamusic o (pcm decoders %close %amutex)
+	 (with-lock %amutex
+	    (lambda ()
+	       (unless %close
+		  (set! %close #t)
+		  (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
+		     (alsa-snd-pcm-close pcm)
+		     (for-each alsadecoder-close decoders))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::alsamusic ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (music-closed? o::alsamusic)
-   (with-access::alsamusic o (pcm)
-      (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)))
+   (with-access::alsamusic o (%close)
+      %close))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-reset! ::alsamusic ...                                     */
