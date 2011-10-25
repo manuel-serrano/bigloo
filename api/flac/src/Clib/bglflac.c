@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Sep 21 09:18:37 2011 (serrano)                */
+/*    Last change :  Tue Oct 25 15:31:38 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -229,23 +229,25 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
    FLAC__FrameHeader h = frame->header;
    obj_t obj = (obj_t)client_data;
    float vol = BGL_DECODER_VOLUME( obj );
-   FLAC__uint32 decoded_size = h.blocksize * h.channels * (h.bits_per_sample / 8);
    long i = 0;
+   FLAC__uint32 decoded_size =
+      h.blocksize * h.channels * (h.bits_per_sample / 8);
 
    switch( h.bits_per_sample ) {
       case 16: {
 	 long sample;
-	 FLAC__uint16 *buf = (FLAC__uint16 *)BGL_DECODER_OUTBUF( obj );
+	 char *buf = (char *)BGL_DECODER_OUTBUF( obj );
 
 	 for( sample = 0; sample < h.blocksize; sample++ ) {
 	    long channel;
 
 	    for( channel = 0; channel < h.channels; channel++ ) {
-	       buf[ i++ ] = vol * buffer[ channel ][ sample ];
+	       FLAC__int16 v = vol * (FLAC__int16)(buffer[ channel ][ sample ]);
+	       buf[ i++ ] = v & 0xff;
+	       buf[ i++ ] = (v >> 8) & 0xff;
 	    }
 	 }
 
-	 i *= 2;
 	 break;
       }
       case 24: {
@@ -256,10 +258,10 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	    long channel;
 
 	    for( channel = 0; channel < h.channels; channel++ ) {
-	       FLAC__uint32 l = vol * buffer[ channel ][ sample ];
-	       buf[ i++ ] = (l >> 0) & 0xff;
-	       buf[ i++ ] = (l >> 8) & 0xff;
-	       buf[ i++ ] = (l >> 16) & 0xff;
+	       FLAC__uint32 v = vol * (FLAC__uint32)buffer[ channel ][ sample ];
+	       buf[ i++ ] = (v >> 0) & 0xff;
+	       buf[ i++ ] = (v >> 8) & 0xff;
+	       buf[ i++ ] = (v >> 16) & 0xff;
 	    }
 	 }
 	 break;

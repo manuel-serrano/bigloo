@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Mon Oct 24 16:54:14 2011 (serrano)                */
+;*    Last change :  Tue Oct 25 15:26:14 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both FLAC *and* ALSA libs.      */
@@ -31,7 +31,9 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main argv)
-   (let* ((pcm (instantiate::alsa-snd-pcm))
+   (let* ((dev (or (getenv "ALSADEVICE") "default"))
+	  (pcm (instantiate::alsa-snd-pcm
+		  (device dev)))
 	  (f (instantiate::flac-alsa
 		(pcm pcm))))
       (alsa-snd-pcm-open pcm)
@@ -94,6 +96,6 @@
    (with-access::flac-alsa o (port %flacbuf %inbuf)
       (let ((flacbuf (custom-identifier %flacbuf))
 	    (sz (minfx size (string-length %inbuf))))
-	 (let ((sz (read-chars! %inbuf sz port)))
-	    ($memcpy flacbuf %inbuf sz)
+	 (let ((sz2 (read-chars! %inbuf sz port)))
+	    ($memcpy flacbuf %inbuf sz2)
 	    sz))))
