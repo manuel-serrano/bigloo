@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun May 22 06:31:51 2011 (serrano)                */
+/*    Last change :  Tue Nov  1 08:36:20 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1948,7 +1948,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    hname = string_to_bstring( hp->h_name );
    memset( server->sin_zero, 0, sizeof( server->sin_zero ) );
 
-   a_socket->datagram_socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
+   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
    a_socket->datagram_socket_t.portnum = ntohs( server->sin_port );
    a_socket->datagram_socket_t.hostname = hname;
    a_socket->datagram_socket_t.hostip = string_to_bstring( inet_ntoa( server->sin_addr ) );
@@ -2006,7 +2006,7 @@ bgl_make_datagram_server_socket( int portnum ) {
 
    // loop through all the results and bind to the first we can
    for( p = servinfo; p != NULL; p = p->ai_next ) {
-      if( (s = socket( p->ai_family, p->ai_socktype, p->ai_protocol) ) == -1 ) {
+      if( (s = socket( p->ai_family, p->ai_socktype, p->ai_protocol )) == -1 ) {
 	 socket_error( msg, "cannot create socket", BINT( portnum ) );
       }
 
@@ -2132,7 +2132,7 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
       
       BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
       BGL_ENV_MVALUES_VAL_SET( env, 1, string_to_bstring( (char *)c ) );
-      
+
       return string_to_bstring_len( buf, n );
    }
 }
