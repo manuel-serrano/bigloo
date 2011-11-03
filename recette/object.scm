@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Tue Jan  4 08:13:47 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:20:43 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -206,18 +206,18 @@
       (hux g)))
 
 ;*---------------------------------------------------------------------*/
-;*    test-with-access.2 ...                                           */
+;*    test-with-access-2 ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (test-with-access.2 u1 u2)
+(define (test-with-access-2 u1 u2)
    (with-access::gee u1 ((x1 x) y)
       (with-access::gee u2 (x (y2 y))
 	 (set! x1 x)
 	 (+ x1 x y y2))))
 
 ;*---------------------------------------------------------------------*/
-;*    test-with-access.3 ...                                           */
+;*    test-with-access-3 ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (test-with-access.3 o)
+(define (test-with-access-3 o)
    (with-access::gee o (x (y1 y))
       (set! x (- x))
       (set! y1 (- y1))
@@ -276,11 +276,11 @@
    (test "predicat" (predicat) '(#t #t #t #t #f #t #t #t #f #f #t #f))
    (test "intern" (intern) #t)
    (test "with-access.1" (test-with-access #t (instantiate::gee (x 4) (y 6))) #t)
-   (test "with-access.2" (test-with-access.2
+   (test "with-access.2" (test-with-access-2
 			  (instantiate::gee (x 4) (y 6))
 			  (instantiate::gee (x 5) (y 7)))
 	 23)
-   (test "with-access.3" (test-with-access.3
+   (test "with-access.3" (test-with-access-3
 			  (instantiate::gee (x 4) (y 6)))
 	 (cons -4 -6))
    (test "equal?" (test-equal?) #t)

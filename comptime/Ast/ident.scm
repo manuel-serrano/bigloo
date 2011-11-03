@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:33:09 1996                          */
-;*    Last change :  Mon Jan  1 10:34:03 2001 (serrano)                */
+;*    Last change :  Thu Nov  3 16:47:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The identifier managment                                         */
 ;*=====================================================================*/
@@ -128,9 +128,8 @@
 		     ;; this empty name variable can be useful to declare
 		     ;; prototype so it is legal.
 		     (let ((id  (string->symbol ""))
-			   (tid (string->symbol (substring string
-							   type-start
-							   len))))
+			   (tid (string->symbol
+				   (substring string type-start len))))
 			(cons id (use-type tid loc))))
 		    ((=fx id-stop 0)
 		     (cons id (get-default-type)))
@@ -142,9 +141,8 @@
 				 (cons 'error-ident (get-default-type))))
 		    (else
 		     (let ((id  (string->symbol (substring string 0 id-stop)))
-			   (tid (string->symbol (substring string
-							   type-start
-							   len))))
+			   (tid (string->symbol
+				   (substring string type-start len))))
 			(cons id (use-type tid loc))))))
 		((and (char=? (string-ref string walker) #\:)
 		      (<fx walker (-fx len 1))
@@ -162,9 +160,9 @@
 ;*    parse-id/import-location ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (parse-id/import-location::pair id loc loci)
-   (parse-id/use id
-		 loc
-		 (lambda (tid loc) (use-type/import-loc! tid loc loci))))
+   (parse-id/use
+      id loc
+      (lambda (tid loc) (use-type/import-loc! tid loc loci))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-id ...                                                     */

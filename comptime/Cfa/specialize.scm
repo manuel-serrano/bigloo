@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Thu Jun 16 07:20:30 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:26:32 2011 (serrano)                */
 ;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -166,15 +166,15 @@
 ;*---------------------------------------------------------------------*/
 (define (show-specialize)
    (verbose 1 "   . Specializing" #\newline)
-   (for-each (lambda (type.num)
-		(if (>fx (cdr type.num) 0)
-		    (verbose 2 "        (-> " (shape (car type.num))
-			     ": " (cdr type.num) #")\n")))
+   (for-each (lambda (type-num)
+		(if (>fx (cdr type-num) 0)
+		    (verbose 2 "        (-> " (shape (car type-num))
+			     ": " (cdr type-num) #")\n")))
 	     *specialized-types*)
-   (for-each (lambda (type.num)
-		(if (>fx (cdr type.num) 0)
-		    (verbose 2 "        (eq? " (shape (car type.num))
-			     ": " (cdr type.num) #")\n")))
+   (for-each (lambda (type-num)
+		(if (>fx (cdr type-num) 0)
+		    (verbose 2 "        (eq? " (shape (car type-num))
+			     ": " (cdr type-num) #")\n")))
 	     *specialized-eq-types*))
 
 ;*---------------------------------------------------------------------*/

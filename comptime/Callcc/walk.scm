@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Thu Mar 24 14:02:19 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:27:34 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
@@ -43,13 +43,13 @@
 	  (body   (sfun-body fun))
 	  (celled (celled-bindings (sfun-args fun))))
       ;; we set alpha-fast slot
-      (for-each (lambda (w.b)
-		   (local-fast-alpha-set! (car w.b) (cdr w.b)))
+      (for-each (lambda (w-b)
+		   (local-fast-alpha-set! (car w-b) (cdr w-b)))
 		celled)
       (sfun-body-set! fun (cell-formals celled (callcc! body)))
       ;; we remove alpha-fast slots
-      (for-each (lambda (w.b)
-		   (local-fast-alpha-set! (car w.b) #unspecified))
+      (for-each (lambda (w-b)
+		   (local-fast-alpha-set! (car w-b) #unspecified))
 		celled)))
 
 ;*---------------------------------------------------------------------*/
@@ -65,9 +65,9 @@
 	  (loop celled (cdr formals)))
 	 (else
 	  (let* ((var (make-local-svar (local-id (car formals)) *obj*))
-		 (o.n (cons (car formals) var)))
+		 (o-n (cons (car formals) var)))
 	     (widen!::local/cell var)
-	     (loop (cons o.n celled) (cdr formals)))))))
+	     (loop (cons o-n celled) (cdr formals)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cell-formals ...                                                 */
@@ -80,15 +80,15 @@
 	     (loc loc)
 	     (body body)
 	     (type (strict-node-type (node-type body) *_*))
-	     (bindings (map (lambda (o.n)
-			       (cons (cdr o.n)
+	     (bindings (map (lambda (o-n)
+			       (cons (cdr o-n)
 				     (a-make-cell (instantiate::var
 						     (type (strict-node-type
-							    (variable-type (car o.n))
+							    (variable-type (car o-n))
 							    *_*))
 						     (loc loc)
-						     (variable (car o.n)))
-						  (car o.n))))
+						     (variable (car o-n)))
+						  (car o-n))))
 			    celled))))))
 
 ;*---------------------------------------------------------------------*/

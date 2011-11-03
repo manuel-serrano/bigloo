@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sun Mar 27 07:45:48 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:21:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -133,9 +133,9 @@
 					    (gensym)
 					    vid)))
 			       (loop (cdr args) (cons var res)))))))
-	  (id.type (parse-id/import-location id loc loci))
-	  (type-res (cdr id.type))
-	  (id (car id.type))
+	  (id-type (parse-id/import-location id loc loci))
+	  (type-res (cdr id-type))
+	  (id (car id-type))
 	  (sfun (instantiate::sfun
 		   (arity arity)
 		   (args args-type)
@@ -230,9 +230,9 @@
 			   (else
 			    (let ((a (fast-id-of-id (car args) loc)))
 			       (loop (cdr args) (cons a res)))))))
-	  (id.type   (parse-id/import-location id loc loci))
-	  (type-res  (cdr id.type))
-	  (id        (car id.type))
+	  (id-type   (parse-id/import-location id loc loci))
+	  (type-res  (cdr id-type))
+	  (id        (car id-type))
 	  (sfun      (instantiate::sfun
 			(arity arity)
 			(args  args-type)
@@ -263,8 +263,8 @@
 (define (declare-global-svar! id module import srce srci)
    (let* ((loc       (find-location srce))
 	  (loci      (find-location/loc srci loc))
-	  (id.type   (parse-id/import-location id loc loci))
-	  (type      (let ((type (cdr id.type)))
+	  (id-type   (parse-id/import-location id loc loci))
+	  (type      (let ((type (cdr id-type)))
 			;; we check that global exported variable are defined
 			;; without type or with the obj type.
 			(cond
@@ -286,7 +286,7 @@
 			      (>=fx *bdb-debug* 3))
 			 'export
 			 import))
-	  (id        (car id.type))
+	  (id        (car id-type))
 	  (svar      (instantiate::svar))
 	  (old       (find-global id))
 	  (global    (bind-global! id module svar import srce)))
@@ -301,8 +301,8 @@
 ;*    declare-global-scnst! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-scnst! id module import node class loc)
-   (let* ((id.type   (parse-id id loc))
-	  (type      (let ((type (cdr id.type)))
+   (let* ((id-type   (parse-id id loc))
+	  (type      (let ((type (cdr id-type)))
 			;; we check that global exported variable are defined
 			;; without type or with the obj type.
 			(cond
@@ -312,7 +312,7 @@
 					    (shape type)))
 			   (else
 			    type))))
-	  (id        (car id.type))    
+	  (id        (car id-type))    
 	  (scnst     (instantiate::scnst
 			(class class)
 			(node node)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Mon Aug 30 14:34:09 2010 (serrano)                */
-;*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 14:28:38 2011 (serrano)                */
+;*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -89,9 +89,9 @@
 	     globals)
    ;; in addition we write that make_pair is CONS and some
    ;; other builtins
-   (for-each (lambda (scm.c)
-		(let ((scm (car scm.c))
-		      (c (cdr scm.c)))
+   (for-each (lambda (scm-c)
+		(let ((scm (car scm-c))
+		      (c (cdr scm-c)))
 		   (fprint port
 			   "      fputs( \"(\\\""
 			   scm "\\\" \\\""

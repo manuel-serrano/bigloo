@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Mar 30 08:23:22 2011 (serrano)                */
+#*    Last change :  Thu Nov  3 10:25:18 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -132,7 +132,7 @@ AST_FILE	= build venv glo_decl node unit dump glo_def pragma \
                   var find_gdefs ident remove local sexp labels let \
                   exit substitute alphatize occur toccur app apply lvtype \
                   hrtype shrinkify check_init private check_sharing init \
-                  check_type
+                  check_type object
 
 AST_OBJ		= $(AST_FILE:%=Ast/%.o)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Sep 16 08:51:27 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 17:14:00 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -130,6 +130,7 @@
 	    (inline object-class-num-set! ::object ::long)
 	    (inline object-class::obj ::object)
 	    (find-class ::symbol)
+	    (class-exists ::symbol)
 	    (class?::bool ::obj)
 	    (eval-class?::bool ::obj)
 	    (class-super class)
@@ -148,6 +149,7 @@
 	    (class-nil::obj class)
 	    (inline class-fields?::bool fields)
 	    (make-class-field::vector ::symbol o o o ::bool ::obj ::obj)
+	    (make-class-field-new::vector ::symbol o o o ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol field)
@@ -159,7 +161,7 @@
 	    (class-field-len-accessor::procedure field)
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
-	    (class-field-type::symbol field)
+	    (class-field-type::obj field)
 	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long o o ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -320,6 +322,17 @@
 		 (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    class-exists ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (class-exists::obj cname)
+   (let loop ((i 0))
+      (unless (=fx i *nb-classes*)
+	 (let ((cla (vector-ref-ur *classes* i)))
+	    (if (eq? (class-name cla) cname)
+		cla
+		(loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    class? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (class? obj)
@@ -436,7 +449,10 @@
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter indexed virtual info default)
-   (vector name getter setter indexed virtual make-class-field info default 'obj))
+   (make-class-field-new name getter setter indexed virtual info default 'obj))
+
+(define (make-class-field-new name getter setter indexed virtual info default type)
+   (vector name getter setter indexed virtual make-class-field info default type))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */

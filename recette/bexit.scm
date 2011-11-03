@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Tue Mar 29 11:26:11 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 11:44:34 2011 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -72,13 +72,13 @@
 ;*---------------------------------------------------------------------*/
 (define bug-bexit-1
    (lambda (x1)
-      (labels ((!-d.try1015 (!-d.1008)
-			    (if :-d.1008
+      (labels ((!-d,try1015 (!-d,1008)
+			    (if !-d,1008
 				(bind-exit
-				 (!-d.staticexit1010)
+				 (!-d,staticexit1010)
 				 0)
 				0)))
-	 (!-d.try1015 0))))
+	 (!-d,try1015 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test5 ...                                                        */

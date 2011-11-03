@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Mon Mar 28 14:29:49 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:27:17 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -43,13 +43,13 @@
 	  (celled (celled-bindings (sfun-args fun)))
 	  (what/by* (append celled what/by*)))
       ;; we set alpha-fast slot 
-      (for-each (lambda (w.b)
-		   (local-fast-alpha-set! (car w.b) (cdr w.b)))
+      (for-each (lambda (w-b)
+		   (local-fast-alpha-set! (car w-b) (cdr w-b)))
 		what/by*)
       (let ((res (cell-formals celled (glo! ast integrator))))
 	 ;; we remove alpha-fast slots
-	 (for-each (lambda (w.b)
-		      (local-fast-alpha-set! (car w.b) #unspecified))
+	 (for-each (lambda (w-b)
+		      (local-fast-alpha-set! (car w-b) #unspecified))
 		   what/by*)
 	 res)))
 
@@ -72,12 +72,12 @@
 			   ((eq? (local-access (car formals)) 'read) vtype)
 			   (else *obj*)))
 		 (var (make-local-svar (local-id (car formals)) ntype))
-		 (o.n (cons (car formals) var)))
+		 (o-n (cons (car formals) var)))
 	     (local-access-set! var 'cell-integrate)
 	     (widen!::svar/Iinfo (local-value var)
 		(celled? #t)
 		(kaptured? #t))
-	     (loop (cons o.n celled) (cdr formals)))))))
+	     (loop (cons o-n celled) (cdr formals)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cell-formals ...                                                 */
@@ -90,16 +90,16 @@
 	     (loc loc)
 	     (body body)
 	     (type (strict-node-type (node-type body) *_*))
-	     (bindings (map (lambda (o.n)
-			       (cons (cdr o.n)
+	     (bindings (map (lambda (o-n)
+			       (cons (cdr o-n)
 				     (a-make-cell (instantiate::var
 						     (type (strict-node-type
 							    (variable-type
-							     (car o.n))
+							     (car o-n))
 							     *_*))
 						     (loc loc)
-						     (variable (car o.n)))
-						  (car o.n))))
+						     (variable (car o-n)))
+						  (car o-n))))
 			    celled))))))
 
 ;*---------------------------------------------------------------------*/
@@ -434,13 +434,13 @@
 	  #unspecified)
 	 (else
 	  (let ((celled (celled-bindings (sfun-args fun))))
-	     (for-each (lambda (w.b)
-			  (variable-fast-alpha-set! (car w.b) (cdr w.b)))
+	     (for-each (lambda (w-b)
+			  (variable-fast-alpha-set! (car w-b) (cdr w-b)))
 		       celled)
 	     (let* ((nbody1 (glo! obody integrator))
 		    (nbody2 (cell-formals celled nbody1)))
-		(for-each (lambda (w.b)
-			     (variable-fast-alpha-set! (car w.b) #unspecified))
+		(for-each (lambda (w-b)
+			     (variable-fast-alpha-set! (car w-b) #unspecified))
 			  celled)
 		(sfun-body-set! fun nbody2)))))))
 

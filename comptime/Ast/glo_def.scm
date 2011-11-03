@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Tue Jun 14 14:23:08 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:22:14 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -84,9 +84,9 @@
 	  "    loc: " (shape (find-location src-exp)) #\newline)
    (enter-function id)
    (let* ((loc        (find-location src-exp))
-	  (id.type    (parse-id id loc))
-	  (type-res   (cdr id.type))
-	  (id         (car id.type))
+	  (id-type    (parse-id id loc))
+	  (type-res   (cdr id-type))
+	  (id         (car id-type))
 	  (import     (if (and (>=fx *bdb-debug* 3)
 			       (memq 'bdb (backend-debug-support (the-backend))))
 			  'export
@@ -216,9 +216,9 @@
 ;*---------------------------------------------------------------------*/
 (define (def-global-scnst! id module node class loc)
    (enter-function id)
-   (let* ((id.type    (parse-id id loc))
-	  (id.id      (car id.type))
-	  (old-global (find-global/module id.id module))
+   (let* ((id-type    (parse-id id loc))
+	  (id-id      (car id-type))
+	  (old-global (find-global/module id-id module))
 	  (global     (declare-global-scnst! id
 					     module
 					     'static
@@ -236,18 +236,18 @@
 ;*---------------------------------------------------------------------*/
 (define (def-global-svar! id module src-exp rem)
    (let* ((loc        (find-location src-exp))
-	  (id.type    (parse-id id loc))
-	  (id.id      (car id.type))
-	  (old-global (find-global/module id.id module))
+	  (id-type    (parse-id id loc))
+	  (id-id      (car id-type))
+	  (old-global (find-global/module id-id module))
 	  (import     (if (and (>=fx *bdb-debug* 3)
 			       (memq 'bdb (backend-debug-support (the-backend))))
 			  'export
 			  'static))
-	  (type       (let ((type (cdr id.type)))
+	  (type       (let ((type (cdr id-type)))
 			 ;; we check that global exported variable are defined
 			 ;; without type or with the obj type.
 			 (if (not (eq? (type-class type) 'bigloo))
-			     (user-error id.id
+			     (user-error id-id
 					 "Illegal type for global variable"
 					 (shape type))
 			     type)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Jun 27 08:44:58 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:50:31 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -93,6 +93,25 @@
 ;*---------------------------------------------------------------------*/
 (define evmodule-uninitialized
    '|#uninitialized|)
+
+;*---------------------------------------------------------------------*/
+;*    untype-ident ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (untype-ident id)
+   (if (not (symbol? id))
+       id
+       (let* ((string (symbol->string id))
+	      (len    (string-length string)))
+	  (let loop ((walker  0))
+	     (cond
+		((=fx walker len)
+		 id)
+		((and (char=? (string-ref string walker) #\:)
+		      (<fx walker (-fx len 1))
+		      (char=? (string-ref string (+fx walker 1)) #\:))
+		 (string->symbol (substring string 0 walker)))
+		(else
+		 (loop (+fx walker 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *modules-table* ...                                              */

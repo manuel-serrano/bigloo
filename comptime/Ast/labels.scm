@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Mar 27 07:40:25 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:22:35 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `labels->node' translator                                    */
 ;*=====================================================================*/
@@ -91,9 +91,9 @@
 ;*    make-local-noopt-sfun ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (make-local-noopt-sfun loc src fun args body)
-   (let* ((id.type (parse-id fun loc))
-	  (id      (car id.type))
-	  (type    (cdr id.type))
+   (let* ((id-type (parse-id fun loc))
+	  (id      (car id-type))
+	  (type    (cdr id-type))
 	  (arity   (local-arity args))
 	  (formals (map (lambda (a)
 			   (parse-id a loc))

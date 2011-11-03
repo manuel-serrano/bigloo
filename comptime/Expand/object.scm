@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Oct 22 18:34:03 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 14:25:48 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -391,10 +391,10 @@
       (match-case expr
 	 ((?instantiate . ?body)
 	  (let* ((loc (find-location/loc body loc))
-		 (id.type (parse-id instantiate loc))
-		 (kclass (cdr id.type)))
+		 (id-type (parse-id instantiate loc))
+		 (kclass (cdr id-type)))
 	     (cond
-		((not (eq? (car id.type) 'instantiate))
+		((not (eq? (car id-type) 'instantiate))
 		 (error #f
 			"co-instantiate:Illegal binding"
 			bdg))
@@ -458,9 +458,9 @@
 		(((and ?var (? symbol?)) ?expr)
 		 (let* ((bdg (car bindings))
 			(loc (find-location/loc bdg x))
-			(id.type (parse-id var loc))
-			(id (car id.type))
-			(t (cdr id.type))
+			(id-type (parse-id var loc))
+			(id (car id-type))
+			(t (cdr id-type))
 			(priv (gensym))
 			(kclass (find-instantiate-class expr bdg loc)))
 		    (loop (cdr bindings)
@@ -480,9 +480,9 @@
 (define (expand-duplicate  x e)
    (match-case x
       ((?duplicate ?dup . ?prov)
-       (let* ((id.type (parse-id duplicate (find-location x)))
-	      (id      (car id.type))
-	      (class   (cdr id.type)))
+       (let* ((id-type (parse-id duplicate (find-location x)))
+	      (id      (car id-type))
+	      (class   (cdr id-type)))
 	  (cond
 	     ((not (tclass? class))
 	      (error #f

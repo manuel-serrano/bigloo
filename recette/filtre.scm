@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug 12 16:13:39 1992                          */
-;*    Last change :  Sun Mar 23 05:58:41 2003 (serrano)                */
+;*    Last change :  Thu Nov  3 14:18:53 2011 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de globalisation d'apres Christian.                    */
 ;*---------------------------------------------------------------------*/
@@ -24,7 +24,7 @@
    #f)
 
 (define (match f e)
-  ((m-g f) e r.init a.init m.init 
+  ((m-g f) e r-init a-init m-init 
 		     (lambda (e r z) #t)
 		     (lambda () #f)))
 
@@ -96,7 +96,7 @@
   (lambda (e r a m k z)
     (if (pair? e)
         ((m-g f1)
-         (car e) r a.init m.init 
+         (car e) r a-init m-init 
          (lambda (ee rr zz)
            ((m-g f2)
             (cdr e) rr a m k zz ) )
@@ -106,13 +106,13 @@
 (define (m-ssetq-append-g n f1 f2)
   (lambda (e r a m k z)
     ((m-g f1)
-     e r (extend a.init n 
+     e r (extend a-init n 
                  (lambda (ee rr zz)
                     (if (eq? (rr n) unbound-pattern)
                         ((m-g f2)
                          ee (extend rr n (cut e ee)) a m k zz ) 
                         (wrong "cannot rebind" n) ) ) )
-     m.init (lambda (ee rr zz)
+     m-init (lambda (ee rr zz)
               (wrong "Ssetq not ended" f1) )
      z ) ) )
 
@@ -137,8 +137,8 @@
 		    e r a m k
 		    (lambda () 
                        ((m-g f1)
-                        e r a.init 
-			(extend m.init n ltry)
+                        e r a-init 
+			(extend m-init n ltry)
 			(lambda (ee rr zz)
 			   (wrong "Times not ended" f1) )
 			z ) ) ) ))
@@ -148,15 +148,15 @@
   (lambda (e r a m k z)
     ((m n) e r z) ) )
 
-(define (a.init n)
+(define (a-init n)
   (lambda (e r z)
     (wrong "No current ssetq for" n) ) )
 
-(define (m.init n)
+(define (m-init n)
   (lambda (e r z)
     (wrong "No current repetition named" n) ) )
 
-(define (r.init n)
+(define (r-init n)
   unbound-pattern )
 
 (define unbound-pattern '**unbound-pattern**)

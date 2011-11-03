@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Fri Feb 18 15:01:43 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:29:40 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -369,7 +369,7 @@
    (if (not (pair? rule))
        (expand-atom match env rule)
        (match-case rule
-	  ((... ?num ?r)             (expand-... match env num r rule))
+	  ((... ?num ?r)             (expand-dots match env num r rule))
 	  ((uncase ?rule)            (expand-uncase match env rule))
 	  ((* ?rule)                 (expand-* match env rule))
 	  ((+ ?rule)                 (expand-+ match env rule))
@@ -426,19 +426,19 @@
        (make-sequence (map char->integer (string->list rule)))))
 
 ;*---------------------------------------------------------------------*/
-;*    expand-... ...                                                   */
+;*    expand-dots ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    This operator applies to sequences. It constructs a regexp       */
 ;*    that matches, the 1fst, the 1fst and 2nd, the 1fst and 2nd and   */
 ;*    3th, etc... parts of the regexp. For instance                    */
-;*       (expand-... (sequence r1 r2 r3 r4))                           */
+;*       (expand-dots (sequence r1 r2 r3 r4))                          */
 ;*          ->                                                         */
 ;*       (or (sequence r1)                                             */
 ;*           (sequence r1 r2)                                          */
 ;*           (sequence r1 r2 r3)                                       */
 ;*           (sequence r1 r2 r3 r4))                                   */
 ;*---------------------------------------------------------------------*/
-(define (expand-... match env num rule err)
+(define (expand-dots match env num rule err)
    (define (explode-sequence rules)
       (let loop ((rules rules)
 		 (i 0))

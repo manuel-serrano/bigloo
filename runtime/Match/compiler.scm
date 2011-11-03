@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Jean-Marie Geffroy                                */
 ;*    Creation    :  Thu Jan 14 10:29:50 1993                          */
-;*    Last change :  Fri Feb 18 15:09:50 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:31:25 2011 (serrano)                */
 ;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    A hand-written pattern "compiler"                                */
@@ -62,8 +62,8 @@
 (define (pcompile f)
    (let ((s (jim-gensym "E-")))
    `(lambda (,s)
-       ,(compile f s r.init m.init
-		 k.init z.init d.init))))
+       ,(compile f s r-init m-init
+		 k-init z-init d-init))))
 
 (define (compile f e r m k z d)
    (cond
@@ -418,16 +418,16 @@
 	   (look-for-descr d (cdr D-env)))))
 
 
-(define (k.init r z d) #t)
+(define (k-init r z d) #t)
 
-(define (z.init d) #f)
+(define (z-init d) #f)
 
-(define d.init '(any))
+(define d-init '(any))
 
 ;*---------------------------------------------------------------------*/
 ;*    We do not need anything better...                                */
 ;*---------------------------------------------------------------------*/
-(define r.init '())
+(define r-init '())
 
 (define (extend-alist l pt im)
    `((,pt . ,im) ,@l))
@@ -445,7 +445,7 @@
 
 	       'dummy)))
 
-(define (m.init n)  
+(define (m-init n)  
    (lambda (e r k z c)
       (wrong "No current repetition named" n) ) )
 

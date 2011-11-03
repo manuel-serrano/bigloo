@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Thu May  5 09:57:13 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:27:58 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -72,33 +72,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-coercion-clause! c-id super . testing)
    (produce-module-clause!
-    (if (and #f (backend-pragma-support (the-backend)))
-	(c-make-coercion-clause.toberemoved-5may2011 c-id super testing)
-	(nopragma-make-coercion-clause c-id super testing))))
-
-;*---------------------------------------------------------------------*/
-;*    c-make-coercion-clause ...                                       */
-;*---------------------------------------------------------------------*/
-(define (c-make-coercion-clause.toberemoved-5may2011 c-id super testing)
-   (let* ((class->obj (class->obj-id c-id))
-	  (obj->class (obj->class-id c-id))
-	  (ttest  (if (null? testing)
-		      (list (class?-id c-id))
-		      '()))
-	  (x (make-typed-ident 'x c-id)))
-      (let loop ((super super)
-		 (coercer (list `(coerce obj ,c-id ,ttest (,obj->class))
-				`(coerce ,c-id obj () (,class->obj))
-				`(coerce ,c-id bool () ((lambda (,x) #t))))))
-	 (if (not (tclass? super))
-	     `(type ,@coercer)
-	     (let* ((super-id     (tclass-id super))
-		    (class->super (class->super-id c-id super-id))
-		    (super->class (super->class-id super-id c-id)))
-		(loop (tclass-its-super super)
-		      (cons* `(coerce ,super-id ,c-id	,ttest (,super->class))
-			     `(coerce ,c-id ,super-id () (,class->super))
-			     coercer)))))))
+      (nopragma-make-coercion-clause c-id super testing)))
 
 ;*---------------------------------------------------------------------*/
 ;*    nopragma-make-coercion-clause ...                                */

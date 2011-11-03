@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Mar 27 07:42:34 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:22:51 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -124,9 +124,9 @@
 			  bloc
 			  loc))
 	  (frame      (map (lambda (binding)
-			      (let* ((var.id (parse-id (car binding) nloc))
-				     (id (car var.id))
-				     (type (cdr var.id)))
+			      (let* ((var-id (parse-id (car binding) nloc))
+				     (id (car var-id))
+				     (type (cdr var-id)))
 				 (if (user-symbol? id)
 				     (make-user-local-svar id type)
 				     (make-local-svar id type))))

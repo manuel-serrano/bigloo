@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Apr 12 10:04:21 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 17:05:07 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -85,7 +85,7 @@
 ;*    decompose-ident ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (decompose-ident id::symbol)
-   (let* ((string (symbol->string id))
+   (let* ((string (symbol->string! id))
 	  (len (string-length string)))
       (let loop ((walker  0))
 	 (cond
@@ -363,7 +363,7 @@
 		     ,hash
 		     (list ,@(map (lambda (f)
 				     (let ((sid (slot-id f)))
-					`(make-class-field
+					`(make-class-field-new
 					  ',sid
 					  ,(or (slot-getter f)
 					       (slot-ref sid id))
@@ -375,7 +375,8 @@
 					       #f)
 					  ,(slot-virtualp f)
 					  ,(slot-info f)
-					  ',(slot-default-value f))))
+					  ',(slot-default-value f)
+					  ',(slot-type f))))
 				  slots))
 		     ,constructor
 		     '#())))
@@ -387,7 +388,7 @@
 ;*---------------------------------------------------------------------*/
 (define (field->slot field)
    (slot (class-field-name field)
-	 #f
+	 (or (class-field-type field) 'obj)
 	 (not (class-field-mutable? field))
 	 (class-field-default-value field)
 	 (when (class-field-virtual? field)
@@ -752,7 +753,8 @@
       ((symbol? f)
        (multiple-value-bind (id type)
 	  (decompose-ident f)
-	  (list (slot id type #f (class-field-no-default-value) #f #f #f #f))))
+	  (list (slot id (if type (or (class-exists type) type) 'obj)
+		   #f (class-field-no-default-value) #f #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
        (evcompile-error (or (get-source-location f) loc)
 			'eval "Illegal slot declaration" f))
@@ -816,7 +818,9 @@
 		     (or (get-source-location f) loc)
 		     'eval "Missing virtual get" f))
 		   (else
-		    (let ((s (slot id type ronly def get set indexp info)))
+		    (let ((s (slot id
+				(if type (or (class-exists type) type) 'obj)
+				ronly def get set indexp info)))
 		       (if indexp
 			   (list
 			    (slot (slot-len id)

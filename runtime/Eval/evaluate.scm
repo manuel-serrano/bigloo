@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Wed Mar  9 18:00:10 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 15:10:09 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -42,10 +42,10 @@
 	    __r4_pairs_and_lists_6_3
 	    __r4_input_6_10_2
 	    __r4_control_features_6_9
-	    __r5_control_features_6_4
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
+	    __r5_control_features_6_4
 
 	    __pp
 	    __reader
@@ -65,6 +65,25 @@
    (export  (evaluate2 sexp env loc)
 	    (get-evaluation-contexte)
 	    (set-evaluation-contexte! v)))
+
+;*---------------------------------------------------------------------*/
+;*    untype-ident ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (untype-ident id)
+   (if (not (symbol? id))
+       id
+       (let* ((string (symbol->string id))
+	      (len    (string-length string)))
+	  (let loop ((walker  0))
+	     (cond
+		((=fx walker len)
+		 id)
+		((and (char=? (string-ref string walker) #\:)
+		      (<fx walker (-fx len 1))
+		      (char=? (string-ref string (+fx walker 1)) #\:))
+		 (string->symbol (substring string 0 walker)))
+		(else
+		 (loop (+fx walker 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluation-contexte ...                                      */

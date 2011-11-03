@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:42:10 1994                          */
-;*    Last change :  Fri Dec 15 05:47:47 2006 (serrano)                */
-;*    Copyright   :  1994-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 14:23:56 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `if' macro expansion                                         */
 ;*=====================================================================*/
@@ -270,11 +270,11 @@
 ;*    est l'expression a reecrire. Le second est la variable testee.   */
 ;*    La troisieme est l'expression a mettre dans le `else'.           */
 ;*---------------------------------------------------------------------*/
-(define (if->case! exp.var.end)
-   (trace expand "if->case: " exp.var.end #\Newline)
-   (let* ((exp     (car exp.var.end))
-	  (var     (cadr exp.var.end))
-	  (end-exp (caddr exp.var.end))
+(define (if->case! exp-var-end)
+   (trace expand "if->case: " exp-var-end #\Newline)
+   (let* ((exp     (car exp-var-end))
+	  (var     (cadr exp-var-end))
+	  (end-exp (caddr exp-var-end))
 	  (new-exp `(case ,var
 		       ,@(let loop ((exp     exp)
 				    (clauses '()))

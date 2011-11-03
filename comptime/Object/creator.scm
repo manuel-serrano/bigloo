@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Mar 16 08:25:36 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:28:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
@@ -367,7 +367,7 @@
 	 (if (backend-pragma-support (the-backend))
 	     (pragma-allocate)
 	     (nopragma-allocate)))
-      (define (make-body.debug)
+      (define (make-body-debug)
 	 (let* ((alloc-id (symbol-append '%allocate- id)))
 	    `(let ((,(make-typed-ident new tid)
 		    ,(if (not (eq? widening 'widening))
@@ -381,7 +381,7 @@
 			 (map (lambda (constr) `(,constr ,new)) constrs)
 			 '())
 		   ,new))))
-      (define (make-body.sans-debug)
+      (define (make-body-sans-debug)
 	 (let* ((alloc-id (symbol-append '%allocate- id)))
 	    `(let ((,(make-typed-ident new tid)
 		    ,(if (not (eq? widening 'widening))
@@ -397,8 +397,8 @@
 		   ,new))))
       (define (make-body)
 	 (if (eq? (backend-language (the-backend)) 'jvm)
-	     (make-body.debug)
-	     (make-body.sans-debug)))
+	     (make-body-debug)
+	     (make-body-sans-debug)))
       ;; the module clause of the maker
       (produce-module-clause! `(,import (,mk-tid ,@f-tids)))
       (produce-module-clause! `(pragma (,mk-id allocator)))

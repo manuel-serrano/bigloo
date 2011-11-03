@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Thu Aug  9 07:01:16 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov  3 14:26:56 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -50,13 +50,13 @@
    (let ((ifun (global-value var)))
       (sfun/Iinfo-K-set!  ifun (list 'bottom))
       (sfun/Iinfo-K*-set! ifun (list 'bottom))
-      (K.2! A (K.1! A '()))))
+      (K-2! A (K-1! A '()))))
 
 ;*---------------------------------------------------------------------*/
-;*    K.1! ...                                                         */
+;*    K-1! ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (K.1! A A-tail)
-   (trace (integrate 4) "K.1!..." #\Newline)
+(define (K-1! A A-tail)
+   (trace (integrate 4) "K-1!..." #\Newline)
    (if (null? A)
        A-tail
        (let* ((pr (car A))
@@ -66,28 +66,28 @@
 	  (cond
 	     ((eq? k 'tail)
 	      (if (eq? f g)
-		  (K.1! (cdr A) A-tail)
-		  (K.1! (cdr A) (cons pr A-tail))))
+		  (K-1! (cdr A) A-tail)
+		  (K-1! (cdr A) (cons pr A-tail))))
 	     (else
 	      (let ((ifun (variable-value g)))
 		 (if (memq k (sfun/Iinfo-K ifun))
-		     (K.1! (cdr A) A-tail)
+		     (K-1! (cdr A) A-tail)
 		     (begin
 			(sfun/Iinfo-K-set!  ifun (cons k (sfun/Iinfo-K ifun)))
 			(sfun/Iinfo-K*-set! ifun (cons k (sfun/Iinfo-K* ifun)))
-			(K.1! (cdr A) A-tail)))))))))
+			(K-1! (cdr A) A-tail)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    K.2! ...                                                         */
+;*    K-2! ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (K.2! A A-tail)
-   (trace (integrate 4) "K.2!..." #\Newline)
+(define (K-2! A A-tail)
+   (trace (integrate 4) "K-2!..." #\Newline)
    (let loop ((continue #t))
       (if (not continue)
 	  A-tail
 	  (let liip ((At A-tail)
 		     (continue #f))
-	     (trace (integrate 5) " K.2 liip: At="
+	     (trace (integrate 5) " K-2 liip: At="
 		    (if (pair? At) (shape (car At)) '())
 		    "  continue=" continue #\Newline)
 	     (if (null? At)
@@ -99,7 +99,7 @@
 			       (gifun (variable-value g)))
 			   (let laap ((Ks (sfun/Iinfo-K ifun))
 				      (continue continue))
-			      (trace (integrate 5) "K.2  laap: Ks="
+			      (trace (integrate 5) "K-2  laap: Ks="
 				     (if (pair? Ks) (shape (car Ks)) '())
 				     " continue=" continue #\Newline)
 			      (if (null? Ks)

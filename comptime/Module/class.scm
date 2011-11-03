@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Mar 13 08:38:45 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 16:54:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -309,25 +309,34 @@
 	      `',value)
 	     (else
 	      (find-default-attribute (cdr attr))))))
+   (define (type-default-id type)
+      (if (eq? (type-id type) '_)
+	  'obj
+	  (type-id type)))
    (define (make-slot-field slot)
       (match-case slot
 	 ((? symbol?)
 	  ;; simple slot without any attributes
-	  (let ((id (fast-id-of-id slot loc)))
-	     `((@ make-class-field __object)
+	  (let* ((pid (parse-id slot loc))
+		 (id (car pid))
+		 (type (cdr pid)))
+	     `((@ make-class-field-new __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(symbol-append class-id '- id '-set!)
 	       #unspecified
 	       #f
 	       #f
-	       ((@ class-field-no-default-value __object)))))
+	       ((@ class-field-no-default-value __object))
+	       ,(if (tclass? type)
+		    (tclass-holder type)
+		    `',(type-default-id type)))))
 	 ((* (and ?id (? symbol?)) . ?att)
 	  ;; indexed slot with possible attributes
 	  (if (any? virtual? att)
 	      (error id "Illegal indexed slot" slot)
 	      (let ((id (fast-id-of-id id loc)))
-		 `((@ make-class-field __object)
+		 `((@ make-class-field-new __object)
 		   ',id
 		   ,(symbol-append class-id '- id '-ref)
 		   ,(if (not (read-only? att))
@@ -336,11 +345,14 @@
 		   ,(symbol-append class-id '- id '-len)
 		   #f
 		   ,(find-info-attribute slot)
-		   ,(find-default-attribute slot)))))
+		   ,(find-default-attribute slot)
+		   'obj))))
 	 (((and ?id (? symbol?)) . ?att)
 	  ;; simple slot with attributes
-	  (let ((id (fast-id-of-id id loc)))
-	     `((@ make-class-field __object)
+	  (let* ((pid (parse-id id loc))
+		 (id (car pid))
+		 (type (cdr pid)))
+	     `((@ make-class-field-new __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(if (not (read-only? att))
@@ -349,11 +361,14 @@
 	       #unspecified
 	       ,(virtual? att)
 	       ,(find-info-attribute slot)
-	       ,(find-default-attribute slot))))
+	       ,(find-default-attribute slot)
+	       ,(if (tclass? type)
+		    (tclass-holder type)
+		    `',(type-default-id type)))))
 	 (else
 	  (internal-error "make-class-fields"
-			  "Illegal slot definition"
-			  slot))))
+	     "Illegal slot definition"
+	     slot))))
    (let ((slot-defs (match-case slot-defs
 		       (((?-) . ?rest)
 			rest)

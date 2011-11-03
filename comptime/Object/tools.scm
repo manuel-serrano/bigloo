@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Wed Mar 16 11:45:03 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 11:08:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -38,7 +38,9 @@
 	    (make-indexed-ref/widening ::type ::slot obj index ::obj)
 	    (make-indexed-init-set! ::type ::slot obj val)
 	    (make-indexed-set! ::type ::slot obj val index)
-	    (make-indexed-set!/widening ::type ::slot obj val index ::obj)))
+	    (make-indexed-set!/widening ::type ::slot obj val index ::obj)
+	    (real-slot-class-owner::type ::slot)
+	    (find-class-slot::obj ::type ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class->obj-id ...                                                */
@@ -221,3 +223,17 @@
    (if (not widening)
        (make-indexed-set! type slot obj val index)
        (make-indexed-set! type slot `(object-widening ,obj) val index)))
+
+;*---------------------------------------------------------------------*/
+;*    find-class-slot ...                                              */
+;*---------------------------------------------------------------------*/
+(define (find-class-slot klass id)
+   (let loop ((slots (tclass-slots klass)))
+      (cond
+	 ((null? slots)
+	  (when (tclass-widening klass)
+	     (find-class-slot (tclass-its-super klass) id)))
+	 ((eq? (slot-id (car slots)) id)
+	  (car slots))
+	 (else
+	  (loop (cdr slots))))))

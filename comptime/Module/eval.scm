@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Jul 18 16:34:42 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:23:18 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -262,26 +262,26 @@
 		 (res globals))
 	 (if (null? eval-exported)
 	     res
-	     (let ((var.module.pos (car eval-exported)))
-		(let ((g (if (cadr var.module.pos)
-			     (find-global/module (car var.module.pos)
-						 (cadr var.module.pos))
-			     (find-global (car var.module.pos)))))
+	     (let ((var-module-pos (car eval-exported)))
+		(let ((g (if (cadr var-module-pos)
+			     (find-global/module (car var-module-pos)
+						 (cadr var-module-pos))
+			     (find-global (car var-module-pos)))))
 		   (cond
 		      ((not (global? g))
 		       (user-error/location (find-location
-					     (caddr var.module.pos))
+					     (caddr var-module-pos))
 					    "eval-init"
 					    "Unbound eval variable"
-					    (car var.module.pos)
+					    (car var-module-pos)
 					    '())
 		       (loop (cdr eval-exported) res))
 		      ((not (global-evaluable? g))
 		       (user-error/location (find-location
-					     (caddr var.module.pos))
+					     (caddr var-module-pos))
 					    "eval-init"
 					    "This variable cannot be known by eval"
-					    (car var.module.pos)
+					    (car var-module-pos)
 					    '())
 		       (loop (cdr eval-exported) res))
 		      (else

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Wed Jun  8 10:08:12 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:30:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -74,7 +74,7 @@
 	    __evenv
 	    __evmodule
 
-	    (extend.r.macro-env __match_normalize))
+	    (extend-r-macro-env __match_normalize))
    
    (eval    (export *c-debug-repl-value*))
 
@@ -696,7 +696,7 @@
 (define (expand-define-pattern x)
    (match-case x
       ((?- ?name ?var ?body)
-       (extend.r.macro-env name (eval! `(lambda ,var ,body)))
+       (extend-r-macro-env name (eval! `(lambda ,var ,body)))
        ''dummy)
       (else
        (evexpand-error 'expand-define-pattern "Illegal form" x))))

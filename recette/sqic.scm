@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette.case1/sqic.scm               */
+;*    serrano/prgm/project/bigloo/recette/sqic.scm                     */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:27:18 1992                          */
-;*    Last change :  Thu Jul  5 08:37:58 2001 (serrano)                */
+;*    Last change :  Thu Nov  3 14:19:38 2011 (serrano)                */
 ;*                                                                     */
 ;*    On fait quelque tests qui portent sur la phase sqic->c.          */
 ;*---------------------------------------------------------------------*/
@@ -195,25 +195,25 @@
 (define filter@types
    (lambda (x1)
       (labels
-	    ((!-d.staticfail1024 () 9))
+	    ((!-d-staticfail1024 () 9))
 	 (case x1
 	    ((2)
 	     (case x1
 		((2)
 		 4)
-		(else (!-d.staticfail1024))))
+		(else (!-d-staticfail1024))))
 	    ((3)
 	     (case x1
 		((3)
 		 x1)
-		(else (!-d.staticfail1024))))
+		(else (!-d-staticfail1024))))
 	    (else
 	     (case x1
 		((4)
 		 (if x1
 		     (filter_list@types 4)
 		     8))
-		(else (!-d.staticfail1024))))))))
+		(else (!-d-staticfail1024))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Un autre programme qui plantait `integ'                          */
@@ -226,24 +226,24 @@
 (define 2-171-concat_228@baltree
    (lambda (x1 x2)
       (labels
-	    ((!-d.staticfail1016
+	    ((!-d-staticfail1016
 	      ()
 	      0))
 	 (labels
-	       ((!-d.staticfail1017
+	       ((!-d-staticfail1017
 		 ()
 		 (labels
-		       ((!-d.staticfail1018
+		       ((!-d-staticfail1018
 			 ()
 			 (case x1
 			    ((2)
 			     (case x2
 				((2)
 				 (((join_132@baltree 0) 0) 0))
-				(else (!-d.staticfail1016))))
-			    (else (!-d.staticfail1016)))))
-		    (!-d.staticfail1018))))
-	    (!-d.staticfail1017)))))
+				(else (!-d-staticfail1016))))
+			    (else (!-d-staticfail1016)))))
+		    (!-d-staticfail1018))))
+	    (!-d-staticfail1017)))))
 
 
 ;*---------------------------------------------------------------------*/

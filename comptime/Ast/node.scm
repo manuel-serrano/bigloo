@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Thu May  5 05:09:20 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 09:56:19 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -112,7 +112,7 @@
 	      (fname::bstring read-only)
 	      ;; the type of the field
 	      (ftype::type read-only)
-	      ;; the type the field belongs to
+	      ;; the type the field belongs to (i.e., the class)
 	      (otype::type read-only))
 
 	   ;; the object field read and write
@@ -121,7 +121,7 @@
 	      (fname::bstring read-only)
 	      ;; the type of the field
 	      (ftype::type read-only)
-	      ;; the type the field belongs to
+	      ;; the type the field belongs to (i.e., the class)
 	      (otype::type read-only))
 
 	   ;; extern object creation

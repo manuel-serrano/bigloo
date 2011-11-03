@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Wed Apr  6 14:45:14 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 17:32:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -46,7 +46,8 @@
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
-
+	    __r5_control_features_6_4
+	    
    	    __evenv
 	    __eval
 	    __evobject
@@ -54,41 +55,9 @@
 	    __expand
 	    __reader)
    
-   (export  (untype-ident ident)
-	    (evcompile-loc-filename loc)
+   (export  (evcompile-loc-filename loc)
 	    (evcompile exp ::pair-nil ::obj ::symbol ::bool loc ::bool ::bool)
 	    (evcompile-error ::obj ::obj ::obj ::obj)))
-
-;*---------------------------------------------------------------------*/
-;*    untype-ident ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (untype-ident id)
-   (if (not (symbol? id))
-       id
-       (let* ((string (symbol->string id))
-	      (len    (string-length string)))
-	  (let loop ((walker  0))
-	     (cond
-		((=fx walker len)
-		 id)
-		((and (char=? (string-ref string walker) #\:)
-		      (<fx walker (-fx len 1))
-		      (char=? (string-ref string (+fx walker 1)) #\:))
-		 (string->symbol (substring string 0 walker)))
-		(else
-		 (loop (+fx walker 1))))))))
-
-;*---------------------------------------------------------------------*/
-;*    untype-ident* ...                                                */
-;*---------------------------------------------------------------------*/
-(define (untype-ident* idents)
-   (cond
-      ((null? idents)
-       '())
-      ((pair? idents)
-       (cons (untype-ident (car idents)) (untype-ident* (cdr idents))))
-      (else
-       (untype-ident idents))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-location ...                                                 */
@@ -126,9 +95,10 @@
       ((atom ?atom)
        (cond
 	  ((symbol? atom)
-	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
-	  ((or (vector? atom)
-	       (struct? atom))
+	   (if (field-access? atom)
+	       (evcompile-field-ref atom env genv where tail loc lkp toplevelp)
+	       (evcompile-ref (variable loc atom env genv) genv loc lkp)))
+	  ((or (vector? atom) (struct? atom))
 	   (evcompile-error loc
 			    "eval"
 			    "Illegal expression (should be quoted)"
@@ -194,7 +164,7 @@
 			    exp))
 	  (else
 	   (let ((loc (get-location exp loc)))
-	      (evcompile-define-value (untype-ident var)
+	      (evcompile-define-value var
 				      (evcompile val '()
 						 genv where
 						 (tailcall?)
@@ -214,13 +184,15 @@
 			     loc)))
 	  ((?- (and (? symbol?) ?var) ?val)
 	   (let ((loc (get-location exp loc)))
-	      (evcompile-set (variable loc var env genv)
-			     (evcompile val env
-					genv var #f
-					(get-location val loc)
-					lkp #f)
-			     genv
-			     loc)))
+	      (if (field-access? var)
+		  (evcompile-field-set var val env genv where tail loc lkp #f)
+		  (evcompile-set (variable loc var env genv)
+		     (evcompile val env
+			genv var #f
+			(get-location val loc)
+			lkp #f)
+		     genv
+		     loc))))
 	  (else
 	   (evcompile-error (get-location exp loc) "set!" "Illegal form" exp))))
       ((bind-exit ?escape ?body)
@@ -261,16 +233,15 @@
 	     (scm-formals (dsssl-formals->scheme-formals
 			   formals
 			   (lambda (proc msg obj)
-			      (evcompile-error loc proc msg obj))))
-	     (untyped-scm-formals (untype-ident* scm-formals)))
-	 (evcompile-lambda untyped-scm-formals
+			      (evcompile-error loc proc msg obj)))))
+	 (evcompile-lambda scm-formals
  			   (evcompile (make-dsssl-function-prelude
 				       exp
 				       formals
 				       body
 				       (lambda (proc msg obj)
 					  (evcompile-error loc proc msg obj)))
-				      (extend-env untyped-scm-formals env)
+				      (extend-env scm-formals env)
 				      genv
 				      where
 				      (tailcall?)
@@ -462,7 +433,7 @@
 ;*    evcompile-define-value ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-define-value var val loc)
-   (evcode 17 loc var val ($eval-module)))
+   (evcode 17 loc (untype-ident var) val ($eval-module)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-bind-exit ...                                          */
@@ -670,8 +641,7 @@
 ;*    evcompile-let ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-let bindings body env genv where tail loc lkp)
-   (let* ((env2 (extend-env (map (lambda (i) (untype-ident (car i))) bindings)
-			    env))
+   (let* ((env2 (extend-env (map car bindings) env))
 	  (b (evcompile body env2 genv where tail loc lkp #f))
 	  (as (map (lambda (a)
 		      (let ((loc (get-location a loc))
@@ -690,10 +660,7 @@
 	      (as '())
 	      (env3 env))
       (if (null? bdgs)
-	  (let* ((env2 (extend-env
-			(reverse! (map (lambda (i) (untype-ident (car i)))
-				       bindings))
-			env))
+	  (let* ((env2 (extend-env (reverse! (map car bindings)) env))
 		 (bd (evcompile body env2 genv where tail loc lkp #f)))
 	     (evcode 66 loc bd (reverse! as)))
 	  (let* ((b (car bdgs))
@@ -704,7 +671,7 @@
 		 (a (evcompile (cadr b) env3 genv n #f loc lkp #f)))
 	     (loop (cdr bdgs)
 		   (cons a as)
-		   (extend-env (list (untype-ident (car b))) env3))))))
+		   (extend-env (list (car b)) env3))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-letrec ...                                             */
@@ -724,8 +691,7 @@
 ;*    evcompile-letrec-lambda ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-letrec-lambda bindings body env genv where tail loc lkp)
-   (let* ((env2 (extend-env (map (lambda (i) (untype-ident (car i))) bindings)
-			    env))
+   (let* ((env2 (extend-env (map car bindings) env))
 	  (b (evcompile body env2 genv where tail loc lkp #f))
 	  (as (map (lambda (a)
 		      (let ((loc (get-location a loc))
@@ -760,12 +726,12 @@
 (define (variable loc symbol env genv)
    (if (not (symbol? symbol))
        (evcompile-error loc "eval" "Illegal `set!' expression" symbol)
-       (let ((offset (let loop ((env   env)
+       (let ((offset (let loop ((env env)
 				(count 0))
 			(cond 
 			   ((null? env)
 			    #f)
-			   ((eq? (car env) symbol)
+			   ((eq? (caar env) symbol)
 			    count)
 			   (else
 			    (loop (cdr env) (+fx count 1)))))))
@@ -804,17 +770,53 @@
    (cdr dynamic))
 
 ;*---------------------------------------------------------------------*/
+;*    untype-ident ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (untype-ident id)
+   (if (not (symbol? id))
+       id
+       (let* ((string (symbol->string id))
+	      (len    (string-length string)))
+	  (let loop ((walker  0))
+	     (cond
+		((=fx walker len)
+		 id)
+		((and (char=? (string-ref string walker) #\:)
+		      (<fx walker (-fx len 1))
+		      (char=? (string-ref string (+fx walker 1)) #\:))
+		 (string->symbol (substring string 0 walker)))
+		(else
+		 (loop (+fx walker 1))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    extend-env ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (extend-env extend old-env)
-   (let _loop_ ((extend extend))
+(define (extend-env frames env)
+   
+   (define (extend-one var env)
+      (let* ((string (symbol->string! var))
+	     (len (string-length string)))
+	 (let loop ((walker  0))
+	    (cond
+	       ((=fx walker len)
+		(cons (cons var #f) env))
+	       ((and (char=? (string-ref-ur string walker) #\:)
+		     (<fx walker (-fx len 1))
+		     (char=? (string-ref string (+fx walker 1)) #\:))
+		(let ((id (string->symbol (substring string 0 walker)))
+		      (type (string->symbol (substring string (+fx walker 2)))))
+		   (cons (cons id (or (class-exists type) type)) env)))
+	       (else
+		(loop (+fx walker 1)))))))
+
+   (let loop ((frames frames))
       (cond
-	 ((null? extend)
-	  old-env)
-	 ((not (pair? extend))
-	  (cons extend old-env))
+	 ((null? frames)
+	  env)
+	 ((not (pair? frames))
+	  (extend-one frames env))
 	 (else
-	  (cons (car extend) (_loop_ (cdr extend)))))))
+	  (extend-one (car frames) (loop (cdr frames)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-loc-filename ...                                       */
@@ -883,3 +885,78 @@
 			  (loadq i))))
 		l)))
 
+;*---------------------------------------------------------------------*/
+;*    field-access? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (field-access? s)
+   (let ((s (symbol->string! s)))
+      (when (string-index s #\.)
+	 (let ((sp (string-split s ".")))
+	    (every? symbol? sp)))))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-field-ref ...                                          */
+;*---------------------------------------------------------------------*/
+(define (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
+   (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
+	  (v (variable loc (car l) env genv)))
+      (if (not (integer? v))
+	  (evcompile-error loc "eval" "Static type not a class" exp)
+	  (let loop ((node (car l))
+		     (klass (cdr (list-ref env v)))
+		     (fields (cdr l)))
+	     (cond
+		((null? fields)
+		 (evcompile node env genv where tail loc lkp toplevelp))
+		((not (class? klass))
+		 (evcompile-error loc "eval" "Static type not a class" exp))
+		(else
+		 (let ((field (find-class-field klass (car fields))))
+		    (if (not field)
+			(evcompile-error loc "eval"
+			   (format "Class \"~a\" has not field \"~a\""
+			      (class-name klass) (car fields))
+			   exp)
+			(let ((node (make-field-ref klass field node)))
+			   (loop node (class-field-type field) (cdr fields)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-field-set ...                                          */
+;*---------------------------------------------------------------------*/
+(define (evcompile-field-set var val env genv where tail loc lkp toplevelp)
+   (let* ((l (map! string->symbol (string-split (symbol->string! var) ".")))
+	  (v (variable loc (car l) env genv)))
+      (if (not (integer? v))
+	  (evcompile-error loc "set!" "Static type not a class" var)
+	  (let loop ((node (car l))
+		     (klass (cdr (list-ref env v)))
+		     (fields (cdr l)))
+	     (if (not (class? klass))
+		 (evcompile-error loc "set!" "Static type not a class" var)
+		 (let ((field (find-class-field klass (car fields))))
+		    (cond
+		       ((not field)
+			(evcompile-error loc "set!"
+			   (format "Class \"~a\" has not field \"~a\""
+			      (class-name klass) (car fields))
+			   var))
+		       ((null? (cdr fields))
+			(if (class-field-mutable? field)
+			    (evcompile (make-field-set! klass field node val)
+			       env genv where tail loc lkp toplevelp)
+			    (evcompile-error loc "eval" "Field read-only" exp)))
+		       (else
+			(let ((node (make-field-ref klass field node)))
+			   (loop node (class-field-type field) (cdr fields)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    make-field-ref ...                                               */
+;*---------------------------------------------------------------------*/
+(define (make-field-ref kclass field exp)
+   `(,(class-field-accessor field) ,exp))
+	   
+;*---------------------------------------------------------------------*/
+;*    make-field-set! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (make-field-set! kclass field var val)
+   `(,(class-field-mutator field) ,var ,val))

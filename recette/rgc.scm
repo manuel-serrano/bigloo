@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  8 11:03:03 1994                          */
-;*    Last change :  Fri Sep 30 07:35:55 2011 (serrano)                */
+;*    Last change :  Thu Nov  3 14:20:09 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Quelques tests d'rgc                                             */
 ;*=====================================================================*/
@@ -134,7 +134,7 @@
 		  ((** 3 6 #\a) (the-string)))))
       (read/rp gram port)))
 
-(define (rgc-... str)
+(define (rgc-etc str)
    (let ((port (open-input-string str))
 	 (gram (regular-grammar ()
 		  ((... 3 "begin") (the-string)))))
@@ -252,7 +252,7 @@
    (test "rgc and" (rgc-and-2 "aaaabbbbccc") "")
    (test "rgc but" (rgc-but "aaaabbbbccc") "aaaabbbb")
    (test "rgc **" (rgc-** "aaaaaaaaaaabbbbccc") "aaaaaa")
-   (test "rgc ..." (rgc-... "begin") "beg")
+   (test "rgc ..." (rgc-etc "begin") "beg")
    (test "rgc submatch" (rgc-submatch "   +++   ") "      ")
    (test "fixnum" (read/rp (regular-grammar () ((: digit) (the-fixnum)))
 			   (open-input-string "1234"))

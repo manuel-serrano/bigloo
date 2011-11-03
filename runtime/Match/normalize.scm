@@ -35,7 +35,7 @@
    (export  (normalize-pattern pat)
 	    (match-define-structure! exp)
 	    (match-define-record-type! exp)
-	    (extend.r.macro-env name fun)))
+	    (extend-r-macro-env name fun)))
  
 ;;;===========================================================4
 ;;; The standardizer converts patterns with an 
@@ -120,7 +120,7 @@
 
 (define (normalize-pattern e)
   ((standardize-pattern e) 
-   r.macro-pattern
+   r-macro-pattern
    (lambda (pattern rr) pattern) ) )
 
 ;(define (standardize-pattern e)
@@ -317,16 +317,16 @@
       (standardize-any f*) ) )
 
 (define (standardize-macro-pattern e)
-  (apply (lookup r.macro-pattern (car e)) (cdr e)) )
+  (apply (lookup r-macro-pattern (car e)) (cdr e)) )
 
 ;;;--------------------------------------------------------------------*/
 ;;;   Macro-patterns                                                   */
 ;;;--------------------------------------------------------------------*/
 
 ;;; The environment binding name to macro-pattern
-(define r.macro-pattern.init '())
+(define r-macro-pattern-init '())
 
-(define r.macro-pattern r.macro-pattern.init)
+(define r-macro-pattern r-macro-pattern-init)
 
 (define (extend-alist fn pt im)
   (cons (cons pt im) fn) )
@@ -336,24 +336,24 @@
        (cdr (assq n r))
        #f))
 
-(define (extend.r.macro-env name fun)
-   (set! r.macro-pattern
-	 (extend-alist r.macro-pattern
+(define (extend-r-macro-env name fun)
+   (set! r-macro-pattern
+	 (extend-alist r-macro-pattern
 		       name
 		       fun)))
 
 (define-macro (defmacro-pattern name variables body)
   `(begin
-;*     (set! r.macro-pattern  */
-;*          (extend-alist r.macro-pattern  */
+;*     (set! r-macro-pattern  */
+;*          (extend-alist r-macro-pattern  */
 ;* 		       ',name  */
 ;* 		       (lambda ,variables ,body) ) )  */
-      (extend.r.macro-env ',name (lambda ,variables ,body))
+      (extend-r-macro-env ',name (lambda ,variables ,body))
     ',name ) )
 
 (define (macro-pattern? e)
   (and (pair? e)
-       (lookup r.macro-pattern (car e)) ) )
+       (lookup r-macro-pattern (car e)) ) )
 
 (defmacro-pattern atom l
    (if (null? l)
@@ -482,7 +482,7 @@
 (define (match-wrong msg arg)
   (error 'Pattern-Matching msg arg))
 
-(define (r9.init n)
+(define (r9-init n)
   unbound-pattern)
 
 (define n normalize-pattern)
