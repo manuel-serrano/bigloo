@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Thu Nov  3 14:28:24 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 15:58:41 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
@@ -64,8 +64,8 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-plain-class-creators class src-def import)
    (append (gen-noinline-plain-class-creators class src-def import)
-	   (gen-inline-plain-class-creators class src-def import)
-	   (gen-plain-class-nil class src-def import)))
+      (gen-inline-plain-class-creators class src-def import)
+      (gen-plain-class-nil class src-def import)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-inline-plain-class-creators ...                              */
@@ -79,7 +79,7 @@
 	     (holder (tclass-holder class))
 	     (fill-id (symbol-append 'fill- id '!)))
 	 (list (gen-class-fill! fill-id id class src-def import)
-	       (gen-class-allocate! id class holder src-def import)))))
+	    (gen-class-allocate! id class holder src-def import)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-noinline-plain-class-creators ...                            */
@@ -97,8 +97,8 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-wide-class-creators class src-def import)
    (append (gen-noinline-wide-class-creators class src-def import)
-	   (gen-inline-wide-class-creators class src-def import)
-	   (gen-wide-class-nil class src-def import)))
+      (gen-inline-wide-class-creators class src-def import)
+      (gen-wide-class-nil class src-def import)))
  
 ;*---------------------------------------------------------------------*/
 ;*    gen-noinline-wide-class-creators ...                             */
@@ -111,7 +111,7 @@
 		(widening (symbol-append widening '- id))
 		(super (tclass-its-super class)))
 	     (list (gen-class-make! 'widening widening id class src-def import)
-		   (gen-wide-class-make! id class src-def import))))))
+		(gen-wide-class-make! id class src-def import))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-inline-wide-class-creators ...                               */
@@ -124,7 +124,7 @@
 		(widening (symbol-append widening '- id))
 		(super (tclass-its-super class)))
 	     (list (gen-class-fill! fill-id id class src-def import)
-		   (gen-class-allocate! id super holder src-def import))))))
+		(gen-class-allocate! id super holder src-def import))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-java-class-creator ...                                       */
@@ -273,20 +273,20 @@
 		 (cid (fast-id-of-id ident loc))
 		 (tid (make-typed-ident (symbol-append jid '- cid) jid))
 		 (args-id (map (lambda (_) (mark-symbol-non-user! (gensym)))
-			       args-type))
+			     args-type))
 		 (self (mark-symbol-non-user! (gensym)))
 		 (tself (make-typed-ident self jid))
 		 (targs (map (lambda (id type)
 				(symbol-append id type))
-			     args-id args-type))
+			   args-id args-type))
 		 (def `(define (,tid ,@targs)
-			      ;; call the actual Java constructor
-			      ,(apply make-private-sexp 'new jid
-				      `',(map (lambda (a)
-						 (type-id
-						  (type-of-id a loc)))
-					      args-type)
-				      args-id)))
+			  ;; call the actual Java constructor
+			  ,(apply make-private-sexp 'new jid
+			      `',(map (lambda (a)
+					 (type-id
+					    (type-of-id a loc)))
+				    args-type)
+			      args-id)))
 		 (scope (if (inline-creators?) 'static 'export))
 		 (mod `(,scope (,tid ,@args-type))))
 	     (produce-module-clause! mod)
@@ -361,7 +361,7 @@
 			      (type-name type))))
 	       `(,(make-typed-ident 'free-pragma tid)
 		 ,(string-append "((" tname
-				 ")BREF( GC_MALLOC (sizeof(" sizeof "))))"))))
+		     ")BREF( GC_MALLOC (sizeof(" sizeof "))))"))))
 	 (define (nopragma-allocate)
 	    (make-private-sexp 'new tid))
 	 (if (backend-pragma-support (the-backend))
@@ -413,28 +413,7 @@
 (define (make-class-slot-make! type new rid rtid slots f-ids)
    (define (make-class-slot slot formal flen)
       (let ((loop (mark-symbol-non-user! (gensym 'loop))))
-	 (cond
-	    ((slot-indexed slot)
-	     ;; for an indexed field we have to make a
-	     ;; malloc call and then to fill all the field slots
-	     `(begin
-		 ,(make-indexed-init-set! type slot new flen)
-		 ;; this loop fills the field slots
-		 (labels ((,loop (,rtid)
-				 (if (=fx ,rid ,flen)
-				     'done
-				     (begin
-					,(make-indexed-set!/widening
-					  type
-					  slot
-					  new
-					  formal
-					  rid
-					  #f)
-					(,loop (+fx ,rid 1))))))
-		    (,loop 0))))
-	    (else
-	     (make-direct-set! type slot new formal)))))
+	 (make-direct-set! type slot new formal)))
    (let loop ((slots slots)
 	      (f-ids f-ids)
 	      (res   '())
@@ -446,9 +425,9 @@
 	  (loop (cdr slots) f-ids res len-id))
 	 (else
 	  (loop (cdr slots)
-		(cdr f-ids)
-		(cons (make-class-slot (car slots) (car f-ids) len-id) res)
-		(car f-ids))))))
+	     (cdr f-ids)
+	     (cons (make-class-slot (car slots) (car f-ids) len-id) res)
+	     (car f-ids))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-class-allocate! ...                                          */
@@ -466,14 +445,14 @@
 			   (type-name type))))
 	    `(,(make-typed-ident 'free-pragma tid)
 	      ,(string-append "((" tname
-			      ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
+		  ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
       (define (pragma-allocate)
 	 `(define-inline (,alloc-tid)
 	     (let ((,(make-typed-ident new tid) ,(c-malloc type)))
 		(object-class-num-set! ,new
-				       ((@ class-num __object)
-					(@ ,(global-id holder)
-					   ,(global-module holder))))
+		   ((@ class-num __object)
+		    (@ ,(global-id holder)
+		       ,(global-module holder))))
 		(object-widening-set! ,new #f)
 		,new)))
       (define (nopragma-allocate)
@@ -481,9 +460,9 @@
 	     (let ((,(make-typed-ident new tid)
 		    ,(make-private-sexp 'new tid)))
 		(object-class-num-set! ,new
-				       ((@ class-num __object)
-					(@ ,(global-id holder)
-					   ,(global-module holder))))
+		   ((@ class-num __object)
+		    (@ ,(global-id holder)
+		       ,(global-module holder))))
 		(object-widening-set! ,new #f)
 		,new)))
       ;; in all cases, produce an parse an import clause
@@ -491,7 +470,7 @@
       (epairify* (if (backend-pragma-support (the-backend))
 		     (pragma-allocate)
 		     (nopragma-allocate))
-		 src-def)))
+	 src-def)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-wide-class-make! ...                                         */
@@ -511,7 +490,7 @@
 	  (f-tids      (make-class-make-typed-formals f-ids slots))
 	  (sf-tids     (make-class-make-typed-formals sf-ids sslots))
 	  (widening    (symbol-append
-			(tclass-widening type) '- (type-id type)))
+			  (tclass-widening type) '- (type-id type)))
 	  (aux         (mark-symbol-non-user! (gensym 'aux)))
 	  (new         (mark-symbol-non-user! (gensym 'new)))
 	  (mk-class-id (symbol-append 'make- stid)))
@@ -519,28 +498,28 @@
       (produce-module-clause! `(,import (,mk-tid ,@sf-tids ,@f-tids)))
       ;; the definition of the maker
       (epairify* `(define (,mk-tid ,@sf-tids ,@f-tids)
-		   ;; we make the allocation in several times:
-		   ;; 1- we allocate a super object ...
-		   (let ((,(make-typed-ident aux stid)
-			  (,mk-class-id ,@sf-ids)))
-		      ;; 2- we create a variable of type type aliased
-		      ;; to the super object ...
-		      ;; 3- we set the class number of the new object ...
-		      (object-class-num-set!
-		       ,aux
-		       (class-num (@ ,(global-id holder)
-				     ,(global-module holder))))
-		      ;; 4- we set the widening property ...
-		      (object-widening-set! ,aux (,widening ,@f-ids))
-		      ;; 5- we mark the object (in bactracking compilation)
-		      (let ((,(make-typed-ident new tid)
-			     ,(make-private-sexp 'cast tid aux)))
-			 ;; 6- if there is a constructor for that
-			 ;; object we call it
-			 ,@(if (and (pair? constrs)
-				    (not (eq? widening 'widening)))
-			       (map (lambda (constr) `(,constr ,new)) constrs)
-			       '())
-			 ;; 6- we return the object
-			 ,new)))
-		 src-def)))
+		     ;; we make the allocation in several times:
+		     ;; 1- we allocate a super object ...
+		     (let ((,(make-typed-ident aux stid)
+			    (,mk-class-id ,@sf-ids)))
+			;; 2- we create a variable of type type aliased
+			;; to the super object ...
+			;; 3- we set the class number of the new object ...
+			(object-class-num-set!
+			   ,aux
+			   (class-num (@ ,(global-id holder)
+					 ,(global-module holder))))
+			;; 4- we set the widening property ...
+			(object-widening-set! ,aux (,widening ,@f-ids))
+			;; 5- we mark the object (in bactracking compilation)
+			(let ((,(make-typed-ident new tid)
+			       ,(make-private-sexp 'cast tid aux)))
+			   ;; 6- if there is a constructor for that
+			   ;; object we call it
+			   ,@(if (and (pair? constrs)
+				      (not (eq? widening 'widening)))
+				 (map (lambda (constr) `(,constr ,new)) constrs)
+				 '())
+			   ;; 6- we return the object
+			   ,new)))
+	 src-def)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Mar 16 08:26:06 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:06:39 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
@@ -209,7 +209,7 @@
 		(list
 		 (epairify*
 		  `(define-inline (,slot-ref-tid ,(symbol-append obj tid))
- 		      ,(make-direct-ref/widening class slot obj widening))
+ 		      ,(make-class-ref class slot obj))
 		  src
 		  src-def)))
 	     ;; otherwise we define a alias pointing to the real slot
@@ -354,11 +354,7 @@
 	     (list
 	      (epairify* `(define-inline (,slot-set!-tid
 					  ,(symbol-append obj tid) ,v-tid)
-			     ,(make-direct-set!/widening class
-								slot
-								obj
-								v-id
-								widening))
+			     ,(make-class-set! class slot obj v-id))
 			 (if (slot? slot)
 			     (slot-src slot)
 			     slot)

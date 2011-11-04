@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Fri Nov  4 10:48:55 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:19:01 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -35,8 +35,6 @@
 	    (make-class-ref ::type ::slot ::obj)
 	    (make-class-set! ::type ::slot ::obj ::obj)
 	    (make-direct-set! ::type ::slot obj val)
-	    (make-direct-ref/widening ::type ::slot obj obj)
-	    (make-direct-set!/widening ::type ::slot obj val w)
 	    (make-indexed-ref/widening ::type ::slot obj index ::obj)
 	    (make-indexed-init-set! ::type ::slot obj val)
 	    (make-indexed-set! ::type ::slot obj val index)
@@ -78,7 +76,8 @@
 ;*    make-class-ref ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (make-class-ref type slot obj)
-   (let ((widening (tclass-widening (slot-class-owner slot))))
+   (let* ((klass (slot-class-owner slot))
+	  (widening (and (tclass? klass) (tclass-widening klass))))
       (if (not widening)
 	  (make-direct-ref type slot obj)
 	  (make-direct-ref type slot `(object-widening ,obj)))))
@@ -87,7 +86,8 @@
 ;*    make-class-set! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (make-class-set! type slot obj val)
-   (let ((widening (tclass-widening (slot-class-owner slot))))
+   (let* ((klass (slot-class-owner slot))
+	  (widening (and (tclass? klass) (tclass-widening klass))))
       (if (not widening)
 	  (make-direct-set! type slot obj val)
 	  (make-direct-set! type slot `(object-widening ,obj) val))))
@@ -108,14 +108,6 @@
 			 obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-direct-ref/widening ...                                     */
-;*---------------------------------------------------------------------*/
-(define (make-direct-ref/widening type slot obj widening)
-   (if (not widening)
-       (make-direct-ref type slot obj)
-       (make-direct-ref type slot `(object-widening ,obj))))
-
-;*---------------------------------------------------------------------*/
 ;*    make-direct-set! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-direct-set! type slot obj val)
@@ -131,14 +123,6 @@
 			 fmt
 			 obj val)))
 
-;*---------------------------------------------------------------------*/
-;*    make-direct-set!/widening ...                                    */
-;*---------------------------------------------------------------------*/
-(define (make-direct-set!/widening type slot obj val widening)
-   (if (not widening)
-       (make-direct-set! type slot obj val)
-       (make-direct-set! type slot `(object-widening ,obj) val)))
-   
 ;*---------------------------------------------------------------------*/
 ;*    make-indexed-ref ...                                             */
 ;*---------------------------------------------------------------------*/

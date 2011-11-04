@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Thu Nov  3 16:54:14 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:20:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -370,10 +370,8 @@
 	     "Illegal slot definition"
 	     slot))))
    (let ((slot-defs (match-case slot-defs
-		       (((?-) . ?rest)
-			rest)
-		       (else
-			slot-defs))))
+		       (((?-) . ?rest) rest)
+		       (else slot-defs))))
       `(list ,@(map make-slot-field slot-defs))))
    
 ;*---------------------------------------------------------------------*/
