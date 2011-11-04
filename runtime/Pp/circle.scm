@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Fri Feb 18 15:03:14 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:43:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -119,17 +119,8 @@
 		      (else
 		       (let* ((f (car fields))
 			      (gv (class-field-accessor f)))
-			  (if (class-field-indexed? f)
-			      (let ((gl (class-field-len-accessor f)))
-				 (let liip ((l (-fx (gl obj) 1)))
-				    (if (=fx l -1)
-					(loop (cdr fields) class)
-					(begin
-					   (register (gv obj l))
-					   (liip (-fx l 1))))))
-			      (begin
-				 (register (gv obj))
-				 (loop (cdr fields) class))))))))))
+			  (register (gv obj))
+			  (loop (cdr fields) class))))))))
       ;; first stage: register object components
       (define (register obj)
 	 ;; do not register objects unique by their nature

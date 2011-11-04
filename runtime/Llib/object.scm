@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Nov  3 17:14:00 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:43:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -155,7 +155,6 @@
 	    (class-field-name::symbol field)
 	    (class-field-info::obj field)
 	    (class-field-default-value::obj field)
-	    (class-field-indexed?::bool field)
 	    (class-field-virtual?::bool field)
 	    (class-field-accessor::procedure field)
 	    (class-field-len-accessor::procedure field)
@@ -475,14 +474,6 @@
    (if (class-field? field)
        (vector-ref field 0)
        (error "class-field-name" "Not a class field" field)))
-
-;*---------------------------------------------------------------------*/
-;*    class-field-indexed? ...                                         */
-;*---------------------------------------------------------------------*/
-(define (class-field-indexed?::bool field)
-   (if (class-field? field)
-       (procedure? (vector-ref field 3))
-       (error "class-field-indexed?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-virtual? ...                                         */
@@ -1274,23 +1265,9 @@
 	 (display " [" port)
 	 (display name port)
 	 (display #\: port)
-	 ;; we now print its specific fields
-	 (if (not (class-field-indexed? field))
-	     ;; this is not an indexed field
-	     (begin
-		(display #\space port)
-		(print-slot (get-value obj) port)
-		(display #\] port))
-	     ;; this is an indexed field
-	     (let* ((get-len (class-field-len-accessor field))
-		    (len     (get-len obj)))
-		(let loop ((i 0))
-		   (if (=fx i len)
-		       (display #\] port)
-		       (begin
-			  (display #\space port)
-			  (print-slot (get-value obj i) port)
-			  (loop (+fx i 1)))))))))
+	 (display #\space port)
+	 (print-slot (get-value obj) port)
+	 (display #\] port)))
    (let* ((class (object-class obj))
 	  (class-name (class-name class))
 	  (fields (class-fields class)))
@@ -1322,22 +1299,7 @@
 (define-generic (object-equal?::bool obj1::object obj2::object)
    (define (class-field-equal? field)
       (let ((get-value (class-field-accessor field)))
-	 (if (not (class-field-indexed? field))
-	     ;; this is not an indexed field, some it is a simple check
-	     (equal? (get-value obj1) (get-value obj2))
-	     ;; this field is indexed, we have to check all its values
-	     (let* ((get-len (class-field-len-accessor field))
-		    (len1    (get-len obj1))
-		    (len2    (get-len obj2)))
-		(and (=fx len1 len2)
-		     (let loop ((i 0))
-			(cond
-			   ((=fx i len1)
-			    #t)
-			   ((equal? (get-value obj1 i) (get-value obj2 i))
-			    (loop (+fx i 1)))
-			   (else
-			    #f))))))))
+	 (equal? (get-value obj1) (get-value obj2))))
    (let ((class1 (object-class obj1))
 	 (class2 (object-class obj2)))
       (cond

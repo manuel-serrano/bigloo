@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Thu Nov  3 17:05:07 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:43:02 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -593,7 +593,7 @@
 (define (eval-with-access-expander id all-fields source)
    `(let* ((fields ',(map (lambda (f)
 			     (list (class-field-name f)
-				   (if (class-field-indexed? f) #t #f)
+				   #f
 				   (not (class-field-mutable? f))))
 			  all-fields))
 	   (bdgs (map (lambda (v)
@@ -661,50 +661,13 @@
 ;*    make-eval-with-access-body ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-eval-with-access-body id all-fields tmp)
-   (if (or #t (any? (lambda (f) (class-field-indexed? f)) all-fields))
-       (make-eval-with-access-body-indexed id all-fields tmp)
-       (make-eval-with-access-body-plain id all-fields tmp)))
+   (make-eval-with-access-body-plain id all-fields tmp))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-with-access-body-plain ...                             */
 ;*---------------------------------------------------------------------*/
 (define (make-eval-with-access-body-plain id all-slots tmp)
    ``(begin ,@body))
-
-;*---------------------------------------------------------------------*/
-;*    make-eval-with-access-body-indexed ...                           */
-;*---------------------------------------------------------------------*/
-(define (make-eval-with-access-body-indexed id all-slots tmp)
-   `(let loop ((vars vars))
-       (if (null? vars)
-	   `(begin ,@body)
-	   (let ((d (assq (cadr (car bdgs)) fields)))
-	      (cond
-		 ((not d)
-		  (error ',(symbol-append 'with-access:: id)
-			 "Illegal attribute"
-			 (car vars)))
-		 ((cadr d)
-		  ;; an indexed slot
-		  (let ((v `(,(symbol-append ',id '- (caar vars) '-len)
-			     ,,tmp))
-			(r `(lambda (r)
-			       (,(symbol-append ',id '- (caar vars) '-ref)
-				,,tmp r)))
-			(s `(lambda (r v)
-			       (,(symbol-append ',id '- (caar vars) '-set!)
-				,,tmp r v))))
-		     (if (caddr d)
-			 `(let ((,(symbol-append (caar vars) '-len) ,v)
-				(,(symbol-append (caar vars) '-ref) ,r))
-			     ,(loop (cdr vars)))
-			 `(let ((,(symbol-append (caar vars) '-len) ,v)
-				(,(symbol-append (caar vars) '-ref) ,r)
-				(,(symbol-append (caar vars) '-set!) ,s))
-			     ,(loop (cdr vars))))))
-		 (else
-		  ;; a direct slot
-		  (loop (cdr vars))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-eval-object->struct ...                                     */
@@ -757,22 +720,10 @@
 		   #f (class-field-no-default-value) #f #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
        (evcompile-error (or (get-source-location f) loc)
-			'eval "Illegal slot declaration" f))
-      ((and (eq? (car f) '*)
-	    (or (null? (cdr f))
-		(not (symbol? (cadr f)))
-		(assq 'get (cddr f))
-		(assq 'set (cddr f))))
-       (evcompile-error (or (get-source-location f) loc)
-			'eval "Illegal indexed slot declaration" f))
+	  'eval "Illegal slot declaration" f))
       (else
-       (let ((indexp #f)
-	     (id (car f))
+       (let ((id (car f))
 	     (attrs (cdr f)))
-	  (when (eq? (car f) '*)
-	     (set! id (cadr f))
-	     (set! indexp #t)
-	     (set! attrs (cddr f)))
 	  (multiple-value-bind (id type)
 	     (decompose-ident id)
 	     (let ((def (class-field-no-default-value))
@@ -805,34 +756,23 @@
 				     (set! def expr))
 				    (else
 				     (evcompile-error
-				      (or (get-source-location f) loc)
-				      'eval "Illegal slot declaration" f))))))
-			  attrs)
+					(or (get-source-location f) loc)
+					'eval "Illegal slot declaration" f))))))
+		   attrs)
 		(cond
 		   ((and get (not ronly) (not set))
 		    (evcompile-error
-		     (or (get-source-location f) loc)
-		     'eval "Missing virtual set" f))
+		       (or (get-source-location f) loc)
+		       'eval "Missing virtual set" f))
 		   ((and set (not get))
 		    (evcompile-error
-		     (or (get-source-location f) loc)
-		     'eval "Missing virtual get" f))
+		       (or (get-source-location f) loc)
+		       'eval "Missing virtual get" f))
 		   (else
 		    (let ((s (slot id
 				(if type (or (class-exists type) type) 'obj)
-				ronly def get set indexp info)))
-		       (if indexp
-			   (list
-			    (slot (slot-len id)
-				  'integer
-				  #t
-				  (class-field-no-default-value)
-				  #f
-				  #f
-				  #f
-				  #f)
-			    s)
-			   (list s)))))))))))
+				ronly def get set #f info)))
+		       (list s))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-parse-class ...                                             */
