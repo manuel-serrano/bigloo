@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov  4 16:43:02 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:56:49 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -73,7 +73,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    slot                                                             */
 ;*---------------------------------------------------------------------*/
-(define-struct slot id type ronlyp default-value getter setter indexp info)
+(define-struct slot id type ronlyp default-value getter setter info)
 
 ;*---------------------------------------------------------------------*/
 ;*    slot-virtualp ...                                                */
@@ -193,20 +193,12 @@
 	  (all-args (append (map slot-id super-slots) (map slot-id slots)))
 	  (eval-slots (drop all-slots (length native-slots)))
 	  (eval-args (drop all-args (length native-args))))
-      (define (init-slot s a)
-	 (let ((v (if (slot-indexp s)
-		      `(make-vector ,(slot-len (slot-id s)) ,a)
-		      a)))
-	    v))
       (localize
        loc
        `(define (,fid ,@all-args)
 	   (let ((,tmp (,make-native ,@native-args)))
 	      (object-class-num-set! ,tmp (class-num ,id))
-	      (%object-widening-set! ,tmp
-				     (vector ,@(map init-slot
-						    eval-slots
-						    eval-args)))
+	      (%object-widening-set! ,tmp (vector ,@eval-args))
 	      ,(when const `(,const ,tmp))
 	      ,tmp)))))
 
@@ -226,17 +218,11 @@
 			    (map slot-id (non-virtual-slots slots))))
 	  (eval-slots (drop all-slots (length native-slots)))
 	  (eval-args (drop all-args (length native-args))))
-      (define (init-slot s a)
-	 (let ((v (if (slot-indexp s)
-		      `(make-vector ,(slot-len (slot-id s)) ,a)
-		      a)))
-	    v))
       (localize
        loc
        `(define (,fid ,o ,@all-args)
 	   (,fill-native ,o ,@native-args)
-	   (%object-widening-set! ,o
-				  (vector ,@(map init-slot eval-slots eval-args)))
+	   (%object-widening-set! ,o (vector ,@eval-args))
 	   ,o))))
 
 ;*---------------------------------------------------------------------*/
@@ -302,7 +288,7 @@
 ;*    eval-class-slot ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (eval-class-slot loc cid slot offset)
-   (define (ref-plain)
+   (define (ref)
       (let ((body (if (slot-getter slot)
 		      `(,(slot-getter slot) o)
 		      `(vector-ref-ur (%object-widening o) ,offset))))
@@ -311,7 +297,7 @@
 		 ,body
 		 (bigloo-type-error
 		  ',(slot-ref (slot-id slot) cid) ',cid o)))))
-   (define (set-plain)
+   (define (set)
       (let ((body (if (slot-setter slot)
 		      `(,(slot-setter slot) o v)
 		      `(vector-set-ur! (%object-widening o) ,offset v))))
@@ -320,27 +306,6 @@
 		 ,body
 		 (bigloo-type-error
 		  ',(slot-set (slot-id slot) cid) ',cid o)))))
-   (define (ref-index)
-      `(define (,(slot-ref (slot-id slot) cid) o i)
-	  (if (,(class-predicate cid) o)
-	      (vector-ref (vector-ref-ur (%object-widening o) ,offset) i)
-	      (bigloo-type-error
-	       ',(slot-ref (slot-id slot) cid) ',cid o))))
-   (define (set-index)
-      (let ((body `(vector-set! (vector-ref-ur (%object-widening o) ,offset) i v)))
-	 `(define (,(slot-set (slot-id slot) cid) o i v)
-	     (if (,(class-predicate cid) o)
-		 ,body
-		 (bigloo-type-error
-		  ',(slot-set (slot-id slot) cid) ',cid o)))))
-   (define (ref)
-      (if (slot-indexp slot)
-	  (ref-index)
-	  (ref-plain)))
-   (define (set)
-      (if (slot-indexp slot)
-	  (set-index)
-	  (set-plain)))
    (if (slot-ronlyp slot)
        (list (localize loc (ref)))
        (list (localize loc (ref)) (localize loc (set)))))
@@ -363,16 +328,13 @@
 		     ,hash
 		     (list ,@(map (lambda (f)
 				     (let ((sid (slot-id f)))
-					`(make-class-field-new
+					`(make-class-field
 					  ',sid
 					  ,(or (slot-getter f)
 					       (slot-ref sid id))
 					  ,(unless (slot-ronlyp f)
 					      (or (slot-setter f)
 						  (slot-set sid id)))
-					  ,(if (slot-indexp f)
-					       (slot-ref (slot-len sid) id)
-					       #f)
 					  ,(slot-virtualp f)
 					  ,(slot-info f)
 					  ',(slot-default-value f)
@@ -396,7 +358,6 @@
 	 (when (and (class-field-virtual? field)
 		    (class-field-mutable? field))
 	    (class-field-mutator field))
-	 #f
 	 (class-field-info field)))
 
 ;*---------------------------------------------------------------------*/
@@ -717,7 +678,7 @@
        (multiple-value-bind (id type)
 	  (decompose-ident f)
 	  (list (slot id (if type (or (class-exists type) type) 'obj)
-		   #f (class-field-no-default-value) #f #f #f #f))))
+		   #f (class-field-no-default-value) #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
        (evcompile-error (or (get-source-location f) loc)
 	  'eval "Illegal slot declaration" f))
@@ -771,7 +732,7 @@
 		   (else
 		    (let ((s (slot id
 				(if type (or (class-exists type) type) 'obj)
-				ronly def get set #f info)))
+				ronly def get set info)))
 		       (list s))))))))))
 
 ;*---------------------------------------------------------------------*/

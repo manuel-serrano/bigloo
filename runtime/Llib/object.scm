@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov  4 16:43:04 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:53:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -148,7 +148,7 @@
 	    (class-creator::obj class)
 	    (class-nil::obj class)
 	    (inline class-fields?::bool fields)
-	    (make-class-field::vector ::symbol o o o ::bool ::obj ::obj)
+	    (make-class-field::vector ::symbol o o ::bool ::obj ::obj ::obj)
 	    (make-class-field-new::vector ::symbol o o o ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
@@ -157,7 +157,6 @@
 	    (class-field-default-value::obj field)
 	    (class-field-virtual?::bool field)
 	    (class-field-accessor::procedure field)
-	    (class-field-len-accessor::procedure field)
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
@@ -447,19 +446,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-class-field name getter setter indexed virtual info default)
-   (make-class-field-new name getter setter indexed virtual info default 'obj))
+(define (make-class-field name getter setter virtual info default type)
+   (vector name getter setter virtual make-class-field info default type))
 
 (define (make-class-field-new name getter setter indexed virtual info default type)
-   (vector name getter setter indexed virtual make-class-field info default type))
+   (vector name getter setter virtual make-class-field info default type))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-field? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 9)
-	(eq? (vector-ref obj 5) make-class-field)))
+	(=fx (vector-length obj) 8)
+	(eq? (vector-ref obj 4) make-class-field)))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    class-fields? ...                                                */
@@ -480,7 +479,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-virtual?::bool field)
    (if (class-field? field)
-       (vector-ref field 4)
+       (vector-ref field 3)
        (error "class-field-virtual?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -508,19 +507,11 @@
        (error "class-field-mutator" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
-;*    class-field-len-accessor ...                                     */
-;*---------------------------------------------------------------------*/
-(define (class-field-len-accessor::procedure field)
-   (if (class-field? field)
-       (vector-ref field 3)
-       (error "class-field-len-accessor" "Not a class field" field)))
-
-;*---------------------------------------------------------------------*/
 ;*    class-field-info ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-field-info field)
    (if (class-field? field)
-       (vector-ref field 6)
+       (vector-ref field 5)
        (error "class-field-info" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -528,7 +519,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
    (if (class-field? field)
-       (vector-ref field 7)
+       (vector-ref field 6)
        (error "class-field-default-value" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -536,7 +527,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-type field)
    (if (class-field? field)
-       (vector-ref field 8)
+       (vector-ref field 7)
        (error "class-field-type" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -605,17 +596,17 @@
 ;*    See the initialize-objects! function to understand these         */
 ;*    stranges affections.                                             */
 ;*---------------------------------------------------------------------*/
-(define *nb-classes-max*  *nb-classes-max*)  
-(define *nb-classes*      *nb-classes*)
-(define *classes*         *classes*)
+(define *nb-classes-max* *nb-classes-max*)  
+(define *nb-classes* *nb-classes*)
+(define *classes* *classes*)
 
 ;*---------------------------------------------------------------------*/
 ;*    Generics                                                         */
 ;*---------------------------------------------------------------------*/
 (define *nb-generics-max* *nb-generics-max*)
-(define *nb-generics*     *nb-generics*)
-(define *generics*        *generics*)
-(define *class-key*       *class-key*)
+(define *nb-generics* *nb-generics*)
+(define *generics* *generics*)
+(define *class-key* *class-key*)
 
 ;*---------------------------------------------------------------------*/
 ;*    initialized-objects? ...                                         */
