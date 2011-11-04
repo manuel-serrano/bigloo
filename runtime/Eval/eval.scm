@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Nov  3 14:30:07 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:39:05 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -102,6 +102,8 @@
 	    *load-path*
 	    *user-pass-name*
 	    *user-pass*
+	    (identifier-syntax::symbol)
+	    (identifier-syntax-set! ::symbol)
 	    (notify-assert-fail vars body loc)
 	    *nil*
 	    (transcript-on ::bstring)
@@ -744,6 +746,18 @@
 ;*---------------------------------------------------------------------*/
 (define *user-pass*      (unspecified))  ;; l'eventuelle user pass 
 (define *user-pass-name* "User")         ;; le nom de la user pass
+
+;*---------------------------------------------------------------------*/
+;*    *identifier-syntax*                                              */
+;*    -------------------------------------------------------------    */
+;*    When 'bigloo, identidiers such as x.f are treated as             */
+;*    field "f" of instance "x". Otherwise treated as identifier       */
+;*    "x.f".                                                           */
+;*---------------------------------------------------------------------*/
+(define *identifier-syntax* 'bigloo)
+
+(define (identifier-syntax) *identifier-syntax*)
+(define (identifier-syntax-set! v) (set! *identifier-syntax* v))
 
 ;*---------------------------------------------------------------------*/
 ;*    *transcript* ...                                                 */

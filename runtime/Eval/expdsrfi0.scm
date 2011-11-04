@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Thu Nov  3 18:05:50 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:39:51 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -116,7 +116,7 @@
 		   (bigloo-major-version)
 		   (bigloo-branch-version)
 		   'bigloo
-		   'bigloo-dot-notation
+		   'bigloo-class-sans
 		   '(srfi-0
 		     srfi-2
 		     srfi-4

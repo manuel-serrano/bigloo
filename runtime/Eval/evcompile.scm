@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Thu Nov  3 17:32:07 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:41:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -889,10 +889,11 @@
 ;*    field-access? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (field-access? s)
-   (let ((s (symbol->string! s)))
-      (when (string-index s #\.)
-	 (let ((sp (string-split s ".")))
-	    (every? symbol? sp)))))
+   (when (eq? (identifier-syntax) 'bigloo)
+      (let ((s (symbol->string! s)))
+	 (when (string-index s #\.)
+	    (let ((sp (string-split s ".")))
+	       (every? symbol? sp))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-field-ref ...                                          */
