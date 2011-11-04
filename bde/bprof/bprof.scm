@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 31 07:37:29 1998                          */
-;*    Last change :  Thu Aug  2 07:43:57 2007 (serrano)                */
+;*    Last change :  Fri Nov  4 11:00:52 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo profiler utility.                                     */
 ;*=====================================================================*/
@@ -30,7 +30,7 @@
    ;; we parse command line arguments
    (parse-args argv)
    ;; we have to load now the bmon.out file
-   (load-bmon.out)
+   (load-bmon-out)
    ;; cleanup the demangling
    (for-each (lambda (k)
 		(hashtable-remove! *demangling-env* k))
@@ -65,9 +65,9 @@
 (define *demangling-unmangle* '("%"))
 
 ;*---------------------------------------------------------------------*/
-;*    load-bmon.out ...                                                */
+;*    load-bmon-out ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (load-bmon.out)
+(define (load-bmon-out)
    (if (not (file-exists? *bprof-bmon*))
        (warning "bmon" "Can't find bmon.out file -- " *bprof-bmon*)
        (let ((iport (open-input-file *bprof-bmon*)))

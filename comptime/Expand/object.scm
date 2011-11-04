@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov  4 09:50:35 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 10:37:02 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -72,31 +72,19 @@
 			 (nslots '()))
 		 (cond
 		    ((null? s)
-		     (let* ((aux (mark-symbol-non-user! (gensym 'instance)))
-			    (mark aux)
+		     (let* ((aux (mark-symbol-non-user! (gensym 'i)))
 			    (instance (e instance e))
-			    (class-id (type-id class)))
-			(multiple-value-bind (direct indexed)
-			   (class-split-slots x class nslots)
-			   (replace! x
-				     (with-lexical
-				      (map car nslots)
-				      mark
-				      (find-location x)
-				      (lambda () 
-					 (let ((e (internal-begin-expander
-						   (with-access-expander
-						    e
-						    mark
-						    aux
-						    class-id
-						    direct))))
-					    (make-with-access-body aux
-								   instance
-								   class-id
-								   indexed
-								   body
-								   e))))))))
+			    (class-id (type-id class))
+			    (taux (make-typed-ident aux class-id)))
+			(replace! x
+			   (with-lexical
+			      (map car nslots) aux (find-location x)
+			      (lambda () 
+				 (let ((e (internal-begin-expander
+					     (with-access-expander
+						e aux class-id nslots))))
+				    `(let ((,taux ,instance))
+					,(e (expand-progn body) e))))))))
 		    ((not (pair? s))
 		     (error #f "Illegal `with-access' slot" x))
 		    ((symbol? (car s))
@@ -110,7 +98,7 @@
 		    (else
 		     (error #f
 			    (string-append
-			     "Illegal `with-access' form. Illegal slot identifier `"
+			     "Illegal `with-access', wrong slot identifier `"
 			     (with-output-to-string
 				(lambda () (display (car s))))
 			     "'")
@@ -119,87 +107,9 @@
        (error #f "Illegal `with-access' form" x))))
 
 ;*---------------------------------------------------------------------*/
-;*    class-split-slots ...                                            */
-;*    -------------------------------------------------------------    */
-;*    Split a slot list in two lists: the direct slots and the         */
-;*    indexed slots.                                                   */
-;*---------------------------------------------------------------------*/
-(define (class-split-slots x class slots)
-   (let ((mark (gensym 'with-access)))
-      (for-each (lambda (slot)
-		   (with-access::slot slot (id)
-		      (putprop! id mark slot)))
-		(tclass-all-slots class))
-      (let loop ((slots slots)
-		 (direct '())
-		 (indexed '()))
-	 (if (null? slots)
-	     (values direct indexed)
-	     (let ((slot (getprop (cadr (car slots)) mark)))
-		(if (not (slot? slot))
-		    (error #f
-			   (string-append
-			    "Illegal `with-access' form. Unknown slot `"
-			    (symbol->string (caar slots))
-			    "'")
-			   x)
-		    (if (slot-indexed slot)
-			(loop (cdr slots)
-			      direct
-			      (cons (list (caar slots) slot) indexed))
-			(loop (cdr slots)
-			      (cons (car slots) direct)
-			      indexed))))))))
-
-;*---------------------------------------------------------------------*/
-;*    make-with-access-body ...                                        */
-;*---------------------------------------------------------------------*/
-(define (make-with-access-body aux instance class-id indexed body e)
-   (define (make-indexed-body)
-      (let loop ((indexed indexed))
-	 (cond
-	    ((null? indexed)
-	     (e (expand-progn body) e))
-	    ((slot-read-only? (cadr (car indexed)))
-	     (let* ((slot (cadr (car indexed)))
-		    (nid (car (car indexed)))
-		    (oid (slot-id slot))
-		    (nsref (symbol-append nid '-ref))
-		    (osref (symbol-append oid '-ref))
-		    (full-sref (symbol-append class-id '- osref))
-		    (nslen (symbol-append nid '-len))
-		    (oslen (symbol-append oid '-len))
-		    (full-slen (symbol-append class-id '- oslen))
-		    (i (mark-symbol-non-user! (gensym 'index))))
-		`(let ((,nslen ,(e `(,full-slen ,aux) e)))
-		    (labels ((,nsref (,i) (,full-sref ,aux ,i)))
-		       ,(loop (cdr indexed))))))
-	    (else
-	     (let* ((slot (cadr (car indexed)))
-		    (nid (car (car indexed)))
-		    (oid (slot-id slot))
-		    (nsref (symbol-append nid '-ref))
-		    (osref (symbol-append oid '-ref))
-		    (full-sref (symbol-append class-id '- osref))
-		    (nsset (symbol-append nid '-set!))
-		    (osset (symbol-append oid '-set!))
-		    (full-sset (symbol-append class-id '- osset))
-		    (nslen (symbol-append nid '-len))
-		    (oslen (symbol-append oid '-len))
-		    (full-slen (symbol-append class-id '- oslen))
-		    (i (mark-symbol-non-user! (gensym 'index)))
-		    (v (mark-symbol-non-user! (gensym 'value))))
-		`(let ((,nslen ,(e `(,full-slen ,aux) e)))
-		    (labels ((,nsref (,i) (,full-sref ,aux ,i))
-			     (,nsset (,i ,v) (,full-sset ,aux ,i ,v)))
-		       ,(loop (cdr indexed)))))))))
-   `(let ((,aux ,instance))
-       ,(make-indexed-body)))
-
-;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-access-expander olde mark instance class slots)
+(define (with-access-expander olde instance class slots)
    (define (id var) (cadr (assq var slots)))
    (let ((ids (map car slots)))
       (lambda (x e)
@@ -207,14 +117,14 @@
 	    ((and ?var (? symbol?))
 	     (if (and (memq var ids)
 		      (let ((cell (assq var (lexical-stack))))
-			 (and (pair? cell) (eq? (cdr cell) mark))))
+			 (and (pair? cell) (eq? (cdr cell) instance))))
 		 (olde `(,(symbol-append class '- (id var)) ,instance) olde)
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
 		(if (and (memq var ids)
 			 (let ((cell (assq var (lexical-stack))))
-			    (and (pair? cell) (eq? (cdr cell) mark))))
+			    (and (pair? cell) (eq? (cdr cell) instance))))
 		    (object-epairify
 		     (olde `(,(symbol-append class '- (id var) '-set!)
 			     ,instance ,val)

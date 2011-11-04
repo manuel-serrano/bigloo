@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Thu May  5 11:31:53 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 10:47:31 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -30,16 +30,17 @@
 	    ast_glo-decl)
    
    (export  (class slot
-	       (id::symbol read-only)
 	       ;; the slot identifier
+	       (id::symbol read-only)
+	       ;; the slot name
 	       (name::bstring read-only)
 	       ;; the source of that field (for reporting errors)
 	       (src read-only)
 	       ;; the class that slot belongs to
 	       (class-owner read-only)
-	       ;; the slot name
+	       ;; the slot type (i.e., the type of values)
 	       (type read-only)
-	       ;; the slot type
+	       ;; access property
 	       (read-only?::bool read-only (default #f))
 	       ;; the slot default value
 	       (default-value read-only (default (slot-no-default-value-mark)))

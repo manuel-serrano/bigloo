@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Thu Nov  3 11:08:16 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 10:48:55 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -32,6 +32,8 @@
 	    (class?-id::symbol ::symbol)
 	    (class->super-id::symbol ::symbol ::symbol)
 	    (super->class-id::symbol ::symbol ::symbol)
+	    (make-class-ref ::type ::slot ::obj)
+	    (make-class-set! ::type ::slot ::obj ::obj)
 	    (make-direct-set! ::type ::slot obj val)
 	    (make-direct-ref/widening ::type ::slot obj obj)
 	    (make-direct-set!/widening ::type ::slot obj val w)
@@ -71,6 +73,24 @@
 ;*---------------------------------------------------------------------*/
 (define (super->class-id super class)
    (symbol-append super '-> class))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-ref ...                                               */
+;*---------------------------------------------------------------------*/
+(define (make-class-ref type slot obj)
+   (let ((widening (tclass-widening (slot-class-owner slot))))
+      (if (not widening)
+	  (make-direct-ref type slot obj)
+	  (make-direct-ref type slot `(object-widening ,obj)))))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-set! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (make-class-set! type slot obj val)
+   (let ((widening (tclass-widening (slot-class-owner slot))))
+      (if (not widening)
+	  (make-direct-set! type slot obj val)
+	  (make-direct-set! type slot `(object-widening ,obj) val))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-direct-ref ...                                              */

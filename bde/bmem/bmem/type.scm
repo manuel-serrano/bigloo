@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
-;*    Last change :  Fri Sep 16 09:08:47 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 11:02:58 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
@@ -88,14 +88,14 @@
 (define (make-type-function-chart allsize type* gc* fun*)
    (define (type->cell type)
       (let* ((tnum (car type))
-	     (tval. (exact->inexact (cadr type)))
-	     (allsize. (exact->inexact allsize))
-	     (oper. (/fl tval. allsize.)))
+	     (tvalfl (exact->inexact (cadr type)))
+	     (allsizefl (exact->inexact allsize))
+	     (operfl (/fl tvalfl allsizefl)))
 	 (map (lambda (f)
 		 (let* ((size (funinfo-type-size f tnum))
-			(size. (exact->inexact size))
-			(rper. (/fl size. tval.))
-			(col (inexact->exact (* 100. oper. rper.))))
+			(sizefl (exact->inexact size))
+			(rperfl (/fl sizefl tvalfl))
+			(col (inexact->exact (* 100. operfl rperfl))))
 		    (list col
 			  (string-append "function"
 					 (integer->string 
@@ -104,7 +104,7 @@
 				  (function-ident-pp
 				   (funinfo-ident f))
 				  (word->size size)
-				  (inexact->exact (*fl 100. rper.))))))
+				  (inexact->exact (*fl 100. rperfl))))))
 	      fun*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))
@@ -139,7 +139,7 @@
 (define (make-type-gc-chart allsize type* gc* fun*)
    (define (type->cell type)
       (let* ((tnum (car type))
-	     (allsize. (exact->inexact allsize))
+	     (allsizefl (exact->inexact allsize))
 	     (tsize 0))
 	 (for-each (lambda (f)
 		      (set! tsize (+fx tsize (funinfo-type-size f tnum))))
@@ -159,17 +159,17 @@
 			      (format "gc ~a (0%)" sn)))
 		       (else
 			(let* ((rper (% size tsize))
-			       (tsize. (exact->inexact tsize))
-			       (size. (exact->inexact size))
-			       (rper. (/fl size. tsize.))
-			       (oper. (/fl tsize. allsize.))
-			       (col (inexact->exact (* 100. oper. rper.))))
+			       (tsizefl (exact->inexact tsize))
+			       (sizefl (exact->inexact size))
+			       (rperfl (/fl sizefl tsizefl))
+			       (operfl (/fl tsizefl allsizefl))
+			       (col (inexact->exact (* 100. operfl rperfl))))
 			   (list col
 				 (string-append "gc" sn)
 				 (format "gc ~a (~a%)"
 					 sn
 					 (inexact->exact
-					  (*fl 100. rper.)))))))))
+					  (*fl 100. rperfl)))))))))
 	      gc*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))

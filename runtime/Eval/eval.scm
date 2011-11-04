@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Nov  4 09:39:05 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 11:30:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -754,7 +754,7 @@
 ;*    field "f" of instance "x". Otherwise treated as identifier       */
 ;*    "x.f".                                                           */
 ;*---------------------------------------------------------------------*/
-(define *identifier-syntax* 'bigloo)
+(define *identifier-syntax* 'bigloo-r5rs)
 
 (define (identifier-syntax) *identifier-syntax*)
 (define (identifier-syntax-set! v) (set! *identifier-syntax* v))

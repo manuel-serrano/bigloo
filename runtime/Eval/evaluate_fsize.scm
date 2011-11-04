@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Wed Jul 27 10:41:31 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 12:28:20 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -202,7 +202,7 @@
       e ))
 
 (define-method (search-letrec expr::ev_hook);
-   (with-access::ev_trap expr (e)
+   (with-access::ev_hook expr (e)
       (set! e (search-letrec e))
       expr ))
       
@@ -313,7 +313,7 @@
       e ))
 
 (define-method (subst_goto expr::ev_hook vars lbls);
-   (with-access::ev_trap expr (e)
+   (with-access::ev_hook expr (e)
       (set! e (subst_goto e vars lbls))
       expr ))
       
@@ -400,7 +400,7 @@
       (and (not (hasvar? e1 v)) (tailpos e2 v)) ))
 
 (define-method (tailpos e::ev_hook v::ev_var);
-   (with-access::ev_trap e (e)
+   (with-access::ev_hook e (e)
       (not (hasvar? e v)) ))
 
 (define-method (tailpos e::ev_setlocal var::ev_var);
@@ -479,7 +479,7 @@
       (or (hasvar? e1 v) (hasvar? e2 v)) ))
 
 (define-method (hasvar? e::ev_hook v::ev_var);
-   (with-access::ev_trap e (e)
+   (with-access::ev_hook e (e)
       (hasvar? e v) ))
 
 (define-method (hasvar? e::ev_setlocal var::ev_var);

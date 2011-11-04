@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Nov  3 17:31:29 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 11:20:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -53,7 +53,8 @@
 	    (location->node::node ::global)
 	    (error-sexp->node::node ::bstring ::obj ::obj)
 	    (use-variable! ::variable ::obj ::symbol)
-	    (make-anonymous-name::symbol loc . pref)))
+	    (make-anonymous-name::symbol loc . pref)
+	    (find-local ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    top-level-sexp->node ...                                         */
@@ -127,9 +128,9 @@
 	      (loc loc)
 	      (type (get-type-atom atom))
 	      (value atom)))
-	  ((field-access? atom)
+	  ((field-access? atom stack)
 	   (field-ref->node atom stack loc site))
-	  ((lookup atom stack)
+	  ((find-local atom stack)
 	   =>
 	   (lambda (i) (variable->node i loc site)))
 	  (else
@@ -144,7 +145,7 @@
 ;*--- application -----------------------------------------------------*/
       (((and (? symbol?)
 	     (? (lambda (x)
-		   (or (lookup x stack)
+		   (or (find-local x stack)
 		       (let ((g (find-global x)))
 			  (when g
 			     (not (eq? (global-module g)
@@ -256,7 +257,7 @@
       ((set! . ?-)
        (match-case exp
           ((?- ?var ?val)
-	   (if (and (symbol? var) (field-access? var))
+	   (if (and (symbol? var) (field-access? var stack))
 	       (field-set->node var val stack loc site)
 	       (let* ((loc (find-location/loc exp loc))
 		      (cdloc (find-location/loc (cdr exp) loc))
@@ -586,11 +587,10 @@
 (define *cache-res*   #f)
 
 ;*---------------------------------------------------------------------*/
-;*    lookup ...                                                       */
+;*    find-local ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (lookup name stack)
-   (if (and (eq? name *cache-name*)
-	    (eq? stack *cache-stack*))
+(define (find-local name stack)
+   (if (and (eq? name *cache-name*) (eq? stack *cache-stack*))
        *cache-res*
        (begin
 	  (set! *cache-name* name)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Nov  4 09:41:39 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 11:29:49 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -95,7 +95,7 @@
       ((atom ?atom)
        (cond
 	  ((symbol? atom)
-	   (if (field-access? atom)
+	   (if (field-access? atom env genv)
 	       (evcompile-field-ref atom env genv where tail loc lkp toplevelp)
 	       (evcompile-ref (variable loc atom env genv) genv loc lkp)))
 	  ((or (vector? atom) (struct? atom))
@@ -184,7 +184,7 @@
 			     loc)))
 	  ((?- (and (? symbol?) ?var) ?val)
 	   (let ((loc (get-location exp loc)))
-	      (if (field-access? var)
+	      (if (field-access? var env genv)
 		  (evcompile-field-set var val env genv where tail loc lkp #f)
 		  (evcompile-set (variable loc var env genv)
 		     (evcompile val env
@@ -888,12 +888,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    field-access? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (field-access? s)
-   (when (eq? (identifier-syntax) 'bigloo)
+(define (field-access? s env genv)
+   (when (or (eq? (identifier-syntax) 'bigloo-r5rs)
+	     (eq? (identifier-syntax) 'bigloo))
       (let ((s (symbol->string! s)))
-	 (when (string-index s #\.)
-	    (let ((sp (string-split s ".")))
-	       (every? symbol? sp))))))
+	 (let ((i (string-index s #\.)))
+	    (when i
+	       (or (eq? (identifier-syntax) 'bigloo)
+		   (let* ((name (string->symbol (substring s 0 i)))
+			  (var (variable #unspecified name env genv)))
+		      (unless (and (pair? var) (eq? (car var) 'dynamic))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-field-ref ...                                          */

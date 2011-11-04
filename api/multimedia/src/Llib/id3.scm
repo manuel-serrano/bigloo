@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Oct  1 11:41:51 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 11:33:51 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -241,9 +241,9 @@
 		(else "unknown")))))
 
 ;*---------------------------------------------------------------------*/
-;*    mp3-id3v1 ...                                                    */
+;*    mp3-id3v11 ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (mp3-id3v1.1 mm)
+(define (mp3-id3v11 mm)
    (let ((id (mp3-id3v1 mm)))
       (with-access::id3 id (version track)
 	 (set! version "id3v1.1")
@@ -579,7 +579,7 @@
 		((id3v2.4? mm) (mp3-id3v2.4 mm))
 		((id3v2.3? mm) (mp3-id3v2.3 mm))
 		((id3v2.2? mm) (mp3-id3v2.2 mm))
-		((id3v1.1? mm) (mp3-id3v1.1 mm))
+		((id3v1.1? mm) (mp3-id3v11 mm))
 		((id3v1? mm) (mp3-id3v1 mm))
 		(else #f))
 	     (close-mmap mm)))))
@@ -813,7 +813,7 @@
 	 ((id3v2.4? mm) (mp3-id3v2.4 mm))
 	 ((id3v2.3? mm) (mp3-id3v2.3 mm))
 	 ((id3v2.2? mm) (mp3-id3v2.2 mm))
-	 ((id3v1.1? mm) (mp3-id3v1.1 mm))
+	 ((id3v1.1? mm) (mp3-id3v11 mm))
 	 ((id3v1? mm) (mp3-id3v1 mm))
 	 ((read-flac-comments mm) => ogg-comments->musictag)
 	 ((read-ogg-comments path mm) => ogg-comments->musictag)

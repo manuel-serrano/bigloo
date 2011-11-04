@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 28 10:33:46 1995                          */
-;*    Last change :  Mon Jul 31 11:25:08 2006 (serrano)                */
+;*    Last change :  Fri Nov  4 12:10:46 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type translation                                             */
 ;*=====================================================================*/
@@ -287,7 +287,7 @@
 ;*    make-function ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (make-function to from)
-   (let* ((from-id.name (cond
+   (let* ((from-id-name (cond
 			   ((null? from)
 			    (cons "" ""))
 			   ((null? (cdr from))
@@ -320,8 +320,8 @@
 							   (car from)))
 						      ","
 						      (cdr rec)))))))))
-	  (from-id      (car from-id.name))
-	  (from-name    (cdr from-id.name))
+	  (from-id      (car from-id-name))
+	  (from-name    (cdr from-id-name))
 	  (type-id      (string-append from-id "->" (type-id to))))
       (let ((old-type (find-type type-id)))
 	 (if (type? old-type)

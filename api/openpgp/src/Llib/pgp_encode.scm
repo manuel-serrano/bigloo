@@ -87,7 +87,7 @@
 	  'secret-key
 	  'secret-subkey)))
 (define-method (packet->content-tag p::PGP-Public-Key-Packet)
-   (with-access::PGP-Secret-Key-Packet p (subkey?)
+   (with-access::PGP-Key-Packet p (subkey?)
       (if subkey?
 	  'public-key
 	  'public-subkey)))

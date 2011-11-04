@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Mar 13 10:55:40 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 10:54:44 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -265,14 +265,13 @@
 ;*---------------------------------------------------------------------*/
 (define (find-class-constructors class::tclass)
    (let loop ((class class))
-      (with-access::tclass class (constructor its-super)
-	 (cond
-	    ((or (not (tclass? class)) (eq? class its-super))
-	     '())
-	    (constructor
-	     (list constructor))
-	    (else
-	     (loop its-super))))))
+      (if (not (tclass? class))
+	  '()
+	  (with-access::tclass class (constructor its-super)
+	     (cond
+		((eq? class its-super) '())
+		(constructor (list constructor))
+		(else (loop its-super)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-common-super-class ...                                      */

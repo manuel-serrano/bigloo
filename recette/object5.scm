@@ -3,11 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Wed Sep 14 09:44:38 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:58:59 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Testing the classes indexed slots and the introspection          */
-;*    facilities within the evaluator.                                 */
+;*    Testing with-access and instantiate.                             */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
