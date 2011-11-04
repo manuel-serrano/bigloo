@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Wed Sep 14 09:44:30 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:31:48 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -133,9 +133,6 @@
 	  (reverse! inits)
 	  (let ((slot (car slots)))
 	     (cond
-		((slot-indexed slot)
-		 (loop (cdr slots)
-		       (cons (slot-get-nil slot) inits)))
 		((slot-virtual? slot)
 		 (loop (cdr slots) inits))
 		(else

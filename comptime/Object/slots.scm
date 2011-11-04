@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Fri Nov  4 10:47:31 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:27:49 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -50,9 +50,6 @@
 	       (getter (default #f))
 	       ;; the virtual slot setter
 	       (setter (default #f))
-	       ;; for an indexed slot, indexed holds a tvec structure
-	       ;; that can be used to generate JVM accessors
-	       (indexed read-only (default #f))
 	       ;; some user information associated to that slot
 	       (user-info read-only (default #unspecified)))
 	    
@@ -199,42 +196,6 @@
 	    (else
 	     (loop (cdr slots) (cons (car slots) res))))))
    
-   (define (make-indexed-slots s slot-id attr)
-      ;; indexed slot.
-      (multiple-value-bind (vget vset)
-	 (find-virtual-attr attr)
-	 (if (or vget vset)
-	     (user-error/location (type-id class)
-				  "virtual slot can't be indexed"
-				  (car slot-id)
-				  '())))
-      (let* ((ftype (find-slot-type slot-id src))
-	     (iid (gensym 'type))
-	     (itype (declare-subtype! iid
-		       (string-append (type-name ftype) " *")
-		       (list 'obj) 'bigloo))
-	     (sval (instantiate::slot
-		      (id (car slot-id))
-		      (name (scheme-symbol->c-string (car slot-id)))
-		      (class-owner class)
-		      (src s)
-		      (type ftype)
-		      (read-only? (memq 'read-only attr))
-		      (default-value (find-default-attr attr))
-		      (indexed (widen!::tvec itype
-				  (item-type ftype)))
-		      (user-info (find-info-attr attr))))
-	     (slen (let ((len-id (symbol-append (car slot-id) '-len)))
-		      (instantiate::slot
-			 (id len-id)
-			 (name (scheme-symbol->c-string len-id))
-			 (type *long*)
-			 (src s)
-			 (class-owner class)
-			 (read-only? #t)))))
-	 (type-init?-set! itype #t)
-	 (values sval slen)))
-   
    (define (make-attribute-slot s slot-id attr vget vset vnum)
       ;; direct slot with attribute. Because of the presence of
       ;; the attributes, this slot may be virtual
@@ -316,12 +277,6 @@
 	     (unique-virtual-slots (append nslots (reverse sslots))))
 	  (let ((s (car slots)))
 	     (match-case s
-		((* (id ?id) . ?attr)
-		 (multiple-value-bind (sval slen)
-		    (make-indexed-slots s id attr)
-		    (loop (cdr slots)
-			  (cons* sval slen nslots)
-			  vnum)))
 		(((id ?id) . ?attr)
 		 (multiple-value-bind (vget vset)
 		    (find-virtual-attr attr)

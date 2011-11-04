@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 11:52:53 1996                          */
-;*    Last change :  Wed Mar 16 08:25:48 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:31:18 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The object<->struct conversion                                   */
@@ -59,32 +59,9 @@
 		    ,i
 		    (,(symbol-append cname '- (slot-id slot))
 		     ,oname)))
-   (define (save-indexed-slot)
-      (let ((vec  (gensym 'vec))
-	    (j    (gensym 'j))
-	    (loop (gensym 'loop))
-	    (len  (gensym 'len)))
-	 `(let ((,len (,(symbol-append cname '- (slot-id slot) '-len) ,oname)))
-	     (let ((,vec (make-vector ,len)))
-		(labels ((,loop (,j) (if (=fx ,j ,len)
-					 (struct-set! ,sname ,i ,vec)
-					 (begin
-					    (vector-set-ur!
-					     ,vec
-					     ,j
-					     (,(symbol-append cname
-							      '-
-							      (slot-id slot)
-							      '-ref)
-					      ,oname
-					      ,j))
-					    (,loop (+fx ,j 1))))))
-		   (,loop 0))))))
    (cond
       ((slot-virtual? slot)
        #unspecified)
-      ((slot-indexed slot)
-       (save-indexed-slot))
       (else
        (save-immediat-slot))))
 
@@ -184,32 +161,6 @@
       (cond
 	 ((slot-virtual? slot)
 	  #unspecified)
-	 ((slot-indexed slot)
-	  ;; I'm lazy I'm note sure it is important to support -gbdb2 and
-	  ;; dynamically indexed field (anyhow, I have never been using
-	  ;; dynamically indexed slots). The problem is that -gbdb2 impose
-	  ;; to every objects to be tagged. Currently dynamic slot chunks
-	  ;; are untagged.
-	  ;; for an indexed field we have to make a
-	  ;; malloc call and to fill all the field slots
-	  (let* ((f (gensym 'f))
-		 (tf (make-typed-ident f (type-id (slot-type slot)))))
-	     `(let ((,v (struct-ref s ,i)))
-		 (let ((,(symbol-append len '::long) (vector-length ,v)))
-		    ,(make-indexed-init-set! type slot 'o len)
-		    ;; this loop fill the field slots
-		    (labels ((,loop (,runner-typed)
-				    (if (=fx ,runner ,len)
-					'done
-					(let ((,tf (vector-ref-ur ,v ,runner)))
-					   ,(make-indexed-set!
-					     type
-					     slot
-					     'o
-					     f
-					     runner)
-					   (,loop (+fx ,runner 1))))))
-		       (,loop 0))))))
 	 (else
 	  `(let ((,(make-typed-ident v (type-id (slot-type slot)))
 		  (struct-ref s ,i)))

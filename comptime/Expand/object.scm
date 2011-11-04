@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov  4 10:37:02 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:37:59 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -176,7 +176,7 @@
 	  (new      (gensym 'new))
 	  (provided (cdr form)))    
       ;; we collect the default values
-      (let loop ((i     0)
+      (let loop ((i 0)
 		 (slots slots))
 	 (if (null? slots)
 	     'done
@@ -186,8 +186,7 @@
 		    (vector-set! vargs i (cons #t (slot-default-value s))))
 		   (else
 		    (vector-set! vargs i (cons #f #unspecified))))
-		(loop (+fx i 1)
-		      (cdr slots)))))
+		(loop (+fx i 1) (cdr slots)))))
       ;; we collect the provided values
       (let loop ((provided provided))
 	 (if (null? provided)
@@ -196,28 +195,12 @@
 		(match-case p
 		   (((and (? symbol?) ?s-name) ?value)
 		    ;; plain slot
-		    (let ((pval (vector-ref vargs
-					    (find-slot-offset slots
-							      s-name
-							      "instantiate"
-							      p))))
+		    (let ((pval (vector-ref
+				   vargs
+				   (find-slot-offset
+				      slots s-name "instantiate" p))))
 		       (set-car! pval #t)
 		       (set-cdr! pval (object-epairify value p))))
-		   (((and (? symbol?) ?s-name) ?len ?value)
-		    ;; indexed slot
-		    (let* ((snum (find-slot-offset slots
-						   s-name
-						   "instantiate"
-						   p))
-			   (slot (list-ref slots snum)))
-		       (if (not (slot-indexed slot))
-			   (error #f "Illegal `instantiate' form" form)
-			   (let* ((pval (vector-ref vargs snum))
-				  (plen (vector-ref vargs (-fx snum 1))))
-			      (set-car! pval #t)
-			      (set-cdr! pval (object-epairify value p))
-			      (set-car! plen #t)
-			      (set-cdr! plen len)))))
 		   (else
 		    (error #f "Illegal `instantiate' form" form)))
 		(loop (cdr provided)))))
@@ -258,22 +241,14 @@
 			  (if (eq? value #unspecified)
 			      virtuals
 			      (if (epair? value)
-				  (econs (make-virtual-set (car slots)
-							   value
-							   new
-							   class
-							   form
-							   e
-							   "instantiate")
+				  (econs (make-virtual-set
+					    (car slots) value new
+					    class form e "instantiate")
 					 virtuals
 					 (cer value))
-				  (cons (make-virtual-set (car slots)
-							  value
-							  new
-							  class
-							  form
-							  e
-							  "instantiate")
+				  (cons (make-virtual-set
+					   (car slots) value new
+					   class form e "instantiate")
 					virtuals)))))
 		   (else
 		    (loop (+fx i 1)
@@ -355,10 +330,8 @@
 								  `(,c ,private))
 							       constrs)
 							,private))))
-				      `(,user ,(instantiate->fill instantiate
-								  class
-								  alloc
-								  e1))))
+				      `(,user ,(instantiate->fill
+						  instantiate class alloc e1))))
 				user-variables
 				private-variables
 				classes
@@ -416,12 +389,12 @@
 ;*    proper fields).                                                  */
 ;*---------------------------------------------------------------------*/
 (define (duplicate->make form class duplicated provided e)
-   (let* ((slots            (tclass-all-slots class))
-	  (len              (length slots))
-	  (dup-var          (mark-symbol-non-user! (gensym 'duplicated)))
-	  (dup-var-typed    (make-typed-ident dup-var (type-id class)))
-	  (new              (gensym 'new))
-	  (vargs            (make-vector (length slots))))
+   (let* ((slots (tclass-all-slots class))
+	  (len (length slots))
+	  (dup-var (mark-symbol-non-user! (gensym 'duplicated)))
+	  (dup-var-typed (make-typed-ident dup-var (type-id class)))
+	  (new (gensym 'new))
+	  (vargs (make-vector (length slots))))
       ;; we collect the provided values
       (let loop ((provided provided))
 	 (if (null? provided)
@@ -431,31 +404,13 @@
 		   (((and (? symbol?) ?s-name) ?value)
 		    ;; plain slot
 		    (vector-set! vargs
-				 (find-slot-offset slots
-						   s-name
-						   "duplicate"
-						   p)
+				 (find-slot-offset slots s-name "duplicate" p)
 				 (cons #t (object-epairify value p))))
-		   (((and (? symbol?) ?s-name) ?len ?value)
-		    ;; index slot
-		    (let* ((snum (find-slot-offset slots
-						   s-name
-						   "duplicate"
-						   p))
-			   (slot (list-ref slots snum)))
-		       (if (not (slot-indexed slot))
-			   (error #f "Illegal `duplicate' form" form)
-			   (begin
-			      (vector-set! vargs
-					   snum
-					   (cons #t (object-epairify value p)))
-			      (vector-set! vargs (-fx snum 1)
-					   (cons #f len))))))
 		   (else
 		    (error #f "Illegal `duplicate' form" form)))
 		(loop (cdr provided)))))
       ;; we collect the duplicated values
-      (let loop ((i     0)
+      (let loop ((i 0)
 		 (slots slots))
 	 (if (null? slots)
 	     'done
@@ -463,35 +418,24 @@
 		(if (pair? value)
 		    ;; a value is already provided for this object
 		    'nothing
-		    (let ((slot (car slots)))
-		       (if (slot-indexed slot)
-			   ;; for indexed slot, we pick the first value
-			   ;; (which is suposed to be existing).
-			   (let ((a-name (symbol-append (type-id class)
-							'-
-							(slot-id slot)
-							'-ref)))
-			      (vector-set! vargs
-					   i
-					   (cons #t `(,a-name ,dup-var 0))))
-			   ;; no value is provided for this object we pick
-			   ;; one from this duplicated object.
-			   (let ((a-name (symbol-append (type-id class)
-							'-
-							(slot-id slot))))
-			      (vector-set! vargs
-					   i
-					   (cons #t `(,a-name ,dup-var)))))))
-		(loop (+fx i 1)
-		      (cdr slots)))))
+		    (let* ((slot (car slots))
+			   (a-name (symbol-append
+				      (type-id class) '- (slot-id slot))))
+		       ;; no value is provided for this object we pick
+		       ;; one from this duplicated object.
+		       (let ()
+			  (vector-set! vargs
+			     i
+			     (cons #t `(,a-name ,dup-var))))))
+		(loop (+fx i 1) (cdr slots)))))
       ;; we just have now to build the make call
-      (let loop ((i        0)
-		 (slots    slots)
-		 (largs    '())
+      (let loop ((i 0)
+		 (slots slots)
+		 (largs '())
 		 (virtuals '()))
 	 (if (=fx i len)
 	     (let* ((make-name (symbol-append 'make- (type-id class)))
-		    (alloc     `(,make-name ,@(reverse! largs))))
+		    (alloc `(,make-name ,@(reverse! largs))))
 		`(let* ((,dup-var-typed ,duplicated)
 			(,new           ,alloc))
 		    ,@(reverse! virtuals)
@@ -502,13 +446,9 @@
 		    (loop (+fx i 1)
 			  (cdr slots)
 			  largs
-			  (cons (make-virtual-set (car slots)
-						  value
-						  new
-						  class
-						  form
-						  e
-						  "duplicate")
+			  (cons (make-virtual-set
+				   (car slots) value new
+				   class form e "duplicate")
 				virtuals)))
 		   (else
 		    (loop (+fx i 1)
@@ -546,7 +486,7 @@
 	  (dup-var-typed (make-typed-ident dup-var tsid))
 	  (cast          (make-private-sexp 'cast tsid obj)))
       ;; we collect the default values
-      (let loop ((i     0)
+      (let loop ((i 0)
 		 (slots slots))
 	 (if (null? slots)
 	     'done
@@ -554,8 +494,7 @@
 		(if (slot-default? s)
 		    (vector-set! vargs i (cons #t (slot-default-value s)))
 		    (vector-set! vargs i (cons #f #unspecified)))
-		(loop (+fx i 1)
-		      (cdr slots)))))
+		(loop (+fx i 1) (cdr slots)))))
       ;; we collect the provided values
       (let loop ((provided provided))
 	 (if (null? provided)
@@ -564,25 +503,8 @@
 		(match-case p
 		   (((and (? symbol?) ?s-name) ?value)
 		    (vector-set! vargs
-				 (find-slot-offset slots
-						   s-name
-						   "widen!"
-						   p)
+				 (find-slot-offset slots s-name "widen!" p)
 				 (cons #t (object-epairify value p))))
-		   (((and (? symbol?) ?s-name) ?len ?value)
-		    (let* ((snum (find-slot-offset slots
-						   s-name
-						   "widen!"
-						   p))
-			   (slot (list-ref slots snum)))
-		       (if (not (slot-indexed slot))
-			   (error #f "Illegal `widen!' form" form)
-			   (begin
-			      (vector-set! vargs
-					   snum
-					   (cons #t (object-epairify value p)))
-			      (vector-set! vargs (-fx snum 1)
-					   (cons #f len))))))
 		   (else
 		    (error #f "Illegal `widen!' form" form)))
 		(loop (cdr provided)))))
@@ -604,9 +526,9 @@
 	    (else
 	     (loop (+fx i 1) (cdr s)))))
       ;; we just have now to build the make call
-      (let loop ((i        0)
-		 (slots    slots)
-		 (largs    '())
+      (let loop ((i 0)
+		 (slots slots)
+		 (largs '())
 		 (virtuals '()))
 	 (if (=fx i len)
 	     (let ((widening (symbol-append (tclass-widening class)
@@ -656,13 +578,9 @@
 			  largs
 			  (if (eq? value #unspecified)
 			      virtuals
-			      (cons (make-virtual-set (car slots)
-						      value
-						      dup-var
-						      class
-						      form
-						      e
-						      "widen!")
+			      (cons (make-virtual-set
+				       (car slots) value dup-var
+				       class form e "widen!")
 				    virtuals))))
 		   (else
 		    (loop (+fx i 1)

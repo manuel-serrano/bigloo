@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Fri Nov  4 16:06:39 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:31:03 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
@@ -106,10 +106,6 @@
 (define (slot-ref class::tclass type slot widening src-def)
    (let ((class-id (tclass-id class)))
       (cond
-	 ((slot-indexed slot)
-	  (values
-	   (slot-indexed-ref class-id type slot widening src-def)
-	   #f))
 	 ((slot-virtual? slot)
 	  (multiple-value-bind (user-def class-def)
 	     (slot-virtual-ref class type slot widening src-def)
@@ -219,52 +215,11 @@
 		'())))))
 
 ;*---------------------------------------------------------------------*/
-;*    slot-indexed-ref ...                                             */
-;*---------------------------------------------------------------------*/
-(define (slot-indexed-ref class-id type slot widening src-def)
-   (define (indexed-ref-unsafe sid id tid)
-      `(define-inline (,tid ,(make-typed-ident 'o class-id) i::long)
-	  ,(make-indexed-ref/widening type slot 'o 'i widening)))
-   (define (indexed-ref-safe sid id tid)
-      `(define (,tid ,(make-typed-ident 'o class-id) i::long)
-	  (if (>=fx i 0)
-	      (if (<fx i (,(symbol-append class-id '- sid '-len) o))
-		  ,(make-indexed-ref/widening type slot 'o 'i widening)
-		  (error ',id "Index out of bound" i))
-	      (error ',id "Index out of bound" i))))
-   (with-access::slot slot (id type src)
-      (let* ((slot-ref-id (symbol-append class-id '- id '-ref))
-	     (slot-ref-tid (make-typed-ident slot-ref-id (type-id type)))
-	     (tid (make-typed-formal class-id)))
-	 (produce-module-clause!
-	  `(pragma (,slot-ref-id side-effect-free no-cfa-top
-				 (effect (write (,slot-ref-id))))))
-	 (cond
-	    ((not *unsafe-range*)
-	     (produce-module-clause!
-	      `(static (,slot-ref-tid ,tid ::long)))
-	     (list
-	      (epairify* (indexed-ref-safe id slot-ref-id slot-ref-tid)
-			 src
-			 src-def)))
-	    (else
-	     (produce-module-clause!
-	      `(static (inline ,slot-ref-tid ,tid ::long)))
-	     (list
-	      (epairify* (indexed-ref-unsafe id slot-ref-id slot-ref-tid)
-			 src
-			 src-def)))))))
-      
-;*---------------------------------------------------------------------*/
 ;*    slot-set! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (slot-set! class type slot widening src-def)
    (let ((class-id (tclass-id class)))
       (cond
-	 ((slot-indexed slot)
-	  (values
-	   (slot-indexed-set! class-id type slot widening src-def)
-	   #f))
 	 ((slot-virtual? slot)
 	  (multiple-value-bind (user-def class-def)
 	     (slot-virtual-set! class type slot widening src-def)
@@ -363,48 +318,6 @@
 					      '- (slot-id slot)
 					      '-set!)))
 	     (add-macro-alias! slot-set!-id slot-set!-oid)
-	     '()))))
-
-;*---------------------------------------------------------------------*/
-;*    slot-indexed-set! ...                                            */
-;*---------------------------------------------------------------------*/
-(define (slot-indexed-set! class-id class slot widening src-def)
-   (define (indexed-set!-unsafe class-id sid! stid! vid vtid)
-      `(define-inline (,stid! ,(make-typed-ident 'o class-id) i::long ,vtid)
-	  ,(make-indexed-set!/widening class slot 'o vid 'i widening)))
-   (define (indexed-set!-safe id class-id sid! stid! vid vtid)
-      `(define (,stid! ,(make-typed-ident 'o class-id) i::long ,vtid)
-	  (if (>=fx i 0)
-	      (if (<fx i (,(symbol-append class-id '- id '-len) o))
-		  ,(make-indexed-set!/widening class slot 'o vid 'i widening)
-		  (error ',sid! "Index out of bound" i))
-	      (error ',sid! "Index out of bound" i))))
-   (with-access::slot slot (id type src)
-      (let* ((slot-set!-id (symbol-append class-id '- id '-set!))
-	     (slot-set!-tid (symbol-append slot-set!-id '::obj))
-	     (class-id (type-id class))
-	     (tid (make-typed-formal class-id))
-	     (vid (gensym 'val))
-	     (vtid (make-typed-ident vid (type-id type))))
-	 (produce-module-clause!
-	  `(pragma (,slot-set!-id (effect (write (,slot-set!-id))))))
-	 (cond
-	    ((not *unsafe-range*)
-	     (produce-module-clause!
-	      `(static (,slot-set!-tid ,tid ::long ,vtid)))
-	     (list
-	      (epairify*
-	       (indexed-set!-safe id class-id slot-set!-id slot-set!-tid vid vtid)
-	       src
-	       src-def)))
-	    (else
-	     (produce-module-clause!
-	      `(static (inline ,slot-set!-tid ,tid ::long ,vtid)))
-	     (list
-	      (epairify*
-	       (indexed-set!-unsafe class-id slot-set!-id slot-set!-tid vid vtid)
-	       src
-	       src-def)))))))
-      
+	     '()))))      
 
 

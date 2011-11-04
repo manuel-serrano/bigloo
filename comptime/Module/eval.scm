@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Nov  3 14:23:18 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:28:23 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -319,21 +319,12 @@
 	     (internal-error 'eval "Can't find global access" id))))
    (define (access s id)
       (let ((i (slot-id s)))
-	 (if (slot-indexed s)
-	     (let* ((gidl (symbol-append id '- i '-len))
-		    (gid (symbol-append id '- i '-ref))
-		    (sid (symbol-append id '- i '-set!))
-		    (gl (get-global gidl))
-		    (g (get-global gid)))
-		(if (slot-read-only? s)
-		    (list gl gl)
-		    (list gl g (get-global sid))))
-	     (let* ((gid (symbol-append id '- i))
-		    (sid (symbol-append gid '-set!))
-		    (g (get-global gid)))
-		(if (slot-read-only? s)
-		    (list g)
-		    (list g (get-global sid)))))))
+	 (let* ((gid (symbol-append id '- i))
+		(sid (symbol-append gid '-set!))
+		(g (get-global gid)))
+	    (if (slot-read-only? s)
+		(list g)
+		(list g (get-global sid))))))
    (match-case ev
       ((class ?id library)
        '())

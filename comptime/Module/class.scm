@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov  4 16:20:24 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:34:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -331,22 +331,6 @@
 	       ,(if (tclass? type)
 		    (tclass-holder type)
 		    `',(type-default-id type)))))
-	 ((* (and ?id (? symbol?)) . ?att)
-	  ;; indexed slot with possible attributes
-	  (if (any? virtual? att)
-	      (error id "Illegal indexed slot" slot)
-	      (let ((id (fast-id-of-id id loc)))
-		 `((@ make-class-field-new __object)
-		   ',id
-		   ,(symbol-append class-id '- id '-ref)
-		   ,(if (not (read-only? att))
-			(symbol-append class-id '- id '-set!)
-			'#unspecified)
-		   ,(symbol-append class-id '- id '-len)
-		   #f
-		   ,(find-info-attribute slot)
-		   ,(find-default-attribute slot)
-		   'obj))))
 	 (((and ?id (? symbol?)) . ?att)
 	  ;; simple slot with attributes
 	  (let* ((pid (parse-id id loc))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Fri Mar 18 12:10:34 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:32:09 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -264,7 +264,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-field-type slot::slot)
    ;; Get the type of field
-   (or (slot-indexed slot) (slot-type slot)))
+   (slot-type slot))
 
 ;*---------------------------------------------------------------------*/
 ;*    wide->chunk                                                      */

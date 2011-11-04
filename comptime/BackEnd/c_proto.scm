@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Fri Mar 18 13:21:53 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 16:32:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -517,13 +517,11 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-class-types class-list oport)
    (define (emit-slot slot)
-      (with-access::slot slot (type virtual-num indexed name)
+      (with-access::slot slot (type virtual-num name)
 	 (let ((cname (cross-name (slot-type slot))))
 	    (cond
 	       ((>=fx virtual-num 0)
 		#unspecified)
-	       (indexed
-		(fprint oport "   " cname " *" name ";"))
 	       (else
 		(fprint oport "   " cname " " name ";"))))))
    (when (pair? class-list)
