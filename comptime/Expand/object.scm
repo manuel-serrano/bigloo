@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Nov  3 14:25:48 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:50:35 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -29,13 +29,13 @@
 	    module_prototype
 	    module_module
 	    module_class)
-   (export  (expand-define-class   ::obj ::procedure)
-	    (expand-with-access    ::obj ::procedure)
-	    (expand-instantiate    ::obj ::procedure)
+   (export  (expand-define-class ::obj ::procedure)
+	    (expand-with-access ::obj ::procedure)
+	    (expand-instantiate ::obj ::procedure)
 	    (expand-co-instantiate ::obj ::procedure)
-	    (expand-duplicate      ::obj ::procedure)
-	    (expand-widen!         ::obj ::procedure)
-	    (expand-shrink!        ::obj ::procedure)))
+	    (expand-duplicate ::obj ::procedure)
+	    (expand-widen! ::obj ::procedure)
+	    (expand-shrink! ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-class ...                                          */
@@ -62,7 +62,7 @@
 (define (expand-with-access x e)
    (match-case x
       ((?with-access ?instance (and (? pair?) ?slots) . (and (? pair?) ?body))
-       (let* ((loc   (find-location x))
+       (let* ((loc (find-location x))
 	      (class (type-of-id with-access loc)))
 	  (cond
 	     ((not (tclass? class))

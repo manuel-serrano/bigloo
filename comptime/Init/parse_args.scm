@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Sep 21 19:18:39 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 09:47:53 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -365,6 +365,9 @@
        (set! *call/cc?* #t))
       (("-hygien" (help "Obsolete (R5rs macros are always supported)"))
        #unspecified)
+      (("-fidentifier-syntax" ?syntax
+	  (help (format "Enable Bigloo extended syntax (default: ~a)" (identifier-syntax))))
+       (identifier-syntax-set! (string->symbol syntax)))
       ;; reflection
       (("-fno-reflection" (help "Disable reflection code production"))
        (set! *reflection?* #f))
