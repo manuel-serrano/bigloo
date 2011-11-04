@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov  4 16:34:08 2011 (serrano)                */
+;*    Last change :  Fri Nov  4 17:06:36 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -320,11 +320,10 @@
 	  (let* ((pid (parse-id slot loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field-new __object)
+	     `((@ make-class-field __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(symbol-append class-id '- id '-set!)
-	       #unspecified
 	       #f
 	       #f
 	       ((@ class-field-no-default-value __object))
@@ -336,13 +335,12 @@
 	  (let* ((pid (parse-id id loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field-new __object)
+	     `((@ make-class-field __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(if (not (read-only? att))
 		    (symbol-append class-id '- id '-set!)
 		    '#unspecified)
-	       #unspecified
 	       ,(virtual? att)
 	       ,(find-info-attribute slot)
 	       ,(find-default-attribute slot)
