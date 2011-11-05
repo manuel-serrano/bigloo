@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov  4 16:53:22 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:05:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -149,7 +149,6 @@
 	    (class-nil::obj class)
 	    (inline class-fields?::bool fields)
 	    (make-class-field::vector ::symbol o o ::bool ::obj ::obj ::obj)
-	    (make-class-field-new::vector ::symbol o o o ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol field)
@@ -397,7 +396,6 @@
 (define (class-evdata-set! class data)
    (vector-set-ur! class 14 data))
 
-
 ;*---------------------------------------------------------------------*/
 ;*    class-fields ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -447,9 +445,6 @@
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter virtual info default type)
-   (vector name getter setter virtual make-class-field info default type))
-
-(define (make-class-field-new name getter setter indexed virtual info default type)
    (vector name getter setter virtual make-class-field info default type))
 
 ;*---------------------------------------------------------------------*/

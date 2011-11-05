@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov  4 16:37:59 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:26:38 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -25,6 +25,7 @@
 	    ast_private
 	    object_class
 	    object_slots
+	    object_tools
 	    expand_lambda
 	    module_prototype
 	    module_module
@@ -82,7 +83,7 @@
 			      (lambda () 
 				 (let ((e (internal-begin-expander
 					     (with-access-expander
-						e aux class-id nslots))))
+						e aux class nslots))))
 				    `(let ((,taux ,instance))
 					,(e (expand-progn body) e))))))))
 		    ((not (pair? s))
@@ -109,27 +110,42 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-access-expander olde instance class slots)
+(define (with-access-expander olde i class slots)
+   
    (define (id var) (cadr (assq var slots)))
+   
    (let ((ids (map car slots)))
       (lambda (x e)
 	 (match-case x
 	    ((and ?var (? symbol?))
 	     (if (and (memq var ids)
 		      (let ((cell (assq var (lexical-stack))))
-			 (and (pair? cell) (eq? (cdr cell) instance))))
-		 (olde `(,(symbol-append class '- (id var)) ,instance) olde)
+			 (and (pair? cell) (eq? (cdr cell) i))))
+		 (let ((slot (find-class-slot class (id var))))
+		    (if (not slot)
+			(error #f
+			   (format "No field \"~a\" in class \"~a\""
+			      var (type-id class))
+			   x)
+			(olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
+			;; (make-class-ref class slot (olde i olde))
+			))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
 		(if (and (memq var ids)
 			 (let ((cell (assq var (lexical-stack))))
-			    (and (pair? cell) (eq? (cdr cell) instance))))
-		    (object-epairify
-		     (olde `(,(symbol-append class '- (id var) '-set!)
-			     ,instance ,val)
-			   olde)
-		     x)
+			    (and (pair? cell) (eq? (cdr cell) i))))
+		    (let ((slot (find-class-slot class (id var))))
+		       (if (not slot)
+			   (error #f
+			      (format "No field \"~a\" in class \"~a\""
+				 var (type-id class))
+			      x)
+			   (object-epairify
+			      (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
+			      ;;(make-class-set! class slot (olde i olde) (olde val olde))
+			      x)))
 		    (begin
 		       (set-car! (cddr x) val)
 		       (olde x olde)))))

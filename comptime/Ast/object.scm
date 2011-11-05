@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Fri Nov  4 11:30:50 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:55:48 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -52,18 +52,29 @@
 	   (field-set->node::node ::symbol ::obj stack ::obj ::symbol)))
 
 ;*---------------------------------------------------------------------*/
+;*    *field-access-mark* ...                                          */
+;*---------------------------------------------------------------------*/
+(define *field-access-mark*
+   (gensym 'DOT))
+
+;*---------------------------------------------------------------------*/
+;*    field-access-mark ...                                            */
+;*---------------------------------------------------------------------*/
+(define (field-access-mark) *field-access-mark*)
+
+;*---------------------------------------------------------------------*/
 ;*    field-access? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (field-access? s stack)
-   (when (or (eq? (identifier-syntax) 'bigloo-r5rs)
-	     (eq? (identifier-syntax) 'bigloo))
-      (let ((s (symbol->string! s)))
-	 (let ((i (string-index s #\.)))
-	    (when i
-	       (or (eq? (identifier-syntax) 'bigloo)
-		   (let ((name (string->symbol (substring s 0 i))))
-		      (or (find-local name stack)
-			  (global? (find-global name))))))))))
+   (let* ((s (symbol->string! s))
+	  (i (string-index s #\.)))
+      (when i
+	 (let ((n (string->symbol (substring s 0 i))))
+	    (cond
+	       ((eq? n (field-access-mark)) #t)
+	       ((eq? (identifier-syntax) 'bigloo) #t)
+	       ((eq? (identifier-syntax) 'r5rs) #f)
+	       (else (or (find-local n stack) (global? (find-global n)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */

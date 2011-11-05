@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu May  5 05:10:05 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:13:46 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -22,6 +22,7 @@
 	   ast_sexp
 	   ast_var)
    (export (private-node ::pair ::obj ::obj ::symbol)
+	   (private-stamp::symbol)
 	   (private-sexp?::bool ::pair)
 	   (make-private-sexp::pair ::symbol ::symbol . objs)))
 
@@ -32,6 +33,12 @@
 ;*    because the heap refers to it.                                   */
 ;*---------------------------------------------------------------------*/
 (define *private-stamp* '___bgl_private_stamp_mark)
+
+;*---------------------------------------------------------------------*/
+;*    private-stamp ...                                                */
+;*---------------------------------------------------------------------*/
+(define (private-stamp)
+   *private-stamp*)
 
 ;*---------------------------------------------------------------------*/
 ;*    private-sexp? ...                                                */
@@ -198,6 +205,9 @@
 ;*    -------------------------------------------------------------    */
 ;*    the private stamp can't be gensymed because it has to traverse   */
 ;*    heap files.                                                      */
+;*    -------------------------------------------------------------    */
+;*    Private sexps block the macro-expansion (i.e., their arguments   */
+;*    are never macro-expanded).                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
    [assert (kind) (memq kind '(getfield setfield new cast cast-null isa
