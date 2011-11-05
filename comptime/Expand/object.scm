@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Nov  5 06:26:38 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 14:10:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -127,9 +127,8 @@
 			   (format "No field \"~a\" in class \"~a\""
 			      var (type-id class))
 			   x)
-			(olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
-			;; (make-class-ref class slot (olde i olde))
-			))
+			;; (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
+			(symbol-append '__bigloo__ '|.| i '|.| (id var))))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -143,8 +142,10 @@
 				 var (type-id class))
 			      x)
 			   (object-epairify
-			      (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
-			      ;;(make-class-set! class slot (olde i olde) (olde val olde))
+			      ;;(olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
+			      (let* ((id (symbol-append '__bigloo__ '|.| i '|.| (id var)))
+				     (nx `(set! ,id ,val)))
+				 (olde nx olde))
 			      x)))
 		    (begin
 		       (set-car! (cddr x) val)

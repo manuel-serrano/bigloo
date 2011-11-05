@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Fri Mar 25 15:03:23 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 08:58:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -217,6 +217,10 @@
 	    (out "#[output-port]" col))
 	   ((eof-object? obj)
 	    (out "#[eof-object]" col))
+	   ((object? obj)
+	    (out (string-append "#|"
+		    (symbol->string (class-name (object-class obj)))
+		    "|") col))
 	   (else
 	    (out (let ((p (open-output-string)))
 		    (write obj p)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Nov  4 11:29:49 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 09:07:52 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -889,21 +889,27 @@
 ;*    field-access? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (field-access? s env genv)
-   (when (or (eq? (identifier-syntax) 'bigloo-r5rs)
-	     (eq? (identifier-syntax) 'bigloo))
-      (let ((s (symbol->string! s)))
-	 (let ((i (string-index s #\.)))
-	    (when i
-	       (or (eq? (identifier-syntax) 'bigloo)
-		   (let* ((name (string->symbol (substring s 0 i)))
-			  (var (variable #unspecified name env genv)))
-		      (unless (and (pair? var) (eq? (car var) 'dynamic))))))))))
+   (let* ((s (symbol->string! s))
+	  (i (string-index s #\.)))
+      (when i
+	 (let ((n (string->symbol (substring s 0 i))))
+	    (cond
+	       ((eq? n '__bigloo__)
+		#t)
+	       ((eq? (identifier-syntax) 'bigloo)
+		#t)
+	       ((eq? (identifier-syntax) 'r5rs)
+		#f)
+	       (else
+		(let ((var (variable #unspecified n env genv)))
+		   (not (and (pair? var) (eq? (car var) 'dynamic))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-field-ref ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
    (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
+	  (l (if (eq? (car l) '__bigloo__) (cdr l) l))
 	  (v (variable loc (car l) env genv)))
       (if (not (integer? v))
 	  (evcompile-error loc "eval" "Static type not a class" exp)

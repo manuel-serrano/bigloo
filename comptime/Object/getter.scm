@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Fri Nov  4 16:31:03 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 18:52:43 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
@@ -105,17 +105,13 @@
 ;*---------------------------------------------------------------------*/
 (define (slot-ref class::tclass type slot widening src-def)
    (let ((class-id (tclass-id class)))
-      (cond
-	 ((slot-virtual? slot)
+      (if (slot-virtual? slot)
 	  (multiple-value-bind (user-def class-def)
 	     (slot-virtual-ref class type slot widening src-def)
-	     (if class-def
-		 (values user-def class-def)
-		 (values user-def #f))))
-	 (else
+	     (values user-def class-def))
 	  (values
-	   (slot-direct-ref class-id type slot widening src-def)
-	   #f)))))
+	     (slot-direct-ref class-id type slot widening src-def)
+	     #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    first-virtual-slot? ...                                          */
