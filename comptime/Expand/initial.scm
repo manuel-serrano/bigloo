@@ -41,8 +41,7 @@
 	    ast_labels
 	    ast_node
 	    ast_var
-	    ast_sexp
-	    ast_private)
+	    ast_sexp)
    (export  (install-initial-expander)
 	    (%append-2-define)))
 
@@ -119,9 +118,6 @@
    ;; multiple-value-bind
    (install-compiler-expander 'multiple-value-bind expand-mvalue-bind)
 
-   ;; private expression
-   ;; (install-compiler-expander (private-stamp) (lambda (x e) x))
-   
    ;; error 
    (install-O-comptime-expander
     'error

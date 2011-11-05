@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Nov  4 09:47:53 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:59:06 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -369,10 +369,10 @@
 	  (help (format "Enable Bigloo extended syntax (default: ~a)" (identifier-syntax))))
        (identifier-syntax-set! (string->symbol syntax)))
       ;; reflection
-      (("-fno-reflection" (help "Disable reflection code production"))
-       (set! *reflection?* #f))
-      (("+fno-reflection" (help "Enable reflection code production"))
-       (set! *reflection?* #t))
+      (("-fno-reflection" (help "Deprecated, no effect"))
+       #unspecified)
+      (("+fno-reflection" (help "Deprecated, no effect"))
+       #unspecified)
       ;; object-nil
       (("-fclass-nil" (help "Enables generation of \"class-nil\" function"))
        (set! *class-nil?* #t))

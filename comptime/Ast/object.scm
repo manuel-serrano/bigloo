@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sat Nov  5 06:55:48 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 07:13:05 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -52,15 +52,9 @@
 	   (field-set->node::node ::symbol ::obj stack ::obj ::symbol)))
 
 ;*---------------------------------------------------------------------*/
-;*    *field-access-mark* ...                                          */
+;*    bigloo-mark ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define *field-access-mark*
-   (gensym 'DOT))
-
-;*---------------------------------------------------------------------*/
-;*    field-access-mark ...                                            */
-;*---------------------------------------------------------------------*/
-(define (field-access-mark) *field-access-mark*)
+(define bigloo-mark '__bigloo__)
 
 ;*---------------------------------------------------------------------*/
 ;*    field-access? ...                                                */
@@ -71,7 +65,7 @@
       (when i
 	 (let ((n (string->symbol (substring s 0 i))))
 	    (cond
-	       ((eq? n (field-access-mark)) #t)
+	       ((eq? n bigloo-mark) #t)
 	       ((eq? (identifier-syntax) 'bigloo) #t)
 	       ((eq? (identifier-syntax) 'r5rs) #f)
 	       (else (or (find-local n stack) (global? (find-global n)))))))))
@@ -81,6 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node exp stack loc site)
    (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
+	  (l (if (eq? (car l) bigloo-mark) (cdr l) l))
 	  (var (sexp->node (car l) stack loc site)))
       (with-access::variable (var-variable var) (type)
 	 (let loop ((node var)
@@ -107,6 +102,7 @@
 ;*---------------------------------------------------------------------*/
 (define (field-set->node exp val stack loc site)
    (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
+	  (l (if (eq? (car l) bigloo-mark) (cdr l) l))
 	  (var (sexp->node (car l) stack loc site))
 	  (val (sexp->node val stack loc site)))
       (if (not (var? var))

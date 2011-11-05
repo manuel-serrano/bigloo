@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov  4 17:06:36 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:57:38 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -202,8 +202,6 @@
 				   ',class-id
 				   "Can't make instance of abstract classes"
 				   ',class-id)))
-			     ((not *reflection?*)
-			      #f)
 			     ((not (symbol? class-make-id))
 			      (internal-error "make-add-class!"
 					      "make-class-id not a symbol"
@@ -222,9 +220,7 @@
 	  (hash           (get-class-hash class-id (cddr src-def)))
 	  (constr         (tclass-constructor class))
 	  (loc            (find-location src-def))
-	  (fields         (if *reflection?*
-			      (make-class-fields class-id (cddr src-def) loc)
-			      #f))
+	  (fields         (make-class-fields class-id (cddr src-def) loc))
 	  (super-class    (if (not (tclass? super))
 			      #f
 			      (let* ((sholder (tclass-holder super))

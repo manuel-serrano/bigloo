@@ -139,15 +139,14 @@
 	    (class-num::long class)
 	    (class-name::symbol class)
 	    (class-hash::long class)
-	    (class-fields::obj class)
+	    (class-fields::pair-nil class)
 	    (class-evdata::obj class)
 	    (class-evdata-set! class ::obj)
-	    (class-all-fields::obj class)
+	    (class-all-fields::pair-nil class)
 	    (find-class-field class ::symbol)
 	    (class-constructor::obj class)
 	    (class-creator::obj class)
 	    (class-nil::obj class)
-	    (inline class-fields?::bool fields)
 	    (make-class-field::vector ::symbol o o ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
@@ -159,7 +158,7 @@
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
-	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long o o ::vector)
+	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil o ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -412,10 +411,7 @@
 ;*    class-all-fields ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-all-fields class)
-   (let ((fields (let ((fields (class-fields class)))
-		    (if (class-fields? fields)
-			fields
-			'())))
+   (let ((fields (class-fields class))
 	 (super (class-super class)))
       (if (class? super)
 	  (append (class-all-fields super) fields)
@@ -436,9 +432,8 @@
    (let loop ((class class))
       (if (class? class)
 	  (let ((fields (class-fields class)))
-	     (if (class-fields? fields)
-		 (let ((res (search fields)))
-		    (or res (loop (class-super class))))))
+	     (let ((res (search fields)))
+		(or res (loop (class-super class)))))
 	  #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -455,12 +450,6 @@
 	(=fx (vector-length obj) 8)
 	(eq? (vector-ref obj 4) make-class-field)))
 	 
-;*---------------------------------------------------------------------*/
-;*    class-fields? ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (class-fields? fields)
-   (or (pair? fields) (null? fields)))
-
 ;*---------------------------------------------------------------------*/
 ;*    class-field-name ...                                             */
 ;*---------------------------------------------------------------------*/
@@ -1261,23 +1250,21 @@
       (display class-name port)
       (if (is-nil? obj)
 	  (display " nil|" port)
-	  (if (class-fields? fields)
-	      (let loop ((fields fields)
-			 (class class))
-		 (cond
-		    ((null? fields)
-		     (let ((super (class-super class)))
-			(if (class? super)
-			    ;; we have to print the super class fields
-			    (loop (class-fields super) super)
-			    (display #\| port))))
-		    ((eq? fields #unspecified)
-		     (display "..." port)
-		     (loop '() class))
-		    (else
-		     (class-field-write/display (car fields))
-		     (loop (cdr fields) class))))
-	      (display #\| port)))))
+	  (let loop ((fields fields)
+		     (class class))
+	     (cond
+		((null? fields)
+		 (let ((super (class-super class)))
+		    (if (class? super)
+			;; we have to print the super class fields
+			(loop (class-fields super) super)
+			(display #\| port))))
+		((eq? fields #unspecified)
+		 (display "..." port)
+		 (loop '() class))
+		(else
+		 (class-field-write/display (car fields))
+		 (loop (cdr fields) class)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */
@@ -1292,26 +1279,20 @@
 	 ((not (eq? class1 class2))
 	  #f)
 	 (else
-	  (let ((fields (class-fields class1)))
-	     (if (not (class-fields? fields))
-		 #f
-		 (let loop ((fields fields)
-			    (class  class1))
-		    (cond
-		       ((null? fields)
-			(let ((super (class-super class)))
-			   (if (class? super)
-			       ;; we have now to check the super class fields
-			       (let ((fields (class-fields super)))
-				  (if (class-fields? fields)
-				      (loop fields super)
-				      #f))
-			       ;; ok we are done with return value #t
-			       #t)))
-		       ((class-field-equal? (car fields))
-			(loop (cdr fields) class))
-		       (else
-			#f)))))))))
+	  (let loop ((fields (class-fields class1))
+		     (class  class1))
+	     (cond
+		((null? fields)
+		 (let ((super (class-super class)))
+		    (if (class? super)
+			;; we have now to check the super class fields
+			(loop (class-fields super) super)
+			;; ok we are done with return value #t
+			#t)))
+		((class-field-equal? (car fields))
+		 (loop (cdr fields) class))
+		(else
+		 #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::obj ...                                       */

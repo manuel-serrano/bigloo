@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jul 19 08:36:06 2011 (serrano)                */
+;*    Last change :  Sat Nov  5 06:58:20 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -171,7 +171,6 @@
 	    *interpreter*      
 	    *startup-file*     
 	    *call/cc?*
-	    *reflection?*
 	    *class-nil?*
 	    *garbage-collector*
 	    *pass*
@@ -690,9 +689,6 @@
 (param-define *call/cc?*
 	      "Shall we enable call/cc?"
 	      #f)
-(param-define *reflection?*
-	      "Shall we produce reflection code for classes"
-	      #t)
 (param-define *class-nil?*
 	      "Shall we produce class-nil function for classes"
 	      #t)

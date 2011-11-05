@@ -104,23 +104,22 @@
 	 (let* ((class (object-class obj))
 		(class-name (class-name class))
 		(fields (class-fields class)))
-	    (if (class-fields? fields)
-		(let loop ((fields fields)
-			   (class class))
-		   (cond
-		      ((null? fields)
-		       (let ((super (class-super class)))
-			  (if (class? super)
-			      ;; we have to register
-			      ;; the super class fields
-			      (loop (class-fields super) super))))
-		      ((eq? fields #unspecified)
-		       (loop '() class))
-		      (else
-		       (let* ((f (car fields))
-			      (gv (class-field-accessor f)))
-			  (register (gv obj))
-			  (loop (cdr fields) class))))))))
+	    (let loop ((fields fields)
+		       (class class))
+	       (cond
+		  ((null? fields)
+		   (let ((super (class-super class)))
+		      (if (class? super)
+			  ;; we have to register
+			  ;; the super class fields
+			  (loop (class-fields super) super))))
+		  ((eq? fields #unspecified)
+		   (loop '() class))
+		  (else
+		   (let* ((f (car fields))
+			  (gv (class-field-accessor f)))
+		      (register (gv obj))
+		      (loop (cdr fields) class)))))))
       ;; first stage: register object components
       (define (register obj)
 	 ;; do not register objects unique by their nature
