@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sat Nov  5 06:57:38 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 06:31:49 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -258,8 +258,6 @@
 		 (loop (cdr fields) (bit-xor hash 2344)))
 		((? symbol?)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber field))))
-		((* (and ?id (? symbol?)) . ?att)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber id))))
 		(((and ?id (? symbol?)) . ?att)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
 

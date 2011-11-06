@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Fri Nov  4 15:58:41 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 08:18:55 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
@@ -350,9 +350,7 @@
 	  (fill-id (symbol-append 'fill- id '!))
 	  (f-ids   (make-class-make-formals slots))
 	  (f-tids  (make-class-make-typed-formals f-ids slots))
-	  (new     (mark-symbol-non-user! (gensym 'new)))
-	  (rid     (mark-symbol-non-user! (gensym 'i)))
-	  (rtid    (symbol-append rid '::long)))
+	  (new     (mark-symbol-non-user! (gensym 'new))))
       (define (alloc-widening)
 	 (define (pragma-allocate)
 	    (let ((tname (string-sans-$ (type-name type)))

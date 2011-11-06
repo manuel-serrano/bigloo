@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Nov  5 06:58:20 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 10:04:48 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -171,7 +171,6 @@
 	    *interpreter*      
 	    *startup-file*     
 	    *call/cc?*
-	    *class-nil?*
 	    *garbage-collector*
 	    *pass*
 	    *jvm-jar?*
@@ -236,6 +235,7 @@
 	    *eval-options*
 	    *allow-type-redefinition*
 	    *pre-processor*
+	    *class-accessors?*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -312,49 +312,49 @@
 ;*---------------------------------------------------------------------*/
 ;; the bigloo version
 (param-define *bigloo-version*
-	      "The Bigloo major release number"
-	      (bigloo-config 'release-number))
+   "The Bigloo major release number"
+   (bigloo-config 'release-number))
 ;; the bigloo specific version
 (param-define *bigloo-specific-version*
-	      "The Bigloo specific version"
-	      (bigloo-config 'specific-version))
+   "The Bigloo specific version"
+   (bigloo-config 'specific-version))
 ;; the bigloo name
 (param-define *bigloo-name*
-	      "The Bigloo name"
-	      (string-append "Bigloo "
-			     *bigloo-specific-version*
-			     "("
-			     *bigloo-version*
-			     ")"))
-(define *bigloo-cmd-name*   'nothing-yet)
-(define *bigloo-args*       'nothing-yet)
-(define *rest-args*         '())
-(define *bigloo-author*     "Inria -- Sophia Antipolis")
-(define *bigloo-email*      "bigloo@lists-sop.inria.fr")
-(define *bigloo-url*        "http://www-sop.inria.fr/indes/fp/Bigloo")
-(define *bigloo-date*       (bigloo-date))
+   "The Bigloo name"
+   (string-append "Bigloo "
+      *bigloo-specific-version*
+      "("
+      *bigloo-version*
+      ")"))
+(define *bigloo-cmd-name* 'nothing-yet)
+(define *bigloo-args* 'nothing-yet)
+(define *rest-args* '())
+(define *bigloo-author* "Inria -- Sophia Antipolis")
+(define *bigloo-email* "bigloo@lists-sop.inria.fr")
+(define *bigloo-url* "http://www-sop.inria.fr/indes/fp/Bigloo")
+(define *bigloo-date* (bigloo-date))
 ;; the tmp directory
 (param-define *bigloo-tmp*
-	      "The tmp directory name"
-	      (let ((tmp (getenv "TMPDIR")))
-		 (if (string? tmp)
-		     tmp
-		     (os-tmp))))
+   "The tmp directory name"
+   (let ((tmp (getenv "TMPDIR")))
+      (if (string? tmp)
+	  tmp
+	  (os-tmp))))
 ;; Shall we include the license in the C files ?
 (param-define *bigloo-licensing?*
-	      "Add the Bigloo license ?"
-	      #f)
+   "Add the Bigloo license ?"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Le bavardage ...                                                 */
 ;*---------------------------------------------------------------------*/
 (param-define *verbose*
-	      "The verbosity level"
-	      0)
+   "The verbosity level"
+   0)
 
 (param-define *hello*
-	      "Say hello (when verbose)"
-	      #f)
+   "Say hello (when verbose)"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Les noms des differents fichiers                                 */
@@ -363,164 +363,164 @@
 (param-define *src-files*
 	      "The sources files"
 	      '())
-(define *tmp-dest*          #f)
+(define *tmp-dest* #f)
 ;; the target name
 (param-define *dest*
-	      "The target name"
-	      #f)
+   "The target name"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Le compilateur C et ses options                                  */
 ;*---------------------------------------------------------------------*/
 ;; the shell
 (param-define *shell*
-	      "The shell to exec C compilations"
-	      (bigloo-config 'shell))
+   "The shell to exec C compilations"
+   (bigloo-config 'shell))
 ;; the c compiler style
 (param-define *cc-style*
-	      "The C compiler style"
-	      (bigloo-config 'c-compiler-style))
+   "The C compiler style"
+   (bigloo-config 'c-compiler-style))
 ;; the c compiler
 (param-define *cc*
-	      "The C compiler"
-	      (bigloo-config 'c-compiler))
+   "The C compiler"
+   (bigloo-config 'c-compiler))
 ;; the c compiler  option
 (param-define *cflags*
-	      "The C compiler option"
-	      (bigloo-config 'c-flag))
+   "The C compiler option"
+   (bigloo-config 'c-flag))
 ;; the c compiler optimization option
 (param-define *cflags-optim*
-	      "The C compiler optimization option"
-	      (bigloo-config 'c-compiler-optim-flag))
+   "The C compiler optimization option"
+   (bigloo-config 'c-compiler-optim-flag))
 ;; the c compiler profile option
 (param-define *cflags-prof*
-	      "The C compiler profiling option"
-	      (bigloo-config 'c-prof-flag))
+   "The C compiler profiling option"
+   (bigloo-config 'c-prof-flag))
 ;; the c compiler -o option
 (param-define *cc-o-option*
-	      "The C compiler -o option"
-	      (bigloo-config 'c-compiler-o-option))
+   "The C compiler -o option"
+   (bigloo-config 'c-compiler-o-option))
 ;; the c object file extension
 (param-define *c-object-file-extension*
-	      "The C object file extension"
-	      (bigloo-config 'c-object-file-extension))
+   "The C object file extension"
+   (bigloo-config 'c-object-file-extension))
 ;; The C production type
 (param-define *stdc*
-	      "Shall we produce ISO C?"
-	      #f)
+   "Shall we produce ISO C?"
+   #f)
 ;; the CC option
 (param-define *cc-options*
-	      "cc options"
-	      (bigloo-config 'c-flag))
+   "cc options"
+   (bigloo-config 'c-flag))
 ;; shall we remove the .c and .il produced file?
 (param-define *rm-tmp-files*
-	      "Shall the .c and .il produced files be removed?"
-	      #t)
+   "Shall the .c and .il produced files be removed?"
+   #t)
 ;; ld style
 (param-define *ld-style*
-	      "ld style"
-	      (bigloo-config 'c-linker-style))
+   "ld style"
+   (bigloo-config 'c-linker-style))
 ;; ld options
 (param-define *ld-options*
-	      "ld options"
-	      "")
+   "ld options"
+   "")
 ;; the linker -o option
 (param-define *ld-o-option*
-	      "The C linker -o option"
-	      (bigloo-config 'c-linker-o-option))
+   "The C linker -o option"
+   (bigloo-config 'c-linker-o-option))
 ;; the linker debugging option
 (param-define *ld-debug-option*
-	      "The C linker debugging option"
-	      (bigloo-config 'c-linker-debug-option))
+   "The C linker debugging option"
+   (bigloo-config 'c-linker-debug-option))
 ;; the linker optimization flags
 (param-define *ld-optim-flags*
-	      "The C linker optimization flags"
-	      (bigloo-config 'c-linker-optim-flags))
+   "The C linker optimization flags"
+   (bigloo-config 'c-linker-optim-flags))
 ;; ld post options
 (param-define *ld-post-options*
-	      "ld post options"
-	      "")
+   "ld post options"
+   "")
 ;; cc-move
 (param-define *cc-move*
-	      "Use mv instead of -o when C compiling"
-	      #t)
+   "Use mv instead of -o when C compiling"
+   #t)
 ;; library link mode
 (param-define *ld-relative*
-	      "Relative or absolute path names for libraries"
-	      #t)
+   "Relative or absolute path names for libraries"
+   #t)
 ;; strip ?
 (param-define *strip*
-	      "Shall we strip the executable?"
-	      #t)
+   "Shall we strip the executable?"
+   #t)
 ;; the installation lib dir path
 (param-define *ld-library-dir*
-	      "The ld lib dir path (without version)"
-	      (bigloo-config 'ld-library-dir))
+   "The ld lib dir path (without version)"
+   (bigloo-config 'ld-library-dir))
 ;; the default lib dir path
 (param-define *default-lib-dir*
-	      "The default lib dir path (without version)"
-	      (bigloo-config 'library-directory))
+   "The default lib dir path (without version)"
+   (bigloo-config 'library-directory))
 ;; the lib dir path
 (param-define *lib-dir*
-	      "The lib dir path"
-	      (let ((lib-env (build-path-from-shell-variable "BIGLOOLIB")))
-		 (if (not (pair? lib-env))
-		     (list "." *default-lib-dir*)
-		     (cons "." lib-env))))
+   "The lib dir path"
+   (let ((lib-env (build-path-from-shell-variable "BIGLOOLIB")))
+      (if (not (pair? lib-env))
+	  (list "." *default-lib-dir*)
+	  (cons "." lib-env))))
 ;; the lib source dir path
 (param-define *lib-src-dir*
-	      "The lib dir path"
-	      (make-file-name (car *lib-dir*) "runtime"))
+   "The lib dir path"
+   (make-file-name (car *lib-dir*) "runtime"))
 ;; the bigloo library
 (param-define *bigloo-lib*
-	      "The Bigloo library"
-	      'bigloo)
+   "The Bigloo library"
+   'bigloo)
 ;; the gc library
 (param-define *gc-lib*
-	      "The Gc library"
-	      (if (string? (bigloo-config 'gc-custom))
-		  (string->symbol (bigloo-config 'gc-custom))
-		  (string->symbol (bigloo-config 'gc-lib))))
+   "The Gc library"
+   (if (string? (bigloo-config 'gc-custom))
+       (string->symbol (bigloo-config 'gc-custom))
+       (string->symbol (bigloo-config 'gc-lib))))
 ;; are we using a custom GC library?
 (param-define *gc-custom?*
-	      "Are we using a custom GC library?"
-	      (bigloo-config 'gc-custom))
+   "Are we using a custom GC library?"
+   (bigloo-config 'gc-custom))
 ;; are we using a multi-threaded GC?
 (param-define *multi-threaded-gc?*
-	      "Are we using a multi-threaded GC?"
-	      #f)
+   "Are we using a multi-threaded GC?"
+   #f)
 ;; do we have bigloo-abort?
 (param-define *bigloo-abort?*
-	      "Do we have the bigloo-abort function in executables?"
-	      (bigloo-config 'have-bigloo-abort))
+   "Do we have the bigloo-abort function in executables?"
+   (bigloo-config 'have-bigloo-abort))
 ;; do we use a static version of the bigloo library?
 (param-define *static-bigloo?*
-	      "Do we use the static Bigloo library"
-	      #f)
+   "Do we use the static Bigloo library"
+   #f)
 ;; do we use a static version of all the bigloo libraries?
 (param-define *static-all-bigloo?*
-	      "Do we use the static version of all Bigloo libraries?"
-	      #f)
+   "Do we use the static version of all Bigloo libraries?"
+   #f)
 ;; do we include the additional user libraries twice?
 (param-define *double-ld-libs?*
-	      "Do we include the additional user libraries twice?"
-	      #t)
+   "Do we include the additional user libraries twice?"
+   #t)
 ;; the user C libraries
 (param-define *bigloo-user-lib*
-	      "The user extra C libraries"
-	      (string-split-char (bigloo-config 'user-libraries) #\space))
+   "The user extra C libraries"
+   (string-split-char (bigloo-config 'user-libraries) #\space))
 ;; the user Bigloo libraries
 (param-define *additional-bigloo-libraries*
-	      "The user extra Bigloo libraries"
-	      '())
+   "The user extra Bigloo libraries"
+   '())
 ;; A list of C functions to be called when starting the application
 (param-define *bigloo-libraries-c-setup*
-	      "A list of C functions to be called when starting the application"
-	      '())
+   "A list of C functions to be called when starting the application"
+   '())
 ;; the user Bigloo zip files
 (param-define *additional-bigloo-zips*
-	      "The user extra Bigloo Zip files"
-	      '())
+   "The user extra Bigloo Zip files"
+   '())
 ;; the load path
 (define *old-load-path* *load-path*)
 (set! *load-path* (append *load-path* *lib-dir*))
@@ -529,74 +529,74 @@
 
 ;; Include a Bigloo include file twice
 (param-define *include-multiple*
-	      "Enable/disable multiple inclusion of same file"
-	      #f)
+   "Enable/disable multiple inclusion of same file"
+   #f)
 ;; the C include files
 (param-define *include-foreign*
-	      "The C included files"
-	      (list "bigloo.h"))
+   "The C included files"
+   (list "bigloo.h"))
 ;; the additional C include files
 (param-define *additional-include-foreign*
-	      "The additional C included files"
-	      '())
+   "The additional C included files"
+   '())
 ;; the bigloo heap base name
 (param-define *heap-base-name*
-	      "The Bigloo heap base name"
-	      "bigloo")
+   "The Bigloo heap base name"
+   "bigloo")
 ;; the heap name
 (param-define *heap-name*
-	      "The Bigloo heap file name"
-	      (string-append *heap-base-name* ".heap"))
+   "The Bigloo heap file name"
+   (string-append *heap-base-name* ".heap"))
 ;; the library the heap belongs to
 (param-define *heap-library*
-	      "The library the heap belongs to"
-	      'bigloo)
+   "The library the heap belongs to"
+   'bigloo)
 ;; the jvm heap name
 (param-define *heap-jvm-name*
-	      "The Bigloo heap file name for the JVM backend"
-	      (string-append *heap-base-name* ".jheap"))
+   "The Bigloo heap file name for the JVM backend"
+   (string-append *heap-base-name* ".jheap"))
 ;; the heap dumped names
 (param-define *heap-dump-names*
-	      "The name of the heap to be dumped"
-	      '())
+   "The name of the heap to be dumped"
+   '())
 ;; the jvm foreign class id
 (param-define *jvm-foreign-class-id*
-	      "The identifier of the Jlib foreign class"
-	      'foreign)
+   "The identifier of the Jlib foreign class"
+   'foreign)
 ;; the jvm foreign class name
 (param-define *jvm-foreign-class-name*
-	      "The name of the Jlib foreign class"
-	      "bigloo.foreign")
+   "The name of the Jlib foreign class"
+   "bigloo.foreign")
 ;; the additional heap name
 (param-define *additional-heap-name*
-	      "A name of an additional heap file name to be build"
-	      #f)
+   "A name of an additional heap file name to be build"
+   #f)
 ;; the additional heap names
 (param-define *additional-heap-names*
-	      "A list of Bigloo additional heap file name"
-	      '())
+   "A list of Bigloo additional heap file name"
+   '())
 ;; indent
 (param-define *indent*
-	      "The name of the C beautifier"
-	      (bigloo-config 'c-beautifier))
+   "The name of the C beautifier"
+   (bigloo-config 'c-beautifier))
 ;; debugging level
 (param-define *compiler-debug*
-	      "Debugging level"
-	      0)
+   "Debugging level"
+   0)
 ;; trace level
 (param-define *compiler-debug-trace*
-	      "Debugging trace level"
-	      0)
+   "Debugging trace level"
+   0)
 ;; error-localization
 (param-define *error-localization*
-	      "Localize error calls in the source code"
-	      #f)
+   "Localize error calls in the source code"
+   #f)
 (param-define *compiler-sharing-debug?*
 	      "Compiler self sharing debug"
 	      #f)
 (param-define *compiler-type-debug?*
-	      "Compiler self type debug"
-	      #f)
+   "Compiler self type debug"
+   #f)
 (param-define *compiler-stack-debug?*
 	      "Compiler self stack trace debug"
 	      #f)
@@ -606,222 +606,219 @@
 	      #f)
 ;; debugging level
 (param-define *debug-module*
-	      "Module initilazation debugging"
-	      0)
+   "Module initilazation debugging"
+   0)
 ;; C debugging mode?
 (param-define *c-debug*
-	      "C debugging mode?"
-	      #f)
+   "C debugging mode?"
+   #f)
 ;; C debugging mode?
 (param-define *c-debug-lines-info*
-	      "Emit # line directives"
-	      #f)
+   "Emit # line directives"
+   #f)
 ;; C debugging option
 (param-define *c-debug-option*
-	      "cc debugging option"
-	      (bigloo-config 'c-compiler-debug-option))
+   "cc debugging option"
+   (bigloo-config 'c-compiler-debug-option))
 ;; C header
 (param-define *c-user-header*
-	      "C header"
-	      '())
+   "C header"
+   '())
 ;; C header
 (param-define *c-user-foot*
-	      "C foot"
-	      '())
+   "C foot"
+   '())
 ;; jvm debuggin mode?
 (param-define *jvm-debug*
-	      "JVM debugging mode?"
-	      #f)
+   "JVM debugging mode?"
+   #f)
 ;; The bdb debugging option
 (param-define *bdb-debug*
-	      "Bdb debugging mode"
-	      0)
+   "Bdb debugging mode"
+   0)
 (define *bdb-debug-no-line-directives?* #f)
 ;; The Bigloo profiling option
 (param-define *profile-mode*
-	      "Bigloo profile mode"
-	      0)
+   "Bigloo profile mode"
+   0)
 ;; The Bigloo profiling translation table name
 (param-define *prof-table-name*
-	      "Bprof translation table file name"
-	      "bmon.out")
+   "Bprof translation table file name"
+   "bmon.out")
 
 ;*---------------------------------------------------------------------*/
 ;*    Access and qualifed-type                                         */
 ;*---------------------------------------------------------------------*/
 (param-define *access-files*
-	      "The access file names"
-	      '())
+   "The access file names"
+   '())
 (param-define *access-file-default*
-	      "The default access file name"
-	      ".afile")
+   "The default access file name"
+   ".afile")
 
 (param-define *qualified-type-file*
-	      "The qualifed-type association file name"
-	      #f)
+   "The qualifed-type association file name"
+   #f)
 (param-define *qualified-type-file-default*
-	      "The qualifed-type association file name"
-	      ".jfile")
+   "The qualifed-type association file name"
+   ".jfile")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link files                                                       */
 ;*---------------------------------------------------------------------*/
 (param-define *o-files*
-	      "The additional obect files"
-	      '())
+   "The additional obect files"
+   '())
 (param-define *c-files*
-	      "The C source files"
-	      '())
+   "The C source files"
+   '())
 (param-define *with-files*
-	      "The additional modules"
-	      '())
+   "The additional modules"
+   '())
 (define *early-with-modules* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    Des variables de controle sur `comment on doit compiler'         */
 ;*---------------------------------------------------------------------*/
 (param-define *interpreter*
-	      "Shall we interprete the source file?"
-	      #f)
+   "Shall we interprete the source file?"
+   #f)
 (param-define *startup-file*
-	      "A startup file for the interpreter"
-	      #f)
+   "A startup file for the interpreter"
+   #f)
 (param-define *call/cc?*
-	      "Shall we enable call/cc?"
-	      #f)
-(param-define *class-nil?*
-	      "Shall we produce class-nil function for classes"
-	      #t)
+   "Shall we enable call/cc?"
+   #f)
 (param-define *pass*
-	      "Stop after the pass"
-	      'ld)
+   "Stop after the pass"
+   'ld)
 (param-define *jvm-jar?*
-	      "Enable/disable a JAR file production for the JVM back-end"
-	      #f)
+   "Enable/disable a JAR file production for the JVM back-end"
+   #f)
 (param-define *jvm-shell*
-	      "Shell to be used when producing JVM run scripts"
-	      (bigloo-config 'java-shell))
+   "Shell to be used when producing JVM run scripts"
+   (bigloo-config 'java-shell))
 (param-define *jvm-java*
-	      "JVM to be used to run Java programs"
-	      (bigloo-config 'java))
+   "JVM to be used to run Java programs"
+   (bigloo-config 'java))
 (param-define *jvm-options*
-	      "JVM options"
-	      "")
+   "JVM options"
+   "")
 (param-define *jvm-bigloo-classpath*
-	      "JVM Bigloo classpath"
-	      #f)
+   "JVM Bigloo classpath"
+   #f)
 (param-define *jvm-classpath*
-	      "JVM classpath"
-	      ".")
+   "JVM classpath"
+   ".")
 (param-define *jvm-mainclass*
-	      "JVM main class"
-	      #f)
+   "JVM main class"
+   #f)
 (param-define *jvm-path-separator*
-	      "JVM classpath"
-	      #f)
+   "JVM classpath"
+   #f)
 (param-define *jvm-jarpath*
-	      "JVM jarpath"
-	      #f)
+   "JVM jarpath"
+   #f)
 (param-define *jvm-directory*
-	      "JVM object directory"
-	      #f)
+   "JVM object directory"
+   #f)
 (param-define *jvm-catch*
-	      "Catch internal errors"
-	      #t)
+   "Catch internal errors"
+   #t)
 (param-define *jvm-cinit-module*
-	      "Enable JVM class constructors to initiliaze bigloo modules"
-	      #f)
+   "Enable JVM class constructors to initiliaze bigloo modules"
+   #f)
 (param-define *dotnet-shell*
-	      ".NET object file linker"
-	      (bigloo-config 'dotnet-shell))
+   ".NET object file linker"
+   (bigloo-config 'dotnet-shell))
 (param-define *dotnet-ld-style*
-	      ".NET object file linker style"
-	      (bigloo-config 'dotnet-ld-style))
+   ".NET object file linker style"
+   (bigloo-config 'dotnet-ld-style))
 (param-define *dotnet-ld*
-	      ".NET object file linker"
-	      (bigloo-config 'dotnet-ld))
+   ".NET object file linker"
+   (bigloo-config 'dotnet-ld))
 (param-define *dotnet-clr*
-	      "CLR to be used to run .NET programs"
-	      (bigloo-config 'dotnet-clr))
+   "CLR to be used to run .NET programs"
+   (bigloo-config 'dotnet-clr))
 (param-define *dotnet-clr-style*
-	      "CLR style to be used to run .NET programs"
-	      (bigloo-config 'dotnet-clr-style))
+   "CLR style to be used to run .NET programs"
+   (bigloo-config 'dotnet-clr-style))
 (param-define *dotnet-clr-opt*
-	      "CLR extra options to be used to run .NET programs"
-	      (bigloo-config 'dotnet-clr-opt))
+   "CLR extra options to be used to run .NET programs"
+   (bigloo-config 'dotnet-clr-opt))
 (param-define *dotnet-dll-path*
-	      "Bigloo.dll path"
-	      #f)
+   "Bigloo.dll path"
+   #f)
 (param-define *dotnet-external-asm*
-	      "Force using and external assembler for .NET code"
-	      (bigloo-config 'dotnet-asm))
+   "Force using and external assembler for .NET code"
+   (bigloo-config 'dotnet-asm))
 (param-define *dotnet-use-external-asm*
-	      "Force using and external assembler for .NET code"
-	      #t)
+   "Force using and external assembler for .NET code"
+   #t)
 (param-define *dotnet-external-asm-style*
-	      "Force using and external assembler for .NET code"
-	      'pnet)
+   "Force using and external assembler for .NET code"
+   'pnet)
 (param-define *dotnet-mono-workaround-switch*
-	      "Workaround mono 0.23..0.30 bug"
-	      #t)
+   "Workaround mono 0.23..0.30 bug"
+   #t)
 (param-define *dotnet-pnet-workaround-switch*
-	      "Workaround pnet switch bug"
-	      #t)
+   "Workaround pnet switch bug"
+   #t)
 (param-define *dotnet-tail*
-	      "Enable/disable tail call generations"
-	      #f)
+   "Enable/disable tail call generations"
+   #f)
 (param-define *dotnet-tail-across-modules*
-	      "Enable/disable tail call generations across modules"
-	      #f)
+   "Enable/disable tail call generations across modules"
+   #f)
 (param-define *dotnet-tail-funcall*
-	      "Enable/disable tail call generations for funcall"
-	      #f)
+   "Enable/disable tail call generations for funcall"
+   #f)
 (param-define *module-checksum-object?*
-	      "Produce a module checksum object (.mco)"
-	      #f)
+   "Produce a module checksum object (.mco)"
+   #f)
 (param-define *garbage-collector*
-	      "The garbage collector"
-	      'boehm)
+   "The garbage collector"
+   'boehm)
 
 ;*---------------------------------------------------------------------*/
 ;*    Les modes de compilations                                        */
 ;*---------------------------------------------------------------------*/
 (param-define *unsafe-type*
-	      "Runtime type safety"
-	      #f)
+   "Runtime type safety"
+   #f)
 (param-define *unsafe-arity*
-	      "Runtime type arity safety"
-	      #f)
+   "Runtime type arity safety"
+   #f)
 (param-define *unsafe-range*
-	      "Runtime range safety"
-	      #f)
+   "Runtime range safety"
+   #f)
 (param-define *unsafe-struct*
-	      "Runtime struct range safety"
-	      #f)
+   "Runtime struct range safety"
+   #f)
 (param-define *unsafe-version*
-	      "Module version safety"
-	      #f)
+   "Module version safety"
+   #f)
 (param-define *unsafe-library*
-	      "Use the unsafe library version"
-	      #f)
+   "Use the unsafe library version"
+   #f)
 (param-define *unsafe-eval*
-	      "Disable type checking for eval functions"
-	      #f)
+   "Disable type checking for eval functions"
+   #f)
 (param-define *unsafe-heap*
-	      "Disable heap version checking"
-	      #f)
+   "Disable heap version checking"
+   #f)
 (param-define *warning-overriden-slots*
-	      "Set to #t to warn about virtual slot overriding"
-	      #t)
+   "Set to #t to warn about virtual slot overriding"
+   #t)
 (param-define *warning-overriden-variables*
-	      "Set to #t to warn about variable overriding"
-	      #f)
+   "Set to #t to warn about variable overriding"
+   #f)
 (param-define *warning-types*
-	      "Set to #t to warn about type checks"
-	      #f)
+   "Set to #t to warn about type checks"
+   #f)
 (param-define *profile-library*
-	      "Use the profiled library version"
-	      #f)
+   "Use the profiled library version"
+   #f)
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)
@@ -834,137 +831,137 @@
 (define *arithmetic-genericity* #t)
 (define *arithmetic-overflow* #t)
 (param-define *shared-cnst?*
-	      "Shared constant compilation?"
-	      #t)
+   "Shared constant compilation?"
+   #t)
 (param-define *lib-mode*
-	      "Lib-mode compilation?"
-	      #f)
+   "Lib-mode compilation?"
+   #f)
 (param-define *init-mode*
-	      "Module initialization mode"
-	      'read)
+   "Module initialization mode"
+   'read)
 (param-define *object-init-mode*
-	      "Object initialization mode"
-	      'stagged)
+   "Object initialization mode"
+   'stagged)
 (param-define *dlopen-init*
-	      "Emit a standard Bigloo dynamic loading init entry point"
-	      #f)
+   "Emit a standard Bigloo dynamic loading init entry point"
+   #f)
 (param-define *max-c-token-length*
-	      "Max C token length"
-	      1024)
+   "Max C token length"
+   1024)
 (param-define *c-split-string*
-	      "C split long strings"
-	      (bigloo-config 'c-string-split))
+   "C split long strings"
+   (bigloo-config 'c-string-split))
 (param-define *max-c-foreign-arity*
-	      "Max C function arity"
-	      16)
+   "Max C function arity"
+   16)
 (param-define *trace-name*
-	      "Trace file name"
-	      "trace")
+   "Trace file name"
+   "trace")
 (param-define *trace-write-length*
-	      "Trace dumping max level"
-	      80)
+   "Trace dumping max level"
+   80)
 (define *additional-traces* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    Optimizations                                                    */
 ;*---------------------------------------------------------------------*/
 (param-define *optim*
-	      "Optimization level"
-	      0)
+   "Optimization level"
+   0)
 (param-define *optim-unroll-loop?*
-	      "Loop unrolling optimization"
-	      #unspecified)
+   "Loop unrolling optimization"
+   #unspecified)
 (param-define *optim-loop-inlining?*
-	      "Loop inlining optimization"
-	      #t)
+   "Loop inlining optimization"
+   #t)
 (param-define *optim-O-macro?*
-	      "Enable optimization by macro-expansion"
-	      #f)
+   "Enable optimization by macro-expansion"
+   #f)
 (param-define *optim-jvm-inlining*
-	      "Enable JVM inlining"
-	      0)
+   "Enable JVM inlining"
+   0)
 (param-define *optim-jvm-constructor-inlining*
-	      "Enable JVM inlining for constructors"
-	      0)
+   "Enable JVM inlining for constructors"
+   0)
 (param-define *optim-jvm-peephole*
-	      "Enable JVM peephole optimization"
-	      0)
+   "Enable JVM peephole optimization"
+   0)
 (param-define *optim-jvm-branch*
-	      "Enable JVM branch tensioning"
-	      0)
+   "Enable JVM branch tensioning"
+   0)
 (param-define *optim-jvm-fasteq*
-	      "EQ? no longer works on integers (use =FX instead)"
-	      #f)
+   "EQ? no longer works on integers (use =FX instead)"
+   #f)
 (param-define *optim-symbol-case*
-	      "Optimize case forms descrimining on symbols only"
-	      #f)
+   "Optimize case forms descrimining on symbols only"
+   #f)
 (param-define *purify*
-	      "Produce byte code verifier compliant JVM code"
-	      #t)
+   "Produce byte code verifier compliant JVM code"
+   #t)
 (param-define *jvm-env*
-	      "List of environment variables to be available in the compiled code"
-	      '())
+   "List of environment variables to be available in the compiled code"
+   '())
 (param-define *optim-jvm*
-	      "Enable optimization by inlining jvm code"
-	      0)
+   "Enable optimization by inlining jvm code"
+   0)
 (param-define *optim-cfa-fixnum-arithmetic?*
-	      "Enable refined fixnum arithmetic specialization"
-	      #f)
+   "Enable refined fixnum arithmetic specialization"
+   #f)
 (param-define *optim-cfa-flonum-arithmetic?*
-	      "Enable refined flonum arithmetic specialization"
-	      #f)
+   "Enable refined flonum arithmetic specialization"
+   #f)
 (param-define *optim-cfa-free-var-tracking?*
-	      "Enable closure free-variables specialization"
-	      #f)
+   "Enable closure free-variables specialization"
+   #f)
 (param-define *optim-cfa-funcall-tracking?*
-	      "Track values across funcall"
-	      #f)
+   "Track values across funcall"
+   #f)
 (param-define *optim-cfa-apply-tracking?*
-	      "Track values across apply"
-	      #f)
+   "Track values across apply"
+   #f)
 (param-define *optim-cfa-pair?*
-	      "Track values across pairs"
-	      #f)
+   "Track values across pairs"
+   #f)
 (param-define *optim-cfa-pair-quote-max-length*
-	      "Maximum length for pair literal tracking"
-	      4)
+   "Maximum length for pair literal tracking"
+   4)
 (param-define *optim-integrate?*
-	      "Enable function integration (closure analysis)"
-	      #t)
+   "Enable function integration (closure analysis)"
+   #t)
 (param-define *optim-dataflow?*
-	      "Enable simple dataflow optimization"
-	      #f)
+   "Enable simple dataflow optimization"
+   #f)
 (param-define *optim-dataflow-for-errors?*
-	      "Enable simple dataflow optimization for eliminating bad error messages"
-	      #t)
+   "Enable simple dataflow optimization for eliminating bad error messages"
+   #t)
 (param-define *optim-dataflow-types?*
-	      "Enable dataflow optimization for types"
-	      #f)
+   "Enable dataflow optimization for types"
+   #f)
 (param-define *optim-initflow?*
-	      "Enable initflow optimization for global variables"
-	      #f)
+   "Enable initflow optimization for global variables"
+   #f)
 (param-define *optim-reduce-beta?*
-	      "Enable simple beta reduction"
-	      #f)
+   "Enable simple beta reduction"
+   #f)
 (param-define *inlining?*
-	      "Inlining optimization"
-	      #t)
+   "Inlining optimization"
+   #t)
 (param-define *user-inlining?*
-	      "User inlining optimization"
-	      #t)
+   "User inlining optimization"
+   #t)
 (param-define *inlining-kfactor*
-	      "Inlining growth factor"
-	      (lambda (olevel) (*fx 2 olevel)))
+   "Inlining growth factor"
+   (lambda (olevel) (*fx 2 olevel)))
 (param-define *inlining-reduce-kfactor*
-	      "Inlinine growth factor reductor"
-	      (lambda (kfactor) (/fx kfactor 2)))
+   "Inlinine growth factor reductor"
+   (lambda (kfactor) (/fx kfactor 2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *extend-entry* ...                                               */
 ;*---------------------------------------------------------------------*/
 (param-define *extend-entry*
-	      "Extend entry"
-	      #f)
+   "Extend entry"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *src-suffix* ...                                                 */
@@ -972,8 +969,8 @@
 ;*    The list of suffix recognized by the compiler and the linker.    */
 ;*---------------------------------------------------------------------*/
 (param-define *src-suffix*
-	      "Scheme legal suffixes"
-	      '("scm" "bgl"))
+   "Scheme legal suffixes"
+   '("scm" "bgl"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *c-suffix* ...                                                   */
@@ -981,8 +978,8 @@
 ;*    The list of C suffixes recognized by the compiler and the linker.*/
 ;*---------------------------------------------------------------------*/
 (param-define *c-suffix*
-	      "C legal suffixes"
-	      '("c"))
+   "C legal suffixes"
+   '("c"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *csharp-suffix* ...                                              */
@@ -991,8 +988,8 @@
 ;*    linker.                                                          */
 ;*---------------------------------------------------------------------*/
 (param-define *csharp-suffix*
-	      "C# legal suffixes"
-	      '("cs"))
+   "C# legal suffixes"
+   '("cs"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *obj-suffix* ...                                                 */
@@ -1000,10 +997,10 @@
 ;*    The suffix list of the object file                               */
 ;*---------------------------------------------------------------------*/
 (param-define *obj-suffix*
-	      "Object legal suffixes"
-	      (list *c-object-file-extension*
-		    (static-library-suffix)
-		    (shared-library-suffix)))
+   "Object legal suffixes"
+   (list *c-object-file-extension*
+      (static-library-suffix)
+      (shared-library-suffix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *mco-suffix*                                                     */
@@ -1011,117 +1008,117 @@
 ;*    The suffix list of the module checksum object files.             */
 ;*---------------------------------------------------------------------*/
 (param-define *mco-suffix*
-	      "Module checksum object legal suffixes"
-	      '("mco"))
+   "Module checksum object legal suffixes"
+   '("mco"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *mco-include-path* ...                                           */
 ;*---------------------------------------------------------------------*/
 (param-define *mco-include-path*
-	      "Module checksum C include path"
-	      '("."))
+   "Module checksum C include path"
+   '("."))
 
 ;*---------------------------------------------------------------------*/
 ;*    auto-modes (emacs like)                                          */
 ;*---------------------------------------------------------------------*/
 (param-define *auto-mode*
-	      "auto-mode (extend mode) list"
-	      '(("ml"  . "caml")
-		("mli" . "caml")
-		("oon" . "meroon")
-		("snow" . "snow")
-		("spi" . "pkgcomp")))
+   "auto-mode (extend mode) list"
+   '(("ml"  . "caml")
+     ("mli" . "caml")
+     ("oon" . "meroon")
+     ("snow" . "snow")
+     ("spi" . "pkgcomp")))
 
 ;*---------------------------------------------------------------------*/
 ;*    *ast-case-sensitive* ...                                         */
 ;*---------------------------------------------------------------------*/
 (param-define *ast-case-sensitive*
-	      "Case sensitivity"
-	      #t)
+   "Case sensitivity"
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    *user-heap-size*                                                 */
 ;*---------------------------------------------------------------------*/
 (param-define *user-heap-size*
-	      "Heap size (in MegaByte) or #f for default value"
-	      0)
+   "Heap size (in MegaByte) or #f for default value"
+   0)
 
 ;*---------------------------------------------------------------------*/
 ;*    *reader* ...                                                     */
 ;*---------------------------------------------------------------------*/
 (param-define *reader*
-	      "The way the reader reads input file ('plain or 'intern)"
-	      'plain)
+   "The way the reader reads input file ('plain or 'intern)"
+   'plain)
 
 ;*---------------------------------------------------------------------*/
 ;*    *target-language* ...                                            */
 ;*---------------------------------------------------------------------*/
 (param-define *target-language*
-	      "The target language (either c, c-saw, jvm, or .net)"
-	      (string->symbol (bigloo-config 'default-back-end)))
+   "The target language (either c, c-saw, jvm, or .net)"
+   (string->symbol (bigloo-config 'default-back-end)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw* ...                                                        */
 ;*---------------------------------------------------------------------*/
 (param-define *saw*
-	      "Do we go to the saw-mill?"
-	      #f)
+   "Do we go to the saw-mill?"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-reallocation?* ...                                 */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-reallocation?*
-	      "Enable/disable saw register re-allocation"
-	      #f)
+   "Enable/disable saw register re-allocation"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-allocation?* ...                                   */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-allocation?*
-	      "Enable/disable saw register allocation"
-	      #f)
+   "Enable/disable saw register allocation"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-allocation-onexpression?* ...                      */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-allocation-onexpression?*
-	      "Enable/disable saw register allocation on expression"
-	      #f)
+   "Enable/disable saw register allocation on expression"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-allocation-max-size* ...                           */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-allocation-max-size*
-	      "Max function size for optimizing the register allocation"
-	      4000)
+   "Max function size for optimizing the register allocation"
+   4000)
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-register-allocation-functions* ...                          */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-register-allocation-functions*
-	      "The list of functions allowing register allocation"
-	      '())
+   "The list of functions allowing register allocation"
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *saw-no-register-allocation-functions* ...                       */
 ;*---------------------------------------------------------------------*/
 (param-define *saw-no-register-allocation-functions*
-	      "The list of functions disabling register allocation"
-	      '())
+   "The list of functions disabling register allocation"
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *global-tail-call?* ...                                          */
 ;*---------------------------------------------------------------------*/
 (param-define *global-tail-call?*
-	      "Do we apply the self-global-tail-call stage?"
-	      #f)
+   "Do we apply the self-global-tail-call stage?"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *globalize-integrate-28c* ...                                    */
 ;*---------------------------------------------------------------------*/
 (param-define *globalize-integrate-28c*
-	      "Enable the old closure integration technique (deprecated)"
-	      #f)
+   "Enable the old closure integration technique (deprecated)"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *builtin-allocators* ...                                         */
@@ -1140,23 +1137,30 @@
 ;*    *eval-options* ...                                               */
 ;*---------------------------------------------------------------------*/
 (param-define *eval-options*
-	      "A user variable to store dynamic command line options"
-	      '())
+   "A user variable to store dynamic command line options"
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *allow-type-redefinition* ...                                    */
 ;*---------------------------------------------------------------------*/
 (param-define *allow-type-redefinition*
-	      "If true, allow type redefinitions"
-	      #f)
+   "If true, allow type redefinitions"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *pre-processor* ...                                              */
 ;*---------------------------------------------------------------------*/
 (param-define *pre-processor*
-	      "An optional function that pre-processes the source file"
-	      (lambda (x) x))
-   
+   "An optional function that pre-processes the source file"
+   (lambda (x) x))
+
+;*---------------------------------------------------------------------*/
+;*    *class-accessors?* ...                                           */
+;*---------------------------------------------------------------------*/
+(param-define *class-accessors?*
+   "If true, generate public class accessors"
+   #t)
+
 ;*---------------------------------------------------------------------*/
 ;*    Other variables that are defined inside the interpreter...       */
 ;*---------------------------------------------------------------------*/

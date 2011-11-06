@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Apr  8 06:40:46 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 06:20:58 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -70,6 +70,7 @@
 	    coerce_walk
 	    reduce_walk
 	    cnst_walk
+	    object_classgen
 	    hgen_walk
 	    bdb_setting
 	    bdb_spread-obj
@@ -197,6 +198,9 @@
 
 	 ;; we check if all types are defined
 	 (profile ctype (check-types))
+
+	 ;; SCH class accessor generation
+	 (stop-on-pass 'classgen classgen-walk)
 	 
 	 ;; C header generation
 	 (stop-on-pass 'hgen hgen-walk)

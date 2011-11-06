@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Nov  3 10:25:18 2011 (serrano)                */
+#*    Last change :  Sun Nov  6 06:20:30 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -301,7 +301,8 @@ EFFECT_OBJ	= $(EFFECT_FILE:%=Effect/%.o)
 #*--- object ----------------------------------------------------------*/
 OBJECT_FILE	= class generic method getter \
                   plain_access wide_access java_access \
-                  struct slots tools coercion predicate creator nil
+                  struct slots tools coercion predicate creator nil \
+                  classgen
 
 OBJECT_OBJ	= $(OBJECT_FILE:%=Object/%.o)
 

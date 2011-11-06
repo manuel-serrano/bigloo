@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Fri Nov  4 16:31:48 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 06:05:48 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -42,11 +42,10 @@
 ;*    import-class-nil ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (import-class-nil class src-def module)
-   (when *class-nil?*
-      (let* ((id (tclass-id class))
-	     (id-nil (symbol-append id '-nil))
-	     (tid-nil (make-typed-ident id-nil id)))
-	 (import-parser module `(,tid-nil)))))
+   (let* ((id (tclass-id class))
+	  (id-nil (symbol-append id '-nil))
+	  (tid-nil (make-typed-ident id-nil id)))
+      (import-parser module `(,tid-nil))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-plain-class-nil ...                                          */
@@ -54,29 +53,28 @@
 ;*    Even abstract classes have a -nil instance.                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-plain-class-nil class src-def import)
-   (when *class-nil?*
-      (with-access::tclass class (slots)
-	 (let* ((id (tclass-id class))
-		(id-nil (symbol-append id '-nil))
-		(tid-nil (make-typed-ident id-nil id))
-		(the-id-nil (symbol-append '%the- id-nil))
-		(the-tid-nil (make-typed-ident the-id-nil 'obj))
-		(alloc (symbol-append '%allocate- id))
-		(fill (symbol-append 'fill- id '!))
-		(tmp (gensym))
-		(tmpt (make-typed-ident tmp id)))
-	    (produce-module-clause! `(,import (,tid-nil)))
-	    (list
-	     `(define ,the-tid-nil #unspecified)
-	     (epairify `(define (,tid-nil)
-			   ,(make-private-sexp 'unsafe id
-			       `(if (is-a? ,the-id-nil ,id)
-				    ,the-id-nil
-				    (let ((,tmpt (,alloc)))
-				       (set! ,the-id-nil ,tmp)
-				       (,fill ,tmp ,@(fill-nil slots))
-				       ,tmp))))
-		       src-def))))))
+   (with-access::tclass class (slots)
+      (let* ((id (tclass-id class))
+	     (id-nil (symbol-append id '-nil))
+	     (tid-nil (make-typed-ident id-nil id))
+	     (the-id-nil (symbol-append '%the- id-nil))
+	     (the-tid-nil (make-typed-ident the-id-nil 'obj))
+	     (alloc (symbol-append '%allocate- id))
+	     (fill (symbol-append 'fill- id '!))
+	     (tmp (gensym))
+	     (tmpt (make-typed-ident tmp id)))
+	 (produce-module-clause! `(,import (,tid-nil)))
+	 (list
+	    `(define ,the-tid-nil #unspecified)
+	    (epairify `(define (,tid-nil)
+			  ,(make-private-sexp 'unsafe id
+			      `(if (is-a? ,the-id-nil ,id)
+				   ,the-id-nil
+				   (let ((,tmpt (,alloc)))
+				      (set! ,the-id-nil ,tmp)
+				      (,fill ,tmp ,@(fill-nil slots))
+				      ,tmp))))
+	       src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-wide-class-nil ...                                           */
@@ -84,44 +82,43 @@
 ;*    Even abstract classes have a -nil instance.                      */
 ;*---------------------------------------------------------------------*/
 (define (gen-wide-class-nil class src-def import)
-   (when *class-nil?*
-      (with-access::tclass class (its-super slots holder)
-	 (let* ((id (tclass-id class))
-		(super-id (tclass-id its-super))
-		(super-slots (tclass-slots its-super))
-		(id-nil (symbol-append id '-nil))
-		(tid-nil (make-typed-ident id-nil id))
-		(the-id-nil (symbol-append '%the- id-nil))
-		(the-tid-nil (make-typed-ident the-id-nil 'obj))
-		(widening (symbol-append (tclass-widening class) '- id))
-		(super-alloc (symbol-append '%allocate- super-id))
-		(super-fill (symbol-append 'fill- super-id '!))
-		(id? (symbol-append id '?))
-		(tmp (gensym))
-		(tmpt (make-typed-ident tmp id)))
-	    (produce-module-clause! `(,import (,tid-nil)))
-	    (list
-	     `(define ,the-tid-nil #unspecified)
-	     (epairify `(define (,tid-nil)
-			   ,(make-private-sexp 'unsafe id
-			       `(if (,id?  ,the-id-nil)
-				    ,the-id-nil
-				    ;; allocate the super instance
-				    (let ((,tmpt (,super-alloc)))
-				       (set! ,the-id-nil ,tmp)
-				       ;; fill it
-				       (,super-fill ,tmp ,@(fill-nil super-slots))
-				       ;; set the new class type
-				       (object-class-num-set!
-					  ,tmp
-					  (class-num (@ ,(global-id holder)
-							,(global-module holder))))
-				       ;; set the widening property
-				       (object-widening-set! 
-					  ,tmp
-					  (,widening ,@(fill-nil slots)))
-				       ,tmp))))
-		       src-def))))))
+   (with-access::tclass class (its-super slots holder)
+      (let* ((id (tclass-id class))
+	     (super-id (tclass-id its-super))
+	     (super-slots (tclass-slots its-super))
+	     (id-nil (symbol-append id '-nil))
+	     (tid-nil (make-typed-ident id-nil id))
+	     (the-id-nil (symbol-append '%the- id-nil))
+	     (the-tid-nil (make-typed-ident the-id-nil 'obj))
+	     (widening (symbol-append (tclass-widening class) '- id))
+	     (super-alloc (symbol-append '%allocate- super-id))
+	     (super-fill (symbol-append 'fill- super-id '!))
+	     (id? (symbol-append id '?))
+	     (tmp (gensym))
+	     (tmpt (make-typed-ident tmp id)))
+	 (produce-module-clause! `(,import (,tid-nil)))
+	 (list
+	    `(define ,the-tid-nil #unspecified)
+	    (epairify `(define (,tid-nil)
+			  ,(make-private-sexp 'unsafe id
+			      `(if (,id?  ,the-id-nil)
+				   ,the-id-nil
+				   ;; allocate the super instance
+				   (let ((,tmpt (,super-alloc)))
+				      (set! ,the-id-nil ,tmp)
+				      ;; fill it
+				      (,super-fill ,tmp ,@(fill-nil super-slots))
+				      ;; set the new class type
+				      (object-class-num-set!
+					 ,tmp
+					 (class-num (@ ,(global-id holder)
+						       ,(global-module holder))))
+				      ;; set the widening property
+				      (object-widening-set! 
+					 ,tmp
+					 (,widening ,@(fill-nil slots)))
+				      ,tmp))))
+	       src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fill-nil ...                                                     */

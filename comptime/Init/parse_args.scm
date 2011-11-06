@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Nov  5 06:59:06 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 10:06:49 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -150,6 +150,8 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
+      (unless *class-accessors?*
+	 (register-srfi! 'bigloo-class-sans))
       ;; and we are done for the arguments parsing
       pres))
  
@@ -369,15 +371,20 @@
 	  (help (format "Enable Bigloo extended syntax (default: ~a)" (identifier-syntax))))
        (identifier-syntax-set! (string->symbol syntax)))
       ;; reflection
-      (("-fno-reflection" (help "Deprecated, no effect"))
+      (("-fno-reflection" (help "Deprecated"))
        #unspecified)
-      (("+fno-reflection" (help "Deprecated, no effect"))
+      (("+fno-reflection" (help "Deprecated"))
        #unspecified)
       ;; object-nil
-      (("-fclass-nil" (help "Enables generation of \"class-nil\" function"))
-       (set! *class-nil?* #t))
-      (("-fno-class-nil" (help "Disables generation of \"class-nil\" function"))
-       (set! *class-nil?* #t))
+      (("-fclass-nil" (help "Deprecated"))
+       #unspecified)
+      (("-fno-class-nil" (help "Deprecated"))
+       #unspecified)
+      ;; object-accessor
+      (("-fclass-accessors" (help "Generate public class accessors"))
+       (set! *class-accessors?* #t))
+      (("-fnoclass-accessors" (help "Do not generate public class accessors"))
+       (set! *class-accessors?* #f))
       ;; arithmetic
       (("-farithmetic" (help "Suppress genericity of arithmetic operators"))
        (set! *arithmetic-genericity* #f))
@@ -917,6 +924,8 @@
        (set! *pass* 'tailc))
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
+      (("-classgen" (help "Produce an include file for class accessors"))
+       (set! *pass* 'classgen))
       (("-egen" (help "Produce an include file for effects (requires -saw)"))
        (set! *pass* 'egen))
       (("-hgen" (help "Produce a C header file with class definitions"))
