@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Thu May  5 10:02:13 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:39:47 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
@@ -152,7 +152,11 @@
 		 #f)
 		(else
 		 (loop (cdr coerce))))))
-	 ((and (not (symbol? (caar check))) (not (eq? (caar check) #t)))
+	 ((and (not (symbol? (caar check)))
+	       (not (eq? (caar check) #t))
+	       (not (match-case (caar check)
+		       ((lambda (?-) . ?-) #t)
+		       (else #f))))
 	  #f)
 	 (else
 	  (loop (cdr check))))))

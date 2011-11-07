@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov  7 09:17:20 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:30:17 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -31,6 +31,7 @@
 	    object_class
 	    object_coercion
 	    object_classgen
+	    object_slots
 	    object_plain-access
 	    object_wide-access)
    (export  (declare-class! ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
@@ -204,17 +205,17 @@
 	  (gen-class-coercions! class)
 	  (let* ((classid (type-id class))
 		 (super (tclass-its-super class))
-		 (superid (when (tclass? super)
-			     (let* ((sholder (tclass-holder super))
-				    (sholderid (global-id sholder))
-				    (sholdermodule (global-module sholder)))
-				`(@ ,sholderid ,sholdermodule))))
+		 (superv (when (tclass? super)
+			    (let* ((sholder (tclass-holder super))
+				   (sholderid (global-id sholder))
+				   (sholdermodule (global-module sholder)))
+			       `(@ ,sholderid ,sholdermodule))))
 		 (decl `(define ,(global-id holder)
-			   ((@ register-class2! __object)
+			   ((@ register-class! __object)
 			    ;; class id
 			    ',classid
 			    ;; super id
-			    ,superid
+			    ,superv
 			    ;; abstract
 			    ,(tclass-abstract? class)
 			    ;; new
@@ -222,15 +223,15 @@
 			    ;; allocator
 			    ,(classgen-allocate-anonymous class)
 			    ;; nil
-			    'class-nil-todo
+			    (lambda () (error 'class-nil "todo" "todo"))
 			    ;; predicate
 			    ,(classgen-predicate-anonymous class)
 			    ;; hash
 			    ,(get-class-hash classid (cddr src-def))
-			    ;; fields
+			    ;; plain fields
 			    ,(make-class-plain-fields class) 
-			    ;; virtuals
-			    'virtuals-todo
+			    ;; virtual fields
+			    ,(make-class-virtual-fields class)
 			    ;; constructor
 			    ,(tclass-constructor class))))
 		 (edecl (if (epair? src-def)
@@ -288,7 +289,7 @@
 				 `(@ ,sholder-id ,sholder-module)))))
       (trace (ast 2) "make-register-class!: " (shape class) " " virtuals #\Newline)
       (let ((decl `(define ,holder-id
-		      ((@ register-class2! __object)
+		      ((@ register-class! __object)
 		       ',class-id ,super-class ,(tclass-abstract? class)
 		       ,class-make ,class-alloc ,class-nil ,class-pred ,hash
 		       ,fields 
@@ -324,8 +325,38 @@
 ;*    make-class-plain-fields ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (make-class-plain-fields class)
-   (let ((slots (tclass-slots class)))
-      (tprint "SLOTS: " (map typeof slots))))
+   
+   (define (type-default-id type)
+      (if (eq? (type-id type) '_)
+	  'obj
+	  (type-id type)))
+   
+   `(list
+       ,@(filter-map (lambda (s)
+			(unless (slot-virtual? s)
+			   (let ((defs (classgen-slot-anonymous class s)))
+			      `((@ make-class-field __object)
+				',(slot-id s)
+				,(car defs)
+				,(when (pair? (cdr defs)) (cadr defs))
+				#f
+				#f
+				((@ class-field-no-default-value __object))
+				,(if (tclass? (slot-type s))
+				     (tclass-holder (slot-type s))
+				     `',(type-default-id (slot-type s)))))))
+	    (tclass-slots class))))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-virtual-fields ...                                    */
+;*---------------------------------------------------------------------*/
+(define (make-class-virtual-fields class)
+   `(vector
+       ,@(filter-map (lambda (s)
+			(when (slot-virtual? s)
+			   `(cons ,(slot-virtual-num s)
+			       (cons ,(slot-getter s) ,(slot-setter s)))))
+	    (tclass-slots class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */

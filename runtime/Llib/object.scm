@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Nov  7 08:57:42 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:12:53 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -158,7 +158,7 @@
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
-	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil o ::vector)
+	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil ::vector ::obj)
 	    (register-class2!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil ::vector ::obj)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -791,7 +791,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (register-class! name super abstract creator allocate nil predicate hash def constructor virtual)
+(define (register-class! name super abstract creator allocate nil predicate hash def virtual constructor)
    (register-class2! name super abstract creator allocate nil predicate hash def virtual constructor))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Mon Nov  7 08:24:16 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:22:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -340,7 +340,7 @@
       (let ((vargs (vector->list vargs)))
 	 ;; allocate the object and set the fields,
 	 ;; first the actual fields, second the virtual fields
-	 `(let ((,tnew (,(classgen-allocate-expr class))))
+	 `(let ((,tnew ,(classgen-allocate-expr class)))
 	     ;; actual fields
 	     ,@(filter-map (lambda (slot val)
 			      (unless (slot-virtual? slot)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Thu Nov  3 14:27:58 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:40:04 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -83,7 +83,10 @@
 	  (obj->class `(lambda (x)
 			  ,(make-private-sexp 'cast c-id 'x)))
 	  (ttest (if (null? testing)
-		     (list (class?-id c-id))
+		     (if *class-gen-accessors?*
+			 (list (class?-id c-id))
+			 (let ((o (gensym 'o)))
+			    `((lambda (,o) (is-a? ,o ,c-id)))))
 		     '()))
 	  (x (make-typed-ident 'x c-id)))
       (let loop ((super   super)
@@ -92,9 +95,9 @@
 				`(coerce ,c-id bool () ((lambda (,x) #t))))))
 	 (if (not (or (jclass? super) (tclass? super)))
 	     `(type ,@coercer)
-	     (let* ((super-id     (if (tclass? super)
-				      (tclass-id super)
-				      (jclass-id super)))
+	     (let* ((super-id (if (tclass? super)
+				  (tclass-id super)
+				  (jclass-id super)))
 		    (class->super `(lambda (x)
 				      ,(make-private-sexp 'cast super-id 'x)))
 		    (super->class `(lambda (x)
@@ -102,7 +105,7 @@
 		(loop (if (tclass? super)
 			  (tclass-its-super super)
 			  (jclass-its-super super))
-		      (cons* `(coerce ,super-id ,c-id	,ttest (,super->class))
+		      (cons* `(coerce ,super-id ,c-id ,ttest (,super->class))
 			     `(coerce ,c-id ,super-id () (,class->super))
 			     coercer)))))))
 

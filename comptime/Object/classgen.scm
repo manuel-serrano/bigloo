@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Nov  7 09:17:04 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:43:03 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -31,7 +31,8 @@
 	    (classgen-predicate-anonymous ::tclass)
 	    (classgen-make-anonymous ::tclass)
 	    (classgen-allocate-expr ::tclass)
-	    (classgen-allocate-anonymous ::tclass)))
+	    (classgen-allocate-anonymous ::tclass)
+	    (classgen-slot-anonymous ::tclass ::slot)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-walk ...                                                */
@@ -185,7 +186,6 @@
 	      #f))
        (multiple-value-bind (proto def)
 	  (classgen-make c)
-	  (tprint "c=" (type-id c) " def=" def)
 	  (match-case def
 	     ((?- (?id . ?formals) ?body)
 	      `(,(make-typed-ident 'lambda (type-id c)) ,formals ,body))))))
@@ -239,10 +239,9 @@
 ;*---------------------------------------------------------------------*/
 (define (classgen-allocate-expr c)
    (if (tclass-abstract? c)
-       `(lambda l
-	   (error ,(symbol->string (type-id c))
-	      "Can't allocate instance of abstract classes"
-	      #f))
+       `(error ,(symbol->string (type-id c))
+	   "Can't allocate instance of abstract classes"
+	   #f)
        (multiple-value-bind (proto def)
 	  (classgen-allocate c)
 	  (match-case def
@@ -259,6 +258,20 @@
 ;*    classgen-accessors ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (classgen-accessors c)
+   (let ((protos '())
+	 (defs '()))
+      (for-each (lambda (s)
+		   (multiple-value-bind (p d)
+		      (classgen-slot c s)
+		      (set! protos (append p protos))
+		      (set! defs (append d defs))))
+	 (tclass-slots c))
+      (values protos defs)))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-slot ...                                                */
+;*---------------------------------------------------------------------*/
+(define (classgen-slot c s)
    
    (define (get-proto s)
       (let* ((tid (type-id c))
@@ -266,6 +279,13 @@
 	     (gid (make-typed-ident id (type-id (slot-type s))))
 	     (o (make-typed-formal tid)))
 	 `(inline ,gid ,o)))
+   
+   (define (set-proto s)
+      (let* ((tid (type-id c))
+	     (id (symbol-append tid '- (slot-id s) '-set!))
+	     (o (make-typed-formal tid))
+	     (v (make-typed-formal (type-id (slot-type s)))))
+	 `(inline ,id ,o ,v)))
    
    (define (get-def s)
       (let* ((tid (type-id c))
@@ -276,5 +296,30 @@
 	 `(define-inline (,gid ,o)
 	     (,(make-typed-ident 'with-access tid) o (,sid) ,sid))))
    
-   (let ((slots (tclass-slots c)))
-      (values (map get-proto slots) (map get-def slots))))
+   (define (set-def s)
+      (let* ((tid (type-id c))
+	     (sid (slot-id s))
+	     (o (make-typed-ident 'o tid))
+	     (id (symbol-append tid '- sid '-set!))
+	     (v (make-typed-ident 'v (type-id (slot-type s)))))
+	 `(define-inline (,id ,o ,v)
+	     (,(make-typed-ident 'with-access tid) o (,sid) (set! ,sid v)))))
+
+   (if (slot-read-only? s)
+       (values (list (get-proto s))
+	  (list (get-def s))))
+       (values (list (get-proto s) (set-proto s))
+	  (list (get-def s) (set-def s))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-slot-anonymous ...                                      */
+;*---------------------------------------------------------------------*/
+(define (classgen-slot-anonymous class s)
+   (multiple-value-bind (_ d)
+      (classgen-slot class s)
+      (map (match-lambda
+	      ((?- (?id . ?args) ?body)
+	       (let* ((pid (parse-id id #f))
+		      (tlam (make-typed-ident 'lambda (type-id (cdr pid)))))
+		  `(,tlam ,args ,body))))
+	 d)))

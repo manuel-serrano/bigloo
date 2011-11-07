@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Thu Mar 31 16:45:14 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 10:38:28 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
@@ -99,7 +99,13 @@
 		      ((null? check)
 		       #t)
 		      ((not (symbol? (car check)))
-		       (user-error "Coercion" "Illegal clause" clause #f))
+		       (match-case (car check)
+			  ((lambda (?-) ?-)
+			   (loop (cdr check)))
+			  (else
+			   (user-error "Coercion"
+			      "Illegal coerce clause"
+			      clause #f))))
 		      (else
 		       (loop (cdr check)))))
 		(let loop ((coerce coerce))
