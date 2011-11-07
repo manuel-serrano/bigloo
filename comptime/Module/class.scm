@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Nov  6 20:54:16 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 09:17:20 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -210,7 +210,7 @@
 				    (sholdermodule (global-module sholder)))
 				`(@ ,sholderid ,sholdermodule))))
 		 (decl `(define ,(global-id holder)
-			   ((@ register-class! __object)
+			   ((@ register-class2! __object)
 			    ;; class id
 			    ',classid
 			    ;; super id
@@ -220,19 +220,19 @@
 			    ;; new
 			    ,(classgen-make-anonymous class)
 			    ;; allocator
-			    'allocator-todo
+			    ,(classgen-allocate-anonymous class)
 			    ;; nil
 			    'class-nil-todo
 			    ;; predicate
-			    'class-pred-todo
+			    ,(classgen-predicate-anonymous class)
 			    ;; hash
-			    'hash-todo
+			    ,(get-class-hash classid (cddr src-def))
 			    ;; fields
-			    'field-todo
-			    ;; constructor
-			    'constructor-todo
+			    ,(make-class-plain-fields class) 
 			    ;; virtuals
-			    'virtuals-todo)))
+			    'virtuals-todo
+			    ;; constructor
+			    ,(tclass-constructor class))))
 		 (edecl (if (epair? src-def)
 			    (econs (car decl) (cdr decl) (cer src-def))
 			    decl)))
@@ -288,14 +288,15 @@
 				 `(@ ,sholder-id ,sholder-module)))))
       (trace (ast 2) "make-register-class!: " (shape class) " " virtuals #\Newline)
       (let ((decl `(define ,holder-id
-		      ((@ register-class! __object)
+		      ((@ register-class2! __object)
 		       ',class-id ,super-class ,(tclass-abstract? class)
 		       ,class-make ,class-alloc ,class-nil ,class-pred ,hash
-		       ,fields ,constr
+		       ,fields 
 		       (vector ,@(map (lambda (v)
 					 `(cons ,(car v)
 					     (cons ,(cadr v) ,(caddr v))))
-				    virtuals))))))
+				    virtuals))
+		       ,constr))))
 	 ;; we have to inject a source positioning into the build declaration
 	 (let ((loc-decl (if (epair? src-def)
 			     (econs (car decl) (cdr decl) (cer src-def))
@@ -318,6 +319,13 @@
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber field))))
 		(((and ?id (? symbol?)) . ?att)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-plain-fields ...                                      */
+;*---------------------------------------------------------------------*/
+(define (make-class-plain-fields class)
+   (let ((slots (tclass-slots class)))
+      (tprint "SLOTS: " (map typeof slots))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */
@@ -414,7 +422,7 @@
 		       (((?-) . ?rest) rest)
 		       (else slot-defs))))
       `(list ,@(map make-slot-field slot-defs))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    class-finalizer ...                                              */
 ;*    -------------------------------------------------------------    */

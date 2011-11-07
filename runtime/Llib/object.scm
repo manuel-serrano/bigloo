@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Nov  5 06:05:48 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 08:57:42 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -136,7 +136,7 @@
 	    (class-super class)
 	    (class-abstract?::bool class)
 	    (class-subclasses class)
-	    (class-num::long class)
+	    (inline class-num::long class)
 	    (class-name::symbol class)
 	    (class-hash::long class)
 	    (class-fields::pair-nil class)
@@ -159,6 +159,7 @@
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
 	    (register-class!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil o ::vector)
+	    (register-class2!::obj o o ::bool o ::procedure ::procedure ::procedure ::long ::pair-nil ::vector ::obj)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -350,7 +351,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-num ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (class-num class)
+(define-inline (class-num class)
    (vector-ref-ur class 1))
 
 ;*---------------------------------------------------------------------*/
@@ -791,6 +792,12 @@
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (register-class! name super abstract creator allocate nil predicate hash def constructor virtual)
+   (register-class2! name super abstract creator allocate nil predicate hash def virtual constructor))
+
+;*---------------------------------------------------------------------*/
+;*    register-class2! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (register-class2! name super abstract creator allocate nil predicate hash plain virtual constructor)
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)
@@ -807,7 +814,7 @@
 			  -1
 			  allocate
 			  hash
-			  def
+			  plain
 			  constructor
 			  (make-class-virtual-slots-vector super virtual)
 			  creator

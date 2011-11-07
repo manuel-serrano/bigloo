@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Sun Nov  6 20:52:33 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 09:17:04 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -28,7 +28,10 @@
 	    module_module
 	    write_scheme)
    (export  (classgen-walk)
-	    (classgen-make-anonymous ::tclass)))
+	    (classgen-predicate-anonymous ::tclass)
+	    (classgen-make-anonymous ::tclass)
+	    (classgen-allocate-expr ::tclass)
+	    (classgen-allocate-anonymous ::tclass)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-walk ...                                                */
@@ -139,28 +142,36 @@
 	 (predicate-def tid holder))))
 
 ;*---------------------------------------------------------------------*/
+;*    classgen-predicate-anonymous ...                                 */
+;*---------------------------------------------------------------------*/
+(define (classgen-predicate-anonymous c)
+   (multiple-value-bind (proto def)
+      (classgen-predicate c)
+      (match-case def
+	 ((?- (?id . ?formals) ?body)
+	  `(,(make-typed-ident 'lambda 'bool) ,formals ,body)))))
+
+;*---------------------------------------------------------------------*/
 ;*    classgen-make ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (classgen-make c)
    
    (define (make-def id tid slots formals tformals)
-      `(define-inline (,id ,@tformals)
-	  (,(make-typed-ident 'instantiate tid)
-	   ,@(map (lambda (s f)
-		     (list (slot-id s) f))
-		slots formals))))
-   
+      (let ((plain-slots (filter (lambda (s) (not (slot-virtual? s))) slots)))
+	 `(define-inline (,id ,@tformals)
+	     (,(make-typed-ident 'instantiate tid)
+	      ,@(map (lambda (s f)
+			(list (slot-id s) f))
+		   plain-slots formals)))))
+
    (let* ((tid (type-id c))
 	  (slots (tclass-slots c))
 	  (id (symbol-append 'make- tid))
 	  (mk-tid (make-typed-ident id tid))
 	  (f-ids (make-class-make-formals slots))
-	  (f-t (map (lambda (s)
-		       (make-typed-formal (type-id (slot-type s))))
-		  slots))
 	  (f-tids (make-class-make-typed-formals f-ids slots)))
       (values
-	 `(inline ,mk-tid ,@f-t)
+	 `(inline ,mk-tid ,@f-tids)
 	 (make-def mk-tid tid slots f-ids f-tids))))
 
 ;*---------------------------------------------------------------------*/
@@ -174,6 +185,7 @@
 	      #f))
        (multiple-value-bind (proto def)
 	  (classgen-make c)
+	  (tprint "c=" (type-id c) " def=" def)
 	  (match-case def
 	     ((?- (?id . ?formals) ?body)
 	      `(,(make-typed-ident 'lambda (type-id c)) ,formals ,body))))))
@@ -221,6 +233,27 @@
 	 (if (backend-pragma-support (the-backend))
 	     (pragma-allocate alloc-tid tid holder)
 	     (nopragma-allocate alloc-tid tid holder)))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-allocate-expr ...                                       */
+;*---------------------------------------------------------------------*/
+(define (classgen-allocate-expr c)
+   (if (tclass-abstract? c)
+       `(lambda l
+	   (error ,(symbol->string (type-id c))
+	      "Can't allocate instance of abstract classes"
+	      #f))
+       (multiple-value-bind (proto def)
+	  (classgen-allocate c)
+	  (match-case def
+	     ((?- ?- ?body)
+	      body)))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-allocate-anonymous ...                                  */
+;*---------------------------------------------------------------------*/
+(define (classgen-allocate-anonymous c)
+   `(,(make-typed-ident 'lambda (type-id c)) () ,(classgen-allocate-expr c)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-accessors ...                                           */

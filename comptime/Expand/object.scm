@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sun Nov  6 20:48:24 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 08:24:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -26,6 +26,7 @@
 	    object_class
 	    object_slots
 	    object_tools
+	    object_classgen
 	    expand_lambda
 	    module_prototype
 	    module_module
@@ -127,8 +128,9 @@
 			   (format "No field \"~a\" in class \"~a\""
 			      var (type-id class))
 			   x)
-			;; (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
-			(symbol-append '__bigloo__ '|.| i '|.| (id var))))
+			(if *class-gen-accessors?*
+			    (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
+			    (symbol-append '__bigloo__ '|.| i '|.| (id var)))))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -142,10 +144,11 @@
 				 var (type-id class))
 			      x)
 			   (object-epairify
-			      ;;(olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
-			      (let* ((id (symbol-append '__bigloo__ '|.| i '|.| (id var)))
-				     (nx `(set! ,id ,val)))
-				 (olde nx olde))
+			      (if *class-gen-accessors?*
+				  (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
+				  (let* ((id (symbol-append '__bigloo__ '|.| i '|.| (id var)))
+					 (nx `(set! ,id ,val)))
+				     (olde nx olde)))
 			      x)))
 		    (begin
 		       (set-car! (cddr x) val)
@@ -334,14 +337,27 @@
 		form))
 	    (else
 	     (loop (+fx i 1) (cdr s)))))
-      ;; we just have now to build the make call
-      `(let ((,tnew (,(symbol-append '%allocate- id))))
-	  ,@(map (lambda (slot val)
-		    (let ((v (e (cdr val) e))
-			  (id (slot-id slot)))
-		       `(set! ,(symbol-append '__bigloo__ '|.| new '|.| id) ,v)))
-	       slots (vector->list vargs))
-	  ,new)))
+      (let ((vargs (vector->list vargs)))
+	 ;; allocate the object and set the fields,
+	 ;; first the actual fields, second the virtual fields
+	 `(let ((,tnew (,(classgen-allocate-expr class))))
+	     ;; actual fields
+	     ,@(filter-map (lambda (slot val)
+			      (unless (slot-virtual? slot)
+				 (let ((v (e (cdr val) e))
+				       (id (slot-id slot)))
+				    `(set! ,(symbol-append '__bigloo__ '|.| new '|.| id)
+					,v))))
+		  slots vargs)
+	     ;; virtual fields
+	     ,@(filter-map (lambda (slot val)
+			      (unless (slot-virtual? slot)
+				 (let ((v (e (cdr val) e))
+				       (id (slot-id slot)))
+				    `(set! ,(symbol-append '__bigloo__ '|.| new '|.| id)
+					,v))))
+		  slots vargs)
+	     ,new))))
    
 ;*---------------------------------------------------------------------*/
 ;*    expand-co-instantiate ...                                        */
