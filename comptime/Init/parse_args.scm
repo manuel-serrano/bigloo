@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Nov  6 10:06:49 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 17:19:25 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -150,7 +150,7 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
-      (unless *class-accessors?*
+      (unless *class-gen-accessors?*
 	 (register-srfi! 'bigloo-class-sans))
       ;; and we are done for the arguments parsing
       pres))
@@ -382,9 +382,9 @@
        #unspecified)
       ;; object-accessor
       (("-fclass-accessors" (help "Generate public class accessors"))
-       (set! *class-accessors?* #t))
-      (("-fnoclass-accessors" (help "Do not generate public class accessors"))
-       (set! *class-accessors?* #f))
+       (set! *class-gen-accessors?* #t))
+      (("-fno-class-accessors" (help "Do not generate public class accessors"))
+       (set! *class-gen-accessors?* #f))
       ;; arithmetic
       (("-farithmetic" (help "Suppress genericity of arithmetic operators"))
        (set! *arithmetic-genericity* #f))

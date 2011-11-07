@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Nov  6 06:31:49 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 20:54:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -29,6 +29,8 @@
 	    ast_var
 	    ast_env
 	    object_class
+	    object_coercion
+	    object_classgen
 	    object_plain-access
 	    object_wide-access)
    (export  (declare-class! ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
@@ -73,16 +75,16 @@
    (cond
       ((memq import '(export static))
        (declare-export-class! gen-plain-class-accessors!
-			      class-def module
-			      (if final? 'final 'plain)
-			      abstract?
-			      def-src decl-src import))
+	  class-def module
+	  (if final? 'final 'plain)
+	  abstract?
+	  def-src decl-src import))
       (else
        (declare-import-class! import-plain-class-accessors!
-			      class-def module
-			      (if final? 'final 'plain)
-			      abstract?
-			      def-src decl-src))))
+	  class-def module
+	  (if final? 'final 'plain)
+	  abstract?
+	  def-src decl-src))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-wide-class! ...                                          */
@@ -91,12 +93,12 @@
    (cond
       ((memq import '(export static))
        (declare-export-class! gen-wide-class-accessors!
-			      class-def module 'wide #f
-			      def-src decl-src import))
+	  class-def module 'wide #f
+	  def-src decl-src import))
       (else
        (declare-import-class! import-wide-class-accessors!
-			      class-def module 'wide #f
-			      def-src decl-src))))
+	  class-def module 'wide #f
+	  def-src decl-src))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-export-class! ...                                        */
@@ -114,8 +116,8 @@
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
 	  (tclass (declare-class-type! cdef holder wide
-				       final? abstract?
-				       src-def)))
+		     final? abstract?
+		     src-def)))
       ;; debug information
       (global-src-set! holder src-def)
       ;; some paranoid checking
@@ -125,19 +127,21 @@
       (type-import-location-set! tclass (find-location/loc src-decl loc))
       ;; tclass can be something else than a class if an error has been found
       (delay-class-accessors!
-       tclass
-       (delay
-	  (multiple-value-bind (concretes virtuals)
-	     (gen cdef tclass src-def import)
-	     (trace (ast 3)
-		    "declare-class! (export static): "#\Newline
-		    "    concretes: " concretes #\Newline
-		    "     virtuals: " virtuals #\Newline)
-	     ;; this is a domestic class, we have to declare the
-	     ;; global variable that holds the class object
-	     (make-add-class! holder tclass src-def virtuals)
-	     ;; we return the list of concretes
-	     concretes)))))
+	 tclass
+	 (delay
+	    (if *class-gen-accessors?*
+		(multiple-value-bind (concretes virtuals)
+		   (gen cdef tclass src-def import)
+		   (trace (ast 3)
+		      "declare-class! (export static): "#\Newline
+		      "    concretes: " concretes #\Newline
+		      "     virtuals: " virtuals #\Newline)
+		   ;; this is a domestic class, we have to declare the
+		   ;; global variable that holds the class object
+		   (register-class-with-accessors! holder tclass src-def virtuals)
+		   ;; we return the list of concretes
+		   concretes)
+		(register-class-sans-accessors! cdef holder tclass src-def))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
@@ -186,9 +190,64 @@
 (define *declared-classes* '())
 
 ;*---------------------------------------------------------------------*/
-;*    make-add-class! ...                                              */
+;*    register-class-sans-accessors! ...                               */
+;*    -------------------------------------------------------------    */
+;*    @label register-class@                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-add-class! holder class src-def virtuals)
+(define (register-class-sans-accessors! class-def holder class src-def)
+   (if (check-class-declaration? class src-def)
+       (begin
+	  ;; store inside the class structure some information about its slots
+	  (set-class-slots! class class-def src-def)
+	  ;; install the coercion between the new-class and obj
+	  ;; and the class and all its super classes
+	  (gen-class-coercions! class)
+	  (let* ((classid (type-id class))
+		 (super (tclass-its-super class))
+		 (superid (when (tclass? super)
+			     (let* ((sholder (tclass-holder super))
+				    (sholderid (global-id sholder))
+				    (sholdermodule (global-module sholder)))
+				`(@ ,sholderid ,sholdermodule))))
+		 (decl `(define ,(global-id holder)
+			   ((@ register-class! __object)
+			    ;; class id
+			    ',classid
+			    ;; super id
+			    ,superid
+			    ;; abstract
+			    ,(tclass-abstract? class)
+			    ;; new
+			    ,(classgen-make-anonymous class)
+			    ;; allocator
+			    'allocator-todo
+			    ;; nil
+			    'class-nil-todo
+			    ;; predicate
+			    'class-pred-todo
+			    ;; hash
+			    'hash-todo
+			    ;; fields
+			    'field-todo
+			    ;; constructor
+			    'constructor-todo
+			    ;; virtuals
+			    'virtuals-todo)))
+		 (edecl (if (epair? src-def)
+			    (econs (car decl) (cdr decl) (cer src-def))
+			    decl)))
+	     (set! *declared-classes* (cons edecl *declared-classes*))
+	     '()))
+       ;; the class is incorrect, an error has been signaled, keep going
+       ;; as if everything is fine
+       (begin
+	  (tclass-slots-set! class '())
+	  '())))
+		       
+;*---------------------------------------------------------------------*/
+;*    register-class-with-accessors! ...                               */
+;*---------------------------------------------------------------------*/
+(define (register-class-with-accessors! holder class src-def virtuals)
    (let* ((super          (tclass-its-super class))
 	  (holder-id      (global-id holder))
 	  (class-id       (type-id class))
@@ -199,13 +258,13 @@
 			     ((tclass-abstract? class)
 			      `(lambda (x)
 				  (error
-				   ',class-id
-				   "Can't make instance of abstract classes"
-				   ',class-id)))
+				     ',class-id
+				     "Can't make instance of abstract classes"
+				     ',class-id)))
 			     ((not (symbol? class-make-id))
-			      (internal-error "make-add-class!"
-					      "make-class-id not a symbol"
-					      class-make-id))
+			      (internal-error "make-register-class!"
+				 "make-class-id not a symbol"
+				 class-make-id))
 			     (else
 			      `(@ ,class-make-id ,class-module))))
 	  (class-nil      `(@ ,(symbol-append class-id '-nil) ,class-module))
@@ -213,9 +272,9 @@
 	  (class-alloc    (if (tclass-abstract? class)
 			      `(lambda (x)
 				  (error
-				   ',class-alloc-id
-				   "Can't allocate instance of abstract classes"
-				   ',class-id))
+				     ',class-alloc-id
+				     "Can't allocate instance of abstract classes"
+				     ',class-id))
 			      `(@ ,class-alloc-id ,class-module)))
 	  (hash           (get-class-hash class-id (cddr src-def)))
 	  (constr         (tclass-constructor class))
@@ -227,7 +286,7 @@
 				     (sholder-id (global-id sholder))
 				     (sholder-module (global-module sholder)))
 				 `(@ ,sholder-id ,sholder-module)))))
-      (trace (ast 2) "make-add-class!: " (shape class) " " virtuals #\Newline)
+      (trace (ast 2) "make-register-class!: " (shape class) " " virtuals #\Newline)
       (let ((decl `(define ,holder-id
 		      ((@ register-class! __object)
 		       ',class-id ,super-class ,(tclass-abstract? class)
@@ -235,9 +294,8 @@
 		       ,fields ,constr
 		       (vector ,@(map (lambda (v)
 					 `(cons ,(car v)
-						(cons ,(cadr v)
-						      ,(caddr v))))
-				      virtuals))))))
+					     (cons ,(cadr v) ,(caddr v))))
+				    virtuals))))))
 	 ;; we have to inject a source positioning into the build declaration
 	 (let ((loc-decl (if (epair? src-def)
 			     (econs (car decl) (cdr decl) (cer src-def))
@@ -269,6 +327,7 @@
 ;*    to produce the correct proper list for the class declaration.    */
 ;*---------------------------------------------------------------------*/
 (define (make-class-fields class-id slot-defs loc)
+   
    (define (read-only? attr)
       (let loop ((attr attr))
 	 (cond
@@ -278,6 +337,7 @@
 	     #t)
 	    (else
 	     (loop (cdr attr))))))
+   
    (define (virtual? attr)
       (let loop ((attr attr))
 	 (cond
@@ -287,6 +347,7 @@
 	     #t)
 	    (else
 	     (loop (cdr attr))))))
+   
    (define (find-info-attribute attr)
       (if (not (pair? attr))
 	  #f
@@ -295,6 +356,7 @@
 	      value)
 	     (else
 	      (find-info-attribute (cdr attr))))))
+   
    (define (find-default-attribute attr)
       (if (not (pair? attr))
 	  '((@ class-field-no-default-value __object))
@@ -303,10 +365,12 @@
 	      `',value)
 	     (else
 	      (find-default-attribute (cdr attr))))))
+   
    (define (type-default-id type)
       (if (eq? (type-id type) '_)
 	  'obj
 	  (type-id type)))
+   
    (define (make-slot-field slot)
       (match-case slot
 	 ((? symbol?)
@@ -345,6 +409,7 @@
 	  (internal-error "make-class-fields"
 	     "Illegal slot definition"
 	     slot))))
+   
    (let ((slot-defs (match-case slot-defs
 		       (((?-) . ?rest) rest)
 		       (else slot-defs))))
@@ -480,8 +545,7 @@
 		 ;; this is the root we proceed now
 		 (loop (cdr cur)
 		       next
-		       (append (force (cdr (car cur)))
-			       access)))
+		       (append (force (cdr (car cur))) access)))
 		((and (tclass? class) (not (tclass? super)))
 		 (if (type? super)
 		     ;; this is and error that will be pointed out later. for
@@ -493,8 +557,7 @@
 			      access))
 		     (loop (cdr cur)
 			   next
-			   (append (force (cdr (car cur)))
-				   access))))
+			   (append (force (cdr (car cur))) access))))
 		((and (jclass? class) (not (jclass? super)))
 		 (if (type? super)
 		     ;; this is and error that will be pointed out later. for
@@ -506,8 +569,7 @@
 			      access))
 		     (loop (cdr cur)
 			   next
-			   (append (force (cdr (car cur)))
-				   access))))
+			   (append (force (cdr (car cur))) access))))
 		((and (tclass? class) (eq? (tclass-slots super) #unspecified))
 		 ;; we have not yet seen the super, we delay again
 		 (loop (cdr cur)
@@ -522,6 +584,5 @@
 		 ;; ok, the super has been proceed, we go for this class
 		 (loop (cdr cur)
 		       next
-		       (append (force (cdr (car cur)))
-			       access))))))))
+		       (append (force (cdr (car cur))) access))))))))
 

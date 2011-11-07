@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/plain-access.scm     */
+;*    serrano/prgm/project/bigloo/comptime/Object/plain_access.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Jun 29 16:58:33 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov  6 17:18:43 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
 ;*    -------------------------------------------------------------    */
@@ -51,20 +51,18 @@
    (trace (ast 2) "=====>>> make-plain-class-accessors!: " src-def #\Newline)
    (if (correct-plain-class? class src-def)
        (with-access::tclass class (id)
-	  ;; we store inside the class structure some information about
-	  ;; its slots
+	  ;; store inside the class structure some information about its slots
 	  (set-plain-class-slots! class-def src-def class)
-	  ;; we install the coercion between the new-class and obj
-	  ;; and the class and all its super classes.
+	  ;; install the coercion between the new-class and obj
+	  ;; and the class and all its super classes
 	  (gen-class-coercions! class)
-	  ;; we produces the user access function
+	  ;; produce the user access functions
 	  (multiple-value-bind (fields virtuals)
 	     (gen-class-slots-access! class class #f src-def)
 	     (let ((creats (gen-plain-class-creators class src-def import))
 		   (structs (gen-plain-class<->struct class src-def))
 		   (predicate (gen-class-pred! class src-def import)))
-		(values `(,@predicate ,@structs ,@creats ,@fields)
-			virtuals))))
+		(values `(,@predicate ,@structs ,@creats ,@fields) virtuals))))
        (values '() '())))
 
 ;*---------------------------------------------------------------------*/
@@ -74,20 +72,18 @@
    (trace (ast 2) "impport-plain-class-accessors!: " src-def #\Newline)
    (if (correct-plain-class? class src-def)
        (with-access::tclass class (id)
-	  ;; we store inside the class structure some information about
-	  ;; its slots
+	  ;; store inside the class structure some information about its slots
 	  (set-plain-class-slots! class-def src-def class)
-	  ;; we install the coercion between the new-class and obj
-	  ;; and the class and all its super classes.
+	  ;; install the coercion between the new-class and obj
+	  ;; and the class and all its super classes
 	  (gen-class-coercions! class)
-	  ;; we produces the user access function
+	  ;; produce the user access functions
 	  (multiple-value-bind (fields virtuals)
 	     (gen-class-slots-access! class class #f src-def)
 	     (let ((creats (import-plain-class-creators class src-def module))
 		   (predicate (import-class-pred! class src-def module)))
-		(values `(,@predicate ,@creats ,@fields)
-			virtuals))))
-       '()))
+		(values `(,@predicate ,@creats ,@fields) virtuals))))
+       (values '() '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    heap-plain-class-accessors! ...                                  */

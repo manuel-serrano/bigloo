@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Fri Nov  4 10:54:44 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 19:13:56 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -79,7 +79,9 @@
 	    (class-fill::obj ::tclass)
 	    (class-predicate::symbol ::tclass)
 	    (class-nil-constructor::symbol ::tclass)
-	    (class-allocate::symbol ::tclass)))
+	    (class-allocate::symbol ::tclass)
+	    (check-class-declaration?::bool ::tclass ::obj)
+	    (set-class-slots! ::tclass ::pair-nil ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *class-type-list* ...                                            */
@@ -359,3 +361,136 @@
    (call-next-method)
    (with-access::tclass t (widening its-super)
       (when widening (type-occurrence-increment! its-super))))
+
+;*---------------------------------------------------------------------*/
+;*    check-class-declaration? ...                                     */
+;*    -------------------------------------------------------------    */
+;*    This function checks if the super class is conform to the        */
+;*    class declaration.                                               */
+;*    -------------------------------------------------------------    */
+;*    Called when registering a class.                                 */
+;*    See @ref ../Module/class.scm:register-class@                     */
+;*---------------------------------------------------------------------*/
+(define (check-class-declaration? class src-def)
+   (if (wide-class? class)
+       (check-wide-class-declaration? class src-def)
+       (check-plain-class-declaration? class src-def)))
+
+;*---------------------------------------------------------------------*/
+;*    check-plain-class-declaration? ...                               */
+;*    -------------------------------------------------------------    */
+;*    This function checks that the super class is conform to the      */
+;*    class. That is, the class is not a wide class and the super      */
+;*    class is not final.                                              */
+;*---------------------------------------------------------------------*/
+(define (check-plain-class-declaration? class src-def)
+   (let ((super (tclass-its-super class))
+	 (class-id (tclass-id class)))
+      ;; Now that the class is defined we check the super (is it or
+      ;; not a class).
+      (cond
+	 ((and (type? super) (not (tclass? super)))
+	  (user-error (symbol->string (type-id super))
+	     (format "super of \"~a\" is not a class" class-id)
+	     src-def
+	     type)
+	  #f)
+	 ((wide-class? class)
+	  ;; internal error because wide classes must be processed
+	  ;; by make-wide-class-accesses
+	  (internal-error "check-plain-class-declation?"
+	     "Should not be able to see a wide class here"
+	     src-def)
+	  #f)
+	 ((wide-class? super)
+	  ;; no one can inherite of a wide class
+	  (user-error (symbol->string (type-id super))
+	     (format "super of \"~a\" is a wide class" class-id)
+	     src-def
+	     type)
+	  #f)
+	 ((final-class? super)
+	  ;; only wide class can inherit of final classes
+	  (user-error (symbol->string (type-id super))
+	     "Only wide classes can inherit of final classes" 
+	     src-def
+	     type)
+	  #f)
+	 (else
+	  #t))))
+
+;*---------------------------------------------------------------------*/
+;*    check-wide-class-declaration? ...                                */
+;*    -------------------------------------------------------------    */
+;*    This function checks that the super class is conform to the      */
+;*    class. That is, the class is a wide class and the super          */
+;*    class is final.                                                  */
+;*---------------------------------------------------------------------*/
+(define (check-wide-class-declaration? class src-def)
+   (let* ((super (tclass-its-super class))
+	  (class-id (tclass-id class)))
+      ;; Now that the class is defined we check the super (is it or
+      ;; not a class).
+      (cond
+	 ((and (type? super) (not (tclass? super)))
+	  (user-error (symbol->string (type-id super))
+	     (format "super of \"~a\" is not a class" class-id)
+	     src-def
+	     type))
+	 ((not (wide-class? class))
+	  ;; internal error because wide classes must be processed
+	  ;; by make-class-accesses
+	  (internal-error "check-wide-class-declaration?"
+	     "Should not be able to see a plain class here"
+	     src-def))
+	 ((wide-class? super)
+	  ;; no one can inherite of a wide class
+	  (user-error (symbol->string (type-id super))
+	     (format "super of \"~a\" is a wide class" class-id)
+	     src-def
+	     type))
+	 ((not (final-class? super))
+	  ;; wide class can only inherit of final classes
+	  (user-error (symbol->string (type-id super))
+	     (format "super of wide class \"~a\" is not a final class"
+		class-id)
+	     src-def
+	     type))
+	 ((final-class? class)
+	  ;; a class can't be final and wide
+	  (user-error class-id
+	     "A class can't be \"wide\" and \"final\""
+	     src-def
+	     type))
+	 (else
+	  #t))))
+
+;*---------------------------------------------------------------------*/
+;*    set-class-slots! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Parse the class slots and store inside the class structure       */
+;*    how many slots are virtual.                                      */
+;*    -------------------------------------------------------------    */
+;*    Called when registering a class.                                 */
+;*    See @ref ../Module/class.scm:register-class@                     */
+;*---------------------------------------------------------------------*/
+(define (set-class-slots! class class-def src-def)
+   (let* ((super (let ((super (tclass-its-super class)))
+		    (if (eq? super class)
+			#f
+			super)))
+	  (super-vnum (if (tclass? super)
+			  (tclass-virtual-slots-number super)
+			  0))
+	  (slots (cddr class-def)))
+      ;; we store inside the class the result of the parsing
+      ;; we pre-parse the class slot and we return the data structure
+      ;; describing the result of this parsing
+      (let* ((cslots (make-class-slots class slots super super-vnum src-def))
+	     (local-vnum (get-local-virtual-slots-number class cslots)))
+	 ;; we set the number of virtual slots for the current class
+	 (tclass-virtual-slots-number-set! class local-vnum)
+	 ;; and we store the slots
+	 (tclass-slots-set! class cslots))))
+
+       

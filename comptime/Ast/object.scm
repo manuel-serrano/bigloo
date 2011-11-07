@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sat Nov  5 20:06:18 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 20:51:48 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -70,12 +70,12 @@
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node exp stack loc site)
    (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
-	  (l (if (eq? (car l) '__bigloo__) (cdr l) l))
-	  (var (sexp->node (car l) stack loc site)))
+	  (l2 (if (eq? (car l) '__bigloo__) (cdr l) l))
+	  (var (sexp->node (car l2) stack loc site)))
       (with-access::variable (var-variable var) (type)
 	 (let loop ((node var)
 		    (klass type)
-		    (slots (cdr l)))
+		    (slots (cdr l2)))
 	    (cond
 	       ((null? slots)
 		node)
@@ -97,15 +97,15 @@
 ;*---------------------------------------------------------------------*/
 (define (field-set->node exp val stack loc site)
    (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
-	  (l (if (eq? (car l) '__bigloo__) (cdr l) l))
-	  (var (sexp->node (car l) stack loc site))
+	  (l2 (if (eq? (car l) '__bigloo__) (cdr l) l))
+	  (var (sexp->node (car l2) stack loc site))
 	  (val (sexp->node val stack loc site)))
       (if (not (var? var))
 	  (error-sexp->node "Unbound variable" exp loc)
 	  (with-access::variable (var-variable var) (type)
 	     (let loop ((node var)
 			(klass type)
-			(slots (cdr l)))
+			(slots (cdr l2)))
 		(if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
 		    (error-sexp->node "Static type not a class" exp loc)
 		    (let ((slot (find-class-slot klass (car slots))))
@@ -116,7 +116,7 @@
 				 (type-id klass) (car slots))
 			      exp loc))
 			  ((null? (cdr slots))
-			   (if (slot-read-only? slot)
+			   (if (and (slot-read-only? slot) (eq? l l2))
 			       (error-sexp->node
 				  (format "Field read-only \"~a\"" (car slots))
 				  exp loc)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Sun Nov  6 08:59:22 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 20:52:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -16,15 +16,19 @@
    (include "Engine/pass.sch")
    (import  tools_error
 	    type_type
+	    type_tools
 	    engine_param
 	    object_class
 	    object_slots
 	    ast_var
 	    ast_ident
+	    ast_private
 	    ast_node
+	    backend_backend
 	    module_module
 	    write_scheme)
-   (export  (classgen-walk)))
+   (export  (classgen-walk)
+	    (classgen-make-anonymous ::tclass)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-walk ...                                                */
@@ -155,10 +159,68 @@
 		       (make-typed-formal (type-id (slot-type s))))
 		  slots))
 	  (f-tids (make-class-make-typed-formals f-ids slots)))
-      
       (values
 	 `(inline ,mk-tid ,@f-t)
 	 (make-def mk-tid tid slots f-ids f-tids))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-make-anonymous ...                                      */
+;*---------------------------------------------------------------------*/
+(define (classgen-make-anonymous c)
+   (if (tclass-abstract? c)
+       `(lambda l
+	   (error ,(symbol->string (type-id c))
+	      "Can't allocate instance of abstract classes"
+	      #f))
+       (multiple-value-bind (proto def)
+	  (classgen-make c)
+	  (match-case def
+	     ((?- (?id . ?formals) ?body)
+	      `(,(make-typed-ident 'lambda (type-id c)) ,formals ,body))))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-allocate ...                                            */
+;*---------------------------------------------------------------------*/
+(define (classgen-allocate c)
+   
+   (define (c-malloc tid)
+      (let ((tname  (string-sans-$ (type-name c)))
+	    (sizeof (if (string? (type-size c))
+			(type-size c)
+			(type-name c))))
+	 `(,(make-typed-ident 'free-pragma tid)
+	   ,(string-append "((" tname
+	       ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
+   
+   (define (pragma-allocate id tid g)
+      (let ((new (mark-symbol-non-user! (gensym 'new))))
+	 `(define-inline (,id)
+	     (let ((,(make-typed-ident new tid) ,(c-malloc tid)))
+		(object-class-num-set! ,new
+		   ((@ class-num __object)
+		    (@ ,(global-id g) ,(global-module g))))
+		(object-widening-set! ,new #f)
+		,new))))
+   
+   (define (nopragma-allocate id tid g)
+      (let ((new (mark-symbol-non-user! (gensym 'new))))
+	 `(define-inline (,id)
+	     (let ((,(make-typed-ident new tid) ,(make-private-sexp 'new tid)))
+		(object-class-num-set! ,new
+		   ((@ class-num __object)
+		    (@ ,(global-id g) ,(global-module g))))
+		(object-widening-set! ,new #f)
+		,new))))
+   
+   (let* ((tid (type-id c))
+	  (alloc-id (symbol-append '%allocate- tid))
+	  (alloc-tid (make-typed-ident alloc-id tid))
+	  (holder (tclass-holder c)))
+      (values
+	 `(inline ,alloc-tid)
+	 (if (backend-pragma-support (the-backend))
+	     (pragma-allocate alloc-tid tid holder)
+	     (nopragma-allocate alloc-tid tid holder)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-accessors ...                                           */

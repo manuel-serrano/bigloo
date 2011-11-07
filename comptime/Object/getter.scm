@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Sat Nov  5 18:52:43 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 17:18:13 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
@@ -58,7 +58,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-class-slots-access! class type widening src)
    (trace (ast 2) "make-class-slots-access!: " (shape class) #\Newline)
-   ;; for wide classes this function is be called twice. First, type will be #f
+   ;; For wide classes this function is called twice. First, type will be #f
    ;; (so the slots are in the class objects, as for plain class). Second,
    ;; it will build the accessors for the plain part of the wide-class,
    ;; using the super class (i.e. the type argument)
@@ -185,6 +185,7 @@
 (define (slot-direct-ref class-id class slot widening src-def)
    (with-access::slot slot (id type src class-owner)
       (let* ((slot-ref-id  (symbol-append class-id '- id))
+	     (slot-ref-id slot-ref-id)
 	     (slot-ref-tid (make-typed-ident slot-ref-id (type-id type)))
 	     (obj (mark-symbol-non-user! (gensym 'obj)))
 	     (tid (make-typed-formal (type-id class))))
@@ -194,19 +195,18 @@
 	     ;; @label slot-direct-ref@
 	     (begin
 		(produce-module-clause!
-		 `(static (inline ,slot-ref-tid ,tid)))
+		   `(static (inline ,slot-ref-tid ,tid)))
 		(produce-module-clause!
-		 `(pragma (,slot-ref-id side-effect-free no-cfa-top
-					(effect (read (,slot-ref-id))))))
+		   `(pragma (,slot-ref-id side-effect-free no-cfa-top
+			       (effect (read (,slot-ref-id))))))
 		(list
 		 (epairify*
 		  `(define-inline (,slot-ref-tid ,(symbol-append obj tid))
  		      ,(make-class-ref class slot obj))
 		  src
 		  src-def)))
-	     ;; otherwise we define a alias pointing to the real slot
-	     (let ((slot-ref-oid (symbol-append (type-id class-owner)
-						'- id)))
+	     ;; otherwise we define an alias pointing to the real slot
+	     (let ((slot-ref-oid (symbol-append (type-id class-owner) '- id)))
 		(add-macro-alias! slot-ref-id slot-ref-oid)
 		'())))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Nov  5 14:10:14 2011 (serrano)                */
+;*    Last change :  Sun Nov  6 20:48:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -174,14 +174,16 @@
 ;*    instantiate->make ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (instantiate->make form class e)
-   (let ((make-name (class-make class)))
-      (instantiate->fill form
-			 class
-			 (lambda (largs)
-			    (if (epair? form)
-				(econs make-name largs (cer form))
-				(cons make-name largs)))
-			 e)))
+   (if *class-gen-accessors?*
+       (let ((make-name (class-make class)))
+	  (instantiate->fill form
+	     class
+	     (lambda (largs)
+		(if (epair? form)
+		    (econs make-name largs (cer form))
+		    (cons make-name largs)))
+	     e))
+       (instantiate->allocate form class e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate->fill ...                                            */
@@ -274,6 +276,72 @@
 			      (econs value largs (cer value))
 			      (cons value largs))
 			  virtuals))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    instantiate->allocate ...                                        */
+;*---------------------------------------------------------------------*/
+(define (instantiate->allocate form class e)
+   (let* ((id (type-id class))
+	  (slots (tclass-all-slots class))
+	  (len (length slots))
+	  (vargs (make-vector (length slots)))
+	  (new (gensym 'new))
+	  (tnew (make-typed-ident new id))
+	  (provided (cdr form)))    
+      ;; we collect the default values
+      (let loop ((i 0)
+		 (slots slots))
+	 (if (null? slots)
+	     'done
+	     (let ((s (car slots)))
+		(cond
+		   ((slot-default? s)
+		    (vector-set! vargs i (cons #t (slot-default-value s))))
+		   (else
+		    (vector-set! vargs i (cons #f #unspecified))))
+		(loop (+fx i 1) (cdr slots)))))
+      ;; we collect the provided values
+      (let loop ((provided provided))
+	 (if (null? provided)
+	     'done
+	     (let ((p (car provided)))
+		(match-case p
+		   (((and (? symbol?) ?s-name) ?value)
+		    ;; plain slot
+		    (let ((pval (vector-ref
+				   vargs
+				   (find-slot-offset
+				      slots s-name "instantiate" p))))
+		       (set-car! pval #t)
+		       (set-cdr! pval (object-epairify value p))))
+		   (else
+		    (error #f "Illegal `instantiate' form" form)))
+		(loop (cdr provided)))))
+      ;; we check that we have a value for all formals
+      (let loop ((i 0)
+		 (s slots))
+	 (cond
+	    ((=fx i len)
+	     'ok)
+	    ((and (not (car (vector-ref vargs i)))
+		  (not (slot-virtual? (car s))))
+	     ;; no, this is not correct, at least one argument is missing
+	     (error #f
+		(string-append
+		   "Illegal `instantiate' form (missing arguments for slot "
+		   (symbol->string (slot-id (car s)))
+		   ")")
+		form))
+	    (else
+	     (loop (+fx i 1) (cdr s)))))
+      ;; we just have now to build the make call
+      `(let ((,tnew (,(symbol-append '%allocate- id))))
+	  ,@(map (lambda (slot val)
+		    (let ((v (e (cdr val) e))
+			  (id (slot-id slot)))
+		       `(set! ,(symbol-append '__bigloo__ '|.| new '|.| id) ,v)))
+	       slots (vector->list vargs))
+	  ,new)))
    
 ;*---------------------------------------------------------------------*/
 ;*    expand-co-instantiate ...                                        */

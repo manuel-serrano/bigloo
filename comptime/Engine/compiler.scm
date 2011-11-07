@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Nov  6 06:20:58 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 07:52:46 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -71,6 +71,7 @@
 	    reduce_walk
 	    cnst_walk
 	    object_classgen
+	    object_class
 	    hgen_walk
 	    bdb_setting
 	    bdb_spread-obj
