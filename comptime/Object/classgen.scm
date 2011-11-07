@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Nov  7 10:43:03 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 12:34:12 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -20,6 +20,7 @@
 	    engine_param
 	    object_class
 	    object_slots
+	    object_nil
 	    ast_var
 	    ast_ident
 	    ast_private
@@ -29,6 +30,7 @@
 	    write_scheme)
    (export  (classgen-walk)
 	    (classgen-predicate-anonymous ::tclass)
+	    (classgen-nil-expr ::tclass)
 	    (classgen-make-anonymous ::tclass)
 	    (classgen-allocate-expr ::tclass)
 	    (classgen-allocate-anonymous ::tclass)
@@ -104,12 +106,6 @@
    (and (tclass? c) (eq? (global-module (tclass-holder c)) *module*)))
 
 ;*---------------------------------------------------------------------*/
-;*    class-import ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (class-import c)
-   (global-import (tclass-holder c)))
-
-;*---------------------------------------------------------------------*/
 ;*    classgen ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (classgen c)
@@ -117,15 +113,24 @@
       (classgen-predicate c)
       (multiple-value-bind (make-p make-d)
 	 (classgen-make c)
-	 (multiple-value-bind (access-p access-d)
-	    (classgen-accessors c)
-	    (values
-	       `(,(class-import c)
-		 ,pred-p
-		 ,make-p
-		 ,@access-p)
-	       (cons* pred-d make-d access-d))))))
-   
+	 (multiple-value-bind (nil-p nil-d)
+	    (classgen-nil c)
+	    (multiple-value-bind (access-p access-d)
+	       (classgen-accessors c)
+	       (values
+		  `(,(class-import c)
+		    ,pred-p
+		    ,make-p
+		    ,nil-p
+		    ,@access-p)
+		  (cons* pred-d make-d nil-d access-d)))))))
+
+;*---------------------------------------------------------------------*/
+;*    class-import ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (class-import c)
+   (global-import (tclass-holder c)))
+
 ;*---------------------------------------------------------------------*/
 ;*    classgen-predicate ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -175,6 +180,40 @@
 	 `(inline ,mk-tid ,@f-tids)
 	 (make-def mk-tid tid slots f-ids f-tids))))
 
+;*---------------------------------------------------------------------*/
+;*    classgen-nil ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (classgen-nil c)
+   
+   (define (nil-def id tid slots)
+      (let* ((plain-slots (filter (lambda (s) (not (slot-virtual? s))) slots))
+	     (new (gensym 'new))
+	     (tnew (make-typed-ident new tid)))
+	 `(define (,id)
+	     (let ((,tnew ,(classgen-allocate-expr c)))
+		,@(map (lambda (s)
+			  `(set! ,(symbol-append '__bigloo__ '|.| new '|.| (slot-id s)) ,(type-nil-value (slot-type s))))
+		     plain-slots)
+		,new))))
+   
+   (let* ((tid (type-id c))
+	  (slots (tclass-slots c))
+	  (id (symbol-append (type-id c) '-nil))
+	  (nil-tid (make-typed-ident id tid)))
+      (values
+	 `(,nil-tid)
+	 (nil-def nil-tid tid slots))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-nil-expr ...                                            */
+;*---------------------------------------------------------------------*/
+(define (classgen-nil-expr c)
+   (multiple-value-bind (proto def)
+      (classgen-nil c)
+      (match-case def
+	 ((?- ?- ?body)
+	  body))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    classgen-make-anonymous ...                                      */
 ;*---------------------------------------------------------------------*/

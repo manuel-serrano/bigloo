@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Sun Nov  6 06:05:48 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 12:09:40 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -36,7 +36,8 @@
 	    foreign_jtype)
    (export  (import-class-nil ::tclass ::pair ::symbol)
 	    (gen-plain-class-nil ::tclass ::pair ::symbol)
-	    (gen-wide-class-nil ::tclass ::pair ::symbol)))
+	    (gen-wide-class-nil ::tclass ::pair ::symbol)
+	    (type-nil-value ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    import-class-nil ...                                             */
@@ -152,6 +153,22 @@
 	  (bigloo-primitive-type-nil type slot))
 	 (else
 	  (extern-type-nil type slot)))))
+
+;*---------------------------------------------------------------------*/
+;*    type-nil-value ...                                               */
+;*---------------------------------------------------------------------*/
+(define (type-nil-value type)
+   (cond
+      ((tclass? type)
+       `(class-nil ,(symbol-append (type-id type))))
+      ((tvec? type)
+       `(list->tvector ',(type-id type) '()))
+      ((jarray? type)
+       `(,(symbol-append 'make- (type-id type)) 0))
+      ((bigloo-type? type)
+       (bigloo-primitive-type-nil type slot))
+      (else
+       (extern-type-nil type slot))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-primitive-type-nil ...                                    */

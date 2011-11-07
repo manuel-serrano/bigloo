@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov  7 10:30:17 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 12:29:17 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -223,7 +223,7 @@
 			    ;; allocator
 			    ,(classgen-allocate-anonymous class)
 			    ;; nil
-			    (lambda () (error 'class-nil "todo" "todo"))
+			    ,(classgen-nil-expr class)
 			    ;; predicate
 			    ,(classgen-predicate-anonymous class)
 			    ;; hash
