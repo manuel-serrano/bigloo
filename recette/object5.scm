@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Fri Nov  4 09:58:59 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 16:26:28 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module object5
    (import  (main "main.scm"))
-   (include "test.sch")
+   (include "test.sch"
+	    "object5.sch")
    (export (test-object5))
    (static (class object5 (x (default 1)) (y (default 1)) (z (default '()))))
    (export (class object6 (rec (default (object6-nil)))))

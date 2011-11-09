@@ -1,5 +1,5 @@
 ;; Automatically generated file (don't edit) */
-;; Mon Nov  7 12:38:02 CET 2011
+;; Wed Nov  9 17:24:48 CET 2011
 
 (provide 'bmacs-config)
 (defvar bmacs-docdir "/users/serrano/prgm/project/bigloo/manuals")

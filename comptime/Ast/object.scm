@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sun Nov  6 20:51:48 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 10:17:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -48,6 +48,7 @@
 	    ast_sexp)
    
    (export (field-access?::bool ::symbol ::obj)
+	   (field-access::symbol ::symbol ::symbol)
 	   (field-ref->node::node ::symbol stack ::obj ::symbol)
 	   (field-set->node::node ::symbol ::obj stack ::obj ::symbol)))
 
@@ -64,6 +65,12 @@
 	       ((eq? (identifier-syntax) 'bigloo) #t)
 	       ((eq? (identifier-syntax) 'r5rs) #f)
 	       (else (or (find-local n stack) (global? (find-global n)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    field-access ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (field-access var field)
+   (symbol-append '__bigloo__ '|.| var '|.| field))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
@@ -142,10 +149,12 @@
 ;*    make-field-set! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (make-field-set! type slot obj val stack loc site)
-   (if (slot-setter slot)
+   (cond
+      ((slot-setter slot)
        (let* ((vnum (slot-virtual-num slot))
 	      (exp `((@ call-virtual-setter __object) ,obj ,vnum ,val)))
-	  (sexp->node exp stack loc site))
+	  (sexp->node exp stack loc site)))
+      (else
        (let ((priv (make-class-set! type slot obj val)))
-	  (private-node priv stack loc site))))
+	  (private-node priv stack loc site)))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Nov  7 12:15:30 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 13:13:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -133,8 +133,9 @@
 	    (class-exists ::symbol)
 	    (class?::bool ::obj)
 	    (eval-class?::bool ::obj)
-	    (class-super class)
 	    (class-abstract?::bool class)
+	    (class-wide?::bool class)
+	    (class-super class)
 	    (class-subclasses class)
 	    (inline class-num::long class)
 	    (class-name::symbol class)
@@ -148,6 +149,7 @@
 	    (class-creator::obj class)
 	    (class-nil::obj class)
 	    (make-class-field::vector ::symbol o o ::bool ::obj ::obj ::obj)
+	    (make-class-field2::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol field)
@@ -158,7 +160,8 @@
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
-	    (register-class!::obj o o ::bool o ::procedure ::obj ::procedure ::long ::pair-nil ::vector ::obj)
+	    (register-class!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
+	    (register-class2!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -199,8 +202,9 @@
 	    *nb-generics*
 	    *class-key*
 	    (make-class ::symbol ::long ::long
-			c o a ::procedure ::long obj o ::vector ::obj
-			::procedure ::procedure ::obj ::bool)
+			::obj ::obj ::obj ::obj ::long ::obj
+			::obj ::vector ::obj
+			::procedure ::obj ::obj ::bool)
 	    (class-allocate::procedure class)
 	    (inline generic-default-set! ::procedure ::procedure)
 	    (inline generic-method-array-set! ::procedure ::vector))
@@ -267,7 +271,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name num min super sub max alloc ha fd constr virt inst nil pred evdata abstract)
+(define (make-class name num min super sub max alloc ha fd constr virt inst nil shrink evdata abstract)
    (let ((v ($create-vector-uncollectable 17)))
       ;;  the class name
       (vector-set-ur! v 0 name)
@@ -294,9 +298,9 @@
       ;;  the function that creates instances
       (vector-set-ur! v 11 inst)
       ;;  the function that return the NIL object
-      (vector-set-ur! v 12 nil)
-      ;;  the class predicate
-      (vector-set-ur! v 13 pred)
+      (vector-set-ur! v 12 (cons #t nil))
+      ;;  the class shrink
+      (vector-set-ur! v 13 shrink)
       ;;  field used when declaring a class within eval
       (vector-set-ur! v 14 evdata)
       ;;  is the class abstract
@@ -440,14 +444,20 @@
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter virtual info default type)
-   (vector name getter setter virtual make-class-field info default type))
+   (vector name getter setter virtual make-class-field info default type (procedure? setter)))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-field2 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (make-class-field2 name getter setter ronly virtual info default type)
+   (vector name getter setter virtual make-class-field info default type (not ronly)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-field? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 8)
+	(=fx (vector-length obj) 9)
 	(eq? (vector-ref obj 4) make-class-field)))
 	 
 ;*---------------------------------------------------------------------*/
@@ -479,13 +489,21 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-mutable?::bool field)
    (if (class-field? field)
-       (procedure? (vector-ref field 2))
+       (vector-ref field 8)
        (error "class-field-mutable?" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-mutator ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (class-field-mutator::procedure field)
+   (if (class-field? field)
+       (vector-ref field 2)
+       (error "class-field-mutator" "Not a class field" field)))
+
+;*---------------------------------------------------------------------*/
+;*    %class-field-mutator ...                                         */
+;*---------------------------------------------------------------------*/
+(define (%class-field-mutator::procedure field)
    (if (class-field? field)
        (vector-ref field 2)
        (error "class-field-mutator" "Not a class field" field)))
@@ -524,7 +542,13 @@
 ;*    class-abstract? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-abstract? class)
-   (vector-ref class 15))
+   (procedure? (class-allocate class)))
+		     
+;*---------------------------------------------------------------------*/
+;*    class-wide? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (class-wide? class)
+   (procedure? (class-shrink class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses ...                                             */
@@ -572,7 +596,16 @@
 ;*    class-nil ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-nil class)
-   (vector-ref class 12))
+   (let ((c (vector-ref class 12)))
+      (when (eq? (car c) #t)
+	 (set-car! c ((cdr c))))
+      (car c)))
+
+;*---------------------------------------------------------------------*/
+;*    class-shrink ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (class-shrink class)
+   (vector-ref class 13))
 
 ;*---------------------------------------------------------------------*/
 ;*    Classes                                                          */
@@ -790,7 +823,54 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (register-class! name super abstract creator allocate nil predicate hash plain virtual constructor)
+(define (register-class! name super abstract creator allocate nil shrink hash plain virtual constructor)
+   (with-lock $bigloo-generic-mutex
+      (lambda ()
+	 (initialize-objects!)
+	 (when (and super (not (class? super)))
+	    (error "add-class!" "Illegal super class for class" name))
+	 (when (=fx *nb-classes* *nb-classes-max*)
+	    (double-nb-classes!))
+	 (let* ((num   (+fx %object-type-number *nb-classes*))
+		(class (make-class name
+			  num
+			  -1
+			  super
+			  '()
+			  -1
+			  (unless abstract allocate)
+			  hash
+			  plain
+			  constructor
+			  (make-class-virtual-slots-vector super virtual)
+			  (unless abstract creator)
+			  nil
+			  shrink
+			  #f
+			  abstract)))
+	    ;; we set the sub field of the super class
+	    (if (class? super)
+		(begin
+		   ;; we add the class to its super subclasses list
+		   (class-subclasses-set!
+		      super (cons class (class-subclasses super)))
+		   ;; and then, we renumber the tree
+		   (class-hierarchy-numbering! class super))
+		(begin
+		   (class-min-num-set! class 1)
+		   (class-max-num-set! class 1)))
+	    ;; we add the class in the *classes* vector (we declare the class)
+	    (vector-set! *classes* *nb-classes* class)
+	    ;; we increment the global class number
+	    (set! *nb-classes* (+fx *nb-classes* 1))
+	    ;; and we adjust the method arrays of all generic functions
+	    (generics-add-class! num (if (class? super) (class-num super) num))
+	    class))))
+   
+;*---------------------------------------------------------------------*/
+;*    register-class! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (register-class2! name super hash new allocate constructor nil shrink plain virtual)
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)
@@ -810,11 +890,11 @@
 			  plain
 			  constructor
 			  (make-class-virtual-slots-vector super virtual)
-			  creator
+			  new
 			  nil
-			  predicate
+			  shrink
 			  #f
-			  abstract)))
+			  'abstract-to-be-removed)))
 	    ;; we set the sub field of the super class
 	    (if (class? super)
 		(begin
@@ -1171,8 +1251,8 @@
 	     (class-max-num-set! class max-num)
 	     (+fx 1 max-num))
 	  (liip (cdr classes)
-		(class-hierarchy-down-renumber! (car classes)
-						(+fx 1 max-num))))))
+	     (class-hierarchy-down-renumber!
+		(car classes) (+fx 1 max-num))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */
@@ -1192,13 +1272,30 @@
 ;*    object->struct ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-generic (object->struct::struct object::object)
-   (error "object->struct" "This object can't be converted" object))
+   (let* ((klass (object-class object))
+	  (fields (class-all-fields klass))
+	  (len (+fx 1 (length fields)))
+	  (res (make-struct (class-name klass) len #unspecified)))
+      (struct-set! res 0 #f)
+      (for-each (lambda (f i)
+		   (unless (class-field-virtual? f)
+		      (struct-set! res i ((class-field-accessor f) object))))
+	 fields (iota len 1))
+      res))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct+object->object ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (struct+object->object::object object::object struct::struct)
-   (error "struct+object->object" "This structure can't be converted" struct))
+   (let* ((klass (object-class object))
+	  (fields (class-all-fields klass))
+	  (len (+fx 1 (length fields))))
+      (for-each (lambda (f i)
+		   (unless (class-field-virtual? f)
+		      ((%class-field-mutator f)
+		       object (struct-ref struct i))))
+	 fields (iota len 1))
+      object))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-hashnumber ...                                            */
@@ -1221,7 +1318,16 @@
 	  (error "allocate-instance" "Can't find class" cname)
 	  (let ((class (vector-ref-ur *classes* i)))
 	     (if (eq? (class-name class) cname)
-		 ((class-allocate class))
+		 (let ((alloc (class-allocate class)))
+		    (if (class-wide? class)
+			;; test to be removed when class generators
+			;; are removed from the compiler
+			(if (=fx (procedure-arity alloc) 0)
+			    (alloc)
+			    (let* ((super (class-super class))
+				   (o ((class-allocate super))))
+			       (alloc o)))
+			(alloc)))
 		 (loop (+fx i 1)))))))
       
 ;*---------------------------------------------------------------------*/
@@ -1234,6 +1340,7 @@
 ;*    object-print ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-print obj::object port print-slot::procedure)
+   
    (define (class-field-write/display field)
       (let* ((name (class-field-name field))
 	     (get-value (class-field-accessor field)))
@@ -1243,6 +1350,7 @@
 	 (display #\space port)
 	 (print-slot (get-value obj) port)
 	 (display #\] port)))
+   
    (let* ((class (object-class obj))
 	  (class-name (class-name class))
 	  (fields (class-fields class)))
@@ -1256,7 +1364,7 @@
 		((null? fields)
 		 (let ((super (class-super class)))
 		    (if (class? super)
-			;; we have to print the super class fields
+			;; super class fields
 			(loop (class-fields super) super)
 			(display #\| port))))
 		((eq? fields #unspecified)

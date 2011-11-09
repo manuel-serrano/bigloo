@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Fri Nov  4 16:32:24 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 15:44:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -516,6 +516,7 @@
 ;*    emit-class-types ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-class-types class-list oport)
+   
    (define (emit-slot slot)
       (with-access::slot slot (type virtual-num name)
 	 (let ((cname (cross-name (slot-type slot))))
@@ -524,27 +525,39 @@
 		#unspecified)
 	       (else
 		(fprint oport "   " cname " " name ";"))))))
+   
+   (define (emit-plain-class class)
+      (fprint oport "typedef " (type-size class) " {")
+      (fprint oport "   header_t header;")
+      (fprint oport "   obj_t widening;")
+      (for-each emit-slot (tclass-slots class))
+      (fprint oport "} *" (type-class-name class) ";\n"))
+
+   (define (emit-wide-class class)
+      (fprint oport "typedef " (type-size (tclass-wide-type class)) " {")
+      (when (null? (tclass-slots class))
+	 ;; this is an empty object (with no fields)
+	 ;; and some ISO C compilers (is it in the
+	 ;; definition ?) does not support empty
+	 ;; types. Hence, we generate a dummy field
+	 ;; as small as possible.
+	 (fprint oport "   char dummy;"))
+      (for-each (lambda (s)
+		   (when (eq? (slot-class-owner s) class)
+		      (emit-slot s)))
+	 (tclass-slots class))
+      (fprint oport "} *"
+	 (type-name (tclass-wide-type class))
+	 ";\n"))
+   
    (when (pair? class-list)
       (fprint oport #\Newline "/* Object type definitions */")
       (for-each (lambda (class)
-		   (if (not (eq? class (get-object-type)))
-		       (begin
-			  (fprint oport "typedef " (type-size class) " {")
-			  (if (not (tclass-widening class))
-			      (begin
-				 (fprint oport "   header_t header;")
-				 (fprint oport "   obj_t widening;"))
-			      (cond
-				 ((null? (tclass-slots class))
-				  ;; this is an empty object (with no fields)
-				  ;; and some ISO C compilers (is it in the
-				  ;; definition ?) does not support empty
-				  ;; types. Hence, we generate a dummy field
-				  ;; as small as possible.
-				  (fprint oport "   char dummy;"))))
-			  (for-each emit-slot (tclass-slots class))
-			  (fprint oport "} *" (type-class-name class) ";\n"))))
-		(reverse! class-list))
+		   (unless (eq? class (get-object-type))
+		      (if (wide-class? class)
+			  (emit-wide-class class)
+			  (emit-plain-class class))))
+	 (reverse! class-list))
       (newline oport)))
 
 ;*---------------------------------------------------------------------*/

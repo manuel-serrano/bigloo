@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Sun Nov  6 08:18:55 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 15:29:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
@@ -107,8 +107,7 @@
    (with-access::tclass class (id holder widening abstract?)
       (if abstract?
 	  '()
-	  (let ((fill-id (symbol-append 'fill- id '!))
-		(widening (symbol-append widening '- id))
+	  (let ((widening (symbol-append widening '- id))
 		(super (tclass-its-super class)))
 	     (list (gen-class-make! 'widening widening id class src-def import)
 		(gen-wide-class-make! id class src-def import))))))
@@ -237,7 +236,7 @@
 	     ;; This must be consistent with GEN-CLASS-MAKE!
 	     ;; @ref creator.scm:Widening type declaration@
 	     ;; @label Widening type import@
-	     (tid (if *saw* (saw-wide-class-id id) 'obj))
+	     (tid (if *saw* (wide-chunk-class-id id) 'obj))
 	     (talloc-wide (make-typed-ident alloc-wide tid))
 	     (f-ids (make-class-make-formals slots))
 	     (f-tids (make-class-make-typed-formals f-ids slots))
@@ -299,11 +298,12 @@
 ;*    The class predicate is not inlined when compiling for            */
 ;*    profiling.                                                       */
 ;*---------------------------------------------------------------------*/
-(define (gen-class-fill! fill-id::symbol id type src-def import)
-   (let* ((tid      (if (and (wide-class? type) *saw*)
-			(saw-wide-class-id (type-id type))
-			(type-id type)))
-	  (slots    (tclass-slots type))
+(define (gen-class-fill! fill-id::symbol id class src-def import)
+   (let* ((type     (if (wide-class? class)
+			(tclass-wide-type class)
+			class))
+	  (tid      (type-id type))
+	  (slots    (tclass-slots class))
 	  (fill-tid (make-typed-ident fill-id tid))
 	  (f-ids    (make-class-make-formals slots))
 	  (f-tids   (make-class-make-typed-formals f-ids slots))
@@ -316,8 +316,7 @@
 	  (rtid     (symbol-append rid '::long)))
       ;; the body of the filler
       (define (make-body)
-	 (let* ((tid (type-id type))
-		(alloc-id (symbol-append '%allocate- id)))
+	 (let ((alloc-id (symbol-append '%allocate- id)))
 	    `(let ,(map (lambda (ft f) `(,ft ,f)) f-tids f-ids)
 		,@(make-class-slot-make! type new rid rtid slots f-ids)
 		,new)))
@@ -335,15 +334,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    The class constructor is NEVER inlined.                          */
 ;*---------------------------------------------------------------------*/
-(define (gen-class-make! widening mk-id::symbol id type src-def import)
-   (let* ((tid     (if (and (eq? widening 'widening)
-			    (wide-class? type)
-			    *saw*)
-		       (saw-wide-class-id (type-id type))
-		       (type-id type)))
-	  (slots   (tclass-slots type))
-	  (holder  (tclass-holder type))
-	  (constrs (find-class-constructors type))
+(define (gen-class-make! widening mk-id::symbol id class src-def import)
+   (let* ((type    (if (and (eq? widening 'widening) (wide-class? class))
+		       (tclass-wide-type class)
+		       class))
+	  (tid     (type-id type))
+	  (slots   (tclass-slots class))
+	  (holder  (tclass-holder class))
+	  (constrs (find-class-constructors class))
 	  ;; @label Widening type declaration@
 	  ;; @ref creator.scm:Widening type import@
 	  (mk-tid  (make-typed-ident mk-id tid))
@@ -409,23 +407,19 @@
 ;*    make-class-slot-make! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (make-class-slot-make! type new rid rtid slots f-ids)
-   (define (make-class-slot slot formal flen)
-      (let ((loop (mark-symbol-non-user! (gensym 'loop))))
-	 (make-direct-set! type slot new formal)))
    (let loop ((slots slots)
 	      (f-ids f-ids)
-	      (res   '())
-	      (len-id #unspecified))
+	      (res   '()))
       (cond
 	 ((null? slots)
 	  (reverse! res))
 	 ((slot-virtual? (car slots))
-	  (loop (cdr slots) f-ids res len-id))
+	  (loop (cdr slots) f-ids res))
 	 (else
 	  (loop (cdr slots)
 	     (cdr f-ids)
-	     (cons (make-class-slot (car slots) (car f-ids) len-id) res)
-	     (car f-ids))))))
+	     (cons (make-direct-set! type (car slots) new (car f-ids))
+		res))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-class-allocate! ...                                          */

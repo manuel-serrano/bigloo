@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Nov  4 09:58:27 2011 (serrano)                */
+#*    Last change :  Mon Nov  7 16:22:43 2011 (serrano)                */
 #*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -68,7 +68,11 @@ ICOMMON		= vital bps bool list vector srfi4 struct print \
                   unicode optim pregexp lalr system date process \
                   mmap weakptr crypto crc
 
-OCOMMON		= object object1 object2 object3 object5
+OCOMMON		= object object-sans \
+                  object1 object1-sans \
+                  object2 object2-sans \
+                  object3 object3-sans \
+                  object5 object5-sans
 
 COMMON		= $(ICOMMON) $(OCOMMON)
 
@@ -104,6 +108,8 @@ SOURCE_FILES	= $(COMMON:%=%.scm) \
 POPULATION	= $(SOURCE_FILES) \
                   Makefile \
                   test.sch \
+                  object.sch \
+                  object5.sch \
                   c-file.h \
 		  include.sch \
 		  include2.sch \

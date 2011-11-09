@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Wed Mar 30 21:01:06 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 14:58:15 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
@@ -195,8 +195,7 @@
 	 (btype btype)
 	 (arity arity)
 	 (type-res (use-type! tres-id loc))
-	 (type-args (map (lambda (a) (use-type! a loc))
-			 targs-id)))
+	 (type-args (map (lambda (a) (use-type! a loc)) targs-id)))
       ctype))
 
 ;*---------------------------------------------------------------------*/
@@ -253,8 +252,8 @@
       ;; we set the sizeof field
       (type-size-set! ctype name)
       (widen!::cstruct ctype
-		       (struct? (eq? (car exp) 'struct))
-		       (fields (cdr exp)))
+	 (struct? (eq? (car exp) 'struct))
+	 (fields (cdr exp)))
       ;; we automatically declare a type `pointer to' the structure
       (let ((ptr-id (symbol-append id '*)))
 	 (declare-c-struct*! ptr-id
@@ -291,8 +290,8 @@
 	     (cstruct-cstruct*-set! struct ctype)
 	     ;; and now we are done
 	     (widen!::cstruct* ctype
-			       (btype btype)
-			       (cstruct struct))
+		(btype btype)
+		(cstruct struct))
 	     ctype)))))
 
 ;*---------------------------------------------------------------------*/
@@ -313,7 +312,7 @@
 		   (coerce ,id foreign
 			   () ((lambda (,(make-typed-ident 'x id))
 				  (,id->bid ',bid x))))
-		   (coerce ,bid    ,id ()      (,bid->id))
+		   (coerce ,bid    ,id () (,bid->id))
 		   (coerce foreign ,id (,id?) (,bid->id)))) )
 	 (trace (expand 3) "make-foreign-coercers: " res #\Newline)
 	 res)))

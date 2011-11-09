@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Nov  6 19:13:56 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 16:05:57 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -65,7 +65,7 @@
 	    
 	    (get-class-list::pair-nil)
 	    (heap-add-class! ::tclass)
-	    (saw-wide-class-id::symbol ::symbol)
+	    (wide-chunk-class-id::symbol ::symbol)
 	    (type-class-name::bstring ::type)
 	    (declare-class-type!::type ::obj ::global ::obj ::bool ::bool ::obj)
 	    (declare-java-class-type!::type ::symbol ::obj ::bstring ::bstring ::pair)
@@ -104,13 +104,13 @@
    (set! *class-type-list* (cons type *class-type-list*)))
 
 ;*---------------------------------------------------------------------*/
-;*    saw-wide-class-id ...                                            */
+;*    wide-chunk-class-id ...                                          */
 ;*    -------------------------------------------------------------    */
 ;*    This function construct type name of the wide component          */
 ;*    of a wide class. The idea is to generate a private name that the */
 ;*    user cannot specify himself in his programs.                     */
 ;*---------------------------------------------------------------------*/
-(define (saw-wide-class-id class-id)
+(define (wide-chunk-class-id class-id)
    (string->symbol (string-append "#!" (symbol->string class-id))))
 
 ;*---------------------------------------------------------------------*/
@@ -167,20 +167,20 @@
 	 (final?      final?)
 	 (abstract?   abstract?)
 	 (constructor (cadr class-def)))
-      ;; For the saw back-end, wide classes creates a new type denoting
-      ;; the wide part of the wide class. In addition, in the saw compilation
-      ;; mode we change the type name for wide classes. The type is turned to
-      ;; the type name of there super class
-      (if (and (eq? widening 'widening) *saw*)
-	  (let* ((wtid (saw-wide-class-id class-id))
+      ;; wide classes creates a new type denoting the wide chunk of the
+      ;; wide class. In addition, the type name of a wide classes is the
+      ;; type name of its super class.
+      (if (eq? widening 'widening)
+	  (let* ((wtid (wide-chunk-class-id class-id))
 		 (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
 			(its-class type))))
+	     (tclass-size-set! wt sizeof)
 	     (tclass-wide-type-set! type wt)
 	     (type-name-set! type (type-name super))
+	     (type-size-set! type (type-size super))
 	     (gen-coercion-clause! wtid super #f)
-	     (gen-class-coercers! wt super)))
-      ;; we set the sizeof field
-      (type-size-set!  type sizeof)
+	     (gen-class-coercers! wt super))
+	  (type-size-set! type sizeof))
       ;; we add the class for the C type emission
       (set! *class-type-list* (cons type *class-type-list*))
       ;; we are done
@@ -305,6 +305,8 @@
 ;*    tclass-all-slots ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (tclass-all-slots::pair-nil class::tclass)
+   (let ((genclass *class-gen-accessors?*))
+      [assert (genclass) genclass])
    (if (not (tclass-widening class))
        (tclass-slots class)
        (append (tclass-slots (tclass-its-super class))

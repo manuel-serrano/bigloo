@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Nov  7 10:16:59 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 10:42:56 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -175,7 +175,13 @@
 	     (units    (profile module (produce-module! module))))
 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
-	 
+
+	 ;; cannot be done earlier because of modules' option
+	 (unless *class-gen-accessors?*
+	    (register-srfi! 'bigloo-class-sans))
+	 (when (eq? *pass* 'classgen)
+	    (register-srfi! 'bigloo-class-generate))
+
 	 ;; the prof initilization code
 	 (if (>=fx *profile-mode* 1)
 	     (set! units (cons (make-prof-unit) units)))

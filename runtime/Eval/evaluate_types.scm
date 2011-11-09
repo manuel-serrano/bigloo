@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:37:05 2011                          */
-;*    Last change :  Wed Jul 27 10:41:01 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 17:09:27 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Private types of the lambda-based evaluator                      */

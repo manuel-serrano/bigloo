@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Nov  6 17:14:58 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 10:58:05 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -81,6 +81,7 @@
 	    *optim-jvm-branch*
 	    *optim-jvm-fasteq*
 	    *optim-symbol-case*
+	    *optim-object-serialization*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -894,6 +895,9 @@
    #f)
 (param-define *optim-symbol-case*
    "Optimize case forms descrimining on symbols only"
+   #f)
+(param-define *optim-object-serialization*
+   "Optimize class instances serialization"
    #f)
 (param-define *purify*
    "Produce byte code verifier compliant JVM code"

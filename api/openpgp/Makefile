@@ -27,9 +27,7 @@ all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && \
-          $(MAKE) build-jvm && \
-          $(MAKE) build-dotnet
+	@ $(MAKE) build-c && $(MAKE) build-jvm
 
 c: build-c
 jvm: build-jvm

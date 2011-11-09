@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Thu May  5 05:24:04 2011 (serrano)                */
+;*    Last change :  Tue Nov  8 20:03:08 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -182,7 +182,7 @@
 (define-method (node->sexp node::new)
    (node->sexp-hook node)
    (with-access::new node (expr* type)
-      `(,(shape-typed-node 'new type) ,@(map node->sexp expr*))))
+      `(,(shape-typed-node 'new type) (,(type-id type)) ,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vlength ...                                         */

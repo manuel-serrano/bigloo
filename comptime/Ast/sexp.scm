@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Nov  4 11:20:02 2011 (serrano)                */
+;*    Last change :  Tue Nov  8 11:17:42 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -372,8 +372,8 @@
       ((lambda . ?-)
        (match-case exp
           ((?- ?args . ?body) 
-           (let ((loc  (find-location/loc exp loc))
-		 (fun  (make-anonymous-name loc)))
+           (let ((loc (find-location/loc exp loc))
+		 (fun (make-anonymous-name loc)))
               (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
 			  stack
 			  loc
@@ -514,7 +514,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call->node exp stack loc site)
    (let ((caller (car exp))
-	 (loc    (find-location/loc exp loc)))
+	 (loc (find-location/loc exp loc)))
       (if (symbol? caller)
 	  ;; it might be a typed special forms (such as pragma or lambda)
 	  (let* ((pid (parse-id caller loc))
@@ -526,33 +526,37 @@
 		((pragma/effect)
 		 (if (not (pair? (cdr exp)))
 		     (error-sexp->node
-		      "Illegal `pragma/effect' form" exp (find-location/loc exp loc))
+			"Illegal pragma/effect"
+			exp (find-location/loc exp loc))
 		     (pragma/type->node #f (parse-effect (cadr exp))
-					type `((car exp) ,@(cddr exp))
-					stack loc site)))
+			type `((car exp) ,@(cddr exp))
+			stack loc site)))
 		((free-pragma)
 		 (pragma/type->node #t #f type exp stack loc site))
 		((free-pragma/effect)
 		 (if (not (pair? (cdr exp)))
 		     (error-sexp->node
-		      "Illegal `free-pragma/effect' form" exp (find-location/loc exp loc))
+			"Illegal free-pragma/effect"
+			exp (find-location/loc exp loc))
 		     (pragma/type->node #t (parse-effect (cadr exp))
-					type `((car exp) ,@(cddr exp))
-					stack loc site)))
+			type `((car exp) ,@(cddr exp))
+			stack loc site)))
 		((lambda)
 		 (match-case exp
 		    ((?- ?args . ?body)
-		     (let* ((loc  (find-location/loc exp loc))
-			    (fun  (mark-symbol-non-user! (gensym 'lambda)))
-			    (tfun (make-typed-ident fun (type-id type))))
+		     (let* ((loc (find-location/loc exp loc))
+			    (fun (mark-symbol-non-user! (gensym 'lambda)))
+			    (tfun (if (bigloo-type? type)
+				      (make-typed-ident fun (type-id type))
+				      fun)))
 			(sexp->node
-			 `(,(labels-sym) ((,tfun ,args ,(normalize-progn body)))
-			     ,fun)
-			 stack
-			 loc
-			 site)))
+			   `(,(labels-sym) ((,tfun ,args ,(normalize-progn body)))
+					   ,fun)
+			   stack
+			   loc
+			   site)))
 		    (else
-		     (error-sexp->node "Illegal `lambda' form" exp loc))))
+		     (error-sexp->node "Illegal lambda" exp loc))))
 		(else
 		 (application->node exp stack loc site))))
 	  (application->node exp stack loc site))))

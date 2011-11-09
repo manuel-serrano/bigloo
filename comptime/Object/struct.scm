@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 11:52:53 1996                          */
-;*    Last change :  Fri Nov  4 16:31:18 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 13:25:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The object<->struct conversion                                   */
@@ -37,10 +37,9 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-plain-class<->struct class src-def)
    (with-access::tclass class (id slots abstract?)
-      (if abstract?
+      (if (or abstract? (not *optim-object-serialization*))
 	  '()
-	  (list (gen-plain-class->struct id class slots src-def)
-		(gen-struct->plain-class id class slots src-def)))))
+	  (list (gen-struct->plain-class id class slots src-def)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    gen-wide-class<->struct ...                                      */
@@ -48,7 +47,7 @@
 (define (gen-wide-class<->struct class src-def)
    (with-access::tclass class (id slots)
       (list (gen-wide-class->struct id class slots src-def)
-	    (gen-struct->wide-class id class slots src-def))))
+	 (gen-struct->wide-class id class slots src-def))))
    
 ;*---------------------------------------------------------------------*/
 ;*    save-slot ...                                                    */
@@ -210,7 +209,9 @@
 	  (new       (gensym 'new))
 	  (tid       (type-id type))
 	  (holder    (tclass-holder type))
-	  (widening  (symbol-append (tclass-widening type) '- tid)))
+	  (widening  (symbol-append (tclass-widening type) '- tid))
+	  (super     (tclass-its-super type))
+	  (sname     (type-id super)))
       (define (cast type expr)
 	 (if (backend-pragma-support (the-backend))
 	     `(,(make-typed-ident 'pragma (type-id type))
@@ -218,36 +219,49 @@
 	       ,expr)
 	     (make-private-sexp 'cast (type-id type) expr)))
       (epairify
-       `(define-method (struct+object->object::object
-			,(make-typed-ident 'o cname)
-			s::struct)
-	   (let ((,old  (call-next-method))
-		 (,taux (struct-ref s 0)))
-	      (let ((,(make-typed-ident new tid)
-		     ,(cast type old)))
-		 (object-class-num-set! ,new
-					(class-num
-					 (@ ,(global-id holder)
-					    ,(global-module holder))))
-		 (object-widening-set!
-		  ,new
-		  (,widening ,@(let loop ((i     0)
-					  (slots slots)
-					  (ref*  '()))
-				  (cond
-				     ((=fx i len)
-				      (reverse! ref*))
-				     ((slot-virtual? (car slots))
-				      (loop (+fx i 1)
-					    (cdr slots)
-					    ref*))
-				     (else
-				      (loop (+fx i 1)
-					    (cdr slots)
-					    (cons `(struct-ref ,aux ,i)
-						  ref*)))))))
-		 ,new)))
-       src-def)))
+	 `(define-method (struct+object->object::object
+			    ,(make-typed-ident 'o cname)
+			    s::struct)
+	     (let ((,old ,(cast (tclass-its-super type) 'o)))
+		,@(let loop ((i 1)
+			     (slots (tclass-all-slots (tclass-its-super type)))
+			     (res '()))
+		     (cond
+			((null? slots)
+			 (reverse! res))
+			((slot-virtual? (car slots))
+			 (loop (+fx i 1)
+			    (cdr slots)
+			    res))
+			(else
+			 (let ((new (restore-slot old 's sname super i (car slots))))
+			    (loop (+fx i 1)
+			       (cdr slots)
+			       (cons new res)))))))
+	     (let ((,taux (struct-ref s 0)))
+		(object-class-num-set! o
+		   (class-num
+		      (@ ,(global-id holder)
+			 ,(global-module holder))))
+		(object-widening-set!
+		   o
+		   (,widening ,@(let loop ((i 0)
+					   (slots slots)
+					   (ref*  '()))
+				   (cond
+				      ((=fx i len)
+				       (reverse! ref*))
+				      ((slot-virtual? (car slots))
+				       (loop (+fx i 1)
+					  (cdr slots)
+					  ref*))
+				      (else
+				       (loop (+fx i 1)
+					  (cdr slots)
+					  (cons `(struct-ref ,aux ,i)
+					     ref*)))))))
+		o))
+	 src-def)))
 
 	  
 	  

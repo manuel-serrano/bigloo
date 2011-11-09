@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Nov  7 12:34:12 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 12:53:24 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -24,17 +24,22 @@
 	    ast_var
 	    ast_ident
 	    ast_private
+	    ast_object
 	    ast_node
 	    backend_backend
 	    module_module
 	    write_scheme)
    (export  (classgen-walk)
 	    (classgen-predicate-anonymous ::tclass)
-	    (classgen-nil-expr ::tclass)
+	    (classgen-nil-anonymous ::tclass)
 	    (classgen-make-anonymous ::tclass)
 	    (classgen-allocate-expr ::tclass)
 	    (classgen-allocate-anonymous ::tclass)
-	    (classgen-slot-anonymous ::tclass ::slot)))
+	    (classgen-widen-expr ::tclass ::obj)
+	    (classgen-widen-anonymous ::tclass)
+	    (classgen-shrink-anonymous ::tclass)
+	    (classgen-slot-anonymous ::tclass ::slot)
+	    (classgen-struct-methods ::tclass)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-walk ...                                                */
@@ -68,7 +73,7 @@
 	    (get-class-list))
 	 (when (pair? protos)
 	    (write-scheme-comment po "The directives")
-	    (display "(directives\n   (cond-expand (bigloo-class-sans\n\n" po)
+	    (display "(directives\n   (cond-expand ((and bigloo-class-sans (not (bigloo-class-generate)))\n\n" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (protos (cdr p)))
@@ -81,11 +86,11 @@
 					 (display p po)
 					 (newline po))
 			       (cdr protos))
-			    (newline po)))
+			    (display ")\n" po)))
 	       protos)
 	    (display ")))\n\n" po)
 	    (write-scheme-comment po "The definitions")
-	    (display "(cond-expand (bigloo-class-sans\n\n" po)
+	    (display "(cond-expand ((and bigloo-class-sans (not (bigloo-class-generate)))" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (defs (cdr p)))
@@ -190,9 +195,13 @@
 	     (new (gensym 'new))
 	     (tnew (make-typed-ident new tid)))
 	 `(define (,id)
-	     (let ((,tnew ,(classgen-allocate-expr c)))
+	     (let ((,tnew ,(if (wide-class? c)
+			       (classgen-widen-expr c
+				  (classgen-allocate-expr (tclass-its-super c)))
+			       (classgen-allocate-expr c))))
 		,@(map (lambda (s)
-			  `(set! ,(symbol-append '__bigloo__ '|.| new '|.| (slot-id s)) ,(type-nil-value (slot-type s))))
+			  `(set! ,(field-access new (slot-id s))
+			      ,(type-nil-value (slot-type s))))
 		     plain-slots)
 		,new))))
    
@@ -205,14 +214,14 @@
 	 (nil-def nil-tid tid slots))))
 
 ;*---------------------------------------------------------------------*/
-;*    classgen-nil-expr ...                                            */
+;*    classgen-nil-anonymous ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (classgen-nil-expr c)
+(define (classgen-nil-anonymous c)
    (multiple-value-bind (proto def)
       (classgen-nil c)
       (match-case def
 	 ((?- ?- ?body)
-	  body))))
+	  `(lambda () ,body)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    classgen-make-anonymous ...                                      */
@@ -231,6 +240,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-allocate ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Generate plain class allocators                                  */
 ;*---------------------------------------------------------------------*/
 (define (classgen-allocate c)
    
@@ -262,7 +273,8 @@
 		    (@ ,(global-id g) ,(global-module g))))
 		(object-widening-set! ,new #f)
 		,new))))
-   
+
+   [assert (c) (not (wide-class? c))]
    (let* ((tid (type-id c))
 	  (alloc-id (symbol-append '%allocate- tid))
 	  (alloc-tid (make-typed-ident alloc-id tid))
@@ -294,6 +306,67 @@
    `(,(make-typed-ident 'lambda (type-id c)) () ,(classgen-allocate-expr c)))
 
 ;*---------------------------------------------------------------------*/
+;*    classgen-widen-expr ...                                          */
+;*---------------------------------------------------------------------*/
+(define (classgen-widen-expr c o)
+   
+   (define (pragma-allocate w)
+      (let ((tname  (string-sans-$ (type-name w)))
+	    (sizeof (if (string? (type-size w))
+			(type-size w)
+			(type-name w))))
+	 `(,(make-typed-ident 'free-pragma (type-id w))
+	   ,(string-append "((" tname
+	       ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
+   
+   (define (nopragma-allocate w)
+      (make-private-sexp 'new (type-id w)))
+   
+   (let* ((w (tclass-wide-type c))
+	  (s (tclass-its-super c))
+	  (wid (type-id w))
+	  (sid (type-id s))
+	  (tmp (mark-symbol-non-user! (gensym 'tmp)))
+	  (ttmp (make-typed-ident tmp sid))
+	  (wide (mark-symbol-non-user! (gensym 'wide)))
+	  (twide (make-typed-ident wide wid))
+	  (holder (tclass-holder c)))
+      `(let ((,ttmp ,(make-private-sexp 'cast sid o))
+	     (,twide ,(if (backend-pragma-support (the-backend))
+			  (pragma-allocate w)
+			  (nopragma-allocate w))))
+	  (object-widening-set! ,tmp ,wide)
+	  ((@ object-class-num-set! __object)
+	   ,tmp
+	   ((@ class-num __object)
+	    (@ ,(global-id holder) ,(global-module holder))))
+	  ,tmp)))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-widen-anonymous ...                                     */
+;*---------------------------------------------------------------------*/
+(define (classgen-widen-anonymous c)
+   (let* ((s (tclass-its-super c))
+	  (sid (type-id s))
+	  (cid (type-id c))
+	  (o (gensym 'o))
+	  (to (make-typed-ident o sid))
+	  (lam (make-typed-ident 'lambda cid)))
+      `(,lam (,to) ,(classgen-widen-expr c o))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-shrink-anonymous ...                                    */
+;*---------------------------------------------------------------------*/
+(define (classgen-shrink-anonymous c)
+   (let* ((o (gensym 'o))
+	  (to (make-typed-ident o (type-id c)))
+	  (super (tclass-its-super c))
+	  (sid (type-id super)))
+      `(,(make-typed-ident 'lambda sid)
+	(,to)
+	(,(make-typed-ident 'shrink! sid) ,o))))
+
+;*---------------------------------------------------------------------*/
 ;*    classgen-accessors ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (classgen-accessors c)
@@ -302,8 +375,13 @@
       (for-each (lambda (s)
 		   (multiple-value-bind (p d)
 		      (classgen-slot c s)
-		      (set! protos (append p protos))
-		      (set! defs (append d defs))))
+		      (if (slot-read-only? s)
+			  (begin
+			     (set! protos (cons (car p) protos))
+			     (set! defs (append d defs)))
+			  (begin
+			     (set! protos (append p protos)) 
+			     (set! defs (append d defs))))))
 	 (tclass-slots c))
       (values protos defs)))
 
@@ -343,12 +421,13 @@
 	     (v (make-typed-ident 'v (type-id (slot-type s)))))
 	 `(define-inline (,id ,o ,v)
 	     (,(make-typed-ident 'with-access tid) o (,sid) (set! ,sid v)))))
-
-   (if (slot-read-only? s)
-       (values (list (get-proto s))
-	  (list (get-def s))))
-       (values (list (get-proto s) (set-proto s))
-	  (list (get-def s) (set-def s))))
+   
+   (values (list (get-proto s) (set-proto s))
+      ;; always build a getter and a setter, the former is
+      ;; filtered out by classgen-accessors for read-only slots
+      (list (get-def s)
+	 (unless (and (slot-read-only? s) (slot-virtual? s))
+	    (set-def s)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-slot-anonymous ...                                      */
@@ -362,3 +441,119 @@
 		      (tlam (make-typed-ident 'lambda (type-id (cdr pid)))))
 		  `(,tlam ,args ,body))))
 	 d)))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-struct-methods ...                                      */
+;*---------------------------------------------------------------------*/
+(define (classgen-struct-methods c)
+   (cond
+      ((tclass-abstract? c) '())
+      ((wide-class? c) (classgen-struct-wide c))
+      (else (classgen-struct-plain c))))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-struct-plain ...                                        */
+;*---------------------------------------------------------------------*/
+(define (classgen-struct-plain c)
+   
+   (define (classgen-class->struct slots)
+      (let* ((len (+fx 1 (length slots)))
+	     (id (type-id c))
+	     (o (gensym 'o))
+	     (to (make-typed-ident o id))
+	     (r (gensym 'r))
+	     (tr (make-typed-ident r 'struct))
+	     (waccess (make-typed-ident 'with-access id)))
+	 `(define-method (object->struct::struct ,to)
+	     (let ((,tr (make-struct ',id ,len #unspecified)))
+		(struct-set! ,r 0 #f)
+		,@(map (lambda (s i)
+			  (unless (slot-virtual? s)
+			     `(,waccess ,o (,(slot-id s))
+				 (struct-set! ,r ,i ,(slot-id s)))))
+		     slots (iota len 1))
+		,r))))
+   
+   (define (classgen-struct->class slots)
+      (let* ((len (+fx 1 (length slots)))
+	     (id (type-id c))
+	     (o (gensym 'o))
+	     (to (make-typed-ident o id))
+	     (r (gensym 'r))
+	     (tr (make-typed-ident r 'struct))
+	     (waccess (make-typed-ident 'with-access id)))
+	 `(define-method (struct+object->object::object ,to ,tr)
+	     ,@(map (lambda (s i)
+		       (unless (slot-virtual? s)
+			  `(set! ,(field-access o (slot-id s))
+			      (struct-ref ,r ,i))))
+		  slots (iota len 1))
+	     ,o)))
+   
+   (if *optim-object-serialization*
+       (let ((slots (tclass-slots c)))
+	  (list (classgen-class->struct slots) (classgen-struct->class slots)))
+       '()))
+
+;*---------------------------------------------------------------------*/
+;*    classgen-struct-wide ...                                         */
+;*---------------------------------------------------------------------*/
+(define (classgen-struct-wide c)
+   
+   (define (classgen-class->struct slots)
+      (let* (
+	     (len (+fx 1 (length slots)))
+	     (id (type-id c))
+	     (o (gensym 'o))
+	     (to (make-typed-ident o id))
+	     (r (gensym 'r))
+	     (tr (make-typed-ident r 'struct))
+	     (plain (gensym 'plain))
+	     (tplain (make-typed-ident plain 'struct))
+	     (waccess (make-typed-ident 'with-access id)))
+	 `(define-method (object->struct::struct ,to)
+	     (let ((,tplain (call-next-method))
+		   (,tr (make-struct ',id ,len #unspecified)))
+		(struct-set! ,r 0 #f)
+		,@(map (lambda (s i)
+			  (unless (slot-virtual? s)
+			     `(,waccess ,o (,(slot-id s))
+				 (struct-set! ,r ,i ,(slot-id s)))))
+		     slots (iota len 1))
+		(struct-set! ,plain 0 ,r)
+		;; we now swap the structures' keys
+		(struct-key-set! ,r (struct-key ,plain))
+		(struct-key-set! ,plain ',id)
+		,plain))))
+   
+   (define (classgen-struct->class slots)
+      (let* ((len (+fx 1 (length slots)))
+	     (id (type-id c))
+	     (super (tclass-its-super c))
+	     (sid (type-id super))
+	     (o (gensym 'o))
+	     (to (make-typed-ident o id))
+	     (r (gensym 'r))
+	     (tr (make-typed-ident r 'struct))
+	     (plain (gensym 'plain))
+	     (tplain (make-typed-ident plain sid))
+	     (aux (gensym 'aux))
+	     (taux (make-typed-ident aux 'struct))
+	     (widen (make-typed-ident 'widen! id)))
+	 `(define-method (struct+object->object::object ,to ,tr)
+	     (let* ((,plain (call-next-method))
+		    (,taux (struct-ref ,r 0)))
+		(,widen ,plain
+		   ,@(map (lambda (s i)
+			     (unless (slot-virtual? s)
+				`(,(slot-id s) (struct-ref ,aux ,i))))
+			slots (iota len 1)))
+		,plain))))
+   
+   (let ((slots (filter (lambda (s)
+			   (eq? (slot-class-owner s) c))
+		   (tclass-slots c))))
+      (if *optim-object-serialization*
+	  (list (classgen-class->struct slots)
+	     (classgen-struct->class slots))
+	  '())))

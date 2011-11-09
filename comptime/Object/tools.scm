@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Fri Nov  4 16:31:37 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 15:44:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -76,7 +76,7 @@
 	  (widening (and (tclass? klass) (tclass-widening klass))))
       (if (not widening)
 	  (make-direct-ref type slot obj)
-	  (make-direct-ref type slot `(object-widening ,obj)))))
+	  (make-direct-ref (tclass-wide-type type) slot `(object-widening ,obj)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-set! ...                                              */
@@ -86,7 +86,7 @@
 	  (widening (and (tclass? klass) (tclass-widening klass))))
       (if (not widening)
 	  (make-direct-set! type slot obj val)
-	  (make-direct-set! type slot `(object-widening ,obj) val))))
+	  (make-direct-set! (tclass-wide-type type) slot `(object-widening ,obj) val))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-direct-ref ...                                              */
@@ -94,11 +94,13 @@
 (define (make-direct-ref type slot obj)
    (let* ((otype (real-slot-class-owner slot))
 	  (fname (slot-name slot))
-	  (tname (type-name otype))
+	  ;;(tname (type-name otype))
+	  (tname (type-name type))
 	  (fmt (format "(((~a)CREF($1))->~a)" tname fname)))
       (make-private-sexp 'getfield
 			 (type-id (slot-type slot))
-			 (type-id otype)
+			 ;; (type-id otype)
+			 (type-id type)
 			 fname
 			 fmt
 			 obj)))
@@ -109,12 +111,14 @@
 (define (make-direct-set! type slot obj val)
    (let* ((otype (real-slot-class-owner slot))
 	  (fname (slot-name slot))
-	  (tname (type-name otype))
+	  ;;(tname (type-name otype))
+	  (tname (type-name type))
 	  (fmt (format "((((~a)CREF($1))->~a)=((~a)$2),BUNSPEC)" tname fname
 		       (type-name (slot-type slot)))))
       (make-private-sexp 'setfield
 			 (type-id (slot-type slot))
-			 (type-id otype)
+			 ;; (type-id otype)
+			 (type-id type)
 			 (slot-name slot)
 			 fmt
 			 obj val)))
@@ -125,7 +129,7 @@
 (define (real-slot-class-owner slot)
    (let ((t (slot-class-owner slot)))
       (if (and *saw* (wide-class? t))
-	  (find-type (saw-wide-class-id (tclass-id t)))
+	  (find-type (wide-chunk-class-id (tclass-id t)))
 	  t)))
 
 ;*---------------------------------------------------------------------*/
@@ -141,3 +145,4 @@
 	  (car slots))
 	 (else
 	  (loop (cdr slots))))))
+   

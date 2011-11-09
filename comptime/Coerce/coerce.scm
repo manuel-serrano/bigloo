@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Mon Jul 18 11:02:08 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 16:29:21 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -155,10 +155,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::getfield caller to safe)
    (with-access::getfield node (expr* ftype otype)
-      ;; there is no need to type check the argument because since
-      ;; getfield/setfield forms are introduced by the compiler they
-      ;; are always type safe
-      (set-car! expr* (coerce! (car expr*) caller *obj* safe))
+      ;; MS 9nov2011: used to be
+      ;; (set-car! expr* (coerce! (car expr*) caller *obj* safe))
+      (set-car! expr* (coerce! (car expr*) caller otype safe))
       (convert! node ftype to safe)))
       
 ;*---------------------------------------------------------------------*/
@@ -166,7 +165,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::setfield caller to safe)
    (with-access::setfield node (expr* type ftype otype)
-      (set-car! expr* (coerce! (car expr*) caller *obj* safe))
+      ;; MS 9nov2011: used to be
+      ;; (set-car! expr* (coerce! (car expr*) caller *obj* safe))
+      (set-car! expr* (coerce! (car expr*) caller otype safe))
       (set-car! (cdr expr*) (coerce! (cadr expr*) caller ftype safe))
       (convert! node *unspec* to safe)))
 

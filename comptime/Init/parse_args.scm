@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Nov  6 17:19:25 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 11:27:35 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -150,8 +150,6 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
-      (unless *class-gen-accessors?*
-	 (register-srfi! 'bigloo-class-sans))
       ;; and we are done for the arguments parsing
       pres))
  
@@ -481,6 +479,11 @@
       ;; closure integration scheme
       (("-fold-closure-integration" (help "Enable old closure integration technique"))
        (set! *globalize-integrate-28c* #t))
+      ;; object serialization
+      (("-fobject-serialization" (help "Enable object serialization optimization"))
+       (set! *optim-object-serialization* #t))
+      (("-fno-object-serialization" (help "Enable object serialization optimization"))
+       (set! *optim-object-serialization* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -1191,7 +1194,7 @@
 		  (-gbdb2!)
 		  (-gbdb3!))
 		 (else
-		  (error "parse-arg" "Illegal -O option" string)))))
+		  (error "parse-arg" "Illegal -g option" string)))))
        (warning "-gbdb"
 		"Bdb not available (see Bigloo configuration option)"
 		" ignoring option")))
@@ -1231,10 +1234,15 @@
 	  ((#\3)
 	   (-O3!)
 	   (set! *optim* 3))
-	  ((#\4 #\5 #\6)
+	  ((#\4 #\5)
 	   (-O3!)
 	   (set! *optim* (-fx (char->integer (string-ref string 0))
-			      (char->integer #\0))))
+			    (char->integer #\0))))
+	  ((#\6)
+	   (-O3!)
+	   (set! *optim* (-fx (char->integer (string-ref string 0))
+			    (char->integer #\0)))
+	   (set! *optim-object-serialization* #t))
 	  (else
 	   (error "parse-arg" "Illegal -O option" string)))
        (set! *cc-options* (string-append *cc-options* " -O"))))

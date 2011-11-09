@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Sun Nov  6 17:18:13 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 10:35:07 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Generation of class accessors                                    */
@@ -200,11 +200,11 @@
 		   `(pragma (,slot-ref-id side-effect-free no-cfa-top
 			       (effect (read (,slot-ref-id))))))
 		(list
-		 (epairify*
-		  `(define-inline (,slot-ref-tid ,(symbol-append obj tid))
- 		      ,(make-class-ref class slot obj))
-		  src
-		  src-def)))
+		   (epairify*
+		      `(define-inline (,slot-ref-tid ,(symbol-append obj tid))
+			  ,(make-class-ref class slot obj))
+		      src
+		      src-def)))
 	     ;; otherwise we define an alias pointing to the real slot
 	     (let ((slot-ref-oid (symbol-append (type-id class-owner) '- id)))
 		(add-macro-alias! slot-ref-id slot-ref-oid)

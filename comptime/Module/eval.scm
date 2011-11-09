@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Fri Nov  4 16:28:23 2011 (serrano)                */
+;*    Last change :  Tue Nov  8 09:06:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -291,22 +291,24 @@
 ;*    get-evaluated-classes-accesses ...                               */
 ;*---------------------------------------------------------------------*/
 (define (get-evaluated-classes-accesses)
-   (let ((err '())
-	 (res '()))
-      (with-exception-handler
-	 (lambda (e)
-	    (error-notify e)
-	    (set! err (cons (&error-obj e) err)))
-	 (lambda ()
-	    (if (null? *eval-classes*)
-		'()
-		(set! res
-		      (append
-		       (append-map get-evaluated-class-accesses *eval-classes*)
-		       res)))))
-      (if (pair? err)
-	  (error 'eval "Undefined classes found" err)
-	  res)))
+   (if *class-gen-accessors?*
+       (let ((err '())
+	     (res '()))
+	  (with-exception-handler
+	     (lambda (e)
+		(error-notify e)
+		(set! err (cons (&error-obj e) err)))
+	     (lambda ()
+		(if (null? *eval-classes*)
+		    '()
+		    (set! res
+		       (append
+			  (append-map get-evaluated-class-accesses *eval-classes*)
+			  res)))))
+	  (if (pair? err)
+	      (error 'eval "Undefined classes found" err)
+	      res))
+       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluated-class-accesses ...                                 */
@@ -414,5 +416,7 @@
 			   (eval! (eval-expand-instantiate ',id))
 			   (eval! (eval-expand-duplicate ',id))))
 		  (eval! (eval-expand-with-access ',id))
-		  ,@(eval-bind-super-access t libp))))
+		  ,@(if *class-gen-accessors?*
+			(eval-bind-super-access t libp)
+			'()))))
 	*eval-classes*))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov  4 19:45:31 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 12:31:22 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -340,8 +340,8 @@
 					  ',(slot-default-value f)
 					  ',(slot-type f))))
 				  slots))
-		     ,constructor
-		     '#())))
+		     '#()
+		     ,constructor)))
 	   (class-evdata-set! ,cla ,sz)
 	   ,cla))))
 

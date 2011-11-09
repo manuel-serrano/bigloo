@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov  7 12:29:17 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 14:40:15 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -28,6 +28,8 @@
 	    ast_ident
 	    ast_var
 	    ast_env
+	    ast_object
+	    ast_node
 	    object_class
 	    object_coercion
 	    object_classgen
@@ -211,34 +213,40 @@
 				   (sholdermodule (global-module sholder)))
 			       `(@ ,sholderid ,sholdermodule))))
 		 (decl `(define ,(global-id holder)
-			   ((@ register-class! __object)
+			   ((@ register-class2! __object)
 			    ;; class id
 			    ',classid
-			    ;; super id
+			    ;; super class
 			    ,superv
-			    ;; abstract
-			    ,(tclass-abstract? class)
-			    ;; new
-			    ,(classgen-make-anonymous class)
-			    ;; allocator
-			    ,(classgen-allocate-anonymous class)
-			    ;; nil
-			    ,(classgen-nil-expr class)
-			    ;; predicate
-			    ,(classgen-predicate-anonymous class)
 			    ;; hash
 			    ,(get-class-hash classid (cddr src-def))
-			    ;; plain fields
-			    ,(make-class-plain-fields class) 
-			    ;; virtual fields
-			    ,(make-class-virtual-fields class)
+			    ;; new
+			    ,(unless (tclass-abstract? class)
+				(classgen-make-anonymous class))
+			    ;; allocator
+			    ,(cond
+				((tclass-abstract? class)
+				 #f)
+				((wide-class? class)
+				 (classgen-widen-anonymous class))
+				(else
+				 (classgen-allocate-anonymous class)))
 			    ;; constructor
-			    ,(tclass-constructor class))))
+			    ,(tclass-constructor class)
+			    ;; nil
+			    ,(classgen-nil-anonymous class)
+			    ;; predicate
+			    ,(when (wide-class? class)
+				(classgen-shrink-anonymous class))
+			    ;; plain fields
+			    ,(make-class-fields class) 
+			    ;; virtual fields
+			    ,(make-class-virtual-fields class))))
 		 (edecl (if (epair? src-def)
 			    (econs (car decl) (cdr decl) (cer src-def))
 			    decl)))
 	     (set! *declared-classes* (cons edecl *declared-classes*))
-	     '()))
+	     (classgen-struct-methods class)))
        ;; the class is incorrect, an error has been signaled, keep going
        ;; as if everything is fine
        (begin
@@ -280,7 +288,7 @@
 	  (hash           (get-class-hash class-id (cddr src-def)))
 	  (constr         (tclass-constructor class))
 	  (loc            (find-location src-def))
-	  (fields         (make-class-fields class-id (cddr src-def) loc))
+	  (fields         (make-class-src-fields class-id (cddr src-def) loc))
 	  (super-class    (if (not (tclass? super))
 			      #f
 			      (let* ((sholder (tclass-holder super))
@@ -291,7 +299,10 @@
       (let ((decl `(define ,holder-id
 		      ((@ register-class! __object)
 		       ',class-id ,super-class ,(tclass-abstract? class)
-		       ,class-make ,class-alloc ,class-nil ,class-pred ,hash
+		       ,class-make ,class-alloc ,class-nil
+		       ,(when (wide-class? class)
+			   (classgen-shrink-anonymous class))
+		       ,hash
 		       ,fields 
 		       (vector ,@(map (lambda (v)
 					 `(cons ,(car v)
@@ -322,29 +333,45 @@
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    make-class-plain-fields ...                                      */
+;*    make-class-fields ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (make-class-plain-fields class)
+(define (make-class-fields class)
    
    (define (type-default-id type)
       (if (eq? (type-id type) '_)
 	  'obj
 	  (type-id type)))
    
+   (define (make-class-field-virtual s)
+      `((@ make-class-field2 __object)
+	',(slot-id s)
+	,(slot-getter s) ,(slot-setter s) ,(slot-read-only? s)
+	#t
+	,(slot-user-info s)
+	((@ class-field-no-default-value __object))
+	,(if (tclass? (slot-type s))
+	     (tclass-holder (slot-type s))
+	     `',(type-default-id (slot-type s)))))
+   
+   (define (make-class-field-plain s)
+      (let ((defs (classgen-slot-anonymous class s)))
+	 ;; plain slot
+	 `((@ make-class-field2 __object)
+	   ',(slot-id s)
+	   ,(car defs) ,(cadr defs) ,(slot-read-only? s)
+	   #f
+	   ,(slot-user-info s)
+	   ((@ class-field-no-default-value __object))
+	   ,(if (tclass? (slot-type s))
+		(tclass-holder (slot-type s))
+		`',(type-default-id (slot-type s))))))
+   
    `(list
        ,@(filter-map (lambda (s)
-			(unless (slot-virtual? s)
-			   (let ((defs (classgen-slot-anonymous class s)))
-			      `((@ make-class-field __object)
-				',(slot-id s)
-				,(car defs)
-				,(when (pair? (cdr defs)) (cadr defs))
-				#f
-				#f
-				((@ class-field-no-default-value __object))
-				,(if (tclass? (slot-type s))
-				     (tclass-holder (slot-type s))
-				     `',(type-default-id (slot-type s)))))))
+			(when (eq? (slot-class-owner s) class)
+			   (if (slot-virtual? s)
+			       (make-class-field-virtual s)
+			       (make-class-field-plain s))))
 	    (tclass-slots class))))
 
 ;*---------------------------------------------------------------------*/
@@ -353,19 +380,20 @@
 (define (make-class-virtual-fields class)
    `(vector
        ,@(filter-map (lambda (s)
-			(when (slot-virtual? s)
+			(when (and (slot-virtual? s)
+				   (eq? (slot-class-owner s) class))
 			   `(cons ,(slot-virtual-num s)
 			       (cons ,(slot-getter s) ,(slot-setter s)))))
 	    (tclass-slots class))))
 
 ;*---------------------------------------------------------------------*/
-;*    make-class-fields ...                                            */
+;*    make-class-src-fields ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    We have not found a better way to do it. We re-parse the class   */
 ;*    definition (according to module_prototype and object_slots)      */
 ;*    to produce the correct proper list for the class declaration.    */
 ;*---------------------------------------------------------------------*/
-(define (make-class-fields class-id slot-defs loc)
+(define (make-class-src-fields class-id slot-defs loc)
    
    (define (read-only? attr)
       (let loop ((attr attr))
@@ -417,10 +445,11 @@
 	  (let* ((pid (parse-id slot loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field __object)
+	     `((@ make-class-field2 __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(symbol-append class-id '- id '-set!)
+	       #f
 	       #f
 	       #f
 	       ((@ class-field-no-default-value __object))
@@ -432,12 +461,21 @@
 	  (let* ((pid (parse-id id loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field __object)
+	     `((@ make-class-field2 __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
-	       ,(if (not (read-only? att))
-		    (symbol-append class-id '- id '-set!)
-		    '#unspecified)
+	       ,(cond
+		   ((not (read-only? att))
+		    (symbol-append class-id '- id '-set!))
+		   ((virtual? att)
+		    #f)
+		   (else
+		    (let ((o (gensym))
+			  (v (gensym)))
+		       `(lambda (,(make-typed-ident o class-id)
+				 ,(make-typed-ident v (type-id type)))
+			   (set! ,(field-access o id) ,v)))))
+	       ,(read-only? att)
 	       ,(virtual? att)
 	       ,(find-info-attribute slot)
 	       ,(find-default-attribute slot)

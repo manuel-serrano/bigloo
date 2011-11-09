@@ -354,13 +354,15 @@
 (define-method (gen-fun fun::rtl_getfield me);
    (with-access::rtl_getfield fun (name objtype type)
       ;; CARE MANU
-      (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
+      ;; MS 9Nov2011
+      ;; (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
       (load-field me type objtype name) ))
 
 (define-method (gen-fun fun::rtl_setfield me);
    (with-access::rtl_setfield fun (name objtype type)
       ;; CARE MANU
-      (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
+      ;; MS 9Nov2011
+      ;; (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
       (store-field me type objtype name) ))
 
 (define-method (gen-fun fun::rtl_isa me);

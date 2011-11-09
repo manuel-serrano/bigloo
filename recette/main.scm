@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Fri Nov  4 09:59:11 2011 (serrano)                */
+;*    Last change :  Mon Nov  7 16:10:47 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -69,6 +69,7 @@
 	   import1
 	   import2
 	   object
+	   object-sans
 	   object5
 	   hygiene
 	   wind
@@ -312,6 +313,7 @@
 	  (if-module 'sua test-sua)
 	  (if-module 'alias test-alias)
 	  (if-module 'object test-object)
+	  (if-module 'object-sans test-object-sans)
 	  (if-module 'object5 test-object5)
 	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)

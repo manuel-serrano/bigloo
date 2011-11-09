@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Nov  7 12:28:30 2011 (serrano)                */
+#*    Last change :  Wed Nov  9 17:19:38 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -396,7 +396,6 @@ fullbootstrap-sans-log:
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C runtime heap-jvm libs-jvm
-	$(MAKE) -C runtime libs-dotnet
 	$(MAKE) -C bde -i clean; $(MAKE) -C bde
 	$(MAKE) -C api fullbootstrap
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo

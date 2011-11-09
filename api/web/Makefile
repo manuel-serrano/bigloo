@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jun 20 12:36:39 2010 (serrano)                */
-#*    Copyright   :  2001-10 Manuel Serrano                            */
+#*    Last change :  Wed Nov  9 17:20:57 2011 (serrano)                */
+#*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -30,9 +30,7 @@ all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && \
-	  $(MAKE) build-jvm && \
-	  $(MAKE) build-dotnet
+	@ $(MAKE) build-c && $(MAKE) build-jvm
 
 c: build-c
 jvm: build-jvm
