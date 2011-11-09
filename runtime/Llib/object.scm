@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov  9 18:35:06 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 19:37:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -150,7 +150,6 @@
 	    (class-nil::obj class)
 	    (make-class-field-old::vector ::symbol o o ::bool ::obj ::obj ::obj)
 	    (make-class-field::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
-	    (make-class-field2::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol field)
@@ -161,8 +160,8 @@
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
-	    (register-class!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
 	    (register-class-old!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
+	    (register-class!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-class2!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -453,12 +452,6 @@
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter ronly virtual info default type)
    (vector name getter setter virtual make-class-field info default type (not ronly)))
-
-;*---------------------------------------------------------------------*/
-;*    make-class-field2 ...                                            */
-;*---------------------------------------------------------------------*/
-(define (make-class-field2 name getter setter ronly virtual info default type)
-   (make-class-field name getter setter ronly virtual info default type))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
@@ -831,8 +824,55 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (register-class! name super abstract creator allocate nil shrink hash plain virtual constructor)
-   (register-class-old! name super abstract creator allocate nil shrink hash plain virtual constructor))
+(define (register-class2! name super hash new allocate constructor nil shrink plain virtual)
+   (register-class! name super hash new allocate constructor nil shrink plain virtual))
+
+;*---------------------------------------------------------------------*/
+;*    register-class! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (register-class! name super hash new allocate constructor nil shrink plain virtual)
+   (with-lock $bigloo-generic-mutex
+      (lambda ()
+	 (initialize-objects!)
+	 (when (and super (not (class? super)))
+	    (error "add-class!" "Illegal super class for class" name))
+	 (when (=fx *nb-classes* *nb-classes-max*)
+	    (double-nb-classes!))
+	 (let* ((num   (+fx %object-type-number *nb-classes*))
+		(class (make-class name
+			  num
+			  -1
+			  super
+			  '()
+			  -1
+			  allocate
+			  hash
+			  plain
+			  constructor
+			  (make-class-virtual-slots-vector super virtual)
+			  new
+			  nil
+			  shrink
+			  #f
+			  'abstract-to-be-removed)))
+	    ;; we set the sub field of the super class
+	    (if (class? super)
+		(begin
+		   ;; we add the class to its super subclasses list
+		   (class-subclasses-set!
+		      super (cons class (class-subclasses super)))
+		   ;; and then, we renumber the tree
+		   (class-hierarchy-numbering! class super))
+		(begin
+		   (class-min-num-set! class 1)
+		   (class-max-num-set! class 1)))
+	    ;; we add the class in the *classes* vector (we declare the class)
+	    (vector-set! *classes* *nb-classes* class)
+	    ;; we increment the global class number
+	    (set! *nb-classes* (+fx *nb-classes* 1))
+	    ;; and we adjust the method arrays of all generic functions
+	    (generics-add-class! num (if (class? super) (class-num super) num))
+	    class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-class-old! ...                                          */
@@ -881,53 +921,6 @@
 	    (generics-add-class! num (if (class? super) (class-num super) num))
 	    class))))
    
-;*---------------------------------------------------------------------*/
-;*    register-class! ...                                              */
-;*---------------------------------------------------------------------*/
-(define (register-class2! name super hash new allocate constructor nil shrink plain virtual)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (initialize-objects!)
-	 (when (and super (not (class? super)))
-	    (error "add-class!" "Illegal super class for class" name))
-	 (when (=fx *nb-classes* *nb-classes-max*)
-	    (double-nb-classes!))
-	 (let* ((num   (+fx %object-type-number *nb-classes*))
-		(class (make-class name
-			  num
-			  -1
-			  super
-			  '()
-			  -1
-			  allocate
-			  hash
-			  plain
-			  constructor
-			  (make-class-virtual-slots-vector super virtual)
-			  new
-			  nil
-			  shrink
-			  #f
-			  'abstract-to-be-removed)))
-	    ;; we set the sub field of the super class
-	    (if (class? super)
-		(begin
-		   ;; we add the class to its super subclasses list
-		   (class-subclasses-set!
-		      super (cons class (class-subclasses super)))
-		   ;; and then, we renumber the tree
-		   (class-hierarchy-numbering! class super))
-		(begin
-		   (class-min-num-set! class 1)
-		   (class-max-num-set! class 1)))
-	    ;; we add the class in the *classes* vector (we declare the class)
-	    (vector-set! *classes* *nb-classes* class)
-	    ;; we increment the global class number
-	    (set! *nb-classes* (+fx *nb-classes* 1))
-	    ;; and we adjust the method arrays of all generic functions
-	    (generics-add-class! num (if (class? super) (class-num super) num))
-	    class))))
-
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-slots-vector ...                              */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov  9 18:26:41 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 19:35:28 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -317,7 +317,7 @@
    (let ((cla (gensym)))
       (localize
        loc
-       `(let ((,cla (register-class2!
+       `(let ((,cla (register-class!
 		     ',id
 		     ,(class-name super)
 		     ,hash

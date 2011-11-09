@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Wed Nov  9 18:37:03 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 19:35:22 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -213,7 +213,7 @@
 				   (sholdermodule (global-module sholder)))
 			       `(@ ,sholderid ,sholdermodule))))
 		 (decl `(define ,(global-id holder)
-			   ((@ register-class2! __object)
+			   ((@ register-class! __object)
 			    ;; class id
 			    ',classid
 			    ;; super class
