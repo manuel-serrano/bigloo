@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov  9 12:31:22 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 18:26:41 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -317,18 +317,18 @@
    (let ((cla (gensym)))
       (localize
        loc
-       `(let ((,cla (register-class!
+       `(let ((,cla (register-class2!
 		     ',id
 		     ,(class-name super)
-		     ,abstract
+		     ,hash
 		     ,(unless abstract (class-make id))
 		     ,(if abstract list (class-allocate id))
+		     ,constructor
 		     ,(class-nil id)
-		     ,(class-predicate id)
-		     ,hash
+		     #f
 		     (list ,@(map (lambda (f)
 				     (let ((sid (slot-id f)))
-					`(make-class-field
+					`(make-class-field-old
 					  ',sid
 					  ,(or (slot-getter f)
 					       (slot-ref sid id))
@@ -340,8 +340,7 @@
 					  ',(slot-default-value f)
 					  ',(slot-type f))))
 				  slots))
-		     '#()
-		     ,constructor)))
+		     '#())))
 	   (class-evdata-set! ,cla ,sz)
 	   ,cla))))
 

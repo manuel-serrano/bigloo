@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov  9 13:13:45 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 18:35:06 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -148,7 +148,8 @@
 	    (class-constructor::obj class)
 	    (class-creator::obj class)
 	    (class-nil::obj class)
-	    (make-class-field::vector ::symbol o o ::bool ::obj ::obj ::obj)
+	    (make-class-field-old::vector ::symbol o o ::bool ::obj ::obj ::obj)
+	    (make-class-field::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (make-class-field2::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
@@ -161,6 +162,7 @@
 	    (class-field-mutator::procedure field)
 	    (class-field-type::obj field)
 	    (register-class!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
+	    (register-class-old!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
 	    (register-class2!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -441,16 +443,22 @@
 	  #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-class-field ...                                             */
+;*    make-class-field-old ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (make-class-field name getter setter virtual info default type)
+(define (make-class-field-old name getter setter virtual info default type)
    (vector name getter setter virtual make-class-field info default type (procedure? setter)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-class-field2 ...                                             */
+;*    make-class-field ...                                             */
+;*---------------------------------------------------------------------*/
+(define (make-class-field name getter setter ronly virtual info default type)
+   (vector name getter setter virtual make-class-field info default type (not ronly)))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-field2 ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field2 name getter setter ronly virtual info default type)
-   (vector name getter setter virtual make-class-field info default type (not ronly)))
+   (make-class-field name getter setter ronly virtual info default type))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
@@ -824,6 +832,12 @@
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (register-class! name super abstract creator allocate nil shrink hash plain virtual constructor)
+   (register-class-old! name super abstract creator allocate nil shrink hash plain virtual constructor))
+
+;*---------------------------------------------------------------------*/
+;*    register-class-old! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (register-class-old! name super abstract creator allocate nil shrink hash plain virtual constructor)
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Wed Nov  9 14:40:15 2011 (serrano)                */
+;*    Last change :  Wed Nov  9 18:37:03 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -297,7 +297,7 @@
 				 `(@ ,sholder-id ,sholder-module)))))
       (trace (ast 2) "make-register-class!: " (shape class) " " virtuals #\Newline)
       (let ((decl `(define ,holder-id
-		      ((@ register-class! __object)
+		      ((@ register-class-old! __object)
 		       ',class-id ,super-class ,(tclass-abstract? class)
 		       ,class-make ,class-alloc ,class-nil
 		       ,(when (wide-class? class)
@@ -343,7 +343,7 @@
 	  (type-id type)))
    
    (define (make-class-field-virtual s)
-      `((@ make-class-field2 __object)
+      `((@ make-class-field __object)
 	',(slot-id s)
 	,(slot-getter s) ,(slot-setter s) ,(slot-read-only? s)
 	#t
@@ -356,7 +356,7 @@
    (define (make-class-field-plain s)
       (let ((defs (classgen-slot-anonymous class s)))
 	 ;; plain slot
-	 `((@ make-class-field2 __object)
+	 `((@ make-class-field __object)
 	   ',(slot-id s)
 	   ,(car defs) ,(cadr defs) ,(slot-read-only? s)
 	   #f
@@ -445,7 +445,7 @@
 	  (let* ((pid (parse-id slot loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field2 __object)
+	     `((@ make-class-field __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(symbol-append class-id '- id '-set!)
@@ -461,7 +461,7 @@
 	  (let* ((pid (parse-id id loc))
 		 (id (car pid))
 		 (type (cdr pid)))
-	     `((@ make-class-field2 __object)
+	     `((@ make-class-field __object)
 	       ',id
 	       ,(symbol-append class-id '- id)
 	       ,(cond
