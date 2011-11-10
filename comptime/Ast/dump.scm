@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Tue Nov  8 20:03:08 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:00:54 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -232,12 +232,12 @@
 	,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
-;*    node->sexp ::isa ...                                             */
+;*    node->sexp ::instanceof ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (node->sexp node::isa)
+(define-method (node->sexp node::instanceof)
    (node->sexp-hook node)
-   (with-access::isa node (class expr*)
-      `(isa? ,(type-id class) ,(node->sexp (car expr*)))))
+   (with-access::instanceof node (class expr*)
+      `(isa? ,(node->sexp (car expr*)) ,(type-id class))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::cast-null ...                                       */

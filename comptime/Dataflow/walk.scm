@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Sep 21 09:43:07 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:05:09 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -327,10 +327,10 @@
 	     '())))))
 
 ;*---------------------------------------------------------------------*/
-;*    dataflow-test-env ::isa ...                                      */
+;*    dataflow-test-env ::instanceof ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (dataflow-test-env node::isa)
-   (with-access::isa node (expr* class)
+(define-method (dataflow-test-env node::instanceof)
+   (with-access::instanceof node (expr* class)
       (if (var? (car expr*))
 	  (list (cons (var-variable (car expr*)) class))
 	  '())))

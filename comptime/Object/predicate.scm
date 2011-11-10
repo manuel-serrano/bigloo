@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon Nov 29 09:17:09 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 10 07:07:07 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
 ;*    -------------------------------------------------------------    */
@@ -65,7 +65,7 @@
 	  (obj     (mark-symbol-non-user! (gensym 'obj)))
 	  (super   (tclass-its-super class)))
       (define (predicate-body)
-	 `((@ is-a? __object) ,obj (@ ,(global-id holder) ,(global-module holder))))
+	 `((@ isa? __object) ,obj (@ ,(global-id holder) ,(global-module holder))))
       (if (not (tclass? super))
  	  ;; roots class tree must have ad-hoc predicate checker as
 	  ;; the (@ object? __object) predicate.
@@ -119,7 +119,7 @@
 	  (obj     (mark-symbol-non-user! (gensym 'obj)))
 	  (super   (jclass-its-super class)))
       (define (predicate-body)
-	 (make-private-sexp 'isa id obj))
+	 (make-private-sexp 'instanceof id obj))
       ;; the pragma declaration
       (produce-module-clause!
        `(,mclause (inline ,pred-id ::obj)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Thu May  5 07:08:18 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:59:02 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
@@ -26,7 +26,8 @@
    (export (type-less-specific?::bool ::type ::type)
 	   (type-disjoint?::bool ::type ::type)
 	   (c-subtype?::bool ::type ::type)
-	   (isa-of ::node)))
+	   (isa-of ::node)
+	   (app-predicate-of ::app)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-less-specific? ...                                          */
@@ -99,6 +100,7 @@
 ;*    *isa* ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define *isa* #f)
+(define *is-a* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    isa-of ...                                                       */
@@ -106,11 +108,23 @@
 (define (isa-of node::node)
    (when (app? node)
       (unless (global? *isa*)
-	 (set! *isa* (find-global/module 'is-a? '__object)))
+	 (set! *isa* (find-global/module 'isa? '__object)))
+      (unless (global? *is-a*)
+	 (set! *is-a* (find-global/module 'is-a? '__object)))
       (with-access::app node (fun args)
-	 (when (and (eq? (var-variable fun) *isa*)
+	 (when (and (or (eq? (var-variable fun) *isa*)
+			(eq? (var-variable fun) *is-a*))
 		    (var? (car args))
 		    (bigloo-type? (variable-type (var-variable (car args))))
 		    (var? (cadr args))
 		    (global? (var-variable (cadr args))))
 	    (find-type (global-id (var-variable (cadr args))))))))
+
+;*---------------------------------------------------------------------*/
+;*    app-predicate-of ...                                             */
+;*---------------------------------------------------------------------*/
+(define (app-predicate-of node::app)
+   (with-access::app node (fun)
+      (let ((val (variable-value (var-variable fun))))
+	 (or (fun-predicate-of val) (isa-of node)))))
+   

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Thu Nov  3 09:56:19 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:59:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -163,7 +163,7 @@
 	      (vtype::type read-only))
 	   
 	   ;; extern predicate
-	   (final-class isa::private
+	   (final-class instanceof::private
 	      (class::type read-only))
 	      
 	   ;; the null node

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov  9 19:37:16 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:50:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -173,8 +173,9 @@
 	    (inline generic-default::procedure ::procedure)
 	    (inline generic-method-array ::procedure)
 	    (inline method-array-ref ::procedure ::vector ::int)
+	    (isa?::bool ::obj class::obj)
+	    (nil?::bool ::object)
 	    (is-a?::bool ::obj class::obj)
-	    (is-nil?::bool ::object)
 	    (generic object-print ::object ::output-port ::procedure)
 	    (generic object-display ::object . port)
 	    (generic object-write ::object . port)
@@ -223,6 +224,7 @@
 	    (object-class side-effect-free no-cfa-top no-trace nesting)
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
 	    (is-a? side-effect-free no-cfa-top no-trace nesting (effect))
+	    (isa? side-effect-free no-cfa-top no-trace nesting (effect))
 	    (struct->object no-cfa-top no-trace nesting)
 	    (struct+object->object no-cfa-top no-trace nesting)
 	    (object->struct side-effect-free no-cfa-top no-trace nesting)
@@ -1170,9 +1172,31 @@
        #f))
 
 ;*---------------------------------------------------------------------*/
-;*    is-nil? ...                                                      */
+;*    isa? ...                                                         */
+;*    -------------------------------------------------------------    */
+;*    The constant time implementation of is-a?                        */
 ;*---------------------------------------------------------------------*/
-(define (is-nil? obj::object)
+(define (isa? obj class)
+   (if (object? obj)
+       ;; it is an object, we check if OBJ inherits of CLASS
+       (let ((oclass (object-class obj)))
+	  (if (eq? oclass class)
+	      #t
+	      (if (class? class)
+		  (let ((omin (class-min-num oclass))
+			(cmin (class-min-num class))
+			(cmax (class-max-num class)))
+		     (if (>=fx omin cmin)
+			 (<=fx omin cmax)
+			 #f))
+		  #f)))
+       ;; not even a class instance
+       #f))
+
+;*---------------------------------------------------------------------*/
+;*    nil? ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (nil? obj::object)
    (let ((klass (object-class obj)))
       (eq? (class-nil klass) obj)))
 
@@ -1363,7 +1387,7 @@
 	  (fields (class-fields class)))
       (display "#|" port)
       (display class-name port)
-      (if (is-nil? obj)
+      (if (nil? obj)
 	  (display " nil|" port)
 	  (let loop ((fields fields)
 		     (class class))

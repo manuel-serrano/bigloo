@@ -112,7 +112,7 @@
 (define-method (type-dest::type fun::rtl_vlength args::pair-nil) ;(list expr)
    (find-type 'int) )
 
-(define-method (type-dest::type fun::rtl_isa args::pair-nil) ;(list expr)
+(define-method (type-dest::type fun::rtl_instanceof args::pair-nil) ;(list expr)
    (find-type 'int) )
 
 (define-method (type-dest::type fun::rtl_cast_null args::pair-nil) ;(list expr)

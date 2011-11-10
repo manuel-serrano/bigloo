@@ -141,8 +141,8 @@
       (get* expr* r) ))
 
 ;;
-(define-method (get e::isa r) ; ()
-   (with-access::isa  e (expr* class)
+(define-method (get e::instanceof r) ; ()
+   (with-access::instanceof  e (expr* class)
       (get* expr* r) ))
 
 ;;

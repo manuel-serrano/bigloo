@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Mon Apr 11 08:11:00 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:04:07 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -314,14 +314,14 @@
       (approx-set-top! (new/Cinfo-approx node))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-setup! ::isa ...                                            */
+;*    node-setup! ::instanceof ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (node-setup! node::isa)
-   (with-access::isa node (type expr*)
+(define-method (node-setup! node::instanceof)
+   (with-access::instanceof node (type expr*)
       (node-setup*! expr*)
-      (widen!::isa/Cinfo node
+      (widen!::instanceof/Cinfo node
 	 (approx (make-type-approx type)))
-      (approx-set-top! (isa/Cinfo-approx node))))
+      (approx-set-top! (instanceof/Cinfo-approx node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::cast-null ...                                      */

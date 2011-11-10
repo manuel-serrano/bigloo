@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Sat Jun 11 07:51:10 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:03:23 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -176,10 +176,10 @@
       approx))
 
 ;*---------------------------------------------------------------------*/
-;*    cfa! ::isa/Cinfo ...                                             */
+;*    cfa! ::instanceof/Cinfo ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (cfa! node::isa/Cinfo)
-   (with-access::isa/Cinfo node (approx expr*)
+(define-method (cfa! node::instanceof/Cinfo)
+   (with-access::instanceof/Cinfo node (approx expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/

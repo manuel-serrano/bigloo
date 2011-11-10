@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Mar 24 15:16:27 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:00:05 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -259,11 +259,11 @@
       (expr* (map do-alphatize (valloc-expr* node)))))
 
 ;*---------------------------------------------------------------------*/
-;*    do-alphatize ::isa ...                                           */
+;*    do-alphatize ::instanceof ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::isa)
-   (duplicate::isa node
-      (expr* (list (do-alphatize (car (isa-expr* node)))))
+(define-method (do-alphatize node::instanceof)
+   (duplicate::instanceof node
+      (expr* (list (do-alphatize (car (instanceof-expr* node)))))
       (loc (get-inline-location node))))
 
 ;*---------------------------------------------------------------------*/

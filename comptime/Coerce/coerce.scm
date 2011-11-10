@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Nov  9 16:29:21 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:04:35 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -273,9 +273,7 @@
 	 (and (pair? args)
 	      (null? (cdr args))
 	      (not (side-effect? (car args)))
-	      (let* ((fun (app-fun node))
-		     (val (variable-value (var-variable fun)))
-		     (typec (fun-predicate-of val))
+	      (let* ((typec (app-predicate-of node))
 		     (typev (get-type (car args))))
 		 (cond
 		    ((not (type? typec))
@@ -295,8 +293,7 @@
 	 (when (and (pair? bindings) (null? (cdr bindings)))
 	    (cond
 	       ((app? body)
-		(let* ((fun (app-fun body))
-		       (var (let ((args (app-args body)))
+		(let* ((var (let ((args (app-args body)))
 			       (cond
 				  ((not (pair? args))
 				   #f)
@@ -310,8 +307,7 @@
 				   (var-variable (car args)))
 				  (else
 				   #f))))
-		       (val (variable-value (var-variable fun)))
-		       (typec (or (fun-predicate-of val) (isa-of body)))
+		       (typec (app-predicate-of body))
 		       (typep (variable-type (car (car bindings))))
 		       (typev (if (eq? typep *obj*)
 				  (get-type (cdr (car bindings)))

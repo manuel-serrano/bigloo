@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Nov  9 10:17:25 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:21:46 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -48,9 +48,15 @@
 	    ast_sexp)
    
    (export (field-access?::bool ::symbol ::obj)
-	   (field-access::symbol ::symbol ::symbol)
-	   (field-ref->node::node ::symbol stack ::obj ::symbol)
-	   (field-set->node::node ::symbol ::obj stack ::obj ::symbol)))
+	   (field-access::pair ::symbol ::symbol)
+	   (field-ref->node::node ::obj stack ::obj ::symbol)
+	   (field-set->node::node ::obj ::obj stack ::obj ::symbol)))
+
+;*---------------------------------------------------------------------*/
+;*    __bigloo__ ...                                                   */
+;*---------------------------------------------------------------------*/
+(define __bigloo__
+   (string->symbol "#!bigloo"))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-access? ...                                                */
@@ -61,7 +67,7 @@
       (when i
 	 (let ((n (string->symbol (substring s 0 i))))
 	    (cond
-	       ((eq? n '__bigloo__) #t)
+	       ((eq? n __bigloo__) #t)
 	       ((eq? (identifier-syntax) 'bigloo) #t)
 	       ((eq? (identifier-syntax) 'r5rs) #f)
 	       (else (or (find-local n stack) (global? (find-global n)))))))))
@@ -70,14 +76,16 @@
 ;*    field-access ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (field-access var field)
-   (symbol-append '__bigloo__ '|.| var '|.| field))
+   `(field-access ,__bigloo__ ,var ,field))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node exp stack loc site)
-   (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
-	  (l2 (if (eq? (car l) '__bigloo__) (cdr l) l))
+   (let* ((l (if (symbol? exp)
+		 (map! string->symbol (string-split (symbol->string! exp) "."))
+		 exp))
+	  (l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site)))
       (with-access::variable (var-variable var) (type)
 	 (let loop ((node var)
@@ -103,8 +111,10 @@
 ;*    field-set->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-set->node exp val stack loc site)
-   (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
-	  (l2 (if (eq? (car l) '__bigloo__) (cdr l) l))
+   (let* ((l (if (symbol? exp)
+		 (map! string->symbol (string-split (symbol->string! exp) "."))
+		 exp))
+	  (l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site))
 	  (val (sexp->node val stack loc site)))
       (if (not (var? var))

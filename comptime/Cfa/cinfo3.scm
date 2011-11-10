@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Wed Mar 30 17:48:07 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:03:39 2011 (serrano)                */
 ;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
@@ -26,7 +26,7 @@
 	   (wide-class getfield/Cinfo::getfield (approx::approx read-only))
 	   (wide-class setfield/Cinfo::setfield (approx::approx read-only))
 	   (wide-class new/Cinfo::new (approx::approx read-only))
-	   (wide-class isa/Cinfo::isa (approx::approx read-only))
+	   (wide-class instanceof/Cinfo::instanceof (approx::approx read-only))
 	   (wide-class cast-null/Cinfo::cast-null (approx::approx read-only))
 
 	   ;; vector management

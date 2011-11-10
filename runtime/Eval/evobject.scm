@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov  9 19:35:28 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:49:49 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -267,7 +267,7 @@
       (localize
        loc
        `(define (,fid x)
-	   (is-a? x ,id)))))
+	   (isa? x ,id)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-class-slot-alias ...                                        */

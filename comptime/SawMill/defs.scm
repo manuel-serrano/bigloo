@@ -42,7 +42,7 @@
       (class rtl_valloc::rtl_pure type::type vtype::type)
       (class rtl_vref::rtl_pure type::type vtype::type)
       (class rtl_vlength::rtl_pure type::type)
-      (class rtl_isa::rtl_pure type::type)
+      (class rtl_instanceof::rtl_pure type::type)
       (class rtl_makebox::rtl_pure)
       (class rtl_boxref::rtl_pure)
      ; dest = #f and make side-effect

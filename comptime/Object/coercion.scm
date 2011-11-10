@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Mon Nov  7 10:40:04 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:51:19 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -86,7 +86,7 @@
 		     (if *class-gen-accessors?*
 			 (list (class?-id c-id))
 			 (let ((o (gensym 'o)))
-			    `((lambda (,o) (is-a? ,o ,c-id)))))
+			    `((lambda (,o) (isa? ,o ,c-id)))))
 		     '()))
 	  (x (make-typed-ident 'x c-id)))
       (let loop ((super   super)

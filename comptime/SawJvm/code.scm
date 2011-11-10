@@ -545,21 +545,15 @@
 
 (define-method (gen-fun fun::rtl_getfield me);
    (with-access::rtl_getfield fun (name objtype type)
-      ;; CARE MANU
-      ;; MS 9nov2011
-      ;; (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
       (load-field me type objtype name) ))
 
 (define-method (gen-fun fun::rtl_setfield me);
    (with-access::rtl_setfield fun (name objtype type)
-      ;; CARE MANU
-      ;; MS 9nov2011
-      ;; (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
       (store-field me type objtype name)
       'no-value ))
 
-(define-method (gen-fun fun::rtl_isa me);
-   (code! me `(instanceof ,(compile-type me (rtl_isa-type fun))))
+(define-method (gen-fun fun::rtl_instanceof me);
+   (code! me `(instanceof ,(compile-type me (rtl_instanceof-type fun))))
    (let ( (l1 (gensym "I")) (l2 (gensym "I")) )
       (branch me 'ifeq l1)
       (push-int me 1)
@@ -646,5 +640,5 @@
 ;	  (default-gen-predicate fun args me on? lab)
 ;	  r )))
 
-;;CARE isa
+;;CARE instanceof
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Thu Mar 31 16:48:02 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:09:46 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
@@ -69,7 +69,7 @@
 
       (define (make-jvm-tv?)
 	 `(define-inline (,(symbol-append tv?-id '::bool) o::obj)
-	     ,(make-private-sexp 'isa tv-id 'o)))
+	     ,(make-private-sexp 'instanceof tv-id 'o)))
        
       (define (make-tv?)
 	 (if (backend-tvector-descr-support (the-backend))

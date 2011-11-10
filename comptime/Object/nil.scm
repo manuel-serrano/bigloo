@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Mon Nov  7 12:09:40 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:51:26 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -69,7 +69,7 @@
 	    `(define ,the-tid-nil #unspecified)
 	    (epairify `(define (,tid-nil)
 			  ,(make-private-sexp 'unsafe id
-			      `(if (is-a? ,the-id-nil ,id)
+			      `(if (isa? ,the-id-nil ,id)
 				   ,the-id-nil
 				   (let ((,tmpt (,alloc)))
 				      (set! ,the-id-nil ,tmp)

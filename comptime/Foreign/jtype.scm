@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 10:58:27 2001                          */
-;*    Last change :  Mon Sep  8 18:02:05 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Thu Nov 10 07:06:12 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The JVM array type managment. I have tried to reuse as much as   */
 ;*    as possible of the C foreign type machinery. This is why this    */
@@ -103,7 +103,7 @@
       ;; the predicate
       (define (mk-id?)
 	 `(define-inline (,tid? o::obj)
-	     ,(make-private-sexp 'isa id 'o)))
+	     ,(make-private-sexp 'instanceof id 'o)))
       
       ;; the length
       (define (mk-id-length)

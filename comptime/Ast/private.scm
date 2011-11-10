@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Sat Nov  5 06:13:46 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 07:01:48 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -123,8 +123,9 @@
 	  (loc loc)
 	  (type (use-type! type loc))
 	  (c-format "")))
-      ((?- isa ?type ?exp)
-       (instantiate::isa
+      ((?- (or instanceof isa) ?type ?exp)
+       ;; isa to be removed
+       (instantiate::instanceof
 	  (loc loc)
 	  (type *bool*)
 	  (class (use-type! type loc))
@@ -210,7 +211,9 @@
 ;*    are never macro-expanded).                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
-   [assert (kind) (memq kind '(getfield setfield new cast cast-null isa
+   [assert (kind) (memq kind '(getfield setfield new cast cast-null
+			       ;; isa to be removed
+			       instanceof isa
 			       vlength vref vset! valloc unsafe
 			       vref-ur vset-ur!))]
    (cons* *private-stamp* kind type-id objs))

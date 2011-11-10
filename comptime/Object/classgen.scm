@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Wed Nov  9 12:53:24 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 06:51:10 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -143,7 +143,7 @@
    
    (define (predicate-def id g)
       `(define-inline (,id obj::obj)
-	  ((@ is-a? __object) obj (@ ,(global-id g) ,(global-module g)))))
+	  ((@ isa? __object) obj (@ ,(global-id g) ,(global-module g)))))
 
    (let* ((holder (tclass-holder c))
 	  (id (symbol-append (tclass-id c) '?))

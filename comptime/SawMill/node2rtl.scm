@@ -402,9 +402,9 @@
       (call* e (instantiate::rtl_vlength (type vtype)) expr*) ))
 
 ;;
-(define-method (node->rtl::area e::isa) ; ()
-   (with-access::isa  e (expr* class)
-      (call* e (instantiate::rtl_isa (type class)) expr*) ))
+(define-method (node->rtl::area e::instanceof) ; ()
+   (with-access::instanceof e (expr* class)
+      (call* e (instantiate::rtl_instanceof (type class)) expr*) ))
 
 ;;
 (define-method (node->rtl::area e::cast) ; ()

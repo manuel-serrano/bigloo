@@ -365,8 +365,8 @@
       ;; (if (wide-class? objtype) (set! objtype (wide->chunk objtype)))
       (store-field me type objtype name) ))
 
-(define-method (gen-fun fun::rtl_isa me);
-   (isinst me (rtl_isa-type fun))
+(define-method (gen-fun fun::rtl_instanceof me);
+   (isinst me (rtl_instanceof-type fun))
    (let ( (l1 (gensym "I")) (l2 (gensym "I")) )
       (brfalse me "" l1)
       (push-int me 1)
@@ -543,5 +543,5 @@
 	  (default-gen-predicate fun me on? lab)
 	  r )))
 
-;;CARE isa
+;;CARE instanceof
 
