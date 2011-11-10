@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Thu Nov 10 06:51:10 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 16:05:27 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -244,6 +244,9 @@
 ;*    Generate plain class allocators                                  */
 ;*---------------------------------------------------------------------*/
 (define (classgen-allocate c)
+
+   (define (unsafe expr)
+      (make-private-sexp 'unsafe (type-id c) expr))
    
    (define (c-malloc tid)
       (let ((tname  (string-sans-$ (type-name c)))
@@ -257,22 +260,24 @@
    (define (pragma-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
-	     (let ((,(make-typed-ident new tid) ,(c-malloc tid)))
-		(object-class-num-set! ,new
-		   ((@ class-num __object)
-		    (@ ,(global-id g) ,(global-module g))))
-		(object-widening-set! ,new #f)
-		,new))))
+	     ,(unsafe 
+		`(let ((,(make-typed-ident new tid) ,(c-malloc tid)))
+		   (object-class-num-set! ,new
+		      ((@ class-num __object)
+		       (@ ,(global-id g) ,(global-module g))))
+		   (object-widening-set! ,new #f)
+		   ,new)))))
    
    (define (nopragma-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
-	     (let ((,(make-typed-ident new tid) ,(make-private-sexp 'new tid)))
-		(object-class-num-set! ,new
-		   ((@ class-num __object)
-		    (@ ,(global-id g) ,(global-module g))))
-		(object-widening-set! ,new #f)
-		,new))))
+	     ,(unsafe
+		 `(let ((,(make-typed-ident new tid) ,(make-private-sexp 'new tid)))
+		     (object-class-num-set! ,new
+			((@ class-num __object)
+			 (@ ,(global-id g) ,(global-module g))))
+		     (object-widening-set! ,new #f)
+		     ,new)))))
 
    [assert (c) (not (wide-class? c))]
    (let* ((tid (type-id c))

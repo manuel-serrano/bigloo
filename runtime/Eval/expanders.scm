@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Jun 10 10:48:31 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 10:59:01 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -132,6 +132,11 @@
 			       x)
 			      (else
 			       (expand-error "@" "Illegal form" x)))))
+   ;; ->
+   (install-expander '-> (lambda (x e)
+			    (if (every? symbol? x)
+				x
+				(expand-error "->" "Illegal form" x))))
    ;; quasiquote
    (install-expander 'quasiquote (lambda (x e) (e (quasiquotation 1 x) e)))
    

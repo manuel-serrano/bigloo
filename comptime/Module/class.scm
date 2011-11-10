@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Wed Nov  9 19:35:22 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 12:24:19 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -168,12 +168,21 @@
       ;; message if that tclass is not defined
       (type-import-location-set! tclass (find-location/loc src-decl loc))
       ;; when importing a class, we import the accessors...
-      (delay-class-accessors!
-       tclass
-       (delay
-	  (multiple-value-bind (concretes virtuals)
-	     (gen cdef tclass src-def module)
-	     concretes)))))
+	 (delay-class-accessors!
+	    tclass
+	    (delay
+	       (if *class-gen-accessors?*
+		   (multiple-value-bind (concretes virtuals)
+		      (gen cdef tclass src-def module)
+		      concretes)
+		   (begin
+		      ;; store inside the class structure some
+		      ;; information about its slots
+		      (set-class-slots! tclass cdef src-def)
+		      ;; install the coercion between the new-class and obj
+		      ;; and the class and all its super classes
+		      (gen-class-coercions! tclass)
+		      '()))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    delay-class-accessors! ...                                       */

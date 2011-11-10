@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 26 08:14:11 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 10 16:56:20 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -132,6 +132,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-1occ! node::extern 1-exp*)
    (values (side-effect? node) node))
+
+;*---------------------------------------------------------------------*/
+;*    node-1occ! ::private ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-1occ! node::private 1-exp*)
+   (with-access::private node (expr*)
+      (values (node-1occ*! expr* 1-exp*) node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::cast ...                                            */
