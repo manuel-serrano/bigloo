@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Nov 10 07:21:46 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 09:21:58 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -76,7 +76,7 @@
 ;*    field-access ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (field-access var field)
-   `(field-access ,__bigloo__ ,var ,field))
+   `(-> ,__bigloo__ ,var ,field))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
