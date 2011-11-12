@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Thu Nov 10 16:05:27 2011 (serrano)                */
+;*    Last change :  Thu Nov 10 18:09:37 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -73,7 +73,7 @@
 	    (get-class-list))
 	 (when (pair? protos)
 	    (write-scheme-comment po "The directives")
-	    (display "(directives\n   (cond-expand ((and bigloo-class-sans (not (bigloo-class-generate)))\n\n" po)
+	    (display "(directives\n   (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))\n\n" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (protos (cdr p)))
@@ -90,7 +90,7 @@
 	       protos)
 	    (display ")))\n\n" po)
 	    (write-scheme-comment po "The definitions")
-	    (display "(cond-expand ((and bigloo-class-sans (not (bigloo-class-generate)))" po)
+	    (display "(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (defs (cdr p)))
@@ -246,7 +246,10 @@
 (define (classgen-allocate c)
 
    (define (unsafe expr)
-      (make-private-sexp 'unsafe (type-id c) expr))
+      (if (eq? *pass* 'classgen)
+	  ;; cannot extern private unsafe form
+	  expr
+	  (make-private-sexp 'unsafe (type-id c) expr)))
    
    (define (c-malloc tid)
       (let ((tname  (string-sans-$ (type-name c)))

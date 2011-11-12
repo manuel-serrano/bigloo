@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Nov 10 09:22:29 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 19:15:58 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -128,8 +128,6 @@
 	      (loc loc)
 	      (type (get-type-atom atom))
 	      (value atom)))
-	  ((field-access? atom stack)
-	   (field-ref->node atom stack loc site))
 	  ((find-local atom stack)
 	   =>
 	   (lambda (i) (variable->node i loc site)))
@@ -266,27 +264,25 @@
       ((set! . ?-)
        (match-case exp
           ((?- ?var ?val)
-	   (if (and (symbol? var) (field-access? var stack))
-	       (field-set->node var val stack loc site)
-	       (let* ((loc (find-location/loc exp loc))
-		      (cdloc (find-location/loc (cdr exp) loc))
-		      (cddloc (find-location/loc (cddr exp) loc))
-		      (val-loc (find-location/loc val cddloc))
-		      (val (sexp->node val stack val-loc 'value)))
-		  (let ((ast (sexp->node var stack cdloc 'set!)))
-		     (if (var? ast)
-			 (with-access::var ast (variable)
-			    (if (and (global? variable)
-				     (global-read-only? variable))
-				(error-sexp->node
-				   "Read-only variable" exp cdloc)
-				(instantiate::setq
-				   (loc loc)
-				   (type *unspec*)
-				   (var ast)
-				   (value val))))
-			 (error-sexp->node
-			    "illegal `set!' expression" exp loc))))))
+	   (let* ((loc (find-location/loc exp loc))
+		  (cdloc (find-location/loc (cdr exp) loc))
+		  (cddloc (find-location/loc (cddr exp) loc))
+		  (val-loc (find-location/loc val cddloc))
+		  (val (sexp->node val stack val-loc 'value)))
+	      (let ((ast (sexp->node var stack cdloc 'set!)))
+		 (if (var? ast)
+		     (with-access::var ast (variable)
+			(if (and (global? variable)
+				 (global-read-only? variable))
+			    (error-sexp->node
+			       "Read-only variable" exp cdloc)
+			    (instantiate::setq
+			       (loc loc)
+			       (type *unspec*)
+			       (var ast)
+			       (value val))))
+		     (error-sexp->node
+			"illegal `set!' expression" exp loc)))))
           (else
 	   (error-sexp->node
 	    "Illegal `set!' form" exp (find-location/loc exp loc)))))

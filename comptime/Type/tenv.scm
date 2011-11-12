@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Nov  9 07:12:49 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 20:09:41 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -157,38 +157,38 @@
       ;; The last traversal used to construct the class accessors
       ;; The same thing apply to tvectors
       (hashtable-for-each Tenv
-			  (lambda (k new)
-			     (let* ((id  (type-id new))
-				    (old (hashtable-get *Tenv* id)))
-				(cond
-				   ((not (type? old))
-				    (hashtable-put! *Tenv* id new)
-				    (when (tclass? new)
-				       (heap-add-class! new)
-				       (set! remember-list
-					     (cons new remember-list)))
-				    (when (jclass? new)
-				       (heap-add-jclass! new))
-				    (when (tvec? new)
-				       (set! tvector-list
-					     (cons new tvector-list))))
-				   ((not (type-init? old))
-				    (error "add-Tenv!"
-					   "Illegal type heap redefinition"
-					   id)
-				    (compiler-exit 55))
-				   (else
-				    ;; we have to store the new coercers 
-				    ;; for the old type
-				    (add-type-coercers! old new))))))
+	 (lambda (k new)
+	    (let* ((id  (type-id new))
+		   (old (hashtable-get *Tenv* id)))
+	       (cond
+		  ((not (type? old))
+		   (hashtable-put! *Tenv* id new)
+		   (when (tclass? new)
+		      (heap-add-class! new)
+		      (set! remember-list
+			 (cons new remember-list)))
+		   (when (jclass? new)
+		      (heap-add-jclass! new))
+		   (when (tvec? new)
+		      (set! tvector-list
+			 (cons new tvector-list))))
+		  ((not (type-init? old))
+		   (error "add-Tenv!"
+		      "Illegal type heap redefinition"
+		      id)
+		   (compiler-exit 55))
+		  (else
+		   ;; we have to store the new coercers 
+		   ;; for the old type
+		   (add-type-coercers! old new))))))
       (hashtable-for-each Tenv
-			  (lambda (k new)
-			     (let* ((id  (type-id new))
-				    (old (hashtable-get *Tenv* id)))
-				(if (ctype? old)
-				    (let ((l (type-location old)))
-				       (foreign-accesses-add!
-					(make-ctype-accesses! old old l)))))))
+	 (lambda (k new)
+	    (let* ((id  (type-id new))
+		   (old (hashtable-get *Tenv* id)))
+	       (if (ctype? old)
+		   (let ((l (type-location old)))
+		      (foreign-accesses-add!
+			 (make-ctype-accesses! old old l)))))))
       ;; we have to walk thru the remember list in order to
       ;; setup the correct super class fields
       (for-each (lambda (new)
@@ -199,14 +199,14 @@
 				     (old-s (find-type super-id)))
 				 (if (not (tclass? old-s))
 				     (error 'add-Tenv
-					    "Can't find super class of"
-					    (tclass-name new))
+					"Can't find super class of"
+					(tclass-name new))
 				     (tclass-its-super-set! new old-s)))))))
-		remember-list)
+	 remember-list)
       ;; the tvector traversal
       (for-each (lambda (new)
 		   (delay-tvector! new 'heap #f))
-		tvector-list)
+	 tvector-list)
       ;; the last walk to construct the class accessors
       ;; When we load an additional heap that contains classes
       ;; definition, the accessors are build when compiling the module
@@ -215,12 +215,17 @@
       (for-each (lambda (n)
 		   (if (tclass? n)
 		       (delay-class-accessors!
-			n
-			(delay
-			   (if (tclass-widening n)
-			       (heap-wide-class-accessors! n)
-			       (heap-plain-class-accessors! n))))))
-		remember-list))
+			  n
+			  (delay
+			     ;; The test cannot be lifter out of the delay
+			     ;; scope otherwise it gets evaluated before the
+			     ;; modules options are evaluated.
+			     (if *class-gen-accessors?*
+				 (if (tclass-widening n)
+				     (heap-wide-class-accessors! n)
+				     (heap-plain-class-accessors! n))
+				 '())))))
+	 remember-list))
    ;; in a second stage, we have to reset the all coercer for _all_ types.
    ;; This is mandatory because some types have not been rebound and
    ;; then we need to adjust the coercer fields of freshly bound types.

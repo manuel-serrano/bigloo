@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Nov  9 11:27:35 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 19:20:40 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -366,8 +366,8 @@
       (("-hygien" (help "Obsolete (R5rs macros are always supported)"))
        #unspecified)
       (("-fidentifier-syntax" ?syntax
-	  (help (format "Enable Bigloo extended syntax (default: ~a)" (identifier-syntax))))
-       (identifier-syntax-set! (string->symbol syntax)))
+	  (help (format "Enable Bigloo extended syntax (default: ~a)" (bigloo-identifier-syntax))))
+       (bigloo-identifier-syntax-set! (string->symbol syntax)))
       ;; reflection
       (("-fno-reflection" (help "Deprecated"))
        #unspecified)

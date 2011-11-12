@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Wed Nov  9 14:40:25 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 20:08:58 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -12,7 +12,8 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object-sans
-   (import  (main    "main.scm")
+   (option  (set! *class-gen-accessors?* #f))
+   (import  (main "main.scm")
 	    (object2-sans "object2-sans.scm")
 	    (object1-sans "object1-sans.scm")
 	    (object3-sans "object3-sans.scm"))
@@ -59,8 +60,7 @@
 	      (x (get (lambda (x) 'virtual-3-x)) read-only))
 	   (class virtual-4-sans::virtual-3-sans
 	      (x (get (lambda (x) 'virtual-4-x)) read-only)
-	      (z (get (lambda (x) 'virtual-4-z)) read-only)))
-   (option (set! *class-gen-accessors?* #f)))
+	      (z (get (lambda (x) 'virtual-4-z)) read-only))))
  
 ;*---------------------------------------------------------------------*/
 ;*    access ...                                                       */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Tue Nov  8 09:07:07 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 20:14:01 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
@@ -13,6 +13,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object5-sans
+   (option (set! *class-gen-accessors?* #f))
    (import  (main "main.scm"))
    (include "test.sch")
    (export (test-object5-sans))
@@ -29,8 +30,7 @@
    (eval (class object5-sans)
       (class object6-sans)
       (class object7-sans)
-      (class object8-sans))
-   (option (set! *class-gen-accessors?* #f)))
+      (class object8-sans)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-object5-sans ...                                            */

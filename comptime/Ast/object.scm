@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Nov 10 09:21:58 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 19:16:25 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -47,8 +47,7 @@
 	    effect_feffect
 	    ast_sexp)
    
-   (export (field-access?::bool ::symbol ::obj)
-	   (field-access::pair ::symbol ::symbol)
+   (export (field-access::pair ::symbol ::symbol)
 	   (field-ref->node::node ::obj stack ::obj ::symbol)
 	   (field-set->node::node ::obj ::obj stack ::obj ::symbol)))
 
@@ -57,20 +56,6 @@
 ;*---------------------------------------------------------------------*/
 (define __bigloo__
    (string->symbol "#!bigloo"))
-
-;*---------------------------------------------------------------------*/
-;*    field-access? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (field-access? s stack)
-   (let* ((s (symbol->string! s))
-	  (i (string-index s #\.)))
-      (when i
-	 (let ((n (string->symbol (substring s 0 i))))
-	    (cond
-	       ((eq? n __bigloo__) #t)
-	       ((eq? (identifier-syntax) 'bigloo) #t)
-	       ((eq? (identifier-syntax) 'r5rs) #f)
-	       (else (or (find-local n stack) (global? (find-global n)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-access ...                                                 */

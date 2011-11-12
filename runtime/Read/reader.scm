@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Fri Jul 22 13:54:38 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 19:45:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -70,6 +70,8 @@
    (export  *bigloo-interpreter*
 	    (bigloo-case-sensitivity::symbol)
 	    (bigloo-case-sensitivity-set! ::symbol)
+	    (bigloo-identifier-syntax::symbol)
+	    (bigloo-identifier-syntax-set! ::symbol)
 	    (make-source-location name pos)
 	    (get-source-location obj)
 	    (read #!optional (iport::input-port (current-input-port)) location)
@@ -84,6 +86,18 @@
 	    (define-reader-ctor::unspecified ::symbol ::procedure)))
 
 ;*---------------------------------------------------------------------*/
+;*    *identifier-syntax*                                              */
+;*    -------------------------------------------------------------    */
+;*    When 'bigloo, identidiers such as x.f are treated as             */
+;*    field "f" of instance "x". Otherwise treated as identifier       */
+;*    "x.f".                                                           */
+;*---------------------------------------------------------------------*/
+(define *identifier-syntax* 'r5rs)
+
+(define (bigloo-identifier-syntax) *identifier-syntax*)
+(define (bigloo-identifier-syntax-set! v) (set! *identifier-syntax* v))
+
+;;*---------------------------------------------------------------------*/
 ;*    bigloo-case-sensitivity ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-case-sensitivity)
@@ -389,20 +403,25 @@
 ;*    *bigloo-grammar* ...                                             */
 ;*---------------------------------------------------------------------*/
 (define *bigloo-grammar*
-   (regular-grammar ((float    (or (: (* digit) "." (+ digit))
-				   (: (+ digit) "." (* digit))))
-		     (letter   (in ("azAZ") (#a128 #a255)))
-		     (kspecial (in "!@~$%^&*></-_+\\=?."))
-		     (special  (or kspecial #\:))
-		     (quote    (in "\",'`"))
-		     (paren    (in "()[]{}"))
-		     (id       (: (* digit)
-				  (or letter special)
-				  (* (or letter special digit (in ",'`")))))
-		     (letterid (: (or letter special)
-				  (* (or letter special digit (in ",'`")))))
-		     (kid      (or digit letter kspecial))
-		     (blank    (in #\Space #\Tab #a011 #a012 #a013))
+   (regular-grammar ((float       (or (: (* digit) "." (+ digit))
+				      (: (+ digit) "." (* digit))))
+		     (letter      (in ("azAZ") (#a128 #a255)))
+		     (kspecial    (in "!@~$%^&*></-_+\\=?"))
+		     (specialsans (or kspecial (in ":")))
+		     (special     (or specialsans "."))
+		     (quote       (in "\",'`"))
+		     (paren       (in "()[]{}"))
+		     (id          (: (* digit)
+				     (or letter special)
+				     (* (or letter special digit (in ",'`")))))
+		     (idsans      (: (* digit)
+				     (or letter specialsans)
+				     (* (or letter specialsans digit (in ",'`")))))
+		     (letterid    (: (or letter special)
+				     (* (or letter special digit (in ",'`")))))
+		     (kid         (or digit letter kspecial "."))
+		     (blank       (in #\Space #\Tab #a011 #a012 #a013))
+		     (field       (: idsans (+ (: "." idsans))))
 		     
 		     posp cycles par-open bra-open par-poses bra-poses)
       
@@ -430,11 +449,11 @@
 	    (ignore)))
       
       ;; srfi-22 support
-      ((bol (: "#!" #\space (in digit letter special "|,'`") (* all)))
+      ((bol (: "#!" #\space (or digit letter special (in "|,'`")) (* all)))
        (ignore))
       
       ;; the interpreter header or the dsssl named constants
-      ((: "#!" (+ (in digit letter special "|,'`")))
+      ((: "#!" (+ (or digit letter special (in "|,'`"))))
        (let* ((str (the-string)))
 	  (cond
 	     ((string=? str "#!optional")
@@ -513,6 +532,13 @@
        (the-keyword))
       
       ;; identifiers
+      (field
+	 (if (eq? *identifier-syntax* 'bigloo)
+	     (cons/loc '->
+		(map! string->symbol (string-split (the-string) "."))
+		(input-port-name (the-port))
+		(input-port-position (the-port)))
+	     (the-symbol)))
       (id
 	 ;; this rule has to be placed after the rule matching the `.' char
 	 (the-symbol))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Sun Nov  6 17:18:43 2011 (serrano)                */
+;*    Last change :  Sat Nov 12 06:48:59 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -49,6 +49,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-plain-class-accessors! class-def class src-def import)
    (trace (ast 2) "=====>>> make-plain-class-accessors!: " src-def #\Newline)
+   [assert (*class-gen-accessors?*) *class-gen-accessors?*]
    (if (correct-plain-class? class src-def)
        (with-access::tclass class (id)
 	  ;; store inside the class structure some information about its slots
@@ -70,6 +71,7 @@
 ;*---------------------------------------------------------------------*/
 (define (import-plain-class-accessors! class-def class src-def module)
    (trace (ast 2) "impport-plain-class-accessors!: " src-def #\Newline)
+   [assert (*class-gen-accessors?*) *class-gen-accessors?*]
    (if (correct-plain-class? class src-def)
        (with-access::tclass class (id)
 	  ;; store inside the class structure some information about its slots
@@ -89,6 +91,7 @@
 ;*    heap-plain-class-accessors! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (heap-plain-class-accessors! class)
+   [assert (*class-gen-accessors?*) *class-gen-accessors?*]
    (let ((src-def '(no def found)))
       (with-access::tclass class (id)
 	 ;; we install the coercion between the new-class and obj

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Wed Nov  9 14:12:21 2011 (serrano)                */
+;*    Last change :  Fri Nov 11 06:45:11 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -52,7 +52,7 @@
        (let* ((nx (evepairify `(class ,@rest) x))
 	      (proto (parse-prototype nx)))
 	  (if (not proto)
-	      (error #f "Illegal define-class" x)
+	      (error (car x) "Illegal define-class" x)
 	      (begin
 		 (declare-class!
 		  (cdr proto) *module* 'static
@@ -60,7 +60,7 @@
 		  (eq? (car x) 'define-abstract-class) nx #f)
 		 (class-finalizer-add-static!)))))
       (else
-       (error #f "Illegal define-class" x))))
+       (error x "Illegal define-class" x))))
        
 ;*---------------------------------------------------------------------*/
 ;*    expand-with-access ...                                           */
@@ -72,7 +72,7 @@
 	      (class (type-of-id with-access loc)))
 	  (cond
 	     ((not (tclass? class))
-	      (error #f "Illegal with-access class" x))
+	      (error with-access "Illegal class" x))
 	     (else
 	      (let loop ((s slots)
 			 (nslots '()))
@@ -88,11 +88,11 @@
 			      (lambda () 
 				 (let ((e (internal-begin-expander
 					     (with-access-expander
-						e aux class nslots))))
+						e aux class nslots x))))
 				    `(let ((,taux ,instance))
 					,(e (expand-progn body) e))))))))
 		    ((not (pair? s))
-		     (error #f "Illegal with-access field" x))
+		     (error s "Illegal field" x))
 		    ((symbol? (car s))
 		     (loop (cdr s) (cons (list (car s) (car s)) nslots)))
 		    ((and (pair? (car s))
@@ -102,20 +102,14 @@
 			  (null? (cddr (car s))))
 		     (loop (cdr s) (cons (car s) nslots)))
 		    (else
-		     (error #f
-			    (string-append
-			     "Illegal with-access, wrong field identifier `"
-			     (with-output-to-string
-				(lambda () (display (car s))))
-			     "'")
-			    x))))))))
+		     (error (car s) "Illegal form" x))))))))
       (else
        (error #f "Illegal with-access" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-access-expander olde i class slots)
+(define (with-access-expander olde i class slots form)
    
    (define (id var) (cadr (assq var slots)))
    
@@ -128,10 +122,7 @@
 			 (and (pair? cell) (eq? (cdr cell) i))))
 		 (let ((slot (find-class-slot class (id var))))
 		    (if (not slot)
-			(error #f
-			   (format "No field \"~a\" in class \"~a\""
-			      var (type-id class))
-			   x)
+			(error var "No such field" form)
 			(if *class-gen-accessors?*
 			    (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
 			    (field-access i (id var)))))
@@ -143,10 +134,7 @@
 			    (and (pair? cell) (eq? (cdr cell) i))))
 		    (let ((slot (find-class-slot class (id var))))
 		       (if (not slot)
-			   (error #f
-			      (format "No field \"~a\" in class \"~a\""
-				 var (type-id class))
-			      x)
+			   (error var "No such field" form)
 			   (object-epairify
 			      (if *class-gen-accessors?*
 				  (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
