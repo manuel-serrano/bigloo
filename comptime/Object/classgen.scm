@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Nov 14 16:49:35 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 19:03:08 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -299,15 +299,11 @@
 ;*    classgen-allocate-expr ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (classgen-allocate-expr c)
-   (if (tclass-abstract? c)
-       `(error ,(symbol->string (type-id c))
-	   "Can't allocate instance of abstract classes"
-	   #f)
-       (multiple-value-bind (proto def)
-	  (classgen-allocate c)
-	  (match-case def
-	     ((?- ?- ?body)
-	      body)))))
+   (multiple-value-bind (proto def)
+      (classgen-allocate c)
+      (match-case def
+	 ((?- ?- ?body)
+	  body))))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-allocate-anonymous ...                                  */
