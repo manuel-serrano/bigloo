@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Nov  3 14:50:31 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 14:44:13 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -709,7 +709,7 @@
 	 (evmodule-include mod mclauses loc)
 	 ;; Step1: evaluate export clauses (and static for coherency).
 	 ;; During that step, classes are not evaluated.
-	 ;; Also process include directives clauses. 
+	 ;; Also process include directives clauses.
 	 (evmodule-step1 mod iclauses loc)
 	 ;; Step2: evaluate import and from clauses.
 	 (evmodule-step2 mod iclauses loc)

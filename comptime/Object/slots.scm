@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Mon Nov 14 16:58:32 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 14:01:51 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -173,8 +173,8 @@
 			    "Illegal duplicated virtual slot"
 			    id)
 			   (let ((new-num (slot-virtual-num (car slots))))
-			      ;; we overriding a virtual slot we have to
-			      ;; ajust the slot numbering
+			      ;; when we override a virtual slot we have to
+			      ;; adjust its numbering
 			      (slot-virtual-num-set! other new-num)
 			      ;; ...and we emit a warning
 			      (when (and (>= (bigloo-warning) 2)

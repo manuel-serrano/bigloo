@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Mon Jun  7 17:00:07 2010 (serrano)                */
+;*    Last change :  Wed Nov 16 12:10:04 2011 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -561,7 +561,7 @@
 	 (let ((lst (directory->list "misc")))
 	    (every? (lambda (f)
 		       (member f lst))
-		    '("dump.c" "dump.dotnet" "dump.jvm" "input.txt" "jm.txt" "trap.txt")))
+		    '("dump.c" "dump.jvm" "input.txt" "jm.txt" "trap.txt")))
 	 #t)
    (test "flush-output-string-port"
 	 (let ((outp (open-output-string)))

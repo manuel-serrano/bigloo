@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Nov 15 08:10:45 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 15:45:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -149,7 +149,7 @@
 	    (class-allocator::procedure class)
 	    (class-creator::obj class)
 	    (class-nil::obj class)
-	    (make-class-field-old::vector ::symbol o o ::bool ::obj ::obj ::obj)
+	    (class-get-new-nil::obj class)
 	    (make-class-field::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
@@ -164,7 +164,6 @@
 	    (class-field-type::obj field)
 	    (register-class-old!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
 	    (register-class!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
-	    (register-class2!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -442,12 +441,6 @@
 	  #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-class-field-old ...                                         */
-;*---------------------------------------------------------------------*/
-(define (make-class-field-old name getter setter virtual info default type)
-   (vector name getter setter virtual make-class-field info default type (procedure? setter)))
-
-;*---------------------------------------------------------------------*/
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter ronly virtual info default type)
@@ -522,10 +515,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
    (if (class-field? field)
-       ;; MS CARE 14nov2011: test to be removed after bootstrap
-       (if (procedure? (vector-ref field 6))
-	   ((vector-ref field 6))
-	   (vector-ref field 6))
+       (vector-ref field 6)
        (error "class-field-default-value" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -549,7 +539,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-abstract? class)
    (if (class? class)
-       (procedure? (class-allocator class))
+       (not (procedure? (class-allocator class)))
        (bigloo-type-error "class-abstract?" "class" class)))
 		     
 ;*---------------------------------------------------------------------*/
@@ -638,6 +628,23 @@
 			(set-car! c o)
 			((cdr c) o)))))
 	  (car c))
+       (bigloo-type-error "class-nil" "class" class)))
+
+;*---------------------------------------------------------------------*/
+;*    class-get-new-nil ...                                            */
+;*---------------------------------------------------------------------*/
+(define (class-get-new-nil class)
+   (if (class? class)
+       (let ((c (vector-ref class 12)))
+	  (if (class-wide? class)
+	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
+	      (let* ((super (class-super class))
+		     (o ((class-allocator super)))
+		     (wo ((class-allocator class) o)))
+		 ((cdr c) wo))
+	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
+	      (let ((o ((class-allocator class))))
+		 ((cdr c) o))))
        (bigloo-type-error "class-nil" "class" class)))
 
 ;*---------------------------------------------------------------------*/
@@ -864,13 +871,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (register-class2! name super hash new allocate constructor nil shrink plain virtual)
-   (register-class!       name super hash new allocate constructor nil shrink plain virtual))
-
-;*---------------------------------------------------------------------*/
-;*    register-class! ...                                              */
-;*---------------------------------------------------------------------*/
-(define (register-class! name super hash new allocate constructor nil shrink plain virtual)
+(define (register-class! name super hash creator allocator constructor nil shrink plain virtual)
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)
@@ -885,12 +886,12 @@
 			  super
 			  '()
 			  -1
-			  allocate
+			  allocator
 			  hash
 			  plain
 			  constructor
 			  (make-class-virtual-slots-vector super virtual)
-			  new
+			  creator
 			  nil
 			  shrink
 			  #f
@@ -1525,7 +1526,7 @@
 ;*    class.                                                           */
 ;*---------------------------------------------------------------------*/
 (define (call-virtual-getter obj::object num::int)
-   (let* ((class  (object-class obj))
+   (let* ((class (object-class obj))
 	  (getter (car (vector-ref (class-virtual class) num))))
       (getter obj)))
 
@@ -1538,7 +1539,7 @@
 ;*    class.                                                           */
 ;*---------------------------------------------------------------------*/
 (define (call-virtual-setter obj::object num::int value)
-   (let* ((class  (object-class obj))
+   (let* ((class (object-class obj))
 	  (setter (cdr (vector-ref (class-virtual class) num))))
       (setter obj value)))
 

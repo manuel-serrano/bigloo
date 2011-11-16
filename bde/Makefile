@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Nov 16 11:44:19 2011 (serrano)                */
+#*    Last change :  Wed Nov 16 12:19:39 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -313,7 +313,7 @@ jas/classfile.scm: ../comptime/Jas/classfile.scm
 
 jas/classfile.scm: jas/classfile.sch
 
-%.sch: ../comptime/Jas/%.sch
+jas/classfile.sch: ../comptime/Jas/classfile.sch
 	cp $< $@
 
 #*---------------------------------------------------------------------*/
