@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Mon Jun 20 14:42:07 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:56:12 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
@@ -61,7 +61,8 @@
 ;*    music-status ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (music-status o::musicproc)
-   (music-%status o))
+   (with-access::music o (%status)
+      %status))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-connect! ...                                           */
@@ -209,8 +210,8 @@
 ;*    music-play ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::musicproc . s)
-   (with-access::musicproc o (%mutex %process %playlist %user-state)
-      (with-access::musicstatus (musicproc-%status o) (song playlistlength)
+   (with-access::musicproc o (%mutex %process %playlist %user-state %status)
+      (with-access::musicstatus %status (song playlistlength)
 	 (with-lock %mutex
 	    (lambda ()
 	       (set! %user-state 'play)
@@ -269,8 +270,8 @@
 ;*    music-next ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-next o::musicproc)
-   (with-access::musicproc o (%mutex %process %playlist %user-state)
-      (with-access::musicstatus (musicproc-%status o) (song playlistlength)
+   (with-access::musicproc o (%mutex %process %playlist %user-state %status)
+      (with-access::musicstatus %status (song playlistlength)
 	 (with-lock %mutex
 	    (lambda ()
 	       (set! %user-state 'play)
@@ -282,8 +283,8 @@
 ;*    music-prev ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-prev o::musicproc)
-   (with-access::musicproc o (%mutex %process %playlist %user-state)
-      (with-access::musicstatus (musicproc-%status o) (song)
+   (with-access::musicproc o (%mutex %process %playlist %user-state %status)
+      (with-access::musicstatus %status (song)
 	 (with-lock %mutex
 	    (lambda ()
 	       (set! %user-state 'play)
@@ -302,21 +303,23 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-random-set! o::musicproc flag::bool)
    (with-access::musicproc o (%status)
-      (musicstatus-random-set! %status flag)))
+      (with-access::musicstatus %status (random)
+	 (set! random flag))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-repeat-set! ::musicproc ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (music-repeat-set! o::musicproc flag::bool)
    (with-access::musicproc o (%status)
-      (musicstatus-repeat-set! %status flag)))
+      (with-access::musicstatus %status (repeat)
+	 (set! repeat flag))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-song ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-song o::musicproc)
-   (with-access::musicproc o (%mutex %playlist)
-      (with-access::musicstatus (musicproc-%status o) (song)
+   (with-access::musicproc o (%mutex %playlist %status)
+      (with-access::musicstatus %status (song)
 	 (with-lock %mutex
 	    (lambda ()
 	       (if (pair? %playlist)
@@ -330,14 +333,16 @@
    (with-access::musicproc o (%mutex %status)
       (with-lock %mutex
 	 (lambda ()
-	    (musicstatus-songpos %status)))))
+	    (with-access::musicstatus %status (songpos)
+	       songpos)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::musicproc ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-get o::musicproc)
-   (with-access::musicstatus (musicproc-%status o) (volume)
-      volume))
+   (with-access::musicproc o (%status)
+      (with-access::musicstatus %status (volume)
+	 volume)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-set! ::musicproc ...                                */
@@ -348,7 +353,8 @@
 	 (lambda ()
 	    (musicproc-connect! o)
 	    (musicproc-exec %process %command-volume v)
-	    (musicstatus-volume-set! %status v)))
+	    (with-access::musicstatus %status (volume)
+	       (set! volume v))))
       v))
 
 ;*---------------------------------------------------------------------*/

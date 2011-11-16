@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Sep 21 09:49:31 2010 (serrano)                */
-#*    Copyright   :  2001-10 Manuel Serrano                            */
+#*    Last change :  Tue Nov 15 11:17:04 2011 (serrano)                */
+#*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -27,7 +27,7 @@ POPULATION = Makefile README
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm build-dotnet
+.PHONY: build build build-c build-jvm
 
 all: build
 boot: build
@@ -36,7 +36,6 @@ build: build-c
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -51,15 +50,6 @@ build-jvm.not-implemented:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    (cd src && $(MAKE) jvm); \
-          fi
-
-build-dotnet:
-	@ echo "GSTREAMER .net: Not implemented";
-
-build-dotnet.not-implemented:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) dotnet); \
           fi
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
-#*    Last change :  Thu Oct 21 10:51:10 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Tue Nov 15 20:53:13 2011 (serrano)                */
+#*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */
 #*=====================================================================*/
@@ -22,7 +22,6 @@ include ../../../Makefile.misc
 API		= openpgp
 # Directories
 BIGLOO_SRC_DIR 	= Llib
-DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
@@ -30,8 +29,6 @@ MISC_SRC_DIR 	= Misc
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
-DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -67,8 +64,6 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 
 _OBJS		= $(_BGL_OBJECTS)
-BGL_DOTNET_OBJ	= $(_OBJS:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
@@ -85,7 +80,7 @@ POPULATION	= $(SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet build-c build-jvm build-dotnet
+.PHONY: c jvm build-c build-jvm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -94,18 +89,12 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) build-dotnet;  \
-	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
-
-dotnet: build-dotnet
-build-dotnet: api-dotnet
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

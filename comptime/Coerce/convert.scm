@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Thu May  5 10:43:54 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 11:05:58 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -196,8 +196,7 @@
 			   (else
 			    (loop (cdr checks)
 				  (cdr coerces)
-				  (make-one-conversion (caar checks)
-						       (cdar checks)
+				  (make-one-conversion (cdar checks)
 						       (cdar coerces)
 						       (caar checks)
 						       (caar coerces)
@@ -213,12 +212,12 @@
 ;* 	       (coerce v)                                              */
 ;* 	       (type-error)))                                          */
 ;*---------------------------------------------------------------------*/
-(define (make-one-conversion id-from from to checkop coerceop node safe)
+(define (make-one-conversion from to checkop coerceop node safe)
    (if (or (eq? checkop #t) (not safe))
        (do-convert coerceop node from)
        (if (tclass? from)
-	   (make-one-class-conversion id-from from to checkop coerceop node)
-	   (make-one-type-conversion id-from from to checkop coerceop node))))
+	   (make-one-class-conversion from to checkop coerceop node)
+	   (make-one-type-conversion from to checkop coerceop node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    skip-let-var ...                                                 */
@@ -231,7 +230,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-one-type-conversion ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (make-one-type-conversion id-from from to check-op coerce-op node)
+(define (make-one-type-conversion from to check-op coerce-op node)
    (trace (coerce 2) "make-one-type-conversion: " (shape node) " ("
 	  (shape from) " -> " (shape to) ")" #\Newline)
    (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
@@ -239,7 +238,7 @@
 	  (lnode (top-level-sexp->node
 		  ;; we coerce all checked object into `obj' because
 		  ;; all the predicate are only defined under this
-		  ;; type and sometime `super-class' object' have to
+		  ;; type and sometimes `super-class' object' have to
 		  ;; be checked and they are not of obj type (but of
 		  ;; a compatible type).
 		  `(let ((,(mark-symbol-non-user!
@@ -277,7 +276,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-one-class-conversion ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (make-one-class-conversion id-from from to check-op coerce-op node)
+(define (make-one-class-conversion from to check-op coerce-op node)
    (if (and (tclass? to) (type-subclass? from to))
        (do-convert coerce-op node from)
        (let* ((aux   (gensym 'aux))

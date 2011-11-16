@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  6 18:55:05 2008                          */
-;*    Last change :  Thu Jan 31 07:36:42 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 18:04:13 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The example shows how to mplement a mime type discovery tool     */
 ;*=====================================================================*/
@@ -21,7 +21,7 @@
 ;*---------------------------------------------------------------------*/
 (define (main argv)
    (let* ((pipeline (gst-pipeline-new "pipeline"))
-	  (bus (gst-pipeline-bus pipeline))
+	  (bus (with-access::gst-pipeline pipeline (bus) bus))
 	  (filesrc (gst-element-factory-make "filesrc" "source"))
 	  (typefind (gst-element-factory-make "typefind" "typefinder"))
 	  (file (if (null? (cdr argv))
@@ -29,23 +29,26 @@
 		    (cadr argv))))
       (gst-object-property-set! filesrc :location file)
       (gst-object-connect! typefind
-			    "have-type"
-			    (lambda (_ probability caps)
-			       (print
-				(format "~a, probabilty=~a"
-					(gst-caps-to-string caps)
-					probability))
-			       (exit 0)))
+	 "have-type"
+	 (lambda (_ probability caps)
+	    (print
+	       (format "~a, probabilty=~a"
+		  (gst-caps-to-string caps)
+		  probability))
+	    (exit 0)))
       (gst-bin-add! pipeline filesrc typefind)
       (gst-element-link! filesrc typefind)
       (gst-element-state-set! pipeline 'playing)
       (let loop ()
 	 (let ((msg (gst-bus-poll bus $gst-message-any #l1000000000)))
-	    (when msg
+	    (when (isa? msg gst-message)
 	       (tprint "msg=" msg)
-	       (when (eq? (gst-message-type msg) $gst-message-error)
-		  (tprint "*** ERROR: " (gst-message-error-string msg))))
-	    (unless (and msg (=fx (gst-message-type msg) $gst-message-eos))
+	       (with-access::gst-message msg (type)
+		  (when (eq? type $gst-message-error)
+		     (tprint "*** ERROR: " (gst-message-error-string msg)))))
+	    (unless (and (isa? msg gst-message)
+			 (with-access::gst-message msg (type)
+			    (=fx type $gst-message-eos)))
 	       (loop))))))
       
       

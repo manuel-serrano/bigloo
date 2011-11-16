@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  3 09:21:35 2008                          */
-;*    Last change :  Mon Dec 14 14:15:40 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:18:46 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstMessage                                                       */
 ;*=====================================================================*/
@@ -25,20 +25,20 @@
 	       ($builtin::$gst-message (default ($gst-message-nil)))
 	       ($finalizer::obj read-only (default #f))
 	       (type::$gst-message-type
-		read-only
-		(get (lambda (o)
-			($gst-message-get-type
-			 (gst-message-$builtin o)))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-message o ($builtin)
+			     ($gst-message-get-type $builtin)))))
 	       (type-name::string
-		read-only
-		(get (lambda (o)
-			($gst-message-get-type-name
-			 (gst-message-$builtin o)))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-message o ($builtin)
+			     ($gst-message-get-type-name $builtin)))))
 	       (src::obj
-		read-only
-		(get (lambda (o)
-			($gst-message-get-src
- 			 (gst-message-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-message o ($builtin)
+			     ($gst-message-get-src $builtin))))))
 
 	    (%gst-message-init ::gst-message)
 	    ($make-gst-message::obj ::$gst-message ::obj)
@@ -94,8 +94,7 @@
 	  ($gst-add-finalizer! o (lambda (o)
 				    (when (> (bigloo-debug) (gst-debug-level))
 				       (%gst-object-finalize-debug o))
-				    ($gst-message-unref!
-				     (gst-message-$builtin o))))))
+				    ($gst-message-unref! $builtin)))))
       o))
 
 ;*---------------------------------------------------------------------*/
@@ -106,9 +105,10 @@
       (display "<" p)
       (display (find-runtime-type o) p)
       (display " refcount=" p)
-      (display ($gst-object-refcount (gst-message-$builtin o)) p)
-      (display " type-name=" p)
-      (display (gst-message-type-name o) p)
+      (with-access::gst-message o ($builtin type-name)
+	 (display ($gst-object-refcount ($gst-message->object $builtin)) p)
+	 (display " type-name=" p)
+	 (display type-name p))
       (display ">" p)))
 
 ;*---------------------------------------------------------------------*/
@@ -135,198 +135,222 @@
 ;*    gst-message-error-string ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-error-string msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-error)
-       ($gst-message-error-string (gst-message-$builtin msg))
-       (bigloo-type-error 'gst-message-error-string 'gst-message-error msg)))
+   (with-access::gst-message msg ($builtin type)
+      (if (=fx type $gst-message-error)
+	  ($gst-message-error-string $builtin)
+	  (bigloo-type-error 'gst-message-error-string 'gst-message-error msg))))
    
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-info-string ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-info-string msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-info)
-       ($gst-message-info-string (gst-message-$builtin msg))
-       (bigloo-type-error 'gst-message-info-string 'gst-message-info msg)))
+   (with-access::gst-message msg ($builtin type)
+   (if (=fx type $gst-message-info)
+       ($gst-message-info-string $builtin)
+       (bigloo-type-error 'gst-message-info-string 'gst-message-info msg))))
    
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-warning-string ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-warning-string msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-warning)
-       ($gst-message-warning-string (gst-message-$builtin msg))
-       (bigloo-type-error 'gst-message-warning-string 'gst-message-warning msg)))
+   (with-access::gst-message msg ($builtin type)
+   (if (=fx type $gst-message-warning)
+       ($gst-message-warning-string $builtin)
+       (bigloo-type-error 'gst-message-warning-string 'gst-message-warning msg))))
    
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-tag-list ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-tag-list msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-tag)
-       ($gst-message-tag-list (gst-message-$builtin msg))
-       (bigloo-type-error 'gst-message-tag-list 'gst-message-tag msg)))
+   (with-access::gst-message msg ($builtin type)
+      (if (=fx type $gst-message-tag)
+	  ($gst-message-tag-list $builtin)
+	  (bigloo-type-error 'gst-message-tag-list 'gst-message-tag msg))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-state ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-state msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-state-changed)
-       ($gst-state->obj ($gst-message-new-state (gst-message-$builtin msg)))
-       (bigloo-type-error 'gst-message-new-state 'gst-message-state-changed msg)))
+   (with-access::gst-message msg ($builtin type)
+      (if (=fx type $gst-message-state-changed)
+	  ($gst-state->obj ($gst-message-new-state $builtin))
+	  (bigloo-type-error 'gst-message-new-state 'gst-message-state-changed msg))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-old-state ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-old-state msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-state-changed)
-       ($gst-state->obj ($gst-message-old-state (gst-message-$builtin msg)))
-       (bigloo-type-error 'gst-message-old-state 'gst-message-state-changed msg)))
+   (with-access::gst-message msg ($builtin type)
+      (if (=fx type $gst-message-state-changed)
+	  ($gst-state->obj ($gst-message-old-state $builtin))
+	  (bigloo-type-error 'gst-message-old-state 'gst-message-state-changed msg))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-pending-state ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-pending-state msg::gst-message)
-   (if (=fx (gst-message-type msg) $gst-message-state-changed)
-       ($gst-state->obj ($gst-message-pending-state (gst-message-$builtin msg)))
-       (bigloo-type-error 'gst-message-pending-state 'gst-message-state-changed msg)))
+   (with-access::gst-message msg ($builtin type)
+      (if (=fx type $gst-message-state-changed)
+	  ($gst-state->obj ($gst-message-pending-state $builtin))
+	  (bigloo-type-error 'gst-message-pending-state 'gst-message-state-changed msg))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-structure ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-structure msg::gst-message)
-   (instantiate::gst-structure
-      ($builtin ($gst-message-get-structure (gst-message-$builtin msg)))
-      ($finalizer #f)))
+   (with-access::gst-message msg ($builtin)
+      (instantiate::gst-structure
+	 ($builtin ($gst-message-get-structure $builtin))
+	 ($finalizer #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-tag? ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-tag? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-tag))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-tag)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-async-start? ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-async-start? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-async-start))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-async-start)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-async-done? ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-async-done? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-async-done))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-async-done)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-eos? ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-eos? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-eos))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-eos)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-error? ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-error? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-error))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-error)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-unknown? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-unknown? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-unknown))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-unknown)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-warning? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-warning? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-warning))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-warning)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-buffering? ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-buffering? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-buffering))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-buffering)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-state-changed? ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-state-changed? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-state-changed))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-state-changed)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-state-dirty? ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-state-dirty? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-state-dirty))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-state-dirty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-info? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-info? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-info))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-info)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-application? ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-application? msg::gst-message)
-   (=fx (gst-message-type msg) $gst-message-application))
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-application)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-application ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-application src::gst-object struct::gst-structure)
-   ($make-gst-message
-    ($gst-message-new-application (gst-object-$builtin src)
-				  ($gst-structure (gst-structure-$builtin struct)))
-    #t))
+   (with-access::gst-object src ($builtin)
+      (with-access::gst-structure struct ((struct-builtin $builtin))
+	 ($make-gst-message
+	    ($gst-message-new-application $builtin struct-builtin)
+	    #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-custom ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-custom type src::gst-object struct::gst-structure)
-   ($make-gst-message
-    ($gst-message-new-custom type
-			     (gst-object-$builtin src)
-			     ($gst-structure (gst-structure-$builtin struct)))
-    #t))
+   (with-access::gst-object src ($builtin)
+      (with-access::gst-structure struct ((struct-builtin $builtin))
+	 ($make-gst-message
+	    ($gst-message-new-custom type $builtin struct-builtin)
+	 
+	    #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-element ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-element src::gst-object struct::gst-structure)
-   ($make-gst-message
-    ($gst-message-new-element (gst-object-$builtin src)
-			      ($gst-structure (gst-structure-$builtin struct)))
-    #t))
+   (with-access::gst-object src ($builtin)
+      (with-access::gst-structure struct ((struct-builtin $builtin))
+	 ($make-gst-message
+	    ($gst-message-new-element $builtin struct-builtin)
+	    #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-eos ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-eos src::gst-object)
-   ($make-gst-message ($gst-message-new-eos (gst-object-$builtin src)) #t))
+   (with-access::gst-object src ($builtin)
+      ($make-gst-message ($gst-message-new-eos $builtin) #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-state-changed ...                                */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-state-changed src::gst-object old new pending)
-   ($make-gst-message ($gst-message-new-state-changed (gst-object-$builtin src)
-						      old
-						      new
-						      pending)
-		      #t))
+   (with-access::gst-object src ($builtin)
+      ($make-gst-message ($gst-message-new-state-changed
+			    $builtin old new pending)
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-state-dirty ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-state-dirty src::gst-object)
-   ($make-gst-message ($gst-message-new-state-dirty (gst-object-$builtin src))
-		      #t))
+   (with-access::gst-object src ($builtin)
+      ($make-gst-message ($gst-message-new-state-dirty $builtin) #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-async-done ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-async-done src::gst-object)
-   ($make-gst-message ($gst-message-new-async-done (gst-object-$builtin src))
-		      #t))
+   (with-access::gst-object src ($builtin)
+      ($make-gst-message ($gst-message-new-async-done $builtin) #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-new-latency ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-new-latency src::gst-object)
-   ($make-gst-message ($gst-message-new-latency (gst-object-$builtin src)) #t))
+   (with-access::gst-object src ($builtin)
+      ($make-gst-message ($gst-message-new-latency $builtin) #t)))

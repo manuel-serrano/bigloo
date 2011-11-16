@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Wed Mar  2 12:03:49 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 10:22:44 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Sqlite.               */
@@ -107,7 +107,7 @@
       (set! *db* (instantiate::sqlite (path "test.db")))
       *db*)
    :result (lambda (v)
-	      (sqlite? *db*)))
+	      (isa? *db* sqlite)))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-table ...                                                 */

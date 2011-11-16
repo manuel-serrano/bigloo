@@ -1,5 +1,6 @@
 (module jas_classfile
    (import jas_lib)
+   (include "Jas/classfile.sch")
    (export
     (class type
        code::bstring

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 28 14:06:46 1996                          */
-;*    Last change :  Mon Mar 28 16:07:37 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:13:27 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The extension for the integrate pass.                            */
@@ -17,6 +17,8 @@
    (import  type_type
 	    ast_var
 	    ast_node)
+
+   (include "Integrate/iinfo.sch")
    
    (export (wide-class svar/Iinfo::svar
 	      ;; a stamp to compute free variables

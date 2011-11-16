@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Sun Mar 13 10:18:29 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:07:17 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
@@ -26,7 +26,8 @@
 ;*---------------------------------------------------------------------*/
 (module initflow_walk
    (include "Engine/pass.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Initflow/walk.sch")
    (import  tools_error
 	    tools_shape
 	    type_type

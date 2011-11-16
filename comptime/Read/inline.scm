@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Tue May 10 11:52:03 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 19:12:50 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
@@ -131,7 +131,7 @@
        (values '() '() '() '())
        (match-case exp
 	  ((define-inline (and ?proto (?name . ?-)) . ?body)
-	   (let* ((id (id-of-id name (find-location exp)))
+	   (let* ((id (fast-id-of-id name (find-location exp)))
 		  (cell (assq id inlines))
 		  (inl (if (and (pair? cell) (eq? (cdr cell) 'sifun))
 			   (begin

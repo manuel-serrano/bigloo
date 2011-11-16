@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Thu Nov 10 06:49:49 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 09:45:40 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -53,9 +53,14 @@
 	    __everror
 	    __evcompile
 	    __eval
-	    __expander_define)
+	    __expander_define
+	    __expand
+	    __macro)
     
   (export (eval-class ::symbol ::bool ::pair-nil ::pair ::obj)
+	  (eval-expand-instantiate2 ::obj)
+	  (eval-expand-duplicate2::pair-nil ::obj)
+	  (eval-expand-with-access2 ::obj)
 	  (eval-expand-instantiate::pair-nil ::symbol)
 	  (eval-expand-duplicate::pair-nil ::symbol)
 	  (eval-expand-with-access::pair-nil ::symbol)
@@ -362,8 +367,63 @@
 ;*---------------------------------------------------------------------*/
 ;*    eval-instantiate->make ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (eval-instantiate->make cid args fields source)
-   (let* ((ins (symbol-append 'instantiate:: cid))
+(define (eval-instantiate->make clazz id args fields source)
+   (let* ((nodef (class-field-no-default-value))
+	  (o (gensym))
+	  (new `(class-creator ,(class-name clazz))))
+      (let loop ((fields fields)
+		 (vals '())
+		 (virtuals '()))
+	 (if (null? fields)
+	     (list 'quasiquote
+		   (if (null? virtuals)
+		       `(,new ,@(map (lambda (v) (list 'unquote v))
+				    (reverse! vals)))
+		       `(let ((,o (,new ,@(map (lambda (v) (list 'unquote v))
+						(reverse! vals)))))
+;* 			   ,@(map (lambda (id)                         */
+;* 				     `(unless (eq? ,(list 'unquote id) ,o) */
+;* 					 (,(slot-set id cid)           */
+;* 					  ,o ,(list 'unquote id))))    */
+;* 				  virtuals)                            */
+			   ,o)))
+	     (let* ((s (car fields))
+		    (id (class-field-name s)))
+		(cond
+		   ;; a virtual slot
+		   ((class-field-virtual? s)
+		    (if (not (class-field-mutable? s))
+			`(if (pair? (assq ',id ,args))
+			     (error/source
+				',id
+				"value provided for read-only virtual slot"
+				',id
+				,source)
+			     ,(loop (cdr fields) vals virtuals))
+			`(let ((,id (let ((c (assq ',id ,args)))
+				       (if (pair? c)
+					   (cadr c)
+					   (class-field-default-value s)))))
+			    ,(loop (cdr fields) vals (cons id virtuals)))))
+		   (else
+		    ;; a plain slot
+		    `(let ((,id (let ((c (assq ',id ,args)))
+				   (if (pair? c)
+				       (cadr c)
+				       ,(let ((d (class-field-default-value s)))
+					   (if (eq? d nodef)
+					       `(error/source ',id
+							      "argument missing"
+							      ',id
+							      ,source)
+					       (list 'quote (list 'quote d))))))))
+			,(loop (cdr fields) (cons id vals) virtuals)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-instantiate->make-old ...                                   */
+;*---------------------------------------------------------------------*/
+(define (eval-instantiate->make-old clazz id args fields source)
+   (let* ((cid (class-name clazz))
 	  (nodef (class-field-no-default-value))
 	  (new (gensym))
 	  (mk (class-make cid)))
@@ -391,7 +451,7 @@
 		    (if (not (class-field-mutable? s))
 			`(if (pair? (assq ',id ,args))
 			     (error/source
-			      ',ins
+			      ',id
 			      "value provided for read-only virtual slot"
 			      ',id
 			      ,source)
@@ -413,7 +473,7 @@
 				       (cadr c)
 				       ,(let ((d (class-field-default-value s)))
 					   (if (eq? d nodef)
-					       `(error/source ',ins
+					       `(error/source ',id
 							      "argument missing"
 							      ',id
 							      ,source)
@@ -450,8 +510,201 @@
 		    (let ((,a (cdr x)))
 		       (e ,(eval-instantiate-check
 			    id a fields
-			    (eval-instantiate->make cid a fields 'x))
+			    (eval-instantiate->make clazz id a fields 'x))
 			  e))))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-instantiate2 ...                                     */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-instantiate2 class)
+   (let ((wid (symbol-append 'instantiate:: (class-name class))))
+      (install-expander wid
+	 (lambda (x e)
+	    (instantiate-fill wid (cdr x) class
+	       (class-all-fields class)
+	       `(,(class-allocator class)) x e)))))
+
+;*---------------------------------------------------------------------*/
+;*    instantiate-fill ...                                             */
+;*---------------------------------------------------------------------*/
+(define (instantiate-fill op provided class fields init x e)
+
+   (define (field-default? s)
+      (not (equal? (class-field-default-value s)
+	      (class-field-no-default-value))))
+	     
+   (define (collect-field-values fields)
+      (let ((vargs (make-vector (length fields))))
+	 ;; collect the default values
+	 (let loop ((i 0)
+		    (fields fields))
+	    (when (pair? fields)
+	       (let ((s (car fields)))
+		  (cond
+		     ((field-default? s)
+		      (vector-set! vargs
+			 i (cons #t (list 'quote (class-field-default-value s)))))
+		     (else
+		      (vector-set! vargs
+			 i (cons #f #unspecified))))
+		  (loop (+fx i 1) (cdr fields)))))
+	 ;; collect the provided values
+	 (let loop ((provided provided))
+	    (when (pair? provided)
+	       (let ((p (car provided)))
+		  (match-case p
+		     (((and (? symbol?) ?s-name) ?value)
+		      ;; plain field
+		      (let ((pval (vector-ref
+				     vargs
+				     (find-field-offset fields s-name op p))))
+			 (set-car! pval #t)
+			 (set-cdr! pval (localize
+					   (when (epair? p) (cer p))
+					   value))))
+		     (else
+		      (error op "Illegal argument" p)))
+		  (loop (cdr provided)))))
+	 ;; build the result
+	 (vector->list vargs)))
+   
+   (let* ((new (gensym 'new))
+	  (args (collect-field-values fields)))
+      ;; check that there is enough values
+      (for-each (lambda (a s)
+		   (unless (or (car a) (class-field-virtual? s))
+		      ;; value missin
+		      (error op
+			 (format "Missing value for field \"~a\""
+			    (class-field-name s))
+			 x)))
+	 args fields)
+      ;; allocate the object and set the fields,
+      ;; first the actual fields, second the virtual fields
+      `(let ((,new ,(e init e)))
+	  ;; actual fields
+	  ,@(filter-map (lambda (field val)
+			   (unless (class-field-virtual? field)
+			      (let ((v (e (cdr val) e)))
+				 `(,(%class-field-mutator field) ,new ,v))))
+	       fields args)
+	  ;; virtual fields
+	  ,@(filter-map (lambda (field val)
+			   (when (and (class-field-virtual? field)
+				      (class-field-mutable? field))
+			      (let ((v (e (cdr val) e)))
+				 `(,(%class-field-mutator field) ,new ,v))))
+	       fields args)
+	  ;; constructors
+	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ;; return the new instance
+	  ,new)))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-duplicate2 ...                                       */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-duplicate2 class)
+   (let ((did (symbol-append 'duplicate:: (class-name class))))
+      (install-expander did
+	 (lambda (x e)
+	    (match-case x
+	       ((?duplicate ?dup . ?prov)
+		(duplicate-expander class dup prov x e))
+	       (else
+		(error "duplicate" "Illegal form" x)))))))
+
+;*---------------------------------------------------------------------*/
+;*    duplicate-expander ...                                           */
+;*---------------------------------------------------------------------*/
+(define (duplicate-expander class duplicated provided x e)
+   
+   (define (collect-field-values fields dupvar)
+      (let ((vargs (make-vector (length fields))))
+	 ;; we collect the provided values
+	 (let loop ((provided provided))
+	    (when (pair? provided)
+	       (let ((p (car provided)))
+		  (match-case p
+		     (((and (? symbol?) ?s-name) ?value)
+		      ;; plain field
+		      (let ((i (find-field-offset fields s-name "duplicate" p)))
+			 (vector-set! vargs
+			    i
+			    (cons #t (localize
+					(when (epair? p) (cer p))
+					value)))))
+		     (else
+		      (error (car x) "Illegal form" x)))
+		  (loop (cdr provided)))))
+	 ;; we collect the duplicated values
+	 (let loop ((i 0)
+		    (fields fields))
+	    (when (pair? fields)
+	       (let ((value (vector-ref vargs i)))
+		  (unless (pair? value)
+		     (let ((field (car fields)))
+			;; no value is provided for this object we pick
+			;; one from this duplicated object.
+			(vector-set! vargs
+			   i
+			   (cons #t `(,(class-field-accessor field) ,dupvar)))))
+		  (loop (+fx i 1) (cdr fields)))))
+	 ;; build the result
+	 (vector->list vargs)))
+
+   (let* ((fields (class-all-fields class))
+	  (new (gensym 'new))
+	  (dupvar (gensym 'duplicated))
+	  (args (collect-field-values fields dupvar)))
+      ;; allocate the object and set the fields,
+      ;; first the actual fields, second the virtual fields
+      `(let ((,dupvar ,(e duplicated e))
+	     (,new ,(e `(,(class-allocator class)) e)))
+	  ;; actual fields
+	  ,@(filter-map (lambda (field val)
+			   (unless (class-field-virtual? field)
+			      (let ((v (e (cdr val) e)))
+				 `(,(%class-field-mutator field) ,new ,v))))
+	       fields args)
+	  ;; virtual fields
+	  ,@(filter-map (lambda (field val)
+			   (when (and (class-field-virtual? field)
+				      (class-field-mutable? field))
+			      (let ((v (e (cdr val) e)))
+				 `(,(%class-field-mutator field) ,new ,v))))
+	       fields args)
+	  ;; constructors
+	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ;; return the new instance
+	  ,new)))
+
+;*---------------------------------------------------------------------*/
+;*    find-class-constructors ...                                      */
+;*---------------------------------------------------------------------*/
+(define (find-class-constructors class)
+   (let ((const (class-constructor class)))
+      (if const
+	  (list const)
+	  (let ((super (class-super class)))
+	     (if (class? super)
+		 (find-class-constructors super)
+		 '())))))
+
+;*---------------------------------------------------------------------*/
+;*    find-field-offset ...                                            */
+;*---------------------------------------------------------------------*/
+(define (find-field-offset fields::pair-nil name::symbol form sexp)
+   (let loop ((fields fields)
+	      (i 0))
+      (cond
+	 ((null? fields)
+	  (error #f
+	     (format "Illegal ~a, field unknown \"~a\"" form name)
+	     sexp))
+	 ((eq? (class-field-name (car fields)) name)
+	  i)
+	 (else   
+	  (loop (cdr fields) (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-duplicate->make ...                                         */
@@ -524,6 +777,84 @@
 				id a fields
 				(eval-duplicate->make cid a o fields))
 			      e)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-with-access2 ...                                     */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-with-access2 class)
+   (let ((wid (symbol-append 'with-access:: (class-name class))))
+      (install-expander wid
+	 (lambda (x e)
+	    (match-case x
+	       ((?- ?instance (and (? pair?) ?fields) . (and (? pair?) ?body))
+		(let loop ((s fields)
+			   (nfields '()))
+		   (cond
+		      ((null? s)
+		       (let ((instance (e instance e))
+			     (aux (gensym 'i)))
+			  (localize
+			     (when (epair? x) (cer x))
+			     `(let ((,aux ,instance))
+				 ,(%with-lexical
+				     (map car nfields)
+				     (expand-progn body)
+				     (eval-begin-expander
+					(eval-with-access-expander2
+					   e aux class nfields x))
+				     aux)))))
+		      ((not (pair? s))
+		       (error s "Illegal field" x))
+		      ((symbol? (car s))
+		       (loop (cdr s) (cons (list (car s) (car s)) nfields)))
+		      ((and (pair? (car s))
+			    (symbol? (car (car s)))
+			    (pair? (cdr (car s)))
+			    (symbol? (cadr (car s)))
+			    (null? (cddr (car s))))
+		       (loop (cdr s) (cons (car s) nfields)))
+		      (else
+		       (error (car s) "Illegal form" x)))))
+	       (else
+		(error #f "Illegal with-access" x)))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-with-access-expander2 ...                                   */
+;*---------------------------------------------------------------------*/
+(define (eval-with-access-expander2 olde i class fields form)
+   
+   (define (id var) (cadr (assq var fields)))
+   
+   (let ((ids (map car fields)))
+      (lambda (x e)
+	 (match-case x
+	    ((and ?var (? symbol?))
+	     (if (and (memq var ids)
+		      (let ((cell (assq var (%lexical-stack))))
+			 (and (pair? cell) (eq? (cdr cell) i))))
+		 (let ((field (find-class-field class (id var))))
+		    (if (not field)
+			(error var "No such field" form)
+			`(,(class-field-accessor field) ,i)))
+		 (olde var olde)))
+	    ((set! (and (? symbol?) ?var) ?val)
+	     (let ((val (e val e)))
+		(if (and (memq var ids)
+			 (let ((cell (assq var (%lexical-stack))))
+			    (and (pair? cell) (eq? (cdr cell) i))))
+		    (let ((field (find-class-field class (id var))))
+		       (if (not field)
+			   (error var "No such field" form)
+			   (localize
+			      x
+			      (olde `(,(class-field-mutator field) ,i ,val)
+				 olde))))
+		    (begin
+		       (localize
+			  x
+			  (olde `(set! ,(cadr x) ,val) olde))))))
+	    (else
+	     (olde x e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-with-access ...                                      */
@@ -863,28 +1194,28 @@
 			    (eval! e mod)
 			    (set! idents (cons (caadr e) idents))))
 		      ;; class definition
-		      (let ((e `(set! ,cid
+		      (let* ((e `(set! ,cid
 				      ,(eval-register-class
 					loc cid super abstract
 					slots (+ offset size)
 					(get-eval-class-hash id src)
-					constructor))))
-			 (eval! e mod))
-		      ;; serialization
-		      (unless abstract
-			 (let ((int (make-eval-struct+object->object cid all-slots))
-			       (ext (make-eval-object->struct cid all-slots)))
-			    (eval! ext mod)
-			    (eval! int mod)))
-		      ;; with-access
-		      (eval! (eval-expand-with-access cid) mod)
-		      ;; instantiate
-		      (let ((e (eval-expand-instantiate cid)))
-			 (eval! e mod))
-		      ;; duplicate
-		      (let ((e (eval-expand-duplicate cid)))
-			 (eval! e mod))
-		      idents))))))))
+					constructor)))
+			     (clazz (eval! e mod)))
+			 ;; serialization
+			 (unless abstract
+			    (let ((int (make-eval-struct+object->object cid all-slots))
+				  (ext (make-eval-object->struct cid all-slots)))
+			       (eval! ext mod)
+			       (eval! int mod)))
+			 ;; with-access
+			 (eval! (eval-expand-with-access cid) mod)
+			 ;; instantiate
+			 (let ((e (eval-expand-instantiate2 clazz)))
+			    (eval! e mod))
+			 ;; duplicate
+			 (let ((e (eval-expand-duplicate cid)))
+			    (eval! e mod))
+			 idents)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-class-hash ...                                          */

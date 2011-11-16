@@ -4,6 +4,7 @@
 	   ast_var
 	   saw_defs
 	   msil_type )
+   (include "SawMsil/maxstack.sch")
    (export (maxstack::int l)
 	   (generic size-dest-fun::int fun::rtl_fun))
    (static (wide-class stacked::block)) )

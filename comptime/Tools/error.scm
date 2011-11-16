@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Tue Jun 14 14:23:25 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:33:16 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -99,19 +99,18 @@
 ;*    user-error-notify ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (user-error-notify e proc)
-   (when (&error? e)
+   (when (isa? e &error)
       (with-dump-stack
 	 (lambda ()
-	    (let* ((obj (&error-obj e))
-		   (loc (find-location obj))
-		   (p (&error-proc e)))
-	       (set! *nb-error-on-pass* (+fx *nb-error-on-pass* 1))
-	       (if (location? loc)
-		   (error-notify (duplicate::&error e
-				    (proc (or p proc))
-				    (fname (location-full-fname loc))
-				    (location (location-pos loc))))
-		   (error-notify e)))))))
+	    (with-access::&error e (obj (p proc))
+	       (let ((loc (find-location obj)))
+		  (set! *nb-error-on-pass* (+fx *nb-error-on-pass* 1))
+		  (if (location? loc)
+		      (error-notify (duplicate::&error e
+				       (proc (or p proc))
+				       (fname (location-full-fname loc))
+				       (location (location-pos loc))))
+		      (error-notify e))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    user-error ...                                                   */

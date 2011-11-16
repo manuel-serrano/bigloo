@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Nov  5 06:11:23 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 18:46:11 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -41,7 +41,8 @@
 	    ast_labels
 	    ast_node
 	    ast_var
-	    ast_sexp)
+	    ast_sexp
+	    ast_private)
    (export  (install-initial-expander)
 	    (%append-2-define)))
 
@@ -117,6 +118,12 @@
    
    ;; multiple-value-bind
    (install-compiler-expander 'multiple-value-bind expand-mvalue-bind)
+
+   ;; private
+   (install-compiler-expander (private-stamp)
+      (lambda (x e)
+	 (map! (lambda (x) (e x e)) (cddr x))
+	 x))
 
    ;; error 
    (install-O-comptime-expander

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Tue Nov 23 18:10:15 2010 (serrano)                */
-;*    Copyright   :  2009-10 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 11:11:48 2011 (serrano)                */
+;*    Copyright   :  2009-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
 ;*=====================================================================*/
@@ -146,7 +146,8 @@
 ;*    css-write ::css-ext ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (css-write o::css-ext p::output-port)
-   (css-write (css-ext-value o) p))
+   (with-access::css-ext o (value)
+      (css-write value p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-stylesheet ...                                   */

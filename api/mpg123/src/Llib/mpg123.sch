@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Wed Sep 21 20:38:43 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 20:47:51 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -35,7 +35,7 @@
     (macro $mpg123-current-decoder::string
        (::$mpg123-handle) "mpg123_current_decoder")
     (macro $mpg123-plain-strerror::string
-       (::int) "mpg123_plain_strerror")
+       (::int) "(char *)mpg123_plain_strerror")
     (macro $mpg123-length::long
        (::$mpg123-handle) "mpg123_length")
     (macro $mpg123-tpf::double

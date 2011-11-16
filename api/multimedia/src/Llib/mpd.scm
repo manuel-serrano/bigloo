@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sun Sep 18 19:42:50 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:36:58 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -341,32 +341,34 @@
 ;*---------------------------------------------------------------------*/
 (define-command (status)
    (let ((status (music-status backend)))
-      (with-access::musicstatus status (volume song songid state)
+      (with-access::musicstatus status (volume song songid state xfade
+					  playlistid playlistlength bitrate
+					  khz songpos songlength repeat random)
 	 (let ((vol (if (vector? volume) (vector-ref volume 0) volume)))
 	    (disp "volume: " vol))
 	 (disp "state: " state)
-	 (disp "playlist: " (musicstatus-playlistid status))
-	 (disp "playlistlength: " (musicstatus-playlistlength status))
+	 (disp "playlist: " playlistid)
+	 (disp "playlistlength: " playlistlength)
 	 (when (>=fx song 0)
 	    (disp "song: " song)
 	    (disp "songid: " songid)
-	    (disp "bitrate: " (musicstatus-bitrate status))
+	    (disp "bitrate: " bitrate)
 	    (display "audio: " op)
-	    (display (musicstatus-khz status) op)
+	    (display khz op)
 	    (display ":16:2\n" op))
 	 (when (or (eq? state 'play) (eq? state 'pause))
 	    (display "time: " op)
-	    (display (musicstatus-songpos status) op)
+	    (display songpos op)
 	    (display ":" op)
-	    (display (musicstatus-songlength status) op)
+	    (display songlength op)
 	    (newline op))
-	 (if (musicstatus-repeat status)
+	 (if repeat
 	     (display "repeat: 1\n" op)
 	     (display "repeat: 0\n" op))
-	 (if (musicstatus-random status)
+	 (if random
 	     (display "random: 1\n" op)
 	     (display "random: 0\n" op))
-	 (disp "xfade: " (musicstatus-xfade status))))
+	 (disp "xfade: " xfade)))
    'ok)
 
 ;*---------------------------------------------------------------------*/
@@ -403,7 +405,7 @@
 			 (not (directory? file))
 			 (file-musictag file)))
 	       (dir (dirname file)))
-	    (if (musictag? tag)
+	    (if (isa? tag musictag)
 		(with-access::musictag tag ((ar artist) title (al album) track)
 		   (let ((a (or artist
 				(if (string-ci=? ar "unknown")
@@ -609,7 +611,7 @@
 (define-command (next)
    (with-handler
       (lambda (e)
-	 (if (&io-error? e)
+	 (if (isa? e &io-error)
 	     (mpd-err op "No more song" :err "50@0" :command "next")
 	     (raise e)))
       (begin
@@ -622,7 +624,7 @@
 (define-command (previous)
    (with-handler
       (lambda (e)
-	 (if (&io-error? e)
+	 (if (isa? e &io-error)
 	     (mpd-err op "No previous song" :err "50@0" :command "previous")
 	     (raise e)))
       (begin
@@ -1186,7 +1188,8 @@ db_update: ~a\n"
 		(display "Album: " op)
 		(display (car a) op)
 		(newline op))
-	     (mpd-database-%albums o)))
+      (with-access::mpd-database o (%albums)
+	 %albums)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listartistalbum ...                                 */
@@ -1209,7 +1212,8 @@ db_update: ~a\n"
       (filter (lambda (c)
 		 (let ((dir (cdr c)))
 		    (string=? (basename (dirname (dirname dir))) genre)))
-	 (mpd-database-%albums o))))
+      (with-access::mpd-database o (%albums)
+	 %albums))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenreartist ...                                 */
@@ -1239,7 +1243,8 @@ db_update: ~a\n"
 		(display "Artist: " op)
 		(display (car a) op)
 		(newline op))
-      (mpd-database-%artists o)))
+      (with-access::mpd-database o (%artists)
+	 %artists)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-lsinfo ...                                          */
@@ -1396,33 +1401,37 @@ db_update: ~a\n"
 ;*    mpd-database-getgenre ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-getgenre o::mpd-database)
-   (mpd-database-%genres o))
+   (with-access::mpd-database o (%genres)
+      %genres))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-getartist ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-getartist o::mpd-database)
-   (mpd-database-%artists o))
+   (with-access::mpd-database o (%artists)
+      %artists))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-getgenreartist ::mpd-database ...                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-getgenreartist o::mpd-database genre)
-   (filter (lambda (c)
-	      (let ((dir (cdr c)))
-		 (string=? (basename (dirname dir)) genre)))
-      (mpd-database-%artists o)))
+   (with-access::mpd-database o (%artists)
+      (filter (lambda (c)
+		 (let ((dir (cdr c)))
+		    (string=? (basename (dirname dir)) genre)))
+	 %artists)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-getartistalbum ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-getartistalbum o::mpd-database artist)
-   (if (string? artist)
-       (filter (lambda (c)
-		  (let ((dir (cdr c)))
-		     (string=? (basename (dirname dir)) artist)))
-	  (mpd-database-%albums o))
-       (mpd-database-%albums o)))
+   (with-access::mpd-database o (%albums)
+      (if (string? artist)
+	  (filter (lambda (c)
+		     (let ((dir (cdr c)))
+			(string=? (basename (dirname dir)) artist)))
+	     %albums)
+	  %albums)))
 
 ;*---------------------------------------------------------------------*/
 ;*    getinfofile ...                                                  */
@@ -1435,7 +1444,7 @@ db_update: ~a\n"
 			  (not (directory? file))
 			  (file-musictag file)))
 		(dir (dirname file)))
-	     (if (musictag? tag)
+	     (if (isa? tag musictag)
 		 (with-access::musictag tag ((ar artist) (al album) title track)
 		    (let ((a (or artist
 				 (if (string-ci=? ar "unknown")

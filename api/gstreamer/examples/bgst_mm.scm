@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst-mm.scm       */
+;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst_mm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 11:44:28 2008                          */
-;*    Last change :  Fri Mar 12 10:37:36 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 19:20:57 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player                                            */
 ;*=====================================================================*/
@@ -139,10 +139,8 @@
 			      (verb 1 "Playing: "
 				    (list-ref (music-playlist-get m) song)))))
 	    :onerror (lambda (err)
-			(print "*** ERROR: " err)
-			(print (list-ref (music-playlist-get m)
-					 (musicstatus-song (music-status m)))))))))
-	    
+			(print "*** ERROR: " err) )))))
+      
       (verb 3 "bgst-mm: " (version) " " backend)
       (verb 3 "gst-version: " (gst-version) "\n")
       (verb 1 "The music object is bound to the variable `m'.")

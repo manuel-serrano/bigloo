@@ -20,45 +20,36 @@
 	   (pgp-resolve-key::pair-nil db id::bstring)
 	   (pgp-db-print-keys db)))
 
-(define (pgp-key? key) (PGP-Key? key))
-(define (pgp-subkey? subkey) (PGP-Subkey? subkey))
+(define (pgp-key? key) (isa? key PGP-Key))
+(define (pgp-subkey? subkey) (isa? subkey PGP-Subkey))
 ;; returns a list of (id . subkey) for a given key.
 (define (pgp-subkeys key)
-   (when (not (PGP-Key? key))
-      (error 'pgp-subkeys
-	     "Expected PGP Key"
-	     key))
-   (PGP-Key-subkeys key))
+   (unless (isa? key PGP-Key)
+      (error "pgp-subkeys" "Expected PGP Key" key))
+   (with-access::PGP-Key key (subkeys) subkeys))
 
 (define (pgp-key->string key)
-   (when (not (PGP-Key? key))
-      (error 'pgp-key->string
-	     "Expected PGP Key"
-	     key))
+   (unless (isa? key PGP-Key)
+      (error "pgp-key->string" "Expected PGP Key" key))
    (pgp-key->human-readable key))
 
 (define (pgp-subkey->string subkey)
-   (when (not (PGP-Subkey? subkey))
-      (error 'pgp-subkey->string
-	     "Expected PGP Subkey"
-	     subkey))
+   (unless (isa? subkey PGP-Subkey)
+      (error "pgp-subkey->string" "Expected PGP Subkey" subkey))
    (pgp-subkey->human-readable subkey))
 
 
 (define (pgp-key-id::bstring subkey)
-   (when (not (PGP-Subkey? subkey))
-      (error "pgp-key-id"
-	     "Expected PGP-Subkey"
-	     subkey))
-   (key-id (PGP-Subkey-key-packet subkey)))
+   (unless (isa? subkey PGP-Subkey)
+      (error "pgp-key-id" "Expected PGP-Subkey" subkey))
+   (with-access::PGP-Subkey subkey (key-packet)
+      (key-id key-packet)))
 
 (define (pgp-key-fingerprint::bstring subkey)
-   (when (not (PGP-Subkey? subkey))
-      (error "pgp-key-id"
-	     "Expected PGP-Subkey"
-	     subkey))
-   (fingerprint (PGP-Subkey-key-packet subkey)))
-
+   (unless (isa? subkey PGP-Subkey)
+      (error "pgp-key-id" "Expected PGP-Subkey" subkey))
+   (with-access::PGP-Subkey subkey (key-packet)
+      (fingerprint key-packet)))
 
 (define (pgp-make-key-db) (list '*pgp-keys*))
 
@@ -68,7 +59,7 @@
 (define (pgp-add-key-to-db db key)
    ;; TODO verify key (or do that before)
    ;; TODO merge if the key is already in there.
-   (when (not (PGP-Key? key))
+   (when (not (isa? key PGP-Key))
       (error 'add-key-to-db
 	     "Expected PGP Key"
 	     key))
@@ -100,7 +91,9 @@
       (if (null? keys)
 	  matching
 	  (let* ((k (car keys))
-		 (valid-subkeys (filter valid-subkey (PGP-Key-subkeys k)))
+		 (valid-subkeys (filter valid-subkey
+				   (with-access::PGP-Key k (subkeys)
+				      subkeys)))
 		 (k-matching (filter (lambda (k)
 					(with-access::PGP-Subkey k (key-packet)
 					   ;; 00000000 is wild-card key.

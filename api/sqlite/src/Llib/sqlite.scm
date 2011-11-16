@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Tue Oct 20 08:25:38 2009 (serrano)                */
-;*    Copyright   :  2005-09 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 10:03:54 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
 ;*=====================================================================*/
@@ -35,7 +35,7 @@
 	    (class sqltiny::%sqlite
 	       (%setup-sqltiny!)
 	       (sync::symbol read-only (default 'automatic))
-	       ($builtin::$sqltiny (default ($sqltiny-nil))))
+	       ($builtin::$sqltiny (default (class-nil $sqltiny))))
 	    
 	    (%setup-sqltiny! ::sqltiny)
 	    (%setup-sqlite! ::sqlite)
@@ -114,7 +114,7 @@
 (define-generic (sqlite-close o::%sqlite)
    (with-access::sqltiny o ($builtin)
       ($sqltiny-close $builtin o)
-      (set! $builtin ($sqltiny-nil))))
+      (set! $builtin (class-nil $sqltiny))))
 
 (cond-expand
    ((and bigloo-c (not sqltiny))
@@ -126,17 +126,18 @@
 ;*    sqlite-exec ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-generic (sqlite-exec o::%sqlite fmt::bstring . args)
-   (if (null? args)
-       ($sqltiny-exec (sqltiny-$builtin o) fmt o)
-       ($sqltiny-exec (sqltiny-$builtin o) (apply sqlite-format fmt args) o)))
+   (with-access::sqltiny o ($builtin)
+      (if (null? args)
+	  ($sqltiny-exec $builtin fmt o)
+	  ($sqltiny-exec $builtin (apply sqlite-format fmt args) o))))
 
 (cond-expand
    ((and bigloo-c (not sqltiny))
     (define-method (sqlite-exec o::sqlite fmt::bstring . args)
-       (if (null? args)
-	   ($sqlite-exec (sqlite-$builtin o) fmt o)
-	   ($sqlite-exec (sqlite-$builtin o)
-			 (apply sqlite-format fmt args) o)))))
+       (with-access::sqlite o ($builtin)
+	  (if (null? args)
+	      ($sqlite-exec $builtin fmt o)
+	      ($sqlite-exec $builtin (apply sqlite-format fmt args) o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-callback ...                                              */
@@ -163,9 +164,10 @@
 ;*    sqlite-eval ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-generic (sqlite-eval o::%sqlite p::procedure fmt::bstring . args)
-   (if (null? args)
-       ($sqltiny-eval (sqltiny-$builtin o) p fmt o)
-       ($sqltiny-eval (sqltiny-$builtin o) p (apply sqlite-format fmt args) o)))
+   (with-access::sqltiny o ($builtin)
+      (if (null? args)
+	  ($sqltiny-eval $builtin p fmt o)
+	  ($sqltiny-eval $builtin p (apply sqlite-format fmt args) o))))
 
 (cond-expand
    ((and bigloo-c (not sqltiny))
@@ -173,19 +175,20 @@
        (let* ((exc #f)
 	      (p (sqlite-callback p exc)))
 	  (unwind-protect
-	     (if (null? args)
-		 ($sqlite-eval (sqlite-$builtin o) p fmt o)
-		 ($sqlite-eval (sqlite-$builtin o) p
-			       (apply sqlite-format fmt args) o))
+	     (with-access::sqlite o ($builtin)
+		(if (null? args)
+		    ($sqlite-eval $builtin p fmt o)
+		    ($sqlite-eval $builtin p (apply sqlite-format fmt args) o)))
 	     (when exc (raise exc)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-map ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (sqlite-map o::%sqlite p::procedure fmt::bstring . args)
-   (if (null? args)
-       ($sqltiny-map (sqltiny-$builtin o) p fmt o)
-       ($sqltiny-map (sqltiny-$builtin o) p (apply sqlite-format fmt args) o)))
+   (with-access::sqltiny o ($builtin)
+      (if (null? args)
+	  ($sqltiny-map $builtin p fmt o)
+	  ($sqltiny-map $builtin p (apply sqlite-format fmt args) o))))
 
 (cond-expand
    ((and bigloo-c (not sqltiny))
@@ -193,10 +196,10 @@
        (let* ((exc #f)
 	      (p (sqlite-callback p exc)))
 	  (unwind-protect
-	     (if (null? args)
-		 ($sqlite-map (sqlite-$builtin o) p fmt o)
-		 ($sqlite-map (sqlite-$builtin o) p
-			      (apply sqlite-format fmt args) o))
+	     (with-access::sqlite o ($builtin)
+		(if (null? args)
+		    ($sqlite-map $builtin p fmt o)
+		    ($sqlite-map $builtin p (apply sqlite-format fmt args) o)))
 	     (when exc (raise exc)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -241,7 +244,8 @@
 ;*    sqlite-dump-table ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-generic (sqlite-dump-table db::%sqlite table::bstring out)
-   ($sqltiny-dump-table db (sqltiny-$builtin db) table out)
+   (with-access::sqltiny db ($builtin)
+      ($sqltiny-dump-table db $builtin table out))
    #unspecified)
 
 (cond-expand

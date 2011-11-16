@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Wed Sep 14 10:17:59 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:42:20 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -126,70 +126,74 @@
 ;*    %ftp-send-cmd ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%ftp-send-cmd ftp . msgs)
-   (let ((op (socket-output (%ftp-cmd ftp))))
-      (fprintf op "~l\r\n" msgs)
-      (flush-output-port op)))
+   (with-access::%ftp ftp (cmd)
+      (let ((op (socket-output cmd)))
+	 (fprintf op "~l\r\n" msgs)
+	 (flush-output-port op))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %ftp-read-cmd ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%ftp-read-cmd ftp)
-   (let* ((ip (socket-input (%ftp-cmd ftp)))
-	  (msg (read-line ip)))
-      (if (eof-object? msg)
-	  (values 999 "EOF" #f)
-	  (let ((code (string->number (substring msg 0 3)))
-		(mesg (substring msg 4))
-		(more? (char=? #\- (string-ref msg 3))))
-	     (when more?
-		(let loop ((msg (read-line ip)))
-		   (unless (eof-object? msg)
-		      (string-case msg
-			 ((bol (: (= 3 digit) #\- (* all)))
-			  (set! mesg (string-append mesg "\n" (the-substring 4 (the-length))))
-			  (loop (read-line ip)))
-			 ((bol (: (= 3 digit) space (* all)))
-			  (let ((code1 (string->number (the-substring 0 3)))
-				(mesg1 (the-substring 4 (the-length))))
-			     (set! mesg (string-append mesg "\n" mesg1))
-			     (unless (= code code1)
-				(loop (read-line ip)))))
-			 ((bol (: space (* all)))
-			  (set! mesg (string-append mesg "\n" (the-substring 1 (the-length))))
-			  (loop (read-line ip)))
-			 ((bol (* all))
-			  (set! mesg (string-append mesg "\n" (the-string)))
-			  (loop (read-line ip)))
-			 (else
-			  (raise (instantiate::&ftp-parse-error
-				    (proc "%ftp-read-cmd")
-				    (msg  "Unrecognized output format")
-				    (obj  msg))))))))
-	     (values code mesg)))))
+   (with-access::%ftp ftp (cmd)
+      (let* ((ip (socket-input cmd))
+	     (msg (read-line ip)))
+	 (if (eof-object? msg)
+	     (values 999 "EOF" #f)
+	     (let ((code (string->number (substring msg 0 3)))
+		   (mesg (substring msg 4))
+		   (more? (char=? #\- (string-ref msg 3))))
+		(when more?
+		   (let loop ((msg (read-line ip)))
+		      (unless (eof-object? msg)
+			 (string-case msg
+			    ((bol (: (= 3 digit) #\- (* all)))
+			     (set! mesg (string-append mesg "\n" (the-substring 4 (the-length))))
+			     (loop (read-line ip)))
+			    ((bol (: (= 3 digit) space (* all)))
+			     (let ((code1 (string->number (the-substring 0 3)))
+				   (mesg1 (the-substring 4 (the-length))))
+				(set! mesg (string-append mesg "\n" mesg1))
+				(unless (= code code1)
+				   (loop (read-line ip)))))
+			    ((bol (: space (* all)))
+			     (set! mesg (string-append mesg "\n" (the-substring 1 (the-length))))
+			     (loop (read-line ip)))
+			    ((bol (* all))
+			     (set! mesg (string-append mesg "\n" (the-string)))
+			     (loop (read-line ip)))
+			    (else
+			     (raise (instantiate::&ftp-parse-error
+				       (proc "%ftp-read-cmd")
+				       (msg  "Unrecognized output format")
+				       (obj  msg))))))))
+		(values code mesg))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %ftp-read-dtp ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%ftp-read-dtp ftp what)
-   (let ((ip (socket-input (%ftp-dtp ftp))))
-      (case what
-	 ;; Read several lines from the dtp
-	 ((list) 
-	  (read-lines ip))
-	 ((port)
-	  ip)
-	 (else
-	  (raise (instantiate::&ftp-error
-		    (proc "%ftp-read-dtp")
-		    (msg  "Dunno what to read")
-		    (obj what)))))))
+   (with-access::%ftp ftp (dtp)
+      (let ((ip (socket-input dtp)))
+	 (case what
+	    ;; Read several lines from the dtp
+	    ((list) 
+	     (read-lines ip))
+	    ((port)
+	     ip)
+	    (else
+	     (raise (instantiate::&ftp-error
+		       (proc "%ftp-read-dtp")
+		       (msg  "Dunno what to read")
+		       (obj what))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %ftp-engine-cmd ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (%ftp-engine-cmd ftp cmd . cmds)
-   (unless (socket? (ftp-cmd ftp))
-      (error "ftp" "Socket not connected" cmd))
+   (with-access::ftp ftp ((ftpcmd cmd))
+      (unless (socket? ftpcmd)
+	 (error "ftp" "Socket not connected" cmd)))
    (when cmd (apply %ftp-send-cmd ftp cmd cmds))
    (multiple-value-bind (code mesg)
       (%ftp-read-cmd ftp)
@@ -546,21 +550,23 @@
 ;*    ftp-store ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (ftp-store ftp source destination)
-   (let ((op (socket-output (%ftp-dtp ftp))))
-      (and (file-exists? source)
-	   (if destination
-	       (%ftp-engine-cmd ftp "STOR" destination)
-	       (%ftp-engine-cmd ftp "STOU"))
-	   (send-file source op	(file-size source) #e0))))
+   (with-access::%ftp ftp (dtp)
+      (let ((op (socket-output dtp)))
+	 (and (file-exists? source)
+	      (if destination
+		  (%ftp-engine-cmd ftp "STOR" destination)
+		  (%ftp-engine-cmd ftp "STOU"))
+	      (send-file source op (file-size source) #e0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ftp-append ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (ftp-append ftp source destination)
-   (let ((op (socket-output (%ftp-dtp ftp))))
-      (and (file-exists? source)
-	   (%ftp-engine-cmd ftp "APPE" source destination)
-	   (send-file source op	(file-size source) #e0))))
+   (with-access::%ftp ftp (dtp)
+      (let ((op (socket-output dtp)))
+	 (and (file-exists? source)
+	      (%ftp-engine-cmd ftp "APPE" source destination)
+	      (send-file source op (file-size source) #e0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ftp-allocate ...                                                 */

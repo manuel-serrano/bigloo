@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Oct  5 14:47:31 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 10:40:40 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -97,7 +97,7 @@
 (define-method (alsadecoder-stop o::flac-alsadecoder am::alsamusic)
    (with-access::flac-alsadecoder o (%flac %!pause %dcondv)
       (with-access::alsamusic am (%buffer)
-	 (when (alsabuffer? %buffer)
+	 (when (isa? %buffer alsabuffer)
 	    (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
 	       (when (<fx %!bstate 3)
 		  (set! %!bstate 3)
@@ -164,7 +164,8 @@
 (define-method (flac-decoder-write o::flac-alsa size rate channels bps)
    (with-access::flac-alsa o (outbuf %alsamusic %buffer)
       (with-access::alsamusic %alsamusic (pcm %status)
-	 (musicstatus-state-set! %status 'play)
+	 (with-access::musicstatus %status (state)
+	    (set! state 'play))
 	 (when (>fx size 0)
 	    (alsa-snd-pcm-write pcm outbuf size)
 	    #t))))
@@ -249,16 +250,18 @@
 			     (tprint "<<< read.2 bs=" 0))
 			  (mutex-unlock! %bmutex))
 		       (loop))))
-	       ((alsadecoder-%!pause %decoder)
+	       ((with-access::alsadecoder %decoder (%!pause) %!pause)
 		;;; user request pause, swith to pause state and wait
 		;;; to be awaken
 		(with-access::alsamusic %alsamusic (%status)
-		   (musicstatus-state-set! %status 'pause)
+		   (with-access::musicstatus %status (state)
+		      (set! state 'pause))
 		   (with-access::alsadecoder %decoder (%dmutex %dcondv %!pause)
 		      (mutex-lock! %dmutex)
 		      (condition-variable-wait! %dcondv %dmutex)
 		      (mutex-unlock! %dmutex))
-		   (musicstatus-state-set! %status 'play))
+		   (with-access::musicstatus %status (state)
+		      (set! state 'play)))
 		(loop))
 	       (else
 		(let ((sz (minfx size
@@ -267,7 +270,8 @@
 				 (-fx inlen %!tail)))))
 		   (when (>fx sz 0)
 		      (with-access::alsamusic %alsamusic (%status)
-			 (musicstatus-state-set! %status 'play))
+			 (with-access::musicstatus %status (state)
+			    (set! state 'play)))
 		      ($flac-blit-string! %inbuf %!tail flacbuf 0 sz))
 		   (when (>fx debug 0)
 		      (tprint ">>> read.inc-tail sz=" sz))

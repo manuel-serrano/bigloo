@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Sun Sep 18 06:58:39 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:27:20 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -21,7 +21,7 @@
 	      (%mutex::mutex (default (make-mutex)))
 	      (%loop-mutex::mutex (default (make-mutex)))
 	      (%loop-condv::condvar (default (make-condition-variable)))
-	      (%status::musicstatus (default (musicstatus-nil)))
+	      (%status::musicstatus (default (class-nil musicstatus)))
 	      (%abort-loop::bool (default #f))
 	      (%reset-loop::bool (default #f)))
 
@@ -87,7 +87,8 @@
    ;; acquired by the submethods
    (music-event-loop-abort! m)
    (with-access::music m (%status)
-      (musicstatus-state-set! %status 'close)))
+      (with-access::musicstatus %status (state)
+	 (set! state 'close))))
 
 (define-generic (music-closed? m::music))
 (define-generic (music-reset! m::music))
@@ -117,7 +118,7 @@
 	      (instantiate::&io-error
 		 (proc "music-next")
 		 (msg "No next soung")
-		 (obj (musicstatus-song %status))))
+		 (obj song)))
 	     (music-play m (+fx song 1))))))
 
 (define-generic (music-prev m::music)
@@ -128,7 +129,7 @@
 	      (instantiate::&io-error
 		 (proc "music-prev")
 		 (msg "No previous soung")
-		 (obj (musicstatus-song %status))))
+		 (obj song)))
 	     (music-play m (-fx song 1))))))
 
 (define-generic (music-crossfade m::music sec::int))
@@ -144,20 +145,24 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (music-init m::music)
    (with-access::music m (%status)
-      (when (eq? %status (musicstatus-nil))
+      (when (nil? %status)
 	 (set! %status (instantiate::musicstatus)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-song ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (music-song::int m::music)
-   (musicstatus-song (music-%status m)))
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (song)
+	 song)))
 
 ;*---------------------------------------------------------------------*/
 ;*    msic-songpos ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (music-songpos::int m::music)
-   (musicstatus-songpos (music-%status m)))
+   (with-access::music m (%status)
+      (with-access::musicstatus %status (songpos)
+	 songpos)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-meta ...                                                   */

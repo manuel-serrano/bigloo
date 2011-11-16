@@ -1,6 +1,6 @@
 ;*=====================================================================*/
 ;*    Author      :  Florian Loitsch                                   */
-;*    Copyright   :  2009 Florian Loitsch                              */
+;*    Copyright   :  2009-11 Florian Loitsch                           */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the ElGamal           */
 ;*    asymmetric cipher.                                               */
@@ -25,8 +25,7 @@
       (/ceilingfx (bignum-bit-length p) 8)))
 
 (define (extract-public-elgamal-key key)
-   (with-access::ElGamal-Key key (p g y)
-      (make-ElGamal-Key p g y)))
+   (duplicate::ElGamal-Key key))
 
 (define (find-relatively-prime n)
    (let ((k (make-random-bignum (-fx (bignum-bit-length n) 1))))

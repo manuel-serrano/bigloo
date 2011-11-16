@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sun Oct 23 06:26:37 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:43:37 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -883,8 +883,9 @@
 	 (with-handler
 	    (lambda (e)
 	       (socket-close sock)
-	       (when (&http-redirection? e)
-		  (open-input-file (&http-redirection-url e) bufinfo)))
+	       (when (isa? e &http-redirection)
+		  (with-access::&http-redirection e (url)
+		     (open-input-file url bufinfo))))
 	    (http-parse-response ip op parser)))))
 
 ;*---------------------------------------------------------------------*/

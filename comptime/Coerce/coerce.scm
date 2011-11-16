@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Thu Nov 10 07:04:35 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 08:47:31 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -151,12 +151,21 @@
 		(loop (cdr values)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    coerce! ::widening ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (coerce! node::widening caller to safe)
+   ;; MS CARE 16nov2011, NOT USED YET
+   (with-access::widening node (expr* otype)
+      ;; the object might have been shrunk
+      (let ((super (tclass-its-super otype)))
+	 (set-car! expr* (coerce! (car expr*) caller super safe))
+      (convert! node *obj* to safe))))
+
+;*---------------------------------------------------------------------*/
 ;*    coerce! ::getfield ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::getfield caller to safe)
    (with-access::getfield node (expr* ftype otype)
-      ;; MS 9nov2011: used to be
-      ;; (set-car! expr* (coerce! (car expr*) caller *obj* safe))
       (set-car! expr* (coerce! (car expr*) caller otype safe))
       (convert! node ftype to safe)))
       
@@ -165,8 +174,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::setfield caller to safe)
    (with-access::setfield node (expr* type ftype otype)
-      ;; MS 9nov2011: used to be
-      ;; (set-car! expr* (coerce! (car expr*) caller *obj* safe))
       (set-car! expr* (coerce! (car expr*) caller otype safe))
       (set-car! (cdr expr*) (coerce! (cadr expr*) caller ftype safe))
       (convert! node *unspec* to safe)))

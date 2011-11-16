@@ -16,9 +16,7 @@
 	   saw_inline_return
 	   saw_blockorder
 	   saw_gotos
-	   saw_cast
-	   saw_register-allocation
-    )
+	   saw_cast)
    (export
     (global->blocks::pair-nil b::backend v::global))
    )

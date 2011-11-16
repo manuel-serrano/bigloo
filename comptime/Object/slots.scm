@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Fri Nov  4 16:27:49 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:58:32 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module object_slots
    
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Object/slots.sch")
    
    (import  tools_error
 	    tools_location
@@ -43,7 +44,7 @@
 	       ;; access property
 	       (read-only?::bool read-only (default #f))
 	       ;; the slot default value
-	       (default-value read-only (default (slot-no-default-value-mark)))
+	       (default-value read-only (default (slot-no-default-value)))
 	       ;; virtual slot number (> 0 if virtual)
 	       (virtual-num (default -1))
 	       ;; the virtual slot getter
@@ -53,7 +54,6 @@
 	       ;; some user information associated to that slot
 	       (user-info read-only (default #unspecified)))
 	    
-	    (slot-no-default-value-mark)
 	    (slot-default?::bool ::slot)
 	    (slot-virtual?::bool ::slot)
 	    (make-class-slots ::tclass ::obj ::obj ::int ::obj)
@@ -61,6 +61,12 @@
 	    (get-local-virtual-slots-number ::tclass ::pair-nil)
 	    (make-class-make-formals ::pair-nil)
 	    (make-class-make-typed-formals ::pair-nil ::pair-nil)))
+
+;*---------------------------------------------------------------------*/
+;*    slot-no-default-value ...                                        */
+;*---------------------------------------------------------------------*/
+(define (slot-no-default-value)
+   '(@ class-field-no-default-value __object))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::slot ...                                                 */
@@ -72,23 +78,10 @@
 		     " type=" (shape type) ">")))
 
 ;*---------------------------------------------------------------------*/
-;*    *slot-no-default-value-mark* ...                                 */
-;*---------------------------------------------------------------------*/
-(define *slot-no-default-value-mark*
-   ;; this value can't be gensymed because it has to traverse libraries
-   'slot-no-default-value__17_5_1996)
-
-;*---------------------------------------------------------------------*/
-;*    slot-no-default-value-mark ...                                   */
-;*---------------------------------------------------------------------*/
-(define (slot-no-default-value-mark)
-   *slot-no-default-value-mark*)
-
-;*---------------------------------------------------------------------*/
 ;*    slot-default? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (slot-default? slot)
-   (not (eq? (slot-default-value slot) (slot-no-default-value-mark))))
+   (not (equal? (slot-default-value slot) (slot-no-default-value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    slot-virtual? ...                                                */
@@ -111,7 +104,7 @@
    (define (find-default-attr attr)
       ;; seek for the default attribute of slots
       (if (not (pair? attr))
-	  (slot-no-default-value-mark)
+	  (slot-no-default-value)
 	  (match-case (car attr)
 	     ((default ?value)
 	      value)

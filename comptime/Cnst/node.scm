@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Tue Jul 12 11:39:11 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:08:42 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -15,7 +15,8 @@
 ;*---------------------------------------------------------------------*/
 (module cnst_node
    (include "Tools/trace.sch"
-	    "Tvector/tvector.sch")
+	    "Tvector/tvector.sch"
+	    "Cnst/node.sch")
    (import  tools_shape
 	    tools_speek
 	    tools_error

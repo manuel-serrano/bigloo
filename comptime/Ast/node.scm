@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Thu Nov 10 06:59:21 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 08:45:49 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -17,6 +17,8 @@
 	   ast_var)
 
    (export *strict-node-type*)
+
+   (include "Ast/nodetype.sch")
    
    (export (class node::object
 	      ;; the location 
@@ -124,6 +126,11 @@
 	      ;; the type the field belongs to (i.e., the class)
 	      (otype::type read-only))
 
+	   ;; wide chunk access
+	   ;; MS CARE 16nov2011 (not used yet)
+	   (final-class widening::private
+	      (otype::type read-only))
+
 	   ;; extern object creation
 	   (final-class new::private
 	      (args-type::pair-nil (default '())))
@@ -131,14 +138,14 @@
 	   ;; extern vector object creation
 	   (final-class valloc::private
 	      ;; the vector fields type
-	      (ftype::type (default *obj*))
+	      ftype::type
 	      ;; the type of the dimension
 	      (otype::type read-only))
 
 	   ;; vector reference
 	   (final-class vref::private
 	      ;; the vector fields type
-	      (ftype::type (default *obj*))
+	      ftype::type
 	      ;; the type of the offset
 	      (otype::type read-only)
 	      ;; the type of the vector
@@ -149,7 +156,7 @@
 	   ;; vector mutation
 	   (final-class vset!::private
 	      ;; the vector fields type
-	      (ftype::type (default *obj*))
+	      ftype::type
 	      ;; the type of the offset
 	      (otype::type read-only)
 	      ;; the type of the vector

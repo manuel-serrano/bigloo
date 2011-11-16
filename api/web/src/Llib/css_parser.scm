@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Mon May 23 12:34:09 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 11:13:02 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -91,7 +91,7 @@
       
       (one-import
        ((import comment*)
-	(when (css-import? import)
+	(when (isa? import css-import)
 	   `(,import ,@comment*))))
       
       (import
@@ -473,11 +473,13 @@
 	     (cond
 		((pair? o)
 		 (loop o))
-		((css-ruleset? o)
-		 (css-ruleset-stamp-set! o css-stamp)
+		((isa? o css-ruleset)
+		 (with-access::css-ruleset o (stamp)
+		    (set! stamp css-stamp))
 		 (set! css-stamp (+fx 1 css-stamp)))
-		((css-media? o)
-		 (loop (css-media-ruleset* o))))
+		((isa? o css-media)
+		 (with-access::css-media o (ruleset*)
+		    (loop ruleset*))))
 	     (loop (cdr l)))))
    
    (mutex-lock! css-mutex)

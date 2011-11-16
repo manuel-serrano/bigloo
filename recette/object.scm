@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Wed Nov  9 13:08:26 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:48:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -60,7 +60,22 @@
 	      (x (get (lambda (x) 'virtual-3-x)) read-only))
 	   (class virtual-4::virtual-3
 	      (x (get (lambda (x) 'virtual-4-x)) read-only)
-	      (z (get (lambda (x) 'virtual-4-z)) read-only))))
+	      (z (get (lambda (x) 'virtual-4-z)) read-only)))
+   (static (class class/constr
+	      (constructor)
+	      (x (default 10)))
+	   (class class2/constr::class/constr)))
+
+;*---------------------------------------------------------------------*/
+;*    *obj* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *obj* '())
+
+;*---------------------------------------------------------------------*/
+;*    constructor ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (constructor o)
+   (set! *obj* (cons o *obj*)))
  
 ;*---------------------------------------------------------------------*/
 ;*    access ...                                                       */
@@ -394,4 +409,7 @@
 		  (instantiate::point3 (x 2) (z 10))))
 	 (p (list + inc-point inc-point2)))
       (test "generic.1" ((car p) ((cadr p) (car l)) ((cadr p) (cadr l))) 13)
-      (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16)))
+      (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16))
+   (let ((i1 (instantiate::class/constr))
+	 (i2 (instantiate::class2/constr)))
+      (test "constructor" (length *obj*) 2)))

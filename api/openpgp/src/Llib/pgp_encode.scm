@@ -305,7 +305,7 @@
 	    (version 4)
 	    (creation-time-packet
 	     (any (lambda (p)
-		     (and (PGP-Signature-Sub-Creation-Time? p) p))
+		     (and (isa? p PGP-Signature-Sub-Creation-Time) p))
 		  signed-sub-packets))
 	    (public-key-algo-byte (public-key-algo->byte public-key-algo))
 	    (hash-algo-byte (hash-algo->byte hash-algo))
@@ -332,8 +332,9 @@
 		 ;; both dates are the same.
 		 (and creation-time-packet
 		      (date=? creation-date
-			      (PGP-Signature-Sub-Creation-Time-creation-date
-			       creation-time-packet))))
+			 (with-access::PGP-Signature-Sub-Creation-Time
+			       creation-time-packet (creation-date)
+			    creation-date))))
 	     (encode-sub-packets signed-sub-packets str-p))
 	    ((and (date? creation-date)
 		  creation-time-packet)
@@ -341,8 +342,9 @@
 		    "Conflicting creation-dates"
 		    creation-date))
 	    (else
-	     (let ((packet (make-PGP-Signature-Sub-Creation-Time #f
-								 creation-date)))
+	     (let ((packet (instantiate::PGP-Signature-Sub-Creation-Time
+			      (critical? #f)
+			      (creation-date creation-date))))
 		(encode-sub-packets (cons packet signed-sub-packets) str-p))))
 	 (close-output-port str-p))))
 
@@ -351,14 +353,17 @@
 				     insecure-packets issuer p)
    ;; just in case the issuer is not in the packets.
    (let ((issuer-packet (any (lambda (p)
-				(and (PGP-Signature-Sub-ID? p)
-				     p))
+				(and (isa? p PGP-Signature-Sub-ID) p))
 			     (append insecure-packets secure-packets))))
       (cond
 	 ((not issuer-packet)
-	  (let ((new-p (make-PGP-Signature-Sub-ID #f issuer)))
+	  (let ((new-p (instantiate::PGP-Signature-Sub-ID
+			  (critical? #f)
+			  (key-id issuer))))
 	     (encode-sub-packets (cons new-p insecure-packets) p)))
-	 ((not (string=? issuer (PGP-Signature-Sub-ID-key-id issuer-packet)))
+	 ((not (string=? issuer
+		  (with-access::PGP-Signature-Sub-ID issuer-packet (key-id)
+		     key-id)))
 	  (error 'encode-insecure-sub-packets
 		 "Conflicting issuers"
 		 issuer))
@@ -515,30 +520,32 @@
 				  (public-key-algo->human-readable algo))))) )
 	 (case algo
 	    ((rsa-encrypt/sign rsa-encrypt rsa-sign)
-	     (when (not (Rsa-Key? key))
+	     (unless (isa? key Rsa-Key)
 		(error 'encode-key
-		       "invalid Rsa-Key"
-		       key))
-	     (encode-mpi (Rsa-Key-modulus key) p)
-	     (encode-mpi (Rsa-Key-exponent key) p))
+		   "invalid Rsa-Key"
+		   key))
+	     (with-access::Rsa-Key key (modulus exponent)
+		(encode-mpi modulus p)
+		(encode-mpi exponent p)))
 	    ((dsa) ;; DSA
-	     (when (not (Dsa-Key? key))
+	     (unless (isa? key Dsa-Key)
 		(error 'encode-key
 		       "invalid Dsa-Key"
 		       key))
-	     (with-access::Dsa-Key key (q g y)
-		(encode-mpi (Dsa-Key-p key) p)
+	     (with-access::Dsa-Key key (q g y (keyp p))
+		(encode-mpi keyp p)
 		(encode-mpi q p)
 		(encode-mpi g p)
 		(encode-mpi y p)))
 	    ((elgamal-encrypt elgamal-encrypt/sign)
-	     (when (not (ElGamal-Key? key))
+	     (unless (isa? key ElGamal-Key)
 		(error 'encode-key
-		       "invalid ElGamal-key"
-		       key))
-	     (encode-mpi (ElGamal-Key-p key) p)
-	     (encode-mpi (ElGamal-Key-g key) p)
-	     (encode-mpi (ElGamal-Key-y key) p))
+		   "invalid ElGamal-key"
+		   key))
+	     (with-access::ElGamal-Key key ((elp p) g y)
+		(encode-mpi elp p)
+		(encode-mpi g p)
+		(encode-mpi y p)))
 	    (else
 	     (error 'encode-key
 		    "unsupported public key algorithm"
@@ -559,7 +566,8 @@
 (define-method (encode-content packet::PGP-Symmetrically-Encrypted-Packet
 			       p::output-port)
    (with-trace 3 "encode-content ::PGP-Symmetrically-Encrypted-Packet"
-      (display (PGP-Symmetrically-Encrypted-Packet-data packet) p)))
+      (with-access::PGP-Symmetrically-Encrypted-Packet packet (data)
+	 (display data p))))
 
 (define-method (encode-content packet::PGP-Marker-Packet p::output-port)
    (with-trace 3 "encode-content ::PGP-Marker-Packet"

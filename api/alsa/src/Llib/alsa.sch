@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Wed Sep 21 16:38:15 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 10:06:20 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -20,7 +20,7 @@
 
       ;; misc
       (macro $snd-lib-version::int "SND_LIB_VERSION")
-      (macro $snd-asoundlib-version::string () "snd_asoundlib_version")
+      (macro $snd-asoundlib-version::string () "(char *)snd_asoundlib_version")
 
       ;; snd-card
       (macro $snd-card-load::bool
@@ -41,7 +41,7 @@
 	 (::obj ::string ::$snd-pcm-stream ::int)
 	 "bgl_snd_pcm_open")
       (macro $snd-pcm-name::string
-	 (::$snd-pcm) "snd_pcm_name")
+	 (::$snd-pcm) "(char *)snd_pcm_name")
       (macro $snd-pcm-close::int
 	 (::$snd-pcm) "snd_pcm_close")
       (macro $snd-pcm-get-state::$snd-pcm-state
@@ -355,4 +355,4 @@
       
       ;; snd-error
       (macro $snd-strerror::string
-	 (::int) "snd_strerror")))
+	 (::int) "(char *)snd_strerror")))

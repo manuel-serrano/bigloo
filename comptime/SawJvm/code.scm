@@ -22,6 +22,7 @@
 	   )
    (export (module-code me::jvm params l)
 	   (gen-expr me::jvm ins))
+   (include "SawJvm/code.sch")
    (static (wide-class lreg::rtl_reg id)
 	   (wide-class liveblock::block in out)
 	   ))

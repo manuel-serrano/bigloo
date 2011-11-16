@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 15 15:04:42 1992                          */
-;*    Last change :  Wed Jul  6 18:44:01 2005 (serrano)                */
-;*    Copyright   :  1992-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov 15 07:57:10 2011 (serrano)                */
+;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The trace management                                             */
 ;*=====================================================================*/
@@ -33,29 +33,29 @@
 ;*    start-trace ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (start-trace level pass)
-   (if *trace-mode*
-       (let ((trace-name *trace-name*))
-	  (set! *trace-pass* pass)
-	  (set! *trace-port* (open-output-file trace-name))
-	  (if (not (output-port? *trace-port*))
-	      (internal-error "start-trace"
-			      "Can't open trace file"
-			      trace-name)
-	      (begin
-		 (with-output-to-port *trace-port*
-		    (lambda ()
-		       (print ";; " *bigloo-name*)" "
-		       (print ";; " (current-date))
-		       (print ";; " (command-line))))
-		 (set! *level* level))))))
+   (when *trace-mode*
+      (let ((trace-name *trace-name*))
+	 (set! *trace-pass* pass)
+	 (set! *trace-port* (open-output-file trace-name))
+	 (if (not (output-port? *trace-port*))
+	     (internal-error "start-trace"
+		"Can't open trace file"
+		trace-name)
+	     (begin
+		(with-output-to-port *trace-port*
+		   (lambda ()
+		      (print ";; " *bigloo-name*)" "
+		      (print ";; " (current-date))
+		      (print ";; " (command-line))))
+		(set! *level* level))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    stop-trace ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (stop-trace)
-   (if *trace-mode*
-       (if (output-port? *trace-port*)
-	   (close-output-port *trace-port*))))
+   (when *trace-mode*
+      (if (output-port? *trace-port*)
+	  (close-output-port *trace-port*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-satisfy? ...                                               */
@@ -69,9 +69,8 @@
 ;*    print-trace ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (print-trace . exp)
-   (if *trace-mode*
-       (begin
-	  (for-each (lambda (e) (display-circle e *trace-port*)) exp)
-	  (flush-output-port *trace-port*))))
+   (when *trace-mode*
+      (for-each (lambda (e) (display-circle e *trace-port*)) exp)
+      (flush-output-port *trace-port*)))
        
 	 

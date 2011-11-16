@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Mon Nov  7 16:26:28 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:21:29 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
@@ -22,6 +22,8 @@
    (export (class object7 (host (default #t)))
 	   (final-class object8 value::byte))
    (static (class recursive-dog name next::recursive-dog))
+   (eval (export object6-rec)
+         (export object6-nil))
    (eval (class object5)
 	 (class object6)
 	 (class object7)
@@ -139,11 +141,14 @@
 				(with-access::object5 z (z)
 				   z)))
 	 4)
-   (test "-nil" (eval '(let ((o (instantiate::object6)))
+   (test "-nil.1" (let ((o (instantiate::object6)))
+		     (eq? (object6-rec o) (object6-nil)))
+	 #t)
+   (test "-nil.2" (eval '(let ((o (instantiate::object6)))
 			  (eq? (object6-rec o) (object6-nil))))
 	 #t)
-   (test "-nil" (object8? (instantiate::object8 (value 0))) #t)
-   (test "-nil" (object8? (eval '(instantiate::object8 (value 0)))) #t)
+   (test "-nil.3" (object8? (instantiate::object8 (value 0))) #t)
+   (test "-nil.4" (object8? (eval '(instantiate::object8 (value 0)))) #t)
    (eval '(define-generic (show o) 1))
    (eval '(define-generic (show2 o) 0))
    (eval '(define-generic (show3 o . p) (apply + p)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Sep  2 15:51:56 2004 (serrano)                */
-;*    Copyright   :  1995-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 17:47:29 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `tail-call' pass.                                            */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module tailc_walk
-   (include "Engine/pass.sch")
+   (include "Engine/pass.sch"
+	    "Tailc/walk.sch")
    (import  tools_error
 	    tools_shape
 	    engine_pass

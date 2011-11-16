@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Mon May  7 12:15:34 2007 (serrano)                */
-;*    Copyright   :  2000-07 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 09:49:41 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module module_java
    (include "Ast/unit.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Module/java.sch")
    (import  module_module
 	    module_checksum
 	    module_class
@@ -69,19 +70,18 @@
 ;*    make-java-compiler ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (make-java-compiler)
-   (instantiate::ccomp (id 'java)
-		       (producer (lambda (c) (java-producer *module* c)))
-		       (consumer (lambda (m c) (java-producer m c)))
-		       (finalizer java-finalizer)))
+   (instantiate::ccomp
+      (id 'java)
+      (producer (lambda (c) (java-producer *module* c)))
+      (consumer (lambda (m c) (java-producer m c)))
+      (finalizer java-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-error ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (java-error java . msg)
    (user-error "Parse error"
-	       (if (pair? msg)
-		   (car msg)
-		   "Illegal java variable")
+	       (if (pair? msg) (car msg) "Illegal java variable")
 	       java
 	       '()))
 
@@ -232,9 +232,7 @@
 ;*---------------------------------------------------------------------*/
 (define (java-parse-class java ident rest abstract? module)
    (let* ((tser (reverse rest))
-	  (jname (if (pair? tser)
-		     (car tser)
-		     #f)))
+	  (jname (if (pair? tser) (car tser) #f)))
       (cond
 	 ((not (symbol? ident))
 	  (java-error java "Illegal java class"))

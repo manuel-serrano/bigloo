@@ -536,11 +536,11 @@
       ((exact? el) (encode-int el p))
       ((inexact? el) (encode-real el p))
       ((pair? el) (encode-sequence el p))
-      ((DER-Set? el) (encode-set el p))
+      ((isa? el DER-Set) (encode-set el p))
       ((eq? el 'null) (encode-null p))
       ((symbol? el) (encode-object-id el p))
       ((string? el) (encode-octet-string el p))
-      ((DER-BitString? el) (encode-bitstring el p))
+      ((isa? el DER-BitString) (encode-bitstring el p))
       (else (error "encode-DER"
 		   "encoding not yet implemented"
 		   el))))

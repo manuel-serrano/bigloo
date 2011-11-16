@@ -13,6 +13,7 @@
 	   saw_defs
 	   saw_procedures
 	   saw_jvm_out)
+   (include "SawJvm/funcall.sch")
    (export (module-funcall/apply me::jvm)
 	   (module-light-funcall me::jvm)
 	   (wide-class indexed::global index::int) ))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
-;*    Last change :  Fri Nov  4 11:02:58 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 21:34:34 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
@@ -92,19 +92,18 @@
 	     (allsizefl (exact->inexact allsize))
 	     (operfl (/fl tvalfl allsizefl)))
 	 (map (lambda (f)
-		 (let* ((size (funinfo-type-size f tnum))
-			(sizefl (exact->inexact size))
-			(rperfl (/fl sizefl tvalfl))
-			(col (inexact->exact (* 100. operfl rperfl))))
-		    (list col
+		 (with-access::funinfo f (num ident)
+		    (let* ((size (funinfo-type-size f tnum))
+			   (sizefl (exact->inexact size))
+			   (rperfl (/fl sizefl tvalfl))
+			   (col (inexact->exact (* 100. operfl rperfl))))
+		       (list col
 			  (string-append "function"
-					 (integer->string 
-					  (funinfo-num f)))
+			     (integer->string num))
 			  (format "~a: ~a (~a%)"
-				  (function-ident-pp
-				   (funinfo-ident f))
-				  (word->size size)
-				  (inexact->exact (*fl 100. rperfl))))))
+			     (function-ident-pp ident)
+			     (word->size size)
+			     (inexact->exact (*fl 100. rperfl)))))))
 	      fun*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))

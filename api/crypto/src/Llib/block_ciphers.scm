@@ -765,7 +765,8 @@
    (let* ((state (create-encryption-state cipher password IV mode pad
 					  nonce-init! nonce-update!
 					  string->key))
-	  (block-size (Cipher-Mode-State-block-size state))
+	  (block-size (with-access::Cipher-Mode-State state (block-size)
+			 block-size))
 	  (str (make-string (+fx (*fx 2 block-size) (string-length plaintext)))))
       (string-shrink! str
 		      (encrypt-input! state
@@ -789,7 +790,7 @@
 	  (state (create-encryption-state cipher password IV mode pad
 					  nonce-init! nonce-update!
 					  string->key))
-	  (str (make-string (+fx (*fx 2 (Cipher-Mode-State-block-size state))
+	  (str (make-string (+fx (*fx 2 (with-access::Cipher-Mode-State state (block-size) block-size))
 				 len))))
 	  
       (string-shrink! str

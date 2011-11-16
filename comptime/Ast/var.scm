@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Wed May  4 17:41:46 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:44:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -16,6 +16,8 @@
    (import engine_param
 	   type_type)
 
+   (include "Ast/var.sch")
+   
    (export (class value)
 	   
 	   (class variable::object
@@ -24,7 +26,7 @@
 	      ;; the target name
 	      (name (default #f))
 	      ;; the variable type or the function type result
-	      (type::type (default *_*))
+	      type::type
 	      ;; its type
 	      value::value
 	      ;; its access mode (should be either READ, WRITE

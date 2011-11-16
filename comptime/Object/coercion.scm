@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Thu Nov 10 06:51:19 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 11:05:43 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -40,7 +40,7 @@
 	    ast_private)
    (export (gen-class-coercions! class)
 	   (gen-java-class-coercions! class)
-	   (gen-coercion-clause! c-id super . testing)
+	   (gen-coercion-clause! ::type ::symbol super . testing)
 	   (gen-class-coercers! class super)))
 
 ;*---------------------------------------------------------------------*/
@@ -48,7 +48,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-class-coercions! class)
    (with-access::tclass class (id its-super)
-      (gen-coercion-clause! id its-super)
+      (gen-coercion-clause! class id its-super)
       (gen-class-coercers! class its-super)))
 
 ;*---------------------------------------------------------------------*/
@@ -56,7 +56,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-coercions! class)
    (with-access::jclass class (id its-super)
-      (gen-coercion-clause! id its-super)
+      (gen-coercion-clause! class id its-super)
       (gen-class-coercers! class its-super)))
 
 ;*---------------------------------------------------------------------*/
@@ -70,14 +70,14 @@
 ;*    eventually the super error will be detected and the compilation  */
 ;*    will be stopped.                                                 */
 ;*---------------------------------------------------------------------*/
-(define (gen-coercion-clause! c-id super . testing)
+(define (gen-coercion-clause! class c-id super . testing)
    (produce-module-clause!
-      (nopragma-make-coercion-clause c-id super testing)))
+      (nopragma-make-coercion-clause class c-id super testing)))
 
 ;*---------------------------------------------------------------------*/
 ;*    nopragma-make-coercion-clause ...                                */
 ;*---------------------------------------------------------------------*/
-(define (nopragma-make-coercion-clause c-id super testing)
+(define (nopragma-make-coercion-clause class c-id super testing)
    (let* ((class->obj `(lambda (x)
 			  ,(make-private-sexp 'cast 'obj 'x)))
 	  (obj->class `(lambda (x)
@@ -86,10 +86,16 @@
 		     (if *class-gen-accessors?*
 			 (list (class?-id c-id))
 			 (let ((o (gensym 'o)))
-			    `((lambda (,o) (isa? ,o ,c-id)))))
+			    (if (jclass? class)
+				`((lambda (,o)
+				     ,(make-private-sexp 'instanceof c-id o)))
+				`((lambda (,o)
+				       ((@ isa? __object) ,o ,c-id))))))
 		     '()))
 	  (x (make-typed-ident 'x c-id)))
-      (let loop ((super   super)
+      (when (eq? c-id '$certificate)
+	 (tprint "NOPRAGMA GOT ONE: " c-id))
+      (let loop ((super super)
 		 (coercer (list `(coerce obj ,c-id ,ttest (,obj->class))
 				`(coerce ,c-id obj () (,class->obj))
 				`(coerce ,c-id bool () ((lambda (,x) #t))))))

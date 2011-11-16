@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Fri Nov  4 12:28:20 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 13:59:51 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -83,10 +83,11 @@
       (max (fsize p n) (fsize t n) (fsize e n)) ))
 
 (define-method (fsize::int e::ev_list n::int);
-   (let rec ( (l (ev_list-args e)) (r n) )
-      (if (null? l)
-	  r
-	  (rec (cdr l) (max r (fsize (car l) n))) )))
+   (with-access::ev_list e (args)
+      (let rec ( (l args) (r n) )
+	 (if (null? l)
+	     r
+	     (rec (cdr l) (max r (fsize (car l) n))) ))))
 
 (define-method (fsize::int e::ev_prog2 n::int);
    (with-access::ev_prog2 e (e1 e2)
@@ -152,9 +153,9 @@
 	     (rec (cdr l) (+fx n 1) (max (fsize (car l) n) r)) ))))
 
 (define-method (fsize::int e::ev_abs n::int);
-   (with-access::ev_abs e (arity vars body)
+   (with-access::ev_abs e (arity vars body size)
       (let ( (nn (fsize body (length vars))) )
-	 (ev_abs-size-set! e nn)
+	 (set! size nn)
 	 n )))
 
 
@@ -257,22 +258,24 @@
 (define (modify-letrec vars vals body)
    (let ( (r (instantiate::ev_labels (vars vars) (vals '())
 				     (body (instantiate::ev_litt (value 0))) )) )
-      (ev_labels-body-set! r (subst_goto body vars r))
-      (ev_labels-vals-set! r
-			   (map (lambda (val)
-				   (cons (ev_abs-vars val)
-					 (subst_goto (ev_abs-body val) vars r) ))
-				vals ))
-      r ))
+      (with-access::ev_labels r ((nbody body) (nvals vals))
+	 (set! nbody (subst_goto body vars r))
+	 (set! nvals (map (lambda (val)
+			    (with-access::ev_abs val ((vvars vars) (vbody body))
+			       (cons vvars (subst_goto vbody vars r)) ))
+		       vals ))
+	 r )))
  
 (define (letrectail? vars vals body)
    (every? (lambda (v)
 	      (and (tailpos body v)
-		   (every? (lambda (e) (and (ev_abs? e)
-					    (>=fx (ev_abs-arity e) 0)
-					    (tailpos (ev_abs-body e) v) ))
-			   vals )))
-	   vars ))
+		   (every? (lambda (e)
+			      (when (isa? e ev_abs)
+				 (with-access::ev_abs e (arity body)
+				    (and (>=fx arity 0)
+					 (tailpos body v) ))))
+		      vals )))
+      vars ))
 
 
 ;;

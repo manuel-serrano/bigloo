@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Jun 24 16:19:06 2011 (serrano)                */
+#*    Last change :  Tue Nov 15 20:46:02 2011 (serrano)                */
 #*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -27,7 +27,7 @@ POPULATION = Makefile README
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm build-dotnet
+.PHONY: build build build-c build-jvm
 
 all: build
 boot: build
@@ -36,7 +36,6 @@ build: build-c
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -46,9 +45,6 @@ build-c:
 
 build-jvm:
 	@ echo "MPG123 .jvm: Not implemented";
-
-build-dotnet:
-	@ echo "MPG123 .net: Not implemented";
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */

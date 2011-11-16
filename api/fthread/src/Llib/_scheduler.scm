@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 07:51:57 2003                          */
-;*    Last change :  Tue May  5 09:09:28 2009 (serrano)                */
-;*    Copyright   :  2003-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:43:40 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The private scheduler implementation.                            */
 ;*=====================================================================*/
@@ -55,10 +55,10 @@
    (cond
       ((null? o)
        (let ((s (default-scheduler)))
-	  (if (scheduler? s)
+	  (if (isa? s scheduler)
 	      s
 	      (default-scheduler (make-scheduler)))))
-      ((scheduler? (car o))
+      ((isa? (car o) scheduler)
        (car o))
       (else
        (error who "Illegal scheduler" (car o)))))
@@ -72,10 +72,11 @@
 ;*---------------------------------------------------------------------*/
 (define (%scheduler-get-async-runnable scdl::%scheduler . nv)
    (synchronize scdl
-      ;;; the synchronized body		
-      (let ((v (%scheduler-async-runnable scdl)))
-	 (if (pair? nv)
-	     (%scheduler-async-runnable-set! scdl (car nv)))
+      ;;; the synchronized body
+      (let ((v (with-access::%scheduler scdl (async-runnable) async-runnable)))
+	 (when (pair? nv)
+	    (with-access::%scheduler scdl (async-runnable)
+	       (set! async-runnable (car nv))))
 	 v)))
 
 ;*---------------------------------------------------------------------*/
@@ -116,7 +117,7 @@
 		;; there is another thread to execute...
 		(let ((nt (car runnable)))
 		   (cond
-		      ((fthread-%is-suspend nt)
+		      ((with-access::fthread nt (%is-suspend) %is-suspend)
 		       ;; it is suspended
 		       (set! threads-yield (cons nt threads-yield))
 		       (loop (cdr runnable)))
@@ -126,7 +127,8 @@
 		       (set! threads-runnable (cdr runnable))
 		       (when (null? threads-runnable)
 			  (set! threads-runnable-last-pair '()))
-		       (%scheduler-current-thread-set! scdl nt)
+		       (with-access::%scheduler scdl (current-thread)
+			  (set! current-thread nt))
 		       nt)))
 		(let ((async (%scheduler-get-async-runnable scdl '())))
 		   (if (pair? async)
@@ -136,7 +138,8 @@
 			      (set! threads-runnable-last-pair
 				    (last-pair threads-runnable))
 			      (set! threads-runnable-last-pair '()))
-			  (%scheduler-current-thread-set! scdl nt)
+			  (with-access::%scheduler scdl (current-thread)
+			     (set! current-thread nt))
 			  nt)
 		       ;; there is no more threads, this is the end of the 
 		       ;; (the micro instant), we switch back to the scheduler
@@ -170,7 +173,8 @@
       (with-trace 3 '%scheduler-switch-to-next-thread
 	 (let ((nt (%scheduler-next-thread t scdl)))
 	    (%scheduler-switch-to-next-thread-debug t scdl nt)
-	    (%pthread-switch %builtin (fthread-%builtin nt))
+	    (with-access::fthread nt ((fbuiltin %builtin))
+	       (%pthread-switch %builtin fbuiltin))
 	    (unless (eq? %state 'dead)
 	       (%pthread-wait %builtin)
 	       #unspecified)))))
@@ -223,8 +227,9 @@
 (define (%sort-threads threads)
    (sort threads
 	 (lambda (t1 t2)
-	    (<fx (fthread-%ident t1)
-		 (fthread-%ident t2)))))
+	    (with-access::fthread t1 ((ident1 %ident))
+	       (with-access::fthread t2 ((ident2 %ident))
+		  (<fx ident1 ident2))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %select-threads! ...                                             */
@@ -243,17 +248,17 @@
       (let ((runnable threads-runnable)
 	    (yield threads-yield)
 	    (timeout threads-timeout)
-	    (tostart (%scheduler-tostart scdl))
+	    (tostart (with-access::%scheduler scdl (tostart) tostart))
 	    (live %live-thread-number))
 	 [assert (runnable)
              ;;; check the runnable threads	   
-	     (every? (lambda (t) (>= (fthread-%timeout t) 0)) runnable)]
+	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) runnable)]
 	 [assert (yield)
              ;;; check the yield threads	   
-	     (every? (lambda (t) (>= (fthread-%timeout t) 0)) yield)]
+	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) yield)]
 	 [assert (timeout)
              ;;; check the timeout threads	   
-	     (every? (lambda (t) (>= (fthread-%timeout t) 0)) timeout)])
+	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) timeout)])
       ;; mark that no threads have currently yield in the instant
       (set! %threads-ready #f)
       (let ((runnable threads-yield))
@@ -361,7 +366,8 @@
       (if (pair? tosuspend/resume)
 	  (begin
 	     (for-each (lambda (v)
-			  (fthread-%is-suspend-set! (car v) (cdr v)))
+			  (with-access::fthread (car v) (%is-suspend)
+			     (set! %is-suspend (cdr v))))
 		       (reverse! tosuspend/resume))
 	     (set! tosuspend/resume '())))))
 
@@ -370,34 +376,36 @@
 ;*---------------------------------------------------------------------*/
 (define (%scheduler-spawn-async scdl::%scheduler sig::%sigasync)
    (with-access::%sigasync sig (spawned id thunk)
-      (if (not spawned)
+      (unless spawned
 	  (let ((nt (lambda ()
 		       (%scheduler-add-broadcast! scdl sig (thunk))
 		       #unspecified)))
 	     (set! spawned #t)
-	     (%async-spawn (%scheduler-%builtin scdl) nt id)
+	     (with-access::%scheduler scdl (%builtin)
+		(%async-spawn %builtin nt id))
 	     #unspecified))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    %spawn-async ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    Spawns all the unwaited asynchronous threads. Since the          */
+;*    Spawns all the unwaited asynchronous threads. Since              */
 ;*    no one is waiting for the signals, we don't have to broadcast    */
 ;*    any signal when the computation is complete.                     */
 ;*---------------------------------------------------------------------*/
 (define (%spawn-async scdl::%scheduler)
    (with-access::%scheduler scdl (tospawn)
-      (if (pair? tospawn)
-	  (begin
-	     (for-each (lambda (s) (%scheduler-spawn-async scdl s)) tospawn)
-	     (set! tospawn '())))))
+      (when (pair? tospawn)
+	 (for-each (lambda (s) (%scheduler-spawn-async scdl s)) tospawn)
+	 (set! tospawn '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %broadcast! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (%broadcast! scdl::%scheduler sig val)
-   (with-access::%scheduler scdl (env+)
-      (signal-emit sig val env+)))
+   (with-trace 2 '%broadcast
+      (trace-item "sig=" sig)
+      (with-access::%scheduler scdl (env+)
+	 (signal-emit sig val env+))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %scheduler-broadcast*! ...                                       */
@@ -407,15 +415,17 @@
       (%broadcast! scdl (car sig) (cdr sig)))
    (synchronize scdl
       ;;; the synchronized body
-      (with-access::%scheduler scdl (tobroadcast)
-	 (if (pair? tobroadcast)
-	     (begin
-		(for-each (cond-expand
-			     ;; debug for bugloo
-			     (bigloo-jvm (car (list broadcast-external)))
-			     (else broadcast-external))
-			  tobroadcast)
-		(set! tobroadcast '()))))))
+      (with-trace 2 '%scheduler-broadcast*
+	 (with-access::%scheduler scdl (tobroadcast)
+	    (trace-item "tobroadcast=" tobroadcast)
+	    (if (pair? tobroadcast)
+		(begin
+		   (for-each (cond-expand
+				;; debug for bugloo
+				(bigloo-jvm (car (list broadcast-external)))
+				(else broadcast-external))
+		      tobroadcast)
+		   (set! tobroadcast '())))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %scheduler-add-broadcast! ...                                    */
@@ -434,7 +444,8 @@
 ;*---------------------------------------------------------------------*/
 (define (%scheduler-time scdl::scheduler)
    (with-access::scheduler scdl (env+)
-      (ftenv-instant (car env+))))
+      (with-access::ftenv (car env+) (instant)
+	 instant)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %scheduler-waiting-threads ...                                   */

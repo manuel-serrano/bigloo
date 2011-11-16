@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Fri May 11 08:06:51 2007 (serrano)                */
-;*    Copyright   :  2005-07 Manuel Serrano                            */
+;*    Last change :  Mon Nov 14 18:53:10 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module saw_register-allocation
    
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "SawMill/regalloc.sch")
    
    (import  engine_param
 	    ast_var

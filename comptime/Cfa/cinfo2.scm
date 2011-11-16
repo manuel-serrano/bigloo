@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Thu Apr  7 09:25:27 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:46:32 2011 (serrano)                */
 ;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
@@ -20,6 +20,8 @@
 	   ast_var
 	   ast_node
 	   cfa_info)
+
+   (include "Cfa/cinfo2.sch")
    
    (export ;; arithmetic
            (wide-class pre-arithmetic-app::app
@@ -39,7 +41,7 @@
 	      ;; the approx of the make-procedure (i.e. *procedure*)
 	      approx::approx
 	      ;; the approximations of the values holded by the procedure
-	      (values-approx::vector (default (make-empty-approx)))
+	      values-approx::vector
 	      ;; a stamp to avoid infinit loops when loosing a procedure.
 	      ;; This slot also reveals if the procedure has been lost.
 	      ;; If the procedure has, lost-stamp > 0.
@@ -56,7 +58,7 @@
 	      (approx::approx read-only))
 	   (wide-class procedure-set!-app::app
 	      (approx::approx read-only)
-	      (vapprox (default (make-empty-approx))))
+	      vapprox)
 
 	   ;; vector
 	   (wide-class pre-make-vector-app::app

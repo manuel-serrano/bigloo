@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Thu Apr 29 18:29:15 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 11:17:11 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
 ;*=====================================================================*/
@@ -133,10 +133,12 @@
 			   (lambda (e)
 			      (socket-close socket)
 			      (cond
-				 ((and (socket? socket) (&io-parse-error? e))
+				 ((and (socket? socket)
+				       (isa? e &io-parse-error))
 				  (liip #f))
-				 ((&http-redirection? e)
-				  (loop (&http-redirection url)))
+				 ((isa? e &http-redirection)
+				  (with-access::&http-redirection e (url)
+				     (loop url)))
 				 (else
 				  (raise e))))
 			   (http-parse-response (socket-input socket)
@@ -252,8 +254,9 @@
 			      (cond
 				 ((and (socket? socket) (&io-parse-error e))
 				  (liip #f))
-				 ((&http-redirection? e)
-				  (loop (&http-redirection url)))
+				 ((isa? e &http-redirection)
+				  (with-access::&http-redirection e (url)
+				     (loop url)))
 				 (else
 				  (raise e))))
 			   (http-parse-response (socket-input socket)

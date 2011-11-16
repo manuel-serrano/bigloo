@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:03:24 1996                          */
-;*    Last change :  Tue Oct  3 05:14:02 2006 (serrano)                */
-;*    Copyright   :  1996-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 17:08:00 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The definition of the info structures for the globalization      */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module globalize_ginfo
    
-   (include "Ast/node.sch")
+   (include "Ast/node.sch"
+	    "Globalize/ginfo.sch")
    
    (export  (wide-class sfun/Ginfo::sfun
 	       ;; is a function globalized

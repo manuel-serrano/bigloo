@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 06:53:19 2008                          */
-;*    Last change :  Wed Jan 23 13:41:04 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 17:35:49 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstPlugin                                                        */
 ;*=====================================================================*/
@@ -21,53 +21,53 @@
    
    (export  (class gst-plugin::gst-object
 	       (name::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-name
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-name
+				($gst-plugin $builtin))))))
 	       (description::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-description
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-description
+				($gst-plugin $builtin))))))
 	       (filename::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-filename
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-filename
+				($gst-plugin $builtin))))))
 	       (license::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-license
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-license
+				($gst-plugin $builtin))))))
 	       (package::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-package
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-package
+				($gst-plugin $builtin))))))
 	       (origin::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-origin
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-origin
+				($gst-plugin $builtin))))))
 	       (source::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-source
-			 ($gst-plugin
-			  (gst-plugin-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-source
+				($gst-plugin $builtin))))))
 	       (version::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-get-version
-			 ($gst-plugin
-			  (gst-plugin-$builtin o)))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin o ($builtin)
+			     ($gst-plugin-get-version
+				($gst-plugin $builtin)))))))
 	    
 	    ($make-gst-plugin::obj ::$gst-plugin ::obj))
 

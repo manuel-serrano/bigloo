@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Wed Nov  9 16:05:57 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 10:51:28 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -28,6 +28,8 @@
 	    ast_var
 	    ast_ident
 	    (find-location tools_location))
+
+   (include "Object/class.sch")
 
    (export  (wide-class tclass::type
 	       ;; the `super' field
@@ -174,11 +176,11 @@
 	  (let* ((wtid (wide-chunk-class-id class-id))
 		 (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
 			(its-class type))))
-	     (tclass-size-set! wt sizeof)
+	     (wclass-size-set! wt sizeof)
 	     (tclass-wide-type-set! type wt)
 	     (type-name-set! type (type-name super))
 	     (type-size-set! type (type-size super))
-	     (gen-coercion-clause! wtid super #f)
+	     (gen-coercion-clause! type wtid super #f)
 	     (gen-class-coercers! wt super))
 	  (type-size-set! type sizeof))
       ;; we add the class for the C type emission

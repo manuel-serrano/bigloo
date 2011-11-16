@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:46:10 2007                          */
-;*    Last change :  Tue Dec  8 07:49:46 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:56:12 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstElement wrapper                                               */
 ;*=====================================================================*/
@@ -32,28 +32,32 @@
 
    (export  (class gst-element::gst-object
 	       (element-factory::gst-element-factory
-		read-only
-		(get
-		 (lambda (o)
-		    ($make-gst-element-factory
-		     ($gst-element-get-factory
-		      ($gst-element (gst-element-$builtin o)))
-		     #f))))
+		  read-only
+		  (get
+		     (lambda (o)
+			(with-access::gst-element o ($builtin)
+			   ($make-gst-element-factory
+			      ($gst-element-get-factory
+				 ($gst-element $builtin))
+			      #f)))))
 	       (interface-list::pair-nil
-		read-only
-		(get
-		 (lambda (o)
-		    ($gst-element-interface-list
-		     ($gst-element (gst-element-$builtin o))))))
+		  read-only
+		  (get
+		     (lambda (o)
+			(with-access::gst-element o ($builtin)
+			   ($gst-element-interface-list
+			      ($gst-element $builtin))))))
 	       (name::string
-		(get
-		 (lambda (o)
-		    ($gst-element-get-name
-		     ($gst-element (gst-element-$builtin o)))))
-		(set
-		 (lambda (o v)
-		    ($gst-element-set-name!
-		     ($gst-element (gst-element-$builtin o)) v)))))
+		  (get
+		     (lambda (o)
+			(with-access::gst-element o ($builtin)
+			   ($gst-element-get-name
+			      ($gst-element $builtin)))))
+		  (set
+		     (lambda (o v)
+			(with-access::gst-element o ($builtin)
+			   ($gst-element-set-name!
+			      ($gst-element $builtin) v))))))
 
 	    ($make-gst-element ::$gst-element ::obj)
 
@@ -91,7 +95,8 @@
 	 (display "<" p)
 	 (display (find-runtime-type o) p)
 	 (display " refcount=" p)
-	 (display ($gst-object-refcount (gst-object-$builtin o)) p)
+	 (with-access::gst-object o ($builtin)
+	    (display ($gst-object-refcount $builtin) p))
 	 (display " name=" p)
 	 (display name p)
 	 (display ">" p))))
@@ -99,22 +104,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-query-position ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (gst-element-query-position element::gst-element)
-   ($gst-element-query-position ($gst-element (gst-element-$builtin element))))
+(define (gst-element-query-position el::gst-element)
+   (with-access::gst-element el ($builtin)
+      ($gst-element-query-position ($gst-element $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-query-duration ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (gst-element-query-duration element::gst-element)
-   ($gst-element-query-duration ($gst-element (gst-element-$builtin element))))
+(define (gst-element-query-duration el::gst-element)
+   (with-access::gst-element el ($builtin)
+      ($gst-element-query-duration ($gst-element $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-seek ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (gst-element-seek element::gst-element v)
-   ($gst-element-seek-simple
-    ($gst-element (gst-element-$builtin element))
-     $gst-format-time (bit-or $gst-seek-flag-flush $gst-seek-flag-key-unit) v))
+(define (gst-element-seek el::gst-element v)
+   (with-access::gst-element el ($builtin)
+      ($gst-element-seek-simple
+	 ($gst-element $builtin)
+	 $gst-format-time (bit-or $gst-seek-flag-flush $gst-seek-flag-key-unit) v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-link! ...                                            */
@@ -122,13 +130,15 @@
 (define (gst-element-link! el0::gst-element el1::gst-element . els)
    
    (define (link! src dst)
-      (if (gst-element? dst)
-	  (unless ($gst-element-link! ($gst-element (gst-element-$builtin src))
-				      ($gst-element (gst-element-$builtin dst)))
-	     (raise (instantiate::&gst-error
-		       (proc 'gst-element-link!)
-		       (msg "Element cannot be linked")
-		       (obj (list src dst)))))
+      (if (isa? dst gst-element)
+	  (with-access::gst-element src ((src-builtin $builtin))
+	     (with-access::gst-element dst ((dst-builtin $builtin))
+		(unless ($gst-element-link! ($gst-element src-builtin)
+			   ($gst-element dst-builtin))
+		   (raise (instantiate::&gst-error
+			     (proc 'gst-element-link!)
+			     (msg "Element cannot be linked")
+			     (obj (list src dst)))))))
 	  (raise (instantiate::&gst-error
 		    (proc 'gst-element-link!)
 		    (msg "Illegal element ")
@@ -147,13 +157,16 @@
 ;*    gst-element-link-filtered! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-link-filtered! e0 e1 caps)
-   (unless ($gst-element-link-filtered! ($gst-element (gst-element-$builtin e0))
-					($gst-element (gst-element-$builtin e1))
-					($gst-caps (gst-caps-$builtin caps)))
-      (raise (instantiate::&gst-error
-		(proc 'gst-element-link-filtered!)
-		(msg "Element cannot be linked")
-		(obj (list e0 e1 caps))))))
+   (with-access::gst-element e0 ((e0-builtin $builtin))
+      (with-access::gst-element e1 ((e1-builtin $builtin))
+	 (with-access::gst-caps caps ((caps-builtin $builtin))
+	    (unless ($gst-element-link-filtered! ($gst-element e0-builtin)
+		       ($gst-element e1-builtin)
+		       ($gst-caps caps-builtin))
+	       (raise (instantiate::&gst-error
+			 (proc 'gst-element-link-filtered!)
+			 (msg "Element cannot be linked")
+			 (obj (list e0 e1 caps)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-link-mime! ...                                       */
@@ -168,8 +181,10 @@
 (define (gst-element-unlink! el0::gst-element el1::gst-element . els)
    
    (define (unlink! src dst)
-      ($gst-element-unlink! ($gst-element (gst-element-$builtin src))
-			    ($gst-element (gst-element-$builtin dst))))
+      (with-access::gst-element src ((src-builtin $builtin))
+	 (with-access::gst-element dst ((dst-builtin $builtin))
+	    ($gst-element-unlink!
+	       ($gst-element src-builtin) ($gst-element dst-builtin)))))
    
    (unlink! el0 el1)
    (let loop ((src el1)
@@ -226,62 +241,71 @@
    (%gst-thread-init!)
    ($gst-invoke-finalizers)
    (%gst-unlock!)
-   ($gst-state-change-return->obj
-    ($gst-element-set-state! ($gst-element (gst-element-$builtin el))
-			     ($gst-state state))))
+   (with-access::gst-element el ($builtin)
+      ($gst-state-change-return->obj
+	 ($gst-element-set-state! ($gst-element $builtin)
+	    ($gst-state state)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-state ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-state el #!optional (timeout #l0))
-   ($gst-state-change-return->obj
-    ($gst-element-get-state ($gst-element (gst-element-$builtin el))
-			    0 0
-			    (if (<=llong timeout #l0)
-				$gst-clock-time-none 
-				timeout))))
+   (with-access::gst-element el ($builtin)
+      ($gst-state-change-return->obj
+	 ($gst-element-get-state ($gst-element $builtin)
+	    0 0
+	    (if (<=llong timeout #l0)
+		$gst-clock-time-none 
+		timeout)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-pad ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-pad el name)
-   (let* (($el::$gst-element ($gst-element (gst-element-$builtin el)))
-	  ($spad ($gst-element-get-static-pad $el name)))
-      (if ($gst-pad-null? $spad)
-	  (let (($rpad ($gst-element-get-request-pad $el name)))
-	     (unless ($gst-pad-null? $rpad)
-		(instantiate::gst-pad
-		   ($builtin ($gst-element->object $rpad))
-		   ($finalizer (lambda (o)
-				  (%gst-object-finalize-closures! o)
-				  ($gst-element-release-request-pad!
-				   ($gst-element (gst-element-$builtin el))
-				   ($gst-pad (gst-element-$builtin o))))))))
-	  (instantiate::gst-pad
-	     ($builtin ($gst-element->object $spad))
-	     ($finalizer %gst-object-finalize!)))))
+   (with-access::gst-element el ((el-builtin $builtin))
+      (let* (($el::$gst-element ($gst-element el-builtin))
+	     ($spad ($gst-element-get-static-pad $el name)))
+	 (if ($gst-pad-null? $spad)
+	     (let (($rpad ($gst-element-get-request-pad $el name)))
+		(unless ($gst-pad-null? $rpad)
+		   (instantiate::gst-pad
+		      ($builtin ($gst-element->object $rpad))
+		      ($finalizer (lambda (o)
+				     (with-access::gst-element o ((o-builtin $builtin))
+					(%gst-object-finalize-closures! o)
+					($gst-element-release-request-pad!
+					   ($gst-element el-builtin)
+					   ($gst-pad o-builtin))))))))
+	     (instantiate::gst-pad
+		($builtin ($gst-element->object $spad))
+		($finalizer %gst-object-finalize!))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-add-pad! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-add-pad! el pad)
-   (unless ($gst-element-add-pad! ($gst-element (gst-element-$builtin el))
-				  ($gst-pad (gst-pad-$builtin pad)))
-      (raise (instantiate::&gst-error
-		(proc 'gst-element-add-pad!)
-		(msg "Cannot add pad")
-		(obj (list el pad))))))
+   (with-access::gst-element el ((el-builtin $builtin))
+      (with-access::gst-pad pad ((pad-builtin $builtin))
+	 (unless ($gst-element-add-pad! ($gst-element el-builtin)
+		    ($gst-pad pad-builtin))
+	    (raise (instantiate::&gst-error
+		      (proc 'gst-element-add-pad!)
+		      (msg "Cannot add pad")
+		      (obj (list el pad))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-compatible-pad ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-compatible-pad el pad caps)
-   (let ((pad::$gst-pad ($gst-element-get-compatible-pad
-			 ($gst-element (gst-element-$builtin el))
-			 ($gst-pad (gst-pad-$builtin pad))
-			 (gst-caps-$builtin caps))))
-      (unless ($gst-pad-null? pad)
-	 (instantiate::gst-pad
-	    ($builtin ($gst-element->object pad))
-	    ($finalizer %gst-object-finalize!)))))
+   (with-access::gst-element el ((el-builtin $builtin))
+      (with-access::gst-pad pad ((pad-builtin $builtin))
+	 (with-access::gst-caps caps ((caps-builtin $builtin))
+	    (let ((pad::$gst-pad ($gst-element-get-compatible-pad
+				    ($gst-element el-builtin)
+				    ($gst-pad pad-builtin)
+				    caps-builtin)))
+	       (unless ($gst-pad-null? pad)
+		  (instantiate::gst-pad
+		     ($builtin ($gst-element->object pad))
+		     ($finalizer %gst-object-finalize!))))))))
 

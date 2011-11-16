@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 28 11:46:28 2005                          */
-;*    Last change :  Thu Dec 13 13:35:01 2007 (serrano)                */
-;*    Copyright   :  2005-07 Manuel Serrano                            */
+;*    Last change :  Mon Nov 14 18:49:06 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The bytecode backend class definition                            */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module backend_bvm
    (import type_type
 	   backend_backend)
+   (include "BackEnd/bvm.sch")
    (export (abstract-class bvm::backend)))
 
 ;*---------------------------------------------------------------------*/

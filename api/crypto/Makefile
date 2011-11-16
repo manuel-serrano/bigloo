@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 08:48:58 2010                          */
-#*    Last change :  Wed Nov  9 17:22:58 2011 (serrano)                */
+#*    Last change :  Tue Nov 15 10:27:20 2011 (serrano)                */
 #*    Copyright   :  2010-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -35,7 +35,6 @@ build:
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -47,12 +46,6 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    (cd src && $(MAKE) jvm); \
-          fi
-
-build-dotnet:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) dotnet); \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -95,14 +88,10 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) api-install-dotnet; \
-          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm \
-           api-uninstall-dotnet
+           api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

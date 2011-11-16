@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 30 10:13:43 1995                          */
-;*    Last change :  Sat Dec 23 09:07:00 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 16 08:05:49 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for type handling                                     */
 ;*=====================================================================*/
@@ -16,12 +16,12 @@
    
    (import  type_type)
    
-   (export  (string-sans-$                 ::bstring)
-	    (type-name-sans-$              ::type)
-	    ($-in-name?                    ::bstring)
-	    (*-name?                       ::bstring)
-	    (replace-$                     ::bstring ::bstring)
-	    (make-typed-declaration        ::type ::bstring)
+   (export  (string-sans-$ ::bstring)
+	    (type-name-sans-$ ::type)
+	    ($-in-name? ::bstring)
+	    (*-name? ::bstring)
+	    (replace-$ ::bstring ::bstring)
+	    (make-typed-declaration ::type ::bstring)
 	    (make-pointer-to-name::bstring ::type)))
 
 ;*---------------------------------------------------------------------*/

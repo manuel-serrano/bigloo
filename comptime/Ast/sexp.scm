@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sat Nov 12 19:15:58 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:17:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -511,7 +511,7 @@
 	      (variable v)))
        (instantiate::var
 	  (loc loc)
-	  (type (strict-node-type *_* (local-type v)))
+	  (type (strict-node-type *_* (variable-type v)))
 	  (variable v))))
    
 ;*---------------------------------------------------------------------*/

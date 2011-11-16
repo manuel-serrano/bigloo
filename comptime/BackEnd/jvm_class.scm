@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 28 11:46:28 2005                          */
-;*    Last change :  Wed Apr  6 13:15:37 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 18:51:12 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C backend class definition                                   */
@@ -16,6 +16,7 @@
    (import type_type
 	   backend_backend
 	   backend_bvm)
+   (include "BackEnd/jvm_class.sch")
    (export (class jvm::bvm
 	      (qname (default 'unamed))
 	      (classes (default '()))

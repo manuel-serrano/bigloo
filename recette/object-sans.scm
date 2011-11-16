@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Sat Nov 12 20:08:58 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:49:22 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -12,7 +12,6 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object-sans
-   (option  (set! *class-gen-accessors?* #f))
    (import  (main "main.scm")
 	    (object2-sans "object2-sans.scm")
 	    (object1-sans "object1-sans.scm")
@@ -60,7 +59,22 @@
 	      (x (get (lambda (x) 'virtual-3-x)) read-only))
 	   (class virtual-4-sans::virtual-3-sans
 	      (x (get (lambda (x) 'virtual-4-x)) read-only)
-	      (z (get (lambda (x) 'virtual-4-z)) read-only))))
+	      (z (get (lambda (x) 'virtual-4-z)) read-only)))
+   (static (class class/constr-sans
+	      (constructor)
+	      (x (default 10)))
+	   (class class2/constr-sans::class/constr-sans)))
+ 
+;*---------------------------------------------------------------------*/
+;*    *obj* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *obj* '())
+
+;*---------------------------------------------------------------------*/
+;*    constructor ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (constructor o)
+   (set! *obj* (cons o *obj*)))
  
 ;*---------------------------------------------------------------------*/
 ;*    access ...                                                       */
@@ -402,4 +416,7 @@
 		  (instantiate::point3-sans (x 2) (z 10))))
 	 (p (list + inc-point inc-point2)))
       (test "generic.1" ((car p) ((cadr p) (car l)) ((cadr p) (cadr l))) 13)
-      (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16)))
+      (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16))
+   (let ((i1 (instantiate::class/constr-sans))
+	 (i2 (instantiate::class2/constr-sans)))
+      (test "constructor" (length *obj*) 2)))

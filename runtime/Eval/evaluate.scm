@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Nov  3 15:10:09 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 14:01:28 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -156,9 +156,10 @@
       (if (null? l)
 	  #f
 	  (let ( (rv (car l)) )
-	     (if (eq? v (ev_var-name rv))
-		 rv
-		 (rec (cdr l)) )))))
+	     (with-access::ev_var rv (name)
+		(if (eq? v name)
+		    rv
+		    (rec (cdr l)) ))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-begin ...                                                   */

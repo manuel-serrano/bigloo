@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst-play.scm     */
+;*    .../prgm/project/bigloo/api/gstreamer/examples/bgst_play.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 28 10:03:41 2008                          */
-;*    Last change :  Wed Sep  2 07:47:51 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 19:16:34 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    An example of Bigloo/Gstreamer program for playing any kind      */
 ;*    of music files.                                                  */
@@ -98,7 +98,7 @@
 	  (conv (gst-element-factory-make "audioconvert" "converter"))
 	  (resample (gst-element-factory-make "audioresample" "resample"))
 	  (sink (gst-element-factory-make "autoaudiosink" "audio-sink"))
-	  (bus (gst-pipeline-bus pipeline)))
+	  (bus (with-access::gst-pipeline pipeline (bus) bus)))
       
       ;; create the pipeline
       (gst-bin-add! pipeline source decoder conv resample sink)
@@ -134,37 +134,35 @@
 			     (let ((msg (gst-bus-poll bus :timeout #l1000000000)))
 				(cond
 				   (msg
+				    ;;;
 				    (verb 4 "message: " msg
-					  (if (gst-message-state-changed? msg)
-					      (case (gst-message-new-state msg)
-						 ((playing) " => playing")
-						 ((paused) " => paused")
-						 ((ready) " => ready")
-						 ((null) " => null"))
-					      ""))
-				    (when (=fx (gst-message-type msg)
-					       $gst-message-error)
-				       (error 'gstreamer
-					      "Message error"
-					      (gst-message-error-string msg)))
-				    (when (=fx (gst-message-type msg)
-					       $gst-message-duration)
-				       (verb 3 "duration: "
+				       (if (gst-message-state-changed? msg)
+					   (case (gst-message-new-state msg)
+					      ((playing) " => playing")
+					      ((paused) " => paused")
+					      ((ready) " => ready")
+					      ((null) " => null"))
+					   ""))
+				    (with-access::gst-message msg (type)
+				       (when (=fx type $gst-message-error)
+					  (error 'gstreamer
+					     "Message error"
+					     (gst-message-error-string msg)))
+				       (when (=fx type $gst-message-duration)
+					  (verb 3 "duration: "
 					     (gst-element-query-duration
-					      pipeline)))
-				    (when (=fx (gst-message-type msg)
-					       $gst-message-tag)
-				       (for-each (lambda (t)
-						    (verb 3 "  "
+						pipeline)))
+				       (when (=fx type $gst-message-tag)
+					  (for-each (lambda (t)
+						       (verb 3 "  "
 							  (car t) ": " (cdr t)))
-						 (gst-message-tag-list msg)))
-				    (if (=fx (gst-message-type msg)
-					     $gst-message-eos)
-					(begin
-					   (gst-element-state-set! pipeline 'null)
-					   (gst-element-state-set! pipeline 'ready)
-					   (laap (-fx r 1)))
-					(liip s)))
+					     (gst-message-tag-list msg)))
+				       (if (=fx type $gst-message-eos)
+					   (begin
+					      (gst-element-state-set! pipeline 'null)
+					      (gst-element-state-set! pipeline 'ready)
+					      (laap (-fx r 1)))
+					   (liip s))))
 				   ((=fx s 0)
 				    (gst-element-state-set! pipeline 'null)
 				    (gst-element-state-set! pipeline 'ready)

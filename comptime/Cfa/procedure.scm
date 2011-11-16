@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Thu Apr  7 09:28:01 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 18:08:16 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -128,6 +128,7 @@
       (node-setup*! args)
       (let ((node (shrink! node)))
 	 (widen!::procedure-set!-app node
+	    (vapprox (make-empty-approx))
 	    (approx (make-type-approx *unspec*))))))
 
 ;*---------------------------------------------------------------------*/

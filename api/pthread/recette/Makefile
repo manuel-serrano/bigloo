@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Thu May 24 11:57:25 2007 (serrano)                */
-#*    Copyright   :  2002-07 Manuel Serrano                            */
+#*    Last change :  Tue Nov 15 14:05:21 2011 (serrano)                */
+#*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ POPULATION	= recette.scm Makefile
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: c jvm dotnet
+all: c jvm
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
@@ -47,14 +47,6 @@ jvm:
 recette-jvm$(SCRIPTEXTENSION): recette.class
 	$(BIGLOO) -jvm $(EFLAGS) $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
-dotnet: 
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) recette-dotnet$(SCRIPTEXTENSION); \
-	  fi
-
-recette-dotnet$(SCRIPTEXTENSION): recette.obj
-	$(BIGLOO) -v -dotnet -dotnet-managed $(EFLAGS) $(BFLAGS) recette.obj -o recette-dotnet$(SCRIPTEXTENSION)
-
 pop:
 	@ echo $(POPULATION:%=pthread/recette/%)
 
@@ -63,15 +55,13 @@ clean:
 	@- $(RM) -f *.escm *.ast recette.c recette$(EXE_SUFFIX)
 	@- $(RM) -f recette.o
 	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
-	@- $(RM) -f recette.obj recette.il
-	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)
 
 distclean: clean
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
-test: test-c test-jvm test-dotnet
+test: test-c test-jvm
 
 test-c:
 	(export LD_LIBRARY_PATH=../lib:$$LD_LIBRARY_PATH; \
@@ -80,9 +70,6 @@ test-c:
 
 test-jvm:
 	./recette-jvm$(SCRIPTEXTENSION)
-
-test-dotnet:
-	./recette-dotnet$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
@@ -98,6 +85,3 @@ test-dotnet:
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
-
-.scm.obj: $*.scm
-	$(BIGLOO) -c -dotnet -dotnet-managed $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.obj

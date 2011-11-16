@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Aug  9 06:47:25 2008                          */
-;*    Last change :  Wed Dec 22 14:20:48 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 19:21:15 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This example scales a source image into a png image.             */
 ;*=====================================================================*/
@@ -71,7 +71,7 @@
 	     (sink (if (eq? mode 'bigloo)
 		       (gst-element-factory-make "bglportsink" "file-sink" :uri dst)
 		       (gst-element-factory-make "filesink" "file-sink" :location dst)))
-	     (bus (gst-pipeline-bus pipeline)))
+	     (bus (with-access::gst-pipeline pipeline (bus) bus)))
 
 	 (tprint "src=" src " dst=" dst)
 	 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Fri Jun 19 16:30:24 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:35:35 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
 ;*=====================================================================*/
@@ -108,7 +108,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test scheduler
    (make-scheduler)
-   :result scheduler?)
+   :result (lambda (x) (isa? x scheduler)))
 
 ;*---------------------------------------------------------------------*/
 ;*    scheduler-react! ...                                             */
@@ -1028,10 +1028,9 @@
 		  (body (lambda ()
 			   (thread-yield!)
 			   (thread-terminate! th1)))
-		  (name 'thread-cleanup2)))
-	  (cleanup (thread-cleanup-set! th1
-					(lambda (t)
-					   (set! res (current-time))))))
+		  (name 'thread-cleanup2))))
+      (with-access::thread th1 (cleanup)
+	 (set! cleanup (lambda (t) (set! res (current-time)))))
       (thread-start! th1)
       (thread-start! th2)
       (scheduler-start!)
@@ -1056,10 +1055,9 @@
 		  (body (lambda ()
 			   (thread-sleep! 2)
 			   (thread-terminate! th1)))
-		  (name 'thread-cleanup3)))
-	  (cleanup (thread-cleanup-set! th1
-					(lambda (r)
-					   (set! res (current-time))))))
+		  (name 'thread-cleanup3))))
+      (with-access::thread th1 (cleanup)
+	 (set! cleanup (lambda (r) (set! res (current-time)))))
       (thread-start! th1)
       (thread-start! th2)
       (thread-start! th3)
@@ -1164,10 +1162,11 @@
 			       (add! (read))
 			       (thread-yield!)
 			       (add! (read))))))))))
-      
-      (scheduler-strict-order?-set! (default-scheduler) #t)
-      (scheduler-start!)
-      (scheduler-strict-order?-set! (default-scheduler) #f)
+
+      (with-access::scheduler (default-scheduler) (strict-order?)
+	 (set! strict-order? #t)
+	 (scheduler-start!)
+	 (set! strict-order? #f))
       g)
    :result '(tata c 3 tutu b 2 toto a 1))
 
@@ -1425,7 +1424,8 @@
 				(thread-terminate! th2)))))
 	       (th2 (instantiate::fthread
 		       (body (lambda () (thread-await! 'foo))))))
-	 (thread-cleanup-set! th2 (lambda (t) (set! res #t)))
+	 (with-access::thread th2 (cleanup)
+	    (set! cleanup (lambda (t) (set! res #t))))
 	 (thread-start! th2)
 	 (thread-start! th1)
 	 (scheduler-start!)
@@ -1502,6 +1502,8 @@
 	  (exit 0))
 	 (("-p" (help "Preserve thread execution order"))
 	  (set! *thread-strict-order* #t))
+	 (("-g?level" (help "Debug"))
+	  (bigloo-debug-set! (string->integer level)))
 	 (else
 	  (set! tests (cons (string->symbol else) tests))))
       ;; run all the tests

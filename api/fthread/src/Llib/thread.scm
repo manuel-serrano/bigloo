@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Jun 19 15:42:03 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:17:43 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public FairThreads implementation.                           */
 ;*=====================================================================*/
@@ -41,9 +41,10 @@
 ;*    object-equal? ::%sigjoin ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (object-equal? o1::%sigjoin o2)
-   (and (%sigjoin? o2)
-	(eq? (%sigjoin-thread o1)
-	     (%sigjoin-thread o2))))
+   (when (isa? o2 %sigjoin)
+      (with-access::%sigjoin o1 ((thread1 thread))
+	 (with-access::%sigjoin o2 ((thread2 thread))
+	    (eq? thread1 thread2)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-join! ::fthread ...                                       */
@@ -60,35 +61,38 @@
 		  (bigloo-type-error "thread-join" "integer" to)
 		  (let ((v (thread-await! (instantiate::%sigjoin
 					     (thread t))
-					  to)))
-		     (cond
-			((terminated-thread-exception? (fthread-%exc-result t))
-			 (raise (fthread-%exc-result t)))
-			(v
-			 v)
-			(else
-			 to-val)))))
+			      to)))
+		     (with-access::fthread t (%exc-result)
+			(cond
+			   ((isa? %exc-result terminated-thread-exception)
+			    (raise %exc-result))
+			   (v
+			      v)
+			   (else
+			    to-val))))))
 	     ((?to)
 	      (if (not (number? to))
 		  (bigloo-type-error "thread-join" "integer" to)
 		  (let ((v (thread-await! (instantiate::%sigjoin
 					     (thread t))
-					  to)))
-		     (cond
-			((terminated-thread-exception? (fthread-%exc-result t))
-			 (raise (fthread-%exc-result t)))
-			(v
-			 v)
-			(else
-			 (raise (instantiate::join-timeout-exception)))))))
+			      to)))
+		     (with-access::fthread t (%exc-result)
+			(cond
+			   ((isa? %exc-result terminated-thread-exception)
+			    (raise %exc-result))
+			   (v
+			      v)
+			   (else
+			    (raise (instantiate::join-timeout-exception))))))))
 	     (else
 	      (let ((v (thread-await! (instantiate::%sigjoin
 					 (thread t)))))
-		 (cond
-		    ((terminated-thread-exception? (fthread-%exc-result t))
-		     (raise (fthread-%exc-result t)))
-		    (else
-		     v))))))))
+		 (with-access::fthread t (%exc-result)
+		    (cond
+		       ((isa? %exc-result terminated-thread-exception)
+			(raise %exc-result))
+		       (else
+			v)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-await! ...                                                */
@@ -97,12 +101,14 @@
    (let* ((t (current-thread)))
       ;; wait until the signal is present
       (define (await scdl::scheduler sig::obj)
-	 (let ((env (scheduler-env+ scdl)))
+	 (with-access::scheduler scdl ((env env+))
 	    (cond
 	       ((signal-lookup sig env)
 		;; the signal is present we return its value
 		(signal-value sig env))
-	       ((and (%sigasync? sig) (not (%sigasync-spawned sig)))
+	       ((and (isa? sig %sigasync)
+		     (with-access::%sigasync sig (spawned)
+			(not spawned)))
 		;; this is an asynchronous signal not already spawned 
 		(with-access::%sigasync sig (spawned id thunk)
 		   (set! spawned #t)
@@ -122,7 +128,7 @@
       ;; await at most n instants until the signal is present
       (define (await-ntimes scdl::scheduler sig::obj timeout)
 	 (if (and (number? timeout) (> timeout 0))
-	     (let ((env (scheduler-env+ scdl)))
+	     (with-access::scheduler scdl ((env env+))
 		(cond
 		   ((signal-lookup sig env)
 		    (signal-value sig env))
@@ -131,7 +137,7 @@
 		    (signal-register-thread! sig env t)
 		    ;; if we are waiting for an asynchronous signal,
 		    ;; it is time to spawn it
-		    (if (%sigasync? sig)
+		    (if (isa? sig %sigasync)
 			(%scheduler-spawn-async scdl sig))
 		    ;; we now mark that the current thread is timeout on SIG
 		    (%thread-timeout! t timeout)
@@ -143,14 +149,16 @@
 			#f))))
 	     (error "thread-await" "Illegal timeout" timeout)))
       (cond
-	 ((not (thread? t))
+	 ((not (isa? t thread))
 	  (error "thread-await" "no such thread" t))
 	 ((not (%thread-attached? t))
 	  (error "thread-await" "unattached thread" t))
 	 ((pair? arg)
-	  (await-ntimes (fthread-scheduler t) sig (car arg)))
+	  (with-access::fthread t (scheduler)
+	     (await-ntimes scheduler sig (car arg))))
 	 (else
-	  (await (fthread-scheduler t) sig)))))
+	  (with-access::fthread t (scheduler)
+	     (await scheduler sig))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-await*! ...                                               */
@@ -159,17 +167,17 @@
    (let* ((t (current-thread)))
       ;; await until one of the signals is present
       (define (await* e* s)
-	 (let ((env (scheduler-env+ s)))
+	 (with-access::scheduler s ((env env+))
 	    (let loop ((es e*))
 	       (cond
 		  ((null? es)
-		   (let ((scdl (fthread-scheduler t)))
+		   (with-access::fthread t ((scdl scheduler))
 		      (for-each (lambda (e)
 				   (signal-register-thread! e env t))
 				e*)
 		      (%thread-cooperate t)
-		      (values (fthread-%awake-value t)
-			      (fthread-%awake-signal t))))
+		      (with-access::fthread t (%awake-value %awake-signal)
+			 (values %awake-value %awake-signal))))
 		  ((signal-lookup (car es) env)
 		   (values (signal-value (car es) env) (car es)))
 		  (else
@@ -177,56 +185,60 @@
       ;; await at most n instants until one of the signals is present
       (define (await*-ntimes e* s timeout)
 	 (if (and (number? timeout) (>= timeout 0))
-	     (let ((env (scheduler-env+ s)))
+	     (with-access::scheduler s (env+)
 		(let loop ((es e*)
 			   (stage 'init))
 		   (cond
 		      ((null? es)
 		       (if (eq? stage 'init)
-			   (let ((scdl (fthread-scheduler t)))
-			      (for-each (lambda (e)
-					   (signal-register-thread! e env t))
-					e*)
+			   (with-access::fthread t (scheduler)
+			      (with-access::scheduler scheduler (env+)
+				 (for-each (lambda (e)
+					      (signal-register-thread! e env+ t))
+				    e*))
 			      (%thread-timeout! t timeout)
 			      (loop e* 'end))
 			   (values #f #f)))
-		      ((signal-lookup (car es) env)
-		       (values (signal-value (car es) env) (car es)))
+		      ((signal-lookup (car es) env+)
+		       (values (signal-value (car es) env+) (car es)))
 		      (else
 		       (loop (cdr es) stage)))))
 	     (error "thread-await*" "Illegal timeout" timeout)))
       (cond
-	 ((not (thread? t))
+	 ((not (isa? t thread))
 	  (error "thread-await" "no such thread" t))
 	 ((not (%thread-attached? t))
 	  (error "thread-await" "unattached thread" t))
 	 ((pair? arg)
-	  (await*-ntimes s* (fthread-scheduler t) (car arg)))
+	  (with-access::fthread t (scheduler)
+	     (await*-ntimes s* scheduler (car arg))))
 	 (else
-	  (await* s* (fthread-scheduler t))))))
+	  (with-access::fthread t (scheduler)
+	     (await* s* scheduler))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-values! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (thread-get-values! s)
    (let ((t (current-thread)))
-      (if (thread? t)
-	  (begin
-	     (%thread-yield! t)
-	     (signal-last-values s (scheduler-env+ (fthread-scheduler t)))))))
+      (when (isa? t thread)
+	 (%thread-yield! t)
+	 (with-access::fthread t (scheduler)
+	    (with-access::scheduler scheduler (env+)
+	       (signal-last-values s env+))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-values*! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (thread-get-values*! s*)
    (let ((t (current-thread)))
-      (if (thread? t)
-	  (begin
-	     (%thread-yield! t)
-	     (map (lambda (s)
-		     (cons s (signal-last-values
-			      s (scheduler-env+ (fthread-scheduler t)))))
-		  s*)))))
+      (when (isa? t thread)
+	 (%thread-yield! t)
+	 (map (lambda (s)
+		 (with-access::fthread t (scheduler)
+		    (with-access::scheduler scheduler (env+)
+		       (cons s (signal-last-values s env+)))))
+	    s*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-await-values! ...                                         */
@@ -330,10 +342,10 @@
        ;; the thread is dead or terminated, nothing to do
        #unspecified)
       (else
-       (let ((scdl (fthread-scheduler t)))
+       (with-access::fthread t (scheduler)
 	  ;; adding a thread simply append it to the list of thread
 	  ;; to be stoped at the next scheduler instant
-	  (with-access::%scheduler scdl (tosuspend/resume)
+	  (with-access::%scheduler scheduler (tosuspend/resume)
 	     (set! tosuspend/resume (cons (cons t val) tosuspend/resume)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -352,22 +364,26 @@
 ;*    thread-get-specific ::fthread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-specific th::fthread)
-   (fthread-%specific th))
+   (with-access::fthread th (%specific)
+      %specific))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-specific! ::fthread ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-specific! th::fthread v)
-   (fthread-%specific-set! th v))
+   (with-access::fthread th (%specific)
+      (set! %specific v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-cleanup ::fthread ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-cleanup th::fthread)
-   (fthread-%cleanup th))
+   (with-access::fthread th (%cleanup)
+      %cleanup))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-cleanup! ::fthread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-cleanup! th::fthread v)
-   (fthread-%cleanup-set! th v))
+   (with-access::fthread th (%cleanup)
+      (set! %cleanup v)))

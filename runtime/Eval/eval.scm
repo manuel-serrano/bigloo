@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Nov  4 11:30:04 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:10:18 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -193,11 +193,13 @@
 ;*    eval-exception-handler ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (eval-exception-handler e loc)
-   (when (and (&exception? e) (not (&exception-fname e)))
+   (when (and (isa? e &exception)
+	      (with-access::&exception e (fname) (not fname)))
       (match-case loc
-	 ((at ?fname ?loc)
-	  (&exception-fname-set! e fname)
-	  (&exception-location-set! e loc))))
+	 ((at ?name ?loc)
+	  (with-access::&exception e (fname location)
+	     (set! fname name)
+	     (set! location loc)))))
    (raise e))
 
 ;*---------------------------------------------------------------------*/
@@ -329,8 +331,9 @@
 		  (with-handler
 		     (lambda (e)
 			(error-notify e)
-			(when (eof-object? (&error-obj e))
-			   (reset-eof (current-input-port)))
+			(with-access::&error e (obj)
+			   (when (eof-object? obj)
+			      (reset-eof (current-input-port))))
 			(sigsetmask 0)
 			(luup mod))
 		     (let liip ((mod mod))
@@ -535,8 +538,8 @@
 				  x)
 		  (with-handler
 		     (lambda (exc)
-			(let ((nexc (if (&error? exc)
-					(let ((obj (&error-obj exc)))
+			(let ((nexc (if (isa? exc &error)
+					(with-access::&error exc (obj)
 					   (if (epair? obj)
 					       (match-case (cer obj)
 						  ((at ?fname ?loc)
@@ -596,8 +599,8 @@
 	      (lambda (x e)
 		 (with-handler
 		    (lambda (e)
-		       (let ((ne (if (&error? e)
-				     (let ((obj (&error-obj e)))
+		       (let ((ne (if (isa? e &error)
+				     (with-access::&error e (obj)
 					(if (epair? obj)
 					    (match-case (cer obj)
 					       ((at ?fname ?loc)
@@ -642,8 +645,8 @@
 	      (lambda (x e)
 		 (with-handler
 		    (lambda (e)
-		       (let ((ne (if (&error? e)
-				     (let ((obj (&error-obj e)))
+		       (let ((ne (if (isa? e &error)
+				     (with-access::&error e (obj)
 					(if (epair? obj)
 					    (match-case (cer obj)
 					       ((at ?fname ?loc)

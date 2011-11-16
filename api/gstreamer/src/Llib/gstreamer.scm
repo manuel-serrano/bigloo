@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Fri Jul 17 16:22:53 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:36:54 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of GSTREAMER applications.                      */
 ;*=====================================================================*/
@@ -101,7 +101,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%gst-thread-init!)
    (unless ($bglgst-use-threads?)
-      (unless (thread? *gst-thread*)
+      (unless (isa? *gst-thread* thread)
 	 ;; the thread in charge of executing all callbacks
 	 (set! *gst-thread*
 	       (instantiate::pthread

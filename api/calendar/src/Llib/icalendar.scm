@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:14:19 2005                          */
-;*    Last change :  Sun Mar 13 11:15:52 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 10:24:06 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    iCalendar parser                                                 */
@@ -17,7 +17,9 @@
    (import __calendar_types)
    
    (export (write-icalendar ::calendar ::output-port #!optional pred)
-	   (port->icalendar::calendar ::input-port #!optional calendar))
+	   (port->icalendar::calendar ::input-port #!optional cal))
+
+   (include "icalendar.sch")
    
    (static (class line
 	      (name::symbol read-only)
@@ -39,24 +41,25 @@
     "VCALENDAR"
     oport
     (lambda (op)
-       (write-line "PRODID" '() (calendar-id cal) op)
-       (write-line "VERSION" '() (calendar-version cal) op)
-       (unless (eq? (calendar-method cal) #unspecified)
-	  (write-line "METHOD" '() (calendar-method cal) op))
-       (if pred
-	   (for-each (lambda (e)
-			(when (pred e)
+       (with-access::calendar cal (id version method events)
+	  (write-line "PRODID" '() id op)
+	  (write-line "VERSION" '() version op)
+	  (unless (eq? method #unspecified)
+	     (write-line "METHOD" '() method op))
+	  (if pred
+	      (for-each (lambda (e)
+			   (when (pred e)
+			      (with-handler
+				 (lambda (e)
+				    (exception-notify e))
+				 (write-calevent e op))))
+		 events)
+	      (for-each (lambda (e)
 			   (with-handler
 			      (lambda (e)
 				 (exception-notify e))
-			      (write-calevent e op))))
-		     (calendar-events cal))
-	   (for-each (lambda (e)
-			(with-handler
-			   (lambda (e)
-			      (exception-notify e))
-			   (write-calevent e op)))
-		     (calendar-events cal))))))
+			      (write-calevent e op)))
+		 events))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-block ...                                                  */
@@ -225,7 +228,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->icalendar ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (port->icalendar iport #!optional calendar)
+(define (port->icalendar iport #!optional cal)
    
    (define (evt b cal)
       (cond
@@ -240,8 +243,8 @@
 	 (else
 	  #f)))
 
-   (let ((cal (if (calendar? calendar)
-		  calendar
+   (let ((cal (if (isa? cal calendar)
+		  cal
 		  (instantiate::calendar
 		     (name (input-port-name iport)))))
 	 (b (read-block iport)))
@@ -590,79 +593,93 @@
 			(lambda (x)
 			   (memq x '(SECONDLY MINUTELY HOURLY DAILY
 					      WEEKLY MONTHLY YEARLY))))))
-		 (calrecurrence-frequency-set! rec t) 
+		 (with-access::calrecurrence rec (frequency)
+		    (set! frequency t) )
 		 (ignore)))
 	     ((COUNT)
-	      (calrecurrence-count-set! rec (read-token integer?))
+	      (with-access::calrecurrence rec (count)
+		 (set! count (read-token integer?)))
 	      (ignore))
 	     ((UNTIL)
-	      (calrecurrence-until-set! rec (read-date))
+	      (with-access::calrecurrence rec (until)
+		 (set! until (read-date)))
 	      (ignore))
 	     ((INTERVAL)
-	      (calrecurrence-interval-set! rec (read-token integer?))
+	      (with-access::calrecurrence rec (interval)
+		 (set! interval (read-token integer?)))
 	      (ignore))
 	     ((BYSECOND)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (>= x 0)
 				  (<fx x 60)))))
-		 (calrecurrence-bysecond-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (bysecond)
+		    (set! bysecond (read-list read pred))))
 	      (ignore))
 	     ((BYMINUTE)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (>= x 0)
 				  (<fx x 60)))))
-		 (calrecurrence-byminute-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (byminute)
+		    (set! byminute (read-list read pred))))
 	      (ignore))
 	     ((BYHOUR)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (>= x 0)
 				  (<fx x 24)))))
-		 (calrecurrence-byhour-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (byhour)
+		    (set! byhour (read-list read pred))))
 	      (ignore))
 	     ((BYDAY)
-	      (calrecurrence-byweekday-set! rec (read-byweekday-list))
+	      (with-access::calrecurrence rec (byweekday)
+		 (set! byweekday (read-byweekday-list)))
 	      (ignore))
 	     ((BYMONTHDAY)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (or (and (>fx x 0) (<fx x 32))
 				      (and (<fx x 0) (>fx x -32)))))))
-		 (calrecurrence-bymonthday-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (bymonthday)
+		    (set! bymonthday (read-list read pred))))
 	      (ignore))
 	     ((BYYEARDAY)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (or (and (>fx x 0) (<fx x 13))
 				      (and (<fx x 0) (>fx x -13)))))))
-		 (calrecurrence-byyearday-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (byyearday)
+		    (set! byyearday (read-list read pred))))
 	      (ignore))
 	     ((BYWEEKNO)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (or (and (>fx x 0) (<fx x 53))
 				      (and (<fx x 0) (>fx x -52)))))))
-		 (calrecurrence-byweekno-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (byweekno)
+		    (set! byweekno (read-list read pred))))
 	      (ignore))
 	     ((BYMONTH)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (or (and (>fx x 0) (<fx x 13))
 				      (and (<fx x 0) (>fx x -13)))))))
-		 (calrecurrence-bymonth-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (bymonth)
+		    (set! bymonth (read-list read pred))))
 	      (ignore))
 	     ((BYSETPOS)
 	      (let ((pred (lambda (x)
 			     (and (fixnum? x)
 				  (and (>fx x 0) (<fx x 366))))))
-		 (calrecurrence-bysetpos-set! rec (read-list read pred)))
+		 (with-access::calrecurrence rec (bysetpos)
+		    (set! bysetpos (read-list read pred))))
 	      (ignore))
 	     ((WKST)
 	      (let ((l (read-token
 			(lambda (x) (memq x '(SU MO TU WE TH FR SA))))))
-		 (calrecurrence-wkst-set! rec l))
+		 (with-access::calrecurrence rec (wkst)
+		    (set! wkst l)))
 	      (ignore))
 	     (else
 	      (raise

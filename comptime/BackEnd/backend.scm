@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Fri Apr  8 06:37:57 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:38:56 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -15,6 +15,8 @@
 (module backend_backend
    
    (import engine_param)
+
+   (include "BackEnd/backend.sch")
    
    (export (abstract-class backend
 	      (backend-initialize!)

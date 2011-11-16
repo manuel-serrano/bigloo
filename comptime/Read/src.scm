@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:44:03 1994                          */
-;*    Last change :  Mon Jun 22 10:03:43 2009 (serrano)                */
-;*    Copyright   :  1994-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov 15 08:14:10 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We read the source file                                          */
 ;*=====================================================================*/
@@ -46,7 +46,7 @@
 ;*    read-handler ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (read-handler e)
-   (if (&error? e)
+   (if (isa? e &error)
        (begin
 	  ;; before producing the error, we display the
 	  ;; source file name

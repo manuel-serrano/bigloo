@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 14:45:56 2008                          */
-;*    Last change :  Sun Jan 25 14:06:21 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:03:46 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstGhostPad                                                      */
 ;*=====================================================================*/
@@ -24,17 +24,20 @@
 	    
    (export  (class gst-ghost-pad::gst-pad
 	       (target::gst-pad
-		(get (lambda (o)
-			($gst-ghost-pad-get-target
-			 ($gst-ghost-pad (gst-ghost-pad-$builtin o)))))
-		(set (lambda (o v)
-			(unless ($gst-ghost-pad-set-target
-				 ($gst-ghost-pad (gst-ghost-pad-$builtin o))
-				 ($gst-pad (gst-pad-$builtin v)))
-			   (raise (instantiate::&gst-error
-				     (proc 'gst-ghost-pad-target-set!)
-				     (msg "Cannot set target")
-				     (obj (list o v)))))))))
+		  (get (lambda (o)
+			  (with-access::gst-ghost-pad o ($builtin)
+			     ($gst-ghost-pad-get-target
+				($gst-ghost-pad $builtin)))))
+		  (set (lambda (o v)
+			  (with-access::gst-ghost-pad o ($builtin)
+			     (with-access::gst-pad v ((pad-builtin $builtin))
+				(unless ($gst-ghost-pad-set-target
+					   ($gst-ghost-pad $builtin)
+					   ($gst-pad pad-builtin))
+				   (raise (instantiate::&gst-error
+					     (proc 'gst-ghost-pad-target-set!)
+					     (msg "Cannot set target")
+					     (obj (list o v)))))))))))
 
 	    ($make-gst-ghost-pad::obj ::$gst-ghost-pad))
 

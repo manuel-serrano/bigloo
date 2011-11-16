@@ -4,6 +4,7 @@
 	   saw_defs
 	   )
    (export (remove::block b::block))
+   (include "SawMill/remove.sch")
    (static (wide-class defcollect::block)
 	   (wide-class rcollect::block)
 	   (wide-class ucollect::block)

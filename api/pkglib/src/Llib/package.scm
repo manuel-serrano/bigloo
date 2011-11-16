@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 13 11:57:08 2006                          */
-;*    Last change :  Mon Nov 19 05:37:07 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 09:58:28 2011 (serrano)                */
+;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for handling packages                                      */
 ;*=====================================================================*/
@@ -160,11 +160,10 @@
 		  (let ((h (tar-read-header pz)))
 		     (if (not h)
 			 #f
-			 (begin
-			    (trace-item "header name=" (tar-header-name h)
-					" type=" (tar-header-type h))
-			    (if (eq? (tar-header-type h) 'normal)
-				(if (string=? (tar-header-name h) intf)
+			 (with-access::tar-header h (type name)
+			    (trace-item "header name=" name " type=" type)
+			    (if (eq? type 'normal)
+				(if (string=? name intf)
 				    (interface-read-interface pz)
 				    (begin
 				       (tar-read-block h pz)
@@ -194,11 +193,10 @@
 		  (let ((h (tar-read-header pz)))
 		     (if (not h)
 			 #f
-			 (begin
-			    (trace-item "header name=" (tar-header-name h)
-					" type=" (tar-header-type h))
-			    (if (eq? (tar-header-type h) 'normal)
-				(if (string=? (tar-header-name h) meta)
+			 (with-access::tar-header h (type name)
+			    (trace-item "header name=" name " type=" type)
+			    (if (eq? type 'normal)
+				(if (string=? name meta)
 				    (read pz)
 				    (begin
 				       (tar-read-block h pz)
@@ -226,14 +224,13 @@
 	       (let ((h (tar-read-header pz)))
 		  (if (not h)
 		      res
-		      (begin
-			 (trace-item "header name=" (tar-header-name h)
-				     " type=" (tar-header-type h))
+		      (with-access::tar-header h (type name)
+			 (trace-item "header name=" name " type=" type)
 			 (tar-read-block h pz)
-			 (if (and (eq? (tar-header-type h) 'normal)
+			 (if (and (eq? type 'normal)
 				  (string-suffix-ci? (pkglib-interface-suffix)
-						     (tar-header-name h)))
-			     (let ((p (prefix (basename (tar-header-name h)))))
+						     name))
+			     (let ((p (prefix (basename name))))
 				(loop (cons (string->symbol p) res)))
 			     (loop res))))))
 	    (close-input-port pz)))))

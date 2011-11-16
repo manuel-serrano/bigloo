@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 06:40:08 2003                          */
-;*    Last change :  Fri Jun 19 16:41:08 2009 (serrano)                */
-;*    Copyright   :  2003-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 11:01:24 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The FairThreads scheduler                                        */
 ;*=====================================================================*/
@@ -53,17 +53,24 @@
 (define (current-scheduler)
    (let ((th (current-thread)))
       (cond
-	 ((scheduler? th) th)
-	 ((fthread? th) (fthread-scheduler th))
-	 ((thread? th) (thread-parameter *current-scdl-param-id*))
-	 (else *current-scheduler*))))
+	 ((isa? th scheduler)
+	  th)
+	 ((isa? th fthread)
+	  (with-access::fthread th (scheduler) scheduler))
+	 ((isa? th thread)
+	  (thread-parameter *current-scdl-param-id*))
+	 (else
+	  *current-scheduler*))))
 
 (define (current-scheduler-set! scdl)
    (let ((th (current-thread)))
       (cond
-	 ((fthread? th) (error 'current-scheduler-set! "Read-only value" th))
-	 ((thread? th) (thread-parameter-set! *current-scdl-param-id* scdl))
-	 (else (set! *current-scheduler* scdl)))))
+	 ((isa? th fthread)
+	  (error 'current-scheduler-set! "Read-only value" th))
+	 ((isa? th thread)
+	  (thread-parameter-set! *current-scdl-param-id* scdl))
+	 (else
+	  (set! *current-scheduler* scdl)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-scheduler ...                                            */
@@ -72,18 +79,21 @@
    (let ((th (current-thread)))
 
       ; The first thread in hierarchy which is not a scheduler, nor a fthread
-      (if (fthread? th)
-	  (set! th (%pthread-parent (fthread-%builtin
-				     (if (scheduler? th)
-					 th
-					 (fthread-scheduler th))))))
+      (when (isa? th fthread)
+	 (let ((s (if (isa? th scheduler)
+		      th
+		      (with-access::fthread th (scheduler) scheduler))))
+	    (with-access::fthread s (%builtin)
+	       (with-access::%pthread %builtin (parent)
+		  (set! th parent)))))
+
       (cond
 	 ((null? scdl)
-	  (if (thread? th)
+	  (if (isa? th thread)
 	      (thread-parameter 'fthread*default-scheduler*)
 	      *default-scheduler*))
-	 ((scheduler? (car scdl))
-	  (if (thread? th)
+	 ((isa? (car scdl) scheduler)
+	  (if (isa? th thread)
 	      (thread-parameter-set! 'fthread*default-scheduler* (car scdl))
 	      (set! *default-scheduler* (car scdl)))
 	  (car scdl))
@@ -176,9 +186,11 @@
       (with-access::%scheduler scdl (next-instant)
 	 (set! next-instant
 	       (lambda (scdl i)
-		  (%pthread-leave-scheduler (scheduler-%builtin scdl))))
+		  (with-access::scheduler scdl (%builtin) 
+		     (%pthread-leave-scheduler %builtin))))
 	 ;; acquire the global cpu lock
-	 (%pthread-enter-scheduler (scheduler-%builtin scdl))
+	 (with-access::scheduler scdl (%builtin) 
+	    (%pthread-enter-scheduler %builtin))
 	 ;; return a description of new state
 	 (scheduler-state scdl))))
 
@@ -207,7 +219,8 @@
 			   args)))))
       (define (busy-waiting-next-instant scdl i)
 	 (if (stop i)
-	     (%pthread-leave-scheduler (scheduler-%builtin scdl))
+	     (with-access::scheduler scdl (%builtin) 
+		(%pthread-leave-scheduler %builtin))
 	     (let ((state (scheduler-state scdl)))
 		(with-trace 2 'busy-waiting-next-instant
 		   (trace-item "state=" state))
@@ -218,10 +231,12 @@
 		    ;; busy waiting mode
 		    #t)
 		   (else
-		    (%pthread-leave-scheduler (scheduler-%builtin scdl)))))))
+		    (with-access::scheduler scdl (%builtin) 
+		       (%pthread-leave-scheduler %builtin)))))))
       (define (no-busy-waiting-next-instant scdl i)
 	 (if (stop i)
-	     (%pthread-leave-scheduler (scheduler-%builtin scdl))
+	     (with-access::scheduler scdl (%builtin) 
+		(%pthread-leave-scheduler %builtin))
 	     (let ((state (scheduler-state scdl)))
 		(with-trace 2 'no-busy-waiting-next-instant
 		   (trace-item "state=" state))
@@ -244,7 +259,8 @@
 		       (%async-asynchronize %builtin)
 		       #t))
 		   (else
-		    (%pthread-leave-scheduler (scheduler-%builtin scdl)))))))
+		    (with-access::scheduler scdl (%builtin)
+		       (%pthread-leave-scheduler %builtin)))))))
 
       (with-access::%scheduler scdl (%builtin next-instant)
 	 (set! next-instant
@@ -252,7 +268,8 @@
 		   busy-waiting-next-instant
 		   no-busy-waiting-next-instant))
 	 ;; acquires the global cpu lock
-	 (%pthread-enter-scheduler (scheduler-%builtin scdl))
+	 (with-access::scheduler scdl (%builtin) 
+	    (%pthread-enter-scheduler %builtin))
 	 #unspecified)))
 
 ;*---------------------------------------------------------------------*/
@@ -261,7 +278,7 @@
 (define (broadcast! sig . val)
    (let ((t (current-thread))
 	 (v (if (pair? val) (car val) #unspecified)))
-      (if (thread? t)
+      (if (isa? t thread)
 	  (if (%thread-attached? t)
 	      (with-access::fthread t (scheduler)
 		 (%broadcast! scheduler sig v))
@@ -280,7 +297,7 @@
    (let ((s (cond
 	       ((null? s)
 		(default-scheduler))
-	       ((scheduler? (car s))
+	       ((isa? (car s) scheduler)
 		(car s))
 	       (else
 		(error "scheduler-react!"
@@ -322,9 +339,10 @@
    (let ((s (cond
 	       ((null? s)
 		(default-scheduler))
-	       ((scheduler? (car s))
+	       ((isa? (car s) scheduler)
 		(car s))
 	       (else
-		(error "scheduler-react!" "Illegal scheduler" (car s))))))
+		(error "scheduler-instant" "Illegal scheduler" (car s))))))
       (with-access::%scheduler s (env+)
-	 (ftenv-instant (car env+)))))
+	 (with-access::ftenv (car env+) (instant)
+	    instant))))

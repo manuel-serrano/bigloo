@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Nov  7 16:22:43 2011 (serrano)                */
+#*    Last change :  Mon Nov 14 10:18:05 2011 (serrano)                */
 #*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -108,6 +108,7 @@ SOURCE_FILES	= $(COMMON:%=%.scm) \
 POPULATION	= $(SOURCE_FILES) \
                   Makefile \
                   test.sch \
+                  eval.sch \
                   object.sch \
                   object5.sch \
                   c-file.h \

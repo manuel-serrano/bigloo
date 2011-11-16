@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 25 13:50:29 1999                          */
-;*    Last change :  Thu Nov 10 07:03:39 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:10:25 2011 (serrano)                */
 ;*    Copyright   :  1999-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The format cfa_info used is to big. Its compilation was          */
@@ -21,6 +21,8 @@
 	   ast_node
 	   cfa_info)
 
+   (include "Cfa/cinfo3.sch")
+   
    (export ;; extern extension
            (wide-class pragma/Cinfo::pragma (approx::approx read-only))
 	   (wide-class getfield/Cinfo::getfield (approx::approx read-only))

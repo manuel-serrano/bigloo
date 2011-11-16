@@ -12,6 +12,7 @@
 	   backend_jvm_class
 	   backend_cplib
 	   )
+   (include "SawJvm/names.sch")
    (export (names-initialization me::jvm)
 	   (wide-class jvmbasic::type) ))
 

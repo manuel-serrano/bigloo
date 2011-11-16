@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Sat Nov 12 20:03:03 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:01:31 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -15,7 +15,8 @@
 (module module_module
    
    (include "Ast/unit.sch"
-	    "Engine/pass.sch")
+	    "Engine/pass.sch"
+	    "Module/module.sch")
    
    (import  engine_param
 	    engine_pass

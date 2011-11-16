@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Nov  9 17:20:37 2011 (serrano)                */
+#*    Last change :  Wed Nov 16 10:26:04 2011 (serrano)                */
 #*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -28,7 +28,7 @@ POPULATION = Makefile README $(SSLZIP)
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm build-dotnet
+.PHONY: build build build-c build-jvm
 
 all: build
 boot: build
@@ -38,7 +38,6 @@ build:
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -52,13 +51,6 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    (cd src && $(MAKE) build-jvm); \
-          fi
-
-build-dotnet:
-build-dotnet_unimplemented:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) build-dotnet); \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -99,9 +91,6 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) install-jvm; \
           fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) install-dotnet; \
-          fi
 
 install-c:
 	if [ "$(OPENSSLIBS)" != "no" ]; then \
@@ -114,12 +103,9 @@ install-jvm: api-install-jvm
 	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
         fi
 
-install-dotnet: 
-
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm \
-           api-uninstall-dotnet
+           api-uninstall-jvm
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/commons-ssl.zip
 
 #*---------------------------------------------------------------------*/

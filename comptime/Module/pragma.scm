@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Sun Mar 13 09:01:52 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:35:05 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -33,11 +33,11 @@
 ;*    make-pragma-compiler ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (make-pragma-compiler)
-   (instantiate::ccomp (id 'pragma)
-		       (producer  (pragma-producer *module*))
-		       (consumer  (lambda (m c)
-				     ((pragma-producer m) c)))
-		       (finalizer pragma-finalizer)))
+   (instantiate::ccomp
+      (id 'pragma)
+      (producer (pragma-producer *module*))
+      (consumer (lambda (m c) ((pragma-producer m) c)))
+      (finalizer pragma-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pragma-producer ...                                              */
@@ -50,10 +50,7 @@
 		    protos)
 	  '())
 	 (else
-	  (user-error "Parse error"
-		      (string-append "Illegal `pragma' clause")
-		      clause
-		      '())))))
+	  (user-error "pragma" "Illegal clause" clause '())))))
    
 ;*---------------------------------------------------------------------*/
 ;*    pragma-parser ...                                                */
@@ -63,7 +60,7 @@
       (((and ?id (? symbol?)) . ?prop)
        (set! *pragma-list* (cons (list id module prop clause) *pragma-list*)))
       (else
-       (user-error "Parse error" "Illegal `pragma' clause" clause '()))))
+       (user-error "pragma" "Illegal clause" clause '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *pragma-list* ...                                                */
@@ -77,8 +74,7 @@
    (for-each (lambda (pragma)
 		(match-case pragma
 		   ((?id ?module ?prop* ?clause)
-		    (let ((global (let ((global (find-global/module id
-								    module)))
+		    (let ((global (let ((global (find-global/module id module)))
 				     (if (global? global)
 					 global
 					 (find-global/module id 'foreign)))))

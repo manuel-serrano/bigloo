@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Wed Mar 23 17:33:07 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:09:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
@@ -18,6 +18,8 @@
 	   type_cache
 	   ast_var
 	   ast_node)
+
+   (include "Cfa/cinfo.sch")
    
    (export ;; the approximations
     (class approx

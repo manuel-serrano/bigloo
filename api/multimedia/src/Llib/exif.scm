@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Fri Nov 20 13:09:33 2009 (serrano)                */
-;*    Copyright   :  2004-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 18:16:06 2011 (serrano)                */
+;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
 ;*=====================================================================*/
@@ -240,87 +240,100 @@
 		     ((#x103)
 		      ;; TAG_COMPRESS
 		      (let ((c (getformat en bytes valptr fmt)))
-			 (exif-jpeg-compress-set! exif c)))
+			 (with-access::exif exif (jpeg-compress)
+			    (set! jpeg-compress c))))
 		     ((#x10f)
 		      ;; TAG_MAKE
-		      (exif-make-set! exif (strncpy valptr 31)))
+		      (with-access::exif exif (make)
+			 (set! make (strncpy valptr 31))))
 		     ((#x110)
 		      ;; TAG_MODEL
-		      (exif-model-set! exif (strncpy valptr 39)))
+		      (with-access::exif exif (model)
+			 (set! model (strncpy valptr 39))))
 		     ((#x112)
 		      ;; TAG_ORIENTATION
 		      (let ((o (getformat en bytes valptr fmt)))
-			 (exif-orientation-set! exif
-						(case o
-						   ((#e1)
-						    'landscape)
-						   ((#e6)
-						    'portrait)
-						   ((#e8)
-						    'upsidedown)
-						   (else
-						    'seascape)))))
+			 (with-access::exif exif (orientation)
+			    (set! orientation
+			       (case o
+				  ((#e1) 'landscape)
+				  ((#e6) 'portrait)
+				  ((#e8) 'upsidedown)
+				  (else 'seascape))))))
 		     ((#x201)
 		      ;; TAG_THUMBNAIL_OFFSET
 		      (let* ((ol (getformat/fx en bytes valptr fmt))
 			     (of (+fx ol base)))
-			 (exif-thumbnail-offset-set! exif of)))
+			 (with-access::exif exif (thumbnail-offset)
+			    (set! thumbnail-offset of))))
 		     ((#x202)
 		      ;; TAG_THUMBNAIL_LENGTH
 		      (let ((le (getformat/fx en bytes valptr fmt)))
-			 (exif-thumbnail-length-set! exif le)))
+			 (with-access::exif exif (thumbnail-length)
+			    (set! thumbnail-length le))))
 		     ((#x11a)
 		      ;; TAG_XRESOLUTION
 		      (let ((xr (getformat en bytes valptr fmt)))
-			 (exif-xresolution-set! exif xr)))
+			 (with-access::exif exif (xresolution)
+			    (set! xresolution xr))))
 		     ((#x11b)
 		      ;; TAG_YRESOLUTION
 		      (let ((yr (getformat en bytes valptr fmt)))
-			 (exif-xresolution-set! exif yr)))
+			 (with-access::exif exif (yresolution)
+			    (set! yresolution yr))))
 		     ((#x128)
 		      ;; TAG_RESOLUTION_UNIT
 		      (let ((ru (getformat en bytes valptr fmt)))
-			 (exif-resolution-unit-set! exif ru)))
+			 (with-access::exif exif (resolution-unit)
+			    (set! resolution-unit ru))))
 		     ((#x132)
 		      ;; TAG_DATE_TIME
 		      (let ((dt (strncpy valptr 31)))
-			 (exif-date-set! exif dt)))
+			 (with-access::exif exif (date)
+			    (set! date dt))))
 		     ((#x213)
 		      ;; TAG_YCbCrPositioning
 		      'todo)
 		     ((#x829A)
 		      ;; TAG_EXPOSURETIME
 		      (let ((et (getformat en bytes valptr fmt)))
-			 (exif-exposure-time-set! exif et)))
+			 (with-access::exif exif (exposure-time)
+			    (set! exposure-time et))))
 		     ((#x829D)
 		      ;; TAG_FNUMBER
 		      (let ((fn (getformat en bytes valptr fmt)))
-			 (exif-fnumber-set! exif fn)))
+			 (with-access::exif exif (fnumber)
+			    (set! fnumber fn))))
 		     ((#x8769 #xa005)
 		      ;; TAG_EXIF_OFFSET, TAG_INTEROP_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
 			 (process-exif-dir! en bytes ss base exif o0)))
 		     ((#x8827)
 		      (let ((is (getformat en bytes valptr fmt)))
-			 (exif-iso-set! exif is)))
+			 (with-access::exif exif (iso)
+			    (set! iso is))))
 		     ((#x9000)
 		      ;; TAG_EXIF_VERSION
 		      'todo)
 		     ((#x9003 #x9004)
 		      ;; TAG_DATE_TIME_ORIGINAL, TAG_DATE_TIME_DIGITIZED
-		      (exif-date-set! exif (strncpy valptr 19)))
+		      (with-access::exif exif (date)
+			 (set! date (strncpy valptr 19))))
 		     ((#x9201)
 		      ;; TAG_SHUTTER_SPEED_VALUE
 		      (let ((sv (getformat en bytes valptr fmt)))
-			 (exif-shutter-speed-value-set! exif sv)))
+			 (with-access::exif exif (shutter-speed-value)
+			    (set! shutter-speed-value sv))))
 		     ((#x9202 #x9205)
 		      ;; TAG_APERTURE
 		      (let ((ap (getformat en bytes valptr fmt)))
-			 (exif-aperture-set! exif ap)))
+			 (with-access::exif exif (aperture)
+			    (set! aperture ap))))
 		     ((#x9204)
 		      ;; TAG_EXPOSURE_BIAS_VALUE
 		      (let ((bv (getformat en bytes valptr fmt)))
-			 (exif-exposure-bias-value-set! exif bv)))
+			 (with-access::exif exif (exposure-bias-value)
+			    (set! exposure-bias-value bv))))
 		     ((#x9207)
 		      ;; TAG_METERING_MODE
 		      (let ((mm (case (getformat/fx en bytes valptr fmt)
@@ -328,39 +341,46 @@
 				   ((3) "spot")
 				   ((5) "matrix")
 				   (else "???"))))
-			 (exif-metering-mode-set! exif mm)))
+			 (with-access::exif exif (metering-mode)
+			    (set! metering-mode mm))))
 		     ((#x920a)
 		      ;; TAG_FOCALLENGTH
 		      (let ((fl (getformat en bytes valptr fmt)))
-			 (exif-focal-length-set! exif fl)))
+			 (with-access::exif exif (focal-length)
+			    (set! focal-length fl))))
 		     ((#x9209)
 		      ;; TAG_FLASH
 		      (let* ((fl (getformat/fx en bytes valptr fmt))
 			     (f (not (=fx (bit-and fl 7) 0))))
-			 (exif-flash-set! exif f)))
+			 (with-access::exif exif (flash)
+			    (set! flash f))))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
-		      (exif-%commentpos-set! exif (+ valptr o0))
-		      (exif-%commentlen-set! exif 199)
-		      (when (substring-at? bytes "ASCII\000\000\000" valptr)
-			 (exif-comment-set! exif
-					    (remove-trailing-spaces!
-					     (strncpy (+fx 8 valptr) 191)))))
+		      (with-access::exif exif (%commentpos
+						 %commentlen
+						 comment)
+			 (set! %commentpos (+ valptr o0))
+			 (set! %commentlen 199)
+			 (when (substring-at? bytes "ASCII\000\000\000" valptr)
+			    (set! comment
+			       (remove-trailing-spaces!
+				  (strncpy (+fx 8 valptr) 191))))))
 		     ((#xa002)
 		      ;; TAG_EXIF_IMAGEWIDTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
-			 (exif-ewidth-set! exif w)))
+			 (with-access::exif exif (ewidth)
+			    (set! ewidth w))))
 		     ((#xa003)
 		      ;; TAG_EXIF_IMAGELENGTH
 		      (let ((w (getformat/fx en bytes valptr fmt)))
-			 (exif-eheight-set! exif w)))
+			 (with-access::exif exif (eheight)
+			    (set! eheight w))))
 		     ((#xa20e)
 		      ;; TAG_FOCALPLANEXRES
 		      (let ((r (getformat en bytes valptr fmt)))
-			 (exif-focal-plane-xres-set! exif
-						     (if (pair? r)
-							 (/ (car r) (cdr r))
-							 r))))
+			 (with-access::exif exif (focal-plane-xres)
+			    (set! focal-plane-xres
+			       (if (pair? r) (/ (car r) (cdr r)) r)))))
 		     ((#xa210)
 		      ;; TAG_FOCALPLANEUNITS
 		      (let ((fpu (case (getformat/fx en bytes valptr fmt)
@@ -369,7 +389,8 @@
 				    ((3) 10)
 				    ((4) 1)
 				    ((5) .001))))
-			 (exif-focal-plane-units-set! exif fpu)))
+			 (with-access::exif exif (focal-plane-units)
+			    (set! focal-plane-units fpu))))
 		     (else
 		      ;; TAG_UNKNOWN
 		      'unknown)))
@@ -396,8 +417,8 @@
 	  ;; Intel is little endian
 	  #t)
 	 (else
-	  (warning 'read-jpeg-exif
-		   "Unknown exif endianess, assuminug big endian")
+	  (warning "'read-jpeg-exif"
+	     "Unknown exif endianess, assuminug big endian")
 	  #f)))
    (if (and (char=? (string-ref bytes 4) #a000)
 	    (char=? (string-ref bytes 5) #a000))
@@ -408,53 +429,58 @@
 	      (let ((fo (elong->fixnum (get32u en bytes 10))))
 		 (if (or (<fx fo 8) (>fx fo 16))
 		     (exif-error 'read-jpeg-exit
-				   "Suspicious offset of first IFD value"
-				   fo)
-		     (begin
+			"Suspicious offset of first IFD value"
+			fo)
+		     (with-access::exif exif ((s thumbnail-offset)
+					      (l thumbnail-length)
+					      cdd-width
+					      ewidth
+					      focal-plane-xres
+					      focal-plane-units
+					      thumbnail)
 			(process-exif-dir! en bytes (+fx 6 fo) 6 exif pos)
 			;; CDD width
-			(if (and (number? (exif-ewidth exif))
-				 (number? (exif-focal-plane-xres exif))
-				 (number? (exif-focal-plane-units exif)))
-			    (let ((w (/ (* (exif-ewidth exif)
-					   (exif-focal-plane-units exif))
-					(exif-focal-plane-xres exif))))	
-			       (exif-cdd-width-set! exif w)))
+			(if (and (number? ewidth)
+				 (number? focal-plane-xres)
+				 (number? focal-plane-units))
+			    (let ((w (/ (* ewidth focal-plane-units)
+					focal-plane-xres)))
+			       (set! cdd-width w)))
 			;; thumbnail
-			(let ((s (exif-thumbnail-offset exif))
-			      (l (exif-thumbnail-length exif)))
-			   (if (and (integer? s) (integer? l))
-			       (let ((th (make-string l)))
-				  (blit-string! bytes s th 0 l)
-				  (exif-thumbnail-set! exif th)
-				  exif)
-			       (exif-thumbnail-set! exif #f))))))))))
+			(if (and (integer? s) (integer? l))
+			    (let ((th (make-string l)))
+			       (blit-string! bytes s th 0 l)
+			       (set! thumbnail th)
+			       exif)
+			    (set! thumbnail #f)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-COM! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (read-COM! exif bytes pos)
-   (let ((len (string-length bytes)))
-      (let loop ((i 0))
-	 (cond
-	    ((=fx i len)
-	     (exif-comment-set! exif bytes))
-	    ((char=? (string-ref bytes i) #a000)
-	     (let ((s (make-string i)))
-		(blit-string! bytes 0 s 0 i)
-		(exif-comment-set! exif s)
-		(exif-%commentpos-set! exif pos)
-		(exif-%commentlen-set! exif i)))
-	    (else
-	     (loop (+fx i 1)))))))
+   (with-access::exif exif (comment %commentpos %commentlen)
+      (let ((len (string-length bytes)))
+	 (let loop ((i 0))
+	    (cond
+	       ((=fx i len)
+		(set! comment bytes))
+	       ((char=? (string-ref bytes i) #a000)
+		(let ((s (make-string i)))
+		   (blit-string! bytes 0 s 0 i)
+		   (set! comment s)
+		   (set! %commentpos pos)
+		   (set! %commentlen i)))
+	       (else
+		(loop (+fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-SOFn! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (read-SOFn! exif bytes encoding)
-   (exif-width-set! exif (elong->fixnum (get16u #t bytes 3)))
-   (exif-height-set! exif (elong->fixnum (get16u #t bytes 1)))
-   (exif-jpeg-encoding-set! exif encoding)
+   (with-access::exif exif (width height jpeg-encoding)
+      (set! width (elong->fixnum (get16u #t bytes 3)))
+      (set! height (elong->fixnum (get16u #t bytes 1)))
+      (set! jpeg-encoding encoding))
    exif)
 
 ;*---------------------------------------------------------------------*/

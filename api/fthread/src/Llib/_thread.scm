@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 07:43:14 2003                          */
-;*    Last change :  Tue May  5 09:06:24 2009 (serrano)                */
-;*    Copyright   :  2003-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:32:41 2011 (serrano)                */
+;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The private FairThreads implementation.                          */
 ;*=====================================================================*/
@@ -125,7 +125,8 @@
 ;*    %thread-attached? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (%thread-attached? t::fthread)
-   (scheduler? (fthread-scheduler t)))
+   (with-access::fthread t ((scdl scheduler))
+      (isa? scdl scheduler)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %thread-is-dead ...                                              */
@@ -162,21 +163,24 @@
       (trace-item "thread=" (trace-string t))
       (trace-item "id=" id))
    (with-access::fthread t (scheduler %builtin)
-      (%pthread-id-set! %builtin id)
+      (with-access::%pthread %builtin ((pid id))
+	 (set! pid id))
       (let ((nt (%scheduler-next-thread t scheduler)))
-	 (%pthread-switch %builtin (fthread-%builtin nt)))
+	 (with-access::fthread nt ((nbuiltin %builtin))
+	    (%pthread-switch %builtin nbuiltin)))
       #unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    %thread-synchronize! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%thread-synchronize! t)
-   (with-access::fthread t (name %builtin scheduler)
-      ;; add the current thread to the list of asynchronous thread
-      ;; ready to be synchronized (i.e. cooperative)
-      (%scheduler-add-async-runnable! scheduler t)
-      ;; wait for the cooperative token
-      (%pthread-wait %builtin)
-      (with-trace 3 '%thread-synchronize!
-	 (trace-item "thread=" (trace-string t)))
-      (%pthread-id-set! %builtin name)))
+   (with-trace 2 '%thread-synchronize!
+      (trace-item "thread=" (trace-string t))
+      (with-access::fthread t (name %builtin scheduler)
+	 ;; add the current thread to the list of asynchronous thread
+	 ;; ready to be synchronized (i.e. cooperative)
+	 (%scheduler-add-async-runnable! scheduler t)
+	 ;; wait for the cooperative token
+	 (%pthread-wait %builtin)
+	 (with-access::%pthread %builtin ((pid id))
+	    (set! pid name)))))

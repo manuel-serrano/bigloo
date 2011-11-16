@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Aug  6 08:10:46 2010 (serrano)                */
+#*    Last change :  Wed Nov 16 09:59:35 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -21,7 +21,6 @@ include ../../../Makefile.misc
 API		= sqlite
 # Directories
 BIGLOO_SRC_DIR 	= Llib
-DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
@@ -30,8 +29,6 @@ WIN32_SRC_DIR 	= Win32
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
-DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -65,7 +62,6 @@ else
 _POSIX_OBJECTS	= bglsqlite
 endif
 _JAVA_CLASSES	= 
-_DOTNET_OBJ	= 
 
 _OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
@@ -78,24 +74,16 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
-BGL_DOTNET_OBJ	= $(_BGL_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
-DOTNET_OBJ	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
-
-DOTNET_OBJ_SRC	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.cs)
-
 _WIN32_SRC	= 
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 _POSIX_SOURCES	= $(_POSIX_OBJECTS:%=$(C_SRC_DIR)/%.c)
 _JAVA_SOURCES	= $(_JAVA_CLASSES:%=$(JAVA_SRC_DIR)/%.java)
-_DOTNET_SOURCES	= $(_DOTNET_OBJ:%=$(DOTNET_SRC_DIR)/%.cs)
 _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 
 SOURCES		= $(_BGL_SOURCES) \
                   $(_POSIX_SOURCES) \
-                  $(_JAVA_SOURCES) \
-                  $(_DOTNET_SOURCES)
+                  $(_JAVA_SOURCES)
 INCLUDES	= $(BIGLOO_SRC_DIR)/sqlite.sch
 
 #*---------------------------------------------------------------------*/
@@ -109,7 +97,7 @@ POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet build-c build-jvm build-dotnet
+.PHONY: c jvm build-c build-jvm
 
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -118,17 +106,12 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) build-dotnet;  \
-	  fi
+
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
-
-dotnet: build-dotnet
-build-dotnet: api-dotnet
 
 $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"

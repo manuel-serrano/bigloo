@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Nov  8 09:06:16 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 09:07:14 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -142,6 +142,18 @@
 ;*    eval-finalizer ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (eval-finalizer)
+   
+   (define (eval-export-global g)
+      (global-eval?-set! g #t)
+      (cond
+	 ((svar? (global-value g))
+	  (variable-access-set! g 'write)
+	  (define-primop-ref->node g (location->node g)))
+	 ((scnst? (global-value g))
+	  (define-primop-ref->node g (location->node g)))
+	 (else
+	  (define-primop->node g))))
+
    (if (or *one-eval?*
 	   *all-eval?*
 	   *all-export-eval?*
@@ -149,43 +161,32 @@
 	   (pair? *eval-libraries*)
 	   (pair? *eval-classes*))
        (list
-	(unit
-	 'eval
-	 (-fx (get-toplevel-unit-weight) 2)
-	 (delay
-	    (let loop ((globals (get-evaluated-globals))
-		       (init*  '(#unspecified)))
-	       (if (null? globals)
-		   `(begin
-		       ;; declare the sfri
-		       ,@(get-eval-srfi-libraries)
-		       ;; bind the classes
-		       ,@(get-evaluated-class-macros)
-		       ;; the variables
-		       ,@(reverse! init*)
-		       ;; initialize the library module
-		       ,@(map library_e *eval-libraries*)
-		       #unspecified)
-		   (let ((g (car globals)))
-		      (set-eval-types! g)
-		      (loop (cdr globals)
-			    (if (global-eval? g)
-				init*
-				(begin
-				   (global-eval?-set! g #t)
-				   (cons (cond
-					    ((svar? (global-value g))
-					     (variable-access-set! g 'write)
-					     (define-primop-ref->node g
-						(location->node g)))
-					    ((scnst? (global-value g))
-					     (define-primop-ref->node g
-						(location->node g)))
-					    (else
-					     (define-primop->node g)))
-					 init*))))))))
-	 #f
-	 #f))
+	  (unit
+	     'eval
+	     (-fx (get-toplevel-unit-weight) 2)
+	     (delay
+		(let loop ((globals (append (get-evaluated-globals)
+				       (get-evaluated-class-holders)))
+			   (init*  '(#unspecified)))
+		   (if (null? globals)
+		       `(begin
+			   ;; declare the sfri
+			   ,@(get-eval-srfi-libraries)
+			   ;; bind the classes
+			   ,@(get-evaluated-class-macros)
+			   ;; the variables
+			   ,@(reverse! init*)
+			   ;; initialize the library module
+			   ,@(map library_e *eval-libraries*)
+			   #unspecified)
+		       (let ((g (car globals)))
+			  (set-eval-types! g)
+			  (loop (cdr globals)
+			     (if (global-eval? g)
+				 init*
+				 (cons (eval-export-global g) init*)))))))
+	     #f
+	     #f))
        'void))
 
 ;*---------------------------------------------------------------------*/
@@ -297,7 +298,8 @@
 	  (with-exception-handler
 	     (lambda (e)
 		(error-notify e)
-		(set! err (cons (&error-obj e) err)))
+		(with-access::&error e (obj)
+		   (set! err (cons obj err))))
 	     (lambda ()
 		(if (null? *eval-classes*)
 		    '()
@@ -408,15 +410,27 @@
    (map (lambda (s)
 	   (let* ((t (find-type/location (cadr s) (find-location s)))
 		  (id (tclass-id t))
-		  (libp (pair? (cddr s))))
+		  (libp (pair? (cddr s)))
+		  (holder (tclass-holder t))
+		  (holdere `(@ ,(global-id holder) ,(global-module holder))))
 	      `(begin
 		  ,(if (tclass-abstract? t)
 		       #unspecified
 		       `(begin
-			   (eval! (eval-expand-instantiate ',id))
-			   (eval! (eval-expand-duplicate ',id))))
-		  (eval! (eval-expand-with-access ',id))
+			   (eval-expand-instantiate2 ,holdere)
+			   (eval-expand-duplicate2 ,holdere)))
+		  (eval-expand-with-access2 ,holdere)
 		  ,@(if *class-gen-accessors?*
 			(eval-bind-super-access t libp)
 			'()))))
 	*eval-classes*))
+
+;*---------------------------------------------------------------------*/
+;*    get-evaluated-class-holders ...                                  */
+;*---------------------------------------------------------------------*/
+(define (get-evaluated-class-holders)
+   (map (lambda (s)
+	   (let ((t (find-type/location (cadr s) (find-location s))))
+	      (tclass-holder t)))
+      *eval-classes*))
+	      

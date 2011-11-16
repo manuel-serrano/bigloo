@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Oct 24 09:25:32 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 20:50:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -148,10 +148,11 @@
 		     (set! songlength songpos))
 		  (set! state 'play)))
 
-	    (define (abort state)
+	    (define (abort st)
 	       (mutex-lock! %dmutex)
-	       (musicstatus-state-set! %status state)
-	       (set! %!bstate (if (eq? state 'ended) 4 3))
+	       (with-access::musicstatus %status (state)
+		  (set! state st))
+	       (set! %!bstate (if (eq? st 'ended) 4 3))
 	       (pcm-cleanup pcm)
 	       (condition-variable-broadcast! %dcondv)
 	       (mutex-unlock! %dmutex))
@@ -167,7 +168,8 @@
 		  (%!pause
 		   ;;; user request pause, swith to pause state and wait
 		   ;;; to be awaken
-		   (musicstatus-state-set! %status 'pause)
+		   (with-access::musicstatus %status (state)
+		      (set! state 'pause))
 		   (mutex-lock! %dmutex)
 		   (condition-variable-wait! %dcondv %dmutex)
 		   (mutex-unlock! %dmutex)
@@ -202,7 +204,8 @@
 			    (tprint "dec.2 s=" s
 			       " tl=" %!tail " hd=" %head
 			       " -> status=" status " size="
-			       (mpg123-handle-size %mpg123)))
+			       (with-access::mpg123-handle %mpg123 (size)
+				  size)))
 			 (when (>fx s 0)
 			    (inc-tail! s))
 			 (cond
@@ -210,34 +213,35 @@
 			     (loop))
 			    ((=fx status $mpg123-ok)
 			     ;; play and keep decoding
-			     (let ((size (mpg123-handle-size %mpg123)))
+			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (musicstatus-set-play!)
 				   (alsa-snd-pcm-write pcm outbuf size)
 				   (flush 0))))
 			    ((=fx status $mpg123-need-more)
 			     ;; play and loop to get more bytes
-			     (let ((size (mpg123-handle-size %mpg123)))
+			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (loop))
 			    ((=fx status $mpg123-new-format)
 			     ;; a new playback
 			     (new-format dec am buffer)
-			     (let ((size (mpg123-handle-size %mpg123)))
+			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (musicstatus-set-play!)
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (flush 0))
 			    ((=fx status $mpg123-done)
 			     ;; done playing
-			     (let ((size (mpg123-handle-size %mpg123)))
+			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (abort 'ended))
 			    (else
 			     ;; an error occured
-			     (musicstatus-err-set! %status "mp3 decoding error")
+			     (with-access::musicstatus %status (err)
+				(set! err "mp3 decoding error"))
 			     (abort 'error))))))))))))
 
 ;*---------------------------------------------------------------------*/

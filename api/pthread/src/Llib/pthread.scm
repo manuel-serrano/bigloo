@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Sat Dec 11 09:11:17 2010 (serrano)                */
-;*    Copyright   :  2002-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 14:29:38 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -45,19 +45,22 @@
 ;*    object-write ::uncaught-exception ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (object-write o::uncaught-exception . port)
-   (apply object-write (uncaught-exception-reason o) port))
+   (with-access::uncaught-exception o (reason)
+      (apply object-write reason port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::uncaught-exception ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display o::uncaught-exception . port)
-   (apply object-display (uncaught-exception-reason o) port))
+   (with-access::uncaught-exception o (reason)
+      (apply object-display reason port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (object-print o::uncaught-exception port print-slot)
-   (object-print (uncaught-exception-reason o) port print-slot))
+   (with-access::uncaught-exception o (reason)
+      (object-print reason port print-slot)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-yield! ...                                          */
@@ -109,32 +112,35 @@
 ;*    thread-start! ::pthread ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-start! t::pthread . scd)
-   (pthread-detachedp-set! t #t)
-   ($pthread-start! (pthread-$builtin t) t #t)
+   (with-access::pthread t (detachedp $builtin)
+      (set! detachedp #t)
+      ($pthread-start! $builtin t #t))
    t)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-start-joinable! ::pthread ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-start-joinable! t::pthread)
-   (pthread-detachedp-set! t #f)
-   ($pthread-start! (pthread-$builtin t) t #f)
+   (with-access::pthread t (detachedp $builtin)
+      (set! detachedp #f)
+      ($pthread-start! $builtin t #f))
    t)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-join! ::pthread ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-join! t::pthread . timeout)
-   (if (pthread-detachedp t)
-       (raise (instantiate::&thread-error
-		 (proc 'thread-join!)
-		 (msg "detached thread")
-		 (obj t)))
-       (with-access::pthread t ($builtin end-result end-exception)
-	  ($pthread-join! $builtin)
-	  (if (&exception? end-exception)
-	      (raise end-exception)
-	      end-result))))
+   (with-access::pthread t (detachedp $builtin end-result end-exception)
+      (if detachedp
+	  (raise (instantiate::&thread-error
+		    (proc 'thread-join!)
+		    (msg "detached thread")
+		    (obj t)))
+	  (begin
+	     ($pthread-join! $builtin)
+	     (if (isa? end-exception &exception)
+		 (raise end-exception)
+		 end-result)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-terminate! ::pthread ...                                  */
@@ -149,30 +155,34 @@
 ;*    thread-get-specific ::pthread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-specific t::pthread)
-   ($pthread-specific (pthread-$builtin t)))
+   (with-access::pthread t ($builtin)
+      ($pthread-specific $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-specific! ::pthread ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-specific! t::pthread v)
-   ($pthread-specific-set! (pthread-$builtin t) v)
+   (with-access::pthread t ($builtin)
+      ($pthread-specific-set! $builtin v))
    v)
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-cleanup ::pthread ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-cleanup t::pthread)
-   ($pthread-cleanup (pthread-$builtin t)))
+   (with-access::pthread t ($builtin)
+      ($pthread-cleanup $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-cleanup! ::pthread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-cleanup! t::pthread p)
-   (if (correct-arity? p 1)
-       (begin
-	  ($pthread-cleanup-set! (pthread-$builtin t) p)
-	  p)
-       (error 'thread-cleanup-set! "Illegal procedure arity" p)))
+   (with-access::pthread t ($builtin)
+      (if (correct-arity? p 1)
+	  (begin
+	     ($pthread-cleanup-set! $builtin p)
+	     p)
+	  (error 'thread-cleanup-set! "Illegal procedure arity" p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $pthread-nil ...                                                 */

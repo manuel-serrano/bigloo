@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/fthread/src/Llib/signal.scm          */
+;*    serrano/prgm/project/bigloo/api/fthread/src/Llib/signal.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 13 14:36:25 2002                          */
-;*    Last change :  Wed Mar  9 18:25:56 2005 (serrano)                */
-;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 14:52:25 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Fair thread signal handling                                      */
 ;*=====================================================================*/
@@ -40,7 +40,8 @@
 (define-method (object-display o::%signal . port)
    (with-output-to-port (if (pair? port) (car port) (current-output-port))
       (lambda ()
-	 (display* "#<signal:" (%signal-id o) ">"))))
+	 (with-access::%signal o (id)
+	    (display* "#<signal:" id ">")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    signal-lookup ...                                                */
@@ -48,9 +49,10 @@
 (define (signal-lookup id envs)
    (define (%signal-lookup id env)
       (let ((s (ftenv-lookup env id)))
-	 (if (%signal? s)
+	 (if (isa? s %signal)
 	     (with-access::%signal s (id stamp)
-		(if (=fx stamp (ftenv-instant env)) s #f))
+		(with-access::ftenv env (instant)
+		   (if (=fx stamp instant) s #f)))
 	     #f)))
    (let loop ((envs envs))
       (if (ftenv-handles? (car envs) id)
@@ -67,9 +69,10 @@
 (define (signal-last-lookup id envs)
    (define (%signal-last-lookup id env)
       (let ((s (ftenv-last-lookup env id)))
-	 (if (%signal? s)
+	 (if (isa? s %signal)
 	     (with-access::%signal s (id stamp)
-		(if (=fx (+fx 1 stamp) (ftenv-instant env)) s #f))
+		(with-access::ftenv env (instant)
+		   (if (=fx (+fx 1 stamp) instant) s #f)))
 	     #f)))
    (let loop ((envs envs))
       (if (ftenv-handles? (car envs) id)
@@ -95,9 +98,10 @@
 		   (for-each (lambda (s) (signal-unbind-thread! s t)) %signals)
 		   ;; empties the signal wait queue
 		   (set! %signals '())))))
-      (let ((ths (%signal-threads s)))
-	 (%signal-threads-set! s '())
-	 (for-each awake-thread ths))))
+      (with-access::%signal s (threads)
+	 (let ((ths threads))
+	    (set! threads '())
+	    (for-each awake-thread ths)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    awake-thread-trace ...                                           */
@@ -115,7 +119,7 @@
 	 (let ((o (ftenv-lookup env id)))
 	    (with-trace 2 'signal-emit
 	       (signal-emit-trace id value envs o)
-	       (if (%signal? o)
+	       (if (isa? o %signal)
 		   (with-access::%signal o (vals stamp threads)
 		      (set! stamp instant)
 		      (set! vals (cons value vals))
@@ -143,8 +147,8 @@
 ;*---------------------------------------------------------------------*/
 (define (signal-values e envs)
    (let ((o (signal-lookup e envs)))
-      (if (%signal? o)
-	  (%signal-vals o)
+      (if (isa? o %signal)
+	  (with-access::%signal o (vals) vals)
 	  #unspecified)))
 
 ;*---------------------------------------------------------------------*/
@@ -161,8 +165,8 @@
 ;*---------------------------------------------------------------------*/
 (define (signal-last-values e envs)
    (let ((o (signal-last-lookup e envs)))
-      (if (%signal? o)
-	  (%signal-vals o)
+      (if (isa? o %signal)
+	  (with-access::%signal o (vals) vals)
 	  '())))
 
 ;*---------------------------------------------------------------------*/
@@ -171,7 +175,7 @@
 (define (signal-register-thread! id envs thread)
    (define (%signal-register-thread! id env thread)
       (let* ((o (ftenv-lookup env id))
-	     (s (if (%signal? o)
+	     (s (if (isa? o %signal)
 		    ;; re-use the existing signal
 		    (with-access::%signal o (threads)
 		       (set! threads (cons thread threads))

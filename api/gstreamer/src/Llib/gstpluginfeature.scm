@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 06:43:18 2008                          */
-;*    Last change :  Mon Feb 11 16:54:23 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 17:23:42 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GltPluginFeature                                                 */
 ;*=====================================================================*/
@@ -20,31 +20,31 @@
    
    (export  (class gst-plugin-feature::gst-object
 	       (name::string
-		(get (lambda (o)
-			($gst-plugin-feature-name
-			 ($gst-plugin-feature
-			  (gst-plugin-feature-$builtin o)))))
-		(set (lambda (o v)
-			($gst-plugin-feature-set-name!
-			 ($gst-plugin-feature
-			  (gst-plugin-feature-$builtin o)) v)
-			v)))
+		  (get (lambda (o)
+			  (with-access::gst-plugin-feature o ($builtin)
+			     ($gst-plugin-feature-name
+				($gst-plugin-feature $builtin)))))
+		  (set (lambda (o v)
+			  (with-access::gst-plugin-feature o ($builtin)
+			     ($gst-plugin-feature-set-name!
+				($gst-plugin-feature $builtin) v))
+			  v)))
 	       (plugin-name::string
-		read-only
-		(get (lambda (o)
-			($gst-plugin-feature-plugin-name
-			 ($gst-plugin-feature
-			  (gst-plugin-feature-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-plugin-feature o ($builtin)
+			     ($gst-plugin-feature-plugin-name
+				($gst-plugin-feature $builtin))))))
 	       (rank::uint
-		(get (lambda (o)
-			($gst-plugin-feature-rank
-			 ($gst-plugin-feature
-			  (gst-plugin-feature-$builtin o)))))
-		(set (lambda (o v)
-			($gst-plugin-feature-set-rank!
-			 ($gst-plugin-feature
-			  (gst-plugin-feature-$builtin o)) v)
-			v))))
+		  (get (lambda (o)
+			  (with-access::gst-plugin-feature o ($builtin)
+			     ($gst-plugin-feature-rank
+				($gst-plugin-feature $builtin)))))
+		  (set (lambda (o v)
+			  (with-access::gst-plugin-feature o ($builtin)
+			     ($gst-plugin-feature-set-rank!
+				($gst-plugin-feature $builtin) v))
+			  v))))
 
 	    ($make-gst-plugin-feature::obj ::$gst-plugin-feature ::obj))
 

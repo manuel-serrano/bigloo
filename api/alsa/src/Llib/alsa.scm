@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:11:10 2011                          */
-;*    Last change :  Tue Jun 28 07:42:34 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 10:03:17 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Alsa object wrapper                                              */

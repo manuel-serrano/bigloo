@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sun Mar 27 20:33:59 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:19:07 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -67,9 +67,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    abound-fun! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (abound-fun! global)
-   (enter-function (global-id global))
-   (let ((fun (variable-value global)))
+(define (abound-fun! var)
+   (enter-function (variable-id var))
+   (let ((fun (variable-value var)))
       (sfun-body-set! fun (abound-node (sfun-body fun)))
       (leave-function)
       var))
@@ -91,7 +91,7 @@
 ;*    abound-node ::app ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::app)
-   
+
    (define (abound-string-access node)
       (with-access::app node (fun args loc)
 	 (let* ((s (mark-symbol-non-user! (gensym 's)))
@@ -115,7 +115,7 @@
 			  ,lname ,lpos ,name ,i ,s)
 			 #f #f))))
 	     loc))))
-   
+
    (abound-node*! (app-args node))
    ;; check if we are calling string-ref/set!, or struct-ref/set!
    (with-access::app node (fun)
@@ -158,7 +158,7 @@
 ;*    abound-node ::vref ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vref)
-   
+
    (define (abound-vref node)
       (with-access::vref node (expr* loc ftype otype vtype unsafe)
 	 (let ((v (mark-symbol-non-user! (gensym 'v)))
@@ -183,7 +183,7 @@
 			  ,lname ,lpos "vector-ref" ,v ,i)
 			 #f #f))))
 	     loc))))
-   
+
    (call-next-method)
    (with-access::vref node (unsafe)
       (if unsafe
@@ -197,7 +197,7 @@
 ;*    abound-node ::vset! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vset!)
-   
+
    (define (abound-vset node)
       (with-access::vset! node (expr* loc ftype otype vtype unsafe)
 	 (let ((v (mark-symbol-non-user! (gensym 'v)))
@@ -220,7 +220,7 @@
 			  ,lname ,lpos "vector-set!" ,i ,v)
 			 #f #f))))
 	     loc))))
-   
+
    (call-next-method)
    (with-access::vset! node (unsafe)
       (if unsafe
@@ -307,7 +307,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
-      (set! exit (abound-node exit)) 
+      (set! exit (abound-node exit))
       (set! value (abound-node value))
       node))
 

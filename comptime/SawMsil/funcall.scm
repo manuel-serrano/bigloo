@@ -11,6 +11,7 @@
 	   backend_cplib
 	   saw_procedures
 	   msil_out)
+   (include "SawMsil/funcall.sch")
    (export (module-funcall/apply me::dotnet)
 	   (wide-class indexed::global index::int) ))
    

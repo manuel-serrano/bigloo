@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Nov  9 08:35:50 2011 (serrano)                */
+#*    Last change :  Wed Nov 16 11:58:25 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -358,18 +358,40 @@ C_OBJECTS	= $(O_OBJECTS:%.o=%.c)
 SOURCE_FILES	= $(O_OBJECTS:%.o=%.scm)
 
 POPULATION	= $(SOURCE_FILES) \
-		  Ast/node.sch \
-		  Ast/unit.sch \
+		  Ast/node.sch Ast/unit.sch Ast/var.sch Ast/nodetype.sch \
 		  Engine/pass.sch \
 		  Expand/expander.sch \
-		  Tools/location.sch \
-		  Tools/fprint.sch \
-		  Tools/verbose.sch \
+		  Tools/location.sch Tools/fprint.sch Tools/verbose.sch \
 		  Tools/trace.sch \
-		  Tvector/tvector.sch \
-		  Type/coercer.sch \
+		  Tvector/tvector.sch Tvector/tvectortype.sch \
+		  Type/coercer.sch Type/type.sch \
                   Init/pass-args-parse.sch \
-		  Module/libinfo.sch \
+		  Module/libinfo.sch Module/impuse.sch Module/module.sch \
+                  Module/java.sch \
+                  BackEnd/backend.sch BackEnd/cvm.sch BackEnd/bvm.sch \
+                  BackEnd/jvm_class.sch BackEnd/dotnet_class.sch \
+                  Object/class.sch Object/slots.sch \
+                  Inline/inline.sch Inline/size.sch Inline/variant.sch \
+                  Foreign/ctype.sch Foreign/jtype.sch \
+                  Dataflow/walk.sch \
+                  Initflow/walk.sch \
+                  Globalize/ginfo.sch \
+                  Cnst/node.sch \
+                  Cfa/cinfo.sch Cfa/cinfo2.sch Cfa/cinfo3.sch \
+                  Cfa/specialize.sch \
+                  Integrate/iinfo.sch \
+                  Tailc/walk.sch \
+                  Cgen/cop.sch \
+                  Callcc/walk.sch \
+                  Effect/cgraph.sch \
+                  Jas/classfile.sch \
+                  SawMill/defs.sch SawMill/regalloc.sch SawMill/node2rtl.sch \
+                  SawMill/collapse.sch SawMill/remove.sch \
+                  SawMill/InlineReturn.sch SawMill/blockorder.sch \
+                  SawMill/expr.sch SawMill/regset.sch \
+                  SawC/code.sch \
+                  SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \
+                  SawMsil/funcall.sch SawMsil/code.sch SawMsil/maxstack.sch \
                   Makefile
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Thu Mar 23 14:06:01 2006 (serrano)                */
-;*    Copyright   :  1996-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 17:05:07 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module inline_size
    
-   (include "Ast/node.sch")
+   (include "Ast/node.sch"
+	    "Inline/size.sch")
    
    (static  (wide-class sized-sequence::sequence (size::long read-only))
 	    (wide-class sized-select::select (size::long read-only))

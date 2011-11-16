@@ -1,5 +1,6 @@
 (module saw_node2rtl
-   (include "Tools/location.sch")
+   (include "Tools/location.sch"
+	    "SawMill/node2rtl.sch")
    (import type_type	;; needed for ast_var !!
 	   type_typeof  ;; needed for ::new
 	   ast_var	;; local/global

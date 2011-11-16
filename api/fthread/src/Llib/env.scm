@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/fthread/src/Llib/env.scm             */
+;*    serrano/prgm/project/bigloo/api/fthread/src/Llib/env.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 26 10:45:00 2001                          */
-;*    Last change :  Wed Mar 24 15:48:41 2004 (serrano)                */
-;*    Copyright   :  2001-04 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 11:09:33 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The representation of Fair environments                          */
 ;*=====================================================================*/
@@ -36,8 +36,9 @@
    (with-access::ftenv env (instant)
       (set! instant (+fx 1 instant))
       (ftenv-filter! env (lambda (s)
-			    (and (%signal? s)
-				 (pair? (%signal-threads s)))))))
+			    (and (isa? s %signal)
+				 (with-access::%signal s (threads)
+				    (pair? threads)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ftenv-bind! ::ftenv ...                                          */
@@ -63,7 +64,9 @@
 ;*    ft-is-signal? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (ft-is-signal? sig::obj id)
-   (and (%signal? sig) (equal? (%signal-id sig) id)))
+   (and (isa? sig %signal)
+	(with-access::%signal sig ((sid id))
+	   (equal? sid id))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ftenv-handles? ::ftenv ...                                       */

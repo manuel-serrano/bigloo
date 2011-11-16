@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Nov  9 17:21:16 2011 (serrano)                */
+#*    Last change :  Wed Nov 16 09:59:08 2011 (serrano)                */
 #*    Copyright   :  2001-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -32,7 +32,7 @@ POPULATION = Makefile README
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm build-dotnet
+.PHONY: build build build-c build-jvm
 
 all: build
 boot: build
@@ -42,7 +42,6 @@ build:
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -54,12 +53,6 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    $(MAKE) -C src build-jvm; \
-          fi
-
-build-dotnet:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> .NET[0m"; \
-	    $(MAKE) -C src build-dotnet; \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -103,14 +96,10 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) api-install-dotnet; \
-          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm \
-           api-uninstall-dotnet
+           api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

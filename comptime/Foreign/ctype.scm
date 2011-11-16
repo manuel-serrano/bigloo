@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Wed Nov  9 14:58:15 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:59:34 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module foreign_ctype
 
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Foreign/ctype.sch")
    
    (import  type_type
 	    type_env

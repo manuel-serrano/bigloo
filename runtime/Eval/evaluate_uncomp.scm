@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:46:26 2011                          */
-;*    Last change :  Fri Feb 18 15:09:15 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:24:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    AST back to list                                                 */
@@ -66,13 +66,16 @@
 (define-generic (uncomp e::ev_expr))
 
 (define-method (uncomp var::ev_var);
-   (ev_var-name var) )
+   (with-access::ev_var var (name)
+      name ))
 
 (define-method (uncomp var::ev_global);
-   (ev_global-name var) )
+   (with-access::ev_global var (name)
+      name ))
 
 (define-method (uncomp e::ev_litt);
-   `',(ev_litt-value e) )
+   (with-access::ev_litt e (value)
+      `',value ))
 
 (define-method (uncomp e::ev_if);
    (with-access::ev_if e (p t e)
@@ -157,6 +160,6 @@
 		(if (null? (cdr l))
 		    (car l)
 		    (cons (car l) (rec (cdr l))) ))))
-      `(lambda ,(redovars arity (map ev_var-name vars)) ,(uncomp body)) ))
+      `(lambda ,(redovars arity (map (lambda (v) (with-access::ev_var v (name) name)) vars)) ,(uncomp body)) ))
 
 

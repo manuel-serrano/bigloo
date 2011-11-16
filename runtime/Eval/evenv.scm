@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Fri Feb 18 14:48:11 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:13:10 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -156,9 +156,11 @@
 	  (begin
 	     (set-eval-global-value! cell addr)
 	     (warning-notify
-	      (make-&eval-warning
-	       #f #f #f
-	       (list "Rebinding compiled constant" var)))))))
+		(instantiate::&eval-warning
+		   (fname #f)
+		   (location #f)
+		   (stack #f)
+		   (args (list "Rebinding compiled constant" var))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-assert-primop-ref! ...                                    */

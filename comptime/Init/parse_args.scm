@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Nov 12 19:20:40 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 08:57:02 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -928,7 +928,8 @@
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
       (("-classgen" (help "Produce an include file for class accessors"))
-       (set! *pass* 'classgen))
+       (set! *pass* 'classgen)
+       (set! *class-gen-accessors?* #f))
       (("-egen" (help "Produce an include file for effects (requires -saw)"))
        (set! *pass* 'egen))
       (("-hgen" (help "Produce a C header file with class definitions"))

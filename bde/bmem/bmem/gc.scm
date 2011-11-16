@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Fri Sep 16 09:09:17 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 21:34:03 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
@@ -53,21 +53,21 @@
 	     (per 0)
 	     (sum 0)
 	     (cell* (map (lambda (f)
-			    (let* ((fgc (funinfo-find-gc f n))
-				   (size (if (pair? fgc)
-					     (cadr fgc)
-					     0))
-				   (nf (funinfo-num f))
-				   (id (format "function~a" nf)))
-			       (set! sum (+fx sum size))
-			       (set! per (+fx per (% size maxhsize)))
-			       (list (% size maxhsize)
+			    (with-access::funinfo f (num ident)
+			       (let* ((fgc (funinfo-find-gc f n))
+				      (size (if (pair? fgc)
+						(cadr fgc)
+						0))
+				      (nf num)
+				      (id (format "function~a" nf)))
+				  (set! sum (+fx sum size))
+				  (set! per (+fx per (% size maxhsize)))
+				  (list (% size maxhsize)
 				     id
 				     (format "~a: ~a (~a%)"
-					     (function-ident-pp
-					      (funinfo-ident f))
-					     (word->size size)
-					     (% size asize)))))
+					(function-ident-pp ident)
+					(word->size size)
+					(% size asize))))))
 			 fun*)))
 	 (if (>=fx (absfx (-fx asize sum)) 1024)
 	     (warning "make-gc-function-table"
@@ -126,7 +126,7 @@
 	    (per 0)
 	    (sum 0))
 	 (define (mark-function! f)
-	    (let* ((dtype (funinfo-dtype f))
+	    (let* ((dtype (with-access::funinfo f (dtype) dtype))
 		   (dtypegc (assq n dtype)))
 	       (if (and (pair? dtypegc) (pair? (cdr dtypegc)))
 		   (for-each (lambda (dt)

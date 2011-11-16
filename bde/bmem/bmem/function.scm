@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
-;*    Last change :  Fri Sep 16 09:09:04 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 21:33:08 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
@@ -83,7 +83,8 @@
 ;*    funinfo-find-gc ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (funinfo-find-gc fi num)
-   (assq num (funinfo-gc* fi)))
+   (with-access::funinfo fi (gc*)
+      (assq num gc*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    funinfo-type-size ...                                            */
@@ -122,7 +123,8 @@
 				     (set! sum (+fx sum (cadr ti))))
 				  (for-each (lambda (gc)
 					       (for-each sum-type (cdr gc)))
-					    (funinfo-dtype f)))
+				     (with-access::funinfo f (dtype)
+					dtype)))
 			       fun*)
 		     sum))
 	  (nbtypes (+fx 1 (apply max (map car (cdr types)))))
@@ -145,15 +147,17 @@
 	`(,(html-td
 	    :valign "top"
 	    (make-function-gc-chart allsize fun*
-				    funinfo-dsize cadr
+				    (lambda (f)
+				       (with-access::funinfo f (dsize) dsize))
+				    cadr
 				    "function-gc-direct"
 				    "Direct allocations (gc)"))
 	  ,(html-td
 	    :valign "top"
 	    (make-function-gc-chart allsize fun*
 				    (lambda (f)
-				       (+fx (funinfo-isize f)
-					    (funinfo-dsize f)))
+				       (with-access::funinfo f (isize dsize)
+					  (+fx isize dsize)))
 				    (lambda (g)
 				       (+fx (cadr g) (caddr g)))
 				    "function-gc-cumulative"
@@ -175,39 +179,39 @@
 			 (>fx (funsize f1) (funsize f2)))))
 	  (cell* (map (lambda (f)
 			 ;; mark the function as used (for the legend)
-			 (funinfo-use-set! f #t)
-			 (let ((fsize (funsize f)))
-			    (map (lambda (gc)
-				    (let* ((n (integer->string
-					       (+fx 1 (car gc))))
-					   (gcsize (fungcsize gc))
-					   (rsize (% gcsize fsize))
-					   (per (% gcsize allsize))
-					   (id (string-append "gc" n)))
-				       (list per
+			 (with-access::funinfo f (use gc*)
+			    (set! use #t)
+			    (let ((fsize (funsize f)))
+			       (map (lambda (gc)
+				       (let* ((n (integer->string
+						    (+fx 1 (car gc))))
+					      (gcsize (fungcsize gc))
+					      (rsize (% gcsize fsize))
+					      (per (% gcsize allsize))
+					      (id (string-append "gc" n)))
+					  (list per
 					     id 
 					     (format "gc ~a: ~a (~a%)"
-						     n
-						     (word->size gcsize)
-						     rsize))))
-				 (funinfo-gc* f))))
+						n
+						(word->size gcsize)
+						rsize))))
+				  gc*))))
 		      fun*))
 	  (row* (map (lambda (f cells)
-			(let* ((size (funsize f))
-			       (size% (% size allsize))
-			       (id (string-append "function"
-						  (integer->string
-						   (funinfo-num f))))
-			       (tdl (html-color-item
-				     id
-				     (function-ref (funinfo-ident f))))
-			       (tds (html-td :class "size"
-					     :align "left"
-					     (format "~a% (~a)"
-						     size%
-						     (word->size size)))))
-			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+			(with-access::funinfo f (num ident)
+			   (let* ((size (funsize f))
+				  (size% (% size allsize))
+				  (id (string-append "function"
+					 (integer->string num)))
+				  (tdl (html-color-item
+					  id (function-ref ident)))
+				  (tds (html-td :class "size"
+					  :align "left"
+					  (format "~a% (~a)"
+					     size%
+					     (word->size size)))))
+			      (list (html-row-gauge cells tdl tds)
+				 (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
 		     fun* cell*)))
       (html-profile (apply append row*)
 		    class caption
@@ -219,64 +223,65 @@
 ;*---------------------------------------------------------------------*/
 (define (make-function-type-mem-table fun* allsize nbtypes tvec)
    (html-table
-    :width "100%"
-    `(,(html-tr
-	`(,(html-td
-	    :valign "top"
-	    (make-function-type-mem-chart allsize fun*
-					  funinfo-dsize
-					  funinfo-dtype
-					  "function-type-direct"
-					  "Direct allocations (size)"
-					  nbtypes
-					  tvec))
-	  ,(html-td
-	    :valign "top"
-	    (make-function-type-mem-chart allsize fun*
-					  (lambda (f)
-					     (+fx (funinfo-isize f)
-						  (funinfo-dsize f)))
-					  (lambda (f)
-					     (map (lambda (i d)
-						     (append i (cdr d)))
-						  (funinfo-itype f)
-						  (funinfo-dtype f)))
-					  "function-type-indirect"
-					  "Indirect allocations (size)"
-					  nbtypes
-					  tvec)))))))
+      :width "100%"
+      `(,(html-tr
+	    `(,(html-td
+		  :valign "top"
+		  (make-function-type-mem-chart allsize fun*
+		     (lambda (f) (with-access::funinfo f (dsize) dsize))
+		     (lambda (f) (with-access::funinfo f (dtype) dtype))
+		     "function-type-direct"
+		     "Direct allocations (size)"
+		     nbtypes
+		     tvec))
+	      ,(html-td
+		  :valign "top"
+		  (make-function-type-mem-chart allsize fun*
+		     (lambda (f)
+			(with-access::funinfo f (isize dsize)
+			   (+fx isize dsize)))
+		     (lambda (f)
+			(with-access::funinfo f (itype dtype)
+			   (map (lambda (i d)
+				   (append i (cdr d)))
+			      itype dtype)))
+		     "function-type-indirect"
+		     "Indirect allocations (size)"
+		     nbtypes
+		     tvec)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-occ-table ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-function-type-occ-table fun* allsize nbtypes tvec)
    (html-table
-    :width "100%"
-    `(,(html-tr
-	`(,(html-td
-	    :valign "top"
-	    (make-function-type-occ-chart allsize fun*
-					  funinfo-dsize
-					  funinfo-dtype
-					  "function-type-direct"
-					  "Direct allocations (occurrence)"
-					  nbtypes
-					  tvec))
-	  ,(html-td
-	    :valign "top"
-	    (make-function-type-occ-chart allsize fun*
-					  (lambda (f)
-					     (+fx (funinfo-isize f)
-						  (funinfo-dsize f)))
-					  (lambda (f)
-					     (map (lambda (i d)
-						     (append i (cdr d)))
-						  (funinfo-itype f)
-						  (funinfo-dtype f)))
-					  "function-type-indirect"
-					  "Indirect allocations (occurrence)"
-					  nbtypes
-					  tvec)))))))
+      :width "100%"
+      `(,(html-tr
+	    `(,(html-td
+		  :valign "top"
+		  (make-function-type-occ-chart allsize fun*
+		     (lambda (f) (with-access::funinfo f (dsize) dsize))
+		     (lambda (f) (with-access::funinfo f (dtype) dtype))
+		     "function-type-direct"
+		     "Direct allocations (occurrence)"
+		     nbtypes
+		     tvec))
+	      ,(html-td
+		  :valign "top"
+		  (make-function-type-occ-chart
+		     allsize fun*
+		     (lambda (f)
+			(with-access::funinfo f (isize dsize)
+			   (+fx isize dsize)))
+		     (lambda (f)
+			(with-access::funinfo f (itype dtype)
+			   (map (lambda (i d)
+				   (append i (cdr d)))
+			      itype dtype)))
+		     "function-type-indirect"
+		     "Indirect allocations (occurrence)"
+		     nbtypes
+		     tvec)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-mem-chart ...                                 */
@@ -287,7 +292,8 @@
 				      nb-types::int tvecnames::vector)
    (define (fun->cell f)
       ;; mark the function used (for the legend)
-      (funinfo-use-set! f #t)
+      (with-access::funinfo f (use)
+	 (set! use #t))
       (let* ((size (funsize f))
 	     (size% (exact->inexact (% size allsize)))
 	     (tvec (make-type-vector nb-types))
@@ -329,21 +335,21 @@
 			 (>fx (funsize f1) (funsize f2)))))
 	  (cell* (map fun->cell fun*))
 	  (r (map (lambda (f cells)
-		     (let* ((size (funsize f))
-			    (size% (% size allsize))
-			    (id (string-append "function"
-						  (integer->string
-						   (funinfo-num f))))
-			    (tdl (html-color-item
-				  id
-				  (function-ref (funinfo-ident f))))
-			    (tds (html-td :class "size"
-					  :align "left"
-					  (format "~a% (~a)"
-						  size%
-						  (word->size size)))))
-			(list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+		     (with-access::funinfo f (num ident)
+			(let* ((size (funsize f))
+			       (size% (% size allsize))
+			       (id (string-append "function"
+				      (integer->string num)))
+			       (tdl (html-color-item
+				       id
+				       (function-ref ident)))
+			       (tds (html-td :class "size"
+				       :align "left"
+				       (format "~a% (~a)"
+					  size%
+					  (word->size size)))))
+			   (list (html-row-gauge cells tdl tds)
+			      (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
 		  fun* cell*)))
       (html-profile (apply append r)
 		    class caption
@@ -359,7 +365,8 @@
 				      nb-types::int tvecnames::vector)
    (define (fun->cell f)
       ;; mark the function used (for the legend)
-      (funinfo-use-set! f #t)
+      (with-access::funinfo f (use)
+	 (set! use #t))
       (let* ((tvec (make-type-vector nb-types))
 	     (at 0)
 	     (sum 0))
@@ -395,29 +402,30 @@
    (let* ((cell* (map fun->cell fun*))
 	  (cell* (filter (lambda (c)
 			    (>fx (% (cadr c) allsize) 0))
-			 cell*))
+		    cell*))
 	  (cell* (sort cell*
-		       (lambda (c1 c2)
-			  (>fx (cadr c1) (cadr c2)))))
+		    (lambda (c1 c2)
+		       (>fx (cadr c1) (cadr c2)))))
 	  (r (map (lambda (cells)
-		     (let* ((f (car cells))
-			    (size (cadr cells))
-			    (cells (caddr cells))
-			    (size% (% size allsize))
-			    (id (string-append "function"
-						  (integer->string
-						   (funinfo-num f))))
-			    (tdl (html-color-item
-				  id
-				  (function-ref (funinfo-ident f))))
-			    (tds (html-td :class "size"
+		     (let ((f (car cells)))
+			(with-access::funinfo f (num ident)
+			   (let* ((size (cadr cells))
+				  (cells (caddr cells))
+				  (size% (% size allsize))
+				  (id (string-append "function"
+					 (integer->string
+					    num)))
+				  (tdl (html-color-item
+					  id
+					  (function-ref ident)))
+				  (tds (html-td :class "size"
 					  :align "left"
 					  (format "~a% (~a)"
-						  size%
-						  size))))
-			(list (html-row-gauge cells tdl tds)
-			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
-		  cell*)))
+					     size%
+					     size))))
+			      (list (html-row-gauge cells tdl tds)
+				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))))
+		cell*)))
       (html-profile (apply append r)
 		    class caption
 		    '("functions" "20%")
@@ -437,7 +445,7 @@
       (for-each (lambda (t)
 		   (vector-set! tvec (car t) (cadr t)))
 		(cdr types))
-      (if (not (funinfo? fun))
+      (if (not (isa? fun funinfo))
 	  #f
 	  (let ((gc (html-verticalbox
 		     (list

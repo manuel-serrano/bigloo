@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:38:54 1996                          */
-;*    Last change :  Thu May  5 09:28:54 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 08:17:05 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type class definition                                        */
@@ -15,6 +15,8 @@
 (module type_type
 
    (import tools_location)
+
+   (include "Type/type.sch")
    
    (export (final-class type::object
 	      ;; the type identifier
@@ -81,4 +83,3 @@
 (define-generic (type-occurrence-increment! t)
    (with-access::type t (occurrence)
       (set! occurrence (+fx 1 occurrence))))
-   

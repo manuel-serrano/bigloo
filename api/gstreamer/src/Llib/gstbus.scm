@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 12:10:42 2008                          */
-;*    Last change :  Wed Mar 26 17:30:09 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 11:23:54 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBus                                                           */
 ;*=====================================================================*/
@@ -58,27 +58,30 @@
 ;*    gst-bus-post ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (gst-bus-post o::gst-bus msg::gst-message)
-   ($gst-message-ref! ($gst-message (gst-message-$builtin msg)))
-   ($gst-bus-post ($gst-bus (gst-bus-$builtin o))
-		  ($gst-message (gst-message-$builtin msg))))
+   (with-access::gst-message msg ((mbuiltin $builtin))
+      (with-access::gst-bus o ((obuiltin $builtin))
+	 ($gst-message-ref! ($gst-message mbuiltin))
+	 ($gst-bus-post ($gst-bus obuiltin) ($gst-message mbuiltin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-bus-peek ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (gst-bus-peek o::gst-bus)
-   (let ((msg::$gst-message ($gst-bus-peek ($gst-bus (gst-bus-$builtin o)))))
-      (if ($gst-message-null? msg)
-	  #f
-	  ($make-gst-message msg #t))))
+   (with-access::gst-bus o ((obuiltin $builtin))
+      (let ((msg::$gst-message ($gst-bus-peek ($gst-bus obuiltin))))
+	 (if ($gst-message-null? msg)
+	     #f
+	     ($make-gst-message msg #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-bus-pop ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-bus-pop o::gst-bus)
-   (let ((msg::$gst-message ($gst-bus-pop ($gst-bus (gst-bus-$builtin o)))))
-      (if ($gst-message-null? msg)
-	  #f
-	  ($make-gst-message msg #f))))
+   (with-access::gst-bus o ((obuiltin $builtin))
+      (let ((msg::$gst-message ($gst-bus-pop ($gst-bus obuiltin))))
+	 (if ($gst-message-null? msg)
+	     #f
+	     ($make-gst-message msg #f)))))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    gst-bus-pop-filtered ...                                         *} */
@@ -104,14 +107,16 @@
 		  (fixnum->llong timeout))
 		 (else
 		  (bigloo-type-error 'gst-bus-poll "llong" timeout)))))
-      (let ((msg::$gst-message
-	     ($gst-bus-poll ($gst-bus (gst-bus-$builtin o)) types tmt)))
-	 (unless ($gst-message-null? msg)
-	    ($make-gst-message msg #t)))))
+      (with-access::gst-bus o ((obuiltin $builtin))
+	 (let ((msg::$gst-message
+		  ($gst-bus-poll ($gst-bus obuiltin) types tmt)))
+	    (unless ($gst-message-null? msg)
+	       ($make-gst-message msg #t))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-bus-sync-handler-set! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gst-bus-sync-handler-set! o handler)
-   ($gst-bus-set-sync-handler! ($gst-bus (gst-bus-$builtin o)) handler)
+   (with-access::gst-bus o ((obuiltin $builtin))
+      ($gst-bus-set-sync-handler! ($gst-bus obuiltin) handler))
    handler)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Oct 24 16:27:23 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 10:12:09 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -101,8 +101,9 @@
 			  (proc "alsamusic")
 			  (msg "inbuf length must be greater that outbuf length")
 			  (obj (cons (string-length inbuf) (string-length outbuf) ))))))
-	    (musicstatus-volume-set! %status 100)
-	    (musicstatus-state-set! %status 'uninitialized)))))
+	    (with-access::musicstatus %status (volume state)
+	       (set! volume 100)
+	       (set! state 'uninitialized))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-close ::alsamusic ...                                      */
@@ -133,7 +134,8 @@
       (unless (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
 	 (alsa-snd-pcm-drop pcm)
 	 (alsa-snd-pcm-reset pcm)
-	 (musicstatus-state-set! %status 'stop)))
+	 (with-access::musicstatus %status (state)
+	    (set! state 'stop))))
    o)
 
 ;*---------------------------------------------------------------------*/
@@ -194,20 +196,44 @@
    (with-access::alsamusic o (%amutex %status)
       (with-lock %amutex
 	 (lambda ()
-	    (musicstatus-volume-set! status (musicstatus-volume %status))
-	    (musicstatus-state-set! status (musicstatus-state %status))
-	    (musicstatus-repeat-set! status (musicstatus-repeat %status))
-	    (musicstatus-random-set! status (musicstatus-random %status))
-	    (musicstatus-playlistid-set! status (musicstatus-playlistid %status))
-	    (musicstatus-playlistlength-set! status (musicstatus-playlistlength %status))
-	    (musicstatus-xfade-set! status (musicstatus-xfade %status))
-	    (musicstatus-song-set! status (musicstatus-song %status))
-	    (musicstatus-songid-set! status (musicstatus-songid %status))
-	    (musicstatus-songpos-set! status (musicstatus-songpos %status))
-	    (musicstatus-songlength-set! status (musicstatus-songlength %status))
-	    (musicstatus-bitrate-set! status (musicstatus-bitrate %status))
-	    (musicstatus-khz-set! status (musicstatus-khz %status))
-	    (musicstatus-err-set! status (musicstatus-err %status))))))
+	    (with-access::musicstatus %status ((%volume volume)
+					       (%state state)
+					       (%repeat repeat)
+					       (%random random)
+					       (%playlistid playlistid)
+					       (%playlistlength playlistlength)
+					       (%xfade xfade)
+					       (%song song)
+					       (%songpos songpos)
+					       (%songlength songlength)
+					       (%bitrate bitrate)
+					       (%khz khz)
+					       (%err err))
+	       (with-access::musicstatus status (volume
+						   state
+						   repeat
+						   random
+						   playlistid
+						   playlistlength
+						   xfade
+						   song
+						   songpos
+						   songlength
+						   bitrate
+						   khz
+						   err)
+		  (set! volume %volume)
+		  (set! state %state)
+		  (set! repeat %repeat)
+		  (set! random %random)
+		  (set! playlistid %playlistid)
+		  (set! playlistlength %playlistlength)
+		  (set! xfade %xfade)
+		  (set! song %song)
+		  (set! songpos %songpos)
+		  (set! bitrate %bitrate)
+		  (set! khz %khz)
+		  (set! err %err)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-can-play-type? ::alsamusic ...                             */
@@ -277,8 +303,9 @@
 
    (define (ehandler/sans-lock e)
       (with-access::alsamusic o (%status)
-	 (musicstatus-state-set! %status 'error)
-	 (musicstatus-err-set! %status e)))
+	 (with-access::musicstatus %status (state err)
+	    (set! state 'error)
+	    (set! err e))))
    
    (define (ehandler e)
       (with-access::alsamusic o (%amutex)
@@ -288,7 +315,7 @@
    
    (define (play o::alsamusic d::alsadecoder p::input-port)
       (with-access::alsamusic o (%buffer %decoder inbuf outbuf mkthread)
-	 (when (alsadecoder? %decoder)
+	 (when (isa? %decoder alsadecoder)
 	    (alsadecoder-reset! %decoder))
 	 (set! %decoder d)
 	 (let ((buffer (instantiate::alsabuffer
@@ -357,7 +384,7 @@
 ;*    alsadecoder-stop ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-stop dec::obj o)
-   (when (alsadecoder? dec)
+   (when (isa? dec alsadecoder)
       (with-access::alsadecoder dec (%dmutex %dcondv %!pause)
 	 (mutex-lock! %dmutex)
 	 (when %!pause
@@ -365,7 +392,7 @@
 	    (condition-variable-broadcast! %dcondv))
 	 (mutex-unlock! %dmutex)))
    (with-access::alsamusic o (%amutex %buffer %status pcm)
-      (when (alsabuffer? %buffer)
+      (when (isa? %buffer alsabuffer)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
 	    (mutex-lock! %bmutex)
 	    (unless (>=fx %!bstate 3)
@@ -495,7 +522,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-get o::alsamusic)
    (with-access::alsamusic o (%status)
-      (musicstatus-volume %status)))
+      (with-access::musicstatus %status (volume)
+	 volume)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-set! ::alsamusic ...                                */
@@ -503,7 +531,8 @@
 (define-method (music-volume-set! o::alsamusic vol)
    (with-access::alsamusic o (decoders %status)
       (for-each (lambda (d) (alsadecoder-volume-set! d vol)) decoders)
-      (musicstatus-volume-set! %status vol)))
+      (with-access::musicstatus %status (volume)
+	 (set! volume vol))))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::alsadecoder ...                               */

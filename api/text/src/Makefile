@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Aug 31 11:16:46 2010 (serrano)                */
+#*    Last change :  Wed Nov 16 11:08:02 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -21,7 +21,6 @@ include ../../../Makefile.misc
 API		= text
 # Directories
 BIGLOO_SRC_DIR 	= Llib
-DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
@@ -29,8 +28,6 @@ MISC_SRC_DIR 	= Misc
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
-DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -58,9 +55,6 @@ EOBJECTS	= objs/make_lib.o
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
-BGL_DOTNET_OBJ	= $(_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
-
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
 SOURCES		= $(_BGL_SOURCES)
@@ -76,7 +70,7 @@ POPULATION	= $(SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet build-c build-jvm build-dotnet
+.PHONY: c jvm build-c build-jvm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -85,18 +79,12 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) build-dotnet;  \
-	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
-
-dotnet: build-dotnet
-build-dotnet: api-dotnet
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  4 06:19:50 2008                          */
-;*    Last change :  Mon Feb 11 15:11:15 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 11:26:00 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBuffer                                                        */
 ;*=====================================================================*/
@@ -32,13 +32,15 @@
 	       (size::long
 		read-only
 		(get (lambda (o)
-			($gst-buffer-size (gst-buffer-$builtin o)))))
+			(with-access::gst-buffer o ($builtin)
+			   ($gst-buffer-size $builtin)))))
 	       (data::string
 		(get (lambda (o)
-			($gst-buffer-data (gst-buffer-$builtin o))))
+			(with-access::gst-buffer o ($builtin)
+			   ($gst-buffer-data $builtin))))
 		(set (lambda (o v)
-			($gst-buffer-set-data!
-			 (gst-buffer-$builtin o) v (string-length v))
+			(with-access::gst-buffer o ($builtin)
+			   ($gst-buffer-set-data! $builtin v (string-length v)))
 			o)))
 	       (caps::gst-caps
 		read-only
@@ -82,10 +84,10 @@
 	  ;; user finalizer
 	  ($gst-add-finalizer! o $finalizer))
 	 ($finalizer
-	  ;; regular unref finalizer
+	  ;;; regular unref finalizer
 	  ($gst-add-finalizer! o (lambda (o)
-				    ($gst-buffer-unref!
-				     (gst-buffer-$builtin o))))))
+				    (with-access::gst-buffer o ($builtin)
+				       ($gst-buffer-unref! $builtin))))))
       o))
 
 ;*---------------------------------------------------------------------*/

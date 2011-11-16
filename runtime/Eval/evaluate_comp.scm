@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Wed Jul 27 10:43:41 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 14:00:54 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -174,8 +174,8 @@
 	      (cons x (diff (cdr l1) l2)) ))))
 
 (define (lname v)
-   (if (ev_var? v)
-       (ev_var-name v)
+   (if (isa? v ev_var)
+       (with-access::ev_var v (name) name)
        v ))
 
 (define (loc-type-error f m v loc)
@@ -319,7 +319,7 @@
 
 ;;
 (define (global-fun-value e::ev_expr);
-   (when (ev_global? e)
+   (when (isa? e ev_global)
       (with-access::ev_global e (name mod)
 	 (let ( (g (evmodule-find-global mod name)) )
 	    (when g
@@ -477,7 +477,7 @@
       (let ( (size (length stk)) (nstk (append stk vars)) )
 	 (let ( (cvals (map (lambda (v) (comp v nstk)) vals))
 		(body (comp body nstk)) )
-	    (if (every? ev_abs? vals)
+	    (if (every? (lambda (v) (isa? v ev_abs)) vals)
 		(EVA '(binder letrec fun) ()
 		     (let rec ( (l cvals) (i (+fx bp size)) )
 			(unless (null? l)
@@ -504,7 +504,7 @@
 (define-method (comp e::ev_bind-exit stk);
    (with-access::ev_bind-exit e (var body)
       (let ( (size (length stk)) (nstk (append stk (cons var '()))) )
-	 (let ( (body (comp body nstk)) (eff? (ev_var-eff var)) )
+	 (let ( (body (comp body nstk)) (eff? (with-access::ev_var var (eff) eff)) )
 	    (EVA '(binder bind-exit) ()
 		 (let ( (saved-bp bp) )
 		    (prog1 (bind-exit (exit)
@@ -538,11 +538,12 @@
    (define (conv f)
       (procedure-attr-set! f **a-label**)
       f )
-   (with-access::ev_labels e (vars vals env body)
+   (with-access::ev_labels e (vars vals env body (ostk stk))
       ;(print "compile labels stk=" (map uncompile stk))
-      (ev_labels-stk-set! e stk)
+      (set! ostk stk)
       (let ( (env (map (lambda (v) (cons v 'notyet)) vars)) )
-	 (ev_labels-env-set! e env)
+	 (with-access::ev_labels e ((oenv env))
+	    (set! oenv env))
 	 (for-each (lambda (slot val)
 		      ;(print "compile " (uncompile (car slot)) " " (uncompile (cdr val)))
 		      (set-cdr! slot 
@@ -568,9 +569,9 @@
 (define-method (comp e::ev_goto stk)
    (with-access::ev_goto e (label labels args loc)
       ;(print "compile goto stk" (map uncompile stk))
-      (let ( (slot (assq label (ev_labels-env labels))) (size (length stk)) (lstk (ev_labels-stk labels)) )
+      (let ( (slot (assq label (with-access::ev_labels labels (env) env))) (size (length stk)) (lstk (with-access::ev_labels labels (stk) stk)) )
 	 ;(print "stk at labels " (map uncompile lstk))
-	 (let ( (llstk (length lstk)) (substk (sub-stk lstk stk)) (boxes (cdr (assq label (ev_labels-boxes labels)))) )
+	 (let ( (llstk (length lstk)) (substk (sub-stk lstk stk)) (boxes (cdr (assq label (with-access::ev_labels labels (boxes) boxes)))) )
 	    ;(print "sub-stk " (map uncompile substk))
 	    (if (need-shift args substk)
 		(let ( (args (comp-with-push args stk)) (nbargs (length args)) )
@@ -842,7 +843,7 @@
 
 ;; calling a constant function
 (define (is-constant-fun? fun nbargs)
-   (when (ev_global? fun)
+   (when (isa? fun ev_global)
       (with-access::ev_global fun (name mod)
 	 (let ( (g (evmodule-find-global mod name)) )
 	    (when g
@@ -857,16 +858,17 @@
    (define (CF e) (compile-float-arith e stk))
    ;(print "compile " (uncompile expr))
    (cond
-      ((ev_litt? expr)
-       (let ( (value (ev_litt-value expr)) )
+      ((isa? expr ev_litt)
+       (with-access::ev_litt expr (value)
 	  (cond ((fixnum? value) (vector 1 (fixnum->flonum value)))
 		((flonum? value) (vector 1 value))
 		(else (vector 0 (comp expr stk))) )))
-      ((ev_var? expr)
-       (if (ev_var-eff expr)
-	   (vector 3 (_index expr stk))
-	   (vector 2 (_index expr stk)) ))
-      ((ev_global? expr)
+      ((isa? expr ev_var)
+       (with-access::ev_var expr (eff)
+	  (if eff
+	      (vector 3 (_index expr stk))
+	      (vector 2 (_index expr stk)) )))
+      ((isa? expr ev_global)
        (with-access::ev_global expr (name mod loc)
 	  (let ( (g (evmodule-find-global mod name)) )
 	     (if g
@@ -874,7 +876,7 @@
 		     (vector 4 g)
 		     (vector 5 g) )
 		 (vector 0 (comp expr stk)) ))))
-      ((ev_app? expr)
+      ((isa? expr ev_app)
        (with-access::ev_app expr (loc fun args tail?)
 	  (let ( (fval (global-fun-value fun)) )
 	     (cond

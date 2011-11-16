@@ -36,11 +36,17 @@
 	  (d-mod-p-1 (any->bignum (cadddr (cdddr l))))
 	  (d-mod-q-1 (any->bignum (cadddr (cddddr l))))
 	  (qInv (any->bignum (cadddr (cddddr (cdr l))))))
-      (make-Complete-Rsa-Key n d
-			     ;; private key information
-			     e p q
-			     d-mod-p-1 d-mod-q-1
-			     qInv)))
+      (instantiate::Complete-Rsa-Key
+	 (modulus n)
+	 (exponent d)
+	 ;; private key information
+	 (e e)
+	 (p p)
+	 (q q)
+	 (exp1 d-mod-p-1)
+	 (exp2 d-mod-q-1)
+	 (coeff qInv))))
+
 (define (dsa-read-complete-key-pem p) ;; needs to be a private key.
    (let* ((l (decode-DER (open-input-string (read-armored-base64-data p))))
 	  (p (any->bignum (cadr l)))
@@ -48,9 +54,13 @@
 	  (g (any->bignum (cadddr l)))
 	  (y (any->bignum (cadddr (cdr l))))
 	  (x (any->bignum (cadddr (cddr l)))))
-      (make-Complete-Dsa-Key p q g y
-			     x))) ;; private information.
-
+      (instantiate::Complete-Dsa-Key
+	 (p p)
+	 (q q)
+	 (g g)
+	 (y y)
+	 ;; private information
+	 (x x))))
 
 (define (rsa-read-public-key-pem l)
    (let* ((algo (car l))
@@ -59,7 +69,7 @@
 	 (error "read-public-key-pem"
 		"Expected Algo of form (oid:... null)."
 		algo))
-      (when (not (DER-BitString? (cadr l)))
+      (when (not (isa? (cadr l) DER-BitString))
 	 (error "read-public-key-pem"
 		"No BitString entry found"
 		(cadr l)))
@@ -67,7 +77,9 @@
 	 (let* ((key-data (decode-DER (open-input-string data)))
 		(n (any->bignum (car key-data)))
 		(e (any->bignum (cadr key-data))))
-	    (make-Rsa-Key n e)))))
+	    (instantiate::Rsa-Key
+	       (modulus n)
+	       (exponent e))))))
 
 (define (dsa-read-public-key-pem l) ;; needs to be public key.
    (let* ((algo (car l))
@@ -75,13 +87,17 @@
 	  (p (any->bignum (car key-data)))
 	  (q (any->bignum (cadr key-data)))
 	  (g (any->bignum (caddr key-data))))
-      (when (not (DER-BitString? (cadr l)))
+      (when (not (isa? (cadr l) DER-BitString))
 	 (error "read-public-key-pem"
 		"No BitString entry found"
 		(cadr l)))
       (with-access::DER-BitString (cadr l) (data) ;; don't need unused bits.
 	 (let ((y (any->bignum (decode-DER (open-input-string data)))))
-	    (make-Dsa-Key p q g y)))))
+	    (instantiate::Dsa-Key
+	       (p p)
+	       (q q)
+	       (g g)
+	       (y y))))))
 
 (define (read-public-key-pem p) ;; needs to be public key.
    (let* ((l (decode-DER (open-input-string (read-armored-base64-data p))))
@@ -138,9 +154,8 @@
 (define (rsa-write-public-pem key p)
    (display "-----BEGIN PUBLIC KEY-----\n" p)
    (let ((str-p (open-output-string)))
-      (encode-DER (list (Rsa-Key-modulus key)
-			(Rsa-Key-exponent key))
-		    str-p)
+      (with-access::Rsa-Key key (modulus exponent)
+	 (encode-DER (list modulus exponent) str-p))
       (let* ((data (close-output-port str-p))
 	     (bitstring (instantiate::DER-BitString
 			   (data data)
@@ -189,13 +204,13 @@
 
 (define (write-pem-key-port key p::output-port #!optional public-key-only?)
    (cond
-      ((and (Complete-Rsa-Key? key) (not public-key-only?))
+      ((and (isa? key Complete-Rsa-Key) (not public-key-only?))
        (rsa-write-private-pem key p))
-      ((Rsa-Key? key)
+      ((isa? key Rsa-Key)
        (rsa-write-public-pem key p))
-      ((and (Complete-Dsa-Key? key) (not public-key-only?))
+      ((and (isa? key Complete-Dsa-Key) (not public-key-only?))
        (dsa-write-private-pem key p))
-      ((Dsa-Key? key)
+      ((isa? key Dsa-Key)
        (dsa-write-public-pem key p))
       (else (error "write-pem-key-port"
 		   "Not an RSA/DSA key"

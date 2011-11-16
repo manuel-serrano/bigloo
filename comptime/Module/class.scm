@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sat Nov 12 20:06:46 2011 (serrano)                */
+;*    Last change :  Sun Nov 13 19:02:02 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -357,7 +357,7 @@
 	,(slot-getter s) ,(slot-setter s) ,(slot-read-only? s)
 	#t
 	,(slot-user-info s)
-	((@ class-field-no-default-value __object))
+	(lambda () ,(slot-default-value s))
 	,(if (tclass? (slot-type s))
 	     (tclass-holder (slot-type s))
 	     `',(type-default-id (slot-type s)))))
@@ -370,7 +370,7 @@
 	   ,(car defs) ,(cadr defs) ,(slot-read-only? s)
 	   #f
 	   ,(slot-user-info s)
-	   ((@ class-field-no-default-value __object))
+	   (lambda () ,(slot-default-value s))
 	   ,(if (tclass? (slot-type s))
 		(tclass-holder (slot-type s))
 		`',(type-default-id (slot-type s))))))

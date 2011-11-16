@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 16 15:37:03 2005                          */
-;*    Last change :  Thu Jun 30 10:24:05 2005 (serrano)                */
-;*    Copyright   :  2005 Manuel Serrano                               */
+;*    Last change :  Mon Nov 14 19:13:17 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Register sets for regiter allocation                             */
 ;*=====================================================================*/
@@ -24,6 +24,8 @@
 	    saw_defs
 	    saw_register-allocation)
 
+   (include "SawMill/regset.sch")
+   
    (export  (class regset
 	       (length::int (default 0))
 	       (msize::int read-only)

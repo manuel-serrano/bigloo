@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Tue May  5 15:03:13 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 10:21:56 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
 ;*=====================================================================*/
@@ -42,15 +42,15 @@
 ;*    force the sync.                                                  */
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-create-table obj builtin table-name columns constraints)
-   (let ((glock ($sqltiny-mutex builtin)))
-      (mutex-lock! glock)
+   (with-access::$sqltiny builtin (mutex)
+      (mutex-lock! mutex)
       (when (sqltiny-get-table builtin table-name)
-	 (mutex-unlock! glock)
+	 (mutex-unlock! mutex)
 	 (raise
-	  (instantiate::&error
-	     (proc 'create-table)
-	     (msg (format "SQL error: table ~s already exists" table-name))
-	     (obj obj))))
+	    (instantiate::&error
+	       (proc "create-table")
+	       (msg (format "SQL error: table ~s already exists" table-name))
+	       (obj obj))))
       (let ((tbl (instantiate::$sqltiny-table
 		    (name table-name)
 		    (constraints constraints)))
@@ -58,28 +58,28 @@
 			   (name "rowid")
 			   (type 'INTEGER)
 			   (default -1))
-			(list-copy (sort-columns columns)))))
+		     (list-copy (sort-columns columns)))))
 	 (table-set-columns! obj tbl cols columns)
 	 (with-access::$sqltiny builtin (tables)
 	    (set! tables (cons tbl tables)))
-	 (mutex-unlock! glock)
+	 (mutex-unlock! mutex)
 	 (sqltiny-insert obj builtin
-			 "sqlite_master"
-			 '("name" "type")
-			 (list table-name "table")
-			 #f))
+	    "sqlite_master"
+	    '("name" "type")
+	    (list table-name "table")
+	    #f))
       #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    table-set-columns! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (table-set-columns! obj tbl cols *cols)
-   (with-access::$sqltiny-table tbl (columns *columns constraints)
+   (with-access::$sqltiny-table tbl (columns *columns constraints keycheck)
       (let ((colis (index-columns! cols)))
 	 (set! columns colis)
 	 (set! *columns *cols)
 	 (let ((kcheck (sqltiny-compile-key-check obj tbl colis constraints)))
-	    ($sqltiny-table-keycheck-set! tbl kcheck)))))
+	    (set! keycheck kcheck)))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-compile-key-check ...                                    */
@@ -92,10 +92,10 @@
 	      skc
 	      (raise
 	       (instantiate::&error
-		  (proc 'create-table)
+		  (proc "create-table")
 		  (msg (format
 			"SQL error: table ~s has more than one primary key"
-			($sqltiny-table-name table)))
+			(with-access::$sqltiny-table table (name) name)))
 		  (obj obj))))
 	  (or mkc (lambda (obj r rs replacep) #t)))))
 
@@ -103,91 +103,95 @@
 ;*    compile-simple-key-check ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (compile-simple-key-check obj table columns contraints)
-   (let ((primkeys (filter $sqltiny-column-primkey columns)))
-      (cond
-	 ((null? primkeys)
-	  #f)
-	 ((pair? (cdr primkeys))
-	  (raise
-	   (instantiate::&error
-	      (proc 'create-table)
-	      (msg (format "SQL error: table ~s has more than one primary key"
-			   ($sqltiny-table-name table)))
-	      (obj obj))))
-	 (else
-	  ;; simple key check
-	  (let ((i ($sqltiny-column-index (car primkeys)))
-		(n ($sqltiny-column-name (car primkeys))))
-	     (lambda (obj r rs replacep)
-		(let* ((v (vector-ref r i))
-		       (f (filter (lambda (r)
-				     (equal? (vector-ref r i) v))
-				  rs)))
-
-		   (cond
-		      ((null? f)
-		       #t)
-		      (replacep
-		       (vector-copy! (car f) 1 r 1)
-		       #f)
-		      (else
-		       (raise
-			(instantiate::&error
-			   (proc 'insert)
-			   (msg (format
-				 "SQL error: column ~a for table ~a is not unique: ~a" n ($sqltiny-table-name table) r))
-			   (obj obj))))))))))))
+   (let ((primkeys (filter (lambda (c)
+			      (with-access::$sqltiny-column c (primkey)
+				 primkey))
+		      columns)))
+      (with-access::$sqltiny-table table (name)
+	 (cond
+	    ((null? primkeys)
+	     #f)
+	    ((pair? (cdr primkeys))
+	     (raise
+		(instantiate::&error
+		   (proc "create-table")
+		   (msg (format "SQL error: table ~s has more than one primary key"
+			   name))
+		   (obj obj))))
+	    (else
+	     ;; simple key check
+	     (with-access::$sqltiny-column (car primkeys) (index (n name))
+		(lambda (obj r rs replacep)
+		   (let* ((v (vector-ref r index))
+			  (f (filter (lambda (r)
+					(equal? (vector-ref r index) v))
+				rs)))
+		      
+		      (cond
+			 ((null? f)
+			  #t)
+			 (replacep
+			    (vector-copy! (car f) 1 r 1)
+			    #f)
+			 (else
+			  (raise
+			     (instantiate::&error
+				(proc "insert")
+				(msg (format
+					"SQL error: column ~a for table ~a is not unique: ~a" n name r))
+				(obj obj)))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-multiple-key-check ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (compile-multiple-key-check obj table columns constraints)
    (let ((f (filter (lambda (c) (eq? (car c) 'primary-key)) constraints)))
-      (when (pair? f)
-	 (when (pair? (cdr f))
-	    (raise
-	     (instantiate::&error
-		(proc 'create-table)
-		(msg (format
-		      "SQL error: table ~s has more than one primary key"
-		      ($sqltiny-table-name table)))
-		(obj obj))))
-	 (let* ((pk (car f))
-		(of (map (lambda (c)
-			    (let ((o (column-offset obj table c)))
-			       (or o
-				   (raise
-				    (instantiate::&error
-				       (proc 'create-table)
-				       (msg (format
-					     "SQL error: table ~a has no column named ~a"
-					     ($sqltiny-table-name table)
-					     c))
-				       (obj obj))))))
-			 (cdr pk))))
-	    (lambda (obj r rs replacep)
-	       (let* ((vs (map (lambda (i) (vector-ref r i)) of))
-		      (f (filter (lambda (r)
-				    (let ((v (map (lambda (i)
-						     (vector-ref r i))
-						  of)))
-				       (equal? vs v)))
-				 rs)))
-		  (cond
-		     ((null? f)
-		      #t)
-		     (replacep
-		      (vector-copy! (car f) 1 r 1)
-		      #f)
-		     (else
-		      (raise
-		       (instantiate::&error
-			  (proc 'insert)
-			  (msg (format
-				"SQL error: column ~a for table ~a is not unique: ~a"
-				(cdr pk) ($sqltiny-table-name table) r))
-			  (obj obj)))
-		      #t))))))))
+      (with-access::$sqltiny-table table (name)
+	 (when (pair? f)
+	    (when (pair? (cdr f))
+	       (raise
+		  (instantiate::&error
+		     (proc "create-table")
+		     (msg (format
+			     "SQL error: table ~s has more than one primary key"
+			     name))
+		     (obj obj))))
+	    (let* ((pk (car f))
+		   (of (map (lambda (c)
+			       (let ((o (column-offset obj table c)))
+				  (or o
+				      (raise
+					 (instantiate::&error
+					    (proc "create-table")
+					    (msg (format
+						    "SQL error: table ~a has no column named ~a"
+						    name
+						    c))
+					    (obj obj))))))
+			  (cdr pk))))
+	       (lambda (obj r rs replacep)
+		  (let* ((vs (map (lambda (i) (vector-ref r i)) of))
+			 (f (filter (lambda (r)
+				       (let ((v (map (lambda (i)
+							(vector-ref r i))
+						   of)))
+					  (equal? vs v)))
+			       rs)))
+		     (cond
+			((null? f)
+			 #t)
+			(replacep
+			   (vector-copy! (car f) 1 r 1)
+			   #f)
+			(else
+			 (raise
+			    (instantiate::&error
+			       (proc "insert")
+			       (msg (format
+				       "SQL error: column ~a for table ~a is not unique: ~a"
+				       (cdr pk) name r))
+			       (obj obj)))
+			 #t)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sort-columns ...                                                 */
@@ -214,26 +218,26 @@
 ;*    sqltiny-drop-table ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-drop-table obj builtin table-name if-exists)
-   (let ((glock ($sqltiny-mutex builtin)))
-      (mutex-lock! glock)
+   (with-access::$sqltiny builtin (mutex)
+      (mutex-lock! mutex)
       (let ((tbl (sqltiny-get-table builtin table-name)))
-	 (if (not ($sqltiny-table? tbl))
+	 (if (not (isa? tbl $sqltiny-table))
 	     (unless if-exists
-		(mutex-unlock! glock)
+		(mutex-unlock! mutex)
 		(raise
-		 (instantiate::&error
-		    (proc 'sqltiny-drop-table)
-		    (msg (format "SQL error: no such table: ~a" table-name))
-		    (obj obj))))
+		   (instantiate::&error
+		      (proc "sqltiny-drop-table")
+		      (msg (format "SQL error: no such table: ~a" table-name))
+		      (obj obj))))
 	     (begin
-		(with-access::$sqltiny builtin (tables)
+		(with-access::$sqltiny builtin (tables sync)
 		   (set! tables (remq! tbl tables))
-		   (unless (eq? ($sqltiny-sync builtin) 'ondemand)
+		   (unless (eq? sync 'ondemand)
 		      (%sqltiny-flush obj builtin))
-		   (mutex-unlock! glock)
+		   (mutex-unlock! mutex)
 		   (sqltiny-delete obj builtin
-				   "sqlite_master"
-				   `(binary = ,table-name (colref "*" "name")))))))))
+		      "sqlite_master"
+		      `(binary = ,table-name (colref "*" "name")))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-get-table ...                                            */
@@ -244,7 +248,8 @@
 	 (cond
 	    ((null? tables)
 	     #f)
-	    ((string=? ($sqltiny-table-name (car tables)) table-name)
+	    ((string=? (with-access::$sqltiny-table (car tables) (name) name)
+		table-name)
 	     (car tables))
 	    (else
 	     (loop (cdr tables)))))))
@@ -256,33 +261,38 @@
    (let ((tbl (sqltiny-get-table builtin table-name)))
       (unless tbl
 	 (raise
-	  (instantiate::&error
-	     (proc 'sqltiny-insert)
-	     (msg (format "SQL error: no such table: ~a" table-name))
-	     (obj obj))))
+	    (instantiate::&error
+	       (proc "sqltiny-insert")
+	       (msg (format "SQL error: no such table: ~a" table-name))
+	       (obj obj))))
       (let* ((lv (length vals))
 	     (cols (cond
 		      ((pair? column-names)
 		       (unless (=fx (length column-names) lv)
 			  (raise
-			   (instantiate::&error
-			      (proc 'sqltiny-insert)
-			      (msg (format "SQL error: ~a values for ~a columns"
-					   lv (length column-names)))
-			      (obj obj))))
+			     (instantiate::&error
+				(proc "sqltiny-insert")
+				(msg (format "SQL error: ~a values for ~a columns"
+					lv (length column-names)))
+				(obj obj))))
 		       column-names)
-		      ((>fx lv (length ($sqltiny-table-*columns tbl)))
+		      ((>fx lv (length (with-access::$sqltiny-table tbl (*columns)
+					  *columns)))
 		       (raise
-			(instantiate::&error
-			   (proc 'sqltiny-insert)
-			   (msg (format "SQL error: table ~a has ~a columns but ~a values were supplied"
-					table-name
-					(length ($sqltiny-table-*columns tbl))
-					lv))
-			   (obj obj))))
+			  (instantiate::&error
+			     (proc "sqltiny-insert")
+			     (msg (format "SQL error: table ~a has ~a columns but ~a values were supplied"
+				     table-name
+				     (length (with-access::$sqltiny-table tbl
+						   (*columns) *columns))
+				     lv))
+			     (obj obj))))
 		      (else
-		       (map $sqltiny-column-name
-			    (take ($sqltiny-table-*columns tbl) lv))))))
+		       (map (lambda (c)
+			       (with-access::$sqltiny-column c (name) name))
+			  (take (with-access::$sqltiny-table tbl (*columns)
+				   *columns)
+			     lv))))))
 	 (insert obj builtin tbl cols vals replacep)))
    #f)
 
@@ -293,7 +303,11 @@
    (with-access::$sqltiny-table table (name rowid columns rows last-row-pair
 					    mutex keycheck)
       (let* ((len (length columns))
-	     (row (apply vector (map $sqltiny-column-default columns)))
+	     (row (apply vector
+		     (map (lambda (c)
+			     (with-access::$sqltiny-column c (default)
+				default))
+			columns)))
 	     (cols (sort (map cons column-names vals)
 			 (lambda (d1 d2)
 			    (string<? (car d1) (car d2))))))
@@ -311,32 +325,34 @@
 			     (set-cdr! last-row-pair last)
 			     (set! rows last))
 			 (set! last-row-pair last)))
-		   (unless (eq? ($sqltiny-sync builtin) 'ondemand)
+		   (unless (eq? (with-access::$sqltiny builtin (sync) sync)
+			      'ondemand)
 		      (%sqltiny-flush obj builtin))
 		   (mutex-unlock! mutex)))
 	       ((null? columns)
 		(when (pair? cols)
 		   (raise
 		    (instantiate::&error
-		       (proc 'sqltiny-insert)
+		       (proc "sqltiny-insert")
 		       (msg (format "SQL error: table ~a has no column named ~a"
 				    name (caar cols)))
 		       (obj obj)))))
 	       (else
 		(let ((c (string-compare3
 			  (caar cols)
-			  ($sqltiny-column-name (car columns)))))
+			  (with-access::$sqltiny-column (car columns) (name)
+			     name))))
 		   (cond
 		      ((=fx c 0)
-		       (let ((i ($sqltiny-column-index (car columns))))
-			  (vector-set! row i (cdar cols))
+		       (with-access::$sqltiny-column (car columns) (index)
+			  (vector-set! row index (cdar cols))
 			  (loop (cdr cols) (cdr columns))))
 		      ((>fx c 0)
 		       (loop cols (cdr columns)))
 		      (else
 		       (raise
 			(instantiate::&error
-			   (proc 'sqltiny-insert)
+			   (proc "sqltiny-insert")
 			   (msg (format "SQL error: table ~a has no column named ~a"
 					name (caar cols)))
 			   (obj obj))))))))))))
@@ -354,7 +370,7 @@
 	     (mutex-unlock! *sqltiny-mutex*)
 	     (raise
 	      (instantiate::&error
-		 (proc 'sqltiny-begin-transaction!)
+		 (proc "sqltiny-begin-transaction!")
 		 (msg (format "SQL error: cannot start a transaction within a transaction"))
 		 (obj obj))))
 	  (begin
@@ -374,7 +390,7 @@
 	     (mutex-unlock! *sqltiny-mutex*)
 	     (raise
 	      (instantiate::&error
-		 (proc 'sqltiny-end-transaction!)
+		 (proc "sqltiny-end-transaction!")
 		 (msg (format "SQL error: cannot commit - no transaction is active"))
 		 (obj obj))))
 	  (begin
@@ -402,21 +418,21 @@
 	  (tbl (sqltiny-get-table builtin table-name)))
       (unless tbl
 	 (raise
-	  (instantiate::&error
-	     (proc 'sqltiny-update)
-	     (msg (format "SQL error: no such table: ~a" table-name))
-	     (obj obj))))
+	    (instantiate::&error
+	       (proc "sqltiny-update")
+	       (msg (format "SQL error: no such table: ~a" table-name))
+	       (obj obj))))
       (for-each (lambda (row)
 		   (for-each (lambda (a)
 				(let ((o (column-offset obj tbl (car a))))
 				   (vector-set! row o (cdr a))))
-			     assignments))
-		rows)
-      (unless (eq? ($sqltiny-sync builtin) 'ondemand)
-	 (let ((glock ($sqltiny-mutex builtin)))
-	    (mutex-lock! glock)
+		      assignments))
+	 rows)
+      (with-access::$sqltiny builtin (sync mutex)
+	 (unless (eq? sync 'ondemand)
+	    (mutex-lock! mutex)
 	    (%sqltiny-flush obj builtin)
-	    (mutex-unlock! glock)))
+	    (mutex-unlock! mutex)))
       '()))
 
 ;*---------------------------------------------------------------------*/
@@ -426,7 +442,10 @@
 			limit env obj builtin)
    (let* ((frame (map (lambda (t) (make-select-frame t obj builtin)) tnames))
 	  (nenv (append frame env))
-	  (table (prod (map (lambda (b) ($sqltiny-table-rows (cdr b))) frame)))
+	  (table (prod (map (lambda (b)
+			       (with-access::$sqltiny-table (cdr b) (rows)
+				  rows))
+			  frame)))
 	  (where-c (compile-expr where nenv obj builtin))
 	  (group-c (map (lambda (g) (compile-expr g nenv obj builtin)) group))
 	  (order-c (compile-order-by orderby nenv obj builtin))
@@ -504,7 +523,10 @@
 (define (compile-update tname where env obj builtin)
    (let* ((frame (list (make-select-frame (cons tname tname) obj builtin)))
 	  (nenv (append frame env))
-	  (table (prod (map (lambda (b) ($sqltiny-table-rows (cdr b))) frame)))
+	  (table (prod (map (lambda (b)
+			       (with-access::$sqltiny-table (cdr b) (rows)
+				  rows))
+			  frame)))
 	  (where-c (compile-expr where nenv obj builtin)))
       (lambda (rows)
 	 (apply append
@@ -536,10 +558,10 @@
 (define (make-select-frame table-name obj builtin)
    (let* ((n (car table-name))
 	  (t (sqltiny-get-table builtin n)))
-      (if (not ($sqltiny-table? t))
+      (if (not (isa? t $sqltiny-table))
 	  (raise
 	   (instantiate::&error
-	      (proc 'sqltiny-select)
+	      (proc "sqltiny-select")
 	      (msg (format "SQL error: no such table: ~a" n))
 	      (obj obj)))
 	  (cons (cdr table-name) t))))
@@ -664,9 +686,10 @@
 	   (lambda (row rows)
 	      (append-map (lambda (v)
 			     (map (lambda (col)
-				     (let ((i ($sqltiny-column-index col)))
-					(vector-ref v i)))
-				  ($sqltiny-table-*columns tbl)))
+				     (with-access::$sqltiny-column col (index)
+					(vector-ref v index)))
+				(with-access::$sqltiny-table tbl (*columns)
+				   *columns)))
 			  row))
 	   #f)))
       ((?name . *)
@@ -695,7 +718,7 @@
 		       (else
 			(raise
 			 (instantiate::&error
-			    (proc 'sqltiny-select-result)
+			    (proc "sqltiny-select-result")
 			    (msg (format "SQL error: not implemented ~a" expr))
 			    (obj obj)))))))
 	     (values 
@@ -708,7 +731,7 @@
       (else
        (raise
 	(instantiate::&error
-	   (proc 'sqltiny-select-result)
+	   (proc "sqltiny-select-result")
 	   (msg (format "SQL error: not implemented ~a" expr))
 	   (obj obj))))))
 
@@ -763,7 +786,7 @@
 	     (else
 	      (raise
 	       (instantiate::&error
-		  (proc 'compile-expr)
+		  (proc "compile-expr")
 		  (msg (format "SQL error: not implemented ~a" expr))
 		  (obj obj)))))))
       ((is-select ?select-statement)
@@ -808,7 +831,7 @@
 	     ((GLOB)
 	      (raise
 	       (instantiate::&error
-		  (proc 'compile-expr)
+		  (proc "compile-expr")
 		  (msg (format "SQL error: not implemented ~a" expr))
 		  (obj obj))))
 	     ((REGEXP)
@@ -824,13 +847,13 @@
 	     ((MATCH)
 	      (raise
 	       (instantiate::&error
-		  (proc 'compile-expr)
+		  (proc "compile-expr")
 		  (msg (format "SQL error: not implemented ~a" expr))
 		  (obj obj)))))))
       (else
        (raise
 	(instantiate::&error
-	   (proc 'compile-expr)
+	   (proc "compile-expr")
 	   (msg (format "SQL error: not implemented ~a" expr))
 	   (obj obj))))))
 
@@ -917,7 +940,7 @@
 	     ((or (null? env) (null? (car env)))
 	      (raise
 	       (instantiate::&error
-		  (proc 'sqltiny-insert)
+		  (proc "sqltiny-insert")
 		  (msg (format "SQL error: no such table: ~a" name))
 		  (obj obj))))
 	     ((string=? name (caar env))
@@ -935,7 +958,7 @@
 	  (if (null? env)
 	      (raise
 	       (instantiate::&error
-		  (proc 'find-column-offset)
+		  (proc "find-column-offset")
 		  (msg (format "SQL error: no such column: ~a" column-name))
 		  (obj obj)))
 	      (let* ((t (cdr (car env)))
@@ -949,7 +972,7 @@
 	  (unless j
 	     (raise
 	      (instantiate::&error
-		 (proc 'find-column-offset)
+		 (proc "find-column-offset")
 		 (msg (format "SQL error: no such column `~a' in table: ~a"
 			      column-name
 			      table-name))
@@ -966,7 +989,8 @@
 	 (cond
 	    ((null? columns)
 	     #f)
-	    ((string=? name ($sqltiny-column-name (car columns)))
+	    ((string=? name
+		(with-access::$sqltiny-column (car columns) (name) name))
 	     i)
 	    (else
 	     (loop (cdr columns) (+fx i 1)))))))
@@ -976,18 +1000,21 @@
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-delete obj builtin table-name where-expr)
    (let ((tbl (sqltiny-get-table builtin table-name))
-	 (glock ($sqltiny-mutex builtin)))
+	 (glock (with-access::$sqltiny builtin (mutex) mutex)))
       (unless tbl
 	 (raise
 	  (instantiate::&error
-	     (proc 'sqltiny-delete)
+	     (proc "sqltiny-delete")
 	     (msg (format "SQL error: no such table: ~a" table-name))
 	     (obj obj))))
       
       (let* ((env (list (cons table-name tbl)))
 	     (pred (compile-expr where-expr env obj builtin)))
 	 (mutex-lock! glock)
-	 (let* ((r (prod (map (lambda (b) ($sqltiny-table-rows (cdr b))) env)))
+	 (let* ((r (prod (map (lambda (b)
+				 (with-access::$sqltiny-table (cdr b) (rows)
+				    rows))
+			    env)))
 		(rows (filter! pred r)))
 	    (with-access::$sqltiny-table tbl ((table-rows rows) last-row-pair)
 	       (let loop ((trows table-rows)
@@ -1014,8 +1041,9 @@
 		     (else
 		      (assert () (eq? last-row-pair
 				      (last-pair table-rows))))))))
-	 (unless (eq? ($sqltiny-sync builtin) 'ondemand)
-	    (%sqltiny-flush obj builtin))
+	 (with-access::$sqltiny builtin (sync)
+	    (unless (eq? sync 'ondemand)
+	       (%sqltiny-flush obj builtin)))
 	 (mutex-unlock! glock)
 	 #f)))
 
@@ -1027,12 +1055,13 @@
       (unless table
 	 (raise
 	  (instantiate::&error
-	     (proc 'sqltiny-insert)
+	     (proc "sqltiny-insert")
 	     (msg (format "SQL error: no such table: ~a" table-name))
 	     (obj obj))))
       (map (lambda (c)
-	      (list 0 ($sqltiny-column-name c)))
-	   ($sqltiny-table-*columns table))))
+	      (with-access::$sqltiny-column c (name)
+		 (list 0 name)))
+	 (with-access::$sqltiny-table  table (*columns) *columns))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %sqltiny-flush ...                                               */
@@ -1073,7 +1102,7 @@
 	    (unless tbl
 	       (raise
 		(instantiate::&error
-		   (proc 'create-table)
+		   (proc "create-table")
 		   (msg (format "SQL error: no such table: ~s" table-name))
 		   (obj obj))))
 	    (proc obj builtin tbl)
@@ -1086,13 +1115,13 @@
 (define (sqltiny-add-column! obj builtin tbl col)
    (with-access::$sqltiny-table tbl (columns *columns rows last-row-pair)
       (table-set-columns! obj tbl
-			  (append! columns (list col))
-			  (append! *columns (list col)))
-      (let ((def ($sqltiny-column-default col))
-	    (len (length columns)))
-	 (set! rows (map (lambda (row)
-			    (let ((v (make-vector len def)))
-			       (vector-copy! v 0 row)
-			       v))
-			 rows))
-	 (set! last-row-pair (last-pair rows)))))
+	 (append! columns (list col))
+	 (append! *columns (list col)))
+      (with-access::$sqltiny-column col (default)
+	 (let ((len (length columns)))
+	    (set! rows (map (lambda (row)
+			       (let ((v (make-vector len default)))
+				  (vector-copy! v 0 row)
+				  v))
+			  rows))
+	    (set! last-row-pair (last-pair rows))))))

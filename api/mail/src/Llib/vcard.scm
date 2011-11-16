@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Mon Oct 11 17:23:32 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 20:21:59 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
 ;*=====================================================================*/
@@ -180,19 +180,25 @@
 		    (parse-error "Illegal END:VCARD" line (the-port)))))
 	    ((fn:)
 	     (let ((vals (read-values (the-port) options cset)))
-		(vcard-fn-set! vcard (if (pair? vals) (car vals) #f))))
+		(with-access::vcard vcard (fn)
+		   (set! fn (if (pair? vals) (car vals) #f)))))
 	    ((n:)
 	     (let ((vals (read-values (the-port) options cset)))
 		(when (pair? vals)
-		   (vcard-familyname-set! vcard (car vals))
+		   (with-access::vcard vcard (familyname)
+		      (set! familyname (car vals)))
 		   (when (pair? (cdr vals))
-		      (vcard-firstname-set! vcard (cadr vals))))))
+		      (with-access::vcard vcard (firstname)
+			 (set! firstname (cadr vals)))))))
 	    ((version:)
-	     (vcard-version-set! vcard (read-line (the-port))))
+	     (with-access::vcard vcard (version)
+		(set! version (read-line (the-port)))))
 	    ((url:)
-	     (vcard-url-set! vcard (read-line (the-port))))
+	     (with-access::vcard vcard (url)
+		(set! url (read-line (the-port)))))
 	    ((org:)
-	     (vcard-org-set! vcard (read-values (the-port) options cset)))
+	     (with-access::vcard vcard (org)
+		(set! org (read-values (the-port) options cset))))
 	    ((tel:)
 	     (with-access::vcard vcard (phones)
 		(let ((num (read-values (the-port) options cset))

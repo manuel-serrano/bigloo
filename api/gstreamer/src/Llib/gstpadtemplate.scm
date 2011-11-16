@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 16 12:06:09 2008                          */
-;*    Last change :  Sun Jan 25 15:50:58 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:34:30 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstPadTemplate                                                   */
 ;*=====================================================================*/
@@ -27,22 +27,25 @@
 	       (%gst-static-pad-template-init)
 	       ($builtin::$gst-static-pad-template)
 	       (name-template::string
-		read-only
-		(get (lambda (o)
-			($gst-static-pad-template-name-template
-			  (gst-static-pad-template-$builtin o)))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-static-pad-template o ($builtin)
+			     ($gst-static-pad-template-name-template
+				$builtin)))))
 	       (direction::symbol
-		read-only
-		(get (lambda (o)
-			($gst-pad-direction->obj
-			 ($gst-static-pad-template-direction
-			  (gst-static-pad-template-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-static-pad-template o ($builtin)
+			     ($gst-pad-direction->obj
+				($gst-static-pad-template-direction
+				   $builtin))))))
 	       (presence::symbol
-		read-only
-		(get (lambda (o)
-			($gst-pad-presence->obj
-			 ($gst-static-pad-template-presence
-			  (gst-static-pad-template-$builtin o)))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-static-pad-template o ($builtin)
+			     ($gst-pad-presence->obj
+				($gst-static-pad-template-presence
+				   $builtin)))))))
 	    
 	    ($make-gst-pad-template::obj ::$gst-pad-template ::obj)
 	    ($make-gst-static-pad-template::obj ::$gst-static-pad-template)
@@ -58,7 +61,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%gst-pad-template-init o::gst-pad-template)
    (with-access::gst-pad-template o ($builtin $finalizer)
-      (when ($gst-caps-null? $builtin)
+      (when ($gst-pad-null? ($gst-pad $builtin))
 	 (raise (instantiate::&gst-create-error
 		   (proc '%gst-pad-template-init)
 		   (msg "Illegal gst-pad-template")

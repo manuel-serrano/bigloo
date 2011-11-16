@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Wed Mar 10 07:50:39 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 19:00:40 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
 ;*=====================================================================*/
@@ -182,34 +182,34 @@
 (define-method (musicproc-start o::mplayer)
    [assert (o) (not (symbol? (mutex-state (mplayer-%mutex o))))]
    (with-access::mplayer o (%process
-			    path args ao ac charset
-			    %result-acknowledge
-			    %command-volume %status)
+			      path args ao ac charset
+			      %result-acknowledge
+			      %command-volume %status)
       (let ((proc (apply run-process
-			 path
-			 input: pipe: output: pipe: error: "/dev/null"
-			 wait: #f fork: #t
-			 (append args
-				 (if (string? ao) (list "-ao" ao) '())
-				 (if (string? ac) (list "-ac" ac) '())))))
+		     path
+		     input: pipe: output: pipe: error: "/dev/null"
+		     wait: #f fork: #t
+		     (append args
+			(if (string? ao) (list "-ao" ao) '())
+			(if (string? ac) (list "-ac" ac) '())))))
 	 (if (not (process-alive? proc))
 	     (raise
-	      (instantiate::&io-error
-		 (proc 'mplayer-start)
-		 (msg "Can't start process")
-		 (obj (format "~a ~a" path args))))
+		(instantiate::&io-error
+		   (proc 'mplayer-start)
+		   (msg "Can't start process")
+		   (obj (format "~a ~a" path args))))
 	     (let* ((p (process-output-port proc))
 		    (l (read-line p)))
 		(set! %process proc)
 		(if (not (substring-ci-at? l %result-acknowledge 0))
 		    (raise
-		     (instantiate::&io-parse-error
-			(proc 'mplayer-start)
-			(msg "Illegal MPLAYER acknowledge")
-			(obj l)))
-		    (let ((vol (musicstatus-volume %status)))
+		       (instantiate::&io-parse-error
+			  (proc 'mplayer-start)
+			  (msg "Illegal MPLAYER acknowledge")
+			  (obj l)))
+		    (with-access::musicstatus %status (volume)
 		       ;; the lock is already acquired so don't call volume-set!
-		       (musicproc-exec proc %command-volume vol)
+		       (musicproc-exec proc %command-volume volume)
 		       proc)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -321,22 +321,33 @@
 			    ((=fx oslen nslen) 'play)
 			    (else 'start))))))
 	    (unless (eq? status %status)
-	       (musicstatus-volume-set! status volume)
-	       (musicstatus-state-set! status state)
-	       (musicstatus-err-set! status err)
-	       (musicstatus-song-set! status song)
-	       (musicstatus-songid-set! status songid)
-	       (musicstatus-songpos-set! status songpos)
-	       (musicstatus-songlength-set! status songlength)
-	       (musicstatus-bitrate-set! status bitrate)
-	       (musicstatus-playlistid-set! status playlistid)
-	       (musicstatus-playlistlength-set! status playlistlength)))
+	       (with-access::musicstatus status ((volume2 volume)
+						 (state2 state)
+						 (err2 err)
+						 (song2 song)
+						 (songid2 songid)
+						 (songpos2 songpos)
+						 (songlength2 songlength)
+						 (bitrate2 bitrate)
+						 (playlistid2 playlistid)
+						 (playlistlength2 playlistlength))
+		  (set! volume2 volume)
+		  (set! state2 state)
+		  (set! err2 err)
+		  (set! song2 song)
+		  (set! songid2 songid)
+		  (set! songpos2 songpos)
+		  (set! songlength2 songlength)
+		  (set! bitrate2 bitrate)
+		  (set! playlistid2 playlistid)
+		  (set! playlistlength2 playlistlength))))
 	 %status))
 
    (define (err e)
-      (with-access::musicstatus (mplayer-%status o) (state err)
-	 (set! state 'error)
-	 (set! err (with-error-to-string (lambda () (error-notify e))))))
+      (with-access::mplayer o (%status)
+	 (with-access::musicstatus %status (state err)
+	    (set! state 'error)
+	    (set! err (with-error-to-string (lambda () (error-notify e)))))))
    
    (with-access::mplayer o (%process %status %user-state %mutex)
       (mutex-lock! %mutex)
@@ -345,9 +356,9 @@
 		  (update-inner! o))))
 	 (mutex-unlock! %mutex)
 	 (cond
-	    ((musicstatus? v)
+	    ((isa? v musicstatus)
 	     v)
-	    ((or (eq? v 'end-of-song) (&io-timeout-error? v))
+	    ((or (eq? v 'end-of-song) (isa? v &io-timeout-error))
 	     (with-access::musicstatus %status (state err
 						      song songpos songlength 
 						      playlistlength

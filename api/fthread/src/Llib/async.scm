@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 19 16:47:03 2002                          */
-;*    Last change :  Mon Oct 24 07:13:11 2005 (serrano)                */
-;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 16:17:17 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Fair thread asynchronous signals.                                */
 ;*=====================================================================*/

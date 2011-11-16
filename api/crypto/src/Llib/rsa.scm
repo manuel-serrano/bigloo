@@ -1,6 +1,6 @@
 ;*=====================================================================*/
 ;*    Author      :  Florian Loitsch                                   */
-;*    Copyright   :  2009 Florian Loitsch                              */
+;*    Copyright   :  2009-11 Florian Loitsch                           */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -110,11 +110,16 @@
 		       (d-mod-q-1 (modulobx d (-bx q #z1)))
 		       (qInv (mod-inverse q p)))
 		   (when show-trace (newline))
-		   (make-Complete-Rsa-Key n d
-					  ;; private key information
-					  e p q
-					  d-mod-p-1 d-mod-q-1
-					  qInv)))))))
+		   (instantiate::Complete-Rsa-Key
+		      (modulus n)
+		      (exponent d)
+		      ;; private key information		      
+		      (e e)
+		      (p p)
+		      (q q)
+		      (exp1 d-mod-p-1)
+		      (exp2 d-mod-q-1)
+		      (coeff qInv))))))))
 
 (define (extract-public-rsa-key::Rsa-Key key::Complete-Rsa-Key)
    (with-access::Complete-Rsa-Key key (modulus e)
@@ -131,18 +136,22 @@
       (modulus modulus)
       (exponent exponent)))
 (define (rsa-key-modulus::bignum key::Rsa-Key)
-   (Rsa-Key-modulus key))
+   (with-access::Rsa-Key key (modulus)
+      modulus))
 (define (rsa-key-exponent::bignum key::Rsa-Key)
-   (Rsa-Key-exponent key))
+   (with-access::Rsa-Key key (exponent)
+      exponent))
 
 (define (rsa-key=? rsa-key1 rsa-key2)
    (define (public-exp k)
-      (if (Complete-Rsa-Key? k)
-	  (Complete-Rsa-Key-e k)
-	  (Rsa-Key-exponent k)))
+      (if (isa? k Complete-Rsa-Key)
+	  (with-access::Complete-Rsa-Key k (e) e)
+	  (with-access::Rsa-Key k (exponent) exponent)))
 
-   (and (=bx (Rsa-Key-modulus rsa-key1) (Rsa-Key-modulus rsa-key2))
-	(=bx (public-exp rsa-key1) (public-exp rsa-key2))))
+   (with-access::Rsa-Key rsa-key1 ((modulus1 modulus))
+      (with-access::Rsa-Key rsa-key2 ((modulus2 modulus))
+	 (and (=bx modulus1 modulus2)
+	      (=bx (public-exp rsa-key1) (public-exp rsa-key2))))))
 
 
 (define (I2OSP x::bignum x-len::long)
@@ -266,7 +275,7 @@
 (define rsa-encrypt RSAEP)
 (define (RSAEP::bignum k::Rsa-Key m::bignum)
    (receive (modulus exponent)
-      (if (Complete-Rsa-Key? k)
+      (if (isa? k Complete-Rsa-Key)
 	  (with-access::Complete-Rsa-Key k (modulus e) (values modulus e))
 	  (with-access::Rsa-Key k (modulus exponent) (values modulus exponent)))
       (when (>=bx m modulus)
@@ -302,7 +311,7 @@
 ;; s: a signature representative.
 (define (RSAVP1::bignum k::Rsa-Key s::bignum)
    (receive (modulus exponent)
-      (if (Complete-Rsa-Key? k)
+      (if (isa? k Complete-Rsa-Key)
 	  (with-access::Complete-Rsa-Key k (modulus e) (values modulus e))
 	  (with-access::Rsa-Key k (modulus exponent) (values modulus exponent)))
       (when (>=bx s modulus)

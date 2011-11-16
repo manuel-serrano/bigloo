@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri Nov  4 11:33:51 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:22:04 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -835,11 +835,12 @@
 		   (unwind-protect
 		      (with-handler
 			 (lambda (e)
-			    (if (&large-frame-exception? e)
-				(let ((sz (elong->fixnum
-					   (- (&large-frame-exception-size e)
-					      (string-length s)))))
-				   (loop (string-append s (read-chars sz p))))))
+			    (if (isa? e &large-frame-exception)
+				(with-access::&large-frame-exception e (size)
+				   (let ((sz (elong->fixnum
+						(- size (string-length s)))))
+				      (loop
+					 (string-append s (read-chars sz p)))))))
 			 (mmap-musictag mm))
 		      (close-mmap mm))))
 	     (close-input-port p))))
@@ -943,49 +944,54 @@
 	    (bps bitrate)
 	    (channels channels)
 	    (duration duration))))
-
+   
    (define (mp3frame-same-constant? f1 f2)
-      (and (=fl (mp3frame-version f1) (mp3frame-version f2))
-	   (=fx (mp3frame-layer f1) (mp3frame-layer f2))
-	   (=fx (mp3frame-crc f1) (mp3frame-crc f2))
-	   (=fx (mp3frame-samplerate f1) (mp3frame-samplerate f2))))
-
+      (with-access::mp3frame f1 ((version1 version)
+				 (layer1 layer)
+				 (crc1 crc)
+				 (samplerate1 samplerate))
+	 (with-access::mp3frame f2 ((version2 version)
+				    (layer2 layer)
+				    (crc2 crc)
+				    (samplerate2 samplerate))
+	    (and (=fl version1 version2)
+		 (=fx layer2 layer2)
+		 (=fx crc1 crc2)
+		 (=fx samplerate1 samplerate2)))))
+   
    ;; skip the ID3 frame
    (cond
       ((id3v2.4? mm) (mp3-id3v2.4 mm))
       ((id3v2.3? mm) (mp3-id3v2.3 mm))
       ((id3v2.2? mm) (mp3-id3v2.2 mm))
       (else (mmap-read-position-set! mm 0)))
-
+   
    (let* ((len (mmap-length mm))
 	  (i0 (mmap-read-position mm))
 	  (f0 (read-mp3-frame mm i0 (instantiate::mp3frame))))
-      (when (mp3frame? f0)
-	 (let ((i0 (+elong (mp3frame-offset f0) (mp3frame-length f0))))
-	    (let loop ((i (+elong 1 i0))
-		       (f (instantiate::mp3frame))
-		       (c 0))
-	       (if (mp3frame? (read-mp3-frame mm i f))
-		   (if (mp3frame-same-constant? f f0)
-		       (if (=fx c 15)
-			   (loop (+elong
-				    (mp3frame-offset f) (mp3frame-length f))
-			      f
-			      (-fx c 1))
-			   (let ((nbframes (/fx (-fx len i0)
-					      (mp3frame-length f0)))
-				 (seconds (/fx (-fx len i0)
-					     (*fx (mp3frame-bitrate f0) 125))))
-			      (mp3frame->musicinfo f0 seconds)))
-		       (let loop ((i i)
-				  (d (*fl (fixnum->flonum c)
-					(mp3frame-duration f))))
-			  (if (mp3frame? (read-mp3-frame mm i f))
-			      (loop (+elong (mp3frame-offset f)
-				       (mp3frame-length f))
-				 (+fl d (mp3frame-duration f)))
-			      (mp3frame->musicinfo f0
-				 (flonum->fixnum (round d))))))))))))
+      (when (isa? f0 mp3frame)
+	 (with-access::mp3frame f0 (offset length bitrate)
+	    (let ((i0 (+elong offset length)))
+	       (let loop ((i (+elong 1 i0))
+			  (f (instantiate::mp3frame))
+			  (c 0))
+		  (if (isa? (read-mp3-frame mm i f) mp3frame)
+		      (if (mp3frame-same-constant? f f0)
+			  (if (=fx c 15)
+			      (with-access::mp3frame f (offset length)
+				 (loop (+elong offset length) f (-fx c 1)))
+			      (let ((nbframes (/fx (-fx len i0) length))
+				    (seconds (/fx (-fx len i0) 
+						(*fx bitrate 125))))
+				 (mp3frame->musicinfo f0 seconds)))
+			  (with-access::mp3frame f (duration offset length)
+			     (let loop ((i i)
+					(d (*fl (fixnum->flonum c) duration)))
+				(if (isa? (read-mp3-frame mm i f) mp3frame)
+				    (loop (+elong offset length)
+				       (+fl d duration))
+				    (mp3frame->musicinfo f0
+				       (flonum->fixnum (round d))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-musicinfo ...                                                */
@@ -1027,11 +1033,11 @@
 		   (unwind-protect
 		      (with-handler
 			 (lambda (e)
-			    (if (&large-frame-exception? e)
-				(let ((sz (elong->fixnum
-					     (- (&large-frame-exception-size e)
-						(string-length s)))))
-				   (loop (string-append s (read-chars sz p))))))
+			    (if (isa? e &large-frame-exception)
+				(with-access::&large-frame-exception e (size)
+				   (let ((sz (elong->fixnum
+						(- size (string-length s)))))
+				      (loop (string-append s (read-chars sz p)))))))
 			 (mmap-musicinfo mm))
 		      (close-mmap mm))))
 	     (close-input-port p))))

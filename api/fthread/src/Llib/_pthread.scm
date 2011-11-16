@@ -35,14 +35,16 @@
 
 (define (%get-scheduler-token)
    (let ((scdl (current-scheduler)))
-      (if (%scheduler? scdl)
-	  (%scheduler-current-token scdl)
+      (if (isa? scdl %scheduler)
+	  (with-access::%scheduler scdl (current-token)
+	     current-token)
 	  *scheduler-current-token*)))
 
 (define (%set-scheduler-token! token)
    (let ((scdl (current-scheduler)))
-      (if (%scheduler? scdl)
-	  (%scheduler-current-token-set! scdl token)
+      (if (isa? scdl %scheduler)
+	  (with-access::%scheduler scdl (current-token)
+	     (set! current-token token))
 	  (set! *scheduler-current-token* token))))
 
 ;*---------------------------------------------------------------------*/
@@ -66,12 +68,14 @@
       (with-access::fthread t (%state %result %cleanup scheduler body)
 	 ;; terminate is used to abruptly terminate a thread
 	 (bind-exit (terminate)
-	    (fthread-%terminate-set! t terminate)
+	    (with-access::fthread t (%terminate)
+	       (set! %terminate terminate))
 	    (with-exception-handler
 	       (lambda (e)
 		  (let ((u (instantiate::uncaught-exception
 			      (reason e))))
-		     (fthread-%exc-result-set! t u)
+		     (with-access::fthread t (%exc-result)
+			(set! %exc-result u))
 		     (exception-notify e)
 		     (terminate #f)))
 	       (lambda ()
@@ -88,13 +92,14 @@
 	 (%thread-kill! t)))
    
    (with-trace 4 "%pthread-new"
-      (letrec ((%pth (instantiate::%pthread
-			(fthread ft)
-			(body (lambda ()
-				 (default-scheduler (fthread-scheduler ft))
-				 (%pthread-wait %pth)
-				 (execute-thread ft)))
-			(name (fthread-name ft)))))
+      (letrec ((%pth (with-access::fthread ft (scheduler name)
+			(instantiate::%pthread
+			   (fthread ft)
+			   (body (lambda ()
+				    (default-scheduler scheduler)
+				    (%pthread-wait %pth)
+				    (execute-thread ft)))
+			   (name name)))))
 	 (trace-item "%pth=" (trace-string %pth))
 	 %pth)))
 
@@ -107,7 +112,7 @@
 	 (trace-item "wait on thread " (trace-string ft))
 	 (trace-item "mutex=" (trace-string mutex))
 	 (trace-item "cv=" (trace-string condvar))
-
+	 
 	 (mutex-lock! mutex)
 	 (let loop ()
 	    (unless (eq? (%get-scheduler-token) ft)
@@ -138,24 +143,23 @@
       (trace-item "scdl=" (trace-string scdl))
       
       (with-access::%pthread scdl (parent fthread)
-	 
 	 ; Find the parent thread in the creation hierarchy, is not set
 	 (when (not parent)
 	    (let ((th (current-thread)))
 	       (cond
 		  ; Only to catch %pthread objects, as they are also pthread
-		  ((%pthread? th)
+		  ((isa? th %pthread)
 		   (error '%pthread-enter-scheduler
 			  "Bogus (current-thread) procedure"
 			  th))
 		  ; A scheduler scheduling another one, ignore
-		  ((scheduler? th)
+		  ((isa? th scheduler)
 		   #unspecified)
 		  ; A fair thread calling the scheduler, ignore
-		  ((fthread? th)
+		  ((isa? th fthread)
 		   #unspecified)
 		  ; A native posix thread
-		  ((pthread? th)
+		  ((isa? th pthread)
 		   (set! parent th))
 		  ; #f, means main() entry point
 		  ((and (boolean? th) (not th))
@@ -168,11 +172,12 @@
 	    (trace-item "setting parent to: " (trace-string parent)))
 
 	 ; As the scheduleding is done by the calling thread, set the parameter
-	 (when (not (scheduler? (current-scheduler)))
+	 (when (not (isa? (current-scheduler) scheduler))
 	    (current-scheduler-set! fthread))
 
 	 ; Runs the scheduler's body
-	 ((scheduler-body fthread)))))
+	 (with-access::scheduler fthread (body)
+	    (body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-leave-scheduler ...                                     */
@@ -181,13 +186,11 @@
    (with-trace 4 "%pthread-leave-scheduler"
       (trace-item "scdl=" (trace-string scdl))
 
-      (when (not (fthread? (current-thread)))
+      (when (not (isa? (current-thread) fthread))
 	 (current-scheduler-set! #f)
-	 (%pthread-parent-set! scdl #f))
+	 (with-access::%pthread scdl (parent)
+	    (set! parent #f)))
       #f))
-
-
-;;; ASYNCHRONOUS THREADS
 
 ;*---------------------------------------------------------------------*/
 ;*    %async-spawn ...                                                 */
@@ -210,15 +213,17 @@
 (define (%async-synchronize scdl::%pthread)
    (with-trace 4 "%async-synchronize"
       (trace-item "scdl=" (trace-string scdl))
-      (mutex-lock! (%pthread-mutex scdl))))
-
+      (with-access::%pthread scdl (mutex)
+	 (mutex-lock! mutex))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    %async-asynchronize ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (%async-asynchronize scdl::%pthread)
    (with-trace 4 "%async-asynchronize"
       (trace-item "scdl=" (trace-string scdl))
-      (mutex-unlock! (%pthread-mutex scdl))))
+      (with-access::%pthread scdl (mutex)
+	 (mutex-unlock! mutex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %async-scheduler-wait ...                                        */
@@ -226,8 +231,8 @@
 (define (%async-scheduler-wait scdl::%pthread)
    (with-trace 4 "%async-scheduler-wait"
       (trace-item "scdl=" (trace-string scdl))
-      (condition-variable-wait! (%pthread-condvar scdl)
-				(%pthread-mutex scdl))))
+      (with-access::%pthread scdl (condvar mutex)
+	 (condition-variable-wait! condvar mutex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %async-scheduler-notify ...                                      */
@@ -235,7 +240,8 @@
 (define (%async-scheduler-notify scdl::%pthread)
    (with-trace 4 "%async-scheduler-notify"
       (trace-item "scdl=" (trace-string scdl))
-      (condition-variable-signal! (%pthread-condvar scdl))))
+      (with-access::%pthread scdl (condvar)
+	 (condition-variable-signal! condvar))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ...                                                 */
@@ -262,25 +268,28 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (%current-fthread)
    (let ((cs (current-scheduler)))
-      (if (scheduler? cs)
-	  (%scheduler-current-thread cs)
+      (if (isa? cs scheduler)
+	  (with-access::%scheduler cs (current-thread)
+	     current-thread)
 	  (let ((ds (default-scheduler)))
-	     (if (scheduler? ds)
-		 (%scheduler-current-thread ds))))))
+	     (if (isa? ds scheduler)
+		 (with-access::%scheduler ds (current-thread)
+		    current-thread))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-current-thread ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-current-thread o::%pthread)
-   (if (fthread? (%pthread-fthread o))
-       (%pthread-fthread o)
-       (%current-fthread)))
+   (with-access::%pthread o ((fth fthread))
+      (if (isa? fth fthread)
+	  fth
+	  (%current-fthread))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-yield! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-thread-yield! o::%pthread)
-   (let ((fth (%pthread-fthread o)))
+   (with-access::%pthread o ((fth fthread))
       (when fth
 	 (%thread-yield! fth))))
 
@@ -288,11 +297,9 @@
 ;*    %user-thread-sleep! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (%user-thread-sleep! o::%pthread timeout)
-   (let ((fth (%pthread-fthread o)))
-      (when (and (fthread? fth)
-		 (>fx timeout 0))
+   (with-access::%pthread o ((fth fthread))
+      (when (and (isa? fth fthread) (>fx timeout 0))
 	 (%thread-timeout! fth timeout))))
-
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-current-thread ...                                         */

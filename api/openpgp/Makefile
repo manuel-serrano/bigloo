@@ -31,7 +31,6 @@ build:
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -43,12 +42,6 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    (cd src && $(MAKE) jvm); \
-          fi
-
-build-dotnet:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	    echo "[0m[1;31m>>> .NET[0m"; \
-	    (cd src && $(MAKE) dotnet); \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -91,14 +84,10 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-            $(MAKE) api-install-dotnet; \
-          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm \
-           api-uninstall-dotnet
+           api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

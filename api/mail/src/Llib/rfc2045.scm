@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Sep 16 14:02:34 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 20:15:38 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -418,7 +418,7 @@
 				 (if (pair? c)
 				     (with-handler
 					(lambda (e)
-					   (if (&io-parse-error? e)
+					   (if (isa? e &io-parse-error)
 					       (begin
 						  (when (>fx (bigloo-warning) 0)
 						     (display "*** WARNING:multipart"

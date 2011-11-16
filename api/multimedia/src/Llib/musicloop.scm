@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Oct 24 15:58:01 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:31:28 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
@@ -56,20 +56,24 @@
    
    (define (newstate? stat2 stat1)
       (with-access::musicstatus stat2 (state songid)
-	 (or (not (eq? (musicstatus-state stat1) state))
-	     (newsong? stat2 stat1))))
+	 (with-access::musicstatus stat1 ((state1 state))
+	    (or (not (eq? state1 state))
+		(newsong? stat2 stat1)))))
 
    (define (newplaylist? stat2 stat1)
       (with-access::musicstatus stat2 (playlistid)
-	 (not (eq? (musicstatus-playlistid stat1) playlistid))))
+	 (with-access::musicstatus stat1 ((playlistid1 playlistid))
+	    (not (eq? playlistid1 playlistid)))))
 
    (define (newsong? stat2 stat1)
       (with-access::musicstatus stat2 (songid)
-	 (not (eq? (musicstatus-songid stat1) songid))))
+	 (with-access::musicstatus stat1 ((songid1 songid))
+	    (not (eq? songid1 songid)))))
 
    (define (newvolume? stat2 stat1)
       (with-access::musicstatus stat2 (volume)
-	 (not (eq? (musicstatus-volume stat1) volume))))
+	 (with-access::musicstatus stat1 ((volume1 volume))
+	    (not (eq? volume1 volume)))))
    
    (with-access::music m (%loop-mutex %abort-loop %reset-loop %status %mutex)
       (mutex-lock! %loop-mutex)
@@ -77,45 +81,45 @@
 			   (state 'unspecified)))
 		 (stat2 (duplicate::musicstatus %status
 			   (state 'init))))
-	 (let ((stop (or (music-closed? m) (music-%abort-loop m))))
+	 (let ((stop (or (music-closed? m) %abort-loop)))
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
 	       (music-update-status! m stat2)
 	       (when (newstate? stat2 stat1)
-		  (case (musicstatus-state stat2)
-		     ((error)
-		      (when (and onerror (musicstatus-err stat2))
-			 ;; onerror
-			 (onerror (musicstatus-err stat2))))
-		     ((play)
-		      ;; onstate
-		      (tprint "ONPLAY..." (musicstatus-songid stat2))
-		      (when onstate
-			 (onstate stat2))
-		      ;; onmeta
-		      (when onmeta
-			 (onmeta (music-get-meta stat2 m))))
-		     ((ended)
-		      ;; onstate
-		      (tprint "ONENDED..." (musicstatus-songid stat2))
-		      (when onstate
-			 (onstate stat2))
-		      (with-access::musicstatus stat2 (song playlistlength)
-			 (when (<fx song (-fx playlistlength 1))
-			    (music-next m))))
-		     ((skip)
-		      ;; as ended but do not raise the onstate event
-		      (with-access::musicstatus stat2 (song playlistlength)
-			 (when (<fx song (-fx playlistlength 1))
-			    (music-next m))))
-		     (else
-		      ;; onstate
-		      (when onstate
-			 (onstate stat2)))))
+		  (with-access::musicstatus stat2 (state err songig)
+		     (case state
+			((error)
+			 (when (and onerror err)
+			    ;; onerror
+			    (onerror err)))
+			((play)
+			 ;; onstate
+			 (when onstate
+			    (onstate stat2))
+			 ;; onmeta
+			 (when onmeta
+			    (onmeta (music-get-meta stat2 m))))
+			((ended)
+			 ;; onstate
+			 (when onstate
+			    (onstate stat2))
+			 (with-access::musicstatus stat2 (song playlistlength)
+			    (when (<fx song (-fx playlistlength 1))
+			       (music-next m))))
+			((skip)
+			 ;; as ended but do not raise the onstate event
+			 (with-access::musicstatus stat2 (song playlistlength)
+			    (when (<fx song (-fx playlistlength 1))
+			       (music-next m))))
+			(else
+			 ;; onstate
+			 (when onstate
+			    (onstate stat2))))))
 	    
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume
-		  (onvol (musicstatus-volume stat2)))
+		  (with-access::musicstatus stat2 (volume)
+		     (onvol volume)))
 
 	       (when (and onplaylist (newplaylist? stat2 stat1))
 		  ;; onplaylist
@@ -128,7 +132,8 @@
 	       (mutex-lock! %loop-mutex)
 	       (when %reset-loop
 		  (set! %reset-loop #f)
-		  (musicstatus-state-set! stat2 'reset))
+		  (with-access::musicstatus stat2 (state)
+		     (set! state 'reset)))
 
 	       ;; loop back
 	       (loop stat2 stat1))))))

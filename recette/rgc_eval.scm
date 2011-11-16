@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/rgc-eval.scm                 */
+;*    serrano/prgm/project/bigloo/recette/rgc_eval.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 08:54:00 1994                          */
-;*    Last change :  Tue Oct 11 10:21:03 2005 (serrano)                */
+;*    Last change :  Mon Nov 14 14:00:29 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    On test rgc sous eval                                            */
 ;*=====================================================================*/

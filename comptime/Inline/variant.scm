@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 10 10:19:51 1996                          */
-;*    Last change :  Wed Jun 15 06:33:23 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 17:05:49 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The variant/invariant property computations.                     */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module inline_variant
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Inline/variant.sch")
    (import  type_type
 	    tools_shape
 	    ast_var

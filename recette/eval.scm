@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Mon Mar 14 09:21:17 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 09:45:46 2011 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -13,7 +13,8 @@
 ;*---------------------------------------------------------------------*/
 (module reval
    (import  (main "main.scm"))
-   (include "test.sch")
+   (include "test.sch"
+	    "eval.sch")
    (export  (test-eval))
    (export  *g* foo *f* bar)
    (static  (class evpt x (y read-only (default 10))))
@@ -22,6 +23,11 @@
 	    (export *f*)
 	    (export bar)
 	    (export gee)
+	    (export evpt?)
+	    (export make-evpt)
+	    (export evpt-x)
+	    (export evpt-x-set!)
+	    (export evpt-y)
 	    (export-exports)
 	    (class evpt)))
 
@@ -524,6 +530,11 @@
 				       (set! x y)
 				       x)))
 	 '40)
+   (test "eval duplicate" (eval '(let* ((i (instantiate::evpt (x 10) (y 40)))
+					(j (duplicate::evpt i (x 11))))
+				  (with-access::evpt j (x y)
+				     (+ x y))))
+      51)
    (test "eval define.1" (eval '(begin
 				   (define (inner.1 x)
 				      (define (%inner.1 x) x)

@@ -4,6 +4,7 @@
 	   saw_defs
 	   )
    (export (collapse b::block))
+   (include "SawMill/collapse.sch")
    (static (wide-class collapsed::block last)) )
 
 ;;

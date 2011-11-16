@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Fri Feb 18 15:14:22 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:40:00 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
@@ -221,17 +221,18 @@
    (cond
       ((not (input-port? p))
        (bigloo-type-error 'tar-read-header "input-port" p))
-      ((tar-header? h)
-       (let ((n (elong->fixnum (tar-header-size h))))
-	  (if (=fx n 0)
-	      #f
-	      (let ((s (read-chars n p)))
-		 (if (<fx (string-length s) n)
-		     (error 'tar-read-block
-			    "Illegal block"
-			    (tar-header-name h))
-		     (read-chars (-fx (tar-round-up-to-record-size n) n) p))
-		 s))))
+      ((isa? h tar-header)
+       (with-access::tar-header h (size name)
+	  (let ((n (elong->fixnum size)))
+	     (if (=fx n 0)
+		 #f
+		 (let ((s (read-chars n p)))
+		    (if (<fx (string-length s) n)
+			(error 'tar-read-block
+			   "Illegal block"
+			   name)
+			(read-chars (-fx (tar-round-up-to-record-size n) n) p))
+		    s)))))
       (else
        (bigloo-type-error 'tar-read-block "tar-header" h))))
 
@@ -268,35 +269,36 @@
       (let ((h (tar-read-header ip)))
 	 (if (not h)
 	     (reverse! lst)
-	     (case (tar-header-type h)
-		((dir)
-		 (let ((path (make-file-name base (tar-header-name h))))
-		    (rm-rf path)
-		    (if (make-directories path)
-			(loop (cons path lst))
-			(raise
-			 (instantiate::&io-error
-			    (proc 'untar)
-			    (msg "Cannot create directory")
-			    (obj path))))))
-		((normal)
-		 (let* ((path (make-file-name base (tar-header-name h)))
-			(dir (dirname path)))
-		    (when (and (file-exists? dir) (not (directory? dir)))
-		       (delete-file dir))
-		    (unless (file-exists? dir)
-		       (make-directories dir)
-		       (set! lst (cons dir lst)))
-		    (with-output-to-file path
-		       (lambda ()
-			  (display (tar-read-block h ip))))
-		    (loop (cons path lst))))
-		(else
-		 (raise
-		  (instantiate::&io-parse-error
-		     (proc 'untar)
-		     (msg (format "Illegal file type `~a'" (tar-header-type h)))
-		     (obj (tar-header-name h))))))))))
+	     (with-access::tar-header h (type name)
+		(case type
+		   ((dir)
+		    (let ((path (make-file-name base name)))
+		       (rm-rf path)
+		       (if (make-directories path)
+			   (loop (cons path lst))
+			   (raise
+			      (instantiate::&io-error
+				 (proc 'untar)
+				 (msg "Cannot create directory")
+				 (obj path))))))
+		   ((normal)
+		    (let* ((path (make-file-name base name))
+			   (dir (dirname path)))
+		       (when (and (file-exists? dir) (not (directory? dir)))
+			  (delete-file dir))
+		       (unless (file-exists? dir)
+			  (make-directories dir)
+			  (set! lst (cons dir lst)))
+		       (with-output-to-file path
+			  (lambda ()
+			     (display (tar-read-block h ip))))
+		       (loop (cons path lst))))
+		   (else
+		    (raise
+		       (instantiate::&io-parse-error
+			  (proc 'untar)
+			  (msg (format "Illegal file type `~a'" type))
+			  (obj name))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    untar-file ...                                                   */
@@ -304,15 +306,16 @@
 (define (untar-file ip::input-port file::bstring)
    (let loop ()
       (let ((h (tar-read-header ip)))
-	 (when (tar-header? h)
-	    (case (tar-header-type h)
-	       ((dir)
-		(loop))
-	       ((normal)
-		(let ((b (tar-read-block h ip))
-		      (n (tar-header-name h)))
-		   (if (string=? n file)
-		       b
-		       (loop))))
-	       (else
-		#f))))))
+	 (when (isa? h tar-header)
+	    (with-access::tar-header h (type name)
+	       (case type
+		  ((dir)
+		   (loop))
+		  ((normal)
+		   (let ((b (tar-read-block h ip))
+			 (n name))
+		      (if (string=? n file)
+			  b
+			  (loop))))
+		  (else
+		   #f)))))))

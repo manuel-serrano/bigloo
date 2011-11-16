@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Nov  7 15:46:33 2011 (serrano)                */
+#*    Last change :  Tue Nov 15 20:14:56 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -22,7 +22,6 @@ API		= mail
 # Directories
 PKG_SRC_DIR	= Pkgs
 BIGLOO_SRC_DIR 	= Llib
-DOTNET_SRC_DIR 	= DotNet
 JAVA_SRC_DIR 	= Java
 C_SRC_DIR 	= Posix
 MISC_SRC_DIR 	= Misc
@@ -30,8 +29,6 @@ MISC_SRC_DIR 	= Misc
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
-DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -62,9 +59,6 @@ EOBJECTS	= objs/make_lib.o
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
-BGL_DOTNET_OBJ	= $(_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
-
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm) \
                   $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.bgl) \
                   $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.stk) \
@@ -83,7 +77,7 @@ POPULATION	= $(SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet build-c build-jvm build-dotnet
+.PHONY: c jvm build-c build-jvm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -92,18 +86,12 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) build-dotnet;  \
-	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
-
-dotnet: build-dotnet
-build-dotnet: api-dotnet
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
@@ -151,19 +139,3 @@ $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
 	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
-	$(BIGLOO) $(SPIFLAGS) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
-	$(BIGLOO) $(SPIFLAGS) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
-	$(BIGLOO) -suffix stk -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $^ -o $@
-

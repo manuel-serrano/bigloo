@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Wed Dec 17 14:59:58 2008 (serrano)                */
-;*    Copyright   :  2002-08 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 20:52:16 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that for the Gstreamer library.                    */
 ;*=====================================================================*/
@@ -93,7 +93,7 @@
 ;*    gst-registry1 ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-test gst-registry1
-   (gst-registry? (gst-registry-default)))
+   (isa? (gst-registry-default) gst-registry))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-registry2 ...                                                */
@@ -105,7 +105,7 @@
 ;*    gst-element1 ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-test gst-element1
-   (gst-element? (gst-element-factory-make "filesrc" "file-source")))
+   (isa? (gst-element-factory-make "filesrc" "file-source") gst-element))
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */

@@ -22,6 +22,7 @@
    (export (saw-cheader)
 	   (saw-cgen b::cvm v::global)
 	   (saw-cepilogue))
+   (include "SawC/code.sch")
    (static (wide-class ireg::rtl_reg index)) )
 
 (define *comment* #f)

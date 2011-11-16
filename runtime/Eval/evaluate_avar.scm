@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Fri Feb 18 15:08:48 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 12:39:57 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
@@ -97,8 +97,8 @@
 	      (cons x (diff (cdr l1) l2)) ))))
 
 (define (lname v)
-   (if (ev_var? v)
-       (ev_var-name v)
+   (if (isa? v ev_var)
+       (with-access::ev_var v (name) name)
        v ))
 
 (define **call/cc-compliant** #f)
@@ -117,8 +117,8 @@
 
 (define (check-var var::ev_var local abs::ev_abs);
    (unless (memq var local)
-      (let ( (free (ev_abs-free abs)) )
-	 (unless (memq var free) (ev_abs-free-set! abs (cons var free))) )))
+      (with-access::ev_abs abs (free)
+	 (unless (memq var free) (set! free (cons var free))) )))
 
 (define-generic (avar e::ev_expr local abs))
 
@@ -153,7 +153,8 @@
 (define-method (avar e::ev_setlocal local abs);
    (with-access::ev_setlocal e (v e)
       (check-var v local abs)
-      (ev_var-eff-set! v #t)
+      (with-access::ev_var v (eff)
+	 (set! eff #t))
       (avar e local abs) ))
 
 (define-method (avar e::ev_bind-exit local abs);
@@ -172,38 +173,39 @@
       (avar body local abs) ))
 
 (define-method (avar e::ev_let local abs);
-   (with-access::ev_let e (vars vals body)
+   (with-access::ev_let e (vars vals body boxes)
       (for-each (lambda (e) (avar e local abs)) vals)
       (avar body (append vars local) abs)
       (bind-and-reset-effect abs vars)
-      (ev_let-boxes-set! e (filter ev_var-eff vars)) ))
+      (set! boxes (filter (lambda (v) (with-access::ev_var v (eff) eff)) vars)) ))
 
 (define-method (avar e::ev_let* local abs);
-   (with-access::ev_let* e (vars vals body)
+   (with-access::ev_let* e (vars vals body boxes)
       (let ( (local (append vars local)) )
 	 (for-each (lambda (e) (avar e local abs)) vals)
 	 (avar body local abs)
 	 (bind-and-reset-effect abs vars)
-	 (ev_let*-boxes-set! e (map ev_var-eff vars)) )))
+	 (set! boxes (map (lambda (v) (with-access::ev_var v (eff) eff)) vars)) )))
 	 
 (define-method (avar e::ev_letrec local abs);
    (with-access::ev_letrec e (vars vals body)
       (let ( (local (append vars local)) )
 	 (for-each (lambda (e) (avar e local abs)) vals)
 	 (avar body local abs)
-	 (ev_abs-bind-set! abs (append vars (ev_abs-bind abs)))
-	 (for-each (lambda (v) (ev_var-eff-set! v #t)) vars) )))
+	 (with-access::ev_abs abs (bind)
+	    (set! bind (append vars bind)) )
+	 (for-each (lambda (v) (with-access::ev_var v (eff) (set! eff #t))) vars) )))
 	 
 (define-method (avar e::ev_labels local abs);
-   (with-access::ev_labels e (vars vals body)
+   (with-access::ev_labels e (vars vals body boxes)
       (let ( (local (append vars local)) )
 	 (for-each
 	  (lambda (s)
 	     (avar (cdr s) (append (car s) local) abs)
 	     (bind-and-reset-effect abs (car s)) )
 	  vals )
-	 (ev_labels-boxes-set! e
-			       (map (lambda (var s) (cons var (map ev_var-eff (car s)))) vars vals) )
+	 (set! boxes
+	    (map (lambda (var s) (cons var (map (lambda (v) (with-access::ev_var v (eff) eff)) (car s)))) vars vals) )
 	 (avar body local abs) )))
 	 
 (define-method (avar e::ev_goto local abs);
@@ -221,17 +223,24 @@
    (define (funion l)
       (if (null? l)
 	  '()
-	  (union (ev_abs-free (car l)) (funion (cdr l))) ))
-   (let ( (ifree (funion (ev_abs-inner abs))) )
-      (ev_abs-bind-set! abs (append vars (ev_abs-bind abs)))
+	  (union (with-access::ev_abs (car l) (free) free) (funion (cdr l))) ))
+   (let ( (ifree (funion (with-access::ev_abs abs (inner) inner))) )
+      (with-access::ev_abs abs (bind)
+	 (set! bind (append vars bind)))
       (unless **call/cc-compliant**
-	 (for-each (lambda (v) (ev_var-eff-set! v #f)) (diff vars ifree) ))
+	 (for-each (lambda (v)
+		      (with-access::ev_var v (eff)
+			 (set! eff #f) ))
+	    (diff vars ifree) ))
       ifree ))
 
 (define-method (avar e::ev_abs local abs);
    (with-access::ev_abs e (arity vars body)
-      (ev_abs-inner-set! abs (cons e (ev_abs-inner abs)))
+      (with-access::ev_abs abs (inner)
+	 (set! inner (cons e inner)))
       (avar body vars e)
       (let ( (ifree (bind-and-reset-effect e vars)) )
-	 (ev_abs-free-set! e (diff (union ifree (ev_abs-free e)) (ev_abs-bind e)))
-         (ev_abs-boxes-set! e (filter ev_var-eff vars)) )))
+	 (with-access::ev_abs e (free boxes bind)
+	    (set! free (diff (union ifree free) bind))
+	    (set! boxes (filter (lambda (v) (with-access::ev_var v (eff) eff))
+			   vars) )))))

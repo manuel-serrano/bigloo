@@ -2,6 +2,7 @@
    (import type_type ast_var ast_node
 	   saw_defs )
    (export (block-ordering::pair-nil b::block))
+   (include "SawMill/blockorder.sch")
    (static (wide-class done::block)
 	   (wide-class rdone::block)
 	   (wide-class dfs::block n::int) ))

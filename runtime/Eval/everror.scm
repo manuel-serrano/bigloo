@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 14 13:46:57 2004                          */
-;*    Last change :  Fri Feb 18 15:05:26 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 11:12:28 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The error of evmeaning                                           */
@@ -84,7 +84,17 @@
 (define (evwarning loc . args)
    (match-case loc
       ((at ?fname ?loc)
-       (warning-notify (make-&eval-warning fname loc (get-trace-stack) args)))
+       (warning-notify
+	  (instantiate::&eval-warning
+	     (fname fname)
+	     (location loc)
+	     (stack (get-trace-stack))
+	     (args args))))
       (else
-       (warning-notify (make-&eval-warning #f #f (get-trace-stack) args)))))
+       (warning-notify
+	  (instantiate::&eval-warning
+	     (fname #f)
+	     (location #f)
+	     (stack (get-trace-stack))
+	     (args args))))))
 

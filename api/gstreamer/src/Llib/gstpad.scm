@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 14:45:56 2008                          */
-;*    Last change :  Sun Jan 25 14:06:33 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:32:23 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstPad                                                           */
 ;*=====================================================================*/
@@ -26,54 +26,63 @@
 
    (export  (class gst-pad::gst-object
 	       (name::string
-		read-only
-		(get (lambda (o)
-			($gst-pad-get-name
-			 ($gst-pad (gst-pad-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     ($gst-pad-get-name
+				($gst-pad $builtin))))))
 	       (direction::symbol
-		read-only
-		(get (lambda (o)
-			($gst-pad-direction->obj
-			 ($gst-pad-get-direction
-			  ($gst-pad (gst-pad-$builtin o)))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     ($gst-pad-direction->obj
+				($gst-pad-get-direction
+				   ($gst-pad $builtin)))))))
 	       (parent
-		read-only
-		(get (lambda (o)
-			(let ((p ($gst-pad-get-parent-element
-				  ($gst-pad (gst-pad-$builtin o)))))
-			   (if ($gst-element-null? p)
-			       #f
-			       ($make-gst-element p %gst-object-finalize!))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     (let ((p ($gst-pad-get-parent-element
+					 ($gst-pad $builtin))))
+				(if ($gst-element-null? p)
+				    #f
+				    ($make-gst-element p %gst-object-finalize!)))))))
 	       (caps::gst-caps
-		(get (lambda (o)
-			($make-gst-caps
-			 ($gst-pad-get-caps ($gst-pad (gst-pad-$builtin o)))
-			 #t)))
-		(set (lambda (o v)
-			($gst-pad-set-caps! ($gst-pad (gst-pad-$builtin o))
-					    (gst-caps-$builtin v)))))
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     ($make-gst-caps
+				($gst-pad-get-caps ($gst-pad $builtin))
+				#t))))
+		  (set (lambda (o v)
+			  (with-access::gst-pad o ($builtin)
+			     (with-access::gst-caps v ((caps-builtin $builtin))
+			     ($gst-pad-set-caps! ($gst-pad $builtin)
+				caps-builtin))))))
 	       (allowed-caps
-		read-only
-		(get (lambda (o)
-			(let ((c ($gst-pad-get-allowed-caps
-				  ($gst-pad (gst-pad-$builtin o)))))
-			   (unless ($gst-caps-null? c)
-			      ($make-gst-caps c #t))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     (let ((c ($gst-pad-get-allowed-caps
+					 ($gst-pad $builtin))))
+				(unless ($gst-caps-null? c)
+				   ($make-gst-caps c #t)))))))
 	       (negotiated-caps
-		read-only
-		(get (lambda (o)
-			(let ((c ($gst-pad-get-negotiated-caps
-				  ($gst-pad (gst-pad-$builtin o)))))
-			   (unless ($gst-caps-null? c)
-			      ($make-gst-caps c #t))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     (let ((c ($gst-pad-get-negotiated-caps
+					 ($gst-pad $builtin))))
+				(unless ($gst-caps-null? c)
+				   ($make-gst-caps c #t)))))))
 	       (pad-template-caps
-		read-only
-		(get (lambda (o)
-			(let ((c ($gst-pad-get-pad-template-caps
-				  ($gst-pad (gst-pad-$builtin o)))))
-			   (unless ($gst-caps-null? c)
-			      ($gst-caps-ref! c)
-			      ($make-gst-caps c #t)))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-pad o ($builtin)
+			     (let ((c ($gst-pad-get-pad-template-caps
+					 ($gst-pad $builtin))))
+				(unless ($gst-caps-null? c)
+				   ($gst-caps-ref! c)
+				   ($make-gst-caps c #t))))))))
 
 	    ($make-gst-pad::obj ::$gst-pad ::obj)
 	    
@@ -105,12 +114,12 @@
 ;*    object-display ::gst-pad ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display o::gst-pad . port)
-   (with-access::gst-pad o (name direction)
+   (with-access::gst-pad o (name direction $builtin)
       (let ((p (if (pair? port) (car port) (current-output-port))))
 	 (display "<" p)
 	 (display (find-runtime-type o) p)
 	 (display " refcount=" p)
-	 (display ($gst-object-refcount (gst-object-$builtin o)) p)
+	 (display ($gst-object-refcount $builtin) p)
 	 (display " name=" p)
 	 (display name p)
 	 (display " direction=" p)
@@ -155,43 +164,49 @@
 ;*    gst-pad-link! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-link! src sink)
-   (let ((retcode ($gst-pad-link! ($gst-pad (gst-pad-$builtin src))
-				  ($gst-pad (gst-pad-$builtin sink)))))
-      (if (eq? retcode $gst-pad-link-ok)
-	  #t
-	  (raise (instantiate::&gst-error
-		    (proc 'gst-pad-link!)
-		    (msg (format "Cannot link pads: ~a"
-				 ($gst-pad-link-return->obj retcode)))
-		    (obj (cons src sink)))))))
+   (with-access::gst-pad src ((src-builtin $builtin))
+      (with-access::gst-pad sink ((sink-builtin $builtin))
+	 (let ((retcode ($gst-pad-link! ($gst-pad src-builtin)
+			   ($gst-pad sink-builtin))))
+	    (if (eq? retcode $gst-pad-link-ok)
+		#t
+		(raise (instantiate::&gst-error
+			  (proc 'gst-pad-link!)
+			  (msg (format "Cannot link pads: ~a"
+				  ($gst-pad-link-return->obj retcode)))
+			  (obj (cons src sink)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-pad-can-link? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-can-link? src sink)
-   ($gst-pad-can-link? ($gst-pad (gst-pad-$builtin src))
-		       ($gst-pad (gst-pad-$builtin sink))))
+   (with-access::gst-pad src ((src-builtin $builtin))
+      (with-access::gst-pad sink ((sink-builtin $builtin))
+	 ($gst-pad-can-link? ($gst-pad src-builtin) ($gst-pad sink-builtin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-pad-is-linked? ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-is-linked? pad)
-   ($gst-pad-is-linked? ($gst-pad (gst-pad-$builtin pad))))
+   (with-access::gst-pad pad ($builtin)
+      ($gst-pad-is-linked? ($gst-pad $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-pad-unlink! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-unlink! src sink)
-   ($gst-pad-unlink! ($gst-pad (gst-pad-$builtin src))
-		     ($gst-pad (gst-pad-$builtin sink))))
+   (with-access::gst-pad src ((src-builtin $builtin))
+      (with-access::gst-pad sink ((sink-builtin $builtin))
+	 ($gst-pad-unlink! ($gst-pad src-builtin) ($gst-pad sink-builtin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-pad-add-buffer-probe! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-add-buffer-probe! pad proc)
-   (if (correct-arity? proc 0)
-       ($gst-pad-add-buffer-probe! ($gst-pad (gst-pad-$builtin pad)) proc)
-       (error 'gst-pad-add-buffer-probe! "Arity 0 procedure expected" proc)))
+   (with-access::gst-pad pad ($builtin)
+      (if (correct-arity? proc 0)
+	  ($gst-pad-add-buffer-probe! ($gst-pad $builtin) proc)
+	  (error 'gst-pad-add-buffer-probe! "Arity 0 procedure expected" proc))))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    gst-pad-add-data-probe! ...                                      *} */
@@ -213,7 +228,8 @@
 ;*    gst-pad-remove-buffer-probe! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (gst-pad-remove-buffer-probe! pad index)
-   ($gst-pad-remove-buffer-probe! ($gst-pad (gst-pad-$builtin pad)) index)
+   (with-access::gst-pad pad ($builtin)
+      ($gst-pad-remove-buffer-probe! ($gst-pad $builtin) index))
    index)
 
 ;* {*---------------------------------------------------------------------*} */

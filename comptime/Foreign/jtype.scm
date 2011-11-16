@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 10:58:27 2001                          */
-;*    Last change :  Thu Nov 10 07:06:12 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:00:12 2011 (serrano)                */
 ;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The JVM array type managment. I have tried to reuse as much as   */
@@ -16,7 +16,8 @@
 ;*---------------------------------------------------------------------*/
 (module foreign_jtype
 
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Foreign/jtype.sch")
 
    (import  type_type
 	    type_env

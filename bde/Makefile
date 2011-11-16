@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Thu Aug 12 11:34:24 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Nov 16 11:44:19 2011 (serrano)                */
+#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -100,7 +100,7 @@ POPULATION	= $(SOURCES_FILES) \
 #*     Suffixes ...                                                    */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .scm .o .el .elc
+.SUFFIXES: .scm .sch .o .el .elc
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
@@ -306,6 +306,14 @@ jas/%.class: jas/%.scm $(JAS_AFILE)
 #*    jas link files                                                   */
 #*---------------------------------------------------------------------*/
 jas/%.scm: ../comptime/Jas/%.scm
+	cp $< $@
+
+jas/classfile.scm: ../comptime/Jas/classfile.scm
+	cat $< | sed 's|Jas/classfile.sch|jas/classfile.sch|' > $@ || exit $@
+
+jas/classfile.scm: jas/classfile.sch
+
+%.sch: ../comptime/Jas/%.sch
 	cp $< $@
 
 #*---------------------------------------------------------------------*/

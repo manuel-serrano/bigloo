@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Thu Aug 18 19:51:45 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:23:25 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -189,6 +189,38 @@
       a repeat code (16, 17, or 18) to go across the boundary between
       the two sets of lengths.
  |#
+
+
+;*---------------------------------------------------------------------*/
+;*    huft accessors ...                                               */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-class-sans
+      
+(define-macro (huft-e o)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id e)) ,id)))
+
+(define-macro (huft-e-set! o v)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id e)) (set! ,id ,v))))
+
+(define-macro (huft-v o)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id v)) ,id)))
+
+(define-macro (huft-v-set! o v)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id v)) (set! ,id ,v))))
+
+(define-macro (huft-b o)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id b)) ,id)))
+
+(define-macro (huft-b-set! o v)
+   (let ((id (gensym)))
+      `(with-access::huft ,o ((,id b)) (set! ,id ,v))))
+))
 
 ;*---------------------------------------------------------------------*/
 ;*    inflate-buffer-size ...                                          */

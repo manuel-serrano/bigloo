@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Nov 12 19:11:37 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 08:10:45 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -146,6 +146,7 @@
 	    (class-all-fields::pair-nil class)
 	    (find-class-field class ::symbol)
 	    (class-constructor::obj class)
+	    (class-allocator::procedure class)
 	    (class-creator::obj class)
 	    (class-nil::obj class)
 	    (make-class-field-old::vector ::symbol o o ::bool ::obj ::obj ::obj)
@@ -159,6 +160,7 @@
 	    (class-field-accessor::procedure field)
 	    (class-field-mutable?::bool field)
 	    (class-field-mutator::procedure field)
+	    (%class-field-mutator::procedure field)
 	    (class-field-type::obj field)
 	    (register-class-old!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
 	    (register-class!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
@@ -207,7 +209,6 @@
 			::obj ::obj ::obj ::obj ::long ::obj
 			::obj ::vector ::obj
 			::procedure ::obj ::obj ::bool)
-	    (class-allocate::procedure class)
 	    (inline generic-default-set! ::procedure ::procedure)
 	    (inline generic-method-array-set! ::procedure ::vector))
 
@@ -225,6 +226,7 @@
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
 	    (is-a? side-effect-free no-cfa-top no-trace nesting (effect))
 	    (isa? side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%object? (predicate-of object) no-cfa-top nesting)
 	    (struct->object no-cfa-top no-trace nesting)
 	    (struct+object->object no-cfa-top no-trace nesting)
 	    (object->struct side-effect-free no-cfa-top no-trace nesting)
@@ -274,7 +276,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name num min super sub max alloc ha fd constr virt inst nil shrink evdata abstract)
+(define (make-class name num min super sub max alloc ha fd constr virt new nil shrink evdata abstract)
    (let ((v ($create-vector-uncollectable 17)))
       ;;  the class name
       (vector-set-ur! v 0 name)
@@ -299,7 +301,7 @@
       ;;  the class virtual getter and setter
       (vector-set-ur! v 10 virt)
       ;;  the function that creates instances
-      (vector-set-ur! v 11 inst)
+      (vector-set-ur! v 11 new)
       ;;  the function that return the NIL object
       (vector-set-ur! v 12 (cons #t nil))
       ;;  the class shrink
@@ -408,11 +410,7 @@
 (define (class-fields class)
    (if (class? class)
        (vector-ref class 8)
-       (error "class-fields"
-	      (bigloo-type-error-msg "runtime type error"
-				     "class"
-				     (find-runtime-type class))
-	      class)))
+       (bigloo-type-error "class-fields" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-all-fields ...                                             */
@@ -524,7 +522,10 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
    (if (class-field? field)
-       (vector-ref field 6)
+       ;; MS CARE 14nov2011: test to be removed after bootstrap
+       (if (procedure? (vector-ref field 6))
+	   ((vector-ref field 6))
+	   (vector-ref field 6))
        (error "class-field-default-value" "Not a class field" field)))
 
 ;*---------------------------------------------------------------------*/
@@ -539,25 +540,33 @@
 ;*    class-super ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-super class)
-   (vector-ref class 3))
+   (if (class? class)
+       (vector-ref class 3)
+       (bigloo-type-error "class-super" "class" class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-abstract? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-abstract? class)
-   (procedure? (class-allocate class)))
+   (if (class? class)
+       (procedure? (class-allocator class))
+       (bigloo-type-error "class-abstract?" "class" class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-wide? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-wide? class)
-   (procedure? (class-shrink class)))
+   (if (class? class)
+       (procedure? (class-shrink class))
+       (bigloo-type-error "class-wide?" "class" class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses class)
-   (vector-ref class 4))
+   (if (class? class)
+       (vector-ref class 4)
+       (bigloo-type-error "class-subclasses" "class" class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses-set! ...                                        */
@@ -572,43 +581,72 @@
    (vector-ref-ur class 5))
 
 ;*---------------------------------------------------------------------*/
-;*    class-allocate ...                                               */
+;*    class-allocator ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (class-allocate class)
-   (vector-ref-ur class 6))
+(define (class-allocator class)
+   (if (class? class)
+       (vector-ref-ur class 6)
+       (bigloo-type-error "class-allocator" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hash ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-hash class)
-   (vector-ref-ur class 7))
+   (if (class? class)
+       (vector-ref-ur class 7)
+       (bigloo-type-error "class-hash" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-constructor ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-constructor class)
-   (vector-ref class 9))
+   (if (class? class)
+       (vector-ref class 9)
+       (bigloo-type-error "class-constructor" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-creator ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (class-creator class)
-   (vector-ref class 11))
+   (if (class? class)
+       (vector-ref class 11)
+       (bigloo-type-error "class-creator" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-nil ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-nil class)
-   (let ((c (vector-ref class 12)))
-      (when (eq? (car c) #t)
-	 (set-car! c ((cdr c))))
-      (car c)))
+   (if (class? class)
+       (let ((c (vector-ref class 12)))
+	  (when (eq? (car c) #t)
+	     ;; no nil value is represented by #t
+	     (if (class-wide? class)
+		 ;; MS CARE 15nov2011, test + true to be removed after bootstrap
+		 (if (=fx (procedure-arity (class-allocator class)) 0)
+		     ;; old schema
+		     (set-car! c ((class-allocator class)))
+		     (let* ((super (class-super class))
+			    (o ((class-allocator super)))
+			    (wo ((class-allocator class) o)))
+			(set-car! c wo)
+			((cdr c) wo)))
+		 ;; MS CARE 15nov2011, test + true to be removed after bootstrap
+		 (if (=fx (procedure-arity (cdr c)) 0)
+		     ;; old schema
+		     (set-car! c ((cdr c)))
+		     (let ((o ((class-allocator class))))
+			(set-car! c o)
+			((cdr c) o)))))
+	  (car c))
+       (bigloo-type-error "class-nil" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-shrink ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-shrink class)
-   (vector-ref class 13))
+   (if (class? class)
+       (vector-ref class 13)
+       (bigloo-type-error "class-shrink" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Classes                                                          */
@@ -700,13 +738,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    object-class-num ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (object-class-num obj)
+(define-inline (object-class-num obj::object)
    (%object-class-num obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-class-num-set! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (object-class-num-set! obj num)
+(define-inline (object-class-num-set! obj::object num::long)
    (%object-class-num-set! obj num))
 
 ;*---------------------------------------------------------------------*/
@@ -714,7 +752,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (object-class object::object)
    (vector-ref-ur *classes*
-		  (-fx (object-class-num object) %object-type-number)))
+      (-fx (object-class-num object) %object-type-number)))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-default ...                                              */
@@ -821,13 +859,13 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-no-default-value)
    ;; this value can't be gensymed because it has to traverse libraries
-   'slot-no-default-value__17_5_1996)
+   ''|slot-no-default-value  17 5 1996|)
 
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (register-class2! name super hash new allocate constructor nil shrink plain virtual)
-   (register-class! name super hash new allocate constructor nil shrink plain virtual))
+   (register-class!       name super hash new allocate constructor nil shrink plain virtual))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
@@ -1320,12 +1358,31 @@
 (define-generic (struct+object->object::object object::object struct::struct)
    (let* ((klass (object-class object))
 	  (fields (class-all-fields klass))
-	  (len (+fx 1 (length fields))))
-      (for-each (lambda (f i)
-		   (unless (class-field-virtual? f)
-		      ((%class-field-mutator f)
-		       object (struct-ref struct i))))
-	 fields (iota len 1))
+	  (len (length fields)))
+      ;; MS CARE: test + then to be removed after bootstrap. Only the else
+      ;; part must remain
+      (if (struct-ref struct 0)
+	  (let* ((x (struct-ref struct 0))
+		 (xlen (struct-length x)))
+	     ;; restore the plain fields
+	     (for-each (lambda (f i)
+			  (unless (class-field-virtual? f)
+			     ((%class-field-mutator f)
+			      object (struct-ref struct i))))
+		(take fields (-fx len xlen))
+		(iota (-fx len xlen) 1))
+	     ;; restore the wide fields
+	     (for-each (lambda (f i)
+			  (unless (class-field-virtual? f)
+			     ((%class-field-mutator f)
+			      object (struct-ref x i))))
+		(list-tail fields (-fx len xlen))
+		(iota xlen)))
+	  (for-each (lambda (f i)
+		       (unless (class-field-virtual? f)
+			  ((%class-field-mutator f)
+			   object (struct-ref struct i))))
+	     fields (iota len 1)))
       object))
 
 ;*---------------------------------------------------------------------*/
@@ -1349,14 +1406,14 @@
 	  (error "allocate-instance" "Can't find class" cname)
 	  (let ((class (vector-ref-ur *classes* i)))
 	     (if (eq? (class-name class) cname)
-		 (let ((alloc (class-allocate class)))
+		 (let ((alloc (class-allocator class)))
 		    (if (class-wide? class)
 			;; test to be removed when class generators
 			;; are removed from the compiler
 			(if (=fx (procedure-arity alloc) 0)
 			    (alloc)
 			    (let* ((super (class-super class))
-				   (o ((class-allocate super))))
+				   (o ((class-allocator super))))
 			       (alloc o)))
 			(alloc)))
 		 (loop (+fx i 1)))))))
@@ -1381,7 +1438,7 @@
 	 (display #\space port)
 	 (print-slot (get-value obj) port)
 	 (display #\] port)))
-   
+
    (let* ((class (object-class obj))
 	  (class-name (class-name class))
 	  (fields (class-fields class)))
@@ -1441,8 +1498,9 @@
       (display "*** UNKNOWN EXCEPTION: " port)
       (write-circle exc port)
       (newline port)
-      (let ((stack (if (and (&exception? exc) (&exception-stack exc))
-		       (&exception-stack exc)
+      (let ((stack (if (isa? exc &exception)
+		       (with-access::&exception exc (stack)
+			 (or stack (get-trace-stack)))
 		       (get-trace-stack))))
 	 (display-trace-stack stack port))))
 

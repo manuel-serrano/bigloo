@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sun Sep  7 16:10:24 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 10:29:31 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -141,18 +141,18 @@
 ;*    sanity-args-checks ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (sanity-args-checks func cert pkey CAs accepted-certs)
-   (unless (or (not cert) (certificate? cert))
+   (unless (or (not cert) (isa? cert certificate))
       (error func "Invalid certificate" cert))
-   (unless (or (not pkey) (private-key? pkey))
+   (unless (or (not pkey) (isa? pkey private-key))
       (error func "Invalid private key" pkey))
-   (unless (and (list? CAs) (every? certificate? CAs))
+   (unless (and (list? CAs) (every? (lambda (c) (isa? c certificate)) CAs))
       (error func "Invalid CA list" CAs))
    (unless (or (not accepted-certs)
 	       (and (list? accepted-certs)
-		    (every? certificate? accepted-certs)))
+		    (every? (lambda (c) (isa? c certificate)) accepted-certs)))
       (error func "Invalid accepted-certs" accepted-certs))
-   (if (or (and (certificate? cert) (not (private-key? pkey)))
-	   (and (private-key? pkey) (not (certificate? cert))))
+   (if (or (and (isa? cert certificate) (not (isa? pkey private-key)))
+	   (and (isa? pkey private-key) (not (isa? cert certificate))))
        (error func
 	      "pkey and cert must be both #f or both set"
 	      (list pkey cert))))
@@ -254,23 +254,27 @@
 ;*    %make-certificate ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (%make-certificate cert)
-   (make-certificate cert))
+   (instantiate::certificate
+      ($native cert)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %make-private-key ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (%make-private-key pkey)
-   (make-private-key pkey))
+   (instantiate::private-key
+      ($native pkey)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %certificate-$native ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%certificate-$native cert)
-   (certificate-$native cert))
+   (with-access::certificate cert ($native)
+      $native))
 
 ;*---------------------------------------------------------------------*/
 ;*    %private-key-$native ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%private-key-$native pkey)
-   (private-key-$native pkey))
+   (with-access::private-key pkey ($native)
+      $native))
 

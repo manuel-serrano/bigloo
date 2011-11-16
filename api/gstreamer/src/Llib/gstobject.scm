@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 16:06:35 2007                          */
-;*    Last change :  Fri Nov 19 10:51:36 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:21:56 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstObject wrapper                                                */
 ;*=====================================================================*/
@@ -25,6 +25,8 @@
 	       ($builtin::$gst-object (default (%$gst-object-nil)))
 	       ($finalizer::obj read-only (default #f))
 	       (%closures::pair-nil (default '())))
+
+	    (inline gst-object?::bool ::obj)
 
 	    (%$gst-object-nil::$gst-object)
 
@@ -55,6 +57,12 @@
 	    (export closure-gcunmark! "bgl_closure_gcunmark")))
 
 ;*---------------------------------------------------------------------*/
+;*    gst-object? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (gst-object?::bool o)
+   (isa? o gst-object))
+
+;*---------------------------------------------------------------------*/
 ;*    %$gst-object-nil ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (%$gst-object-nil::$gst-object)
@@ -64,7 +72,8 @@
 ;*    %gst-object->gobject ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object->gobject o::gst-object)
-   (gst-object-$builtin o))
+   (with-access::gst-object o ($builtin)
+      $builtin))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gst-object-debug-mutex* ...                                     */
@@ -107,7 +116,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (%gst-object-init o::gst-object)
    (with-access::gst-object o ($builtin $finalizer)
-      (when ($gst-element-null? $builtin)
+      (when ($gst-element-null? ($gst-element $builtin))
 	 (raise (instantiate::&gst-create-error
 		   (proc '%gst-object-init)
 		   (msg "Illegal gst-object")
@@ -130,20 +139,23 @@
       (display "<" p)
       (display (find-runtime-type o) p)
       (display " refcount=" p)
-      (display ($gst-object-refcount (gst-object-$builtin o)) p)
+      (with-access::gst-object o ($builtin)
+	 (display ($gst-object-refcount $builtin) p))
       (display ">" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %gst-object-unref! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-unref! o)
-   ($gst-object-unref! (gst-object-$builtin o)))
+   (with-access::gst-object o ($builtin)
+      ($gst-object-unref! $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %gst-object-ref! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-ref! o)
-   ($gst-object-ref! (gst-object-$builtin o)))
+   (with-access::gst-object o ($builtin)
+      ($gst-object-ref! $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %gst-object-finalize-closures! ...                               */
@@ -164,29 +176,31 @@
 ;*    gst-object-property-list ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-object-property-list o::gst-object)
-   ($gst-object-property-list (gst-object-$builtin o)))
+   (with-access::gst-object o ($builtin)
+   ($gst-object-property-list $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-object-property ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (gst-object-property o::gst-object prop)
-   ($gst-object-get-property (gst-object-$builtin o) (keyword->string! prop)))
+   (with-access::gst-object o ($builtin)
+   ($gst-object-get-property $builtin (keyword->string! prop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-object-property-set! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (gst-object-property-set! o::gst-object prop val)
-   ($gst-object-set-property!
-    (gst-object-$builtin o) (keyword->string! prop) val))
+   (with-access::gst-object o ($builtin)
+      ($gst-object-set-property! $builtin (keyword->string! prop) val)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-object-connect! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (gst-object-connect! el name proc)
-   (with-access::gst-object el (%closures)
-      (set! %closures (cons proc %closures)))
-   (closure-gcmark! proc)
-   ($gst-object-connect! (gst-object-$builtin el) name proc))
+   (with-access::gst-object el (%closures $builtin)
+      (set! %closures (cons proc %closures))
+      (closure-gcmark! proc)
+      ($gst-object-connect! $builtin name proc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gcmark-mutex* ...                                               */

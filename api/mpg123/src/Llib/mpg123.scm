@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Oct 24 07:19:54 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 20:47:09 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -89,7 +89,8 @@
 (define (mpg123-decode m::mpg123-handle inbuf inoff insz outbuf outsz)
    (let ((status ($bgl-mpg123-decode m inbuf inoff insz outbuf outsz)))
       (values (mpg123-decode-status->symbol status)
-	 (mpg123-handle-size m))))
+	 (with-access::mpg123-handle m (size)
+	    size))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-get-format ...                                            */

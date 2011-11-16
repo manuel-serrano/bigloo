@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 24 15:54:35 2006                          */
-;*    Last change :  Fri Feb 12 19:07:14 2010 (serrano)                */
-;*    Copyright   :  2006-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 10:24:21 2011 (serrano)                */
+;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Calendar utitility functions.                                    */
 ;*=====================================================================*/
@@ -128,7 +128,7 @@
 (define (calevent-during-day? e::calevent d::date)
    (or (simple-during-day? e d)
        (with-access::calevent e (recurrence)
-	  (and (calrecurrence? recurrence) (recurrence-during-day? e d)))))
+	  (and (isa? recurrence calrecurrence) (recurrence-during-day? e d)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    calendar->list ...                                               */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Mon Aug 30 09:41:17 2010 (serrano)                */
-;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano              */
+;*    Last change :  Wed Nov 16 08:55:30 2011 (serrano)                */
+;*    Copyright   :  2010-11 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
 ;*=====================================================================*/
@@ -75,23 +75,25 @@
 	  (error 'parse-packets
 		 "no packet decoded"
 		 #f))
-	 ((and (PGP-Key-Packet? (car packets))
-	       (not (PGP-Key-Packet-subkey? (car packets))))
+	 ((and (isa? (car packets) PGP-Key-Packet)
+	       (with-access::PGP-Key-Packet (car packets) (subkey?)
+		  (not subkey?)))
 	  (parse-keys packets))
-	 ((or (PGP-Symmetrically-Encrypted-Packet? (car packets))
-	      (PGP-Session-Key-Packet? (car packets)))
+	 ((or (isa? (car packets) PGP-Symmetrically-Encrypted-Packet)
+	      (isa? (car packets) PGP-Session-Key-Packet))
 	  (parse-encrypted-message packets))
-	 ((PGP-Signature-Packet? (car packets))
+	 ((isa? (car packets) PGP-Signature-Packet)
 	  (parse-signature packets))
-	 ((PGP-One-Pass-Signature-Packet? (car packets))
+	 ((isa? (car packets) PGP-One-Pass-Signature-Packet)
 	  (parse-one-pass-signature packets))
-	 ((PGP-Literal-Packet? (car packets))
+	 ((isa? (car packets) PGP-Literal-Packet)
 	  (parse-literal packets))
-	 ((PGP-Compressed-Packet? (car packets))
+	 ((isa? (car packets) PGP-Compressed-Packet)
 	  (trace-item "parsing compressed packet")
 	  (when (not (null? (cdr packets)))
 	     (warning "discarding packets"))
-	  (parse-packets (PGP-Compressed-Packet-packets (car packets))))
+	  (with-access::PGP-Compressed-Packet (car packets) (packets)
+	     (parse-packets packets)))
 	 (else
 	  (error 'parse-packets
 		 "could not parse pgp-message"
@@ -121,9 +123,9 @@
 (define (parse-key packets user-ids)
    
    (define (revocation-signature? pkt)
-      (and (PGP-Signature-Packet? pkt)
-	   (eq? (PGP-Signature-Packet-signature-type pkt)
-		'key-revocation)))
+      (and (isa? pkt PGP-Signature-Packet)
+	   (with-access::PGP-Signature-Packet pkt (signature-type)
+	      (eq? signature-type 'key-revocation))))
    
    (define (parse-revocation-sigs packets)
       (let loop ((packets packets)
@@ -139,11 +141,12 @@
    
    (define (parse-user-id-sigs packets)
       (define (user-id-sig? pkt)
-	 (and (PGP-Signature-Packet? pkt)
-	      (case (PGP-Signature-Packet-signature-type pkt)
-		 ((generic-certif persona-certif casual-certif positive-certif)
-		  #t)
-		 (else #f))))
+	 (and (isa? pkt PGP-Signature-Packet)
+	      (with-access::PGP-Signature-Packet pkt (signature-type)
+		 (case signature-type
+		    ((generic-certif persona-certif casual-certif positive-certif)
+		     #t)
+		    (else #f)))))
       (let loop ((packets packets)
 		 (sigs '()))
 	 (cond
@@ -162,7 +165,7 @@
 	    (cond
 	       ((null? packets)
 		(values (reverse! user-ids) '()))
-	       ((PGP-ID-Packet? (car packets))
+	       ((isa? (car packets) PGP-ID-Packet)
 		(trace-item "PGP-ID-Packet=" (find-runtime-type (car packets)))
 		(receive (sigs remaining-packets)
 		   (parse-user-id-sigs (cdr packets))
@@ -176,16 +179,16 @@
    
    (define (parse-subkeys packets)
       (define (subkey-sig? pkt)
-	 (and (PGP-Signature-Packet? pkt)
-	      (eq? (PGP-Signature-Packet-signature-type pkt)
-		   'subkey-binding)))
+	 (and (isa? pkt PGP-Signature-Packet)
+	      (with-access::PGP-Signature-Packet pkt (signature-type)
+		 (eq? signature-type 'subkey-binding))))
       (let loop ((packets packets)
 		 (subkeys '()))
 	 (cond
 	    ((or (null? packets)
 		 (null? (cdr packets)))
 	     (values (reverse! subkeys) '()))
-	    ((PGP-Key-Packet? (car packets))
+	    ((isa? (car packets) PGP-Key-Packet)
 	     (let liip ((pkts (cdr packets))
 			(subkey-sigs '())
 			(revoc-sigs '()))
@@ -202,7 +205,7 @@
 				   (key-packet (car packets))
 				   (sigs subkey-sigs)
 				   (revocation-sigs revoc-sigs)
-				   (pgp-key (PGP-Key-nil)))
+				   (pgp-key (class-nil PGP-Key)))
 				subkeys)))
 		   ((subkey-sig? (car pkts))
 		    (liip (cdr pkts) (cons (car pkts) subkey-sigs) revoc-sigs))
@@ -225,12 +228,12 @@
 			 #f))
 	       (receive (subkeys remaining-packets)
 		  (parse-subkeys remaining-packets)
-		  (if (PGP-Key-Packet? main-key-packet)
+		  (if (isa? main-key-packet PGP-Key-Packet)
 		      (let* ((main-key (instantiate::PGP-Subkey
 					  (key-packet main-key-packet)
 					  (sigs '())
 					  (revocation-sigs revocation-sigs)
-					  (pgp-key (PGP-Key-nil))))
+					  (pgp-key (class-nil PGP-Key))))
 			     (all-subkeys (cons main-key subkeys))
 			     (res-key (instantiate::PGP-Key
 					 (user-ids (append nuser-ids user-ids))
@@ -254,19 +257,19 @@
 	     (error 'parse-encrypted-message
 		    "missing encrypted data packet"
 		    #f))
-	    ((PGP-Symmetrically-Encrypted-Packet? (car packets))
+	    ((isa? (car packets) PGP-Symmetrically-Encrypted-Packet)
 	     (when (not (null? (cdr packets)))
 		(warning "Packet after encrypted data discarded"))
 	     (instantiate::PGP-Encrypted
 		(session-keys (reverse! session-keys))
 		(encrypted-data (car packets))))
-	    ((PGP-MDC-Symmetrically-Encrypted-Packet? (car packets))
+	    ((isa? (car packets) PGP-MDC-Symmetrically-Encrypted-Packet)
 	     (when (not (null? (cdr packets)))
 		(warning "Packet after encrypted data discarded"))
 	     (instantiate::PGP-Encrypted
 		(session-keys (reverse! session-keys))
 		(encrypted-data (car packets))))
-	    ((PGP-Session-Key-Packet? (car packets))
+	    ((isa? (car packets) PGP-Session-Key-Packet)
 	     (loop (cdr packets)
 		   (cons (car packets) session-keys)))
 	    (else
@@ -287,14 +290,12 @@
 	     (instantiate::PGP-Signature
 		(msg #f)
 		(sigs (reverse! sigs))))
-	    ((PGP-Compressed-Packet? (car packets))
-	     (loop (append (PGP-Compressed-Packet-packets (car packets))
-			   packets)
-		   sigs))
-	    ((PGP-Signature-Packet? (car packets))
-	     (loop (cdr packets)
-		   (cons (car packets) sigs)))
-	    ((PGP-Literal-Packet? (car packets))
+	    ((isa? (car packets) PGP-Compressed-Packet)
+	     (with-access::PGP-Compressed-Packet (car packets) ((np packets))
+		(loop (append np packets) sigs)))
+	    ((isa? (car packets) PGP-Signature-Packet)
+	     (loop (cdr packets) (cons (car packets) sigs)))
+	    ((isa? (car packets) PGP-Literal-Packet)
 	     (when (not (null? (cdr packets)))
 		(warning "discarding packets after signature message"))
 	     (instantiate::PGP-Signature
@@ -302,7 +303,7 @@
 		(sigs (reverse! sigs))))
 	    (else
 	     (warning "unexpected packet encountered and discarded"
-		      (car packets))
+		(car packets))
 	     (loop (cdr packets) sigs))))))
 
 ;*---------------------------------------------------------------------*/
@@ -311,14 +312,18 @@
 (define (parse-one-pass-signature packets)
    
    (define (same-sig? op-pkt pkt)
-      (and (equal? (PGP-One-Pass-Signature-Packet-issuer op-pkt)
-		   (PGP-Signature-Packet-issuer pkt))
-	   (eq? (PGP-One-Pass-Signature-Packet-public-key-algo op-pkt)
-		(PGP-Signature-Packet-public-key-algo pkt))
-	   (eq? (PGP-One-Pass-Signature-Packet-hash-algo op-pkt)
-		(PGP-Signature-Packet-hash-algo pkt))
-	   (eq? (PGP-One-Pass-Signature-Packet-signature-type op-pkt)
-		(PGP-Signature-Packet-signature-type pkt))))
+      (with-access::PGP-One-Pass-Signature-Packet op-pkt ((oi issuer)
+							  (opka public-key-algo)
+							  (ohash hash-algo)
+							  (osig signature-type))
+	 (with-access::PGP-Signature-Packet pkt (issuer
+						   public-key-algo
+						   hash-algo
+						   signature-type)
+	    (and (equal? oi issuer)
+		 (eq? opka public-key-algo)
+		 (eq? ohash hash-algo)
+		 (eq? osig signature-type)))))
    
    (with-trace 2 "parse-one-pass-signature"
       (let loop ((packets packets)
@@ -345,42 +350,32 @@
 		   (one-pass-sigs one-pass-sigs)
 		   (msg msg)
 		   (sigs sigs))))
-	    ((PGP-Compressed-Packet? (car packets))
-	     (loop (append (PGP-Compressed-Packet-packets (car packets))
-			   packets)
-		   expect-one-pass?
-		   one-pass-sigs
-		   msg
-		   sigs))
+	    ((isa? (car packets) PGP-Compressed-Packet)
+	     (with-access::PGP-Compressed-Packet (car packets) ((np packets))
+		(loop (append np packets)
+		   expect-one-pass? one-pass-sigs msg sigs)))
 	    ((and expect-one-pass?
-		  (PGP-One-Pass-Signature-Packet? (car packets)))
-	     (loop (cdr packets)
-		   (PGP-One-Pass-Signature-Packet-contains-nested-sig?
-		    (car packets))
+		  (isa? (car packets) PGP-One-Pass-Signature-Packet))
+	     (with-access::PGP-One-Pass-Signature-Packet (car packets)
+		   (contains-nested-sig?)
+		(loop (cdr packets)
+		   contains-nested-sig?
 		   (cons (car packets) one-pass-sigs)
 		   msg
-		   sigs))
+		   sigs)))
 	    (expect-one-pass?
 	     (error 'parse-signature
 		    "bad one-pass signature"
 		    #f))
-	    ((and (not msg)
-		  (PGP-Literal-Packet? (car packets)))
-	     (loop (cdr packets)
-		   #f
-		   one-pass-sigs
-		   (car packets)
-		   sigs))
+	    ((and (not msg) (isa? (car packets) PGP-Literal-Packet))
+	     (loop (cdr packets) #f one-pass-sigs (car packets) sigs))
 	    ((not msg)
 	     (error 'parse-signature
 		    "bad one-pass signature"
 		    #f))
-	    ((PGP-Signature-Packet? (car packets))
-	     (loop (cdr packets)
-		   #f
-		   one-pass-sigs
-		   msg
-		   (cons (car packets) sigs)))
+	    ((isa? (car packets) PGP-Signature-Packet)
+	     (loop (cdr packets) #f one-pass-sigs msg
+		(cons (car packets) sigs)))
 	    (else
 	     (error 'parse-signature
 		    "bad one-pass signature"
@@ -393,7 +388,7 @@
    (when (not (null? (cdr packets)))
       (warning "discarding packets"))
    (when (or (null? packets)
-	     (not (PGP-Literal-Packet? (car packets))))
+	     (not (isa? (car packets) PGP-Literal-Packet)))
       (error 'parse-literal
 	     "bad Literal"
 	     #f))

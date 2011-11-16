@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 06:53:19 2008                          */
-;*    Last change :  Tue Jul 29 11:48:16 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 17:00:11 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstElementFactory                                                */
 ;*=====================================================================*/
@@ -26,41 +26,47 @@
    
    (export  (class gst-element-factory::gst-plugin-feature
 	       (longname::string
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-longname
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-longname
+				($gst-element-factory
+				   $builtin))))))
 	       (klass::string
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-klass
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-klass
+				($gst-element-factory
+				   $builtin))))))
 	       (description::string
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-description
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-description
+				($gst-element-factory
+				   $builtin))))))
 	       (author::string
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-author
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-author
+				($gst-element-factory
+				   $builtin))))))
 	       (uri-protocols::pair-nil
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-uri-protocols
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-uri-protocols
+				($gst-element-factory
+				   $builtin))))))
 	       (static-pad-templates::pair-nil
-		read-only
-		(get (lambda (o)
-			($gst-element-factory-get-static-pad-templates
-			 ($gst-element-factory
-			  (gst-element-factory-$builtin o)))))))
+		  read-only
+		  (get (lambda (o)
+			  (with-access::gst-element-factory o ($builtin)
+			     ($gst-element-factory-get-static-pad-templates
+				($gst-element-factory
+				   $builtin)))))))
 	    
 	    ($make-gst-element-factory::obj ::$gst-element-factory ::obj)
 	    
@@ -90,7 +96,8 @@
 	 (display "<" p)
 	 (display (find-runtime-type o) p)
 	 (display " refcount=" p)
-	 (display ($gst-object-refcount (gst-object-$builtin o)) p)
+	 (with-access::gst-object o ($builtin)
+	    (display ($gst-object-refcount $builtin) p))
 	 (display " longname=" p)
 	 (display longname p)
 	 (display ">" p))))
@@ -137,19 +144,16 @@
 ;*    gst-element-factory-create ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-factory-create factory  . a)
-   (let* ((name::string (if (and (pair? a) (string? (car a)))
-			    (car a)
-			    ($gst-element-factory-name-nil)))
-	  (rest (if (and (pair? a) (string? (car a))) (cdr a) a))
-	  ($el::$gst-element ($gst-element-factory-create
-			      ($gst-element-factory
-			       (gst-element-factory-$builtin factory))
-			      name)))
-      (gst-element-init $el
-			'gst-element-factory-create
-			(gst-element-factory-name factory)
-			name
-			rest)))
+   (with-access::gst-element-factory factory ($builtin (fname name))
+      (let* ((name::string (if (and (pair? a) (string? (car a)))
+			       (car a)
+			       ($gst-element-factory-name-nil)))
+	     (rest (if (and (pair? a) (string? (car a))) (cdr a) a))
+	     ($el::$gst-element ($gst-element-factory-create
+				   ($gst-element-factory
+				      $builtin)
+				   name)))
+	 (gst-element-init $el 'gst-element-factory-create fname name rest))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-factory-find ...                                     */
@@ -165,22 +169,27 @@
 ;*    gst-element-factory-has-interface? ...                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-factory-has-interface? factory name)
-   ($gst-element-factory-has-interface?
-    ($gst-element-factory (gst-element-factory-$builtin factory))
-    name))
+   (with-access::gst-element-factory factory ($builtin)
+      ($gst-element-factory-has-interface?
+	 ($gst-element-factory $builtin)
+	 name)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-factory-can-sink-caps? ...                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-factory-can-sink-caps? factory caps)
-   ($gst-element-factory-can-sink-caps?
-    ($gst-element-factory (gst-element-factory-$builtin factory))
-    (gst-caps-$builtin caps)))
+   (with-access::gst-element-factory factory ($builtin)
+      (with-access::gst-caps caps ((caps-builtin $builtin))
+	 ($gst-element-factory-can-sink-caps?
+	    ($gst-element-factory $builtin)
+	    caps-builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-element-factory-can-src-caps? ...                            */
 ;*---------------------------------------------------------------------*/
 (define (gst-element-factory-can-src-caps? factory caps)
-   ($gst-element-factory-can-src-caps?
-    ($gst-element-factory (gst-element-factory-$builtin factory))
-    (gst-caps-$builtin caps)))
+   (with-access::gst-element-factory factory ($builtin)
+      (with-access::gst-caps caps ((caps-builtin $builtin))
+	 ($gst-element-factory-can-src-caps?
+	    ($gst-element-factory $builtin)
+	    caps-builtin))))

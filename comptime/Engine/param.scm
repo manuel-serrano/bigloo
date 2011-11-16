@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Nov  9 10:58:05 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 10:16:46 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1163,7 +1163,7 @@
 ;*---------------------------------------------------------------------*/
 (param-define *class-gen-accessors?*
    "If true, generate public class accessors"
-   #t)
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Other variables that are defined inside the interpreter...       */

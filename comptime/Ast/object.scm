@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sat Nov 12 19:16:25 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 07:25:33 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -88,8 +88,7 @@
 			  (format "Class \"~a\" has not field \"~a\""
 			     (type-id klass) (car slots))
 			  exp loc)
-		       (let ((node (make-field-ref klass slot node
-				      stack loc site)))
+		       (let ((node (make-field-ref slot node stack loc site)))
 			  (loop node (slot-type slot) (cdr slots)))))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -122,34 +121,35 @@
 			       (error-sexp->node
 				  (format "Field read-only \"~a\"" (car slots))
 				  exp loc)
-			       (make-field-set! klass slot node val
-				  stack loc site)))
+			       (make-field-set! slot node val stack loc site)))
 			  (else
-			   (let ((node (make-field-ref klass slot node
-					  stack loc site)))
+			   (let ((node (make-field-ref slot node stack loc site)))
 			      (loop node (slot-type slot) (cdr slots))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-ref ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (make-field-ref type slot obj stack loc site)
+(define (make-field-ref slot obj stack loc site)
    (if (slot-getter slot)
        (let* ((vnum (slot-virtual-num slot))
 	      (exp `((@ call-virtual-getter __object) ,obj ,vnum)))
 	  (sexp->node exp stack loc site))
-       (let ((priv (make-class-ref type slot obj)))
+       (let ((priv (make-class-ref (slot-class-owner slot) slot obj)))
+	  ;; instead of (SLOT-CLASS-OWNER SLOT), the class used to find
+	  ;; the slot (see find-class-lot in FIELD-REF->NODE) was used here
 	  (private-node priv stack loc site))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-set! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (make-field-set! type slot obj val stack loc site)
+(define (make-field-set! slot obj val stack loc site)
    (cond
       ((slot-setter slot)
        (let* ((vnum (slot-virtual-num slot))
 	      (exp `((@ call-virtual-setter __object) ,obj ,vnum ,val)))
 	  (sexp->node exp stack loc site)))
       (else
-       (let ((priv (make-class-set! type slot obj val)))
+       (let ((priv (make-class-set! (slot-class-owner slot) slot obj val)))
+	  ;; see MAKE-FIELD-REF for the remark about (SLOT-CLASS-OWNER SLOT)
 	  (private-node priv stack loc site)))))
 

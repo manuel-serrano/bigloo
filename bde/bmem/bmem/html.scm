@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb  2 05:57:51 2003                          */
-;*    Last change :  Fri Sep 16 09:40:06 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 06:52:50 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Html generation                                                  */
@@ -162,7 +162,7 @@
 	    (html-dtd::bstring)
 	    (html-error ::obj ::obj ::obj)
 
-	    (html-vbox . obj)
+	    (html-vbox obj . obj)
 	    
 	    (html->string::bstring ::%html-document)
 	    (print-html ::%html-document)))
@@ -478,25 +478,25 @@
 ;*---------------------------------------------------------------------*/
 (define-method (out-css style::%css-literal m)
    (let ((m2 (+fx 2 m)))
-      (with-access::%css style (type)
+      (with-access::%css-literal style (type entry+)
 	 (with-markup "style"
-		      (make-attributes ("type" (string? type) type))
-		      (+fx 1 m)
-		      (display (%css-literal-entry+ style))))))
+	    (make-attributes ("type" (string? type) type))
+	    (+fx 1 m)
+	    (display entry+)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    out-css ::%css-list ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (out-css style::%css-list m)
    (let ((m2 (+fx 2 m)))
-      (with-access::%css style (type)
+      (with-access::%css-list style (type entry+)
 	 (with-markup "style"
-		      (make-attributes ("type" (string? type) type))
-		      (+fx 1 m)
-		      (for-each (lambda (e)
-				   (newline)
-				   (out-css-entry e m2))
-				(%css-list-entry+ style))))))
+	    (make-attributes ("type" (string? type) type))
+	    (+fx 1 m)
+	    (for-each (lambda (e)
+			 (newline)
+			 (out-css-entry e m2))
+	       entry+)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    out-css-entry ...                                                */
@@ -658,24 +658,26 @@
 		   (cond
 		      ((not colgroup?)
 		       #unspecified)
-		      ((%html-colgroup? colgroup?)
+		      ((isa? colgroup? %html-colgroup)
 		       (out colgroup? (+fx m 1)))
 		      ((and (list? colgroup?)
-			    (every %html-colgroup? colgroup?))
+			    (every (lambda (c) (isa? c %html-colgroup))
+			       colgroup?))
 		       (out+ colgroup? (+fx m 1)))
 		      (else
 		       (error 'html "Illegal table colgroup" colgroup?)))
 		   (cond
 		      ((not thead?)
 		       #unspecified)
-		      ((%html-telement? thead?)
+		      ((isa? thead? %html-telement)
 		       (out thead? (+fx m 1)))
-		      ((and (list? thead?) (every %html-tr? thead?))
+		      ((and (list? thead?)
+			    (every (lambda (e) (isa? e %html-tr)) thead?))
 		       (with-markup "thead"
 				    '()
 				    (+fx m 1)
 				    (out+ thead? (+fx m 2))))
-		      ((%html-tr? thead?)
+		      ((isa? thead? %html-tr)
 		       (with-markup "thead"
 				    '()
 				    (+fx m 1)
@@ -683,20 +685,21 @@
 		      (else
 		       (error 'html "Illegal table head" thead?)))
 		   (cond
-		      ((%html-telement? tbody+)
+		      ((isa? tbody+ %html-telement)
 		       (out tbody+ (+fx m 1)))
-		      ((every %html-tr? tbody+)
+		      ((every (lambda (e) (isa? e %html-tr)) tbody+)
 		       (out+ tbody+ (+fx m 1)))
 		      (else
 		       (error 'html "Illegal table body" tbody+)))
 		   (cond
 		      ((not tfoot?)
 		       #unspecified)
-		      ((%html-telement? tfoot?)
+		      ((isa? tfoot? %html-telement)
 		       (out tfoot? (+fx m 1)))
-		      ((and (list? tfoot?) (every %html-tr? tfoot?))
+		      ((and (list? tfoot?)
+			    (every (lambda (e) (isa? e %html-tr)) tfoot?))
 		       (out+ tfoot? (+fx m 1)))
-		      ((%html-tr? tfoot?)
+		      ((isa? tfoot? %html-tr)
 		       (out tfoot? (+fx m 1)))
 		      (else
 		       (error 'html "Illegal table foot" tfoot?))))))
@@ -706,7 +709,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (out v::%html-telement m::int)
    (with-access::%html-telement v (kind id class title tr+)
-      (if (not (every %html-tr? tr+))
+      (if (not (every (lambda (e) (isa? e %html-tr)) tr+))
 	  (error 'html "Illegal table element" v)
 	  (with-markup (case kind
 			  ((thead) "thead")
@@ -724,7 +727,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (out v::%html-tr m::int)
    (with-access::%html-tr v (id class title tcell+)
-      (if (not (every %html-tcell? tcell+))
+      (if (not (every (lambda (e) (isa? e %html-tcell)) tcell+))
 	  (error 'html "Illegal tr" v)
 	  (with-markup "tr"
 		       (make-attributes ("class" (string? class) class)
@@ -739,7 +742,7 @@
 (define-method (out v::%html-colgroup m::int)
    (with-access::%html-colgroup v (id class title
 					 width span col* align valign char)
-      (if (not (every %html-tcell? col*))
+      (if (not (every (lambda (e) (isa? e %html-tcell)) col*))
 	  (error 'html "Illegal colgroup" v)
 	  (with-markup "colgroup"
 		       (make-attributes ("class" (string? class) class)
@@ -858,5 +861,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    html-vbox ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (html-vbox . items)
-   (html-ul :class "hop-verticalbox" (map (lambda (v) (html-li v)) items)))
+(define (html-vbox item . items)
+   (html-ul :class "hop-verticalbox"
+      (cons (html-li item)
+	 (map (lambda (v) (html-li v)) items))))

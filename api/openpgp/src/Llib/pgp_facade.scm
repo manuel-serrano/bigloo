@@ -63,13 +63,15 @@
 (define global-format format)
 
 (define (pgp-write-port oport::output-port composition #!key (format 'armored))
-   (when (not (PGP-Composition? composition))
+   (when (not (isa? composition PGP-Composition))
       (error "pgp-write-port"
 	     "Expected PGP Composition"
 	     composition))
    (if (eq? format 'armored)
-       (let ((main-header-info (if (and (PGP-Signature? composition)
-					(not (PGP-Signature-msg composition)))
+       (let ((main-header-info (if (and (isa? composition PGP-Signature)
+					(with-access::PGP-Signature composition
+					      (msg)
+					   (not msg)))
 				   "PGP SIGNATURE"
 				   "PGP MESSAGE")))
 	  (encode-armored-pgp composition
@@ -87,26 +89,30 @@
 
 (define (extract-subkey key encryption?)
    (define (good-for-encryption? key::PGP-Subkey)
-      (memq (PGP-Key-Packet-algo (PGP-Subkey-key-packet key))
-	    '(rsa-encrypt/sign rsa-encrypt elgamal-encrypt
-	      elgamal-encrypt/sign)))
+      (with-access::PGP-Subkey key (key-packet)
+	 (with-access::PGP-Key-Packet key-packet (algo)
+	    (memq algo
+	       '(rsa-encrypt/sign rsa-encrypt elgamal-encrypt
+		 elgamal-encrypt/sign)))))
    (define (good-for-signature? key::PGP-Subkey)
-      (memq (PGP-Key-Packet-algo (PGP-Subkey-key-packet key))
-	    '(rsa-encrypt/sign rsa-sign dsa elgamal-encrypt/sign)))
+      (with-access::PGP-Subkey key (key-packet)
+	 (with-access::PGP-Key-Packet key-packet (algo)
+	    (memq algo '(rsa-encrypt/sign rsa-sign dsa elgamal-encrypt/sign)))))
 
    (cond
-      ((PGP-Subkey? key)
+      ((isa? key PGP-Subkey)
        key)
       ((not encryption?)
        ;; we assume that the main-key is used for signature.
-       (let ((main-key (car (PGP-Key-subkeys key))))
-	  (when (not (good-for-signature? main-key))
-	     (error "extract-subkey"
-		    "Couldn't find suitable key for signature."
-		    #f))
-	  main-key))
+       (with-access::PGP-Key key (subkeys)
+	  (let ((main-key (car subkeys)))
+	     (when (not (good-for-signature? main-key))
+		(error "extract-subkey"
+		   "Couldn't find suitable key for signature."
+		   #f))
+	     main-key)))
       (else
-       (let ((subkeys (PGP-Key-subkeys key)))
+       (with-access::PGP-Key key (subkeys)
 	  (cond
 	     ((null? subkeys)
 	      ;; can this happen?
@@ -135,8 +141,8 @@
 		     (error "extract-subkey"
 			    "Found more than one suitable subkey."
 			    (map (lambda (subkey)
-				    (str->hex-string
-				     (key-id (PGP-Subkey-key-packet subkey))))
+				    (with-access::PGP-Subkey subkey (key-packet)
+				       (str->hex-string (key-id key-packet))))
 				 possible-subkeys)))
 		    (else
 		     (car possible-subkeys))))))))))
@@ -152,14 +158,14 @@
    (with-trace 2 "pgp-sign"
       (trace-item (if detached-signature? "Detached Signature" "Attached Signature"))
       (cond
-	 ((PGP-Key? key)
+	 ((isa? key PGP-Key)
 	  (pgp-sign msg
 		    (extract-subkey key #f)
 		    password-provider
 		    :detached-signature? detached-signature?
 		    :one-pass? one-pass?
 		    :hash-algo hash-algo))
-	 ((PGP-Subkey? key)
+	 ((isa? key PGP-Subkey)
 	  (cond
 	     (detached-signature?
 	      (create-pgp-signature msg key
@@ -183,16 +189,16 @@
 ;; the result contains a list of keys which matched the signature.
 (define (pgp-verify::pair-nil signature key-manager::procedure
 			      #!optional (msg #f))
-   (when (not (PGP-Signature? signature))
+   (when (not (isa? signature PGP-Signature))
       (error "pgp-verify" "not a signature" signature))
    (verify-pgp-signature signature key-manager msg))
 
 
 ;; returns the signature's message, or #f if there is non in the composition.
 (define (pgp-signature-message signature)
-   (when (not (PGP-Signature? signature))
+   (when (not (isa? signature PGP-Signature))
       (error "pgp-verify" "not a signature" signature))
-   (let ((sig-msg (PGP-Signature-msg signature)))
+   (let ((sig-msg (with-access::PGP-Signature signature (msg) msg)))
       (and sig-msg
 	   (with-access::PGP-Literal-Packet sig-msg (data)
 	      data))))
@@ -238,7 +244,7 @@
       (if (and (procedure? key-manager) (correct-arity? key-manager 1))
 	  (unless (null? pubkey-session-packets)
 	     (let* ((pack (car pubkey-session-packets))
-		    (key-id (PGP-Public-Key-Encrypted-Session-Key-Packet-id pack))
+		    (key-id (with-access::PGP-Public-Key-Encrypted-Session-Key-Packet pack (id) id))
 		    (subkeys (or (key-manager key-id) '())))
 		(for-each (lambda (k)
 			     (trace-item "key=" (pgp-subkey->human-readable k)))
@@ -279,7 +285,7 @@
 		     (hash-algo 'sha-1)
 		     (symmetric-algo 'cast5))
 
-   (when (not (PGP-Encrypted? encrypted))
+   (when (not (isa? encrypted PGP-Encrypted))
       (error "pgp-decrypt" "Expected PGP-composition." encrypted))
 
    (with-trace 2 "pgp-decrypt"
@@ -305,10 +311,12 @@
 					      #f #f))
 			       (encrypted-session-key #f)))))
 		(pubkey-session-packets
-		 (filter PGP-Public-Key-Encrypted-Session-Key-Packet?
+		 (filter (lambda (x)
+			    (isa? x PGP-Public-Key-Encrypted-Session-Key-Packet))
 			 skeys))
 		(password-session-packets
-		 (filter PGP-Symmetric-Key-Encrypted-Session-Key-Packet?
+		 (filter (lambda (x)
+			    (isa? x PGP-Symmetric-Key-Encrypted-Session-Key-Packet))
 			 skeys)))
 	    ;; first try the public keys, then only the password.
 	    (let* ((decrypted (or (pubkey-decrypt encrypted-data
@@ -318,9 +326,9 @@
 					       password-session-packets
 					       passkey-provider))))
 	       (when (and (pair? decrypted)
-			  (PGP-Compressed-Packet? (car decrypted)))
-		  (set! decrypted (PGP-Compressed-Packet-packets
-				   (car decrypted))))
+			  (isa? (car decrypted) PGP-Compressed-Packet))
+		  (with-access::PGP-Compressed-Packet (car decrypted) (packets)
+		     (set! decrypted packets)))
 	       (trace-item "decrypted=" decrypted)
 	       (cond
 		  ((not decrypted)
@@ -329,7 +337,7 @@
 		  ((and (null? decrypted) (not (pair? decrypted)))
 		   (trace-item "no encrypted data.")
 		   (error "pgp-decrypt" "No or bad encrypted data" #f))
-		  ((PGP-Literal-Packet? (car decrypted))
+		  ((isa? (car decrypted) PGP-Literal-Packet)
 		   (when (not (null? (cdr decrypted)))
 		      (warning "ignoring trailing packet(s)"))
 		   (with-access::PGP-Literal-Packet (car decrypted)
@@ -338,9 +346,9 @@
 		      (trace-item "file: " file-name)
 		      (trace-item "creation-date: " creation-date)
 		      data))
-		  ((and (PGP-Sig-Packet? (car decrypted))
+		  ((and (isa? (car decrypted) PGP-Sig-Packet)
 			(pair? (cdr decrypted))
-			(PGP-Literal-Packet? (cadr decrypted)))
+			(isa? (cadr decrypted) PGP-Literal-Packet))
 ;* 		   (when (not (null? (cddr decrypted)))                */
 ;* 		      (warning "ignoring trailing packet(s)"))         */
 		   (with-access::PGP-Literal-Packet (cadr decrypted)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed May  4 09:52:21 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 21:38:54 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -257,7 +257,7 @@
 ;*    the_failure ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (the_failure proc msg obj)
-   (if (&exception? proc)
+   (if (isa? proc &exception)
        (raise proc)
        (error proc msg obj)))
 
@@ -267,27 +267,38 @@
 (define (error/errno sysno proc msg obj)
    (cond
       ((=fx sysno $errno-io-error)
-       (raise (make-&io-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-port-error)
-       (raise (make-&io-port-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-port-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-read-error)
-       (raise (make-&io-read-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-read-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-write-error)
-       (raise (make-&io-write-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-write-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-unknown-host-error)
-       (raise (make-&io-unknown-host-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-unknown-host-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-file-not-found-error)
-       (raise (make-&io-file-not-found-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-file-not-found-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-parse-error)
-       (raise (make-&io-parse-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-parse-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-malformed-url-error)
-       (raise (make-&io-malformed-url-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-malformed-url-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-sigpipe-error)
-       (raise (make-&io-sigpipe-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-sigpipe-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-io-timeout-error)
-       (raise (make-&io-timeout-error #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&io-timeout-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-process-exception)
-       (raise (make-&process-exception #f #f (get-trace-stack) proc msg obj)))
+       (raise
+	  (instantiate::&process-exception (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-type-error)
        (raise (type-error #f #f proc msg obj)))
       ((=fx sysno $errno-typename-error)
@@ -340,12 +351,11 @@
 	     ($set-error-handler! hdls)
 	     (let ((r ((car handlers) val)))
 		($set-error-handler! hdls)
-		(when (&error? val)
-		   (error/location "raise"
-				   "Handler return from error"
-				   val
-				   (&error-fname val)
-				   (&error-location val)))
+		(when (isa? val &error)
+		   (with-access::&error val (fname location)
+			 (error/location "raise"
+			    "Handler return from error"
+			    val fname location)))
 		r))
 	  (begin
 	     (default-exception-handler val)
@@ -356,8 +366,8 @@
 ;*---------------------------------------------------------------------*/
 (define (default-exception-handler val)
    (exception-notify val)
-   (unless (&warning? val)
-      (let ((retval (if (&error? val) 1 2)))
+   (unless (isa? val &warning)
+      (let ((retval (if (isa? val &error) 1 2)))
 	 (unwind-stack-until! #f #f retval (lambda (x) (%exit retval)))))
    #unspecified)
 
@@ -376,13 +386,23 @@
 ;*    error ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (error proc msg obj)
-   (raise (make-&error #f #f (get-trace-stack) proc msg obj)))
+   (raise
+      (instantiate::&error
+	 (proc proc)
+	 (msg msg)
+	 (obj obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/location ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (error/location proc msg obj fname loc)
-   (raise (make-&error fname loc (get-trace-stack) proc msg obj)))
+   (raise
+      (instantiate::&error
+	 (fname fname)
+	 (location loc)
+	 (proc proc)
+	 (msg msg)
+	 (obj obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/source-location ...                                        */
@@ -430,22 +450,18 @@
 		 (else
 		  "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
-      (raise (make-&type-error #f #f (get-trace-stack) proc msg obj type))))
+      (raise
+	 (instantiate::&type-error
+	    (proc proc)
+	    (msg msg)
+	    (obj obj)
+	    (type type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-type-error/location ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-type-error/location proc type obj fname loc)
-   (let* ((ty (cond
-		 ((string? type)
-		  type)
-		 ((symbol? type)
-		  (symbol->string type))
-		 (else
-		  "???")))
-	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
-      (raise
-       (make-&type-error fname loc (get-trace-stack) proc msg obj type))))
+   (raise (type-error fname loc proc type obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-error ...                                                   */
@@ -456,7 +472,13 @@
 		 ((symbol? type) (symbol->string type))
 		 (else "???")))
 	  (msg (bigloo-type-error-msg "Type" ty (typeof obj))))
-      (make-&type-error fname loc (get-trace-stack) proc msg obj type)))
+      (instantiate::&type-error
+	 (fname fname)
+	 (location loc)
+	 (proc proc)
+	 (msg msg)
+	 (obj obj)
+	 (type type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    typename-error ...                                               */
@@ -467,7 +489,13 @@
 		 ((symbol? type) (symbol->string type))
 		 (else "???")))
 	  (msg (bigloo-type-error-msg "Type" ty obj)))
-      (make-&type-error fname loc (get-trace-stack) proc msg #unspecified type)))
+      (instantiate::&type-error
+	 (fname fname)
+	 (location loc)
+	 (proc proc)
+	 (msg msg)
+	 (obj #unspecified)
+	 (type type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    index-out-of-bounds-error ...                                    */
@@ -480,21 +508,27 @@
 	  (msg (string-append "index out of range [0.."
 			      (integer->string (-fx len 1))
 			      "]")))
-      (make-&index-out-of-bounds-error fname loc
-				       (get-trace-stack)
-				       proc msg obj len)))
+      (instantiate::&index-out-of-bounds-error
+	 (fname fname)
+	 (location loc)
+	 (proc proc)
+	 (msg msg)
+	 (obj obj)
+	 (index len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (warning . args)
-   (warning-notify (make-&warning #f #f (get-trace-stack) args)))
+   (warning-notify
+      (instantiate::&warning (args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/location ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (warning/location fname loc . args)
-   (warning-notify (make-&warning fname loc (get-trace-stack) args)))
+   (warning-notify
+      (instantiate::&warning (fname fname) (location loc) (args args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/loc ...                                                  */
@@ -521,61 +555,60 @@
 ;*---------------------------------------------------------------------*/
 (define (notify-&error err)
    (let ((port (current-error-port)))
-      (flush-output-port port)
-      (display "*** ERROR:" port)
-      (display-circle (&error-proc err) port)
-      (display #":\n" port)
-      (display-circle (&error-msg err) port)
-      (display " -- " port)
-      (display-circle (&error-obj err) port)
-      (newline port)
-      (display-trace-stack (or (&error-stack err) (get-trace-stack)) port)
-      (flush-output-port port)))
+      (with-access::&error err (proc msg obj stack)
+	 (flush-output-port port)
+	 (display "*** ERROR:" port)
+	 (display-circle proc port)
+	 (display #":\n" port)
+	 (display-circle msg port)
+	 (display " -- " port)
+	 (display-circle obj port)
+	 (newline port)
+	 (display-trace-stack (or stack (get-trace-stack)) port)
+	 (flush-output-port port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/location-no-loc ...                                */
 ;*---------------------------------------------------------------------*/
 (define (notify-&error/location-no-loc err)
    (let ((port (current-error-port)))
-      (flush-output-port port)
-      (newline port)
-      (fprint port "File \"" (&error-fname err)
-	      "\", character " (&error-location err) #\:)
-      (notify-&error err)))
+      (with-access::&error err (fname location)
+	 (flush-output-port port)
+	 (newline port)
+	 (fprint port "File \"" fname "\", character " location #\:)
+	 (notify-&error err))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/location-loc ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (notify-&error/location-loc err fname line loc string column)
-   (let ((port (current-error-port))
-	 (proc (&error-proc err))
-	 (msg (&error-msg err))
-	 (obj (&error-obj err)))
-      ;; we flush error-port
-      (flush-output-port port)
-      (newline port)
-      (let* ((space-string (if (>fx column 0)
-			       (make-string column #\space)
-			       ""))
-	     (l (string-length string))
-	     (n-column (if (>=fx column l)
-			   l
-			   column)))
-	 ;; we ajust tabulation in space string.
-	 (fix-tabulation! n-column string space-string)
-	 ;; we now print the error message
-	 (print-cursor fname line loc string space-string)
-	 ;; we display the error message
-	 (display "*** ERROR:" port)
-	 (display-circle proc port)
+   (with-access::&error err (proc msg obj stack)
+      (let ((port (current-error-port)))
+	 ;; we flush error-port
+	 (flush-output-port port)
 	 (newline port)
-	 (display-circle msg port)
-	 (display " -- " port)
-	 (display-circle obj port)
-	 (newline port)
-	 (display-trace-stack (or (&error-stack err) (get-trace-stack)) port)
-	 ;; we are now done, we flush
-	 (flush-output-port port))))
+	 (let* ((space-string (if (>fx column 0)
+				  (make-string column #\space)
+				  ""))
+		(l (string-length string))
+		(n-column (if (>=fx column l)
+			      l
+			      column)))
+	    ;; we ajust tabulation in space string.
+	    (fix-tabulation! n-column string space-string)
+	    ;; we now print the error message
+	    (print-cursor fname line loc string space-string)
+	    ;; we display the error message
+	    (display "*** ERROR:" port)
+	    (display-circle proc port)
+	    (newline port)
+	    (display-circle msg port)
+	    (display " -- " port)
+	    (display-circle obj port)
+	    (newline port)
+	    (display-trace-stack (or stack (get-trace-stack)) port)
+	    ;; we are now done, we flush
+	    (flush-output-port port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/loc ...                                            */
@@ -620,25 +653,27 @@
 ;*    exception-location? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (exception-location? e)
-   (and (string? (&exception-fname e)) (integer? (&exception-location e))))
+   (with-access::&exception e (fname location)
+      (and (string? fname) (integer? location))))
    
 ;*---------------------------------------------------------------------*/
 ;*    error-notify ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (error-notify e)
    (cond
-      ((&error? e)
+      ((isa? e &error)
        (if (exception-location? e)
-	   (notify-&error/loc e (&exception-fname e) (&exception-location e))
+	   (with-access::&exception e (fname location)
+	      (notify-&error/loc e fname location))
 	   (notify-&error e)))
-      ((&condition? e)
+      ((isa? e &condition)
        (fprint (current-error-port) "*** CONDITION: " e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-notify/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (error-notify/location e fname location)
-   (when (&error? e)
+   (when (isa? e &error)
       (notify-&error/loc e fname location)))
 
 ;*---------------------------------------------------------------------*/
@@ -648,7 +683,7 @@
    (define (simple-warning e)
       (flush-output-port (current-output-port))
       (display "*** WARNING:bigloo:" (current-error-port))
-      (let ((args (&warning-args e)))
+      (with-access::&warning e (args)
 	 (if (not (null? args))
 	     (begin
 		(display-circle (car args) (current-error-port))
@@ -660,20 +695,19 @@
       (flush-output-port (current-error-port)))
    (when (>fx (bigloo-warning) 0)
       (if (exception-location? e)
-	  (let ((fname (&warning-fname e)))
+	  (with-access::&warning e (fname location args)
 	     (cond
 		((string=? fname "[string]")
 		 (simple-warning e))
 		((string=? fname "[stdin]")
 		 (simple-warning e))
 		(else
-		 (warning/location-file fname
-					(&warning-location e)
-					(&warning-args e)))))
+		 (warning/location-file fname location args))))
 	  (simple-warning e)))
    ;; stack
-   (when (&warning-stack e)
-      (display-trace-stack (&warning-stack e) (current-error-port)))
+   (with-access::&warning e (stack)
+      (when stack
+	 (display-trace-stack stack (current-error-port))))
    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -681,7 +715,8 @@
 ;*---------------------------------------------------------------------*/
 (define (warning-notify/location e fname location)
    (when (>fx (bigloo-warning) 0)
-      (warning/location-file fname location (&warning-args e))))
+      (with-access::&warning e (args)
+	 (warning/location-file fname location args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    warning/location-file ...                                        */
@@ -1017,9 +1052,9 @@
    (bind-exit (esc)
       (with-exception-handler
 	 (lambda (e)
-	    (if (&error? e)
-		(begin
-		   (handler esc (&error-proc e) (&error-msg e) (&error-obj e))
+	    (if (isa? e &error)
+		(with-access::&error e (proc msg obj)
+		   (handler esc proc msg obj)
 		   (exit 4))
 		(raise e)))
 	 thunk)))

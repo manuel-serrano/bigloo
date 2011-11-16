@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Thu Mar 17 13:50:34 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:48:20 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
@@ -17,6 +17,8 @@
    (import type_type
 	   ast_var
 	   ast_node)
+
+   (include "Cgen/cop.sch")
    
    (export (class cop
 	      ;; the source line number associated to this instruction

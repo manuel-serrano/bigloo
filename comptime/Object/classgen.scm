@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Thu Nov 10 18:09:37 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:49:35 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -73,33 +73,36 @@
 	    (get-class-list))
 	 (when (pair? protos)
 	    (write-scheme-comment po "The directives")
-	    (display "(directives\n   (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))\n\n" po)
+	    (display "(directives" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (protos (cdr p)))
-			    (write-scheme-comment po (tclass-id c))
-			    (display "(" po)
-			    (display (car protos) po)
 			    (newline po)
+			    (newline po)
+			    (write-scheme-comment po (tclass-id c))
+			    (display "(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))\n" po)
+			    (display "  (" po)
+			    (display (car protos) po)
 			    (for-each (lambda (p)
-					 (display "  " po)
-					 (display p po)
-					 (newline po))
+					 (newline po)
+					 (display "    " po)
+					 (display p po))
 			       (cdr protos))
-			    (display ")\n" po)))
+			    (display ")))" po)))
 	       protos)
-	    (display ")))\n\n" po)
+	    (display ")\n\n" po)
+	    
 	    (write-scheme-comment po "The definitions")
-	    (display "(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))" po)
+	    (display "(cond-expand (bigloo-class-sans" po)
 	    (for-each (lambda (p)
 			 (let ((c (car p))
 			       (defs (cdr p)))
+			    (newline po)
 			    (write-scheme-comment po (tclass-id c))
 			    (for-each (lambda (p)
-					 (display p po)
+					 (write p po)
 					 (newline po))
-			       defs)
-			    (newline po)))
+			       defs)))
 	       defs)
 	    (display "))\n" po)
 	    (close-output-port po)))))
@@ -116,19 +119,18 @@
 (define (classgen c)
    (multiple-value-bind (pred-p pred-d)
       (classgen-predicate c)
-      (multiple-value-bind (make-p make-d)
-	 (classgen-make c)
 	 (multiple-value-bind (nil-p nil-d)
 	    (classgen-nil c)
 	    (multiple-value-bind (access-p access-d)
 	       (classgen-accessors c)
-	       (values
-		  `(,(class-import c)
-		    ,pred-p
-		    ,make-p
-		    ,nil-p
-		    ,@access-p)
-		  (cons* pred-d make-d nil-d access-d)))))))
+	       (let ((p (cons* pred-p nil-p access-p))
+		     (d (cons* pred-d nil-d access-d)))
+	       (if (tclass-abstract? c)
+		   (values (cons (class-import c) p) d)
+		   (multiple-value-bind (make-p make-d)
+		      (classgen-make c)
+		      (values (cons* (class-import c) make-p p)
+			 (cons make-d d)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-import ...                                                 */
@@ -149,7 +151,7 @@
 	  (id (symbol-append (tclass-id c) '?))
 	  (tid (make-typed-ident id 'bool)))
       (values
-	 `(inline ,id ::obj)
+	 `(inline ,tid ::obj)
 	 (predicate-def tid holder))))
 
 ;*---------------------------------------------------------------------*/
@@ -193,17 +195,10 @@
    (define (nil-def id tid slots)
       (let* ((plain-slots (filter (lambda (s) (not (slot-virtual? s))) slots))
 	     (new (gensym 'new))
-	     (tnew (make-typed-ident new tid)))
+	     (tnew (make-typed-ident new tid))
+	     (holder (tclass-holder c)))
 	 `(define (,id)
-	     (let ((,tnew ,(if (wide-class? c)
-			       (classgen-widen-expr c
-				  (classgen-allocate-expr (tclass-its-super c)))
-			       (classgen-allocate-expr c))))
-		,@(map (lambda (s)
-			  `(set! ,(field-access new (slot-id s))
-			      ,(type-nil-value (slot-type s))))
-		     plain-slots)
-		,new))))
+	     (class-nil (@ ,(global-id holder) ,(global-module holder))))))
    
    (let* ((tid (type-id c))
 	  (slots (tclass-slots c))
@@ -217,11 +212,18 @@
 ;*    classgen-nil-anonymous ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (classgen-nil-anonymous c)
-   (multiple-value-bind (proto def)
-      (classgen-nil c)
-      (match-case def
-	 ((?- ?- ?body)
-	  `(lambda () ,body)))))
+   (let* ((tid (type-id c))
+	  (slots (tclass-slots c))
+	  (id (symbol-append (type-id c) '-nil))
+	  (plain-slots (filter (lambda (s) (not (slot-virtual? s))) slots))
+	  (new (gensym 'new))
+	  (tnew (make-typed-ident new tid)))
+      `(lambda (,tnew)
+	  ,@(map (lambda (s)
+		    `(set! ,(field-access new (slot-id s))
+			,(type-nil-value (slot-type s))))
+	       plain-slots)
+	  ,new)))
    
 ;*---------------------------------------------------------------------*/
 ;*    classgen-make-anonymous ...                                      */

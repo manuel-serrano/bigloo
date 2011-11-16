@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Fri Sep 16 10:51:15 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 21:23:25 2011 (serrano)                */
 ;*    Copyright   :  2003-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
@@ -124,16 +124,12 @@
 (define (main argv)
    (with-exception-handler
       (lambda (e)
-	 (if (&error? e)
-	     (begin
+	 (if (isa? e &error)
+	     (with-access::&error e (obj proc msg)
 		(error-notify e)
 		(if (http-request?)
 		    (print-html
-		     (html-plugin-error #f
-					*bmem*
-					(&error-obj e)
-					(&error-proc e)
-					(&error-msg e))))
+		     (html-plugin-error #f *bmem* obj proc msg)))
 		(plugin-exit 500)
 		#f))
 	 (raise e))
@@ -335,11 +331,16 @@
 				 (with-access::funinfo f (ident num)
 				    (list (format "function~a" num)
 					  (function-ref ident))))
-			      (sort (filter funinfo-use functions)
+			      (sort (filter (lambda (f)
+					       (with-access::funinfo f (use)
+						  use))
+				       functions)
 				    (lambda (f1 f2)
-				       (string<?
-					(symbol->string (funinfo-ident f1))
-					(symbol->string (funinfo-ident f2))))))
+				       (with-access::funinfo f1 ((id1 ident))
+					  (with-access::funinfo f1 ((id2 ident))
+					     (string<?
+						(symbol->string id1)
+						(symbol->string id2)))))))
 			 "Functions" "function-legend")
 			(html-br)
 			(html-legend
@@ -398,12 +399,12 @@
 	     (reverse! res))))
    (define (function-css fun)
       (map (lambda (f)
-	      (let* ((i (funinfo-num f))
-		     (selector (string-append "div.profile td.function"
-					      (integer->string i)))
-		     (color (css-color i 143 255 128)))
-		 `(,selector background: ,color
-			     cursor: help)))
+	      (with-access::funinfo f (num)
+		 (let* ((selector (string-append "div.profile td.function"
+				     (integer->string num)))
+			(color (css-color num 143 255 128)))
+		    `(,selector background: ,color
+			cursor: help))))
 	   fun))
    (define (type-css types)
       (map (lambda (t)

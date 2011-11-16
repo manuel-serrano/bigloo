@@ -6,6 +6,7 @@
 	   ast_var
 	   ast_node
 	   saw_lib)
+   (include "SawMill/defs.sch")
    (export
     ;; Regs
     (final-class rtl_reg

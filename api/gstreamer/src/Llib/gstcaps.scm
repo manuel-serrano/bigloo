@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  4 06:24:04 2008                          */
-;*    Last change :  Mon Feb 11 15:11:29 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 11:51:40 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstCaps                                                          */
 ;*=====================================================================*/
@@ -23,15 +23,15 @@
    (export  (class gst-caps
 	       (%gst-caps-init)
 	       ($builtin::$gst-caps (default ($gst-caps-nil)))
-	       ($finalizer::obj read-only (default (lambda (o)
-						      ($gst-caps-unref!
-						       (gst-caps-$builtin o)))))
+	       ($finalizer::obj read-only
+		  (default (lambda (o)
+			      (with-access::gst-caps o ($builtin)
+				 ($gst-caps-unref! $builtin)))))
 	       (size::long
 		read-only
 		(get (lambda (o)
-			($gst-caps-get-size
-			 ($gst-caps
-			  (gst-caps-$builtin o)))))))
+			(with-access::gst-caps o ($builtin)
+			   ($gst-caps-get-size $builtin))))))
 
 	    (%gst-caps-init ::gst-caps)
 	    ($make-gst-caps ::$gst-caps ::obj)
@@ -64,9 +64,10 @@
 	 ((procedure? $finalizer)
 	  ($gst-add-finalizer! o $finalizer))
 	 ($finalizer
+	   ;;;
 	  ($gst-add-finalizer! o (lambda (o)
-				    ($gst-caps-unref!
-				     (gst-caps-$builtin o))))))
+				    (with-access::gst-caps o ($builtin)
+				       ($gst-caps-unref! $builtin))))))
       o))
 
 ;*---------------------------------------------------------------------*/
@@ -85,9 +86,10 @@
       (display "<" p)
       (display (find-runtime-type o) p)
       (display " refcount=" p)
-      (display ($gst-object-refcount (gst-caps-$builtin o)) p)
-      (display " size=" p)
-      (display (gst-caps-size o) p)
+      (with-access::gst-caps o ($builtin size)
+	 (display ($gst-object-refcount ($gst-caps->object $builtin)) p)
+	 (display " size=" p)
+	 (display size p))
       (display ">" p)))
 
 ;*---------------------------------------------------------------------*/
@@ -99,7 +101,8 @@
       (cond
 	 ((null? a)
 	  (let ((finalizer (lambda (o)
-			      ($gst-caps-unref! (gst-caps-$builtin o)))))
+			      (with-access::gst-caps o ($builtin)
+				 ($gst-caps-unref! $builtin)))))
 	     ($gst-caps-new-simple media-type args finalizer)))
 	 ((not (keyword? (car a)))
 	  (bigloo-type-error 'gst-caps-new-simple 'keyword (car a)))
@@ -112,66 +115,68 @@
 ;*    gst-caps-structure ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-structure caps index)
-   (instantiate::gst-structure
-      ($builtin ($gst-caps-get-structure
-		 ($gst-caps (gst-caps-$builtin caps)) index))))
+   (with-access::gst-caps caps ($builtin)
+      (instantiate::gst-structure
+	 ($builtin ($gst-caps-get-structure $builtin index)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-always-compatible? ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-always-compatible? caps1 caps2)
-   ($gst-caps-is-always-compatible?
-    ($gst-caps (gst-caps-$builtin caps1))
-    ($gst-caps (gst-caps-$builtin caps2))))
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      (with-access::gst-caps caps2 ((builtin2 $builtin))
+	 ($gst-caps-is-always-compatible? builtin1 builtin2))))
 	       
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-append! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-append! caps1 caps2)
-   ($gst-caps-append
-    ($gst-caps (gst-caps-$builtin caps1))
-    ($gst-caps (gst-caps-$builtin caps2)))
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      (with-access::gst-caps caps2 ((builtin2 $builtin))
+	 ($gst-caps-append builtin1 builtin2)))
    caps1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-merge! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-merge! caps1 caps2)
-   ($gst-caps-merge
-    ($gst-caps (gst-caps-$builtin caps1))
-    ($gst-caps (gst-caps-$builtin caps2)))
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      (with-access::gst-caps caps2 ((builtin2 $builtin))
+	 ($gst-caps-merge builtin1 builtin2)))
    caps1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-append-structure! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-append-structure! caps1 s)
-   ($gst-caps-append-structure
-    ($gst-caps (gst-caps-$builtin caps1))
-    ($gst-structure (gst-structure-$builtin s)))
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      (with-access::gst-structure s ((builtin2 $builtin))
+	 ($gst-caps-append-structure builtin1 builtin2)))
    caps1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-merge-structure! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-merge-structure! caps1 s)
-   ($gst-caps-merge-structure
-    ($gst-caps (gst-caps-$builtin caps1))
-    ($gst-structure (gst-structure-$builtin s)))
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      (with-access::gst-structure s ((builtin2 $builtin))
+	 ($gst-caps-merge-structure builtin1 builtin2)))
    caps1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-remove-structure! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-remove-structure! caps1 i)
-   ($gst-caps-remove-structure ($gst-caps (gst-caps-$builtin caps1)) i)
+   (with-access::gst-caps caps1 ((builtin1 $builtin))
+      ($gst-caps-remove-structure builtin1 i))
    caps1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-to-string ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (gst-caps-to-string caps)
-   ($gst-caps-to-string ($gst-caps (gst-caps-$builtin caps))))
+   (with-access::gst-caps caps ($builtin)
+      ($gst-caps-to-string $builtin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-caps-from-string ...                                         */

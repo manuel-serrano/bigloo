@@ -8,6 +8,7 @@
    (export (pre-build-tree ::backend params::pair-nil l::pair-nil)
 	   (build-tree ::backend params::pair-nil l::pair-nil)
 	   (generic accept-folding? b::backend ins tree))
+   (include "SawMill/expr.sch")
    (static (wide-class ireg::rtl_reg index status)
 	   (wide-class preg::rtl_reg index status)
 	   (wide-class inlined::rtl_ins) ))

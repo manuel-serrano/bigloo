@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Nov 10 07:00:05 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 10:31:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -201,6 +201,14 @@
    (duplicate::pragma node
       (loc (get-inline-location node))
       (expr* (map do-alphatize (pragma-expr* node)))))
+
+;*---------------------------------------------------------------------*/
+;*    do-alphatize ::cast-null ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (do-alphatize node::cast-null)
+   (duplicate::cast-null node
+      (loc (get-inline-location node))
+      (expr* (map do-alphatize (cast-null-expr* node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::getfield ...                                      */

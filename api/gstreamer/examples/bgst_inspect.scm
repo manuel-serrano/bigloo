@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/gstreamer/examples/bgst-inspect.scm       */
+;*    .../project/bigloo/api/gstreamer/examples/bgst_inspect.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 14 08:08:42 2008                          */
-;*    Last change :  Thu Jan 31 07:37:06 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 19:13:52 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    gst-inspect implemented with the Bigloo GSTREAMER binding.       */
 ;*=====================================================================*/
@@ -53,10 +53,10 @@
 	 (else
 	  (let ((factory (gst-element-factory-find else)))
 	     (unless (eq? all 'force) (set! all #f))
-	     (if (gst-element-factory? factory)
+	     (if (isa? factory gst-element-factory)
 		 (inspect-factory factory)
 		 (let ((plugin (gst-registry-find-plugin else)))
-		    (if (gst-plugin? plugin)
+		    (if (isa? plugin gst-plugin)
 			(inspect-plugin plugin)
 			(error 'bgst-insect "No such element or plugin" else)))))))
       (when all
@@ -87,11 +87,12 @@
       (print-row 14 "Rank:" rank)
       (newline)
       (let ((plugin (gst-registry-find-plugin plugin-name)))
-	 (when (gst-plugin? plugin) (inspect-plugin-details plugin)))
+	 (when (isa? plugin gst-plugin) (inspect-plugin-details plugin)))
       (newline)
       (let ((el (gst-element-factory-create factory "")))
 	 (print "Implemented Interfaces:")
-	 (for-each (lambda (i) (print "  " i)) (gst-element-interface-list el))
+	 (for-each (lambda (i) (print "  " i))
+	    (with-access::gst-element el (interface-list) interface-list))
 	 (newline)
 	 (print "Pad Templates:")
 	 (for-each inspect-static-pad-template static-pad-templates)
@@ -153,6 +154,7 @@
 ;*---------------------------------------------------------------------*/
 (define (inspect-plugins)
    (for-each (lambda (p)
-		(print (gst-plugin-name p) ":"))
+		(with-access::gst-plugin p (name)
+		   (print name ":")))
 	     (gst-registry-plugin-list)))
       

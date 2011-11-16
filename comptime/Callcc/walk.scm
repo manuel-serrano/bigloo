@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Thu Nov  3 14:27:34 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:50:10 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
@@ -15,7 +15,8 @@
 ;*---------------------------------------------------------------------*/
 (module callcc_walk
    (include "Engine/pass.sch"
-	    "Ast/node.sch")
+	    "Ast/node.sch"
+	    "Callcc/walk.sch")
    (import  tools_error
 	    tools_shape
 	    type_cache

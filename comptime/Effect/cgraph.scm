@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Sun Dec 24 14:30:52 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 17:50:51 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module effect_cgraph
    (include "Ast/node.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Effect/cgraph.sch")
    (import  tools_shape
 	    tools_error)
    (export  (wide-class local/from::local from)

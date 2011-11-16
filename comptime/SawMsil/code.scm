@@ -22,6 +22,7 @@
 	   )
    (export (module-code me::dotnet v::global params l)
 	   (gen-expr me::dotnet ins))
+   (include "SawMsil/code.sch")
    (static (wide-class lreg::rtl_reg index param?)
 	   ;; Better to have final classes for rtl_*call ?
 	   (class tail_call::rtl_call)

@@ -35,6 +35,6 @@
 (define (wxws)
    (let ((s (instantiate::wx (x 2))))
       (widen!::ws s (y 9))
-      (ws-y s)))
+      (with-access::ws s (y) y)))
 
 

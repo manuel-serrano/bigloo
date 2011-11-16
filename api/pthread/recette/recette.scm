@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu May 27 17:44:49 2010 (serrano)                */
-;*    Copyright   :  2002-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 14:06:56 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
 ;*=====================================================================*/
@@ -97,13 +97,15 @@
    :result (lambda (v)
 	      (if (eq? v 'result)
 		  "a thread"
-		  (thread? v))))
+		  (isa? v thread))))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-name ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-test thread-name
-   (thread-name (instantiate::pthread (body (lambda () #f)) (name 'foo)))
+   (with-access::thread (instantiate::pthread (body (lambda () #f)) (name 'foo))
+	 (name)
+      name)
    :result 'foo)
 
 ;*---------------------------------------------------------------------*/
@@ -111,8 +113,9 @@
 ;*---------------------------------------------------------------------*/
 (define-test thread-specific
    (let ((t (instantiate::pthread (body (lambda () #f)))))
-      (thread-specific-set! t "hello")
-      (thread-specific t))
+      (with-access::thread t (specific)
+	 (set! specific "hello")
+	 specific))
    :result "hello")
 
 ;*---------------------------------------------------------------------*/
@@ -236,8 +239,9 @@
 		 (body (lambda ()
 			  (with-exception-handler
 			     (lambda (exc)
-				(if (uncaught-exception? exc)
-				    (* 10 (uncaught-exception-reason exc))
+				(if (isa? exc uncaught-exception)
+				    (with-access::uncaught-exception exc (reason)
+				       (* 10 reason))
 				    99999))
 			     (lambda ()
 				(set! res (+ 1 (thread-join! t)))))))
@@ -257,8 +261,8 @@
 		  (with-exception-handler
 		     (lambda (exc)
 			(tprint "EXC=" (find-runtime-type exc))
-			(if (not (or (terminated-thread-exception? exc)
-				     (uncaught-exception? exc)))
+			(if (not (or (isa? exc terminated-thread-exception)
+				     (isa? exc uncaught-exception)))
 			    (eh exc)))
 		     (lambda ()
 			(thread-join! thread)

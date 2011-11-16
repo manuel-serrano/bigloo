@@ -1,6 +1,6 @@
 ;*=====================================================================*/
 ;*    Author      :  Florian Loitsch                                   */
-;*    Copyright   :  2009-10 Florian Loitsch                           */
+;*    Copyright   :  2009-11 Florian Loitsch                           */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the DSA asymmetric    */
 ;*    cipher.                                                          */
@@ -18,8 +18,7 @@
 	   (dsa-verify key::Dsa-Key m::bignum r::bignum s::bignum)))
 
 (define (extract-public-dsa-key key)
-   (with-access::Dsa-Key key (p q g y)
-      (make-Dsa-Key p q g y)))
+   (duplicate::Dsa-Key key))
 
 (define (dsa-sign key m::bignum)
    (with-access::Complete-Dsa-Key key (p q g y x)

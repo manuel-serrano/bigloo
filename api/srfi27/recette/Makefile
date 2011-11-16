@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/packrat/recette/Makefile         */
+#*    serrano/prgm/project/bigloo/api/srfi27/recette/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Apr 20 08:26:32 2009 (serrano)                */
-#*    Copyright   :  2002-09 Manuel Serrano                            */
+#*    Last change :  Wed Nov 16 10:25:19 2011 (serrano)                */
+#*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ POPULATION	= recette.scm Makefile
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: c jvm dotnet
+all: c jvm
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
@@ -47,14 +47,6 @@ jvm:
 recette-jvm$(SCRIPTEXTENSION): recette.class
 	$(BIGLOO) $(EFLAGS) -jvm $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
-dotnet: 
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) recette-dotnet$(SCRIPTEXTENSION); \
-	  fi
-
-recette-dotnet$(SCRIPTEXTENSION): recette.obj
-	$(BIGLOO) $(EFLAGS) -v -dotnet -dotnet-managed $(BFLAGS) recette.obj -o recette-dotnet$(SCRIPTEXTENSION)
-
 pop:
 	@ echo $(POPULATION:%=packrat/recette/%)
 
@@ -64,13 +56,11 @@ clean:
 	@- $(RM) -f recette.o
 	@- $(RM) -f test.db
 	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
-	@- $(RM) -f recette.obj recette.il
-	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
-test: test-c test-jvm test-dotnet
+test: test-c test-jvm
 
 test-c:
 	(export LD_LIBRARY_PATH=../lib:$$LD_LIBRARY_PATH; \
@@ -79,9 +69,6 @@ test-c:
 
 test-jvm:
 	./recette-jvm$(SCRIPTEXTENSION)
-
-test-dotnet:
-	./recette-dotnet$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
@@ -97,6 +84,3 @@ test-dotnet:
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
-
-.scm.obj: $*.scm
-	$(BIGLOO) -c -dotnet -dotnet-managed $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.obj

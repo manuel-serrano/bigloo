@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Thu Nov  3 14:26:32 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:11:25 2011 (serrano)                */
 ;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -17,7 +17,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_specialize
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Cfa/specialize.sch")
    (import  engine_param
 	    type_type
 	    type_cache

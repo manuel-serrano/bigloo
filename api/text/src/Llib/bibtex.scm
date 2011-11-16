@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Tue Aug 31 10:17:20 2010 (serrano)                */
-;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 11:08:46 2011 (serrano)                */
+;*    Copyright   :  2001-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A BibTeX parser, produces a list of UTF-8 entries.               */
 ;*=====================================================================*/
@@ -75,15 +75,15 @@
       (set! *bibtex-string-table* (make-bibtex-hashtable)))
    (with-handler
       (lambda (e)
-	 (if (&io-parse-error? e)
-	     (let ((o (&error-obj e)))
-		(match-case o
+	 (if (isa? e &io-parse-error)
+	     (with-access::&error e (obj proc)
+		(match-case obj
 		   ((?token (?fname . ?pos) . ?val)
-		    (error/location (&error-proc e)
-				    "bibtex parse error"
-				    token
-				    fname
-				    pos))
+		    (error/location proc
+		       "bibtex parse error"
+		       token
+		       fname
+		       pos))
 		   (else
 		    (raise e))))
 	     (raise e)))

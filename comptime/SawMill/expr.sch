@@ -1,0 +1,126 @@
+;; ==========================================================
+;; Class accessors
+;; Bigloo (3.7b)
+;; Inria -- Sophia Antipolis     Mon Nov 14 19:08:36 CET 2011 
+;; (bigloo.new -classgen SawMill/expr.scm)
+;; ==========================================================
+
+;; The directives
+(directives
+
+;; ireg
+(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
+  (static
+    (inline make-ireg::ireg type1247::type var1248::obj onexpr?1249::obj name1250::obj key1251::obj hardware1252::obj index1253::obj status1254::obj)
+    (inline ireg?::bool ::obj)
+    (ireg-nil::ireg)
+    (inline ireg-status::obj ::ireg)
+    (inline ireg-status-set! ::ireg ::obj)
+    (inline ireg-index::obj ::ireg)
+    (inline ireg-index-set! ::ireg ::obj)
+    (inline ireg-hardware::obj ::ireg)
+    (inline ireg-key::obj ::ireg)
+    (inline ireg-name::obj ::ireg)
+    (inline ireg-onexpr?::obj ::ireg)
+    (inline ireg-onexpr?-set! ::ireg ::obj)
+    (inline ireg-var::obj ::ireg)
+    (inline ireg-var-set! ::ireg ::obj)
+    (inline ireg-type::type ::ireg)
+    (inline ireg-type-set! ::ireg ::type))))
+
+;; preg
+(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
+  (static
+    (inline make-preg::preg type1238::type var1239::obj onexpr?1240::obj name1241::obj key1242::obj hardware1243::obj index1244::obj status1245::obj)
+    (inline preg?::bool ::obj)
+    (preg-nil::preg)
+    (inline preg-status::obj ::preg)
+    (inline preg-status-set! ::preg ::obj)
+    (inline preg-index::obj ::preg)
+    (inline preg-index-set! ::preg ::obj)
+    (inline preg-hardware::obj ::preg)
+    (inline preg-key::obj ::preg)
+    (inline preg-name::obj ::preg)
+    (inline preg-onexpr?::obj ::preg)
+    (inline preg-onexpr?-set! ::preg ::obj)
+    (inline preg-var::obj ::preg)
+    (inline preg-var-set! ::preg ::obj)
+    (inline preg-type::type ::preg)
+    (inline preg-type-set! ::preg ::type))))
+
+;; inlined
+(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
+  (static
+    (inline make-inlined::inlined loc1232::obj %spill1233::pair-nil dest1234::obj fun1235::rtl_fun args1236::pair-nil)
+    (inline inlined?::bool ::obj)
+    (inlined-nil::inlined)
+    (inline inlined-args::pair-nil ::inlined)
+    (inline inlined-args-set! ::inlined ::pair-nil)
+    (inline inlined-fun::rtl_fun ::inlined)
+    (inline inlined-fun-set! ::inlined ::rtl_fun)
+    (inline inlined-dest::obj ::inlined)
+    (inline inlined-dest-set! ::inlined ::obj)
+    (inline inlined-%spill::pair-nil ::inlined)
+    (inline inlined-%spill-set! ::inlined ::pair-nil)
+    (inline inlined-loc::obj ::inlined)
+    (inline inlined-loc-set! ::inlined ::obj)))))
+
+;; The definitions
+(cond-expand (bigloo-class-sans
+;; ireg
+(define-inline (make-ireg::ireg type1247::type var1248::obj onexpr?1249::obj name1250::obj key1251::obj hardware1252::obj index1253::obj status1254::obj) (instantiate::ireg (type type1247) (var var1248) (onexpr? onexpr?1249) (name name1250) (key key1251) (hardware hardware1252) (index index1253) (status status1254)))
+(define-inline (ireg?::bool obj::obj) ((@ isa? __object) obj (@ ireg saw_expr)))
+(define (ireg-nil::ireg) (class-nil (@ ireg saw_expr)))
+(define-inline (ireg-status::obj o::ireg) (with-access::ireg o (status) status))
+(define-inline (ireg-status-set! o::ireg v::obj) (with-access::ireg o (status) (set! status v)))
+(define-inline (ireg-index::obj o::ireg) (with-access::ireg o (index) index))
+(define-inline (ireg-index-set! o::ireg v::obj) (with-access::ireg o (index) (set! index v)))
+(define-inline (ireg-hardware::obj o::ireg) (with-access::ireg o (hardware) hardware))
+(define-inline (ireg-hardware-set! o::ireg v::obj) (with-access::ireg o (hardware) (set! hardware v)))
+(define-inline (ireg-key::obj o::ireg) (with-access::ireg o (key) key))
+(define-inline (ireg-key-set! o::ireg v::obj) (with-access::ireg o (key) (set! key v)))
+(define-inline (ireg-name::obj o::ireg) (with-access::ireg o (name) name))
+(define-inline (ireg-name-set! o::ireg v::obj) (with-access::ireg o (name) (set! name v)))
+(define-inline (ireg-onexpr?::obj o::ireg) (with-access::ireg o (onexpr?) onexpr?))
+(define-inline (ireg-onexpr?-set! o::ireg v::obj) (with-access::ireg o (onexpr?) (set! onexpr? v)))
+(define-inline (ireg-var::obj o::ireg) (with-access::ireg o (var) var))
+(define-inline (ireg-var-set! o::ireg v::obj) (with-access::ireg o (var) (set! var v)))
+(define-inline (ireg-type::type o::ireg) (with-access::ireg o (type) type))
+(define-inline (ireg-type-set! o::ireg v::type) (with-access::ireg o (type) (set! type v)))
+
+;; preg
+(define-inline (make-preg::preg type1238::type var1239::obj onexpr?1240::obj name1241::obj key1242::obj hardware1243::obj index1244::obj status1245::obj) (instantiate::preg (type type1238) (var var1239) (onexpr? onexpr?1240) (name name1241) (key key1242) (hardware hardware1243) (index index1244) (status status1245)))
+(define-inline (preg?::bool obj::obj) ((@ isa? __object) obj (@ preg saw_expr)))
+(define (preg-nil::preg) (class-nil (@ preg saw_expr)))
+(define-inline (preg-status::obj o::preg) (with-access::preg o (status) status))
+(define-inline (preg-status-set! o::preg v::obj) (with-access::preg o (status) (set! status v)))
+(define-inline (preg-index::obj o::preg) (with-access::preg o (index) index))
+(define-inline (preg-index-set! o::preg v::obj) (with-access::preg o (index) (set! index v)))
+(define-inline (preg-hardware::obj o::preg) (with-access::preg o (hardware) hardware))
+(define-inline (preg-hardware-set! o::preg v::obj) (with-access::preg o (hardware) (set! hardware v)))
+(define-inline (preg-key::obj o::preg) (with-access::preg o (key) key))
+(define-inline (preg-key-set! o::preg v::obj) (with-access::preg o (key) (set! key v)))
+(define-inline (preg-name::obj o::preg) (with-access::preg o (name) name))
+(define-inline (preg-name-set! o::preg v::obj) (with-access::preg o (name) (set! name v)))
+(define-inline (preg-onexpr?::obj o::preg) (with-access::preg o (onexpr?) onexpr?))
+(define-inline (preg-onexpr?-set! o::preg v::obj) (with-access::preg o (onexpr?) (set! onexpr? v)))
+(define-inline (preg-var::obj o::preg) (with-access::preg o (var) var))
+(define-inline (preg-var-set! o::preg v::obj) (with-access::preg o (var) (set! var v)))
+(define-inline (preg-type::type o::preg) (with-access::preg o (type) type))
+(define-inline (preg-type-set! o::preg v::type) (with-access::preg o (type) (set! type v)))
+
+;; inlined
+(define-inline (make-inlined::inlined loc1232::obj %spill1233::pair-nil dest1234::obj fun1235::rtl_fun args1236::pair-nil) (instantiate::inlined (loc loc1232) (%spill %spill1233) (dest dest1234) (fun fun1235) (args args1236)))
+(define-inline (inlined?::bool obj::obj) ((@ isa? __object) obj (@ inlined saw_expr)))
+(define (inlined-nil::inlined) (class-nil (@ inlined saw_expr)))
+(define-inline (inlined-args::pair-nil o::inlined) (with-access::inlined o (args) args))
+(define-inline (inlined-args-set! o::inlined v::pair-nil) (with-access::inlined o (args) (set! args v)))
+(define-inline (inlined-fun::rtl_fun o::inlined) (with-access::inlined o (fun) fun))
+(define-inline (inlined-fun-set! o::inlined v::rtl_fun) (with-access::inlined o (fun) (set! fun v)))
+(define-inline (inlined-dest::obj o::inlined) (with-access::inlined o (dest) dest))
+(define-inline (inlined-dest-set! o::inlined v::obj) (with-access::inlined o (dest) (set! dest v)))
+(define-inline (inlined-%spill::pair-nil o::inlined) (with-access::inlined o (%spill) %spill))
+(define-inline (inlined-%spill-set! o::inlined v::pair-nil) (with-access::inlined o (%spill) (set! %spill v)))
+(define-inline (inlined-loc::obj o::inlined) (with-access::inlined o (loc) loc))
+(define-inline (inlined-loc-set! o::inlined v::obj) (with-access::inlined o (loc) (set! loc v)))
+))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Mon Aug 22 10:24:30 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 19:10:47 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPG123 Bigloo binding                                        */
@@ -38,7 +38,7 @@
 			   %command-load
 			   %status)
       (call-next-method)
-      (unless (eq? %status (musicstatus-nil))
+      (unless (nil? %status)
 	 (set! %status (instantiate::musicstatus)))
       (unless (string? %command-volume)
 	 (set! %command-volume "VOLUME"))
@@ -102,7 +102,7 @@
 	     (terr #f))
 	  (with-access::mpg123 mpg123 (%mutex %status)
 	     (mutex-lock! %mutex)
-	     (musicstatus-err-set! %status reason)
+	     (with-access::musicstatus %status (err) (set! err reason))
 	     (mutex-unlock! %mutex)
 	     (when onerror (onerror reason)))
 	  (ignore)))
@@ -114,21 +114,21 @@
 	      (d (read/rp number-grammar (the-port))))
 	  (with-access::mpg123 mpg123 (%mutex %status)
 	     (mutex-lock! %mutex)
-	     (let ((tstate (not (eq? (musicstatus-state %status) 'play)))
-		   (song (musicstatus-song %status)))
-		(musicstatus-songpos-set! %status c)
-		(musicstatus-songlength-set! %status (+fx c d))
-		(musicstatus-state-set! %status 'play)
-		(mutex-unlock! %mutex)
-		(when tstate
-		   (when onstate (onstate %status))
-		   (when (and onmeta tstate)
-		      (let* ((plist (music-playlist-get mpg123))
-			     (file (list-ref plist song)))
-			 (if (file-exists? file)
-			     (let ((tag (mp3-id3 file)))
-				(onmeta (or tag file)))
-			     (onmeta file))))))))
+	     (with-access::musicstatus %status (state song songpos songlength)
+		(let ((tstate (not (eq? state 'play))))
+		   (set! songpos c)
+		   (set! songlength (+fx c d))
+		   (set! state 'play)
+		   (mutex-unlock! %mutex)
+		   (when tstate
+		      (when onstate (onstate %status))
+		      (when (and onmeta tstate)
+			 (let* ((plist (music-playlist-get mpg123))
+				(file (list-ref plist song)))
+			    (if (file-exists? file)
+				(let ((tag (mp3-id3 file)))
+				   (onmeta (or tag file)))
+				(onmeta file)))))))))
        (ignore))
       ((: "@S ")
        ;; Stream info at beginning of playback
@@ -147,41 +147,47 @@
 	  (read-line (the-port))
 	  (with-access::mpg123 mpg123 (%mutex %status)
 	     (mutex-lock! %mutex)
-	     (musicstatus-state-set! %status 'start)
+	     (with-access::musicstatus %status (state)
+		(set! state 'start))
 	     (mutex-unlock! %mutex)
 	     (when onstate (onstate %status))
-	     (when (and onplaylist
-			(not (eq? playlistid (musicstatus-playlistid %status))))
-		(set! playlistid (musicstatus-playlistid %status))
-		(onplaylist playlistid))
-	     (ignore))))
+	     (with-access::musicstatus %status ((mplaylistid playlistid))
+		(when (and onplaylist
+			   (not (eq? playlistid mplaylistid)))
+		   (set! playlistid mplaylistid)
+		   (onplaylist playlistid))
+		(ignore)))))
       ((: "@P " digit)
        ;; Playing status
        (with-access::mpg123 mpg123 (%mutex %status %user-state)
 	  (case (integer->char (the-byte-ref 3))
 	     ((#\0)
 	      (mutex-lock! %mutex)
-	      (musicstatus-state-set! %status (if armed 'ended 'stop))
-	      (set! armed #f)
-	      (mutex-unlock! %mutex)
-	      (when onstate (onstate %status))
-	      (when (eq? %user-state 'play)
-		 (cond
-		    ((musicstatus-repeat %status)
-		     (music-play mpg123))
-		    ((musicstatus-random %status)
-		     (music-play mpg123
-				 (random (musicstatus-playlistlength %status))))
-		    (else
-		     (music-next mpg123)))))
+	      (with-access::musicstatus %status (state repeat (mrandom random)
+						   playlistlength)
+		 (set! state (if armed 'ended 'stop))
+		 (set! armed #f)
+		 (mutex-unlock! %mutex)
+		 (when onstate (onstate %status))
+		 (when (eq? %user-state 'play)
+		    (cond
+		       (repeat
+			  (music-play mpg123))
+		       (mrandom
+			  (music-play mpg123
+			     (random playlistlength)))
+		       (else
+			(music-next mpg123))))))
 	     ((#\1)
 	      (mutex-lock! %mutex)
-	      (musicstatus-state-set! %status 'pause)
+	      (with-access::musicstatus %status (state)
+		 (set! state 'pause))
 	      (mutex-unlock! %mutex)
 	      (when onstate (onstate %status)))
 	     ((#\2)
 	      (mutex-lock! %mutex)
-	      (musicstatus-state-set! %status 'start)
+	      (with-access::musicstatus %status (state)
+		 (set! state 'start))
 	      (mutex-unlock! %mutex)
 	      (when onstate (onstate %status)))))
        (ignore))
@@ -194,8 +200,9 @@
 		     (string->number (the-substring 3 -1))))))
 	     (let ((t #f))
 		(mutex-lock! %mutex)
-		(set! t (=fx (musicstatus-volume %status) v))
-		(musicstatus-volume-set! %status v)
+		(with-access::musicstatus %status (volume)
+		   (set! t (=fx volume v))
+		   (set! volume v))
 		(mutex-unlock! %mutex)
 		(when (and (not t) onvolume)
 		   (onvolume v)))))
@@ -220,23 +227,41 @@
 ;*    music-update-status! ::mpg123 ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (music-update-status! o::mpg123 status)
-   (mutex-lock! (mpg123-%mutex o))
-   (with-access::mpg123 o (%status)
-      (musicstatus-state-set! status (musicstatus-state %status))
-      (musicstatus-volume-set! status (musicstatus-volume %status))
-      (musicstatus-repeat-set! status (musicstatus-repeat %status))
-      (musicstatus-random-set! status (musicstatus-random %status))
-      (musicstatus-playlistid-set! status (musicstatus-playlistid %status))
-      (musicstatus-playlistlength-set! status (musicstatus-playlistlength %status))
-      (musicstatus-xfade-set! status (musicstatus-xfade %status))
-      (musicstatus-song-set! status (musicstatus-song %status))
-      (musicstatus-songid-set! status (musicstatus-songid %status))
-      (musicstatus-songpos-set! status (musicstatus-songpos %status))
-      (musicstatus-songlength-set! status (musicstatus-songlength %status))
-      (musicstatus-bitrate-set! status (musicstatus-bitrate %status))
-      (musicstatus-khz-set! status (musicstatus-khz %status))
-      (musicstatus-err-set! status (musicstatus-err %status)))
-   (mutex-unlock! (mpg123-%mutex o)))
+   (with-access::mpg123 o (%status %mutex)
+      (mutex-lock! %mutex)
+      (with-access::musicstatus status (state volume repeat random
+					  playlistid playlistlength
+					  xfade song songid songpos songlength
+					  bitrate khz err)
+	 (with-access::musicstatus %status ((%state state)
+					    (%volume volume)
+					    (%repeat repeat)
+					    (%random random)
+					    (%playlistid playlistid)
+					    (%playlistlength playlistlength)
+					    (%xfade xfade)
+					    (%song song)
+					    (%songid songid)
+					    (%songpos songpos)
+					    (%songlength songlength)
+					    (%bitrate bitrate)
+					    (%khz khz)
+					    (%err err))
+	    (set! state %state)
+	    (set! volume %volume)
+	    (set! repeat %repeat)
+	    (set! random %random)
+	    (set! playlistid %playlistid)
+	    (set! playlistlength %playlistlength)
+	    (set! xfade %xfade)
+	    (set! song %song)
+	    (set! songid %songid)
+	    (set! songpos %songpos)
+	    (set! songlength %songlength)
+	    (set! bitrate %bitrate)
+	    (set! khz %khz)
+	    (set! err %err)))
+      (mutex-unlock! %mutex)))
    
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop ::mpg123 ...                                    */
@@ -248,7 +273,8 @@
 	     (let ((p (process-output-port %process)))
 		(read/rp mpg123-grammar p o onstate onmeta onerror onvol
 		   onplaylist #f
-		   (musicstatus-playlistid %status)))
+		   (with-access::musicstatus %status (playlistid)
+		      playlistid)))
 	     (begin
 		(mutex-lock! %mutex)
 		(let ((abort %abort-loop))

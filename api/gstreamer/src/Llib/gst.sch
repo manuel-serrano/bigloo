@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
-;*    Last change :  Mon Dec 14 14:11:17 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 17:40:50 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of GSTREAMER functions                                */
 ;*=====================================================================*/
@@ -211,13 +211,13 @@
        (::string ::string) "gst_element_factory_make")
     (infix macro $gst-element-factory-name-nil::string () "(char *)0L")
     (macro $gst-element-factory-get-longname::string
-       (::$gst-element-factory) "gst_element_factory_get_longname")
+       (::$gst-element-factory) "(char *)gst_element_factory_get_longname")
     (macro $gst-element-factory-get-klass::string
-       (::$gst-element-factory) "gst_element_factory_get_klass")
+       (::$gst-element-factory) "(char *)gst_element_factory_get_klass")
     (macro $gst-element-factory-get-description::string
-       (::$gst-element-factory) "gst_element_factory_get_description")
+       (::$gst-element-factory) "(char *)gst_element_factory_get_description")
     (macro $gst-element-factory-get-author::string
-       (::$gst-element-factory) "gst_element_factory_get_author")
+       (::$gst-element-factory) "(char *)gst_element_factory_get_author")
     (macro $gst-element-factory-get-uri-protocols::pair-nil
        (::$gst-element-factory) "bgl_gst_element_factory_get_uri_protocols")
     (macro $gst-element-factory-can-sink-caps?::bool
@@ -274,9 +274,9 @@
     (macro $gst-message-get-type::$gst-message-type
        (::$gst-message) "GST_MESSAGE_TYPE")
     (macro $gst-message-get-type-name::string
-       (::$gst-message) "GST_MESSAGE_TYPE_NAME")
+       (::$gst-message) "(char *)GST_MESSAGE_TYPE_NAME")
     (macro $gst-message-get-structure::$gst-structure
-       (::$gst-message) "gst_message_get_structure")
+       (::$gst-message) "(GstStructure *)gst_message_get_structure")
     (macro $gst-message-error-string::string
        (::$gst-message) "bgl_gst_message_error_string")
     (macro $gst-message-info-string::string
@@ -486,7 +486,7 @@
     (macro $gst-pad-get-negotiated-caps::$gst-caps
        (::$gst-pad) "gst_pad_get_negotiated_caps")
     (macro $gst-pad-get-pad-template-caps::$gst-caps
-       (::$gst-pad) "gst_pad_get_pad_template_caps")
+       (::$gst-pad) "(GstCaps *)gst_pad_get_pad_template_caps")
     (macro $gst-pad-add-buffer-probe!::int
        (::$gst-pad ::procedure) "bgl_gst_pad_add_buffer_probe")
 ;*     (macro $gst-pad-add-data-probe!::int                            */
@@ -582,21 +582,21 @@
     (macro $gst-plugin::$gst-plugin
        (::$gst-object) "GST_PLUGIN")
     (macro $gst-plugin-get-name::string
-       (::$gst-plugin) "gst_plugin_get_name")
+       (::$gst-plugin) "(char *)gst_plugin_get_name")
     (macro $gst-plugin-get-description::string
-       (::$gst-plugin) "gst_plugin_get_description")
+       (::$gst-plugin) "(char *)gst_plugin_get_description")
     (macro $gst-plugin-get-filename::string
-       (::$gst-plugin) "gst_plugin_get_filename")
+       (::$gst-plugin) "(char *)gst_plugin_get_filename")
     (macro $gst-plugin-get-license::string
-       (::$gst-plugin) "gst_plugin_get_license")
+       (::$gst-plugin) "(char *)gst_plugin_get_license")
     (macro $gst-plugin-get-package::string
-       (::$gst-plugin) "gst_plugin_get_package")
+       (::$gst-plugin) "(char *)gst_plugin_get_package")
     (macro $gst-plugin-get-origin::string
-       (::$gst-plugin) "gst_plugin_get_origin")
+       (::$gst-plugin) "(char *)gst_plugin_get_origin")
     (macro $gst-plugin-get-source::string
-       (::$gst-plugin) "gst_plugin_get_source")
+       (::$gst-plugin) "(char *)gst_plugin_get_source")
     (macro $gst-plugin-get-version::string
-       (::$gst-plugin) "gst_plugin_get_version")
+       (::$gst-plugin) "(char *)gst_plugin_get_version")
     
     ;; gst-plugin-feature
     (type $gst-plugin-feature void* "GstPluginFeature *")
@@ -608,7 +608,7 @@
     (macro $gst-plugin-feature::$gst-plugin-feature
        (::$gst-object) "GST_PLUGIN_FEATURE")
     (macro $gst-plugin-feature-name::string
-       (::$gst-plugin-feature) "gst_plugin_feature_get_name")
+       (::$gst-plugin-feature) "(char *)gst_plugin_feature_get_name")
     (infix macro $gst-plugin-feature-plugin-name::string
        (::$gst-plugin-feature) "->plugin_name")
     (macro $gst-plugin-feature-set-name!::string
@@ -707,7 +707,7 @@
     (macro $gst-structure-free!::void
        (::$gst-structure) "gst_structure_free")
     (macro $gst-structure-get-name::string
-       (::$gst-structure) "gst_structure_get_name")
+       (::$gst-structure) "(char *)gst_structure_get_name")
     (macro $gst-structure-set-name!::void
        (::$gst-structure ::string) "gst_structure_set_name")
     (macro $gst-structure-property-list::pair-nil

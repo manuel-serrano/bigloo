@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 12 08:19:14 2005                          */
-;*    Last change :  Sun Apr 20 09:24:48 2008 (serrano)                */
-;*    Copyright   :  2005-08 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 19:12:22 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SOUNDCARD mixer API implementation                           */
 ;*=====================================================================*/
@@ -48,7 +48,7 @@
 	     (set! devices (map car %devices)))
 	  m))
       (else
-       (error 'mixer-open "Only supported by C back-end" m))))
+       (error "mixer-open" "Only supported by C back-end" m))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mixer-close ::soundcard ...                                      */
@@ -60,7 +60,7 @@
 	  ;; open the mixer
 	  ($close-mixer %mixer)))
       (else
-       (error 'mixer-close "Only supported by C back-end" m))))
+       (error "mixer-close" "Only supported by C back-end" m))))
 
 ;*---------------------------------------------------------------------*/
 ;*    soundcard-find-device ...                                        */
@@ -68,12 +68,14 @@
 (define (soundcard-find-device m::soundcard dev)
    (cond-expand
       (bigloo-c
-       (let ((c (assoc dev (soundcard-%devices m))))
-	  (if (pair? c)
-	      (cdr c)
-	      (error 'soundcard "Unknown device" dev))))
+       ;;;
+       (with-access::soundcard m (%devices)
+	  (let ((c (assoc dev %devices)))
+	     (if (pair? c)
+		 (cdr c)
+		 (error 'soundcard "Unknown device" dev)))))
       (else
-       (error 'soundcard-find-device "Only supported by C back-end" m))))
+       (error "soundcard-find-device" "Only supported by C back-end" m))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mixer-volume-set! ::soundcard ...                                */
@@ -81,12 +83,12 @@
 (define-method (mixer-volume-set! m::soundcard dev::bstring l::int r::int)
    (cond-expand
       (bigloo-c
-       (let ((vol (+fx (*fx 256 r) l)))
-	  ($mixer-volume-set! (soundcard-%mixer m)
-			      (soundcard-find-device m dev)
-			      vol)))
+       ;;;
+       (with-access::soundcard m (%mixer)
+	  (let ((vol (+fx (*fx 256 r) l)))
+	     ($mixer-volume-set! %mixer (soundcard-find-device m dev) vol))))
       (else
-       (error 'mixer-volume-set! "Only supported by C back-end" m))))
+       (error "mixer-volume-set!" "Only supported by C back-end" m))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mixer-volume-get ::soundcard ...                                 */
@@ -94,10 +96,10 @@
 (define-method (mixer-volume-get m::soundcard dev::bstring)
    (cond-expand
       (bigloo-c
-       (let ((vol ($mixer-volume (soundcard-%mixer m)
-				 (soundcard-find-device m dev)
-				 #t)))
-	  (values (remainderfx vol 256) (quotientfx vol 256))))
+       ;;;
+       (with-access::soundcard m (%mixer)
+	  (let ((vol ($mixer-volume %mixer (soundcard-find-device m dev) #t)))
+	     (values (remainderfx vol 256) (quotientfx vol 256)))))
       (else
-       (error 'mixer-volume-set! "Only supported by C back-end" m))))
+       (error "mixer-volume-set!" "Only supported by C back-end" m))))
 

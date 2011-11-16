@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 28 11:46:28 2005                          */
-;*    Last change :  Mon Feb 28 14:03:05 2005 (serrano)                */
-;*    Copyright   :  2005 Manuel Serrano                               */
+;*    Last change :  Mon Nov 14 17:49:24 2011 (serrano)                */
+;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C backend class definition                                   */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module backend_cvm
    (import type_type
 	   backend_backend)
+   (include "BackEnd/cvm.sch")
    (export (abstract-class cvm::backend)
 	   (class sawc::cvm)
 	   (class cgen::cvm)))

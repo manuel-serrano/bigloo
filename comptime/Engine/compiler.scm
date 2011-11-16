@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Nov  9 10:42:56 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:20:10 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -167,6 +167,10 @@
       ;; we install macros ...
       (install-initial-expander)
 
+      ;; cannot be done earlier because of modules' option
+      (unless *class-gen-accessors?*
+	 (register-srfi! 'bigloo-class-sans))
+      
       ;; we compile the module clause which leads to the
       ;; complete source code.
       (let* ((exp0     (comptime-expand/error (car src)))
@@ -176,7 +180,7 @@
 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 
-	 ;; cannot be done earlier because of modules' option
+	 ;; do it again because it might have been changed in a module option
 	 (unless *class-gen-accessors?*
 	    (register-srfi! 'bigloo-class-sans))
 	 (when (eq? *pass* 'classgen)

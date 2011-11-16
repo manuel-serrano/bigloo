@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Mon Nov  7 16:10:47 2011 (serrano)                */
+;*    Last change :  Sun Nov 13 18:55:13 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -71,6 +71,7 @@
 	   object
 	   object-sans
 	   object5
+	   object5-sans
 	   hygiene
 	   wind
 	   dsssl
@@ -315,6 +316,7 @@
 	  (if-module 'object test-object)
 	  (if-module 'object-sans test-object-sans)
 	  (if-module 'object5 test-object5)
+	  (if-module 'object5-sans test-object5-sans)
 	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)
 	  (if-module 'unicode test-unicode)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jul 13 12:23:58 2011 (serrano)                */
+#*    Last change :  Tue Nov 15 10:25:14 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -28,8 +28,6 @@ MISC_SRC_DIR 	= Misc
 PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
-DOTNET_OBJ_DIR	= objs/dotnet_s
-DOTNET_OBJ_EDIR	= objs/dotnet_es
 # The Bigloo compiler
 BIGLOO		= $(BGLBUILDBIGLOO)
 AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -66,7 +64,6 @@ else
 _C_OBJECTS	= bglalsa
 endif
 _JAVA_CLASSES	= 
-_DOTNET_OBJ	= 
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
@@ -79,24 +76,16 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
-BGL_DOTNET_OBJ	= $(_BGL_OBJECTS:%=$(DOTNET_OBJ_DIR)/%.obj)
-DOTNET_OBJ	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.obj)
-BGL_DOTNET_EOBJ	= $(DOTNET_OBJ_EDIR)/make_lib.obj
-
-DOTNET_OBJ_SRC	= $(_DOTNET_OBJ:%=$(DOTNET_OBJ_DIR)/%.cs)
-
 _WIN32_SRC	= 
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 _C_SOURCES	= $(_C_OBJECTS:%=$(C_SRC_DIR)/%.c)
 _JAVA_SOURCES	= $(_JAVA_CLASSES:%=$(JAVA_SRC_DIR)/%.java)
-_DOTNET_SOURCES	= $(_DOTNET_OBJ:%=$(DOTNET_SRC_DIR)/%.cs)
 _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 
 SOURCES		= $(_BGL_SOURCES) \
                   $(_C_SOURCES) \
-                  $(_JAVA_SOURCES) \
-                  $(_DOTNET_SOURCES)
+                  $(_JAVA_SOURCES)
 INCLUDES	= $(BIGLOO_SRC_DIR)/alsa.sch
 
 #*---------------------------------------------------------------------*/
@@ -111,7 +100,7 @@ POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm dotnet build-c build-jvm build-dotnet
+.PHONY: c jvm build-c build-jvm
 
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -123,9 +112,6 @@ build-c: api-c
 
 jvm: build-jvm
 build-jvm:
-
-dotnet: build-dotnet
-build-dotnet:
 
 $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Fri Sep 17 20:18:59 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 20:20:22 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -128,7 +128,7 @@
 			     "mailbox-folder-select ::maildir" m s)))
 		   (set! %selection path)
 		   (set! %selection-info (get-folder-info m path))
-		   (unless (folderinfo? %selection-info)
+		   (unless (isa? %selection-info folderinfo)
 		      (error "mailbox-folder-select!" "Illegal folder" path))
 		   (set! folder-selection s)
 		   (with-access::folderinfo %selection-info (count recent)
@@ -178,7 +178,8 @@
 	 (lenp (string-length parent)))
       (and (>fx lenf lenp)
 	   (substring-at? folder parent 0)
-	   (char=? (string-ref folder lenp) (maildir-%separator m)))))
+	   (with-access::maildir m (%separator)
+	      (char=? (string-ref folder lenp) %separator)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-direct-subfolder? ...                                         */
@@ -189,7 +190,8 @@
 	 (lenp (string-length parent)))
       (and (>fx lenf lenp)
 	   (substring-at? folder parent 0)
-	   (=fx (string-index-right folder (maildir-%separator m)) lenp))))
+	   (with-access::maildir m (%separator)
+	      (=fx (string-index-right folder %separator) lenp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-delete! ::maildir ...                             */
@@ -262,23 +264,24 @@
 ;*    mailbox-folder-move! ::maildir ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-folder-move! m::maildir s1::bstring s2::bstring)
-   (let ((i (string-index-right s1 (maildir-%separator m))))
-      (if i
-	  (let* ((len1 (string-length s1))
-		 (base (substring s1 i len1))
-		 (dest (string-append s2 base)))
-	     (mailbox-folder-rename! m s1 dest)
-	     (for-each (lambda (f)
-			  (when (is-subfolder? m f s1)
-			     (let* ((base (substring f i (string-length f)))
-				    (dest (string-append s2 base)))
-				(mailbox-folder-rename! m f dest))))
-		       (mailbox-folders m)))
-	  (raise
-	   (instantiate::&maildir-error
-	      (proc "mailbox-folder-move! ::maildir")
-	      (msg (format "Illegal folder name ~s " s1))
-	      (obj m))))))
+   (with-access::maildir m (%separator)
+      (let ((i (string-index-right s1 %separator)))
+	 (if i
+	     (let* ((len1 (string-length s1))
+		    (base (substring s1 i len1))
+		    (dest (string-append s2 base)))
+		(mailbox-folder-rename! m s1 dest)
+		(for-each (lambda (f)
+			     (when (is-subfolder? m f s1)
+				(let* ((base (substring f i (string-length f)))
+				       (dest (string-append s2 base)))
+				   (mailbox-folder-rename! m f dest))))
+		   (mailbox-folders m)))
+	     (raise
+		(instantiate::&maildir-error
+		   (proc "mailbox-folder-move! ::maildir")
+		   (msg (format "Illegal folder name ~s " s1))
+		   (obj m)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-subscribe! ::maildir ...                          */
@@ -322,7 +325,7 @@
 	 (lambda ()
 	    (let ((info (get-cached-folder-info
 			 m s "mailbox-folder-status ::maildir")))
-	       (when (folderinfo? info)
+	       (when (isa? info folderinfo)
 		  (with-access::folderinfo info (uids uidvalidity nextuid)
 		     (let ((messages (hashtable-size uids))
 			   (recent 0)
@@ -433,7 +436,7 @@
 (define (get-folder-info::obj m::maildir folder::bstring)
    (with-access::maildir m (%folders %mutex)
       (let ((oinfo (hashtable-get %folders folder)))
-	 (if (and (folderinfo? oinfo) (folderinfo-valid? oinfo))
+	 (if (and (isa? oinfo folderinfo) (folderinfo-valid? oinfo))
 	     oinfo
 	     (let ((pcur (make-file-name folder "cur"))
 		   (pnew (make-file-name folder "new")))
@@ -443,7 +446,8 @@
 		      (let* ((newc (length (directory->list pnew)))
 			     (curc (length (directory->list pcur)))
 			     (uidv (if oinfo
-				       (+fx 1 (folderinfo-uidvalidity oinfo))
+				       (with-access::folderinfo oinfo (uidvalidity)
+					  (+fx 1 uidvalidity))
 				       (elong->fixnum (current-seconds))))
 			     (ninfo (instantiate::folderinfo
 				       (time (file-modification-time pcur))
@@ -474,15 +478,15 @@
    (with-access::maildir m (%selection %selection-info %mutex)
       (with-lock %mutex
 	 (lambda ()
-	    (unless (folderinfo? %selection-info)
+	    (unless (isa? %selection-info folderinfo)
 	       (raise (instantiate::&maildir-error
 			 (proc "mailbox-folder-uids ::maildir")
 			 (msg "No folder selected")
 			 (obj m))))
 	    (unless (folderinfo-valid? %selection-info)
 	       (set! %selection-info (get-folder-info m %selection)))
-	    (hashtable-map (folderinfo-uids %selection-info)
-			   (lambda (k m) k))))))
+	    (with-access::folderinfo %selection-info (uids)
+	       (hashtable-map uids (lambda (k m) k)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-folder-dates ::maildir ...                               */
@@ -502,7 +506,7 @@
    (with-access::maildir m (%selection %selection-info %mutex)
       (with-lock %mutex
 	 (lambda ()
-	    (unless (folderinfo? %selection-info)
+	    (unless (isa? %selection-info folderinfo)
 	       (raise (instantiate::&maildir-error
 			 (proc "mailbox-folder-delete-messages ::maildir")
 			 (msg "No folder selected")
@@ -523,7 +527,7 @@
       (with-lock %mutex
 	 (lambda ()
 	    (let ((info (get-folder-info m %selection)))
-	       (if (folderinfo? info)
+	       (if (isa? info folderinfo)
 		   (with-access::folderinfo info (uids)
 		      (hashtable-map uids proc))
 		   '()))))))
@@ -582,7 +586,7 @@
    (with-access::maildir m (%selection %selection-info %mutex)
       (with-lock %mutex
 	 (lambda ()
-	    (unless (folderinfo? %selection-info)
+	    (unless (isa? %selection-info folderinfo)
 	       (raise (instantiate::&maildir-error
 			 (proc "mailbox-folder-header-fields ::maildir")
 			 (msg "No folder selected")
@@ -616,22 +620,23 @@
 ;*    get-folder-message ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (get-folder-message mbox folder uid)
-   (let ((info (with-lock (maildir-%mutex mbox)
-		  (lambda ()
-		     (get-folder-info mbox folder)))))
-      (if (not info)
-	  (raise (instantiate::&maildir-error
-		    (proc 'get-folder-message)
-		    (msg (format "Folder ~s doest not exist!" folder))
-		    (obj mbox)))
-	  (get-folder-info-message mbox info uid))))
+   (with-access::maildir mbox (%mutex)
+      (let ((info (with-lock %mutex
+		     (lambda ()
+			(get-folder-info mbox folder)))))
+	 (if (not info)
+	     (raise (instantiate::&maildir-error
+		       (proc 'get-folder-message)
+		       (msg (format "Folder ~s doest not exist!" folder))
+		       (obj mbox)))
+	     (get-folder-info-message mbox info uid)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    get-message-path ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (get-message-path proc m uid)
    (with-access::maildir m (%selection %selection-info)
-      (if (not (folderinfo? %selection-info))
+      (if (not (isa? %selection-info folderinfo))
 	  (raise (instantiate::&maildir-error
 		    (proc 'get-message-path)
 		    (msg "No folder selected")
@@ -786,7 +791,7 @@
 	 (with-lock %mutex
 	    (lambda ()
 	       (cond
-		  ((not (folderinfo? %selection-info))
+		  ((not (isa? %selection-info folderinfo))
 		   (raise (instantiate::&maildir-error
 			     (proc "mailbox-message-flags-set! ::maildir")
 			     (msg "No folder selected")
@@ -809,7 +814,7 @@
 	 (with-lock %mutex
 	    (lambda ()
 	       (cond
-		  ((not (folderinfo? %selection-info))
+		  ((not (isa? %selection-info folderinfo))
 		   (raise (instantiate::&maildir-error
 			     (proc "mailbox-message-delete! ::maildir")
 			     (msg "No folder selected")
@@ -836,7 +841,7 @@
 	    (lambda ()
 	       (let ((dest (make-file-path dir "cur" file)))
 		  (cond
-		     ((not (folderinfo? %selection-info))
+		     ((not (isa? %selection-info folderinfo))
 		      (raise (instantiate::&maildir-error
 				(proc "mailbox-message-move! ::maildir")
 				(msg "No folder selected")
@@ -849,10 +854,11 @@
 		     (else
 		      (with-access::maildir m (%folders %mutex)
 			 (let ((oinfo (hashtable-get %folders folder)))
-			    (when (folderinfo? oinfo)
+			    (when (isa? oinfo folderinfo)
 			       (invalidate-folderinfo! oinfo))))
 		      (update-folderinfo! %selection %selection-info uid #f)
-		      (folderinfo-nextuid %selection-info)))))))))
+		      (with-access::folderinfo %selection-info (nextuid)
+			 nextuid)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    genfilename ...                                                  */

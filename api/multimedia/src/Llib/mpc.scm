@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Sep  8 08:42:19 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:52:55 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -58,7 +58,7 @@
    (let ((th (current-thread))
 	 (st (mutex-state m)))
       (or (and (not th) (eq? st #unspecified))
-	  (and (thread? th) (eq? (mutex-state m) th)))))
+	  (and (isa? th thread) (eq? (mutex-state m) th)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpc-skip-line ...                                                */
@@ -97,9 +97,10 @@
       (with-access::musicstatus status (err state)
 	 (set! state 'error)
 	 (cond
-	    ((&error? e)
-	     (set! err (&error-msg e)))
-	    ((&exception? e)
+	    ((isa? e &error)
+	     (with-access::&error e (msg)
+		(set! err msg)))
+	    ((isa? e &exception)
 	     (set! err (with-error-to-string (lambda () (exception-notify e)))))
 	    (else
 	     (set! err e)))
@@ -111,9 +112,9 @@
 ;*    exec ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (exec mpc::mpc cmd::bstring)
-   (with-access::mpc mpc (%mutex)
+   (with-access::mpc mpc (%mutex %socket)
       [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
-      (let ((po (socket-output (mpc-%socket mpc))))
+      (let ((po (socket-output %socket)))
 	 (when debug-mpc
 	    (tprint "display-string cmd=[" cmd "]"))
 	 (display-string cmd po)
@@ -269,8 +270,9 @@
 ;*---------------------------------------------------------------------*/
 (define (ok-parser mpc::mpc)
    [assert (mpc) (mutex-locked? (mpc-%mutex mpc))]
-   (let ((l (read-line (socket-input (mpc-%socket mpc)))))
-      (and (string? l) (substring-at? l "OK" 0))))
+   (with-access::mpc mpc (%socket)
+      (let ((l (read-line (socket-input %socket))))
+	 (and (string? l) (substring-at? l "OK" 0)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    music-close ::mpc ...                                            */
@@ -319,16 +321,17 @@
 (define-method (music-playlist-get mpc::mpc)
    
    (define (qualify-path s)
-      (if (or (substring-at? s "http:" 0) (substring-at? s "https:" 0))
-	  s
-	  (string-append (mpc-prefix mpc) s)))
+      (with-access::mpc mpc (prefix)
+	 (if (or (substring-at? s "http:" 0) (substring-at? s "https:" 0))
+	     s
+	     (string-append prefix s))))
    
    (define mpc-playlist-grammar
       (regular-grammar ()
 	 ((: (+ digit) #\:)
 	  (read/rp *mpc-string-grammar* (the-port)))
 	 ("OK\n"
-	  'ok)
+	    'ok)
 	 (else
 	  ;; there is an error, flush out everything and raises the error
 	  (let ((exc (instantiate::&io-parse-error
@@ -342,20 +345,22 @@
 		       (loop))))))))
    
    (define (playlist-parser mpc)
-      (let ((ip (socket-input (mpc-%socket mpc))))
-	 (let loop ((ser '()))
-	    (let ((l (read/rp mpc-playlist-grammar ip)))
-	       (if (eq? l 'ok)
-		   (map! qualify-path (reverse! ser))
-		   (loop (cons l ser)))))))
+      (with-access::mpc mpc (%socket)
+	 (let ((ip (socket-input %socket)))
+	    (let loop ((ser '()))
+	       (let ((l (read/rp mpc-playlist-grammar ip)))
+		  (if (eq? l 'ok)
+		      (map! qualify-path (reverse! ser))
+		      (loop (cons l ser))))))))
    
-   (with-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (set-error! mpc (mpc-%status mpc) e)
-	       '())
-	    (mpc-cmd mpc "playlist" playlist-parser)))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (set-error! mpc %status e)
+		  '())
+	       (mpc-cmd mpc "playlist" playlist-parser))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-add! ::mpc ...                                    */
@@ -363,7 +368,7 @@
 (define-method (music-playlist-add! mpc::mpc s)
    (call-next-method)
    (with-access::mpc mpc (%mutex prefix)
-      (with-timed-lock (mpc-%mutex mpc)
+      (with-timed-lock %mutex
 	 (lambda ()
 	    (let ((s (if (and (string? prefix) (substring-at? s prefix 0))
 			 (substring s (string-length prefix) (string-length s))
@@ -374,17 +379,19 @@
 ;*    music-playlist-delete! ::mpc ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-delete! mpc::mpc n)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc (string-append "delete " (integer->string n)) ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc (string-append "delete " (integer->string n)) ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-clear! ::mpc ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-clear! mpc::mpc)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "clear" ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc "clear" ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status-sans-lock! ...                               */
@@ -439,8 +446,9 @@
 	 ((: (+ digit) ":")
 	  (let* ((tm (the-fixnum))
 		 (du (read/rp *mpc-integer-grammar* (the-port))))
-	     (musicstatus-songpos-set! status tm)
-	     (musicstatus-songlength-set! status du)))
+	     (with-access::musicstatus status (songpos songlength)
+		(set! songpos tm)
+		(set! songlength du))))
 	 (else
 	  (raise
 	   (instantiate::&io-parse-error
@@ -456,24 +464,27 @@
 	  ;; song
 	  (let ((k (the-keyword)))
 	     (if (eq? k song:)
-		 (let ((song (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-song-set! status song))
+		 (let ((s (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (song)
+		       (set! song s)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "s" (+ alpha) "d" #\:)
 	  ;; songid
 	  (let ((k (the-keyword)))
 	     (if (eq? k songid:)
-		 (let ((songid (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-songid-set! status songid))
+		 (let ((sid (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (songid)
+		       (set! songid sid)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "st" (+ alpha) #\:)
 	  ;; state
 	  (let ((k (the-keyword)))
 	     (if (eq? k state:)
-		 (let ((state (read/rp mpc-symbol-grammar (the-port))))
-		    (musicstatus-state-set! status state))
+		 (let ((s (read/rp mpc-symbol-grammar (the-port))))
+		    (with-access::musicstatus status (state)
+		       (set! state s)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "t" (+ alpha) #\:)
@@ -487,8 +498,9 @@
 	  ;; volume
 	  (let ((k (the-keyword)))
 	     (if (eq? k volume:)
-		 (let ((volume (read/rp *mpc-integer-grammar* (the-port)))) 
-		    (musicstatus-volume-set! status volume))
+		 (let ((v (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (volume)
+		       (set! volume v)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "p" (+ alpha) "h" #\:)
@@ -496,7 +508,8 @@
 	  (let ((k (the-keyword)))
 	     (if (eq? k playlistlength:)
 		 (let ((plen (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-playlistlength-set! status plen))
+		    (with-access::musicstatus status (playlistlength)
+		       (set! playlistlength plen)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "p" (+ alpha) "t" #\:)
@@ -504,83 +517,93 @@
 	  (let ((k (the-keyword)))
 	     (if (eq? k playlist:)
 		 (let ((pid (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-playlistid-set! status pid))
+		    (with-access::musicstatus status (playlistid)
+		       (set! playlistid pid)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "e" (+ alpha) #\:)
 	  ;; error
 	  (let ((k (the-keyword)))
 	     (if (eq? k error:)
-		 (let ((err (read/rp mpc-value-grammar (the-port))))
-		    (musicstatus-err-set! status err))
+		 (let ((e (read/rp mpc-value-grammar (the-port))))
+		    (with-access::musicstatus status (err)
+		       (set! err e)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "b" (+ alpha) #\:)
 	  ;; bitrate
 	  (let ((k (the-keyword)))
 	     (if (eq? k bitrate:)
-		 (let ((bitrate (read (the-port))))
-		    (musicstatus-bitrate-set! status bitrate))
+		 (let ((brate (read (the-port))))
+		    (with-access::musicstatus status (bitrate)
+		       (set! bitrate brate)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "a" (+ alpha) #\:)
 	  ;; audio
 	  (let ((k (the-keyword)))
 	     (if (eq? k audio:)
-		 (let ((khz (read/rp mpc-khz-grammar (the-port))))
-		    (musicstatus-khz-set! status khz))
+		 (let ((k (read/rp mpc-khz-grammar (the-port))))
+		    (with-access::musicstatus status (khz)
+		       (set! khz k)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "x" (+ alpha) #\:)
 	  ;; xfade
 	  (let ((k (the-keyword)))
 	     (if (eq? k xfade:)
-		 (let ((xfade (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-xfade-set! status xfade))
+		 (let ((x (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (xfade)
+		       (set! xfade x)))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "ra" (+ alpha) #\:)
 	  ;; random
 	  (let ((k (the-keyword)))
 	     (if (eq? k random:)
-		 (let ((random (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-random-set! status (=fx random 1)))
+		 (let ((r (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (random)
+		       (set! random (=fx r 1))))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: "re" (+ alpha) #\:)
 	  ;; repeat
 	  (let ((k (the-keyword)))
 	     (if (eq? k repeat:)
-		 (let ((repeat (read/rp *mpc-integer-grammar* (the-port))))
-		    (musicstatus-repeat-set! status (=fx repeat 1)))
+		 (let ((r (read/rp *mpc-integer-grammar* (the-port))))
+		    (with-access::musicstatus status (repeat)
+		       (set! repeat (=fx r 1))))
 		 (read/rp *mpc-ignore-grammar* (the-port)))
 	     (ignore)))
 	 ((: (+ alpha) #\:)
 	  (read/rp *mpc-ignore-grammar* (the-port))
 	  (ignore))
 	 ((: "ACK " (+ all))
-	  (musicstatus-err-set! status (the-string))
+	  (with-access::musicstatus status (err)
+	     (set! err (the-string)))
 	  (ignore))
 	 ((+ #\Newline)
 	  (ignore))
 	 (else
 	  ;; a parsing error
-	  (musicstatus-song-set! status 0)
-	  (musicstatus-songid-set! status 0)
-	  (musicstatus-playlistlength-set! status 0)
-	  (musicstatus-songpos-set! status 0)
-	  (musicstatus-songlength-set! status 0)
-	  (musicstatus-khz-set! status 0)
-	  (musicstatus-bitrate-set! status 0)
-	  (if (eof-object? (the-failure))
-	      (begin
-		 (musicstatus-state-set! status 'eof)
-		 (unless (string? (musicstatus-err status))
-		    (musicstatus-err-set! status "Illegal end-of-file")))
-	      (begin
-		 (musicstatus-state-set! status 'error)
-		 (unless (string? (musicstatus-err status))
-		    (musicstatus-err-set! status "Parsing error")))))))
+	  (with-access::musicstatus status (song songid playlistlength songpos
+					      songlength khz bitrate state err)
+	     (set! song 0)
+	     (set! songid 0)
+	     (set! playlistlength 0)
+	     (set! songpos 0)
+	     (set! songlength 0)
+	     (set! khz 0)
+	     (set! bitrate 0)
+	     (if (eof-object? (the-failure))
+		 (begin
+		    (set! state 'eof)
+		    (unless (string? err)
+		       (set! err "Illegal end-of-file")))
+		 (begin
+		    (set! state 'error)
+		    (unless (string? err)
+		       (set! err "Parsing error"))))))))
    
    (define (parse ip status)
       (with-access::musicstatus status (songpos songlength bitrate khz err)
@@ -611,23 +634,24 @@
 ;*    music-update-status! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (music-update-status! mpc::mpc status::musicstatus)
-   (with-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-access::musicstatus status (state)
-	    (unless (eq? state 'eof)
-	       (with-handler
-		  (lambda (e)
-		     (set-error! mpc status e))
-		  ;; first ping to check if the connection is still open
-		  (let loop ((retry #t))
-		     (cond
-			((mpc-cmd mpc "ping" ok-parser)
-			 ;; it is still open
-			 (music-update-status-sans-lock! mpc status))
-			(retry
-			 ;; it is apparently closed, try to re-open it once
-			 (music-reset-error! mpc)
-			 (loop #f))))))))))
+   (with-access::mpc mpc (%mutex)
+      (with-lock %mutex
+	 (lambda ()
+	    (with-access::musicstatus status (state)
+	       (unless (eq? state 'eof)
+		  (with-handler
+		     (lambda (e)
+			(set-error! mpc status e))
+		     ;; first ping to check if the connection is still open
+		     (let loop ((retry #t))
+			(cond
+			   ((mpc-cmd mpc "ping" ok-parser)
+			    ;; it is still open
+			    (music-update-status-sans-lock! mpc status))
+			   (retry
+			      ;; it is apparently closed, try to re-open it once
+			      (music-reset-error! mpc)
+			      (loop #f)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-status ...                                                 */
@@ -674,20 +698,22 @@
 	      (obj (parse-error-msg (the-failure) (the-port))))))))
    
    (define (music-song-parser mpc)
-      (let ((ip (socket-input (mpc-%socket mpc))))
-	 (let loop ((ser '()))
-	    (let ((l (read/rp mpc-song-grammar ip)))
-	       (if (eq? l 'ok)
-		   (reverse! ser)
-		   (loop (cons l ser)))))))
+      (with-access::mpc mpc (%socket) 
+	 (let ((ip (socket-input %socket)))
+	    (let loop ((ser '()))
+	       (let ((l (read/rp mpc-song-grammar ip)))
+		  (if (eq? l 'ok)
+		      (reverse! ser)
+		      (loop (cons l ser))))))))
    
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (set-error! mpc (mpc-%status mpc) e)
-	       0)
-	    (mpc-cmd mpc "currentsong" music-song-parser)))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (set-error! mpc %status e)
+		  0)
+	       (mpc-cmd mpc "currentsong" music-song-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-time ::mpc ...                                             */
@@ -729,24 +755,26 @@
 	      (obj (parse-error-msg (the-failure) (the-port))))))))
 
    (define (music-time-parser mpc)
-      (let ((ip (socket-input (mpc-%socket mpc))))
-	 (let loop ((tm 0))
-	    (let ((l (read/rp mpc-status-time-grammar ip)))
-	       (cond
-		  ((integer? l)
-		   (loop l))
-		  ((eq? l 'ok)
-		   tm)
-		  (else
-		   (loop tm)))))))
+      (with-access::mpc mpc (%socket) 
+	 (let ((ip (socket-input %socket)))
+	    (let loop ((tm 0))
+	       (let ((l (read/rp mpc-status-time-grammar ip)))
+		  (cond
+		     ((integer? l)
+		      (loop l))
+		     ((eq? l 'ok)
+		      tm)
+		     (else
+		      (loop tm))))))))
    
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (set-error! mpc (mpc-%status mpc) e)
-	       0)
-	    (mpc-cmd mpc "status" music-time-parser)))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (set-error! mpc %status e)
+		  0)
+	       (mpc-cmd mpc "status" music-time-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-meta ...                                                   */
@@ -764,102 +792,113 @@
 	  '())))
 	 
    (define (currentsong-parser mpc)
-      (let ((ip (socket-input (mpc-%socket mpc))))
-	 (read/rp mpc-meta-grammar ip)))
+      (with-access::mpc mpc (%socket) 
+	 (let ((ip (socket-input %socket)))
+	    (read/rp mpc-meta-grammar ip))))
    
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (tprint "e=" e)
-	       (set-error! mpc (mpc-%status mpc) e)
-	       '())
-	    (mpc-cmd mpc "currentsong" currentsong-parser)))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (tprint "e=" e)
+		  (set-error! mpc %status e)
+		  '())
+	       (mpc-cmd mpc "currentsong" currentsong-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play mpc::mpc . song)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (let ((cmd (if (null? song) "play" (format "play ~a" (car song)))))
-	    (mpc-cmd mpc cmd ok-parser)))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (let ((cmd (if (null? song) "play" (format "play ~a" (car song)))))
+	       (mpc-cmd mpc cmd ok-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek mpc::mpc ntime::obj . nsong)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (set-error! mpc (music-%status mpc) e))
-	    (music-update-status-sans-lock! mpc (music-%status mpc)))
-	 (with-access::musicstatus (music-%status mpc) (song songpos)
-	    (let ((song (if (null? nsong) song (car nsong)))
-		  (time (if (fixnum? ntime)
-			    ntime
-			    (+ (if (pair? songpos) (car songpos) songpos)
-			       (flonum->fixnum ntime)))))
-	       (mpc-cmd mpc (format "seek ~a ~a" song time) ok-parser))))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (set-error! mpc %status e))
+	       (music-update-status-sans-lock! mpc %status))
+	    (with-access::musicstatus %status (song songpos)
+	       (let ((song (if (null? nsong) song (car nsong)))
+		     (time (if (fixnum? ntime)
+			       ntime
+			       (+ (if (pair? songpos) (car songpos) songpos)
+				  (flonum->fixnum ntime)))))
+		  (mpc-cmd mpc (format "seek ~a ~a" song time) ok-parser)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop mpc::mpc)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "stop" ok-parser)
-	 (mpc-cmd mpc "clearerror" ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc "stop" ok-parser)
+	    (mpc-cmd mpc "clearerror" ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::mpc ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause mpc::mpc)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "pause" ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc "pause" ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-next ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-next mpc::mpc)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "next" ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc "next" ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-prev ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-prev mpc::mpc)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc "previous" ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc "previous" ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-crossfade ::mpc ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (music-crossfade mpc::mpc sec::int)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (let ((cmd (string-append "crossfade " (integer->string sec))))
-	    (mpc-cmd mpc cmd ok-parser)))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (let ((cmd (string-append "crossfade " (integer->string sec))))
+	       (mpc-cmd mpc cmd ok-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-random-set! ::mpc ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (music-random-set! mpc::mpc flag::bool)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc (if "random 1" "random 0") ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc (if "random 1" "random 0") ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-repeat-set! ::mpc ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (music-repeat-set! mpc::mpc flag::bool)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (mpc-cmd mpc (if "repeat 1" "repeat 0") ok-parser))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (mpc-cmd mpc (if "repeat 1" "repeat 0") ok-parser)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::mpc ...                                       */
@@ -886,31 +925,34 @@
 	      (obj (parse-error-msg (the-failure) (the-port))))))))
 
    (define (get-volume-parser mpc)
-      (let ((ip (socket-input (mpc-%socket mpc))))
-	 (let loop ((tm 0))
-	    (let ((l (read/rp mpc-status-volume-grammar ip)))
-	       (cond
-		  ((integer? l)
-		   (loop l))
-		  ((eq? l 'ok)
-		   tm)
-		  (else
-		   (loop tm)))))))
+      (with-access::mpc mpc (%socket) 
+	 (let ((ip (socket-input %socket)))
+	    (let loop ((tm 0))
+	       (let ((l (read/rp mpc-status-volume-grammar ip)))
+		  (cond
+		     ((integer? l)
+		      (loop l))
+		     ((eq? l 'ok)
+		      tm)
+		     (else
+		      (loop tm))))))))
    
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (with-handler
-	    (lambda (e)
-	       (set-error! mpc (mpc-%status mpc) e)
-	       0)
-	    (mpc-cmd mpc "status" get-volume-parser)))))
+   (with-access::mpc mpc (%mutex %status)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (with-handler
+	       (lambda (e)
+		  (set-error! mpc %status e)
+		  0)
+	       (mpc-cmd mpc "status" get-volume-parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-set! ::mpc ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! mpc::mpc vol)
-   (with-timed-lock (mpc-%mutex mpc)
-      (lambda ()
-	 (let ((cmd (string-append "setvol " (integer->string vol))))
-	    (mpc-cmd mpc cmd ok-parser)))))
+   (with-access::mpc mpc (%mutex)
+      (with-timed-lock %mutex
+	 (lambda ()
+	    (let ((cmd (string-append "setvol " (integer->string vol))))
+	       (mpc-cmd mpc cmd ok-parser))))))
    

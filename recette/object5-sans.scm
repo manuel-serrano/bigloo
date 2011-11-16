@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Sat Nov 12 20:14:01 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 08:58:44 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
@@ -13,7 +13,6 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object5-sans
-   (option (set! *class-gen-accessors?* #f))
    (import  (main "main.scm"))
    (include "test.sch")
    (export (test-object5-sans))
@@ -145,11 +144,16 @@
 				(with-access::object5-sans z (z)
 				   z)))
 	 4)
-   (test "-nil" (eval '(let ((o (instantiate::object6-sans)))
-			  (eq? (object6-rec o) (object6-nil))))
+   (test "-nil.1" (let ((o (instantiate::object6-sans)))
+		     (with-access::object6-sans o (rec)
+			(eq? rec (class-nil object6-sans))))
+      #t)
+   (test "-nil.2" (eval '(let ((o (instantiate::object6-sans)))
+			  (with-access::object6-sans o (rec)
+			     (eq? rec (class-nil object6-sans)))))
 	 #t)
-   (test "-nil" (is-a? (instantiate::object8-sans (value 0)) object8-sans) #t)
-   (test "-nil" (is-a? (eval '(instantiate::object8-sans (value 0))) object8-sans) #t)
+   (test "-nil.3" (is-a? (instantiate::object8-sans (value 0)) object8-sans) #t)
+   (test "-nil.4" (is-a? (eval '(instantiate::object8-sans (value 0))) object8-sans) #t)
    (eval '(define-generic (show o) 1))
    (eval '(define-generic (show2 o) 0))
    (eval '(define-generic (show3 o . p) (apply + p)))

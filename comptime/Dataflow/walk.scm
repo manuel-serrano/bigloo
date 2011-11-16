@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Thu Nov 10 07:05:09 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:06:33 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -16,7 +16,8 @@
 ;*---------------------------------------------------------------------*/
 (module dataflow_walk
    (include "Engine/pass.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Dataflow/walk.sch")
    (import  tools_error
 	    tools_shape
 	    type_type

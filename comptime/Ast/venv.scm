@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed May  4 17:40:47 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 18:23:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -349,6 +349,7 @@
 	      (error-rebind-global! old src)))
 	  (let ((bucket (hashtable-get *Genv* id))
 		(new (instantiate::global
+			(type *_*)
 			(module module)
 			(jvm-type-name (if (eq? import 'eval)
 					   "eval"

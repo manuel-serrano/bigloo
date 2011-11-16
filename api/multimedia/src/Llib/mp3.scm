@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 25 08:37:41 2007                          */
-;*    Last change :  Tue Jun 28 11:56:53 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:25:23 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 info extractor                                               */
@@ -38,16 +38,6 @@
 (define (frame-duration len bitrate)
    (/fl (fixnum->flonum (elong->fixnum len))
       (*fl (fixnum->flonum bitrate) 125.)))
-
-;*---------------------------------------------------------------------*/
-;*    mp3frame-same-constant? ...                                      */
-;*---------------------------------------------------------------------*/
-(define (mp3frame-same-constant? f1 f2)
-   (and #f
-	(=fl (mp3frame-version f1) (mp3frame-version f2))
-	(=fx (mp3frame-layer f1) (mp3frame-layer f2))
-	(=fx (mp3frame-crc f1) (mp3frame-crc f2))
-	(=fx (mp3frame-samplerate f1) (mp3frame-samplerate f2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-ref-byte ...                                                */
@@ -111,7 +101,7 @@
 			   (crc (byte-bits b1 0 0))
 			   (bitbrate (byte-bits b2 4 7))
 			   (bitsrate (byte-bits b2 2 3))
-			   (padding (byte-bits b2 1 1))
+			   (pding (byte-bits b2 1 1))
 			   (bitchannels (byte-bits b3 6 7)))
 		       (if (or (=fx bitlayer 00)
 			       (=fx bitsrate 3)
@@ -127,22 +117,31 @@
 							   #(44100 48000 32000 0))
 					       bitver)
 					    bitsrate))
-				  (len (frame-length bitlayer bitver brate srate padding)))
+				  (len (frame-length bitlayer bitver brate srate pding)))
 			      (if (<elong len #e21)
 				  (loop (+elong i 1))
-				  (begin
-				     (mp3frame-offset-set! frame i)
-				     (mp3frame-version-set! frame
+				  (with-access::mp3frame frame (offset
+								  version
+								  layer
+								  crc
+								  bitrate
+								  samplerate
+								  padding
+								  channels
+								  length
+								  duration)
+				     (set! offset i)
+				     (set! version
 					(vector-ref '#(2.5 0. 2. 1.) bitver))
-				     (mp3frame-layer-set! frame layer)
-				     (mp3frame-crc-set! frame crc)
-				     (mp3frame-bitrate-set! frame brate)
-				     (mp3frame-samplerate-set! frame srate)
-				     (mp3frame-padding-set! frame padding)
-				     (mp3frame-channels-set! frame
+				     (set! layer layer)
+				     (set! crc crc)
+				     (set! bitrate brate)
+				     (set! samplerate srate)
+				     (set! padding pding)
+				     (set! channels
 					(vector-ref '#(2 2 1 1) bitchannels))
-				     (mp3frame-length-set! frame len)
-				     (mp3frame-duration-set! frame
+				     (set! length len)
+				     (set! duration
 					(frame-duration len brate))
 				     frame)))))
 		    (loop (+elong i 1)))))

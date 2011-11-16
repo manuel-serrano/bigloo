@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov 11 06:45:11 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 09:41:49 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -104,7 +104,7 @@
 		    (else
 		     (error (car s) "Illegal form" x))))))))
       (else
-       (error #f "Illegal with-access" x))))
+       (error "with-access" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
@@ -122,7 +122,7 @@
 			 (and (pair? cell) (eq? (cdr cell) i))))
 		 (let ((slot (find-class-slot class (id var))))
 		    (if (not slot)
-			(error var "No such field" form)
+			(error (id var) "No such field" form)
 			(if *class-gen-accessors?*
 			    (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
 			    (field-access i (id var)))))
@@ -134,7 +134,7 @@
 			    (and (pair? cell) (eq? (cdr cell) i))))
 		    (let ((slot (find-class-slot class (id var))))
 		       (if (not slot)
-			   (error var "No such field" form)
+			   (error (id var) "No such field" form)
 			   (object-epairify
 			      (if *class-gen-accessors?*
 				  (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
@@ -157,39 +157,30 @@
        (let ((class (type-of-id instantiate (find-location x))))
 	  (cond
 	     ((not (tclass? class))
-	      (error #f (format "Illegal ~a" instantiate) x))
+	      (error instantiate "Illegal form" x))
 	     ((tclass-abstract? class)
-	      (error #f "Abstract classes can't be instantiated" x))
+	      (error instantiate "Abstract classes can't be instantiated" x))
 	     (else
 	      (replace! x (instantiate->make x class e))))))
       (else
-       (error #f "Illegal form" x))))
+       (error "instantiate" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate->make ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (instantiate->make form class e)
+(define (instantiate->make x class e)
    (if *class-gen-accessors?*
        (let ((make-name (class-make class)))
-	  (instantiate->fill-accessors form
+	  (instantiate->fill-accessors x
 	     class
 	     (lambda (largs)
-		(if (epair? form)
-		    (econs make-name largs (cer form))
+		(if (epair? x)
+		    (econs make-name largs (cer x))
 		    (cons make-name largs)))
 	     e))
-       (instantiate->allocate form class e)))
-
-;*---------------------------------------------------------------------*/
-;*    instantiate->allocate ...                                        */
-;*---------------------------------------------------------------------*/
-(define (instantiate->allocate x class e)
-   (let ((o (if (wide-class? class)
-		(let ((super (tclass-its-super class)))
-		   (classgen-widen-expr class (classgen-allocate-expr super)))
-		(classgen-allocate-expr class))))
-      (instantiate->fill-sans (car x) (cdr x) class
-	 (tclass-slots class) o x e)))
+       (let ((o (allocate-expr class)))
+	  (instantiate->fill-sans (car x) (cdr x) class
+	     (tclass-slots class) o x e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate->fill-sans ...                                       */
@@ -222,7 +213,7 @@
 			 (set-car! pval #t)
 			 (set-cdr! pval (object-epairify value p))))
 		     (else
-		      (error #f (format "Illegal ~a argument" op) p)))
+		      (error op "Illegal argument \"~a\"" x)))
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 (vector->list vargs)))
@@ -235,10 +226,8 @@
       (for-each (lambda (a s)
 		   (unless (or (car a) (slot-virtual? s))
 		      ;; value missin
-		      (error #f
-			 (format "Illegal ~a, missing value for field \"~a\""
-			    op
-			    (slot-id s))
+		      (error op
+			 (format "Missing value for field \"~a\"" (slot-id s))
 			 x)))
 	 args slots)
       ;; allocate the object and set the fields,
@@ -252,15 +241,19 @@
 				 `(set! ,(field-access new id)
 				     ,v))))
 	       slots args)
+	  ;; constructors
+	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
-				      (not (slot-read-only? slot)))
+				      (not (slot-read-only? slot))
+				      (car val))
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 `(set! ,(field-access new id)
 				     ,v))))
 	       slots args)
+	  ;; return the new instance
 	  ,new)))
    
 ;*---------------------------------------------------------------------*/
@@ -271,7 +264,7 @@
       ((co-instantiate ?bindings . ?body)
        (replace! x (co-instantiate->let bindings body x e)))
       (else
-       (error #f "Illegal co-instantiate" x))))
+       (error "co-instantiate" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    co-instantiate->let ...                                          */
@@ -294,23 +287,17 @@
 		 (kclass (cdr id-type)))
 	     (cond
 		((not (eq? (car id-type) 'instantiate))
-		 (error #f
-		    "co-instantiate:Illegal binding"
-		    bdg))
+		 (error instantiate "Illegal binding" bdg))
 		((not (tclass? kclass))
-		 (error #f
-		    "co-instantiate:Illegal class"
-		    bdg))
+		 (error instantiate "Illegal class" bdg))
 		((tclass-abstract? kclass)
-		 (error #f
-		    "co-instantiate:Abstract classes can't be instantiated"
+		 (error instantiate
+		    "Abstract classes can't be instantiated"
 		    bdg))
 		(else
 		 kclass))))
 	 (else
-	  (error #f
-	     "co-instantiate:Illegal binding"
-	     bdg))))
+	  (error "co-instantiate" "Illegal binding" bdg))))
    
    (let ((loc (find-location x))
 	 (vars (map (lambda (bdg)
@@ -324,19 +311,15 @@
 			      (if (or (eq? t (get-default-type))
 				      (eq? t klass))
 				  (list id klass expr)
-				  (error #f
-				     "co-instantiate::Illegal variable type"
-				     bdg))))
+				  (error (car x) "Illegal variable type" bdg))))
 			  (else
-			   (error #f
-			      "co-instantiate:Illegal binding"
-			      bdg))))
+			   (error (car x) "Illegal binding" bdg))))
 		  bindings)))
       `(let ,(map (lambda (var)
 		     (let ((id (car var))
 			   (klass (cadr var)))
 			`(,(make-typed-ident id (type-id klass))
-			  ,(classgen-allocate-expr klass))))
+			  ,(allocate-expr klass))))
 		vars)
 	  ,@(map (lambda (var)
 		    (let ((id (car var))
@@ -358,16 +341,13 @@
 	      (class (cdr id-type)))
 	  (cond
 	     ((not (tclass? class))
-	      (error #f
-		     (string-append "duplicate:Illegal class type:"
-				    (symbol->string id))
-		     x))
+	      (error duplicate (format "Illegal class type \"~a\"" id) x))
 	     ((tclass-abstract? class)
-	      (error #f "Abstract classes can't be duplicated" x))
+	      (error duplicate "Abstract classes can't be duplicated" x))
 	     (else
-	      (replace! x (e (duplicate->make class dup prov x e) e))))))
+	      (replace! x (duplicate->make class dup prov x e))))))
       (else
-       (error #f "Illegal duplicate" x))))
+       (error "duplicate" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate->make ...                                              */
@@ -380,7 +360,7 @@
 ;*---------------------------------------------------------------------*/
 (define (duplicate->make class duplicated provided x e)
    (if *class-gen-accessors?*
-       (duplicate->make-accessors x class duplicated provided e)
+       (e (duplicate->make-accessors x class duplicated provided e) e)
        (duplicate->make-sans class duplicated provided x e)))
 
 ;*---------------------------------------------------------------------*/
@@ -402,7 +382,7 @@
 			    i
 			    (cons #t (object-epairify value p)))))
 		     (else
-		      (error #f "Illegal duplicate" x)))
+		      (error (car x) "Illegal form" x)))
 		  (loop (cdr provided)))))
 	 ;; we collect the duplicated values
 	 (let loop ((i 0)
@@ -429,25 +409,38 @@
 	  (args (collect-slot-values slots dupvar)))
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
-      `(let ((,tdupvar ,duplicated)
-	     (,tnew ,(classgen-allocate-expr class)))
+      `(let ((,tdupvar ,(e duplicated e))
+	     (,tnew ,(allocate-expr class)))
 	  ;; actual fields
-	  ,@(filter-map (lambda (slot val)
-			   (unless (slot-virtual? slot)
-			      (let ((v (e (cdr val) e))
-				    (id (slot-id slot)))
-				 `(set! ,(field-access new id)
-				     ,v))))
-	       slots args)
-	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (unless (slot-virtual? slot)
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 `(set! ,(field-access new id) ,v))))
 	       slots args)
+	  ;; constructors
+	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ;; virtual fields
+	  ,@(filter-map (lambda (slot val)
+			   (when (and (slot-virtual? slot)
+				      (not (slot-read-only? slot))
+				      (car val))
+			      (let ((v (e (cdr val) e))
+				    (id (slot-id slot)))
+				 `(set! ,(field-access new id) ,v))))
+	       slots args)
 	  ,new)))
-   
+
+;*---------------------------------------------------------------------*/
+;*    allocate-expr ...                                                */
+;*---------------------------------------------------------------------*/
+(define (allocate-expr class)
+   (if (wide-class? class)
+       (let ((super (tclass-its-super class)))
+	  (classgen-widen-expr
+	     class (classgen-allocate-expr super)))
+       (classgen-allocate-expr class)))
+
 ;*---------------------------------------------------------------------*/
 ;*    expand-widen! ...                                                */
 ;*---------------------------------------------------------------------*/
@@ -457,12 +450,11 @@
        (let ((class (type-of-id widen! (find-location x))))
 	  (if (and (tclass? class) (tclass-widening class))
 	      (replace! x (e (make-widening x class obj provided e) e))
-	      (error #f
-		     (string-append "widen!:Illegal class type:"
-				    (symbol->string (type-id class)))
-		     x))))
+	      (error widen!
+		 (format "Illegal class type \"~a\"" (type-id class))
+		 x))))
       (else
-       (error #f "Illegal widen!" x))))
+       (error "wident!" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-widening ...                                                */
@@ -497,9 +489,9 @@
        (let ((s (parse-id sym (find-location x))))
 	  (if (eq? (car s) 'shrink!)
 	      (replace! x (make-a-shrink! e o))
-	      (error #f "Illegal shrink!" x))))
+	      (error sym "Illegal shrink!" x))))
       (else
-       (error #f "Illegal shrink!" x))))
+       (error "shrink!" "Illegal form" x))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    make-a-shrink! ...                                               */
@@ -530,22 +522,6 @@
 		  (error "shrink!" "Not a wide object" ,newo))))))
 
 ;*---------------------------------------------------------------------*/
-;*    make-virtual-set ...                                             */
-;*---------------------------------------------------------------------*/
-(define (make-virtual-set slot value var class form e alloc-kind)
-   (if (slot-read-only? slot)
-       (error #f
-	  (format "Illegal \"~a\", field read-only \"~a\""
-	     alloc-kind (slot-id slot))
-	  form)
-       (object-epairify
-	(e `(,(symbol-append (tclass-id class) '- (slot-id slot) '-set!)
-	     ,var
-	     ,value)
-	   e)
-	value)))
-
-;*---------------------------------------------------------------------*/
 ;*    object-epairify ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (object-epairify obj epair)
@@ -563,9 +539,7 @@
 	      (i 0))
       (cond
 	 ((null? slots)
-	  (error #f
-	     (format "Illegal ~a, field unknown \"~a\"" form name)
-	     sexp))
+	  (error form (format "Field unknown \"~a\"" name) sexp))
 	 ((eq? (slot-id (car slots)) name)
 	  i)
 	 (else   

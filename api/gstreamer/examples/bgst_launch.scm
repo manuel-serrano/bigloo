@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/gstreamer/examples/bgst-launch.scm        */
+;*    .../project/bigloo/api/gstreamer/examples/bgst_launch.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 14 10:26:04 2008                          */
-;*    Last change :  Fri Jul 25 07:44:05 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 19:15:19 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    gst-launch implemented with the Bigloo GSTREAMER binding.        */
 ;*    -------------------------------------------------------------    */
@@ -80,7 +80,7 @@
 	  (set! args (cons else args))))
       (let ((el (gst-parse-launchv (reverse! args))))
 	 (unless el (error 'bgst-launch "Cannot create pipeline" el))
-	 (let ((pipeline (if (gst-pipeline? el)
+	 (let ((pipeline (if (isa? el gst-pipeline)
 			     el
 			     (let ((pipe (instantiate::gst-pipeline)))
 				(gst-bin-add! pipe el)
@@ -91,17 +91,19 @@
 	    (display "Setting pipeline to PLAYING ...")
 	    (flush-output-port (current-output-port))
 	    (print (gst-element-state-set! pipeline 'playing))
-	    (let ((bus (gst-pipeline-bus pipeline)))
+	    (with-access::gst-pipeline pipeline (bus)
 	       (let loop ()
 		  (let ((msg (gst-bus-poll bus)))
 		     (when (bgst-launch-messages)
 			(display
 			 (format "Got Message from element \"~a\" (~a): "
-				 (let ((src (gst-message-src msg)))
-				    (if (gst-element? src)
-					(gst-element-name src)
-					(find-runtime-type src)))
-				 (gst-message-type-name msg))))
+			    (with-access::gst-message msg (src)
+			       (if (isa? src gst-element)
+				   (with-access::gst-element src (name)
+				      name)
+				   (find-runtime-type src)))
+			    (with-access::gst-message msg (type-name)
+			       type-name))))
 		     (cond
 			((gst-message-state-changed? msg)
 			 (when (bgst-launch-messages)

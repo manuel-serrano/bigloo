@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Tue May 10 11:26:59 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 17:00:56 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -15,7 +15,8 @@
 (module module_impuse
    
    (include "Ast/unit.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Module/impuse.sch")
    
    (import  read_reader
 	    backend_backend

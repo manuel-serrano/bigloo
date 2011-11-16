@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed May  4 16:17:37 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 14:16:21 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -273,9 +273,10 @@
 (define (get-thread-backend name)
    (let loop ((tbs *thread-backends*))
       (when (pair? tbs)
-	 (if (string=? (thread-backend-name (car tbs)) name)
-	     (car tbs)
-	     (loop (cdr tbs))))))
+	 (with-access::thread-backend (car tbs) ((tname name))
+	    (if (string=? tname name)
+		(car tbs)
+		(loop (cdr tbs)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tb-make-thread ::thread-backend ...                              */
@@ -334,6 +335,7 @@
 ;*    thread-initialize! ::thread ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-generic (thread-initialize! th::thread)
+   (print "THREAD-INIT (generic)")
    th)
 
 ;*---------------------------------------------------------------------*/
@@ -393,7 +395,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%current-thread)
    (let ((tb (current-thread-backend)))
-      (when (thread-backend? tb)
+      (when (isa? tb thread-backend)
  	 (tb-current-thread tb))))
 
 ;*---------------------------------------------------------------------*/
@@ -401,7 +403,7 @@
 ;*---------------------------------------------------------------------*/
 (define (current-thread)
    (let ((th (%current-thread)))
-      (when (thread? th)
+      (when (isa? th thread)
 	 (%user-current-thread th))))
 
 ;*---------------------------------------------------------------------*/
@@ -470,13 +472,13 @@
 (define-method (thread-start! th::nothread . scd)
    (let ((thread *nothread-current*))
       (unwind-protect
-	 (with-access::nothread th (end-result end-exception)
+	 (with-access::nothread th (end-result end-exception body)
 	    (set! *nothread-current* th)
 	    (with-handler
 	       (lambda (e)
 		  (set! end-exception e)
 		  (raise e))
-	       (set! end-result ((nothread-body th))))
+	       (set! end-result (body)))
 	    th)
 	 (set! *nothread-current* thread))))
 
@@ -491,7 +493,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (thread-join! th::nothread . timeout)
    (with-access::nothread th (end-result end-exception)
-      (if (&exception? end-exception)
+      (if (isa? end-exception &exception)
 	  (raise end-exception)
 	  end-result)))
 
@@ -507,25 +509,25 @@
 ;*    thread-get-specific ::nothread ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-specific th::nothread)
-   (nothread-%specific th))
+   (with-access::nothread th (%specific) %specific))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-specific! ::nothread ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-specific! th::nothread v)
-   (nothread-%specific-set! th v))
+   (with-access::nothread th (%specific) (set! %specific v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-get-cleanup ::nothread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-get-cleanup th::nothread)
-   (nothread-%cleanup th))
+   (with-access::nothread th (%cleanup) %cleanup))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-set-cleanup! ::nothread ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-cleanup! th::nothread v)
-   (nothread-%cleanup-set! th v))
+   (with-access::nothread th (%cleanup) (set! %cleanup v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex? ...                                                       */

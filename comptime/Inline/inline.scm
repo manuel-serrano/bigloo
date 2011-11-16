@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Thu Mar 17 18:44:00 2011 (serrano)                */
+;*    Last change :  Mon Nov 14 16:54:35 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module inline_inline
    (include "Ast/node.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "Inline/inline.sch")
    (import  inline_walk
 	    inline_app
 	    ast_alphatize

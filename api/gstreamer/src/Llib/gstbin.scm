@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  1 08:52:59 2008                          */
-;*    Last change :  Wed Feb 10 18:36:08 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 11:21:41 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBin wrapper                                                   */
 ;*=====================================================================*/
@@ -59,7 +59,8 @@
 ;*    $gst-bin-elements-set! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define ($gst-bin-elements-set! o el)
-   (gst-bin-elements-set! o el))
+   (with-access::gst-bin o (elements)
+      (set! elements el)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-bin-add! ...                                                 */
@@ -67,17 +68,18 @@
 (define (gst-bin-add! o::gst-bin el0 . els)
    
    (define (add! el)
-      (if ($gst-bin-add! ($gst-bin (gst-element-$builtin o))
-			 ($gst-element (gst-element-$builtin el)))
-	  ;; We have to store the Bigloo object inside the pipeline
-	  ;; otherwise the GC could collect the elements.
-	  ;; In addition, gst-bin-remove decrement the ref counter, hence,
-	  ;; since we want GST object to be reclaimed only when Bigloo
-	  ;; no longer uses it, we manually increment its ref counter when
-	  ;; adding an element into a bin.
-	  (with-access::gst-bin o (elements)
-	     (%gst-object-ref! el)
-	     (set! elements (cons el elements)))
+      (with-access::gst-element o ((obuiltin $builtin))
+	 (with-access::gst-element el ((elbuiltin $builtin))
+	    (if ($gst-bin-add! ($gst-bin obuiltin) ($gst-element elbuiltin))
+		;; We have to store the Bigloo object inside the pipeline
+		;; otherwise the GC could collect the elements.
+		;; In addition, gst-bin-remove decrement the ref counter, hence,
+		;; since we want GST object to be reclaimed only when Bigloo
+		;; no longer uses it, we manually increment its ref counter when
+		;; adding an element into a bin.
+		(with-access::gst-bin o (elements)
+		   (%gst-object-ref! el)
+		   (set! elements (cons el elements)))))
 	  (raise (instantiate::&gst-error
 		    (proc 'gst-bin-add!)
 		    (msg "Element cannot be added")
@@ -86,7 +88,7 @@
    (add! el0)
    
    (for-each (lambda (el)
-		(if (gst-element? el)
+		(if (isa? el gst-element)
 		    (add! el)
 		    (bigloo-type-error 'gst-bin-add! "gst-element" el)))
 	     els)
@@ -99,12 +101,13 @@
 (define (gst-bin-remove! o::gst-bin el0 . els)
    
    (define (remove! el)
-      (if ($gst-bin-remove! ($gst-bin (gst-element-$builtin o))
-			    ($gst-element (gst-element-$builtin el)))
-	  ;; we have to remove the Bigloo object from the pipeline
-	  ;; otherwise the GC won't ever free the element
-	  (with-access::gst-bin o (elements)
-	     (set! elements (remq! el elements)))
+      (with-access::gst-element o ((obuiltin $builtin))
+	 (with-access::gst-element el ((elbuiltin $builtin))
+	    (if ($gst-bin-remove! ($gst-bin obuiltin) ($gst-element elbuiltin))
+		;; we have to remove the Bigloo object from the pipeline
+		;; otherwise the GC won't ever free the element
+		(with-access::gst-bin o (elements)
+		   (set! elements (remq! el elements)))))
 	  (raise (instantiate::&gst-error
 		    (proc 'gst-bin-remove!)
 		    (msg "Element cannot be removed")
@@ -113,7 +116,7 @@
    (remove! el0)
    
    (for-each (lambda (el)
-		(if (gst-element? el)
+		(if (isa? el gst-element)
 		    (remove! el)
 		    (bigloo-type-error 'gst-bin-remove! "gst-element" el)))
 	     els)
@@ -124,8 +127,10 @@
 ;*    gst-bin-get ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (gst-bin-get o::gst-bin name)
-   (let loop ((els (gst-bin-elements o)))
-      (when (pair? els)
-	 (if (string=? (gst-element-name (car els)) name)
-	     (car els)
-	     (loop (cdr els))))))
+   (with-access::gst-bin o (elements)
+      (let loop ((els elements))
+	 (when (pair? els)
+	    (with-access::gst-element (car els) ((ename name))
+	       (if (string=? ename name)
+		   (car els)
+		   (loop (cdr els))))))))

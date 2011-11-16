@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  2 14:45:56 2008                          */
-;*    Last change :  Mon Feb 11 15:14:52 2008 (serrano)                */
-;*    Copyright   :  2008 Manuel Serrano                               */
+;*    Last change :  Tue Nov 15 17:41:38 2011 (serrano)                */
+;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstTypefind                                                      */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%gst-type-find-init o::gst-type-find)
    (with-access::gst-type-find o ($builtin)
-      (when ($gst-element-null? $builtin)
+      (when ($gst-type-find-null? $builtin)
 	 (raise (instantiate::&gst-create-error
 		   (proc '%gst-type-find-init)
 		   (msg "Illegal gst-type-find")

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:54:22 1995                          */
-;*    Last change :  Tue Oct  3 09:20:19 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov 15 08:18:09 2011 (serrano)                */
+;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the G0 and G1 properties which is defined as follow:  */
 ;*                                                                     */
@@ -246,7 +246,7 @@
 		 (sfun/Ginfo-cfrom-set! callee-info
 					(cons caller
 					      (sfun/Ginfo-cfrom callee-info)))
-		 (let ((caller-info (local-value caller)))
+		 (let ((caller-info (variable-value caller)))
 		    (sfun/Ginfo-cto-set! caller-info
 					 (cons callee
 					       (sfun/Ginfo-cto

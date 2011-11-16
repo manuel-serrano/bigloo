@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Mon Aug 22 10:40:04 2011 (serrano)                */
+;*    Last change :  Tue Nov 15 18:01:38 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -117,49 +117,49 @@
       (with-lock %mutex
 	 (lambda ()
 	    ;; initialize the pipeline
-	    (unless (gst-element? %pipeline)
-	       (unless (gst-element? %audiosrc)
+	    (unless (isa? %pipeline gst-element)
+	       (unless (isa? %audiosrc gst-element)
 		  (set! %audiosrc (gst-element-factory-make "bglportsrc"))
-		  (unless (gst-element? %audiosrc)
+		  (unless (isa? %audiosrc gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audiosrc"
 			      o)))
-	       (unless (gst-element? %audiosink)
+	       (unless (isa? %audiosink gst-element)
 		  (let ((f (gst-element-factory-find "autoaudiosink")))
-		     (if (gst-element-factory? f)
+		     (if (isa? f gst-element-factory)
 			 (set! %audiosink (gst-element-factory-create f))
 			 (set! %audiosink (find-best-ranked-audio-sink))))
-		  (unless (gst-element? %audiosink)
+		  (unless (isa? %audiosink gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audiosink"
 			      o)))
-	       (unless (gst-element? %audiomixer)
+	       (unless (isa? %audiomixer gst-element)
 		  (let ((f (gst-element-factory-make "volume")))
 		     (set! %audiomixer (gst-element-factory-make "volume")))
-		  (unless (gst-element? %audiomixer)
+		  (unless (isa? %audiomixer gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audiomixer"
 			      o)))
-	       (unless (gst-element? %audiodecode)
+	       (unless (isa? %audiodecode gst-element)
 		  (set! %audiodecode (gst-element-factory-make "decodebin"))
-		  (unless (gst-element? %audiodecode)
+		  (unless (isa? %audiodecode gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audiodecode"
 			      o)))
-	       (unless (gst-element? %audioconvert)
+	       (unless (isa? %audioconvert gst-element)
 		  (set! %audioconvert (gst-element-factory-make "audioconvert"))
-		  (unless (gst-element? %audioconvert)
+		  (unless (isa? %audioconvert gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audioconvert"
 			      o)))
-	       (unless (gst-element? %audioresample)
+	       (unless (isa? %audioresample gst-element)
 		  (set! %audioresample (gst-element-factory-make "audioresample"))
-		  (unless (gst-element? %audioresample)
+		  (unless (isa? %audioresample gst-element)
 		     (error '|music-init ::gstmusic|
 			      "Cannot create audioresampler"
 			      o)))
 	       (set! %pipeline (instantiate::gst-pipeline))
-	       (unless (gst-element? %audioresample)
+	       (unless (isa? %audioresample gst-element)
 		  (error '|music-init ::gstmusic|
 			   "Cannot create pipeline"
 			   o))
@@ -192,164 +192,159 @@
 (define (find-best-ranked-audio-sink)
    (let* ((lall (gst-registry-element-factory-list))
 	  (lsinkaudio (filter (lambda (f)
-				 (string-ci=? (gst-element-factory-klass f)
-					      "sink/audio"))
-			      lall))
+				 (with-access::gst-element-factory f (klass)
+				    (string-ci=? klass "sink/audio")))
+			 lall))
 	  (lrank (sort lsinkaudio
 		       (lambda (f1 f2)
-			  (>fx (gst-element-factory-rank f1)
-			       (gst-element-factory-rank f2))))))
+			  (with-access::gst-element-factory f1 ((rank1 rank))
+			     (with-access::gst-element-factory f2 ((rank2 rank))
+				(>fx rank1 rank2)))))))
       (if (null? lrank)
 	  (error 'music-init
 		 "Cannot find audio sink"
-		 (map gst-element-factory-name lall))
+		 (map (lambda (e) (with-access::gst-element-factory e (name) name)) lall))
 	  (gst-element-factory-create (car lrank) "gstmm-sink"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-inner ::gstmusic ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (music-event-loop-inner o::gstmusic frequency::long onstate onmeta onerror onvol onplaylist)
-   (with-access::gstmusic o (%mutex %loop-mutex %pipeline %status %abort-loop)
+   (with-access::gstmusic o (%mutex %loop-mutex %pipeline %status %abort-loop %meta)
       (when %pipeline
 	 (mutex-lock! %loop-mutex)
-	 (musicstatus-state-set! %status 'init)
-	 (let ((bus (unwind-protect
-		       (gst-pipeline-bus (gstmusic-%pipeline o))
-		       (mutex-unlock! %loop-mutex))))
-	    ;; store the current volume level
-	    (music-volume-get o)
-	    (let loop ((vol (musicstatus-volume %status))
-		       (pid (musicstatus-playlistid %status))
-		       (meta #f))
-	       (mutex-lock! %loop-mutex)
-	       (let* ((msg (unwind-protect
-			     (gst-bus-poll bus :timeout #l1167000000)
-			     (mutex-unlock! %loop-mutex)))
-		      (nvol (musicstatus-volume %status))
-		      (npid (musicstatus-playlistid %status)))
-		  (cond
-		     (%abort-loop
-		      ;; we are done
-		      #f)
-		     ((not msg)
-		      ;; time out
-		      (cond
-			 ((not (=fx vol nvol))
-			  (when onvol (onvol nvol)))
-			 ((not (=fx pid npid))
-			  (when onplaylist
-			     (onplaylist %status))
-			  (sleep 10)))
-		      #f)
-		     ((gst-message-eos? msg)
-		      ;; end of stream
-		      (mutex-lock! %mutex)
-		      (gst-element-state-set! (gstmusic-%pipeline o) 'null)
-		      (musicstatus-state-set! %status 'ended)
-		      (musicstatus-songpos-set! %status 0)
-		      (gstmusic-%meta-set! o '())
-		      (set! meta #f)
-		      (mutex-unlock! %mutex)
-		      (when onstate (onstate %status))
-		      (with-access::musicstatus %status (song playlistlength volume)
+	 (with-access::musicstatus %status (volume playlistid state song songpos songlength bitrate err playlistlength)
+	    (set! state 'init)
+	    (let ((bus (unwind-protect
+			  (with-access::gst-pipeline %pipeline (bus) bus)
+			  (mutex-unlock! %loop-mutex))))
+	       ;; store the current volume level
+	       (music-volume-get o)
+	       (let loop ((vol volume)
+			  (pid playlistid)
+			  (meta #f))
+		  (mutex-lock! %loop-mutex)
+		  (let* ((msg (unwind-protect
+				 (gst-bus-poll bus :timeout #l1167000000)
+				 (mutex-unlock! %loop-mutex)))
+			 (nvol volume)
+			 (npid playlistid))
+		     (cond
+			(%abort-loop
+			   ;; we are done
+			   #f)
+			((not msg)
+			 ;; time out
+			 (cond
+			    ((not (=fx vol nvol))
+			     (when onvol (onvol nvol)))
+			    ((not (=fx pid npid))
+			     (when onplaylist
+				(onplaylist %status))
+			     (sleep 10)))
+			 #f)
+			((gst-message-eos? msg)
+			 ;; end of stream
+			 (mutex-lock! %mutex)
+			 (gst-element-state-set! %pipeline 'null)
+			 (set! state 'ended)
+			 (set! songpos 0)
+			 (set! %meta '())
+			 (set! meta #f)
+			 (mutex-unlock! %mutex)
+			 (when onstate (onstate %status))
 			 (when (<fx song (-fx playlistlength 1))
 			    (mutex-lock! %mutex)
 			    (set! song (+fx 1 song))
 			    (mutex-unlock! %mutex)
 			    (music-play o)
 			    (when (>=fx volume 0)
-			       (music-volume-set! o volume)))))
-		     ((gst-message-state-changed? msg)
-		      ;; state changed
-		      (let ((nstate (case (gst-message-new-state msg)
-				       ((playing) 'play)
-				       ((paused) 'pause)
-				       ((ready) 'stop)
-				       ((null) 'stop))))
-			 (mutex-lock! %mutex)
-			 (if (eq? nstate (musicstatus-state %status))
-			     (mutex-unlock! %mutex)
-			     (with-access::musicstatus %status (state
-								song
-								songpos
-								songlength
-								playlistid)
-				(set! state nstate)
-				(when (gst-element? (gstmusic-%pipeline o))
-				   (set! songpos (music-position o))
-				   (set! songlength (music-duration o)))
+			       (music-volume-set! o volume))))
+			((gst-message-state-changed? msg)
+			 ;; state changed
+			 (let ((nstate (case (gst-message-new-state msg)
+					  ((playing) 'play)
+					  ((paused) 'pause)
+					  ((ready) 'stop)
+					  ((null) 'stop))))
+			    (mutex-lock! %mutex)
+			    (if (eq? nstate state)
 				(mutex-unlock! %mutex)
-				(when onstate (onstate %status))
-				;; at this moment we don't know if we will
-				;; see tags, so we emit a fake onmeta
-				(when (and onmeta (not meta) (eq? state 'play))
-				   (let* ((plist (music-playlist-get o))
-					  (file (list-ref plist song)))
-				      (onmeta (or (file-musictag file) file))))))
-			 (with-access::musicstatus %status (volume)
-			    (when (and (eq? nstate 'play) (>=fx volume 0))
-			       ;; Some gstreamer player are wrong and
-			       ;; tend to forget the volume level. As a
-			       ;; workaround, we enforce it each time we
-			       ;; receive a play state change message.
-			       (music-volume-set! o volume)))))
-		     ((and (gst-message-tag? msg) onmeta)
-		      ;; tag found
-		      (mutex-lock! %mutex)
-		      (let ((notify #f))
-			 (for-each (lambda (tag)
-				      (let ((key (string->symbol (car tag))))
-					 (case key
-					    ((bitrate)
-					     (musicstatus-bitrate-set!
-					      %status
-					      (elong->fixnum
-					       (/elong (cdr tag) #e1000))))
-					    ((artist title album year)
-					     (set! notify #t)
-					     (gstmusic-%meta-set!
-					      o
-					      (cons (cons key (cdr tag))
-						    (gstmusic-%meta o))))
-					    (else
-					     #unspecified))))
-				   (gst-message-tag-list msg))
+				(begin
+				   (set! state nstate)
+				   (when (isa? %pipeline gst-element)
+				      (set! songpos (music-position o))
+				      (set! songlength (music-duration o)))
+				   (mutex-unlock! %mutex)
+				   (when onstate (onstate %status))
+				   ;; at this moment we don't know if we will
+				   ;; see tags, so we emit a fake onmeta
+				   (when (and onmeta (not meta) (eq? state 'play))
+				      (let* ((plist (music-playlist-get o))
+					     (file (list-ref plist song)))
+					 (onmeta (or (file-musictag file) file))))))
+			    (begin
+			       (when (and (eq? nstate 'play) (>=fx volume 0))
+				  ;; Some gstreamer player are wrong and
+				  ;; tend to forget the volume level. As a
+				  ;; workaround, we enforce it each time we
+				  ;; receive a play state change message.
+				  (music-volume-set! o volume)))))
+			((and (gst-message-tag? msg) onmeta)
+			 ;; tag found
+			 (mutex-lock! %mutex)
+			 (let ((notify #f))
+			    (for-each (lambda (tag)
+					 (let ((key (string->symbol (car tag))))
+					    (case key
+					       ((bitrate)
+						(set! bitrate
+						   (elong->fixnum
+						      (/elong (cdr tag) #e1000))))
+					       ((artist title album year)
+						(set! notify #t)
+						(set! %meta
+						   (cons (cons key (cdr tag))
+						      %meta)))
+					       (else
+						#unspecified))))
+			       (gst-message-tag-list msg))
+			    (mutex-unlock! %mutex)
+			    (when notify
+			       (set! meta #t)
+			       (onmeta %meta))))
+			((gst-message-warning? msg)
+			 ;; warning
+			 (mutex-lock! %mutex)
+			 (set! err (gst-message-warning-string msg))
 			 (mutex-unlock! %mutex)
-			 (when notify
-			    (set! meta #t)
-			    (onmeta (gstmusic-%meta o)))))
-		     ((gst-message-warning? msg)
-		      ;; warning
-		      (mutex-lock! %mutex)
-		      (musicstatus-err-set! %status (gst-message-warning-string msg))
-		      (mutex-unlock! %mutex)
-		      (when onerror (onerror (musicstatus-err %status))))
-		     ((gst-message-error? msg)
-		      ;; error
-		      (mutex-lock! %mutex)
-		      (musicstatus-err-set! %status (gst-message-error-string msg))
-		      (mutex-unlock! %mutex)
-		      (when onerror (onerror (musicstatus-err %status))))
-		     ((gst-message-state-dirty? msg)
-		      ;; refresh
-		      (when onstate (onstate %status))))
-
-		  
-		  (unless %abort-loop
-		     ;; wait to give a chance to other threads
-		     ;; to acquire the lock
-		     (sleep 113)
-		     (loop nvol npid meta))))))))
+			 (when onerror (onerror err)))
+			((gst-message-error? msg)
+			 ;; error
+			 (mutex-lock! %mutex)
+			 (set! err (gst-message-error-string msg))
+			 (mutex-unlock! %mutex)
+			 (when onerror (onerror err)))
+			((gst-message-state-dirty? msg)
+			 ;; refresh
+			 (when onstate (onstate %status))))
+		     
+		     
+		     (unless %abort-loop
+			;; wait to give a chance to other threads
+			;; to acquire the lock
+			(sleep 113)
+			(loop nvol npid meta)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    reset-sans-lock! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (reset-sans-lock! o::gstmusic)
    (with-access::gstmusic o (%pipeline)
-      (when (gst-element? %pipeline)
-	 (let ((bus (gst-pipeline-bus %pipeline))
-	       (msg (gst-message-new-state-dirty %pipeline)))
-	    (gst-bus-post bus msg)))))
+      (when (isa? %pipeline gst-element)
+	 (with-access::gst-pipeline %pipeline (bus)
+	    (let ((msg (gst-message-new-state-dirty %pipeline)))
+	       (gst-bus-post bus msg))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-event-loop-reset! ::gstmusic ...                           */
@@ -383,7 +378,7 @@
 	    (call-next-method)
 	    (with-lock %mutex
 	       (lambda ()
-		  (when (gst-element? %pipeline)
+		  (when (isa? %pipeline gst-element)
 		     (gst-element-state-set! %pipeline 'null))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -391,7 +386,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-closed? o::gstmusic)
    (with-access::gstmusic o (%pipeline)
-      (not (gst-element? %pipeline))))
+      (not (isa? %pipeline gst-element))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-reset! ::gstmusic ...                                      */
@@ -461,7 +456,8 @@
 	  #f)
 	 (else
 	  (let ((m (list-ref %playlist i)))
-	     (musicstatus-song-set! %status i)
+	     (with-access::musicstatus %status (song)
+		(set! song i))
 	     m)))))
 
 ;*---------------------------------------------------------------------*/
@@ -485,7 +481,7 @@
    (with-access::gstmusic o (%mutex %pipeline %audiosrc %status %playlist)
       (with-lock %mutex
 	 (lambda ()
-	    (unless (gst-element? %pipeline)
+	    (unless (isa? %pipeline gst-element)
 	       (error '|music-play ::gstmusic|
 			"Player closed (or badly initialized)"
 			o))
@@ -496,7 +492,8 @@
 				     'int
 				     (car song))
 				  (set-song! o (car song)))
-			      (set-song! o (musicstatus-song %status)))))
+			      (with-access::musicstatus %status (song)
+				 (set-song! o song)))))
 		  (when (string? url)
 		     (let ((uri (gstmm-charset-convert url)))
 			(gst-element-state-set! %pipeline 'null)
@@ -515,9 +512,9 @@
 	       (if (not (integer? (car song)))
 		   (bigloo-type-error '|music-seek ::gstmusic| 'int (car song))
 		   (set-song! o (car song))))
-	    (when (gst-element? %pipeline)
+	    (when (isa? %pipeline gst-element)
 	       (gst-element-seek %pipeline
-				 (*llong (fixnum->llong pos) #l1000000000)))))))
+		  (*llong (fixnum->llong pos) #l1000000000)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::gstmusic ...                                        */
@@ -526,7 +523,7 @@
    (with-access::gstmusic o (%mutex %pipeline)
       (with-lock %mutex
 	 (lambda ()
-	    (when (gst-element? %pipeline)
+	    (when (isa? %pipeline gst-element)
 	       (gst-element-state-set! %pipeline 'null)
 	       (gst-element-state-set! %pipeline 'ready))))))
    
@@ -537,10 +534,11 @@
    (with-access::gstmusic o (%mutex %pipeline %status)
       (with-lock %mutex
 	 (lambda ()
-	    (when (gst-element? %pipeline)
-	       (if (eq? (musicstatus-state %status) 'pause)
-		   (gst-element-state-set! %pipeline 'playing)
-		   (gst-element-state-set! %pipeline 'paused)))))))
+	    (when (isa? %pipeline gst-element)
+	       (with-access::musicstatus %status (state)
+		  (if (eq? state 'pause)
+		      (gst-element-state-set! %pipeline 'playing)
+		      (gst-element-state-set! %pipeline 'paused))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-position ...                                               */
@@ -548,9 +546,9 @@
 (define (music-position o)
    ;; this function assumes that %pipeline is still valid (i.e., the
    ;; gstmm music player has not been closed yet)
-   (llong->fixnum
-    (/llong (gst-element-query-position (gstmusic-%pipeline o))
-	    #l1000000000)))
+   (with-access::gstmusic o (%pipeline)
+      (llong->fixnum
+	 (/llong (gst-element-query-position %pipeline) #l1000000000))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-duration ...                                               */
@@ -558,9 +556,9 @@
 (define (music-duration o)
    ;; this function assumes that %pipeline is still valid (i.e., the
    ;; gstmm music player has not been closed yet)
-   (llong->fixnum
-    (/llong (gst-element-query-duration (gstmusic-%pipeline o))
-	    #l1000000000)))
+   (with-access::gstmusic o (%pipeline)
+      (llong->fixnum
+	 (/llong (gst-element-query-duration %pipeline) #l1000000000))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status! ::gstmusic ...                              */
@@ -569,12 +567,12 @@
    (with-access::gstmusic o (%mutex %pipeline)
       (with-access::musicstatus status (state songpos songlength volume)
 	 (mutex-lock! %mutex)
-	 (if (gst-element? %pipeline)
+	 (if (isa? %pipeline gst-element)
 	     (begin
 		(set! songpos (music-position o))
 		(set! songlength (music-duration o))
 		(set! volume (music-volume-get o)))
-	     (musicstatus-state-set! status 'stop))
+	     (set! state 'stop))
 	 (mutex-unlock! %mutex)
 	 status)))
 
@@ -582,9 +580,9 @@
 ;*    music-status ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (music-status o::gstmusic)
-   (let ((status (music-%status o)))
-      (music-update-status! o status)
-      status))
+   (with-access::music o (%status)
+      (music-update-status! o %status)
+      %status))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-song ::gstmusic ...                                        */
@@ -593,7 +591,7 @@
    (with-access::gstmusic o (%mutex %status)
       (with-lock %mutex
 	 (lambda ()
-	    (musicstatus-song %status)))))
+	    (with-access::musicstatus %status (song) song)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-songpos ::gstmusic ...                                     */
@@ -601,9 +599,9 @@
 (define-method (music-songpos o::gstmusic)
    ;; this function assumes that %pipeline is still valid (i.e., the
    ;; gstmm music player has not been closed yet)
-   (llong->fixnum
-    (/llong (gst-element-query-position (gstmusic-%pipeline o))
-	    #l1000000000)))
+   (with-access::gstmusic o (%pipeline)
+      (llong->fixnum
+	 (/llong (gst-element-query-position %pipeline) #l1000000000))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-meta ...                                                   */
@@ -617,10 +615,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-get o::gstmusic)
    (with-access::gstmusic o (%status %audiomixer)
-      (if (gst-element? %audiomixer)
+      (if (isa? %audiomixer gst-element)
 	  (let ((vol (inexact->exact
 		      (* 100 (gst-object-property %audiomixer :volume)))))
-	     (musicstatus-volume-set! %status vol)
+	     (with-access::musicstatus %status (volume)
+		(set! volume vol))
 	     vol)
 	  0)))
 
@@ -629,6 +628,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! o::gstmusic vol)
    (with-access::gstmusic o (%status %audiomixer)
-      (when (gst-element? %audiomixer)
+      (when (isa? %audiomixer gst-element)
 	 (gst-object-property-set! %audiomixer :volume (/ vol 100))
-	 (musicstatus-volume-set! %status vol))))
+	 (with-access::musicstatus %status (volume)
+	    (set! volume vol)))))

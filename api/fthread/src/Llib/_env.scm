@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/fthread/src/Llib/_env.scm            */
+;*    serrano/prgm/project/bigloo/api/fthread/src/Llib/_env.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 13 14:38:14 2002                          */
-;*    Last change :  Wed Mar 24 15:49:40 2004 (serrano)                */
-;*    Copyright   :  2002-04 Manuel Serrano                            */
+;*    Last change :  Tue Nov 15 11:10:00 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of fair environments.                         */
 ;*=====================================================================*/
@@ -81,6 +81,7 @@
 (define (%env-waiting-signals env::%env)
    (with-access::%env env (%signals)
       (filter (lambda (s)
-		 (and (%signal? s)
-		      (pair? (%signal-threads s))))
+		 (and (isa? s %signal)
+		      (with-access::%signal s (threads)
+			 (pair? threads))))
 	      %signals)))

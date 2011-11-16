@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Tue May  5 13:53:21 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Wed Nov 16 10:07:30 2011 (serrano)                */
+;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
 ;*=====================================================================*/
@@ -72,7 +72,8 @@
          (with-access::$sqltiny-table o (name columns)
             (display* "#<sqltiny:" name ":")
 	    (for-each (lambda (c)
-			 (display* ($sqltiny-column-name c) ","))
+			 (with-access::$sqltiny-column c (name)
+			    (display* name ",")))
 		      columns)
 	    (print ">")))))
 
@@ -90,7 +91,8 @@
        (let ((p (open-input-binary-file path)))
 	  (unwind-protect
 	     (let ((o (input-obj p)))
-		($sqltiny-path-set! o path)
+		(with-access::$sqltiny o ((spath path))
+		   (set! spath path))
 		o)
 	     (close-binary-port p)))
        (let* ((crowid (instantiate::$sqltiny-column
@@ -220,7 +222,7 @@
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-dump-table obj builtin table out)
    (let ((t (sqltiny-get-table builtin table)))
-      (if ($sqltiny-table? t)
+      (if (isa? t $sqltiny-table)
 	  (with-access::$sqltiny-table t (name *columns constraints rows)
 	     (display "BEGIN TRANSACTION;\n" out)
 	     (display "CREATE TABLE " out)
@@ -240,8 +242,13 @@
 			  out
 			  constraints))
 	     (display ");\n" out)
-	     (let ((cols (map $sqltiny-column-name ($sqltiny-table-columns t))))
-		(for-each (lambda (r) (dump-row name (cdr cols) r out)) rows))
+	     (with-access::$sqltiny-table t (columns)
+		(let ((cols (map (lambda (c)
+				    (with-access::$sqltiny-column c (name)
+				       name))
+			       columns)))
+		   (for-each (lambda (r) (dump-row name (cdr cols) r out))
+		      rows)))
 	     (display "END TRANSACTION;\n"))
 	  (raise
 	   (instantiate::&error
@@ -265,10 +272,11 @@
 		(transaction #f))))
        ;; patch all the tables for adding the constraint
        (for-each (lambda (t)
-		    (let* ((cols ($sqltiny-table-columns t))
-			   (cts ($sqltiny-table-constraints t))
-			   (kcheck (sqltiny-compile-key-check o t cols cts)))
-		       ($sqltiny-table-keycheck-set! t kcheck)))
+		    (with-access::$sqltiny-table t ((cols columns)
+						    (cts constraints)
+						    keycheck)
+		       (let ((kcheck (sqltiny-compile-key-check o t cols cts)))
+			  (set! keycheck kcheck))))
 		 (vector-ref v 1))
        o)))
     

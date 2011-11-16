@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Mon Aug 30 08:43:17 2010 (serrano)                */
-;*    Copyright   :  2010 Florian Loitsch, Manuel Serrano.             */
+;*    Last change :  Wed Nov 16 09:15:07 2011 (serrano)                */
+;*    Copyright   :  2010-11 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
 ;*    -------------------------------------------------------------    */
@@ -370,39 +370,57 @@
 	       ((creation-time)
 		(let ((t (decode-time p)))
 		   (trace-item "Date: " t)
-		   (make-PGP-Signature-Sub-Creation-Time critical? t)))
+		   (instantiate::PGP-Signature-Sub-Creation-Time
+		      (critical? critical?)
+		      (creation-date t))))
 	       ((expiration-time)
 		(let ((t (decode-time p)))
 		   (trace-item "Date: " t)
-		   (make-PGP-Signature-Sub-Expiration-Time critical? t)))
+		   (instantiate::PGP-Signature-Sub-Expiration-Time
+		      (critical? critical?)
+		      (expiration-date t))))
 	       ((exportable?)
 		(let ((exportable? (=fx 1 (safe-read-octet p))))
 		   (trace-item "Exportable?: " exportable?)
-		   (make-PGP-Signature-Sub-Exportable critical? exportable?)))
+		   (instantiate::PGP-Signature-Sub-Exportable
+		      (critical? critical?)
+		      (exportable? exportable?))))
 	       ((trust)
 		(let* ((level (safe-read-octet p))
 		       (trust (safe-read-octet p)))
 		   (trace-item "Level/Trust: " level "/" trust)
-		   (make-PGP-Signature-Sub-Trust critical? level trust)))
+		   (instantiate::PGP-Signature-Sub-Trust
+		      (critical? critical?)
+		      (level level)
+		      (amount trust))))
 	       ;; TODO ((6) 'regular-expression)
 	       ((revocable?)
 		(let ((revocable? (=fx 1 (safe-read-octet p))))
-		   (make-PGP-Signature-Sub-Revocable critical? revocable?)))
+		   (instantiate::PGP-Signature-Sub-Revocable
+		      (critical? critical?)
+		      (revocable? revocable?))))
 	       ((key-expiration-time)
 		(let ((t (decode-scalar p 4)))
 		   (trace-item "expiration-time: " t)
-		   (make-PGP-Signature-Sub-Key-Expiration-Time critical? t)))
+		   (instantiate::PGP-Signature-Sub-Key-Expiration-Time
+		      (critical? critical?)
+		      (expiration-time t))))
 	       ((placeholder) ;; placeholder for backward compatibility
 		(let ((tmp (safe-read-octets (-fx len 1) p)))
 		   (trace-item "generic: " (str->hex-string tmp))
-		   (make-PGP-Signature-Sub-Generic critical? type tmp)))
+		   (instantiate::PGP-Signature-Sub-Generic
+		      (critical? critical?)
+		      (type type)
+		      (data tmp))))
 	       ((preferred-symmetric)
 		(let ((prefs (preferences->list
 			      (safe-read-octets (-fx len 1) p)
 			      byte->symmetric-key-algo)))
 		   (trace-item "preferred symmetrics: "
 			  (map symmetric-key-algo->human-readable prefs))
-		   (make-PGP-Signature-Sub-Preferred-Symmetric critical? prefs)))
+		   (instantiate::PGP-Signature-Sub-Preferred-Symmetric
+		      (critical? critical?)
+		      (algos prefs))))
 	       ((revocation-key)
 		(let* ((class (safe-read-octet p))
 		       (sensitive? (not (zerofx? (bit-and #x40 class))))
@@ -414,15 +432,21 @@
 		   (trace-item "finger-print: " (str->hex-string fingerprint))
 		   (when (zerofx? (bit-and #x80 class))
 		      (error
-		       "decode-signature-sub-packet"
-		       "revocation-key signature must have bit 0x80 set"
-		       (format "0x~x" class)))
-		   (make-PGP-Signature-Sub-Revocation
-		    critical? class sensitive? algid fingerprint)))
+			 "decode-signature-sub-packet"
+			 "revocation-key signature must have bit 0x80 set"
+			 (format "0x~x" class)))
+		   (instantiate::PGP-Signature-Sub-Revocation
+		      (critical? critical?)
+		      (clazz class)
+		      (sensitive? sensitive?)
+		      (algid algid)
+		      (fingerprint fingerprint))))
 	       ((issuer-ID)
 		(let ((id (safe-read-octets 8 p)))
 		   (trace-item "Id: " (str->hex-string id))
-		   (make-PGP-Signature-Sub-ID critical? id)))
+		   (instantiate::PGP-Signature-Sub-ID
+		      (critical? critical?)
+		      (key-id id))))
 	       ((notation)
 		(let* ((flags (safe-read-octets 4 p))
 		       (name-len (decode-scalar p 2))
@@ -432,55 +456,72 @@
 		   (trace-item "flags: " flags)
 		   (trace-item "name: " name-data)
 		   (trace-item "value: " value-data)
-		   (make-PGP-Signature-Sub-Notation
-		    critical? flags name-data value-data)))
+		   (instantiate::PGP-Signature-Sub-Notation
+		      (critical? critical?)
+		      (flags flags)
+		      (name name-data)
+		      (value value-data))))
 	       ((preferred-hash)
 		(let ((prefs (preferences->list
 			      (safe-read-octets (-fx len 1) p)
 			      byte->hash-algo)))
 		   (trace-item "Preferred Hash-algo: "
 			  (map hash-algo->human-readable prefs))
-		   (make-PGP-Signature-Sub-Preferred-Hash critical? prefs)))
+		   (instantiate::PGP-Signature-Sub-Preferred-Hash
+		      (critical? critical?)
+		      (algos prefs))))
 	       ((preferred-compression)
 		(let ((prefs (preferences->list
-			      (safe-read-octets (-fx len 1) p)
-			      byte->compression-algo)))
+				(safe-read-octets (-fx len 1) p)
+				byte->compression-algo)))
 		   (trace-item "Preferred Compression algo: "
-			  (map compression-algo->human-readable prefs))
-		   (make-PGP-Signature-Sub-Preferred-Compression critical?
-								 prefs)))
+		      (map compression-algo->human-readable prefs))
+		   (instantiate::PGP-Signature-Sub-Preferred-Compression
+		      (critical? critical?)
+		      (algos prefs))))
 	       ; TODO ((key-server-prefs) ;; preferred key server preferences
 	       ((preferred-key-server)
 		(let ((key-server (safe-read-octets (-fx len 1) p)))
 		   (trace-item "Preferred Key-server:" key-server)
-		   (make-PGP-Signature-Sub-Preferred-Key-Server critical?
-								key-server)))
+		   (instantiate::PGP-Signature-Sub-Preferred-Key-Server
+		      (critical? critical?)
+		      (server key-server))))
 	       ((primary-id?)
 		(let ((prim-id? (not (=fx 0 (safe-read-octet p)))))
 		   (trace-item "Primary Id?: " prim-id?)
-		   (make-PGP-Signature-Sub-Primary-ID critical? prim-id?)))
+		   (instantiate::PGP-Signature-Sub-Primary-ID
+		      (critical? critical?)
+		      (primary? prim-id?))))
 	       ((policy)
 		(let ((policy (safe-read-octets (-fx len 1) p)))
 		   (trace-item "Policy: " policy)
-		   (make-PGP-Signature-Sub-Policy critical? policy)))
+		   (instantiate::PGP-Signature-Sub-Policy
+		      (critical? critical?)
+		      (url policy))))
 	       ; TODO ((key-flags) ;; key flags
 	       ((signer-ID)
 		(let ((id (safe-read-octets (-fx len 1) p)))
 		   (trace-item "Signer id: " id)
-		   (make-PGP-Signature-Sub-Signer-ID critical? id)))
+		   (instantiate::PGP-Signature-Sub-Signer-ID
+		      (critical? critical?)
+		      (id id))))
 	       ((revocation-reason)
 		(let* ((code-byte (safe-read-octet p))
 		       (code (byte->revocation-code code-byte))
 		       (reason (safe-read-octets (-fx len 2) p)))
 		   (trace-item "Revocation code: " code-byte " "
-			  (revocation-code->human-readable code))
+		      (revocation-code->human-readable code))
 		   (trace-item "Reason: " reason)
-		   (make-PGP-Signature-Sub-Revocation-Reason
-		    critical? code reason)))
+		   (instantiate::PGP-Signature-Sub-Revocation-Reason
+		      (critical? critical?)
+		      (code code)
+		      (reason reason))))
 	       (else
 		(trace-item "Generic")
-		(make-PGP-Signature-Sub-Generic
-		 critical? type (safe-read-octets (-fx len 1) p))))))))
+		(instantiate::PGP-Signature-Sub-Generic
+		   (critical? critical?)
+		   (type type)
+		   (data (safe-read-octets (-fx len 1) p)))))))))
 
 (define (decode-sub-packets p::input-port)
    (let ((c (peek-char p)))
@@ -494,8 +535,7 @@
    
    (define (find-creation-date sps)
       (let ((pkt (any (lambda (pkt)
-			 (and (PGP-Signature-Sub-Creation-Time? pkt)
-			      pkt))
+			 (and (isa? pkt PGP-Signature-Sub-Creation-Time) pkt))
 		      sps)))
 	 
 	 (when (not pkt)
@@ -503,18 +543,18 @@
 	     "decode-signature-v4"
 	     "invalid signature. Can't find obligatory creation-time sub-packet"
 	     #f))
-	 (PGP-Signature-Sub-Creation-Time-creation-date pkt)))
+	 (with-access::PGP-Signature-Sub-Creation-Time pkt (creation-date)
+	    creation-date)))
    (define (find-issuer sps)
       (let ((pkt (any (lambda (pkt)
-			 (and (PGP-Signature-Sub-ID? pkt)
-			      pkt))
-		      sps)))
+			 (and (isa? pkt PGP-Signature-Sub-ID) pkt))
+		    sps)))
 	 (when (not pkt)
 	    (error
-	     "decode-signature-v4"
-	     "invalid signature. Can't find obligatory issuer id sub-packet"
-	     #f))
-	 (PGP-Signature-Sub-ID-key-id pkt)))
+	       "decode-signature-v4"
+	       "invalid signature. Can't find obligatory issuer id sub-packet"
+	       #f))
+	 (with-access::PGP-Signature-Sub-ID pkt (key-id) key-id)))
 
    (with-trace 3 "decode-signature-v4"
       (let* ((signature-type-byte (safe-read-octet p))
@@ -664,9 +704,21 @@
 ;; ----------
 ;; 5.5.1.1 Public Key Packet
 ;; ----------------------------------------------------------------------------
-(define make-public-rsa-key make-Rsa-Key)
-(define make-public-dsa-key make-Dsa-Key)
-(define make-public-elgamal-key make-ElGamal-Key)
+(define make-public-rsa-key (lambda (m e)
+			       (instantiate::Rsa-Key
+				  (modulus m)
+				  (exponent e))))
+(define make-public-dsa-key (lambda (p q g y)
+			       (instantiate::Dsa-Key
+				  (p p)
+				  (q q)
+				  (g g)
+				  (y y))))
+(define make-public-elgamal-key (lambda (p g y)
+				   (instantiate::ElGamal-Key
+				      (p p)
+				      (g g)
+				      (y y))))
 
 (define *dummy-date* (current-date))
 
@@ -688,13 +740,15 @@
 
 (define (decode/fill-key kp::PGP-Key-Packet version p::input-port)
    (with-trace 2 "decode/fill-key"
-      (let ((creation-date (decode-time p)))
-	 (trace-item "creation-date: " creation-date)
-	 (PGP-Key-Packet-creation-date-set! kp creation-date))
+      (let ((cd (decode-time p)))
+	 (trace-item "creation-date: " cd)
+	 (with-access::PGP-Key-Packet kp (creation-date)
+	    (set! creation-date cd)))
       (when (or (=fx version 2) (=fx version 3))
-	 (let ((valid-days (decode-scalar p 2))) ;; if 0 indefinite
-	    (trace-item "valid days: " valid-days)
-	    (PGP-Key-Packet-valid-days-set! kp valid-days)))
+	 (let ((vd (decode-scalar p 2))) ;; if 0 indefinite
+	    (trace-item "valid days: " bd)
+	    (with-access::PGP-Key-Packet kp (valid-days)
+	       (set! valid-days vd))))
       (let* ((algo-byte (safe-read-octet p))
 	     (algo (byte->public-key-algo algo-byte)))
 	 (when (and (or (=fx version 2) (=fx version 3))
@@ -705,37 +759,38 @@
 		   "only RSA is supported for version 3 keys"
 		   (public-key-algo->human-readable algo)))
 	 (trace-item "algo: " algo " " (public-key-algo->human-readable algo))
-	 (PGP-Key-Packet-algo-set! kp algo)
+	 (with-access::PGP-Key-Packet kp ((kalgo algo))
+	    (set! kalgo algo))
 	 (case algo
 	    ((rsa-encrypt/sign rsa-encrypt rsa-sign)
 	     (let* ((modulus (decode-mpi p))
 		    (exponent (decode-mpi p))
-		    (key (make-public-rsa-key modulus exponent)))
+		    (k (make-public-rsa-key modulus exponent)))
 		(trace-item "modulus: " modulus)
 		(trace-item "exponent: " exponent)
-		(PGP-Key-Packet-key-set! kp key)))
+		(with-access::PGP-Key-Packet kp (key) (set! key k))))
 	    ((dsa) ;; DSA
 	     (let* ((port p)
 		    (p (decode-mpi port))
 		    (q (decode-mpi port))
 		    (g (decode-mpi port))
 		    (y (decode-mpi port))
-		    (key (make-public-dsa-key p q g y)))
+		    (k (make-public-dsa-key p q g y)))
 		(trace-item "p: " p)
 		(trace-item "q: " q)
 		(trace-item "g: " g)
 		(trace-item "y: " y)
-		(PGP-Key-Packet-key-set! kp key)))
+		(with-access::PGP-Key-Packet kp (key) (set! key k))))
 	    ((elgamal-encrypt elgamal-encrypt/sign)
 	     (let* ((port p)
 		    (p (decode-mpi port))
 		    (g (decode-mpi port))
 		    (y (decode-mpi port))
-		    (key (make-public-elgamal-key p g y)))
+		    (k (make-public-elgamal-key p g y)))
 		(trace-item "p: " p)
 		(trace-item "g: " g)
 		(trace-item "y: " y)
-		(PGP-Key-Packet-key-set! kp key)))
+		(with-access::PGP-Key-Packet kp (key) (set! key k))))
 	    (else (error "decode-key"
 			 "public key algorithm must be RSA, DSA or ElGamal"
 			 (public-key-algo->human-readable algo)))))))
@@ -745,7 +800,7 @@
 ;; ----------------------------------------------------------------------------
 (define (decode-public-subkey cpp)
    (let ((p (decode-public-key cpp)))
-      (PGP-Public-Key-Packet-subkey?-set! p #t)
+      (with-access::PGP-Public-Key-Packet p (subkey?) (set! subkey? #t))
       p))
 
 
@@ -779,9 +834,8 @@
 ;; ----------------------------------------------------------------------------
 (define (decode-secret-subkey cpp)
    (let ((p (decode-secret-key cpp)))
-      (PGP-Secret-Key-Packet-subkey?-set! p #t)
+      (with-access::PGP-Secret-Key-Packet p (subkey?) (set! subkey? #t))
       p))
-
 
 ;; ----------------------------------------------------------------------------
 ;; 5.6 Compressed Data Packet
