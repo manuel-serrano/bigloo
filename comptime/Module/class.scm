@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Nov 13 19:02:02 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 16:38:42 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -350,6 +350,11 @@
       (if (eq? (type-id type) '_)
 	  'obj
 	  (type-id type)))
+
+   (define (slot-default-expr s)
+      (if (equal? (slot-default-value s) (slot-no-default-value))
+	  (slot-no-default-value)
+	  `(lambda () ,(slot-default-value s))))
    
    (define (make-class-field-virtual s)
       `((@ make-class-field __object)
@@ -357,7 +362,7 @@
 	,(slot-getter s) ,(slot-setter s) ,(slot-read-only? s)
 	#t
 	,(slot-user-info s)
-	(lambda () ,(slot-default-value s))
+	,(slot-default-expr s)
 	,(if (tclass? (slot-type s))
 	     (tclass-holder (slot-type s))
 	     `',(type-default-id (slot-type s)))))
@@ -370,7 +375,7 @@
 	   ,(car defs) ,(cadr defs) ,(slot-read-only? s)
 	   #f
 	   ,(slot-user-info s)
-	   (lambda () ,(slot-default-value s))
+	   ,(slot-default-expr s)
 	   ,(if (tclass? (slot-type s))
 		(tclass-holder (slot-type s))
 		`',(type-default-id (slot-type s))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov 16 15:47:45 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 18:54:21 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -173,9 +173,15 @@
    (let* ((size (length (filter (lambda (s) (not (slot-virtual? s))) slots)))
 	  (offset (if (eval-class? super) (class-evdata super) 0))
 	  (native (let loop ((super super))
-		     (if (eval-class? super)
-			 (loop (class-super super))
-			 super)))
+		     (cond
+			((eval-class? super)
+			 (loop (class-super super)))
+			((eq? super object)
+			 object)
+			((class-abstract? super)
+			 (loop (class-super super)))
+			(else
+			 super))))
 	  (length (+fx offset size))
 	  (classnum (make-cell -1))
 	  (clazz (register-class!
@@ -227,7 +233,7 @@
 	(slot-getter s) (slot-setter s) (slot-read-only? s)
 	#t
 	(slot-user-info s)
-	(lambda () (slot-default-value s))
+	(slot-default-value s)
 	(slot-type s)))
    
    (define (make-class-field-plain s i)
@@ -237,7 +243,7 @@
 	  (car defs) (cadr defs) (slot-read-only? s)
 	  #f
 	  (slot-user-info s)
-	  (lambda () (slot-default-value s))
+	  (slot-default-value s)
 	  (slot-type s))))
    
    (append
@@ -294,8 +300,8 @@
 (define (instantiate-fill op provided class fields init x e)
 
    (define (field-default? s)
-      (not (equal? (class-field-default-value s)
-	      (class-field-no-default-value))))
+      (not (eq? (class-field-default-value s)
+	      (@ class-field-no-default-value __object))))
 	     
    (define (collect-field-values fields)
       (let ((vargs (make-vector (length fields))))

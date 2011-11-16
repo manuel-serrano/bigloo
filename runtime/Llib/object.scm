@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov 16 15:45:26 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 18:54:17 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -634,7 +634,10 @@
 ;*    class-get-new-nil ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-get-new-nil class)
-   (if (class? class)
+   (cond
+      ((eq? class object)
+       ((class-allocator object)))
+      ((class? class)
        (let ((c (vector-ref class 12)))
 	  (if (class-wide? class)
 	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
@@ -644,8 +647,9 @@
 		 ((cdr c) wo))
 	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
 	      (let ((o ((class-allocator class))))
-		 ((cdr c) o))))
-       (bigloo-type-error "class-nil" "class" class)))
+		 ((cdr c) o)))))
+      (else
+       (bigloo-type-error "class-nil" "class" class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-shrink ...                                                 */

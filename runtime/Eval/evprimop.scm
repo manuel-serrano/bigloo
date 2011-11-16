@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Fri Feb 18 15:06:22 2011 (serrano)                */
+;*    Last change :  Wed Nov 16 16:48:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -152,7 +152,9 @@
 
 	    (class ftp)
 	    (class &ftp-error)
-	    (class &ftp-parse-error)))
+	    (class &ftp-parse-error)
+
+	    (class tar-header)))
 
 
  
