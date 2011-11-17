@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Wed Nov 16 09:41:49 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:10:08 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -125,7 +125,7 @@
 			(error (id var) "No such field" form)
 			(if *class-gen-accessors?*
 			    (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
-			    (field-access i (id var)))))
+			    (olde (field-access i (id var)) olde))))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Nov 15 09:07:14 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:00:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -417,9 +417,9 @@
 		  ,(if (tclass-abstract? t)
 		       #unspecified
 		       `(begin
-			   (eval-expand-instantiate2 ,holdere)
-			   (eval-expand-duplicate2 ,holdere)))
-		  (eval-expand-with-access2 ,holdere)
+			   (eval-expand-instantiate ,holdere)
+			   (eval-expand-duplicate ,holdere)))
+		  (eval-expand-with-access ,holdere)
 		  ,@(if *class-gen-accessors?*
 			(eval-bind-super-access t libp)
 			'()))))

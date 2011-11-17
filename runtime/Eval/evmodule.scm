@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Nov 16 14:44:13 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:24:13 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -401,6 +401,12 @@
 ;*    Raise an error if a module contains un unbound variable.         */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-check-unbound mod loc)
+   
+   (define (unbound-error v)
+      (evcompile-error (or (eval-global-loc v) loc)
+	 (evmodule-name mod)
+	 "Unbound variable" (eval-global-name v)))
+   
    (let ((l '()))
       (define (global-check-unbound k g)
 	 (let ((tag (eval-global-tag g)))
@@ -409,10 +415,19 @@
 	       (set! l (cons g l)))))
       (hashtable-for-each (%evmodule-env mod) global-check-unbound)
       (when (pair? l)
-	 (evcompile-error (or (eval-global-loc (car l)) loc)
-			  (evmodule-name mod)
-			  "Unbound variable(s)"
-			  (format "~l" (map eval-global-name l))))))
+	 (for-each (lambda (v)
+		      (with-handler
+			 (lambda (e)
+			    (error-notify e)
+			    (newline (current-error-port))
+			    #f)
+			 (unbound-error v)))
+	    l)
+	 (let ((len (length l)))
+	    (evcompile-error #f
+	       (evmodule-name mod)
+	       (format "~a unbound variable~a" len (if (> len 1) "s" ""))
+	       (format "~l" (map eval-global-name l)))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */

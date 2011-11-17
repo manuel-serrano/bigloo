@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov 16 18:54:21 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:15:15 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -58,10 +58,14 @@
 	    __macro)
     
   (export (eval-class ::symbol ::bool ::pair-nil ::pair ::obj)
+	  (eval-expand-instantiate ::obj)
+	  (eval-expand-duplicate::pair-nil ::obj)
+	  (eval-expand-with-access ::obj)
+	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)
 	  (eval-expand-instantiate2 ::obj)
 	  (eval-expand-duplicate2::pair-nil ::obj)
 	  (eval-expand-with-access2 ::obj)
-	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)))
+	  ))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-error ...                                                 */
@@ -118,12 +122,12 @@
 ;*    localize ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (localize loc p)
-   (if (not loc)
+   (if (or (not loc) (not (epair? loc)))
        p
        (let loop ((p p))
-	  (if (not (pair? p))
+	  (if (or (epair? p) (not (pair? p)))
 	      p
-	      (econs (loop (car p)) (loop (cdr p)) loc)))))
+	      (econs (loop (car p)) (loop (cdr p)) (cer loc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-creator ...                                                 */
@@ -284,15 +288,21 @@
 	 (class-field-info field)))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-expand-instantiate2 ...                                     */
+;*    eval-expand-instantiate ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-instantiate2 class)
+(define (eval-expand-instantiate class)
    (let ((wid (symbol-append 'instantiate:: (class-name class))))
       (install-expander wid
 	 (lambda (x e)
 	    (instantiate-fill wid (cdr x) class
 	       (class-all-fields class)
 	       `(,(class-allocator class)) x e)))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-instantiate2 ...                                     */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-instantiate2 class)
+   (eval-expand-instantiate class))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate-fill ...                                             */
@@ -329,9 +339,7 @@
 				     vargs
 				     (find-field-offset fields s-name op p))))
 			 (set-car! pval #t)
-			 (set-cdr! pval (localize
-					   (when (epair? p) (cer p))
-					   value))))
+			 (set-cdr! pval (localize p value))))
 		     (else
 		      (error op "Illegal argument" p)))
 		  (loop (cdr provided)))))
@@ -374,9 +382,9 @@
 	  ,new)))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-expand-duplicate2 ...                                       */
+;*    eval-expand-duplicate ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-duplicate2 class)
+(define (eval-expand-duplicate class)
    (let ((did (symbol-append 'duplicate:: (class-name class))))
       (install-expander did
 	 (lambda (x e)
@@ -385,6 +393,12 @@
 		(duplicate-expander class dup prov x e))
 	       (else
 		(error "duplicate" "Illegal form" x)))))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-duplicate2 ...                                       */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-duplicate2 class)
+   (eval-expand-duplicate class))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-expander ...                                           */
@@ -403,9 +417,7 @@
 		      (let ((i (find-field-offset fields s-name "duplicate" p)))
 			 (vector-set! vargs
 			    i
-			    (cons #t (localize
-					(when (epair? p) (cer p))
-					value)))))
+			    (cons #t (localize p value)))))
 		     (else
 		      (error (car x) "Illegal form" x)))
 		  (loop (cdr provided)))))
@@ -480,9 +492,9 @@
 	  (loop (cdr fields) (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-expand-with-access2 ...                                     */
+;*    eval-expand-with-access ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-with-access2 class)
+(define (eval-expand-with-access class)
    (let ((wid (symbol-append 'with-access:: (class-name class))))
       (install-expander wid
 	 (lambda (x e)
@@ -495,13 +507,13 @@
 		       (let ((instance (e instance e))
 			     (aux (gensym 'i)))
 			  (localize
-			     (when (epair? x) (cer x))
+			     x
 			     `(let ((,aux ,instance))
 				 ,(%with-lexical
 				     (map car nfields)
 				     (expand-progn body)
 				     (eval-begin-expander
-					(eval-with-access-expander2
+					(eval-with-access-expander
 					   e aux class nfields x))
 				     aux)))))
 		      ((not (pair? s))
@@ -519,10 +531,13 @@
 	       (else
 		(error #f "Illegal with-access" x)))))))
 
+(define (eval-expand-with-access2 class)
+   (eval-expand-with-access class))
+
 ;*---------------------------------------------------------------------*/
-;*    eval-with-access-expander2 ...                                   */
+;*    eval-with-access-expander ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (eval-with-access-expander2 olde i class fields form)
+(define (eval-with-access-expander olde i class fields form)
    
    (define (id var) (cadr (assq var fields)))
    
@@ -535,8 +550,10 @@
 			 (and (pair? cell) (eq? (cdr cell) i))))
 		 (let ((field (find-class-field class (id var))))
 		    (if (not field)
-			(error var "No such field" form)
-			`(,(class-field-accessor field) ,i)))
+			(error (id var) "No such field" form)
+			(localize
+			   x
+			   `(,(class-field-accessor field) ,(olde i olde)))))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -545,7 +562,7 @@
 			    (and (pair? cell) (eq? (cdr cell) i))))
 		    (let ((field (find-class-field class (id var))))
 		       (if (not field)
-			   (error var "No such field" form)
+			   (error (id var) "No such field" form)
 			   (localize
 			      x
 			      (olde `(,(class-field-mutator field) ,i ,val)
@@ -699,13 +716,11 @@
 				 (eval! constructor mod))))
 		   (eval! `(define ,cid ,clazz))
 		   ;; with-access
-		   (eval! (eval-expand-with-access2 clazz) mod)
-		   ;; instantiate
-		   (let ((e (eval-expand-instantiate2 clazz)))
-		      (eval! e mod))
-		   ;; duplicate
-		   (let ((e (eval-expand-duplicate2 clazz)))
-		      (eval! e mod))
+		   (eval-expand-with-access clazz)
+		   (unless abstract
+		      ;; instantiate
+		      (eval-expand-instantiate clazz)
+		      (eval-expand-duplicate clazz))
 		   (list cid))))))))
 
 ;*---------------------------------------------------------------------*/
