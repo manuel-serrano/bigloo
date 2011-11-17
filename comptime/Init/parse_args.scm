@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Nov 14 08:57:02 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:47:22 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -378,11 +378,6 @@
        #unspecified)
       (("-fno-class-nil" (help "Deprecated"))
        #unspecified)
-      ;; object-accessor
-      (("-fclass-accessors" (help "Generate public class accessors"))
-       (set! *class-gen-accessors?* #t))
-      (("-fno-class-accessors" (help "Do not generate public class accessors"))
-       (set! *class-gen-accessors?* #f))
       ;; arithmetic
       (("-farithmetic" (help "Suppress genericity of arithmetic operators"))
        (set! *arithmetic-genericity* #f))
@@ -928,8 +923,7 @@
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
       (("-classgen" (help "Produce an include file for class accessors"))
-       (set! *pass* 'classgen)
-       (set! *class-gen-accessors?* #f))
+       (set! *pass* 'classgen))
       (("-egen" (help "Produce an include file for effects (requires -saw)"))
        (set! *pass* 'egen))
       (("-hgen" (help "Produce a C header file with class definitions"))

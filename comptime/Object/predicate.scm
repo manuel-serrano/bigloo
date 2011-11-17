@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Thu Nov 10 07:07:07 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:45:29 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
@@ -30,7 +30,6 @@
 	    ast_ident
 	    ast_private
 	    object_class
-	    object_struct
 	    object_slots
 	    object_tools
 	    module_module

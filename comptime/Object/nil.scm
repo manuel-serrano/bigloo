@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Thu Nov 10 06:51:26 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:45:45 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -27,7 +27,6 @@
 	    ast_ident
 	    ast_private
 	    object_class
-	    object_struct
 	    object_slots
 	    object_tools
 	    module_module

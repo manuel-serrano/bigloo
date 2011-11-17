@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Wed Nov 16 10:51:28 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:30:45 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -76,7 +76,6 @@
 	    (find-class-constructors ::tclass)
 	    (find-common-super-class ::tclass ::tclass)
 	    (type-subclass?::bool ::type ::type)
-	    (tclass-all-slots::pair-nil ::tclass)
 	    (class-make::obj ::tclass)
 	    (class-fill::obj ::tclass)
 	    (class-predicate::symbol ::tclass)
@@ -303,17 +302,6 @@
 		(else
 		 (loop (cdr l)))))))))
       
-;*---------------------------------------------------------------------*/
-;*    tclass-all-slots ...                                             */
-;*---------------------------------------------------------------------*/
-(define (tclass-all-slots::pair-nil class::tclass)
-   (let ((genclass *class-gen-accessors?*))
-      [assert (genclass) genclass])
-   (if (not (tclass-widening class))
-       (tclass-slots class)
-       (append (tclass-slots (tclass-its-super class))
-	       (tclass-slots class))))
-
 ;*---------------------------------------------------------------------*/
 ;*    class-make ...                                                   */
 ;*    -------------------------------------------------------------    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Nov 14 10:16:46 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:26:21 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -236,7 +236,6 @@
 	    *eval-options*
 	    *allow-type-redefinition*
 	    *pre-processor*
-	    *class-gen-accessors?*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1157,13 +1156,6 @@
 (param-define *pre-processor*
    "An optional function that pre-processes the source file"
    (lambda (x) x))
-
-;*---------------------------------------------------------------------*/
-;*    *class-gen-accessors?* ...                                       */
-;*---------------------------------------------------------------------*/
-(param-define *class-gen-accessors?*
-   "If true, generate public class accessors"
-   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Other variables that are defined inside the interpreter...       */

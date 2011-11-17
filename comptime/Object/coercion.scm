@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Wed Nov 16 11:05:43 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:45:21 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -32,7 +32,6 @@
 	    ast_var
 	    ast_ident
 	    object_class
-	    object_struct
 	    object_slots
 	    object_tools
 	    module_module
@@ -83,18 +82,14 @@
 	  (obj->class `(lambda (x)
 			  ,(make-private-sexp 'cast c-id 'x)))
 	  (ttest (if (null? testing)
-		     (if *class-gen-accessors?*
-			 (list (class?-id c-id))
-			 (let ((o (gensym 'o)))
-			    (if (jclass? class)
-				`((lambda (,o)
-				     ,(make-private-sexp 'instanceof c-id o)))
-				`((lambda (,o)
-				       ((@ isa? __object) ,o ,c-id))))))
+		     (let ((o (gensym 'o)))
+			(if (jclass? class)
+			    `((lambda (,o)
+				 ,(make-private-sexp 'instanceof c-id o)))
+			    `((lambda (,o)
+				 ((@ isa? __object) ,o ,c-id)))))
 		     '()))
 	  (x (make-typed-ident 'x c-id)))
-      (when (eq? c-id '$certificate)
-	 (tprint "NOPRAGMA GOT ONE: " c-id))
       (let loop ((super super)
 		 (coercer (list `(coerce obj ,c-id ,ttest (,obj->class))
 				`(coerce ,c-id obj () (,class->obj))

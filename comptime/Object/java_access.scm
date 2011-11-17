@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/java-access.scm      */
+;*    serrano/prgm/project/bigloo/comptime/Object/java_access.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon May  7 15:31:28 2007 (serrano)                */
-;*    Copyright   :  1996-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 17 05:46:02 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
 ;*    -------------------------------------------------------------    */
@@ -30,7 +30,6 @@
 	    ast_var
 	    ast_ident
 	    object_class
-	    object_struct
 	    object_slots
 	    object_tools
 	    object_getter
@@ -65,11 +64,9 @@
 		    (if abstract?
 			(append pred fields)
 			(let* ((const (gen-java-class-constructors class
-								   constrs
-								   src))
+					 constrs src))
 			       (creator (import-java-class-creator class
-								   constrs
-								   src)))
+					   constrs src)))
 			   `(,@pred ,@creator ,@fields ,@const)))))))
        '()))
 

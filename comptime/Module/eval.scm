@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Nov 17 05:00:24 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:36:04 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -292,69 +292,7 @@
 ;*    get-evaluated-classes-accesses ...                               */
 ;*---------------------------------------------------------------------*/
 (define (get-evaluated-classes-accesses)
-   (if *class-gen-accessors?*
-       (let ((err '())
-	     (res '()))
-	  (with-exception-handler
-	     (lambda (e)
-		(error-notify e)
-		(with-access::&error e (obj)
-		   (set! err (cons obj err))))
-	     (lambda ()
-		(if (null? *eval-classes*)
-		    '()
-		    (set! res
-		       (append
-			  (append-map get-evaluated-class-accesses *eval-classes*)
-			  res)))))
-	  (if (pair? err)
-	      (error 'eval "Undefined classes found" err)
-	      res))
-       '()))
-
-;*---------------------------------------------------------------------*/
-;*    get-evaluated-class-accesses ...                                 */
-;*---------------------------------------------------------------------*/
-(define (get-evaluated-class-accesses ev)
-   (define (get-global id)
-      (let ((g (find-global id)))
-	 (if (global? g)
-	     g
-	     (internal-error 'eval "Can't find global access" id))))
-   (define (access s id)
-      (let ((i (slot-id s)))
-	 (let* ((gid (symbol-append id '- i))
-		(sid (symbol-append gid '-set!))
-		(g (get-global gid)))
-	    (if (slot-read-only? s)
-		(list g)
-		(list g (get-global sid))))))
-   (match-case ev
-      ((class ?id library)
-       '())
-      ((class ?id)
-       (let ((t (find-type/location id (find-location ev))))
-	  (if (not (tclass? t))
-	      (user-error/location (find-location ev)
-				   'eval
-				   "Referenced type is not a Bigloo class"
-				   id)
-	      (let* ((slots (map (lambda (s) (access s id))
-				 (filter (lambda (s)
-					    (eq? (slot-class-owner s) t))
-					 (tclass-all-slots t))))
-		     (commons (cons* (get-global (class-predicate t))
-				     (get-global (class-nil-constructor t))
-				     (apply append slots))))
-		 (if (tclass-abstract? t)
-		     commons
-		     (cons* (get-global (class-make t))
-			    (get-global (class-allocate t))
-			    (get-global (class-fill t))
-			    (tclass-holder t)
-			    commons))))))
-      (else
-       (internal-error 'eval "(eval (class ...)) malformed" ev))))
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-srfi-libraries ...                                      */
@@ -364,44 +302,6 @@
 	   `(begin
 	       (register-eval-srfi! ',l)))
 	*eval-libraries*))
-
-;*---------------------------------------------------------------------*/
-;*    eval-bind-super-access ...                                       */
-;*---------------------------------------------------------------------*/
-(define (eval-bind-super-access t libraryp)
-   (let ((slots (tclass-all-slots t))
-	 (id (tclass-id t)))
-      (define (slot-bind s)
-	 (let* ((i (slot-id s))
-		(ssi (symbol-append (tclass-id (slot-class-owner s)) '- i))
-		(asi (symbol-append id '- i))
-		(get `'(define (,asi o) (,ssi o))))
-	    (if (slot-read-only? s)
-		(list get)
-		(let ((sssi (symbol-append ssi '-set!))
-		      (sasi (symbol-append asi '-set!)))
-		   (list get `'(define (,sasi o x) (,sssi o x)))))))
-      (define (slot-bind-compiled s)
-	 (let* ((i (slot-id s))
-		(ssi (symbol-append (tclass-id (slot-class-owner s)) '- i))
-		(get (find-global ssi *module*)))
-	    (if (slot-read-only? s)
-		(list (define-primop->node get))
-		(let ((set (find-global (symbol-append ssi '-set!) *module*)))
-		   (list (define-primop->node get)
-			 (define-primop->node set))))))
-      (if libraryp
-	  (append-map (lambda (s)
-			 (if (not (eq? (slot-class-owner s) t))
-			     (slot-bind s)
-			     (slot-bind-compiled s)))
-		      (tclass-all-slots t))
-	  (map (lambda (e) `(eval! ,e))
-	       (append-map (lambda (s)
-			      (if (not (eq? (slot-class-owner s) t))
-				  (slot-bind s)
-				  '()))
-			   (tclass-all-slots t))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluated-class-macros ...                                   */
@@ -420,9 +320,7 @@
 			   (eval-expand-instantiate ,holdere)
 			   (eval-expand-duplicate ,holdere)))
 		  (eval-expand-with-access ,holdere)
-		  ,@(if *class-gen-accessors?*
-			(eval-bind-super-access t libp)
-			'()))))
+		  '())))
 	*eval-classes*))
 
 ;*---------------------------------------------------------------------*/

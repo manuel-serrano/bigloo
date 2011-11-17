@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Nov 17 05:10:08 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:41:01 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -20,7 +20,6 @@
 	    type_env
 	    type_cache
 	    expand_eps
-	    expand_oldobject
 	    engine_param
 	    ast_var
 	    ast_ident
@@ -123,9 +122,7 @@
 		 (let ((slot (find-class-slot class (id var))))
 		    (if (not slot)
 			(error (id var) "No such field" form)
-			(if *class-gen-accessors?*
-			    (olde `(,(symbol-append (type-id class) '- (id var)) ,i) olde)
-			    (olde (field-access i (id var)) olde))))
+			(olde (field-access i (id var)) olde)))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -136,11 +133,9 @@
 		       (if (not slot)
 			   (error (id var) "No such field" form)
 			   (object-epairify
-			      (if *class-gen-accessors?*
-				  (olde `(,(symbol-append (type-id class) '- (id var) '-set!) ,i ,val) olde)
-				  (let* ((id (field-access i (id var)))
-					 (nx `(set! ,id ,val)))
-				     (olde nx olde)))
+			      (let* ((id (field-access i (id var)))
+				     (nx `(set! ,id ,val)))
+				 (olde nx olde))
 			      x)))
 		    (begin
 		       (set-car! (cddr x) val)
@@ -169,23 +164,14 @@
 ;*    instantiate->make ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (instantiate->make x class e)
-   (if *class-gen-accessors?*
-       (let ((make-name (class-make class)))
-	  (instantiate->fill-accessors x
-	     class
-	     (lambda (largs)
-		(if (epair? x)
-		    (econs make-name largs (cer x))
-		    (cons make-name largs)))
-	     e))
-       (let ((o (allocate-expr class)))
-	  (instantiate->fill-sans (car x) (cdr x) class
-	     (tclass-slots class) o x e))))
+   (let ((o (allocate-expr class)))
+      (instantiate-fill (car x) (cdr x) class
+	 (tclass-slots class) o x e)))
 
 ;*---------------------------------------------------------------------*/
-;*    instantiate->fill-sans ...                                       */
+;*    instantiate-fill ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (instantiate->fill-sans op provided class slots init x e)
+(define (instantiate-fill op provided class slots init x e)
    
    (define (collect-slot-values slots)
       (let ((vargs (make-vector (length slots))))
@@ -270,14 +256,6 @@
 ;*    co-instantiate->let ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (co-instantiate->let bindings body x e)
-   (if *class-gen-accessors?*
-       (co-instantiate->let-accessors bindings body x e)
-       (co-instantiate->let-sans bindings body x e)))
-
-;*---------------------------------------------------------------------*/
-;*    co-instantiate->let-sans ...                                     */
-;*---------------------------------------------------------------------*/
-(define (co-instantiate->let-sans bindings body x e)
    
    (define (find-instantiate-class expr bdg loc)
       (match-case expr
@@ -325,7 +303,7 @@
 		    (let ((id (car var))
 			  (klass (cadr var))
 			  (expr (caddr var)))
-		       (instantiate->fill-sans (car expr) (cdr expr)
+		       (instantiate-fill (car expr) (cdr expr)
 			  klass (tclass-slots klass) id expr e)))
 	       vars)
 	  ,(e `(begin ,@body) e))))
@@ -359,14 +337,6 @@
 ;*    proper fields).                                                  */
 ;*---------------------------------------------------------------------*/
 (define (duplicate->make class duplicated provided x e)
-   (if *class-gen-accessors?*
-       (e (duplicate->make-accessors x class duplicated provided e) e)
-       (duplicate->make-sans class duplicated provided x e)))
-
-;*---------------------------------------------------------------------*/
-;*    duplicate->make-sans ...                                         */
-;*---------------------------------------------------------------------*/
-(define (duplicate->make-sans class duplicated provided x e)
    
    (define (collect-slot-values slots dupvar)
       (let ((vargs (make-vector (length slots))))
@@ -459,15 +429,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-widening ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (make-widening form class obj provided e)
-   (if *class-gen-accessors?*
-       (make-widening-accessors form class obj provided e)
-       (make-widening-sans form class obj provided e)))
-
-;*---------------------------------------------------------------------*/
-;*    make-widening-sans ...                                           */
-;*---------------------------------------------------------------------*/
-(define (make-widening-sans form class o provided e)
+(define (make-widening form class o provided e)
    (let* ((super (tclass-its-super class))
 	  (tid (type-id class))
 	  (sid (type-id super))
@@ -477,7 +439,7 @@
 		    (tclass-slots class))))
       `(let ((,ttmp ,(make-private-sexp 'cast sid o)))
 	  ,(classgen-widen-expr class tmp)
-	  ,(instantiate->fill-sans (car form) (cddr form)
+	  ,(instantiate-fill (car form) (cddr form)
 	      class slots (make-private-sexp 'cast tid tmp) form e))))
 
 ;*---------------------------------------------------------------------*/

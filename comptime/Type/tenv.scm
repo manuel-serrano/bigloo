@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sat Nov 12 20:09:41 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:48:35 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -31,8 +31,6 @@
 	    type_cache
 	    foreign_ctype
 	    object_class
-	    object_wide-access
-	    object_plain-access
 	    object_predicate
 	    object_creator
 	    tvector_tvector
@@ -220,11 +218,7 @@
 			     ;; The test cannot be lifter out of the delay
 			     ;; scope otherwise it gets evaluated before the
 			     ;; modules options are evaluated.
-			     (if *class-gen-accessors?*
-				 (if (tclass-widening n)
-				     (heap-wide-class-accessors! n)
-				     (heap-plain-class-accessors! n))
-				 '())))))
+			     '()))))
 	 remember-list))
    ;; in a second stage, we have to reset the all coercer for _all_ types.
    ;; This is mandatory because some types have not been rebound and

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Nov 16 11:58:25 2011 (serrano)                */
+#*    Last change :  Thu Nov 17 05:40:02 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -159,8 +159,7 @@ TYPE_OBJ	= $(TYPE_FILE:%=Type/%.o)
 
 #*--- expand ----------------------------------------------------------*/
 EXPAND_FILE	= eps assert case define expander garith iarith farith \
-                  if initial lambda let map struct exit object oldobject \
-                  mvalue
+                  if initial lambda let map struct exit object mvalue
 
 EXPAND_OBJ	= $(EXPAND_FILE:%=Expand/%.o)
 
@@ -300,8 +299,8 @@ EFFECT_OBJ	= $(EFFECT_FILE:%=Effect/%.o)
 
 #*--- object ----------------------------------------------------------*/
 OBJECT_FILE	= class generic method getter \
-                  plain_access wide_access java_access \
-                  struct slots tools coercion predicate creator nil \
+                  java_access \
+                  slots tools coercion predicate creator nil \
                   classgen
 
 OBJECT_OBJ	= $(OBJECT_FILE:%=Object/%.o)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Wed Nov 16 19:01:58 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 05:48:07 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -33,9 +33,7 @@
 	    object_class
 	    object_coercion
 	    object_classgen
-	    object_slots
-	    object_plain-access
-	    object_wide-access)
+	    object_slots)
    (export  (declare-class! ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
 	    (declare-wide-class! ::pair ::symbol ::symbol ::obj ::obj)
 	    (get-class-hash ::symbol ::pair-nil)
@@ -77,13 +75,13 @@
 (define (declare-class! class-def module import final? abstract? def-src decl-src)
    (cond
       ((memq import '(export static))
-       (declare-export-class! gen-plain-class-accessors!
+       (declare-export-class!
 	  class-def module
 	  (if final? 'final 'plain)
 	  abstract?
 	  def-src decl-src import))
       (else
-       (declare-import-class! import-plain-class-accessors!
+       (declare-import-class!
 	  class-def module
 	  (if final? 'final 'plain)
 	  abstract?
@@ -95,18 +93,18 @@
 (define (declare-wide-class! class-def module import def-src decl-src)
    (cond
       ((memq import '(export static))
-       (declare-export-class! gen-wide-class-accessors!
+       (declare-export-class!
 	  class-def module 'wide #f
 	  def-src decl-src import))
       (else
-       (declare-import-class! import-wide-class-accessors!
+       (declare-import-class!
 	  class-def module 'wide #f
 	  def-src decl-src))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-export-class! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-export-class! gen cdef module kind abstract? src-def src-decl import)
+(define (declare-export-class! cdef module kind abstract? src-def src-decl import)
    (trace (ast 2) "declare-export-class!: " src-def #\Newline)
    ;; We create the class holder
    ;; and we create a type for this class
@@ -132,24 +130,12 @@
       (delay-class-accessors!
 	 tclass
 	 (delay
-	    (if *class-gen-accessors?*
-		(multiple-value-bind (concretes virtuals)
-		   (gen cdef tclass src-def import)
-		   (trace (ast 3)
-		      "declare-class! (export static): "#\Newline
-		      "    concretes: " concretes #\Newline
-		      "     virtuals: " virtuals #\Newline)
-		   ;; this is a domestic class, we have to declare the
-		   ;; global variable that holds the class object
-		   (register-class-with-accessors! holder tclass src-def virtuals)
-		   ;; we return the list of concretes
-		   concretes)
-		(register-class-sans-accessors! cdef holder tclass src-def))))))
+	    (register-class-sans-accessors! cdef holder tclass src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-import-class! gen cdef module kind abstract? src-def src-decl)
+(define (declare-import-class! cdef module kind abstract? src-def src-decl)
    (trace (ast 2) "declare-import-class!: " src-def #\Newline)
    ;; We create the class holder
    ;; and we create a type for this class
@@ -171,18 +157,14 @@
       (delay-class-accessors!
 	 tclass
 	 (delay
-	    (if *class-gen-accessors?*
-		(multiple-value-bind (concretes virtuals)
-		   (gen cdef tclass src-def module)
-		   concretes)
-		(begin
-		   ;; store inside the class structure some
-		   ;; information about its slots
-		   (set-class-slots! tclass cdef src-def)
-		   ;; install the coercion between the new-class and obj
-		   ;; and the class and all its super classes
-		   (gen-class-coercions! tclass)
-		   '()))))))
+	    (begin
+	       ;; store inside the class structure some
+	       ;; information about its slots
+	       (set-class-slots! tclass cdef src-def)
+	       ;; install the coercion between the new-class and obj
+	       ;; and the class and all its super classes
+	       (gen-class-coercions! tclass)
+	       '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    delay-class-accessors! ...                                       */
