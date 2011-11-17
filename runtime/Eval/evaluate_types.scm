@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:37:05 2011                          */
-;*    Last change :  Wed Nov  9 17:09:27 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 17:41:23 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Private types of the lambda-based evaluator                      */
@@ -51,7 +51,8 @@
 	   
 	   (class ev_var::ev_expr
 	      name::symbol
-	      (eff (default #f)))
+	      (eff (default #f))
+	      type)
 	   (class ev_global::ev_expr
 	      (loc read-only)
 	      name::symbol

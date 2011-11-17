@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Mon Nov 14 14:01:28 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 18:22:57 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -69,21 +69,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (untype-ident id)
-   (if (not (symbol? id))
-       id
-       (let* ((string (symbol->string id))
-	      (len    (string-length string)))
-	  (let loop ((walker  0))
-	     (cond
-		((=fx walker len)
-		 id)
-		((and (char=? (string-ref string walker) #\:)
-		      (<fx walker (-fx len 1))
-		      (char=? (string-ref string (+fx walker 1)) #\:))
-		 (string->symbol (substring string 0 walker)))
-		(else
-		 (loop (+fx walker 1))))))))
+(define (untype-ident id::symbol)
+   (let* ((string (symbol->string id))
+	  (len (string-length string)))
+      (let loop ((walker  0))
+	 (cond
+	    ((=fx walker len)
+	     (cons id #f))
+	    ((and (char=? (string-ref string walker) #\:)
+		  (<fx walker (-fx len 1))
+		  (char=? (string-ref string (+fx walker 1)) #\:))
+	     (cons (string->symbol (substring string 0 walker))
+		(string->symbol (substring string (+fx walker 2)))))
+	    (else
+	     (loop (+fx walker 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluation-contexte ...                                      */
@@ -219,7 +218,11 @@
       
       (multiple-value-bind (vars arity)
 	 (split-formals (dsssl-formals->scheme-formals formals error))
-	 (let ( (vars (map (lambda (v) (instantiate::ev_var (name v))) vars))
+	 (let ( (vars (map (lambda (v)
+			      (instantiate::ev_var
+				 (name (car v))
+				 (type (cdr v))) )
+			 vars ))
 		(body (make-dsssl-function-prelude e formals body error))
 		(nloc (get-location body loc)) )
 	    (instantiate::ev_abs
@@ -248,6 +251,32 @@
 	  (loc loc)
 	  (name id)
 	  (mod (eval-find-module modname))))
+      ((-> (and (? symbol?) ?var) (and (? symbol?) ?field))
+       (let ( (v (conv-var var locals)) )
+	  (if (isa? v ev_var)
+	      (with-access::ev_var v (type)
+		 (cond
+		    ((not type)
+		     (evcompile-error loc var "Static type not a class" e))
+		    ((class-exists type)
+		     =>
+		     (lambda (klass)
+			(let ( (field (find-class-field klass field)) )
+			   (if (not field)
+			       (evcompile-error loc
+				  type
+				  (format "Class \"~a\" has no field \"~a\""
+				     type field)
+				  e)
+			       (instantiate::ev_app
+				  (loc loc)
+				  (fun (instantiate::ev_litt
+					  (value (class-field-accessor field))))
+				  (args (list v))
+				  (tail? tail?))))))
+		    (else
+		     (evcompile-error loc var "No such class" e))))
+	      (evcompile-error loc var "Variable unbound" e) )))
       (((and (? symbol?)
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
@@ -279,9 +308,11 @@
        (conv-begin l locals globals tail? where loc top?) )
       ((let ?binds . ?body)
        (let ( (vars (map (lambda (b)
-			    (instantiate::ev_var
-			       (name (untype-ident (car b)))))
-			 binds)) )
+			    (let ( (i (untype-ident (car b))) )
+			       (instantiate::ev_var
+				  (name (car i))
+				  (type (cdr i)) )))
+		       binds)) )
 	  (instantiate::ev_let
 	     (vars vars)
 	     (vals (map (lambda (b) (uconv (cadr b))) binds))
@@ -294,8 +325,10 @@
 		 (cons (conv (cadar l) locals globals #f where loc #f)
 		       (conv-vals (cdr l) (cdr vars) (cons (car vars) locals) loc) ))))
        (let ( (vars (map (lambda (b)
-			    (instantiate::ev_var
-			       (name (untype-ident (car b)))))
+			    (let ( (i (untype-ident (car b))) )
+			       (instantiate::ev_var
+				  (name (car i))
+				  (type (cdr i)) )))
 			 binds))
 	      (bloc (get-location binds loc)) )
 	  (instantiate::ev_let*
@@ -304,8 +337,10 @@
 	     (body (conv-begin body (append (reverse vars) locals) globals tail? where loc #f)) )))
       ((letrec ?binds . ?body)
        (let* ( (vars (map (lambda (b)
-			     (instantiate::ev_var
-				(name (untype-ident (car b)))))
+			     (let ( (i (untype-ident (car b))) )
+			       (instantiate::ev_var
+				  (name (car i))
+				  (type (cdr i)) )))
 			  binds))
 	       (locals (append vars locals))
 	       (bloc (get-location binds loc)) )
@@ -320,6 +355,32 @@
 	  (name id)
 	  (mod (eval-find-module modname))
 	  (e (uconv e))))
+      ((set! (-> (and (? symbol?) ?var) (and (? symbol?) ?field)) ?e)
+       (let ( (v (conv-var var locals)) )
+	  (if (isa? v ev_var)
+	      (with-access::ev_var v (type)
+		 (cond
+		    ((not type)
+		     (evcompile-error loc var "Static type not a class" e))
+		    ((class-exists type)
+		     =>
+		     (lambda (klass)
+			(let ( (field (find-class-field klass field)) )
+			   (if (not field)
+			       (evcompile-error loc
+				  type
+				  (format "Class \"~a\" has no field \"~a\""
+				     type field)
+				  e)
+			       (instantiate::ev_app
+				  (loc loc)
+				  (fun (instantiate::ev_litt
+					  (value (class-field-mutator field))))
+				  (args (list v (uconv e)))
+				  (tail? tail?))))))
+		    (else
+		     (evcompile-error loc var "No such class" e))))
+	      (evcompile-error loc var "Variable unbound" e) )))      
       ((set! ?v ?e)
        (let ( (cv (conv-var v locals)) (e (uconv e)) )
 	  (if cv
@@ -336,17 +397,17 @@
       ((define ?gv (lambda ?formals ?body))
        (instantiate::ev_defglobal
 	  (loc loc)
-	  (name (untype-ident gv))
+	  (name (car (untype-ident gv)))
 	  (mod (if (evmodule? globals) globals ($eval-module)))
 	  (e (conv-lambda formals body gv)) ))
       ((define ?gv ?ge)
        (instantiate::ev_defglobal
 	  (loc loc)
-	  (name (untype-ident gv))
+	  (name (car (untype-ident gv)))
 	  (mod (if (evmodule? globals) globals ($eval-module)))
 	  (e (uconv ge)) ))
       ((bind-exit (?v) . ?body)
-       (let ( (var (instantiate::ev_var (name v))) )
+       (let ( (var (instantiate::ev_var (name v) (type #f))) )
 	  (instantiate::ev_bind-exit
 	     (var var)
 	     (body (conv-begin body (cons var locals) globals #f where loc #f)) )))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Nov 16 07:25:33 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 18:22:17 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -113,7 +113,7 @@
 		       (cond
 			  ((not slot)
 			   (error-sexp->node
-			      (format "Class \"~a\" has not field \"~a\""
+			      (format "Class \"~a\" has no field \"~a\""
 				 (type-id klass) (car slots))
 			      exp loc))
 			  ((null? (cdr slots))
