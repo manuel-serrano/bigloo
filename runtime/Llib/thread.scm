@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Tue Nov 15 14:16:21 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 08:27:55 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -335,7 +335,6 @@
 ;*    thread-initialize! ::thread ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-generic (thread-initialize! th::thread)
-   (print "THREAD-INIT (generic)")
    th)
 
 ;*---------------------------------------------------------------------*/

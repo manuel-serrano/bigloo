@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Thu Nov 17 05:15:15 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 08:39:11 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -61,11 +61,7 @@
 	  (eval-expand-instantiate ::obj)
 	  (eval-expand-duplicate::pair-nil ::obj)
 	  (eval-expand-with-access ::obj)
-	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)
-	  (eval-expand-instantiate2 ::obj)
-	  (eval-expand-duplicate2::pair-nil ::obj)
-	  (eval-expand-with-access2 ::obj)
-	  ))
+	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-error ...                                                 */
@@ -299,12 +295,6 @@
 	       `(,(class-allocator class)) x e)))))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-expand-instantiate2 ...                                     */
-;*---------------------------------------------------------------------*/
-(define (eval-expand-instantiate2 class)
-   (eval-expand-instantiate class))
-
-;*---------------------------------------------------------------------*/
 ;*    instantiate-fill ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class fields init x e)
@@ -374,7 +364,8 @@
 	  ;; virtual fields
 	  ,@(filter-map (lambda (field val)
 			   (when (and (class-field-virtual? field)
-				      (class-field-mutable? field))
+				      (class-field-mutable? field)
+				      (field-default? field))
 			      (let ((v (e (cdr val) e)))
 				 `(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
@@ -393,12 +384,6 @@
 		(duplicate-expander class dup prov x e))
 	       (else
 		(error "duplicate" "Illegal form" x)))))))
-
-;*---------------------------------------------------------------------*/
-;*    eval-expand-duplicate2 ...                                       */
-;*---------------------------------------------------------------------*/
-(define (eval-expand-duplicate2 class)
-   (eval-expand-duplicate class))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-expander ...                                           */
@@ -530,9 +515,6 @@
 		       (error (car s) "Illegal form" x)))))
 	       (else
 		(error #f "Illegal with-access" x)))))))
-
-(define (eval-expand-with-access2 class)
-   (eval-expand-with-access class))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-with-access-expander ...                                    */

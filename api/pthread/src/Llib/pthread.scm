@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Nov 15 14:29:38 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 08:26:06 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -177,6 +177,7 @@
 ;*    thread-set-cleanup! ::pthread ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-set-cleanup! t::pthread p)
+   (tprint "THREAD-SET-CLEANUP... t=" (typeof t) " p=" (typeof p))
    (with-access::pthread t ($builtin)
       (if (correct-arity? p 1)
 	  (begin
