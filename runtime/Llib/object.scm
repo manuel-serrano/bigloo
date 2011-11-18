@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 18 09:31:23 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 15:59:33 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -109,6 +109,7 @@
 	    (class &io-malformed-url-error::&io-error)
 	    (class &io-sigpipe-error::&io-error)
 	    (class &io-timeout-error::&io-error)
+	    (class &io-connection-error::&io-error)
 	    
 	    (class &process-exception::&error)
 	    

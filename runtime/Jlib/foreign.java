@@ -3774,6 +3774,7 @@ public final class foreign
    public static final int BGL_IO_MALFORMED_URL_ERROR = 37;
    public static final int BGL_IO_SIGPIPE_ERROR = 38;
    public static final int BGL_IO_TIMEOUT_ERROR = 39;
+   public static final int BGL_IO_CONNECTION_ERROR = 40;
    public static final int BGL_PROCESS_EXCEPTION = 50;
 
    private static int throwable_errno( Throwable v ) {
@@ -3789,6 +3790,10 @@ public final class foreign
 
       if( v instanceof SocketTimeoutException ) {
 	 return BGL_IO_TIMEOUT_ERROR;
+      }
+      
+      if( v instanceof InterruptedIOException ) {
+	 return BGL_IO_CONNECTION_ERROR;
       }
       
       if( v instanceof IndexOutOfBoundsException ) {

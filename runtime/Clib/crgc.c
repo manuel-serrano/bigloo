@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Sep 30 07:37:51 2011 (serrano)                */
+/*    Last change :  Fri Nov 18 15:59:06 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -157,7 +157,9 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
       if( r == 0 )
 	 INPUT_PORT( port ).eof = 1;
       else {
-	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "read", strerror( errno ), port );
+	 int e = (errno == ECONNRESET ?
+		  BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
+	 C_SYSTEM_FAILURE( e, "read", strerror( errno ), port );
       }
    }
 

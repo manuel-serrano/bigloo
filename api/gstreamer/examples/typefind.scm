@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  6 18:55:05 2008                          */
-;*    Last change :  Tue Nov 15 18:04:13 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 18:24:41 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The example shows how to mplement a mime type discovery tool     */
@@ -36,7 +36,9 @@
 		  (gst-caps-to-string caps)
 		  probability))
 	    (exit 0)))
+      (tprint "1")
       (gst-bin-add! pipeline filesrc typefind)
+      (tprint "2")
       (gst-element-link! filesrc typefind)
       (gst-element-state-set! pipeline 'playing)
       (let loop ()

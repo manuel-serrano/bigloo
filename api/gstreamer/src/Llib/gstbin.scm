@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  1 08:52:59 2008                          */
-;*    Last change :  Tue Nov 15 11:21:41 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 18:25:43 2011 (serrano)                */
 ;*    Copyright   :  2008-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstBin wrapper                                                   */
@@ -79,11 +79,11 @@
 		;; adding an element into a bin.
 		(with-access::gst-bin o (elements)
 		   (%gst-object-ref! el)
-		   (set! elements (cons el elements)))))
-	  (raise (instantiate::&gst-error
-		    (proc 'gst-bin-add!)
-		    (msg "Element cannot be added")
-		    (obj el)))))
+		   (set! elements (cons el elements)))
+		(raise (instantiate::&gst-error
+			  (proc 'gst-bin-add!)
+			  (msg "Element cannot be added")
+			  (obj el)))))))
    
    (add! el0)
    

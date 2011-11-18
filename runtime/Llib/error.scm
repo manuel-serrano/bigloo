@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Nov 14 21:38:54 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 15:59:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -61,6 +61,7 @@
 	    (macro $errno-io-malformed-url-error::int "BGL_IO_MALFORMED_URL_ERROR")
 	    (macro $errno-io-sigpipe-error::int "BGL_IO_SIGPIPE_ERROR")
 	    (macro $errno-io-timeout-error::int "BGL_IO_TIMEOUT_ERROR")
+	    (macro $errno-io-connection-error::int "BGL_IO_CONNECTION_ERROR")
 	    (macro $errno-process-exception::int "BGL_PROCESS_EXCEPTION"))
 
    (java    (export the_failure "the_failure")
@@ -139,6 +140,8 @@
 		      "BGL_IO_SIGPIPE_ERROR")
 	       (field static $errno-io-timeout-error::int
 		      "BGL_IO_TIMEOUT_ERROR")
+	       (field static $errno-io-connection-error::int
+		      "BGL_IO_CONNECTION_ERROR")
 	       (field static $errno-process-exception::int
 		      "BGL_PROCESS_EXCEPTION")))
    
@@ -296,6 +299,9 @@
       ((=fx sysno $errno-io-timeout-error)
        (raise
 	  (instantiate::&io-timeout-error (proc proc) (msg msg) (obj obj))))
+      ((=fx sysno $errno-io-connection-error)
+       (raise
+	  (instantiate::&io-connection-error (proc proc) (msg msg) (obj obj))))
       ((=fx sysno $errno-process-exception)
        (raise
 	  (instantiate::&process-exception (proc proc) (msg msg) (obj obj))))

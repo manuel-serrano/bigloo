@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Nov 18 14:00:16 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 17:48:06 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -183,22 +183,21 @@
       (if (isa? v ev_var)
 	  (with-access::ev_var v (type name)
 	     (let loop ( (node v)
-			 (type type)
+			 (klass (class-exists type))
 			 (fields (cdr l)) )
 		(cond
 		   ((null? fields)
 		    node)
-		   ((class-exists type)
-		    =>
-		    (lambda (klass)
-		       (let ( (field (find-class-field klass (car fields))) )
-			  (if (class-field? field)
-			      (let ( (node (make-class-field-ref
-					      field node loc tail?)) )
-				 (loop node (class-field-type field) (cdr fields)) )
-			      (evcompile-error loc type
-				 (format "Class \"~a\" has no field \"~a\"" type field)
-				 e) ))))
+		   (klass
+		    ;;;
+		    (let ( (field (find-class-field klass (car fields))) )
+		       (if (class-field? field)
+			   (let ( (node (make-class-field-ref
+					   field node loc tail?)) )
+			      (loop node (class-field-type field) (cdr fields)) )
+			   (evcompile-error loc type
+			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
+			      e) )))
 		   (else
 		    (evcompile-error loc (or type name)
 		       "Static type not a class" e) ))))
@@ -213,29 +212,28 @@
       (if (isa? v ev_var)
 	  (with-access::ev_var v (type name)
 	     (let loop ( (node v)
-			 (type type)
+			 (klass (class-exists type))
 			 (fields (cdr l)) )
 		(cond
 		   ((null? fields)
 		    node)
-		   ((class-exists type)
-		    =>
-		    (lambda (klass)
-		       (let ( (field (find-class-field klass (car fields))) )
-			  (if (class-field? field)
-			      (if (null? (cdr fields))
-				  (if (class-field-mutable? field)
-				      (make-class-field-set
-					 field (list node e2) loc tail?)
-				      (evcompile-error loc (car fields)
-					 "Field read-only"
-					 e))
-				  (let ( (node (make-class-field-ref
-						  field node loc tail?)) )
-				     (loop node (class-field-type field) (cdr fields)) ))
-			      (evcompile-error loc type
-				 (format "Class \"~a\" has no field \"~a\"" type field)
-				 e) ))))
+		   (klass
+		    ;;;
+		    (let ( (field (find-class-field klass (car fields))) )
+		       (if (class-field? field)
+			   (if (null? (cdr fields))
+			       (if (class-field-mutable? field)
+				   (make-class-field-set
+				      field (list node e2) loc tail?)
+				   (evcompile-error loc (car fields)
+				      "Field read-only"
+				      e))
+			       (let ( (node (make-class-field-ref
+					       field node loc tail?)) )
+				  (loop node (class-field-type field) (cdr fields)) ))
+			   (evcompile-error loc type
+			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
+			      e) )))
 		   (else
 		    (evcompile-error loc
 		       (or type name) "Static type not a class" e) ))))

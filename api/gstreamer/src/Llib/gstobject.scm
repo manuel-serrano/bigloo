@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 16:06:35 2007                          */
-;*    Last change :  Tue Nov 15 17:21:56 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 18:23:01 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstObject wrapper                                                */
@@ -116,7 +116,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (%gst-object-init o::gst-object)
    (with-access::gst-object o ($builtin $finalizer)
-      (when ($gst-element-null? ($gst-element $builtin))
+      (when ($gst-object-null? $builtin)
 	 (raise (instantiate::&gst-create-error
 		   (proc '%gst-object-init)
 		   (msg "Illegal gst-object")

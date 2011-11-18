@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Jun 10 10:50:15 2011 (serrano)                */
+/*    Last change :  Fri Nov 18 15:58:51 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1503,6 +1503,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_IO_MALFORMED_URL_ERROR   37
 #define BGL_IO_SIGPIPE_ERROR         38
 #define BGL_IO_TIMEOUT_ERROR         39
+#define BGL_IO_CONNECTION_ERROR      40
    
 #define BGL_PROCESS_EXCEPTION        50
    
