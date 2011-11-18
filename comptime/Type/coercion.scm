@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Tue Nov 15 08:11:54 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:14:29 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
@@ -146,6 +146,7 @@
 		 #t)
 		((match-case (car coerce)
 		    (((? symbol?) . ?-) #f)
+		    (((@ (? symbol?) (? symbol?)) . ?-) #f)
 		    ((#t . ?-) #f)
 		    (((lambda (?-) . ?-) . ?-) #f)
 		    (else #t))
@@ -155,6 +156,7 @@
 	 ((and (not (symbol? (caar check)))
 	       (not (eq? (caar check) #t))
 	       (not (match-case (caar check)
+		       ((@ (? symbol?) (? symbol?)) #t)
 		       ((lambda (?-) . ?-) #t)
 		       (else #f))))
 	  #f)

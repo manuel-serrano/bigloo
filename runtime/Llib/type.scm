@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Apr 29 14:33:59 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:17:20 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -29,7 +29,8 @@
 	__r4_numbers_6_5_flonum
 	__r4_symbols_6_4
 	__r4_strings_6_7
-	__evenv)
+	__evenv
+	__object)
    
    (type
     
@@ -106,6 +107,10 @@
 
     (subtype f32vector "obj_t" (obj))
     (subtype f64vector "obj_t" (obj))
+
+    ;; classes
+    (subtype class "obj_t" (obj))
+    (subtype class-field "obj_t" (obj))
 
     ;; we give now the foreign hierarchy
     (cobj "long" C)
@@ -191,6 +196,8 @@
     (coerce obj mutex ($mutex?) ())
     (coerce obj condvar ($condvar?) ())
     (coerce obj mmap ($mmap?) ())
+    (coerce obj class ((@ class? __object)) ())
+    (coerce obj class-field ((@ class-field? __object)) ())
     (coerce obj opaque (c-opaque?) ())
     
     ;; cobj
@@ -271,6 +278,8 @@
     (coerce condvar obj () ())
     (coerce mmap obj () ())
     (coerce opaque obj () ())
+    (coerce class obj () ())
+    (coerce class-field obj () ())
 
     ;; -> cobj
     (coerce bool cobj () ())
@@ -585,6 +594,10 @@
 
     ;; mmap
     (coerce mmap bool () ((lambda (x) #t)))
+
+    ;; class
+    (coerce class bool () ((lambda (x) #t)))
+    (coerce class-field bool () ((lambda (x) #t)))
 
     ;; opaque
     (coerce opaque bool () ((lambda (x) #t))))
