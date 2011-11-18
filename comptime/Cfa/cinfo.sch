@@ -170,7 +170,9 @@
     (inline svar/Cinfo-clo-env?-set! ::svar/Cinfo ::bool)
     (inline svar/Cinfo-approx::approx ::svar/Cinfo)
     (inline svar/Cinfo-loc::obj ::svar/Cinfo)
-    (inline svar/Cinfo-loc-set! ::svar/Cinfo ::obj))))
+    (inline svar/Cinfo-loc-set! ::svar/Cinfo ::obj)
+    (inline svar/Cinfo-stamp::long ::svar/Cinfo)
+    (inline svar/Cinfo-stamp-set! ::svar/Cinfo ::long))))
 
 ;; cvar/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
@@ -729,6 +731,8 @@
 (define-inline (svar/Cinfo-approx-set! o::svar/Cinfo v::approx) (with-access::svar/Cinfo o (approx) (set! approx v)))
 (define-inline (svar/Cinfo-loc::obj o::svar/Cinfo) (with-access::svar/Cinfo o (loc) loc))
 (define-inline (svar/Cinfo-loc-set! o::svar/Cinfo v::obj) (with-access::svar/Cinfo o (loc) (set! loc v)))
+(define-inline (svar/Cinfo-stamp::long o::svar/Cinfo) (with-access::svar/Cinfo o (stamp) stamp))
+(define-inline (svar/Cinfo-stamp-set! o::svar/Cinfo v::long) (with-access::svar/Cinfo o (stamp) (set! stamp v)))
 
 ;; cvar/Cinfo
 (define-inline (make-cvar/Cinfo::cvar/Cinfo macro?1690::bool approx1691::approx) (instantiate::cvar/Cinfo (macro? macro?1690) (approx approx1691)))

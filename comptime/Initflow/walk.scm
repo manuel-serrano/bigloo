@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Mon Nov 14 17:07:17 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:57:02 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
@@ -106,6 +106,9 @@
 	    ((eq? (global-type variable) *_*)
 	     (global-type-set! variable *obj*))
 	    ((eq? (global-type variable) *obj*)
+	     #unspecified)
+	    ((and (global-read-only? variable)
+		  (eq? (global-type variable) (get-class-type)))
 	     #unspecified)
 	    (else
 	     (user-error/location

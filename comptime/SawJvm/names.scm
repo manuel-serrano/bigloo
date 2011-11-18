@@ -48,6 +48,8 @@
 	       (pair-nil      . obj)
 	       (void*         . obj)
 	       (tvector       . obj)
+	       (class         . obj)
+	       (class-field   . obj)
 	       ; Not here in mklib mode
 ;	       (object        . object)
 	       (output-port   . output-port)

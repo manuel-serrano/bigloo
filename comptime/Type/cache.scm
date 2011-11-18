@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Wed Mar 30 18:17:07 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:25:05 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
@@ -56,6 +56,7 @@
 	   (get-default-type::type)
 	   (set-default-type! ::type)
 	   (get-object-type)
+	   (get-class-type)
 	   (get-default-c-type::type)
 	   (get-bigloo-type::type ::type)))
 
@@ -101,6 +102,9 @@
    (set! *object*        (if (type-exists? 'object)
 			     (find-type 'object)
 			     #f))
+   (set! *class*         (if (type-exists? 'class)
+			     (find-type 'class)
+			     #f))
    (set! *foreign*       (use-type! 'foreign #f))
    (set! *_*             (use-type! '_ #f))
    (set! *default-type* *_*))
@@ -144,6 +148,7 @@
 (define *unspec*        'no-type-yet)
 (define *exit*          'no-type-yet)
 (define *object*        'no-type-yet)
+(define *class*         'no-type-yet)
 (define *foreign*       'no-type-yet)
 (define *_*             'no-type-yet)
 (define *default-type*  'no-type-yet)
@@ -174,6 +179,17 @@
       (else
        (set! *object* (find-type 'object))
        *object*)))
+
+;*---------------------------------------------------------------------*/
+;*    get-class-type ...                                               */
+;*---------------------------------------------------------------------*/
+(define (get-class-type)
+   (cond
+      ((type? *class*)
+       *class*)
+      (else
+       (set! *class* (find-type 'class))
+       *class*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-default-c-type ...                                           */

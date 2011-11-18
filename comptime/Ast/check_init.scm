@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 11:02:16 1999                          */
-;*    Last change :  Sun Mar 13 10:14:41 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:30:35 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module checks that global variables are not used before     */
 ;*    being initialized. This function implements a walk thru          */
@@ -221,8 +221,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (check-init node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
-      (check-init exit)) 
-      (check-init value))
+      (check-init exit)
+      (check-init value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-init ::make-box ...                                        */

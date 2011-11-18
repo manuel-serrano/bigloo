@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Thu Nov 17 05:30:45 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:22:51 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -155,6 +155,7 @@
       ;; we mark that the holder is a read-only variable
       (global-set-read-only! class-holder)
       (global-evaluable?-set! class-holder #t)
+      (global-type-set! class-holder (get-class-type))
       ;; By now we make the assumption that super is a correct class.
       ;; Super will be checked in `make-class-accesses!' (see module
       ;; object_access).

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Sat Jun 11 06:31:03 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:40:33 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
@@ -93,10 +93,10 @@
 ;*    cfa-export-var! ::svar ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa-export-var! value::svar/Cinfo owner)
-   (with-access::intern-sfun/Cinfo sfun (stamp)
+   (with-access::svar/Cinfo value (stamp)
       (trace (cfa 3) "~~~ cfa-export/var!::svar/Cinfo[stamp: " stamp
-	     " *cfa-stamp*: " *cfa-stamp*
-	     "]" #\Newline)
+	 " *cfa-stamp*: " *cfa-stamp*
+	 "]" #\Newline)
       (if (=fx stamp *cfa-stamp*)
 	  (cfa-variable-value-approx value)
 	  (begin

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Mon Nov 14 17:09:37 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:38:51 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
@@ -63,7 +63,8 @@
        ;; is this variable holding a closure environement
        ;; (if it is it won't be lost when loosing the
        ;; function whose's this variable owner).
-       (clo-env?::bool (default #f)))
+       (clo-env?::bool (default #f))
+       (stamp::long (default -1)))
     (wide-class cvar/Cinfo::cvar
        (approx::approx read-only))
     

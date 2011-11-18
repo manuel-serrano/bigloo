@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Jun 11 07:56:18 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 07:41:22 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -42,7 +42,6 @@
 	    (approx-set-top! ::approx)
 	    (make-empty-approx::approx)
 	    (make-type-approx::approx ::type)
-	    (make-alloc-approx::approx ::app)
 	    (make-type-alloc-approx::approx ::type ::node)
 	    (for-each-approx-alloc ::procedure ::approx)
 	    (empty-approx-alloc? ::approx)
@@ -309,16 +308,6 @@
    (let ((allocs (make-set! *alloc-set*)))
       (instantiate::approx
 	 (type-locked? (not (eq? type *_*)))
-	 (type type)
-	 (allocs allocs))))
-		 
-;*---------------------------------------------------------------------*/
-;*    make-alloc-approx ...                                            */
-;*---------------------------------------------------------------------*/
-(define (make-alloc-approx alloc)
-   (let ((allocs (make-set! *alloc-set*)))
-      (set-extend! allocs alloc)
-      (instantiate::approx
 	 (type type)
 	 (allocs allocs))))
 		 
