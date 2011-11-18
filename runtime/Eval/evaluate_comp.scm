@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Nov 14 14:00:54 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 10:01:28 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -831,7 +831,7 @@
 	      (args (map (lambda (i) (symbol-append 'a (string->symbol (integer->string i))))
 			    (iota from 1) )))
 	  `(begin (define (,(symbol-append 'comp-call sn) loc vfun symb-fun fun tail? stk size ,@args)
-		     (let ( (cfun (is-constant-fun? vfun ,(length args))) )
+		     (let ( (cfun (is-constant-fun? vfun ,(length args) loc symb-fun)) )
 			(if cfun
 			    (generate-comp-constant-calli-body ,args)
 			    (if tail?
@@ -842,16 +842,23 @@
 (generate-comp-calli 0 4)
 
 ;; calling a constant function
-(define (is-constant-fun? fun nbargs)
-   (when (isa? fun ev_global)
-      (with-access::ev_global fun (name mod)
-	 (let ( (g (evmodule-find-global mod name)) )
-	    (when g
-	       (when (=fx (eval-global-tag g) 0)
-		  (let ( (val (eval-global-value g)) )
-		     (when (and (procedure? val)
-				(correct-arity? val nbargs) )
-			val ))))))))
+(define (is-constant-fun? fun nbargs loc symb-fun)
+   (cond
+      ((isa? fun ev_global)
+       (with-access::ev_global fun (name mod)
+	  (let ( (g (evmodule-find-global mod name)) )
+	     (when g
+		(when (=fx (eval-global-tag g) 0)
+		   (let ( (val (eval-global-value g)) )
+		      (when (and (procedure? val)
+				 (correct-arity? val nbargs) )
+			 val )))))))
+      ((and (isa? fun ev_litt)
+	    (procedure? (with-access::ev_litt fun (value) value)))
+       (with-access::ev_litt fun (value)
+	  (if (correct-arity? value nbargs)
+	      value
+	      (evarity-error loc symb-fun nbargs ($procedure-arity value)))))))
 
 ;; expression arithmetique
 (define (compile-float-arith expr stk)
@@ -1131,7 +1138,3 @@
 	 (when (<fx sp stop)
 	    (vector-set! s sp (vector-ref val* i))
 	    (rec (+fx i 1) (+fx sp 1)) ))))
-
-
-
-
