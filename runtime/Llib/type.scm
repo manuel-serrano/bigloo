@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Nov 18 07:17:20 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 09:32:28 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -279,7 +279,11 @@
     (coerce mmap obj () ())
     (coerce opaque obj () ())
     (coerce class obj () ())
+    (coerce class vector () ())
+    (coerce vector class () ())
     (coerce class-field obj () ())
+    (coerce class-field vector () ())
+    (coerce vector class-field () ())
 
     ;; -> cobj
     (coerce bool cobj () ())

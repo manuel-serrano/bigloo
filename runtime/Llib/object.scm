@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov 16 18:54:17 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 09:31:23 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -129,41 +129,40 @@
 	    (inline object-class-num::long ::object)
 	    (inline object-class-num-set! ::object ::long)
 	    (inline object-class::obj ::object)
-	    (find-class ::symbol)
+	    (find-class::class ::symbol)
 	    (class-exists ::symbol)
 	    (class?::bool ::obj)
 	    (eval-class?::bool ::obj)
-	    (class-abstract?::bool class)
-	    (class-wide?::bool class)
-	    (class-super class)
-	    (class-subclasses class)
+	    (class-abstract?::bool ::class)
+	    (class-wide?::bool ::class)
+	    (class-super ::class)
+	    (class-subclasses::pair-nil ::class)
 	    (inline class-num::long class)
-	    (class-name::symbol class)
-	    (class-hash::long class)
-	    (class-fields::pair-nil class)
-	    (class-evdata::obj class)
-	    (class-evdata-set! class ::obj)
+	    (class-name::symbol ::class)
+	    (class-hash::long ::class)
+	    (class-fields::pair-nil ::class)
+	    (class-evdata::obj ::class)
+	    (class-evdata-set! ::class ::obj)
 	    (class-all-fields::pair-nil class)
 	    (find-class-field class ::symbol)
-	    (class-constructor::obj class)
+	    (class-constructor::obj ::class)
 	    (class-allocator::procedure class)
-	    (class-creator::obj class)
-	    (class-nil::obj class)
-	    (class-get-new-nil::obj class)
-	    (make-class-field::vector ::symbol o o ::bool ::bool ::obj ::obj ::obj)
+	    (class-creator::obj ::class)
+	    (class-nil::obj ::class)
+	    (class-get-new-nil::obj ::class)
+	    (make-class-field::class-field ::symbol o o ::bool ::bool ::obj ::obj ::obj)
 	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
-	    (class-field-name::symbol field)
-	    (class-field-info::obj field)
-	    (class-field-default-value::obj field)
-	    (class-field-virtual?::bool field)
-	    (class-field-accessor::procedure field)
-	    (class-field-mutable?::bool field)
-	    (class-field-mutator::procedure field)
-	    (%class-field-mutator::procedure field)
-	    (class-field-type::obj field)
-	    (register-class-old!::obj ::symbol ::obj ::obj ::obj ::obj ::obj ::obj ::long ::pair-nil ::vector ::obj)
-	    (register-class!::obj ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
+	    (class-field-name::symbol ::class-field)
+	    (class-field-info::obj ::class-field)
+	    (class-field-default-value::obj ::class-field)
+	    (class-field-virtual?::bool ::class-field)
+	    (class-field-accessor::procedure ::class-field)
+	    (class-field-mutable?::bool ::class-field)
+	    (class-field-mutator::procedure ::class-field)
+	    (%class-field-mutator::procedure ::class-field)
+	    (class-field-type::obj ::class-field)
+	    (register-class!::class ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -316,7 +315,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (find-class::obj cname)
+(define (find-class cname)
    (let loop ((i 0))
       (if (=fx i *nb-classes*)
 	  (error "find-class" "Can't find class" cname)
@@ -353,7 +352,7 @@
 ;*    class-name ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-name class)
-   (vector-ref class 0))
+   (vector-ref-ur class 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-num ...                                                    */
@@ -407,9 +406,7 @@
 ;*    class-fields ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-fields class)
-   (if (class? class)
-       (vector-ref class 8)
-       (bigloo-type-error "class-fields" "class" class)))
+   (vector-ref-ur class 8))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-all-fields ...                                             */
@@ -458,105 +455,79 @@
 ;*    class-field-name ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-field-name::symbol field)
-   (if (class-field? field)
-       (vector-ref field 0)
-       (error "class-field-name" "Not a class field" field)))
+   (vector-ref-ur field 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-virtual? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (class-field-virtual?::bool field)
-   (if (class-field? field)
-       (vector-ref field 3)
-       (error "class-field-virtual?" "Not a class field" field)))
+   (vector-ref-ur field 3))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-accessor ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (class-field-accessor::procedure field)
-   (if (class-field? field)
-       (vector-ref field 1)
-       (error "class-field-accessor" "Not a class field" field)))
+   (vector-ref-ur field 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-mutable? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (class-field-mutable?::bool field)
-   (if (class-field? field)
-       (vector-ref field 8)
-       (error "class-field-mutable?" "Not a class field" field)))
+   (vector-ref-ur field 8))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-mutator ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (class-field-mutator::procedure field)
-   (if (class-field? field)
-       (vector-ref field 2)
-       (error "class-field-mutator" "Not a class field" field)))
+   (vector-ref-ur field 2))
 
 ;*---------------------------------------------------------------------*/
 ;*    %class-field-mutator ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%class-field-mutator::procedure field)
-   (if (class-field? field)
-       (vector-ref field 2)
-       (error "class-field-mutator" "Not a class field" field)))
+   (vector-ref-ur field 2))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-info ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-field-info field)
-   (if (class-field? field)
-       (vector-ref field 5)
-       (error "class-field-info" "Not a class field" field)))
+   (vector-ref-ur field 5))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
-   (if (class-field? field)
-       (vector-ref field 6)
-       (error "class-field-default-value" "Not a class field" field)))
+   (vector-ref-ur field 6))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-type ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-field-type field)
-   (if (class-field? field)
-       (vector-ref field 7)
-       (error "class-field-type" "Not a class field" field)))
+   (vector-ref-ur field 7))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-super ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-super class)
-   (if (class? class)
-       (vector-ref class 3)
-       (bigloo-type-error "class-super" "class" class)))
+   (vector-ref-ur class 3))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-abstract? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-abstract? class)
-   (if (class? class)
-       (not (procedure? (class-allocator class)))
-       (bigloo-type-error "class-abstract?" "class" class)))
+   (not (procedure? (class-allocator class))))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-wide? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-wide? class)
-   (if (class? class)
-       (procedure? (class-shrink class))
-       (bigloo-type-error "class-wide?" "class" class)))
+   (procedure? (class-shrink class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses class)
-   (if (class? class)
-       (vector-ref class 4)
-       (bigloo-type-error "class-subclasses" "class" class)))
+   (vector-ref class 4))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses-set! ...                                        */
@@ -582,32 +553,26 @@
 ;*    class-hash ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-hash class)
-   (if (class? class)
-       (vector-ref-ur class 7)
-       (bigloo-type-error "class-hash" "class" class)))
+   (vector-ref-ur class 7))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-constructor ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-constructor class)
-   (if (class? class)
-       (vector-ref class 9)
-       (bigloo-type-error "class-constructor" "class" class)))
+   (vector-ref-ur class 9))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-creator ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (class-creator class)
-   (if (class? class)
-       (vector-ref class 11)
-       (bigloo-type-error "class-creator" "class" class)))
+   (vector-ref-ur class 11))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-nil ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-nil class)
    (if (class? class)
-       (let ((c (vector-ref class 12)))
+       (let ((c (vector-ref-ur class 12)))
 	  (when (eq? (car c) #t)
 	     ;; no nil value is represented by #t
 	     (if (class-wide? class)
@@ -634,22 +599,16 @@
 ;*    class-get-new-nil ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-get-new-nil class)
-   (cond
-      ((eq? class object)
-       ((class-allocator object)))
-      ((class? class)
-       (let ((c (vector-ref class 12)))
+   (if (eq? class object)
+       ((class-allocator object))
+       (let ((c (vector-ref-ur class 12)))
 	  (if (class-wide? class)
-	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
 	      (let* ((super (class-super class))
 		     (o ((class-allocator super)))
 		     (wo ((class-allocator class) o)))
 		 ((cdr c) wo))
-	      ;; MS CARE 15nov2011, test + true to be removed after bootstrap
 	      (let ((o ((class-allocator class))))
-		 ((cdr c) o)))))
-      (else
-       (bigloo-type-error "class-nil" "class" class))))
+		 ((cdr c) o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-shrink ...                                                 */
@@ -919,53 +878,6 @@
 	    (generics-add-class! num (if (class? super) (class-num super) num))
 	    class))))
 
-;*---------------------------------------------------------------------*/
-;*    register-class-old! ...                                          */
-;*---------------------------------------------------------------------*/
-(define (register-class-old! name super abstract creator allocate nil shrink hash plain virtual constructor)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (initialize-objects!)
-	 (when (and super (not (class? super)))
-	    (error "add-class!" "Illegal super class for class" name))
-	 (when (=fx *nb-classes* *nb-classes-max*)
-	    (double-nb-classes!))
-	 (let* ((num   (+fx %object-type-number *nb-classes*))
-		(class (make-class name
-			  num
-			  -1
-			  super
-			  '()
-			  -1
-			  (unless abstract allocate)
-			  hash
-			  plain
-			  constructor
-			  (make-class-virtual-slots-vector super virtual)
-			  (unless abstract creator)
-			  nil
-			  shrink
-			  #f
-			  abstract)))
-	    ;; we set the sub field of the super class
-	    (if (class? super)
-		(begin
-		   ;; we add the class to its super subclasses list
-		   (class-subclasses-set!
-		      super (cons class (class-subclasses super)))
-		   ;; and then, we renumber the tree
-		   (class-hierarchy-numbering! class super))
-		(begin
-		   (class-min-num-set! class 1)
-		   (class-max-num-set! class 1)))
-	    ;; we add the class in the *classes* vector (we declare the class)
-	    (vector-set! *classes* *nb-classes* class)
-	    ;; we increment the global class number
-	    (set! *nb-classes* (+fx *nb-classes* 1))
-	    ;; and we adjust the method arrays of all generic functions
-	    (generics-add-class! num (if (class? super) (class-num super) num))
-	    class))))
-   
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-slots-vector ...                              */
 ;*---------------------------------------------------------------------*/

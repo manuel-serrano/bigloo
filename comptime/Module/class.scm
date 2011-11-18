@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Thu Nov 17 05:48:07 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 09:29:18 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -245,68 +245,6 @@
 	  (tclass-slots-set! class '())
 	  '())))
 		       
-;*---------------------------------------------------------------------*/
-;*    register-class-with-accessors! ...                               */
-;*---------------------------------------------------------------------*/
-(define (register-class-with-accessors! holder class src-def virtuals)
-   (let* ((super          (tclass-its-super class))
-	  (holder-id      (global-id holder))
-	  (class-id       (type-id class))
-	  (class-module   (global-module holder))
-	  (class-make-id  (class-make class))
-	  (class-alloc-id (symbol-append '%allocate- class-id))
-	  (class-make     (cond
-			     ((tclass-abstract? class)
-			      `(lambda (x)
-				  (error
-				     ',class-id
-				     "Can't make instance of abstract classes"
-				     ',class-id)))
-			     ((not (symbol? class-make-id))
-			      (internal-error "make-register-class!"
-				 "make-class-id not a symbol"
-				 class-make-id))
-			     (else
-			      `(@ ,class-make-id ,class-module))))
-	  (class-nil      `(@ ,(symbol-append class-id '-nil) ,class-module))
-	  (class-pred     `(@ ,(class-predicate class) ,class-module))
-	  (class-alloc    (if (tclass-abstract? class)
-			      `(lambda (x)
-				  (error
-				     ',class-alloc-id
-				     "Can't allocate instance of abstract classes"
-				     ',class-id))
-			      `(@ ,class-alloc-id ,class-module)))
-	  (hash           (get-class-hash class-id (cddr src-def)))
-	  (constr         (tclass-constructor class))
-	  (loc            (find-location src-def))
-	  (fields         (make-class-src-fields class-id (cddr src-def) loc))
-	  (super-class    (if (not (tclass? super))
-			      #f
-			      (let* ((sholder (tclass-holder super))
-				     (sholder-id (global-id sholder))
-				     (sholder-module (global-module sholder)))
-				 `(@ ,sholder-id ,sholder-module)))))
-      (trace (ast 2) "make-register-class!: " (shape class) " " virtuals #\Newline)
-      (let ((decl `(define ,holder-id
-		      ((@ register-class-old! __object)
-		       ',class-id ,super-class ,(tclass-abstract? class)
-		       ,class-make ,class-alloc ,class-nil
-		       ,(when (wide-class? class)
-			   (classgen-shrink-anonymous class))
-		       ,hash
-		       ,fields 
-		       (vector ,@(map (lambda (v)
-					 `(cons ,(car v)
-					     (cons ,(cadr v) ,(caddr v))))
-				    virtuals))
-		       ,constr))))
-	 ;; we have to inject a source positioning into the build declaration
-	 (let ((loc-decl (if (epair? src-def)
-			     (econs (car decl) (cdr decl) (cer src-def))
-			     decl)))
-	    (set! *declared-classes* (cons loc-decl *declared-classes*))))))
-
 ;*---------------------------------------------------------------------*/
 ;*    get-hash-class ...                                               */
 ;*---------------------------------------------------------------------*/
