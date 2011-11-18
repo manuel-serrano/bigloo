@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Fri Feb 18 15:19:17 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 14:01:33 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -46,7 +46,8 @@
 	    (dsssl-get-key-arg ::obj ::keyword ::obj)
 	    (dsssl-get-key-rest-arg ::obj ::pair-nil)
 	    (dsssl-check-key-args! ::obj ::obj)
-	    (dsssl-formals->scheme-formals ::obj ::procedure)))
+	    (dsssl-formals->scheme-formals ::obj ::procedure)
+	    (dsssl-formals->scheme-typed-formals ::obj ::procedure ::bool)))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-named-constant? ...                                        */
@@ -393,17 +394,25 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-formals->scheme-formals ...                                */
+;*---------------------------------------------------------------------*/
+(define (dsssl-formals->scheme-formals formals err)
+   (dsssl-formals->scheme-typed-formals formals err #f))
+
+;*---------------------------------------------------------------------*/
+;*    dsssl-formals->scheme-formals ...                                */
 ;*    -------------------------------------------------------------    */
 ;*    This function parses a formal argument list and removes          */
 ;*    the DSSSL named constant in order to construct a regular Scheme  */
 ;*    formal parameter list.                                           */
 ;*      eg:   x y #!optional z #!rest r #!key k -> x y . z             */
+;*    If the argument typed is true, fixed argument are left typed.    */
+;*    Otherwise, they are untyped.                                     */
 ;*    -------------------------------------------------------------    */
 ;*    This function does not check the whole correctness of the        */
 ;*    formal parameter list. It only checks until the first            */
 ;*    DSSSL formal parameter is found.                                 */
 ;*---------------------------------------------------------------------*/
-(define (dsssl-formals->scheme-formals formals err)
+(define (dsssl-formals->scheme-typed-formals formals err typed)
    
    (define (dsssl-named-constant? obj)
       (memq obj '(#!optional #!rest #!key)))
@@ -446,5 +455,6 @@
 	 (dsssl
 	  (id-sans-type (car args)))
 	 (else
-	  (cons (id-sans-type (car args))
+	  (cons (if typed (car args) (id-sans-type (car args)))
 		(loop (cdr args) #f))))))
+

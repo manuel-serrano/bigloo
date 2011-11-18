@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Nov 18 06:52:34 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 14:01:07 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -234,10 +234,11 @@
      ((lambda ?formals ?body)
       ;;(tprint "where=" where " " `(lambda ,formals ,body))
       (let* ((loc (get-location exp loc))
-	     (scm-formals (dsssl-formals->scheme-formals
+	     (scm-formals (dsssl-formals->scheme-typed-formals
 			   formals
 			   (lambda (proc msg obj)
-			      (evcompile-error loc proc msg obj)))))
+			      (evcompile-error loc proc msg obj))
+			   #t)))
 	 (evcompile-lambda scm-formals
  			   (evcompile (make-dsssl-function-prelude
 				       exp

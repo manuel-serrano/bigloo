@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Nov 18 06:53:47 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 14:00:16 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -200,7 +200,8 @@
 				 (format "Class \"~a\" has no field \"~a\"" type field)
 				 e) ))))
 		   (else
-		    (evcompile-error loc name "Static type not a class" e) ))))
+		    (evcompile-error loc (or type name)
+		       "Static type not a class" e) ))))
 	  (evcompile-error loc (cadr e) "Variable unbound" e) )))
 
 ;*---------------------------------------------------------------------*/
@@ -236,7 +237,8 @@
 				 (format "Class \"~a\" has no field \"~a\"" type field)
 				 e) ))))
 		   (else
-		    (evcompile-error loc name "Static type not a class" e) ))))
+		    (evcompile-error loc
+		       (or type name) "Static type not a class" e) ))))
 	  (evcompile-error loc (car l) "Variable unbound" e) )))
 
 ;*---------------------------------------------------------------------*/
@@ -300,7 +302,7 @@
 		     (cons (untype-ident (car r)) flat) (+fx arity 1))) )))
       
       (multiple-value-bind (vars arity)
-	 (split-formals (dsssl-formals->scheme-formals formals error))
+	 (split-formals (dsssl-formals->scheme-typed-formals formals error #t))
 	 (let ( (vars (map (lambda (v)
 			      (instantiate::ev_var
 				 (name (car v))
