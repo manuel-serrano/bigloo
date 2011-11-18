@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Nov 15 08:17:01 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 20:52:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -169,8 +169,8 @@
 	      (error-sexp->node "Illegal `@' expression" exp loc)))))
 ;*--- -> --------------------------------------------------------------*/
       ((-> . ?l)
-       (if (every? symbol? l)
-	   (field-ref->node l stack loc site)
+       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (field-ref->node l exp stack loc site)
 	   (error-sexp->node "Illegal ->" exp loc)))
 ;*--- quote -----------------------------------------------------------*/
       ((quote . ?-)
@@ -258,8 +258,8 @@
 	   (error-sexp->node "Illegal `if' form" exp loc))))
 ;*--- set! ------------------------------------------------------------*/
       ((set! (-> . ?l) ?val)
-       (if (every? symbol? l)
-	   (field-set->node l val stack loc site)
+       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (field-set->node l val exp stack loc site)
 	   (error-sexp->node "Illegal ->" exp loc)))
       ((set! . ?-)
        (match-case exp

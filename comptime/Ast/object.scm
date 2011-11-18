@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Nov 17 18:22:17 2011 (serrano)                */
+;*    Last change :  Thu Nov 17 20:39:19 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -48,8 +48,8 @@
 	    ast_sexp)
    
    (export (field-access::pair ::symbol ::symbol)
-	   (field-ref->node::node ::obj stack ::obj ::symbol)
-	   (field-set->node::node ::obj ::obj stack ::obj ::symbol)))
+	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol)
+	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    __bigloo__ ...                                                   */
@@ -66,11 +66,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (field-ref->node exp stack loc site)
-   (let* ((l (if (symbol? exp)
-		 (map! string->symbol (string-split (symbol->string! exp) "."))
-		 exp))
-	  (l2 (if (eq? (car l) __bigloo__) (cdr l) l))
+(define (field-ref->node l exp stack loc site)
+   (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site)))
       (with-access::variable (var-variable var) (type)
 	 (let loop ((node var)
@@ -94,11 +91,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    field-set->node ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (field-set->node exp val stack loc site)
-   (let* ((l (if (symbol? exp)
-		 (map! string->symbol (string-split (symbol->string! exp) "."))
-		 exp))
-	  (l2 (if (eq? (car l) __bigloo__) (cdr l) l))
+(define (field-set->node l val exp stack loc site)
+   (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site))
 	  (val (sexp->node val stack loc site)))
       (if (not (var? var))

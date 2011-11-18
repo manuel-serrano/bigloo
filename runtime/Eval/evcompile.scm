@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sat Nov  5 09:07:52 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 06:52:34 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -95,9 +95,7 @@
       ((atom ?atom)
        (cond
 	  ((symbol? atom)
-	   (if (field-access? atom env genv)
-	       (evcompile-field-ref atom env genv where tail loc lkp toplevelp)
-	       (evcompile-ref (variable loc atom env genv) genv loc lkp)))
+	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
 	  ((or (vector? atom) (struct? atom))
 	   (evcompile-error loc
 			    "eval"
@@ -124,6 +122,10 @@
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
        (let ((@var (@variable loc id env genv mod)))
 	  (evcompile-ref @var genv loc lkp)))
+       ((-> . ?l)
+       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
+	   (evcompile-error loc "eval" "Illegal form" exp) ))
       ((quote ?cnst)
        (evcompile-cnst cnst (get-location exp loc)))
       ((if ?si ?alors ?sinon)
@@ -182,17 +184,19 @@
 					lkp #f)
 			     genv
 			     loc)))
+	  ((?- (-> . ?l) ?val)
+	   (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	       (evcompile-field-set l val exp env genv where tail loc lkp toplevelp)
+	       (evcompile-error loc "eval" "Illegal form" exp) ))
 	  ((?- (and (? symbol?) ?var) ?val)
 	   (let ((loc (get-location exp loc)))
-	      (if (field-access? var env genv)
-		  (evcompile-field-set var val env genv where tail loc lkp #f)
-		  (evcompile-set (variable loc var env genv)
-		     (evcompile val env
-			genv var #f
-			(get-location val loc)
-			lkp #f)
-		     genv
-		     loc))))
+	      (evcompile-set (variable loc var env genv)
+		 (evcompile val env
+		    genv var #f
+		    (get-location val loc)
+		    lkp #f)
+		 genv
+		 loc)))
 	  (else
 	   (evcompile-error (get-location exp loc) "set!" "Illegal form" exp))))
       ((bind-exit ?escape ?body)
@@ -886,30 +890,10 @@
 		l)))
 
 ;*---------------------------------------------------------------------*/
-;*    field-access? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (field-access? s env genv)
-   (let* ((s (symbol->string! s))
-	  (i (string-index s #\.)))
-      (when i
-	 (let ((n (string->symbol (substring s 0 i))))
-	    (cond
-	       ((eq? n '__bigloo__)
-		#t)
-	       ((eq? (identifier-syntax) 'bigloo)
-		#t)
-	       ((eq? (identifier-syntax) 'r5rs)
-		#f)
-	       (else
-		(let ((var (variable #unspecified n env genv)))
-		   (not (and (pair? var) (eq? (car var) 'dynamic))))))))))
-
-;*---------------------------------------------------------------------*/
 ;*    evcompile-field-ref ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
-   (let* ((l (map! string->symbol (string-split (symbol->string! exp) ".")))
-	  (l (if (eq? (car l) '__bigloo__) (cdr l) l))
+   (let* ((l (cdr exp))
 	  (v (variable loc (car l) env genv)))
       (if (not (integer? v))
 	  (evcompile-error loc "eval" "Static type not a class" exp)
@@ -934,23 +918,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-field-set ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-field-set var val env genv where tail loc lkp toplevelp)
-   (let* ((l (map! string->symbol (string-split (symbol->string! var) ".")))
-	  (v (variable loc (car l) env genv)))
+(define (evcompile-field-set l val exp env genv where tail loc lkp toplevelp)
+   (let ((v (variable loc (car l) env genv)))
       (if (not (integer? v))
-	  (evcompile-error loc "set!" "Static type not a class" var)
+	  (evcompile-error loc "set!" "Static type not a class" exp)
 	  (let loop ((node (car l))
 		     (klass (cdr (list-ref env v)))
 		     (fields (cdr l)))
 	     (if (not (class? klass))
-		 (evcompile-error loc "set!" "Static type not a class" var)
+		 (evcompile-error loc "set!" "Static type not a class" exp)
 		 (let ((field (find-class-field klass (car fields))))
 		    (cond
 		       ((not field)
 			(evcompile-error loc "set!"
 			   (format "Class \"~a\" has not field \"~a\""
 			      (class-name klass) (car fields))
-			   var))
+			   exp))
 		       ((null? (cdr fields))
 			(if (class-field-mutable? field)
 			    (evcompile (make-field-set! klass field node val)

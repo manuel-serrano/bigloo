@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Nov 17 18:22:57 2011 (serrano)                */
+;*    Last change :  Fri Nov 18 06:53:47 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -112,10 +112,6 @@
 ;*    evaluate2 ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (evaluate2 sexp env loc)
-   #;(tprint "evaluate2: current="
-	   (if (evmodule? env)
-	       (evmodule-name env)
-	       "???"))
    (let ( (ast (extract-loops (convert sexp env loc))) )
       (when (> (bigloo-debug) 10) (pp (uncompile ast)))
       (analyse-vars ast)
@@ -177,6 +173,93 @@
 	     (e2 (conv-begin r locals globals tail? where loc top?)) ))
 	 (else
 	  (evcompile-error loc "eval" "bad syntax" l)) )))
+
+;*---------------------------------------------------------------------*/
+;*    conv-field-ref ...                                               */
+;*---------------------------------------------------------------------*/
+(define (conv-field-ref e locals globals tail? where loc top?)
+   (let* ( (l (cdr e))
+	   (v (conv-var (car l) locals)) )
+      (if (isa? v ev_var)
+	  (with-access::ev_var v (type name)
+	     (let loop ( (node v)
+			 (type type)
+			 (fields (cdr l)) )
+		(cond
+		   ((null? fields)
+		    node)
+		   ((class-exists type)
+		    =>
+		    (lambda (klass)
+		       (let ( (field (find-class-field klass (car fields))) )
+			  (if (class-field? field)
+			      (let ( (node (make-class-field-ref
+					      field node loc tail?)) )
+				 (loop node (class-field-type field) (cdr fields)) )
+			      (evcompile-error loc type
+				 (format "Class \"~a\" has no field \"~a\"" type field)
+				 e) ))))
+		   (else
+		    (evcompile-error loc name "Static type not a class" e) ))))
+	  (evcompile-error loc (cadr e) "Variable unbound" e) )))
+
+;*---------------------------------------------------------------------*/
+;*    conv-field-set ...                                               */
+;*---------------------------------------------------------------------*/
+(define (conv-field-set l e2 e locals globals tail? where loc top?)
+   (let* ( (v (conv-var (car l) locals))
+	   (e2 (conv e2 locals globals #f where loc #f)) )
+      (if (isa? v ev_var)
+	  (with-access::ev_var v (type name)
+	     (let loop ( (node v)
+			 (type type)
+			 (fields (cdr l)) )
+		(cond
+		   ((null? fields)
+		    node)
+		   ((class-exists type)
+		    =>
+		    (lambda (klass)
+		       (let ( (field (find-class-field klass (car fields))) )
+			  (if (class-field? field)
+			      (if (null? (cdr fields))
+				  (if (class-field-mutable? field)
+				      (make-class-field-set
+					 field (list node e2) loc tail?)
+				      (evcompile-error loc (car fields)
+					 "Field read-only"
+					 e))
+				  (let ( (node (make-class-field-ref
+						  field node loc tail?)) )
+				     (loop node (class-field-type field) (cdr fields)) ))
+			      (evcompile-error loc type
+				 (format "Class \"~a\" has no field \"~a\"" type field)
+				 e) ))))
+		   (else
+		    (evcompile-error loc name "Static type not a class" e) ))))
+	  (evcompile-error loc (car l) "Variable unbound" e) )))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-field-ref ...                                         */
+;*---------------------------------------------------------------------*/
+(define (make-class-field-ref field arg loc tail?)
+   (let ( (get (class-field-accessor field)) )
+      (instantiate::ev_app
+	 (loc loc)
+	 (fun (instantiate::ev_litt (value get)))
+	 (args (list arg))
+	 (tail? tail?))))
+
+;*---------------------------------------------------------------------*/
+;*    make-class-field-set ...                                         */
+;*---------------------------------------------------------------------*/
+(define (make-class-field-set field args loc tail?)
+   (let ( (set (class-field-mutator field)) )
+      (instantiate::ev_app
+	 (loc loc)
+	 (fun (instantiate::ev_litt (value set)))
+	 (args args)
+	 (tail? tail?))))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv ...                                                         */
@@ -251,32 +334,10 @@
 	  (loc loc)
 	  (name id)
 	  (mod (eval-find-module modname))))
-      ((-> (and (? symbol?) ?var) (and (? symbol?) ?field))
-       (let ( (v (conv-var var locals)) )
-	  (if (isa? v ev_var)
-	      (with-access::ev_var v (type)
-		 (cond
-		    ((not type)
-		     (evcompile-error loc var "Static type not a class" e))
-		    ((class-exists type)
-		     =>
-		     (lambda (klass)
-			(let ( (field (find-class-field klass field)) )
-			   (if (not field)
-			       (evcompile-error loc
-				  type
-				  (format "Class \"~a\" has no field \"~a\""
-				     type field)
-				  e)
-			       (instantiate::ev_app
-				  (loc loc)
-				  (fun (instantiate::ev_litt
-					  (value (class-field-accessor field))))
-				  (args (list v))
-				  (tail? tail?))))))
-		    (else
-		     (evcompile-error loc var "No such class" e))))
-	      (evcompile-error loc var "Variable unbound" e) )))
+      ((-> . ?l)
+       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (conv-field-ref e locals globals tail? where loc top?)
+	   (evcompile-error loc "eval" "Illegal form" e) ))
       (((and (? symbol?)
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
@@ -355,32 +416,10 @@
 	  (name id)
 	  (mod (eval-find-module modname))
 	  (e (uconv e))))
-      ((set! (-> (and (? symbol?) ?var) (and (? symbol?) ?field)) ?e)
-       (let ( (v (conv-var var locals)) )
-	  (if (isa? v ev_var)
-	      (with-access::ev_var v (type)
-		 (cond
-		    ((not type)
-		     (evcompile-error loc var "Static type not a class" e))
-		    ((class-exists type)
-		     =>
-		     (lambda (klass)
-			(let ( (field (find-class-field klass field)) )
-			   (if (not field)
-			       (evcompile-error loc
-				  type
-				  (format "Class \"~a\" has no field \"~a\""
-				     type field)
-				  e)
-			       (instantiate::ev_app
-				  (loc loc)
-				  (fun (instantiate::ev_litt
-					  (value (class-field-mutator field))))
-				  (args (list v (uconv e)))
-				  (tail? tail?))))))
-		    (else
-		     (evcompile-error loc var "No such class" e))))
-	      (evcompile-error loc var "Variable unbound" e) )))      
+      ((set! (-> . ?l) ?e2)
+       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (conv-field-set l e2 e locals globals tail? where loc top?)
+	   (evcompile-error loc "eval" "Illegal form" e) ))
       ((set! ?v ?e)
        (let ( (cv (conv-var v locals)) (e (uconv e)) )
 	  (if cv
@@ -429,5 +468,4 @@
 	     (args args)
 	     (tail? tail?)) ))
       (else (evcompile-error loc "eval" "bad syntax" e)) ))
-
 
