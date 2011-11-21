@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov 21 11:07:31 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:27:39 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -273,9 +273,9 @@
 	  (type-id type)))
 
    (define (slot-default-expr s)
-      (if (equal? (slot-default-value s) (slot-no-default-value))
-	  (slot-no-default-value)
-	  `(lambda () ,(slot-default-value s))))
+      (if (slot-default? s)
+	  `(lambda () ,(slot-default-value s))
+	  #f))
    
    (define (make-class-field-virtual s)
       `((@ make-class-field __object)

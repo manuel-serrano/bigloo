@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Wed Nov 16 16:36:13 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:37:12 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -54,7 +54,6 @@
 	       ;; some user information associated to that slot
 	       (user-info read-only (default #unspecified)))
 
-	    (slot-no-default-value)
 	    (slot-default?::bool ::slot)
 	    (slot-virtual?::bool ::slot)
 	    (make-class-slots ::tclass ::obj ::obj ::int ::obj)
@@ -67,7 +66,7 @@
 ;*    slot-no-default-value ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (slot-no-default-value)
-   '(@ class-field-no-default-value __object))
+   (cons 1 2))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::slot ...                                                 */
