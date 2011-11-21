@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Tue Nov 15 08:49:22 2011 (serrano)                */
+;*    Last change :  Sat Nov 19 07:17:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -165,18 +165,18 @@
 	 (fin (instantiate::fin-sans (x 1)))
 	 (sfin (instantiate::sfin-sans (x -1) (y 2)))
 	 (cfin (instantiate::cfin-sans (x -1) (z 3))))
-      (list (is-a? val value-sans)
-	    (is-a? fin value-sans) 
-	    (is-a? sfin value-sans)
-	    (is-a? cfin value-sans)
-	    (is-a? val fin-sans)
-	    (is-a? fin fin-sans)
-	    (is-a? sfin fin-sans)
-	    (is-a? cfin fin-sans)
-	    (is-a? val sfin-sans)
-	    (is-a? fin sfin-sans)
-	    (is-a? sfin sfin-sans)
-	    (is-a? cfin sfin-sans))))
+      (list (isa? val value-sans)
+	    (isa? fin value-sans) 
+	    (isa? sfin value-sans)
+	    (isa? cfin value-sans)
+	    (isa? val fin-sans)
+	    (isa? fin fin-sans)
+	    (isa? sfin fin-sans)
+	    (isa? cfin fin-sans)
+	    (isa? val sfin-sans)
+	    (isa? fin sfin-sans)
+	    (isa? sfin sfin-sans)
+	    (isa? cfin sfin-sans))))
 
 ;*---------------------------------------------------------------------*/
 ;*    intern ...                                                       */
@@ -205,7 +205,7 @@
 		 (with-access::gee-sans (vector-ref bis 3) (x y)
 		    (eq? x y))
 		 (with-access::gee-sans (vector-ref bis 3) (x)
-		    (is-a? (cdr x) foo-sans))
+		    (isa? (cdr x) foo-sans))
 		 (with-access::gee-sans (vector-ref bis 3) (x y)
 		    (eq? (cdr x) (cdr y)))
 		 (with-access::foo/l-sans  (vector-ref bis 5) (dummy)
@@ -410,7 +410,7 @@
    (let ((c2/l (instantiate::foo/l-sans (x 10))))
       (widen!::foo/l-sans c2/l (dummy 'glop))
       (test "serialization.2" (string->obj (obj->string c2/l)) c2/l)
-      (test "serialization.3" (is-a?  (string->obj (obj->string c2/l)) foo/l-sans) #t)
+      (test "serialization.3" (isa?  (string->obj (obj->string c2/l)) foo/l-sans) #t)
       (test "serialization.4" (with-access::foo/l-sans (string->obj (obj->string c2/l)) (dummy) dummy) 'glop))
    (let ((l (list (instantiate::point-sans (x 1))
 		  (instantiate::point3-sans (x 2) (z 10))))

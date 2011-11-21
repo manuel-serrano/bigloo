@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 18 15:59:33 2011 (serrano)                */
+;*    Last change :  Sat Nov 19 07:17:15 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -174,9 +174,8 @@
 	    (inline generic-default::procedure ::procedure)
 	    (inline generic-method-array ::procedure)
 	    (inline method-array-ref ::procedure ::vector ::int)
-	    (isa?::bool ::obj class::obj)
+	    (isa?::bool ::obj ::class)
 	    (nil?::bool ::object)
-	    (is-a?::bool ::obj class::obj)
 	    (generic object-print ::object ::output-port ::procedure)
 	    (generic object-display ::object . port)
 	    (generic object-write ::object . port)
@@ -223,7 +222,6 @@
 	    (class-name side-effect-free no-cfa-top no-trace nesting)
 	    (object-class side-effect-free no-cfa-top no-trace nesting)
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
-	    (is-a? side-effect-free no-cfa-top no-trace nesting (effect))
 	    (isa? side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%object? (predicate-of object) no-cfa-top nesting)
 	    (struct->object no-cfa-top no-trace nesting)
@@ -1105,28 +1103,6 @@
 		    (cons class method)
 		    (loop (class-super class))))))))
    
-;*---------------------------------------------------------------------*/
-;*    is-a? ...                                                        */
-;*    -------------------------------------------------------------    */
-;*    The constant time implementation of is-a?                        */
-;*---------------------------------------------------------------------*/
-(define (is-a? obj class)
-   (if (object? obj)
-       ;; it is an object, we check if OBJ inherits of CLASS
-       (let ((oclass (object-class obj)))
-	  (if (eq? oclass class)
-	      #t
-	      (if (class? class)
-		  (let ((omin (class-min-num oclass))
-			(cmin (class-min-num class))
-			(cmax (class-max-num class)))
-		     (if (>=fx omin cmin)
-			 (<=fx omin cmax)
-			 #f))
-		  #f)))
-       ;; not even a class instance
-       #f))
-
 ;*---------------------------------------------------------------------*/
 ;*    isa? ...                                                         */
 ;*    -------------------------------------------------------------    */

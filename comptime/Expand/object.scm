@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Nov 17 05:41:01 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 07:50:50 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -224,8 +224,7 @@
 			   (unless (slot-virtual? slot)
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id)
-				     ,v))))
+				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; constructors
 	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
@@ -236,8 +235,7 @@
 				      (car val))
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id)
-				     ,v))))
+				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; return the new instance
 	  ,new)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Thu Nov 17 08:39:11 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 07:48:00 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -489,11 +489,12 @@
 			   (nfields '()))
 		   (cond
 		      ((null? s)
-		       (let ((instance (e instance e))
-			     (aux (gensym 'i)))
+		       (let* ((instance (e instance e))
+			      (aux (gensym 'i))
+			      (taux (symbol-append aux '|::| (class-name class))))
 			  (localize
 			     x
-			     `(let ((,aux ,instance))
+			     `(let ((,taux ,instance))
 				 ,(%with-lexical
 				     (map car nfields)
 				     (expand-progn body)
@@ -533,9 +534,10 @@
 		 (let ((field (find-class-field class (id var))))
 		    (if (not field)
 			(error (id var) "No such field" form)
-			(localize
-			   x
-			   `(,(class-field-accessor field) ,(olde i olde)))))
+			`(-> ,(olde i olde) ,(class-field-name field))))
+;* 			(localize                                      */
+;* 			   x                                           */
+;* 			   `(,(class-field-accessor field) ,(olde i olde))))) */
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -545,14 +547,13 @@
 		    (let ((field (find-class-field class (id var))))
 		       (if (not field)
 			   (error (id var) "No such field" form)
-			   (localize
-			      x
-			      (olde `(,(class-field-mutator field) ,i ,val)
-				 olde))))
-		    (begin
-		       (localize
-			  x
-			  (olde `(set! ,(cadr x) ,val) olde))))))
+			   `(set! (-> ,(olde i olde) ,(class-field-name field))
+			       ,(olde val olde))))
+;* 			   (localize                                   */
+;* 			      x                                        */
+;* 			      (olde `(,(class-field-mutator field) ,i ,val) */
+;* 				 olde))))                              */
+		    (localize x (olde `(set! ,(cadr x) ,val) olde)))))
 	    (else
 	     (olde x e))))))
 

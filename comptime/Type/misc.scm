@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Wed Nov 16 07:15:54 2011 (serrano)                */
+;*    Last change :  Sat Nov 19 07:16:46 2011 (serrano)                */
 ;*    Copyright   :  2004-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
@@ -100,7 +100,6 @@
 ;*    *isa* ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define *isa* #f)
-(define *is-a* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    isa-of ...                                                       */
@@ -109,11 +108,8 @@
    (when (app? node)
       (unless (global? *isa*)
 	 (set! *isa* (find-global/module 'isa? '__object)))
-      (unless (global? *is-a*)
-	 (set! *is-a* (find-global/module 'is-a? '__object)))
       (with-access::app node (fun args)
-	 (when (and (or (eq? (var-variable fun) *isa*)
-			(eq? (var-variable fun) *is-a*))
+	 (when (and (eq? (var-variable fun) *isa*)
 		    (var? (car args))
 		    (bigloo-type? (variable-type (var-variable (car args))))
 		    (var? (cadr args))
