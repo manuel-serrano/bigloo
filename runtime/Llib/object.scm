@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Nov 21 09:49:44 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:06:17 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -498,14 +498,19 @@
 ;*    class-field-default-value? ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value? field)
-   (not (eq? (vector-ref-ur field 6) class-field-no-default-value)))
+   (and (procedure? (vector-ref-ur field 6))
+	(not (eq? (vector-ref-ur field 6) class-field-no-default-value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
    (let ((p (vector-ref-ur field 6)))
-      (p)))
+      (if (procedure? p)
+	  (p)
+	  (error "class-field-default-value"
+	     "This field has no default value"
+	     (class-field-name field)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-type ...                                             */

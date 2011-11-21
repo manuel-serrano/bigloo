@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 18 09:29:18 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:07:31 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -361,7 +361,7 @@
    
    (define (find-default-attribute attr)
       (if (not (pair? attr))
-	  '((@ class-field-no-default-value __object))
+	  #f
 	  (match-case (car attr)
 	     ((default ?value)
 	      `',value)
@@ -387,7 +387,7 @@
 	       #f
 	       #f
 	       #f
-	       ((@ class-field-no-default-value __object))
+	       #f
 	       ,(if (tclass? type)
 		    (tclass-holder type)
 		    `',(type-default-id type)))))

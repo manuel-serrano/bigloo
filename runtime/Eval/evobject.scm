@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Nov 21 09:51:09 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:08:37 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -530,9 +530,6 @@
 		    (if (not field)
 			(error (id var) "No such field" form)
 			`(-> ,(olde i olde) ,(class-field-name field))))
-;* 			(localize                                      */
-;* 			   x                                           */
-;* 			   `(,(class-field-accessor field) ,(olde i olde))))) */
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
@@ -544,10 +541,6 @@
 			   (error (id var) "No such field" form)
 			   `(set! (-> ,(olde i olde) ,(class-field-name field))
 			       ,(olde val olde))))
-;* 			   (localize                                   */
-;* 			      x                                        */
-;* 			      (olde `(,(class-field-mutator field) ,i ,val) */
-;* 				 olde))))                              */
 		    (localize x (olde `(set! ,(cadr x) ,val) olde)))))
 	    (else
 	     (olde x e))))))
@@ -561,7 +554,7 @@
        (multiple-value-bind (id type)
 	  (decompose-ident f)
 	  (list (slot id (if type (or (class-exists type) type) 'obj)
-		   #f (@ class-field-no-default-value __object) 0 #f #f #f))))
+		   #f #f 0 #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
        (evcompile-error (or (get-source-location f) loc)
 	  "eval" "Illegal slot declaration" f))
@@ -570,7 +563,7 @@
 	     (attrs (cdr f)))
 	  (multiple-value-bind (id type)
 	     (decompose-ident id)
-	     (let ((def (@ class-field-no-default-value __object))
+	     (let ((def #f)
 		   (get #f)
 		   (set #f)
 		   (info #f)
