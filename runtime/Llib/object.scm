@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Nov 21 11:06:17 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 11:47:24 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -152,7 +152,6 @@
 	    (class-nil::obj ::class)
 	    (class-get-new-nil::obj ::class)
 	    (make-class-field::class-field ::symbol o o ::bool ::bool ::obj ::obj ::obj)
-	    (class-field-no-default-value)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
 	    (class-field-info::obj ::class-field)
@@ -498,8 +497,7 @@
 ;*    class-field-default-value? ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value? field)
-   (and (procedure? (vector-ref-ur field 6))
-	(not (eq? (vector-ref-ur field 6) class-field-no-default-value))))
+   (procedure? (vector-ref-ur field 6)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
@@ -836,12 +834,6 @@
 		(method (method-array-ref gen method-array super-num)))
 	    (method-array-set! gen method-array class-num method)
 	    (loop (+fx g 1))))))
-
-;*---------------------------------------------------------------------*/
-;*    class-field-no-default-value ...                                 */
-;*---------------------------------------------------------------------*/
-(define (class-field-no-default-value)
-   (error "class-field-no-default-value" "This function is never called" #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
