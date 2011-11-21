@@ -3,7 +3,9 @@
    (main jas) )
 
 (define (jas a)
-   (if (and (pair? (cdr a)) (string=? (cadr a) "-help"))
+   (if (and (pair? (cdr a))
+	    (or (string=? (cadr a) "-help")
+		(string=? (cadr a) "--help")))
        (print "usage: jas <filein> [-nopeep] <fileout>")
        (match-case (cdr a)
 	  ((?filein ?fileout)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Mon Nov 21 07:50:50 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 08:03:29 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -172,6 +172,12 @@
 ;*    instantiate-fill ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class slots init x e)
+
+   (define (slot-default-expr s)
+      (let ((g (tclass-holder class)))
+	 `(class-field-default-value
+	     (find-class-field
+		(@ ,(global-id g) ,(global-module g)) ',(slot-id s)))))
    
    (define (collect-slot-values slots)
       (let ((vargs (make-vector (length slots))))
@@ -182,7 +188,7 @@
 	       (let ((s (car slots)))
 		  (cond
 		     ((slot-default? s)
-		      (vector-set! vargs i (cons #t (slot-default-value s))))
+		      (vector-set! vargs i (cons #t (slot-default-expr s))))
 		     (else
 		      (vector-set! vargs i (cons #f #unspecified))))
 		  (loop (+fx i 1) (cdr slots)))))

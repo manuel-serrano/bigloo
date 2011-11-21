@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Nov 21 07:48:00 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 09:51:09 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -299,10 +299,6 @@
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class fields init x e)
 
-   (define (field-default? s)
-      (not (eq? (class-field-default-value s)
-	      (@ class-field-no-default-value __object))))
-	     
    (define (collect-field-values fields)
       (let ((vargs (make-vector (length fields))))
 	 ;; collect the default values
@@ -311,9 +307,10 @@
 	    (when (pair? fields)
 	       (let ((s (car fields)))
 		  (cond
-		     ((field-default? s)
+		     ((class-field-default-value? s)
 		      (vector-set! vargs
-			 i (cons #f (class-field-default-value s))))
+			 i (cons #t
+			      `((@ class-field-default-value __object) ,s))))
 		     (else
 		      (vector-set! vargs
 			 i (cons #f #unspecified))))
@@ -335,20 +332,18 @@
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 (vector->list vargs)))
-   
+
    (let* ((new (gensym 'new))
 	  (args (collect-field-values fields)))
       ;; check that there is enough values
       (for-each (lambda (a s)
 		   (unless (car a)
-		      (if (procedure? (cdr a))
-			  (set-cdr! a `(,(cdr a)))
-			  (unless (class-field-virtual? s)
-			     ;; value missin
-			     (error op
-				(format "Missing value for field \"~a\""
-				   (class-field-name s))
-				x)))))
+		      (unless (class-field-virtual? s)
+			 ;; value missin
+			 (error op
+			    (format "Missing value for field \"~a\""
+			       (class-field-name s))
+			    x))))
 	 args fields)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
@@ -365,7 +360,7 @@
 	  ,@(filter-map (lambda (field val)
 			   (when (and (class-field-virtual? field)
 				      (class-field-mutable? field)
-				      (field-default? field))
+				      (car val))
 			      (let ((v (e (cdr val) e)))
 				 `(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
@@ -664,9 +659,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-class ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    Returns a double value, the list of declarations and the list    */
-;*    of bound variables.                                              */
 ;*---------------------------------------------------------------------*/
 (define (eval-class id abstract clauses src mod)
    (multiple-value-bind (cid sid)

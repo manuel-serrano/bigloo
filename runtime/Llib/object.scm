@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Nov 19 07:17:15 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 09:49:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -156,6 +156,7 @@
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
 	    (class-field-info::obj ::class-field)
+	    (class-field-default-value?::bool ::class-field)
 	    (class-field-default-value::obj ::class-field)
 	    (class-field-virtual?::bool ::class-field)
 	    (class-field-accessor::procedure ::class-field)
@@ -440,7 +441,8 @@
 ;*    make-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter ronly virtual info default type)
-   (vector name getter setter virtual make-class-field info default type (not ronly)))
+   (vector name getter setter virtual make-class-field
+      info default type (not ronly)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
@@ -493,10 +495,17 @@
    (vector-ref-ur field 5))
 
 ;*---------------------------------------------------------------------*/
+;*    class-field-default-value? ...                                   */
+;*---------------------------------------------------------------------*/
+(define (class-field-default-value? field)
+   (not (eq? (vector-ref-ur field 6) class-field-no-default-value)))
+
+;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
-   (vector-ref-ur field 6))
+   (let ((p (vector-ref-ur field 6)))
+      (p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-type ...                                             */
@@ -827,8 +836,7 @@
 ;*    class-field-no-default-value ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-field-no-default-value)
-   ;; this value can't be gensymed because it has to traverse libraries
-   ''|slot-no-default-value  17 5 1996|)
+   (error "class-field-no-default-value" "This function is never called" #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
