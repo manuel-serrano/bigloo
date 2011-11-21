@@ -148,7 +148,6 @@
       (let ( (v (global-value g)) )
 	 (if (sfun? v)
 	     (begin
-		(tprint "G=" (shape g) " class=" (sfun-strength v))
 		(map (lambda (a) (compile-bad-type me a))
 		   (cdr (sfun-args v)) ) )
 	     '() )))

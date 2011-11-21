@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Nov 17 20:52:44 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 14:15:51 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -620,11 +620,11 @@
 ;*---------------------------------------------------------------------*/
 (define (use-variable! var::variable loc::obj site)
    [assert (site) (memq site *sites*)]
-   (if (eq? site 'set!)
-       (variable-access-set! var 'write))
+   (when (eq? site 'set!)
+      (variable-access-set! var 'write))
    (let ((val (variable-value var)))
-      (if (and (eq? site 'set!) (fun? val))
-	  (error-sexp->node "Illegal mutation" (shape var) loc))))
+      (when (and (eq? site 'set!) (fun? val))
+	 (error-sexp->node "Illegal mutation" (shape var) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-sexp->node ...                                             */

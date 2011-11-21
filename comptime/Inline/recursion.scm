@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Thu Oct 15 20:45:16 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 21 14:28:01 2011 (serrano)                */
+;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -57,40 +57,48 @@
 ;*    We create a local function to inline this call.                  */
 ;*---------------------------------------------------------------------*/
 (define (inline-app-labels node kfactor stack)
-   (let* ((variable       (var-variable (app-fun node)))
-	  (call-size      (+fx 1 (length (app-args node))))
-	  (local          (make-local-sfun (variable-id variable)
-					   (variable-type variable)
-					   (variable-value variable)))
-	  (old-sfun       (variable-value variable))
-	  (rec-calls      (isfun-recursive-calls old-sfun))
-	  (old-args       (sfun-args old-sfun))
-	  (inv-args       (invariant-args node variable rec-calls))
-	  (var-args       (variant-args variable))
-	  (new-args       (map (lambda (l)
-				  (clone-local
-				   l
-				   (duplicate::svar (local-value l))))
-			       var-args))
-	  (substitute     (substitutions variable (app-args node) new-args))
-	  (old-body       (if (isfun? old-sfun)
-			      (isfun-original-body old-sfun)
-			      (sfun-body old-sfun)))
+   (let* ((variable (var-variable (app-fun node)))
+	  (call-size (+fx 1 (length (app-args node))))
+	  (local (make-local-sfun (variable-id variable)
+		    (variable-type variable)
+		    (variable-value variable)))
+	  (old-sfun (variable-value variable))
+	  (rec-calls (isfun-recursive-calls old-sfun))
+	  (old-args (sfun-args old-sfun))
+	  (inv-args (invariant-args node variable rec-calls))
+	  (var-args (variant-args variable))
+	  (new-args (map (lambda (l)
+			    (clone-local l (duplicate::svar (local-value l))))
+		       var-args))
+	  (substitute (substitutions variable (app-args node) new-args))
+	  (old-body (if (isfun? old-sfun)
+			(isfun-original-body old-sfun)
+			(sfun-body old-sfun)))
 	  (svg-calls-args (map (lambda (app) (app-args app)) rec-calls))
-	  (remove!        (for-each remove-invariant-args! rec-calls))
-	  (new-body       (alphatize (cons variable old-args)
-				     (cons local substitute)
-				     (node-loc node)
-				     old-body))
-	  (restore!       (for-each (lambda (app args)
-				       (app-args-set! app args))
-				    rec-calls
-				    svg-calls-args))
-	  (new-sfun       (duplicate::sfun old-sfun
-			     (args new-args)
-			     (class 'sfun)
-			     (body new-body)))
-	  (new-kfactor    (*inlining-reduce-kfactor* kfactor)))
+	  (remove! (for-each remove-invariant-args! rec-calls))
+	  (new-body (if (null? inv-args)
+			;; full substitution of the procedure and its arguments
+			(alphatize (cons variable old-args)
+			   (cons local substitute)
+			   (node-loc node)
+			   old-body)
+			;; The arity of the inlined function differs from
+			;; the one of the initial function so we cannot replace
+			;; the old closure with the new one.
+			(alphatize-sans-closure (cons variable old-args)
+			   (cons local substitute)
+			   (node-loc node)
+			   old-body
+			   variable)))
+	  (restore! (for-each (lambda (app args)
+				 (app-args-set! app args))
+		       rec-calls
+		       svg-calls-args))
+	  (new-sfun (duplicate::sfun old-sfun
+		       (args new-args)
+		       (class 'sfun)
+		       (body new-body)))
+	  (new-kfactor (*inlining-reduce-kfactor* kfactor)))
       ;; we mark the formal parameter as compiler parameters
       (for-each (lambda (new old)
 		   (local-user?-set! new (local-user? old)))

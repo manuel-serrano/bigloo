@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Nov 16 10:31:04 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 14:21:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
 	    ast_local
 	    ast_apply
 	    ast_app)
-   (export  (alphatize::node what* by* loc ::node)))
+   (export  (alphatize::node what* by* loc ::node)
+	    (alphatize-sans-closure::node what* by* loc ::node ::variable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alphatize ...                                                    */
@@ -48,6 +49,20 @@
 		what*)
       res))
 
+;*---------------------------------------------------------------------*/
+;*    *no-alphatize-closure* ...                                       */
+;*---------------------------------------------------------------------*/
+(define *no-alphatize-closure* #f)
+
+;*---------------------------------------------------------------------*/
+;*    alphatize-sans-closure ...                                       */
+;*---------------------------------------------------------------------*/
+(define (alphatize-sans-closure what* by* loc node closure)
+   (set! *no-alphatize-closure* closure)
+   (unwind-protect
+      (alphatize what* by* loc node)
+      (set! *no-alphatize-closure* #f)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    *location* ...                                                   */
 ;*---------------------------------------------------------------------*/
@@ -114,21 +129,23 @@
 ;*    do-alphatize ::closure ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (do-alphatize node::closure)
-   (let* ((var   (var-variable node))
-	  (alpha (variable-fast-alpha var)))
-      (cond
-	 ((eq? alpha #unspecified)
-	  (use-variable! var (node-loc node) 'value)
-	  (duplicate::closure node (loc (get-inline-location node))))
-	 ((variable? alpha)
-	  (use-variable! alpha (node-loc node) 'value)
-	  (duplicate::closure node
-	     (loc (get-inline-location node))
-	     (variable alpha)))
-	 (else
-	  (internal-error "alphatize"
-			  "Illegal alphatization (closure)"
-			  (shape node))))))
+   (let ((var (var-variable node)))
+      (if (eq? var *no-alphatize-closure*)
+	  node
+	  (let ((alpha (variable-fast-alpha var)))
+	     (cond
+		((eq? alpha #unspecified)
+		 (use-variable! var (node-loc node) 'value)
+		 (duplicate::closure node (loc (get-inline-location node))))
+		((variable? alpha)
+		 (use-variable! alpha (node-loc node) 'value)
+		 (duplicate::closure node
+		    (loc (get-inline-location node))
+		    (variable alpha)))
+		(else
+		 (internal-error "alphatize"
+		    "Illegal alphatization (closure)"
+		    (shape node))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::kwote ...                                         */
