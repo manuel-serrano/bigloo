@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Thu Nov  3 14:22:51 2011 (serrano)                */
+;*    Last change :  Mon Nov 21 18:23:36 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -267,6 +267,8 @@
    (define (safe-rec-val-optim? val vars::pair-nil)
       (or (safe-rec-val? val)
 	  (cond
+	     ((atom? val)
+	      #t)
 	     ((var? val)
 	      (not (memq (var-variable val) vars)))
 	     ((sequence? val)
@@ -287,7 +289,9 @@
 		      (safe-rec-val-optim? args vars))))
 	     ((extern? val)
 	      (with-access::extern val (expr*)
-		 (safe-rec-val-optim? expr* vars)))
+		 (every? (lambda (e)
+			    (safe-rec-val-optim? e vars))
+		    expr*)))
 	     ((conditional? val)
 	      (with-access::conditional val (test true false)
 		 (and (safe-rec-val-optim? test vars)
