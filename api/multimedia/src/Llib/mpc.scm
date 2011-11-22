@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Tue Nov 15 18:52:55 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 08:57:26 2011 (serrano)                */
 ;*    Copyright   :  2005-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -113,7 +113,7 @@
 ;*---------------------------------------------------------------------*/
 (define (exec mpc::mpc cmd::bstring)
    (with-access::mpc mpc (%mutex %socket)
-      [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
+      (assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc)))
       (let ((po (socket-output %socket)))
 	 (when debug-mpc
 	    (tprint "display-string cmd=[" cmd "]"))
@@ -155,7 +155,7 @@
 	 (input-port-timeout-set! (socket-input %socket) timeout)))
 
    (with-access::mpc mpc (%socket %status host port)
-      [assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc))]
+      (assert (cmd mpc) (mutex-locked? (mpc-%mutex mpc)))
       ;; the player is already closed
       (when debug-mpc
 	 (tprint "mpc-cmd closed?: " (music-closed? mpc) " socket=" %socket))
@@ -269,7 +269,7 @@
 ;*    ok-parser ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (ok-parser mpc::mpc)
-   [assert (mpc) (mutex-locked? (mpc-%mutex mpc))]
+   (assert (mpc) (mutex-locked? (mpc-%mutex mpc)))
    (with-access::mpc mpc (%socket)
       (let ((l (read-line (socket-input %socket))))
 	 (and (string? l) (substring-at? l "OK" 0)))))

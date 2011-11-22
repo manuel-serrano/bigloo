@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sat Nov 12 19:45:26 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 08:46:35 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -728,7 +728,7 @@
 		  char)))
 	     ((get-reader-extension char)
 	      =>
-	      (lambda (e) e (the-port)))
+	      (lambda (e) (e (the-port))))
 	     (else
 	      (read-error "Illegal char"
 		 (illegal-char-rep char)

@@ -68,7 +68,7 @@
 ;*    musicproc-connect! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (musicproc-connect! o::musicproc)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%process)
       ;; start a new extern process
       (unless (and (process? %process) (process-alive? %process))
@@ -155,7 +155,7 @@
 ;*    musicproc-loadpaused ::musicproc ...                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (musicproc-loadpaused o::musicproc m::bstring)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%process %mutex %command-loadpaused %quote-uri)
       (let ((uri (if %quote-uri
 		     (string-append "\"" m "\"")
@@ -166,7 +166,7 @@
 ;*    musicproc-load ::musicproc ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (musicproc-load o::musicproc m::bstring)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%process %mutex %command-load %quote-uri)
       (let ((uri (if %quote-uri
 		     (string-append "\"" m "\"")
@@ -177,7 +177,7 @@
 ;*    playlist-load-inner! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (playlist-load-inner! o i proccmd)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%playlist %status charset)
       (with-access::musicstatus %status (song songid playlistlength)
 	 (if (or (<fx i 0) (>=fx i playlistlength))
@@ -196,14 +196,14 @@
 ;*    playlist-load-paused! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (playlist-load-paused! o i)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (playlist-load-inner! o i musicproc-loadpaused))
 
 ;*---------------------------------------------------------------------*/
 ;*    playlist-load! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (playlist-load! o i)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (playlist-load-inner! o i musicproc-load))
 
 ;*---------------------------------------------------------------------*/

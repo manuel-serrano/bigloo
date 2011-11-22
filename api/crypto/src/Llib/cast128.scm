@@ -38,7 +38,7 @@
    (make-sub-keys (pad-string key 16)))
 
 (define (make-sub-keys key::bstring)
-   [assert (key) (>=fx (string-length key) 16)]
+   (assert (key) (>=fx (string-length key) 16))
 
    ;; S-box creates macros for S-box access for S-boxes S5-S8
    (define-macro (S-box i)

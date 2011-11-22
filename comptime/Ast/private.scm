@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu Nov 10 07:01:48 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 08:58:16 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -211,9 +211,9 @@
 ;*    are never macro-expanded).                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
-   [assert (kind) (memq kind '(getfield setfield new cast cast-null
+   (assert (kind) (memq kind '(getfield setfield new cast cast-null
 			       ;; isa to be removed
 			       instanceof isa
 			       vlength vref vset! valloc unsafe
-			       vref-ur vset-ur!))]
+			       vref-ur vset-ur!)))
    (cons* *private-stamp* kind type-id objs))

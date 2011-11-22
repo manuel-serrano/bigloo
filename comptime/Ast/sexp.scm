@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Nov 21 14:15:51 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 08:57:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -99,7 +99,7 @@
 ;*    `site' is a information on the place the sexp takes place        */
 ;*---------------------------------------------------------------------*/
 (define (sexp->node exp stack loc site)
-   [assert (site) (memq site *sites*)]
+   (assert (site) (memq site *sites*))
    (trace (ast 2) "sexp->node(" loc "): " (shape exp))
    (trace (ast 3) " site: " site)
    (trace (ast 2) #\Newline)
@@ -619,7 +619,7 @@
 ;*    use-variable! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (use-variable! var::variable loc::obj site)
-   [assert (site) (memq site *sites*)]
+   (assert (site) (memq site *sites*))
    (when (eq? site 'set!)
       (variable-access-set! var 'write))
    (let ((val (variable-value var)))

@@ -57,7 +57,7 @@
       (trace (cgen 2) "*return-kont*: " *return-kont* #\Newline)
       (set! *the-global* global)
       (let ((sh (shape global)))
-	 [assert (sh) (string? (global-name global))])
+	 (assert (sh) (string? (global-name global))))
       (let* ((sfun (widen!::sfun/C (global-value global)
 		      (label (instantiate::clabel
 				(loc (sfun-loc (global-value global)))

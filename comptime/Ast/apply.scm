@@ -108,9 +108,9 @@
    (let* ((fun   (variable-value (var-variable proc)))
 	  (arity (fun-arity fun))
 	  (frame (make-fun-frame fun)))
-      [assert (arity fun) (or (<=fx arity 0)
+      (assert (arity fun) (or (<=fx arity 0)
 			      (and (not (sfun-optional? fun))
-				   (not (sfun-key? fun))))]
+				   (not (sfun-key? fun)))))
       (cond
 	 ((>fx arity 0)
 	  (fx-known-app-ly->node stack loc proc arg frame site))

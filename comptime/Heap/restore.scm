@@ -183,8 +183,8 @@
 			  ;; create the accessors for that classes. Note
 			  ;; that set-Tenv! *doesn't* do the same job, it
 			  ;; supposes that the env doesn't contain classes
-			  [assert (Tenv) (hashtable? Tenv)]
-			  [assert (Genv) (hashtable? Genv)]
+			  (assert (Tenv) (hashtable? Tenv))
+			  (assert (Genv) (hashtable? Genv))
 			  (add-tenv! Tenv)
 			  (add-genv! Genv)
 			  ;; in jvm mode, we have to propagate

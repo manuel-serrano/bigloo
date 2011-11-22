@@ -67,8 +67,8 @@
 
 (define (compile f e r m k z d)
    (cond
-      [(more-precise? d f) (k r z d)]
-      [(compatible? d f)
+      ((more-precise? d f) (k r z d))
+      ((compatible? d f)
        (case (car f)
 	  ((any)      (compile-any e r m k z d))
 	  ((check)    (compile-check (cadr f) e r m k z d))
@@ -95,8 +95,8 @@
 	  ((vector-times) (compile-vector-times (cadr f) (caddr f) (cadddr f)
 						e r m k z d))
 	  ((struct-pat) (compile-struct-pat f e r m k z d))
-	  (else       (wrong "Unrecognized pattern" f)))]
-      [#t (z d) ] ))
+	  (else       (wrong "Unrecognized pattern" f))))
+      (#t (z d) ) ))
    
 
 (define (compile-any e r m k z d)

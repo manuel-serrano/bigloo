@@ -71,8 +71,8 @@
 		       ;; create the accessors for that classes. Note
 		       ;; that set-Tenv! *doesn't* do the same job, it
 		       ;; supposes that the env doesn't contain classes
-		       [assert (Tenv) (hashtable? Tenv)]
-		       [assert (Genv) (hashtable? Genv)]
+		       (assert (Tenv) (hashtable? Tenv))
+		       (assert (Genv) (hashtable? Genv))
 		       (if (=fx (vector-length Envs) 6)
 			   (begin
 			      ;(add-tenv! Tenv)

@@ -296,8 +296,8 @@
 	  (len (- sz 1))
 	  (res (make-ucs2-string (elong->fixnum len))))
       ;; debug
-      [assert (n0 n1) (or (and (=fx n0 #xfe) (=fx n1 #xff)
-			       (and (=fx n0 #xff) (=fx n1 #xfe))))]
+      (assert (n0 n1) (or (and (=fx n0 #xfe) (=fx n1 #xff)
+			       (and (=fx n0 #xff) (=fx n1 #xfe)))))
       (if (and (=fx n0 #xfe) (=fx n1 #xff))
 	  ;; big-endian
 	  (let loop ((i 0)

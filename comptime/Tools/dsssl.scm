@@ -130,7 +130,7 @@
 ;*    functions.                                                       */
 ;*---------------------------------------------------------------------*/
 (define (dsssl-arity args optim)
-   [assert (args) (dsssl-check-prototype? args)]
+   (assert (args) (dsssl-check-prototype? args))
    (let loop ((i 0)
 	      (a args))
       (cond
@@ -151,7 +151,7 @@
 ;*    This function only accepts legal DSSSL protoypes.                */
 ;*---------------------------------------------------------------------*/
 (define (dsssl-canonicalize-prototype args)
-   [assert (args) (dsssl-check-prototype? args)]
+   (assert (args) (dsssl-check-prototype? args))
    (let loop ((args args)
 	      (mode #f)
 	      (res '()))

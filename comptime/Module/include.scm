@@ -138,7 +138,7 @@
 ;*    get-toplevel-unit ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (get-toplevel-unit)
-   [assert (*toplevel-unit*) (unit? *toplevel-unit*)]
+   (assert (*toplevel-unit*) (unit? *toplevel-unit*))
    *toplevel-unit*)
 
 ;*---------------------------------------------------------------------*/

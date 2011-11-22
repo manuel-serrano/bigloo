@@ -115,7 +115,7 @@
 
 ;; n must be < 31
 (define (encode-short-identifier class prim/constr n p)
-   [assert (n) (<fx n 31)]
+   (assert (n) (<fx n 31))
    ;; 8.1.2.3
    (display-octet (+fx+ (class-tag class)
 			(prim/constr-tag prim/constr)
@@ -174,7 +174,7 @@
 ;; l must be <= 127
 (define (encode-short-definite-length l p)
    ;; 8.1.3.4
-   [assert (l) (<=fx l 127)]
+   (assert (l) (<=fx l 127))
    (display-octet l p))
 
 (define (encode-long-definite-length l p)
@@ -185,7 +185,7 @@
 	  (+fx 1 (nb-octets-needed (bit-rsh l 8)))))
 
    (let ((nb-octets (nb-octets-needed l)))
-      [assert (nb-octets) (<fx nb-octets #x7F)]
+      (assert (nb-octets) (<fx nb-octets #x7F))
       (display-octet (+fx #x80 nb-octets) p)
       ;; recursive
       (let rec ((l l))
@@ -291,7 +291,7 @@
 
 (define (decode-null p)
    (let ((o (read-octet p)))
-      [assert (o) (=fx o #x00)])
+      (assert (o) (=fx o #x00)))
    'null)
 
 ;; when definite build string first in memory and print it.

@@ -162,7 +162,7 @@
 ;*    It is possible to integrate f in g                               */
 ;*---------------------------------------------------------------------*/
 (define (integrate? f::variable g::local)
-   [assert (g) (integrator? f g)]
+   (assert (g) (integrator? f g))
    (set! *integrate-mark* (+fx *integrate-mark* 1))
    (define (visible?-avant-2oct06 h)
       ;; is h visible from g?

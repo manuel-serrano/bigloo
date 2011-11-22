@@ -122,7 +122,7 @@
       ;; debug information
       (global-src-set! holder src-def)
       ;; some paranoid checking
-      [assert (tclass) (tclass? tclass)]
+      (assert (tclass) (tclass? tclass))
       ;; we store the src-import location in order to print a nice error
       ;; message if that tclass is not defined
       (type-import-location-set! tclass (find-location/loc src-decl loc))
@@ -149,7 +149,7 @@
 				       final? abstract?
 				       src-def)))
       ;; some paranoid checking
-      [assert (tclass) (tclass? tclass)]
+      (assert (tclass) (tclass? tclass))
       ;; we store the src-import location in order to print a nice error
       ;; message if that tclass is not defined
       (type-import-location-set! tclass (find-location/loc src-decl loc))
@@ -472,7 +472,7 @@
 	  ;;    any change must be reported in modules:
 	  ;;    module_impuse (function import-finalizer)
 	  ;;    module_include (function include-finalizer)
-	  [assert () (<fx 20 (get-toplevel-unit-weight))]
+	  (assert () (<fx 20 (get-toplevel-unit-weight)))
 	  (set! *method-unit* (unit 'method
 				    21
 				    ;; this unit may be empty so we initialize

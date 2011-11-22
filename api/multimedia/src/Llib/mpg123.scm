@@ -57,7 +57,7 @@
 ;*    musicproc-start ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (musicproc-start o::mpg123)
-   [assert (o) (not (symbol? (mutex-state (mpg123-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (mpg123-%mutex o)))))
    (with-access::mpg123 o (path args %result-acknowledge)
       (let ((proc (apply run-process
 			 path

@@ -63,7 +63,7 @@
 (define (qualified-real-tclass-name::bstring class::tclass) 
    (define (on-package pkgc name)
       ;; name is already mangled.
-      [assert (name) (not (bigloo-need-mangling? name))]
+      (assert (name) (not (bigloo-need-mangling? name)))
       (if (string=? pkgc "")
 	  name
 	  (string-append pkgc "." name)))

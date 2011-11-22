@@ -32,10 +32,10 @@
 ;*    (including `fun') construction but nothing else.                 */
 ;*---------------------------------------------------------------------*/
 (define (substitute! what* by* node site)
-   [assert (site) (memq site '(value apply app set!))]
+   (assert (site) (memq site '(value apply app set!)))
    ;; we set alpha-fnode slot 
    (for-each (lambda (what by)
-		[assert (by) (variable? by)]
+		(assert (by) (variable? by))
 		(variable-fast-alpha-set! what by))
 	     what*
 	     by*)

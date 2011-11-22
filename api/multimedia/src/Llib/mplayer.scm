@@ -54,7 +54,7 @@
 ;*    musicproc-loadpaused ::mplayer ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (musicproc-loadpaused o::mplayer m::bstring)
-   [assert (o) (not (symbol? (mutex-state (musicproc-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%mutex %process %command-load %command-pause)
       (musicproc-exec %process %command-load m)
       (musicproc-exec %process %command-pause m)))
@@ -113,7 +113,7 @@
 ;*    read-playing ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (read-playing o)
-   [assert (o) (not (symbol? (mutex-state (mplayer-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (mplayer-%mutex o)))))
    (with-access::mplayer o (%process frequency)
       (let ((p (process-output-port %process)))
 	 ;; timeout for input-port
@@ -180,7 +180,7 @@
 ;*    musicproc-start ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (musicproc-start o::mplayer)
-   [assert (o) (not (symbol? (mutex-state (mplayer-%mutex o))))]
+   (assert (o) (not (symbol? (mutex-state (mplayer-%mutex o)))))
    (with-access::mplayer o (%process
 			      path args ao ac charset
 			      %result-acknowledge

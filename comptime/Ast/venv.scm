@@ -230,7 +230,7 @@
 ;*    find-global ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (find-global id::symbol . module)
-   [assert (module) (or (null? module) (symbol? (car module)))]
+   (assert (module) (or (null? module) (symbol? (car module))))
    (let ((bucket (hashtable-get *Genv* id))
 	 (module (if (null? module) '() (car module))))
       (cond

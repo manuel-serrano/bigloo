@@ -75,7 +75,7 @@
 ;*    `obj' and `foreign' since this link already exists.              */
 ;*---------------------------------------------------------------------*/
 (define (add-coercion! from to check coerce)
-   [assert (check coerce) (check-coercion? check coerce)]
+   (assert (check coerce) (check-coercion? check coerce))
    (trace (ast 2) "add-coercion!: " (shape from) " -> " (shape to)
 	  " check: " (shape check) " coerce: " (shape coerce) #\Newline)
 ;*    (if (null? check) (set! check '(())))                            */

@@ -436,7 +436,7 @@
 	 ;; and we create a type for this class
 	 (let ((jclass (declare-java-class-type! jid super jname package src)))
 	    ;; some paranoid checking
-	    [assert (jclass) (jclass? jclass)]
+	    (assert (jclass) (jclass? jclass))
 	    ;; we store the src-import location in order to print a nice error
 	    ;; message if that tclass is not defined
 	    (type-import-location-set! jclass loc)
@@ -468,7 +468,7 @@
 ;*    heap-add-jclass! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (heap-add-jclass! new)
-   [assert (new) (jclass? new)]
+   (assert (new) (jclass? new))
    (register-java-class! (jclass-id new) (jclass-name new)))
 
 ;*---------------------------------------------------------------------*/

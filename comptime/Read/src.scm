@@ -29,7 +29,7 @@
 ;*    compiler will stop and jump to the interpreter.                  */
 ;*---------------------------------------------------------------------*/
 (define (read-src)
-   [assert (*src-files*) (pair? *src-files*)]
+   (assert (*src-files*) (pair? *src-files*))
    ;; we read the first source file (which must be containing the
    ;; module clause).
    (let ((mod (read-module-clause)))

@@ -387,7 +387,7 @@
 ;*---------------------------------------------------------------------*/
 (define (declare-subtype!::type id::symbol name::bstring parents class::symbol)
    (trace (ast 2) "~~~ declare-subtype!: " id #\Newline)
-   [assert (parents) (list? parents)]
+   (assert (parents) (list? parents))
    (let ((type    (bind-type! id #t #unspecified))
 	 (parents (map find-type parents)))
       (type-name-set!    type name)

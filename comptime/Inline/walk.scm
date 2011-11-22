@@ -39,7 +39,7 @@
 ;*    inline-walk! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-walk! globals what)
-   [assert (what) (memq what '(all reducer predicate))]
+   (assert (what) (memq what '(all reducer predicate)))
    (pass-prelude "Inlining" reset-stat!)
    ;; we setup the inlining
    (inline-setup! what)

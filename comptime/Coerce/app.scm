@@ -135,7 +135,7 @@
 	  (ntype (get-type node)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
-	 [assert (actuals formals sh) (=fx (length actuals) (length formals))]
+	 (assert (actuals formals sh) (=fx (length actuals) (length formals)))
 	 (if (null? actuals)
 	     (if (and (eq? caller callee) (not *unsafe-type*))
 		 ;; As suggested by J.G Malecki, there is no need to
