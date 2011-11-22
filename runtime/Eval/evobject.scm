@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Nov 22 18:34:57 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 18:54:01 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -107,18 +107,6 @@
 	     (loop (+fx walker 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    slot-non-virtual-id ...                                          */
-;*---------------------------------------------------------------------*/
-(define (slot-non-virtual-id s)
-   (and (not (slot-virtual? s)) (slot-id s)))
-
-;*---------------------------------------------------------------------*/
-;*    non-virtual-slots ...                                            */
-;*---------------------------------------------------------------------*/
-(define (non-virtual-slots lst)
-   (filter (lambda (s) (not (slot-virtual? s))) lst))
-
-;*---------------------------------------------------------------------*/
 ;*    localize ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (localize loc p)
@@ -212,6 +200,18 @@
       (cell-set! classnum (class-num clazz))
       (class-evdata-set! clazz length)
       clazz))
+
+;*---------------------------------------------------------------------*/
+;*    find-class-constructor ...                                       */
+;*---------------------------------------------------------------------*/
+(define (find-class-constructor c)
+   (let ((const (class-constructor c)))
+      (if const
+	  const
+	  (let ((s (class-super c)))
+	     (if (class? s)
+		 (find-class-constructor s)
+		 #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-slot-anonymous ...                                      */
@@ -645,18 +645,6 @@
 			      clauses))))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-class-constructor ...                                       */
-;*---------------------------------------------------------------------*/
-(define (find-class-constructor c)
-   (let ((const (class-constructor c)))
-      (if const
-	  const
-	  (let ((s (class-super c)))
-	     (if (class? s)
-		 (find-class-constructor s)
-		 #f)))))
-
-;*---------------------------------------------------------------------*/
 ;*    eval-class ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-class id abstract clauses src mod)
@@ -664,10 +652,8 @@
       (decompose-ident id)
       (let ((loc (get-source-location src))
 	    (super (find-class (or sid 'object))))
-	 (cond
-	    ((not (class? super))
-	     (evcompile-error loc "eval" "Cannot find super class" sid))
-	    (else
+	 (if (not (class? super))
+	     (evcompile-error loc "eval" "Cannot find super class" sid)
 	     (multiple-value-bind (constructor slots)
 		(eval-parse-class loc clauses)
 		;; evaluate the slots default value and virtual accessors
@@ -695,7 +681,7 @@
 		      ;; instantiate
 		      (eval-expand-instantiate clazz)
 		      (eval-expand-duplicate clazz))
-		   (list cid))))))))
+		   (list cid)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-class-hash ...                                          */
