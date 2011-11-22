@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Apr 19 19:22:08 2009 (serrano)                */
-/*    Copyright   :  2005-09 Manuel Serrano                            */
+/*    Last change :  Tue Nov 22 10:41:23 2011 (serrano)                */
+/*    Copyright   :  2005-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
 /*=====================================================================*/
@@ -85,7 +85,13 @@ bgl_sqlite_exec( sqlite3 *db, char *str, obj_t odb ) {
      char *buf = (char *)alloca( strlen( str ) + 16 );
      
      sprintf( buf, "sqlite-exec:%s", str );
-     C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     sqlite3_free( msg );
+
+     if( rc == SQLITE_LOCKED || rc == SQLITE_BUSY ) {
+	C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, buf, msg, odb );
+     } else {
+	C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     }
   }
   
   return result;
@@ -271,7 +277,12 @@ bgl_sqlite_eval( sqlite3 *db, obj_t proc, char *str, obj_t odb ) {
      
      sprintf( buf, "sqlite-eval:%s", str );
      sqlite3_free( msg );
-     C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     
+     if( rc == SQLITE_LOCKED || rc == SQLITE_BUSY ) {
+	C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, buf, msg, odb );
+     } else {
+	C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     }
   }
   
   return result[ 1 ];
@@ -304,7 +315,13 @@ bgl_sqlite_map( sqlite3 *db, obj_t proc, char *str, obj_t odb ) {
      char *buf = (char *)alloca( strlen( str ) + 16 );
      
      sprintf( buf, "sqlite-map:%s", str );
-     C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     sqlite3_free( msg );
+
+     if( rc == SQLITE_LOCKED || rc == SQLITE_BUSY ) {
+	C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, buf, msg, odb );
+     } else {
+	C_SYSTEM_FAILURE( BGL_ERROR, buf, msg, odb );
+     }
   }
   
   return bgl_reverse_bang( result[ 1 ] );

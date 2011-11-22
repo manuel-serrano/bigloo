@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Nov 21 11:47:24 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 18:16:55 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -151,7 +151,9 @@
 	    (class-creator::obj ::class)
 	    (class-nil::obj ::class)
 	    (class-get-new-nil::obj ::class)
-	    (make-class-field::class-field ::symbol o o ::bool ::bool ::obj ::obj ::obj)
+	    (%make-class #!key name super alloc hash fields constructor
+	       virtuals new nil shrink evdata abstract)
+	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
 	    (class-field-info::obj ::class-field)
@@ -270,6 +272,15 @@
        (+fx %object-type-number *nb-classes*)
        %object-type-number))
 
+;*---------------------------------------------------------------------*/
+;*    %make-class ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (%make-class #!key name super alloc hash fields constructor
+	   virtuals new nil shrink evdata abstract)
+   (make-class name -1 -1 super -1 -1
+      alloc hash fields constructor virtuals
+      new nil shrink  evdata abstract))
+   
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/

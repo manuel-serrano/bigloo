@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Thu Nov 10 10:59:01 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 18:33:11 2011 (serrano)                */
 ;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -412,7 +412,7 @@
 				 (expand-error id "Unknown class" x)))))
 
    ;; co-instantiate
-   (install-eval-expander 'co-instantiate eval-expand-co-instantiate)
+   (install-eval-expander 'co-instantiate eval-co-instantiate-expander)
    
    ;; classes
    (let ((e (lambda (x e) (e (evmodule-static-class x) e))))

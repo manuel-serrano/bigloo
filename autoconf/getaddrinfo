@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May  2 09:57:43 2011 (serrano)                */
+#*    Last change :  Tue Nov 22 09:30:36 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the getaddrinfo in replacement of gethostbyname.       */
 #*=====================================================================*/
@@ -69,6 +69,9 @@ cat > $file.c <<EOF
 #include <sys/socket.h>
 #include <netdb.h>
 #include <stdio.h>
+#ifdef __FreeBSD__
+#  include <netinet/in.h>
+#endif
 #ifdef BGL_ANDROID
 #  include <linux/in.h>
 #endif

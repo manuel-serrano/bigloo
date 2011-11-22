@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Nov 17 05:36:04 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 18:38:56 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -29,6 +29,7 @@
 	    ast_env
 	    ast_glo-decl
 	    ast_sexp
+	    ast_ident
 	    backend_backend)
    (export  (make-eval-compiler)
 	    (get-eval-libraries::pair-nil)
@@ -317,9 +318,17 @@
 		  ,(if (tclass-abstract? t)
 		       #unspecified
 		       `(begin
-			   (eval-expand-instantiate ,holdere)
-			   (eval-expand-duplicate ,holdere)))
-		  (eval-expand-with-access ,holdere)
+			   ;; instantiate expander
+			   (install-expander ',(make-typed-ident 'instantiate id)
+			      (eval-instantiate-expander ,holdere))
+			   ;; (eval-expand-instantiate ,holdere)
+			   (install-expander ',(make-typed-ident 'duplicate id)
+			      (eval-duplicate-expander ,holdere))
+			   ;; (eval-expand-duplicate ,holdere)
+			   ))
+		  (install-expander ',(make-typed-ident 'with-access id)
+		     (eval-with-access-expander ,holdere))
+		  ;; (eval-expand-with-access ,holdere)
 		  '())))
 	*eval-classes*))
 

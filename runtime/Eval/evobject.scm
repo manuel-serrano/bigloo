@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Nov 21 11:08:37 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 18:34:57 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -58,6 +58,10 @@
 	    __macro)
     
   (export (eval-class ::symbol ::bool ::pair-nil ::pair ::obj)
+	  (eval-instantiate-expander ::class)
+	  (eval-duplicate-expander ::class)
+	  (eval-with-access-expander ::class)
+	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)
 	  (eval-expand-instantiate ::obj)
 	  (eval-expand-duplicate::pair-nil ::obj)
 	  (eval-expand-with-access ::obj)
@@ -268,31 +272,21 @@
 	 slots)))
 
 ;*---------------------------------------------------------------------*/
-;*    field->slot ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (field->slot field)
-   (slot (class-field-name field)
-	 (or (class-field-type field) 'obj)
-	 (not (class-field-mutable? field))
-	 (class-field-default-value field)
-	 0
-	 (when (class-field-virtual? field)
-	    (class-field-accessor field))
-	 (when (and (class-field-virtual? field)
-		    (class-field-mutable? field))
-	    (class-field-mutator field))
-	 (class-field-info field)))
-
-;*---------------------------------------------------------------------*/
 ;*    eval-expand-instantiate ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-instantiate class)
    (let ((wid (symbol-append 'instantiate:: (class-name class))))
       (install-expander wid
-	 (lambda (x e)
-	    (instantiate-fill wid (cdr x) class
-	       (class-all-fields class)
-	       `(,(class-allocator class)) x e)))))
+	 (eval-instantiate-expander class))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-instantiate-expander ...                                    */
+;*---------------------------------------------------------------------*/
+(define (eval-instantiate-expander class)
+   (lambda (x e)
+      (instantiate-fill (car x) (cdr x) class
+	 (class-all-fields class)
+	 `(,(class-allocator class)) x e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate-fill ...                                             */
@@ -373,12 +367,18 @@
 (define (eval-expand-duplicate class)
    (let ((did (symbol-append 'duplicate:: (class-name class))))
       (install-expander did
-	 (lambda (x e)
-	    (match-case x
-	       ((?duplicate ?dup . ?prov)
-		(duplicate-expander class dup prov x e))
-	       (else
-		(error "duplicate" "Illegal form" x)))))))
+	 (eval-duplicate-expander class))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-duplicate-expander ...                                      */
+;*---------------------------------------------------------------------*/
+(define (eval-duplicate-expander class)
+   (lambda (x e)
+      (match-case x
+	 ((?duplicate ?dup . ?prov)
+	  (duplicate-expander class dup prov x e))
+	 (else
+	  (error "duplicate" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-expander ...                                           */
@@ -477,45 +477,51 @@
 (define (eval-expand-with-access class)
    (let ((wid (symbol-append 'with-access:: (class-name class))))
       (install-expander wid
-	 (lambda (x e)
-	    (match-case x
-	       ((?- ?instance (and (? pair?) ?fields) . (and (? pair?) ?body))
-		(let loop ((s fields)
-			   (nfields '()))
-		   (cond
-		      ((null? s)
-		       (let* ((instance (e instance e))
-			      (aux (gensym 'i))
-			      (taux (symbol-append aux '|::| (class-name class))))
-			  (localize
-			     x
-			     `(let ((,taux ,instance))
-				 ,(%with-lexical
-				     (map car nfields)
-				     (expand-progn body)
-				     (eval-begin-expander
-					(eval-with-access-expander
-					   e aux class nfields x))
-				     aux)))))
-		      ((not (pair? s))
-		       (error s "Illegal field" x))
-		      ((symbol? (car s))
-		       (loop (cdr s) (cons (list (car s) (car s)) nfields)))
-		      ((and (pair? (car s))
-			    (symbol? (car (car s)))
-			    (pair? (cdr (car s)))
-			    (symbol? (cadr (car s)))
-			    (null? (cddr (car s))))
-		       (loop (cdr s) (cons (car s) nfields)))
-		      (else
-		       (error (car s) "Illegal form" x)))))
-	       (else
-		(error #f "Illegal with-access" x)))))))
+	 (eval-with-access-expander class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-with-access-expander ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (eval-with-access-expander olde i class fields form)
+(define (eval-with-access-expander class)
+   (lambda (x e)
+      (match-case x
+	 ((?- ?instance (and (? pair?) ?fields) . (and (? pair?) ?body))
+	  (let loop ((s fields)
+		     (nfields '()))
+	     (cond
+		((null? s)
+		 (let* ((instance (e instance e))
+			(aux (gensym 'i))
+			(taux (symbol-append aux '|::| (class-name class))))
+		    (localize
+		       x
+		       `(let ((,taux ,instance))
+			   ,(%with-lexical
+			       (map car nfields)
+			       (expand-progn body)
+			       (eval-begin-expander
+				  (with-access-expander
+				     e aux class nfields x))
+			       aux)))))
+		((not (pair? s))
+		 (error s "Illegal field" x))
+		((symbol? (car s))
+		 (loop (cdr s) (cons (list (car s) (car s)) nfields)))
+		((and (pair? (car s))
+		      (symbol? (car (car s)))
+		      (pair? (cdr (car s)))
+		      (symbol? (cadr (car s)))
+		      (null? (cddr (car s))))
+		 (loop (cdr s) (cons (car s) nfields)))
+		(else
+		 (error (car s) "Illegal form" x)))))
+	 (else
+	  (error #f "Illegal with-access" x)))))
+
+;*---------------------------------------------------------------------*/
+;*    with-access-expander ...                                         */
+;*---------------------------------------------------------------------*/
+(define (with-access-expander olde i class fields form)
    
    (define (id var) (cadr (assq var fields)))
    
@@ -711,14 +717,20 @@
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-expand-co-instantiate ...                                   */
+;*    eval-co-instantiate-expander ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (eval-expand-co-instantiate x e)
+(define (eval-co-instantiate-expander x e)
    (match-case x
       ((co-instantiate ?bindings . ?body)
        (co-instantiate->let bindings body x e))
       (else
        (expand-error "co-instantiate" "Illegal `co-instantiate' form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expand-co-instantiate ...                                   */
+;*---------------------------------------------------------------------*/
+(define (eval-expand-co-instantiate x e)
+   (eval-co-instantiate-expander x e))
 
 ;*---------------------------------------------------------------------*/
 ;*    co-instantiate->let ...                                          */
