@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Nov 22 18:54:01 2011 (serrano)                */
+;*    Last change :  Tue Nov 22 20:03:46 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -61,11 +61,7 @@
 	  (eval-instantiate-expander ::class)
 	  (eval-duplicate-expander ::class)
 	  (eval-with-access-expander ::class)
-	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)
-	  (eval-expand-instantiate ::obj)
-	  (eval-expand-duplicate::pair-nil ::obj)
-	  (eval-expand-with-access ::obj)
-	  (eval-expand-co-instantiate::pair-nil ::pair-nil ::procedure)))
+	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-error ...                                                 */
