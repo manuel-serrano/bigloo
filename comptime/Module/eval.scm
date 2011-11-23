@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Nov 22 19:52:06 2011 (serrano)                */
+;*    Last change :  Wed Nov 23 12:43:46 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -318,13 +318,9 @@
 		  ,(if (tclass-abstract? t)
 		       #unspecified
 		       `(begin
-			   ;; instantiate expander
-			   (install-expander ',(make-typed-ident 'instantiate id)
-			      (eval-instantiate-expander ,holdere))
-			   (install-expander ',(make-typed-ident 'duplicate id)
-			      (eval-duplicate-expander ,holdere))))
-		  (install-expander ',(make-typed-ident 'with-access id)
-		     (eval-with-access-expander ,holdere))
+			   (eval-expand-instantiate ,holdere)
+			   (eval-expand-duplicate ,holdere)))
+		  (eval-expand-with-access ,holdere)
 		  '())))
 	*eval-classes*))
 

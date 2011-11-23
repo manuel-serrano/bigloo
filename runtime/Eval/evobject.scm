@@ -58,9 +58,9 @@
 	    __macro)
     
   (export (eval-class ::symbol ::bool ::pair-nil ::pair ::obj)
-	  (eval-instantiate-expander ::class)
-	  (eval-duplicate-expander ::class)
-	  (eval-with-access-expander ::class)
+	  (eval-expand-instantiate ::class)
+	  (eval-expand-duplicate ::class)
+	  (eval-expand-with-access ::class)
 	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)))
 
 ;*---------------------------------------------------------------------*/
@@ -472,16 +472,16 @@
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-with-access class)
    (let ((wid (symbol-append 'with-access:: (class-name class))))
-      (install-expander wid
-	 (eval-with-access-expander class))))
+      (install-expander wid (eval-with-access-expander class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-with-access-expander ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (eval-with-access-expander class)
+
    (lambda (x e)
       (match-case x
-	 ((?- ?instance (and (? pair?) ?fields) . (and (? pair?) ?body))
+	 ((?waccess ?instance (and (? pair?) ?fields) . (and (? pair?) ?body))
 	  (let loop ((s fields)
 		     (nfields '()))
 	     (cond
@@ -497,7 +497,7 @@
 			       (expand-progn body)
 			       (eval-begin-expander
 				  (with-access-expander
-				     e aux class nfields x))
+				     e aux nfields x))
 			       aux)))))
 		((not (pair? s))
 		 (error s "Illegal field" x))
@@ -517,7 +517,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-access-expander olde i class fields form)
+(define (with-access-expander olde i fields form)
    
    (define (id var) (cadr (assq var fields)))
    
@@ -528,21 +528,14 @@
 	     (if (and (memq var ids)
 		      (let ((cell (assq var (%lexical-stack))))
 			 (and (pair? cell) (eq? (cdr cell) i))))
-		 (let ((field (find-class-field class (id var))))
-		    (if (not field)
-			(error (id var) "No such field" form)
-			`(-> ,(olde i olde) ,(class-field-name field))))
+		 `(-> ,(olde i olde) ,(id var))
 		 (olde var olde)))
 	    ((set! (and (? symbol?) ?var) ?val)
 	     (let ((val (e val e)))
 		(if (and (memq var ids)
 			 (let ((cell (assq var (%lexical-stack))))
 			    (and (pair? cell) (eq? (cdr cell) i))))
-		    (let ((field (find-class-field class (id var))))
-		       (if (not field)
-			   (error (id var) "No such field" form)
-			   `(set! (-> ,(olde i olde) ,(class-field-name field))
-			       ,(olde val olde))))
+		    `(set! (-> ,(olde i olde) ,(id var)) ,(olde val olde))
 		    (localize x (olde `(set! ,(cadr x) ,val) olde)))))
 	    (else
 	     (olde x e))))))
@@ -693,8 +686,6 @@
 		 (loop (cdr fields) (bit-xor hash 2344)))
 		((? symbol?)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber field))))
-		((* (and ?id (? symbol?)) . ?att)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber id))))
 		(((and ?id (? symbol?)) . ?att)
 		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
 
