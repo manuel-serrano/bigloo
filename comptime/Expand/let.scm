@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Mon Oct 18 08:33:56 2010 (serrano)                */
-;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 23 18:29:11 2011 (serrano)                */
+;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
 ;*=====================================================================*/
@@ -32,7 +32,7 @@
 (define (expand-let* x e)
    (let ((old-internal internal-definition?))
       (set! internal-definition? #t)
-      (let* ((e   (internal-begin-expander e))
+      (let* ((e (internal-begin-expander e))
 	     (res (match-case x
 		     ((?- () . (and ?body (not ())))
 		      (replace! x `(let () ,(e (expand-progn body) e))))

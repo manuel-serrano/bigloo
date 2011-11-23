@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Mon Nov 21 08:03:29 2011 (serrano)                */
+;*    Last change :  Wed Nov 23 20:32:10 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -173,11 +173,16 @@
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class slots init x e)
 
+   (define (literal? n)
+      (or (number? n) (string? n) (symbol? n) (null? n) (char? n)))
+   
    (define (slot-default-expr s)
       (let ((g (tclass-holder class)))
-	 `(class-field-default-value
-	     (find-class-field
-		(@ ,(global-id g) ,(global-module g)) ',(slot-id s)))))
+	 (if (literal? (slot-default-value s))
+	     `',(slot-default-value s)
+	     `(class-field-default-value
+		 (find-class-field
+		    (@ ,(global-id g) ,(global-module g)) ',(slot-id s))))))
    
    (define (collect-slot-values slots)
       (let ((vargs (make-vector (length slots))))
@@ -205,7 +210,7 @@
 			 (set-car! pval #t)
 			 (set-cdr! pval (object-epairify value p))))
 		     (else
-		      (error op "Illegal argument \"~a\"" x)))
+		      (error op (format "Illegal argument \"~a\"" p) x)))
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 (vector->list vargs)))
