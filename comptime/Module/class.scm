@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Nov 21 11:27:39 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 16:15:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -36,7 +36,6 @@
 	    object_slots)
    (export  (declare-class! ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
 	    (declare-wide-class! ::pair ::symbol ::symbol ::obj ::obj)
-	    (get-class-hash ::symbol ::pair-nil)
 	    (get-object-unit)
 	    (get-method-unit)
 	    (get-generic-unit)
@@ -210,7 +209,7 @@
 			    ;; super class
 			    ,superv
 			    ;; hash
-			    ,(get-class-hash classid (cddr src-def))
+			    ,(get-class-hash src-def)
 			    ;; new
 			    ,(unless (tclass-abstract? class)
 				(classgen-make-anonymous class))
@@ -248,19 +247,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-hash-class ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (get-class-hash class-id fields)
-   (let loop ((fields fields)
-	      (hash (get-hashnumber class-id)))
-      (if (null? fields)
-	  hash
-	  (let ((field (car fields)))
-	     (match-case field
-		((?-)
-		 (loop (cdr fields) (bit-xor hash 2344)))
-		((? symbol?)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber field))))
-		(((and ?id (? symbol?)) . ?att)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
+(define (get-class-hash def)
+   
+   (define (gethash v)
+      (bit-and (get-hashnumber v) #xffff))
+   
+   (let loop ((def def)
+	      (hash 1705))
+      (cond
+	 ((null? def)
+	  hash)
+	 ((not (pair? def))
+	  (bit-xor (gethash def) hash))
+	 (else
+	  (loop (cdr def)
+	     (loop (car def)
+		(bit-xor 1966 hash)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */

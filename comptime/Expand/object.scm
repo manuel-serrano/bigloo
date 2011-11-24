@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Wed Nov 23 20:32:10 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 09:59:24 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -174,12 +174,20 @@
 (define (instantiate-fill op provided class slots init x e)
 
    (define (literal? n)
-      (or (number? n) (string? n) (symbol? n) (null? n) (char? n)))
+      (or (number? n)
+	  (string? n)
+	  (null? n)
+	  (char? n)
+	  (boolean? n)
+	  (eq? n #unspecified)
+	  (match-case n
+	     ((quote . ?-) #t)
+	     (else #f))))
    
    (define (slot-default-expr s)
       (let ((g (tclass-holder class)))
 	 (if (literal? (slot-default-value s))
-	     `',(slot-default-value s)
+	     (slot-default-value s)
 	     `(class-field-default-value
 		 (find-class-field
 		    (@ ,(global-id g) ,(global-module g)) ',(slot-id s))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Sat Nov 19 07:17:44 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 16:22:26 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -17,8 +17,7 @@
 	    (object1-sans "object1-sans.scm")
 	    (object3-sans "object3-sans.scm"))
    (include "test.sch")
-   (export  (test-object-sans)
-	    (dump-obj fname))
+   (export  (test-object-sans))
    (static  (final-class foo-sans
 	       x::long
 	       (y::string (default "yoyo"))

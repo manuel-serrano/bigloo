@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Tue Nov 15 08:48:29 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 09:50:38 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -64,7 +64,21 @@
    (static (class class/constr
 	      (constructor)
 	      (x (default 10)))
-	   (class class2/constr::class/constr)))
+	   (class class2/constr::class/constr))
+   (static (class deftest (x (default (counter))))
+	   (counter)))
+
+;*---------------------------------------------------------------------*/
+;*    *counter* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *counter* 0)
+
+;*---------------------------------------------------------------------*/
+;*    counter ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (counter)
+   (set! *counter* (+fx 1 *counter*))
+   *counter*)
 
 ;*---------------------------------------------------------------------*/
 ;*    *obj* ...                                                        */
@@ -412,4 +426,9 @@
       (test "generic.2" ((car p) ((caddr p) (car l) 1) ((caddr p) (cadr l) 2)) 16))
    (let ((i1 (instantiate::class/constr))
 	 (i2 (instantiate::class2/constr)))
-      (test "constructor" (length *obj*) 2)))
+      (test "constructor" (length *obj*) 2))
+   (let* ((i1 (instantiate::deftest))
+	  (i2 (instantiate::deftest)))
+      (with-access::deftest i1 ((x1 x))
+	 (with-access::deftest i2 ((x2 x))
+	    (test "default field value" (+fx x1 1) x2)))))

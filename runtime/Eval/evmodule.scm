@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Nov 17 05:24:13 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 16:02:02 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -281,13 +281,13 @@
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (eval-class cla #f clauses clause mod)))
+	     (eval-class cla #f clauses s mod)))
 	 ((final-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (eval-class cla #f clauses clause mod)))
+	     (eval-class cla #f clauses s mod)))
 	 ((abstract-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (eval-class cla #t clauses clause mod)))
+	     (eval-class cla #t clauses s mod)))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
 	     (evcompile-error
@@ -342,15 +342,15 @@
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (let ((idents (eval-class cla #f clauses clause mod)))
+	     (let ((idents (eval-class cla #f clauses s mod)))
 		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((final-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (let ((idents (eval-class cla #f clauses clause mod)))
+	     (let ((idents (eval-class cla #f clauses s mod)))
 		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((abstract-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (let ((idents (eval-class cla #t clauses clause mod)))
+	     (let ((idents (eval-class cla #t clauses s mod)))
 		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Wed Nov 23 22:24:16 2011 (serrano)                */
+;*    Last change :  Thu Nov 24 16:10:42 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -639,8 +639,9 @@
 (define (eval-class id abstract clauses src mod)
    (multiple-value-bind (cid sid)
       (decompose-ident id)
-      (let ((loc (get-source-location src))
-	    (super (find-class (or sid 'object))))
+      (let* ((loc (get-source-location src))
+	     (sid (or sid 'object))
+	     (super (find-class sid)))
 	 (if (not (class? super))
 	     (evcompile-error loc "eval" "Cannot find super class" sid)
 	     (multiple-value-bind (constructor slots)
@@ -661,7 +662,7 @@
 		(let* ((clazz (eval-register-class
 				 cid super abstract
 				 slots 
-				 (get-eval-class-hash id src)
+				 (get-class-hash src)
 				 (eval! constructor mod))))
 		   (eval! `(define ,cid ,clazz))
 		   ;; with-access
@@ -673,21 +674,24 @@
 		   (list cid)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-eval-class-hash ...                                          */
+;*    get-class-hash ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (get-eval-class-hash class-id fields)
-   (let loop ((fields fields)
-	      (hash (get-hashnumber class-id)))
-      (if (null? fields)
-	  hash
-	  (let ((field (car fields)))
-	     (match-case field
-		((?-)
-		 (loop (cdr fields) (bit-xor hash 2344)))
-		((? symbol?)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber field))))
-		(((and ?id (? symbol?)) . ?att)
-		 (loop (cdr fields) (bit-xor hash (get-hashnumber id)))))))))
+(define (get-class-hash def)
+   
+   (define (gethash v)
+      (bit-and (get-hashnumber v) #xffff))
+   
+   (let loop ((def def)
+	      (hash 1705))
+      (cond
+	 ((null? def)
+	  hash)
+	 ((not (pair? def))
+	  (bit-xor (gethash def) hash))
+	 (else
+	  (loop (cdr def)
+	     (loop (car def)
+		(bit-xor 1966 hash)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-co-instantiate-expander ...                                 */
