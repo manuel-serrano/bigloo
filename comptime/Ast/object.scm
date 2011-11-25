@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Nov 17 20:39:19 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 16:22:56 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -126,12 +126,12 @@
 (define (make-field-ref slot obj stack loc site)
    (if (slot-getter slot)
        (let* ((vnum (slot-virtual-num slot))
-	      (exp `((@ call-virtual-getter __object) ,obj ,vnum)))
-	  (sexp->node exp stack loc site))
+              (exp `((@ call-virtual-getter __object) ,obj ,vnum)))
+          (sexp->node exp stack loc site))
        (let ((priv (make-class-ref (slot-class-owner slot) slot obj)))
-	  ;; instead of (SLOT-CLASS-OWNER SLOT), the class used to find
-	  ;; the slot (see find-class-lot in FIELD-REF->NODE) was used here
-	  (private-node priv stack loc site))))
+          ;; instead of (SLOT-CLASS-OWNER SLOT), the class used to find
+          ;; the slot (see find-class-lot in FIELD-REF->NODE) was used here
+          (private-node priv stack loc site))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-set! ...                                              */
@@ -140,10 +140,9 @@
    (cond
       ((slot-setter slot)
        (let* ((vnum (slot-virtual-num slot))
-	      (exp `((@ call-virtual-setter __object) ,obj ,vnum ,val)))
-	  (sexp->node exp stack loc site)))
+              (exp `((@ call-virtual-setter __object) ,obj ,vnum ,val)))
+          (sexp->node exp stack loc site)))
       (else
        (let ((priv (make-class-set! (slot-class-owner slot) slot obj val)))
-	  ;; see MAKE-FIELD-REF for the remark about (SLOT-CLASS-OWNER SLOT)
-	  (private-node priv stack loc site)))))
-
+          ;; see MAKE-FIELD-REF for the remark about (SLOT-CLASS-OWNER SLOT)
+          (private-node priv stack loc site)))))

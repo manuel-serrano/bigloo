@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 25 15:30:43 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 16:26:07 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -282,7 +282,11 @@
    (define (make-class-field-virtual s)
       `((@ make-class-field __object)
 	',(slot-id s)
-	,(slot-getter s) ,(slot-setter s) ,(slot-read-only? s)
+	(lambda (o)
+	   ((@ call-virtual-getter __object) o ,(slot-virtual-num s)))
+	(lambda (o v)
+	   ((@ call-virtual-setter __object) o ,(slot-virtual-num s) v))
+	,(slot-read-only? s)
 	#t
 	,(slot-user-info s)
 	,(slot-default-expr s)

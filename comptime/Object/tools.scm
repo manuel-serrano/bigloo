@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Wed Nov 16 07:09:24 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 16:14:13 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */

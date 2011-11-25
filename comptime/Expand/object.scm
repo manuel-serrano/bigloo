@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov 25 15:33:55 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 16:18:40 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -532,4 +532,4 @@
    (let ((s (find (lambda (s) (eq? (slot-id s) name)) slots)))
       (if (slot? s)
 	  (slot-index s)
-          (error form (format "Field unknown \"~a\"" name) sexp))))
+	  (error form (format "Field unknown \"~a\"" name) sexp))))
