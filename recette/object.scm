@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Fri Nov 25 07:23:36 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:15:21 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -65,6 +65,12 @@
 	      (constructor)
 	      (x (default 10)))
 	   (class class2/constr::class/constr))
+   (static (class def-foo
+	      (x (default (cons 1 1))))
+	   (final-class def-bar::def-foo
+	      (y (default (cons 2 2))))
+	   (wide-class def-gee::def-bar
+	      (z (default (cons 3 3)))))
    (static (class deftest (x (default (counter))))
 	   (counter)))
 
@@ -431,4 +437,17 @@
 	  (i2 (instantiate::deftest)))
       (with-access::deftest i1 ((x1 x))
 	 (with-access::deftest i2 ((x2 x))
-	    (test "default field value" (+fx x1 1) x2)))))
+	    (test "default field value.1" (+fx x1 1) x2))))
+   (let ((o1 (instantiate::def-foo)))
+      (with-access::def-foo o1 (x)
+	 (test "default field value.2" (car x) 1)))
+   (let ((o2 (instantiate::def-bar)))
+      (with-access::def-bar o2 (x y)
+	 (test "default field value.3" (+fx (car x) 1) (car y)))
+      (widen!::def-gee o2)
+      (with-access::def-gee o2 (x y z)
+	 (test "default field value.4" (+fx (car x) (car y)) (car z))))
+   (let ((o3 (instantiate::def-gee)))
+      (with-access::def-gee o3 (x y z)
+	 (test "default field value.5" (+fx (car x) (car y)) (car z)))))
+      

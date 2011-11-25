@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Mon Nov 21 11:37:12 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:01:41 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -39,6 +39,8 @@
 	       (src read-only)
 	       ;; the class that slot belongs to
 	       (class-owner read-only)
+	       ;; index in the class
+	       (index::long read-only)
 	       ;; the slot type (i.e., the type of values)
 	       (type read-only)
 	       ;; access property
@@ -99,7 +101,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class-slots ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-class-slots class slots super vnum src)
+(define (make-class-slots class clauses super vnum src)
    
    (define (find-default-attr attr)
       ;; seek for the default attribute of slots
@@ -189,7 +191,7 @@
 	    (else
 	     (loop (cdr slots) (cons (car slots) res))))))
    
-   (define (make-attribute-slot s slot-id attr vget vset vnum)
+   (define (make-attribute-slot s slot-id attr vget vset vnum index)
       ;; direct slot with attribute. Because of the presence of
       ;; the attributes, this slot may be virtual
       (let ((reado? (memq 'read-only attr)))
@@ -215,6 +217,7 @@
 	    (else
 	     (instantiate::slot
 		(id (car slot-id))
+		(index index)
 		(name (scheme-symbol->c-string (car slot-id)))
 		(src s)
 		(class-owner class)
@@ -240,69 +243,77 @@
 		   (check-super-slot slot sslots class))
 		nslots))
    
-   (define (make-direct-slot slot-id)
+   (define (make-direct-slot slot-id index)
       ;; plain direct slot
       (instantiate::slot
 	 (id (car slot-id))
+	 (index index)
 	 (name (scheme-symbol->c-string (car slot-id)))
 	 (src slot-id)
 	 (class-owner class)
 	 (type (find-slot-type slot-id src))))
    
-   (trace (ast 2) "make-class-slots: " slots " " vnum #\Newline)
-   (let loop ((slots slots)
-	      (nslots '())
-	      (vnum  vnum))
-      (if (null? slots)
-	  (let ((sslots (cond
-			   ((not (type? super))
-			    '())
-			   ((not (tclass? super))
-			    '())
-			   (else
-			    (tclass-slots super)))))
-	     ;; check that this class does not re-define a super class slot
-	     (check-super-slots nslots sslots class)
-	     ;; this is mandatory that unique-virtual-slots is called
-	     ;; on a reversed list. This function fixes up virtual slots
-	     ;; number. If the list is the wrong direction, numbers will get
-	     ;; mixed up.
-	     (unique-virtual-slots (append nslots (reverse sslots))))
-	  (let ((s (car slots)))
-	     (match-case s
-		(((id ?id) . ?attr)
-		 (multiple-value-bind (vget vset)
-		    (find-virtual-attr attr)
-		    (loop (cdr slots)
-			  (cons (make-attribute-slot s id attr vget vset vnum)
-				nslots)
-			  (if (or vget vset) (+ vnum 1) vnum))))
-		((id ?id)
-		 (loop (cdr slots)
-		       (cons (make-direct-slot id) nslots)
-		       vnum))
-		(else
-		 (user-error/location (find-location s)
-				      (tclass-id class)
-				      "Illegal slot"
-				      s)))))))
+   (trace (ast 2) "make-class-slots: " clauses " " vnum #\Newline)
+   (let ((sslots (cond
+		    ((not (type? super))
+		     '())
+		    ((not (tclass? super))
+		     '())
+		    (else
+		     (tclass-slots super)))))
+      (let loop ((clauses clauses)
+		 (nslots '())
+		 (vnum  vnum)
+		 (index (length sslots)))
+	 (if (null? clauses)
+	     (begin
+		;; check that this class does not re-define a super class slot
+		(check-super-slots nslots sslots class)
+		;; this is mandatory that unique-virtual-slots is called
+		;; on a reversed list. This function fixes up virtual slots
+		;; number. If the list is the wrong direction, numbers will get
+		;; mixed up.
+		(unique-virtual-slots (append nslots (reverse sslots))))
+	     (let ((s (car clauses)))
+		(match-case s
+		   (((id ?id) . ?attr)
+		    (multiple-value-bind (vget vset)
+		       (find-virtual-attr attr)
+		       (loop (cdr clauses)
+			  (cons (make-attribute-slot s id attr vget vset vnum index)
+			     nslots)
+			  (if (or vget vset) (+ vnum 1) vnum)
+			  (+fx index 1))))
+		   ((id ?id)
+		    (loop (cdr clauses)
+		       (cons (make-direct-slot id index) nslots)
+		       vnum
+		       (+fx index 1)))
+		   (else
+		    (user-error/location (find-location s)
+		       (tclass-id class)
+		       "Illegal slot"
+		       s))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-java-class-slots ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (make-java-class-slots class slots super src)
-   (trace (ast 2) "make-java-class-slots: " slots " " 0 #\Newline)
+(define (make-java-class-slots class clauses super src)
+   (trace (ast 2) "make-java-class-slots: " clauses " " 0 #\Newline)
    (let ((loc (find-location src)))
-      (define (make-java-class-slot ident jname reado? s)
+      
+      (define (make-java-class-slot ident jname reado? s index)
 	 (let* ((loc (find-location/loc s loc))
 		(slot-id (parse-id ident loc)))
 	    (instantiate::slot
 	       (id (car slot-id))
+	       (index index)
 	       (name jname)
 	       (type (find-slot-type slot-id src))
 	       (read-only? reado?)
 	       (class-owner class)
 	       (src s))))
+      
       (define (declare-static-field! id jname reado? src)
 	 (let* ((loc (find-location/loc src loc))
 		(slot-id (parse-id id loc))
@@ -315,25 +326,28 @@
 		(qc-id jname))
 	    (ensure-type-defined! t-id src)
 	    (let ((g (declare-global-cvar! l-id qc-id
-					   (type-id t-id) reado? src #f)))
+			(type-id t-id) reado? src #f)))
 	       (global-module-set! g (jclass-id class))
 	       (global-jvm-type-name-set! g (jclass-name class))
 	       g)))
-      (let loop ((slots slots)
-		 (res   (cond
-			   ((not (type? super))
-			    '())
-			   ((not (jclass? super))
-			    '())
-			   (else
-			    (reverse (jclass-slots super))))))
-	 (if (null? slots)
+
+      (let ((sslots (cond
+		       ((not (type? super))
+			'())
+		       ((not (jclass? super))
+			'())
+		       (else
+			(reverse (jclass-slots super))))))
+      (let loop ((clauses clauses)
+		 (res sslots)
+		 (index (length sslots)))
+	 (if (null? clauses)
 	     ;; this is mandatory that unique-virtual-slots is called
 	     ;; on a reversed list. This function fixs up virtual slots
 	     ;; number. If the list is the wrong direction, numbers will get
 	     ;; mixed up.
 	     res
-	     (let* ((s (car slots))
+	     (let* ((s (car clauses))
 		    (src (car s))
 		    (id (cadr s))
 		    (jname (caddr s))
@@ -342,10 +356,11 @@
 		(if (memq 'static mod)
 		    (begin
 		       (declare-static-field! id jname reado? src)
-		       (loop (cdr slots) res))
-		    (loop (cdr slots)
-			  (cons (make-java-class-slot id jname reado? src)
-				res))))))))
+		       (loop (cdr clauses) res index))
+		    (loop (cdr clauses)
+		       (cons (make-java-class-slot id jname reado? src index)
+			  res)
+		       (+fx 1 index)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-slot-type ...                                               */

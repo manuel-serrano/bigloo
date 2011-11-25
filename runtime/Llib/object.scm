@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 25 07:53:36 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:20:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -142,7 +142,7 @@
 	    (class-name::symbol ::class)
 	    (class-hash::long ::class)
 	    (class-fields::vector ::class)
-	    (class-all-fields::vector ::class)
+	    (inline class-all-fields::vector ::class)
 	    (class-evdata::obj ::class)
 	    (class-evdata-set! ::class ::obj)
 	    (find-class-field ::class ::symbol)
@@ -406,7 +406,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-all-fields ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (class-all-fields class)
+(define-inline (class-all-fields class)
    (vector-ref-ur class 15))
 
 ;*---------------------------------------------------------------------*/
@@ -834,9 +834,9 @@
 	    (error "add-class!" "Illegal super class for class" name))
 	 (when (=fx *nb-classes* *nb-classes-max*)
 	    (double-nb-classes!))
+	 (unless (vector? plain)
+	    (error "register-class" "fields not a vector" plain))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
-		;; MS CARE 25 nov 2011: to be removed after bootstrap
-		(plain (if (list? plain) (list->vector plain) plain))
 		(class (make-class name
 			  num
 			  -1
@@ -1252,25 +1252,6 @@
    (let* ((klass (object-class obj))
 	  (fields (class-all-fields klass))
 	  (len (vector-length fields)))
-      ;; MS CARE: test + then to be removed after bootstrap. Only the else
-      ;; part must remain
-;*       (if (struct-ref struct 0)                                     */
-;* 	  (let* ((x (struct-ref struct 0))                             */
-;* 		 (xlen (struct-length x)))                             */
-;* 	     ;; restore the plain fields                               */
-;* 	     (for-each (lambda (f i)                                   */
-;* 			  (unless (class-field-virtual? f)             */
-;* 			     ((%class-field-mutator f)                 */
-;* 			      object (struct-ref struct i))))          */
-;* 		(take fields (-fx len xlen))                           */
-;* 		(iota (-fx len xlen) 1))                               */
-;* 	     ;; restore the wide fields                                */
-;* 	     (for-each (lambda (f i)                                   */
-;* 			  (unless (class-field-virtual? f)             */
-;* 			     ((%class-field-mutator f)                 */
-;* 			      object (struct-ref x i))))               */
-;* 		(list-tail fields (-fx len xlen))                      */
-;* 		(iota xlen)))                                          */
       (let loop ((i 0))
 	 (when (<fx i len)
 	    (let ((f (vector-ref-ur fields i)))

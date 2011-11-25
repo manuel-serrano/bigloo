@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Nov 24 09:59:24 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:22:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -189,11 +189,16 @@
 	 (if (literal? (slot-default-value s))
 	     (slot-default-value s)
 	     `(class-field-default-value
-		 (find-class-field
-		    (@ ,(global-id g) ,(global-module g)) ',(slot-id s))))))
+		 (vector-ref-ur
+		    ((@ class-all-fields __object)
+		     (@ ,(global-id g) ,(global-module g)))
+		    ,(slot-index s))))))
    
    (define (collect-slot-values slots)
-      (let ((vargs (make-vector (length slots))))
+      ;; When instantiate-fill is called for widening, slots only contains
+      ;; the wide slots. The OFFSET value adjust the indices in such a case.
+      (let ((offset (-fx (length (tclass-slots class)) (length slots)))
+	    (vargs (make-vector (length slots))))
 	 ;; collect the default values
 	 (let loop ((i 0)
 		    (slots slots))
@@ -213,8 +218,9 @@
 		     (((and (? symbol?) ?s-name) ?value)
 		      ;; plain slot
 		      (let ((pval (vector-ref
-				     vargs
-				     (find-slot-offset slots s-name op p))))
+                                     vargs
+                                     (-fx (find-slot-offset slots s-name op p)
+					offset))))
 			 (set-car! pval #t)
 			 (set-cdr! pval (object-epairify value p))))
 		     (else
@@ -246,7 +252,8 @@
 				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ,@(map (lambda (c) (e `(,c ,new) e))
+	       (find-class-constructors class))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
@@ -364,10 +371,9 @@
 		  (match-case p
 		     (((and (? symbol?) ?s-name) ?value)
 		      ;; plain slot
-		      (let ((i (find-slot-offset slots s-name "duplicate" p)))
-			 (vector-set! vargs
-			    i
-			    (cons #t (object-epairify value p)))))
+		      (vector-set! vargs
+			 (find-slot-offset slots s-name "duplicate" p)
+			 (cons #t (object-epairify value p))))
 		     (else
 		      (error (car x) "Illegal form" x)))
 		  (loop (cdr provided)))))
@@ -406,7 +412,8 @@
 				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ,@(map (lambda (c) (e `(,c ,new) e))
+	       (find-class-constructors class))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
@@ -514,12 +521,7 @@
 ;*    find-slot-offset ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (find-slot-offset slots::pair-nil name::symbol form sexp)
-   (let loop ((slots slots)
-	      (i 0))
-      (cond
-	 ((null? slots)
-	  (error form (format "Field unknown \"~a\"" name) sexp))
-	 ((eq? (slot-id (car slots)) name)
-	  i)
-	 (else   
-	  (loop (cdr slots) (+fx i 1))))))
+   (let ((s (find (lambda (s) (eq? (slot-id s) name)) slots)))
+      (if (slot? s)
+	  (slot-index s)
+          (error form (format "Field unknown \"~a\"" name) sexp))))
