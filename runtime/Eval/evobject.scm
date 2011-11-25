@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov 25 15:37:56 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 19:45:13 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -53,6 +53,7 @@
 	    __everror
 	    __evcompile
 	    __eval
+	    __evmodule
 	    __expander_define
 	    __expand
 	    __macro)
@@ -167,7 +168,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    eval-register-class ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (eval-register-class id super abstract slots hash constr)
+(define (eval-register-class id module super abstract slots hash constr)
    (let* ((size (length (filter (lambda (s) (not (slot-virtual? s))) slots)))
 	  (offset (if (eval-class? super) (class-evdata super) 0))
 	  (native (let loop ((super super))
@@ -185,6 +186,8 @@
 	  (clazz (register-class!
 		    ;; name
 		    id
+		    ;; module name
+		    (evmodule-name module)
 		    ;; super class
 		    super
 		    ;; hash number
@@ -686,7 +689,7 @@
 		   slots)
 		;; make the class and bind it to its global variable
 		(let* ((clazz (eval-register-class
-				 cid super abstract
+				 cid mod super abstract
 				 slots 
 				 (get-class-hash src)
 				 (eval! constructor mod))))

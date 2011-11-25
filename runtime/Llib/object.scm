@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 25 15:20:02 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 19:24:51 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -140,6 +140,7 @@
 	    (class-subclasses::pair-nil ::class)
 	    (inline class-num::long ::class)
 	    (class-name::symbol ::class)
+	    (class-module::symbol ::class)
 	    (class-hash::long ::class)
 	    (class-fields::vector ::class)
 	    (inline class-all-fields::vector ::class)
@@ -163,7 +164,7 @@
 	    (class-field-mutator::procedure ::class-field)
 	    (%class-field-mutator::procedure ::class-field)
 	    (class-field-type::obj ::class-field)
-	    (register-class!::class ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::obj ::vector)
+	    (register-class!::class ::symbol ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::obj ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -216,6 +217,7 @@
 	    (class-nil side-effect-free no-cfa-top no-trace nesting)
 	    (class-num side-effect-free no-cfa-top no-trace nesting)
 	    (class-name side-effect-free no-cfa-top no-trace nesting)
+	    (class-module side-effect-free no-cfa-top no-trace nesting)
 	    (object-class side-effect-free no-cfa-top no-trace nesting)
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
 	    (isa? side-effect-free no-cfa-top no-trace nesting (effect))
@@ -269,12 +271,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name::symbol num::long min::long
+(define (make-class name::symbol module::symbol num::long min::long
 	   super::obj sub::pair-nil max
 	   alloc ha
 	   fd::vector allfd::vector
 	   constr virt new nil shrink evdata)
-   (let ((v ($create-vector-uncollectable 17)))
+   (let ((v ($create-vector-uncollectable 18)))
       ;; the class name
       (vector-set-ur! v 0 name)
       ;; the class number
@@ -307,9 +309,19 @@
       (vector-set-ur! v 14 evdata)
       ;; all the fields
       (vector-set-ur! v 15 allfd)
+      ;; class module
+      (vector-set-ur! v 16 module)
       ;;  a stamp to implement class?
-      (vector-set-ur! v 16 *class-key*)
+      (vector-set-ur! v 17 *class-key*)
       v))
+
+;*---------------------------------------------------------------------*/
+;*    class? ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (class? obj)
+   (and (vector? obj)
+	(=fx (vector-length obj) 18)
+	(eq? (vector-ref-ur obj 17) *class-key*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-exists ...                                                 */
@@ -330,14 +342,6 @@
        (error "find-class" "Can't find class" cname)))
 
 ;*---------------------------------------------------------------------*/
-;*    class? ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (class? obj)
-   (and (vector? obj)
-	(=fx (vector-length obj) 17)
-	(eq? (vector-ref-ur obj 16) *class-key*)))
-
-;*---------------------------------------------------------------------*/
 ;*    eval-class? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (eval-class? obj)
@@ -348,6 +352,12 @@
 ;*---------------------------------------------------------------------*/
 (define (class-name class)
    (vector-ref-ur class 0))
+
+;*---------------------------------------------------------------------*/
+;*    class-module ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (class-module class)
+   (vector-ref-ur class 16))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-num ...                                                    */
@@ -826,7 +836,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (register-class! name super hash creator allocator constructor nil shrink plain virtual)
+(define (register-class! name module super hash creator allocator constructor nil shrink plain virtual)
    (with-lock $bigloo-generic-mutex
       (lambda ()
 	 (initialize-objects!)
@@ -837,7 +847,7 @@
 	 (unless (vector? plain)
 	    (error "register-class" "fields not a vector" plain))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
-		(class (make-class name
+		(class (make-class name module
 			  num
 			  -1
 			  super

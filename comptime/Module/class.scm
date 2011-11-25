@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 25 18:25:53 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 19:23:46 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -196,6 +196,7 @@
 	  ;; and the class and all its super classes
 	  (gen-class-coercions! class)
 	  (let* ((classid (type-id class))
+		 (classmod (global-module (tclass-holder class)))
 		 (super (tclass-its-super class))
 		 (superv (when (tclass? super)
 			    (let* ((sholder (tclass-holder super))
@@ -206,6 +207,8 @@
 			   ((@ register-class! __object)
 			    ;; class id
 			    ',classid
+			    ;; class module
+			    ',classmod
 			    ;; super class
 			    ,superv
 			    ;; hash
