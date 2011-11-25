@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Thu Nov 24 16:15:53 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 07:54:11 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -303,7 +303,7 @@
 		(tclass-holder (slot-type s))
 		`',(type-default-id (slot-type s))))))
    
-   `(list
+   `(vector
        ,@(filter-map (lambda (s)
 			(when (eq? (slot-class-owner s) class)
 			   (if (slot-virtual? s)

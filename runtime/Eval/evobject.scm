@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Thu Nov 24 16:10:42 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 07:54:58 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -117,21 +117,31 @@
 ;*    eval-creator ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (eval-creator id native len classnum)
-   (let ((n (length (filter (lambda (f)
-			       (not (class-field-virtual? f)))
-		       (class-all-fields native))))
-	 (creator (class-creator native)))
-      (lambda l
-	 (if (=fx (length l) (+fx n len))
-	     (let ((o (apply creator (take l n))))
-		(object-class-num-set! o (cell-ref classnum))
-		(%object-widening-set! o (list->vector (list-tail l n)))
-		o)
-	     (error id
-		(format
-		   "Wrong number of arguments for constructor (expecting ~a)"
-		   (+fx n len))
-		l)))))
+   
+   (define (make-create n)
+      (let ((creator (class-creator native)))
+	 (lambda l
+	    (if (=fx (length l) (+fx n len))
+		(let ((o (apply creator (take l n))))
+		   (object-class-num-set! o (cell-ref classnum))
+		   (%object-widening-set! o (list->vector (list-tail l n)))
+		   o)
+		(error id
+		   (format
+		      "Wrong number of arguments for constructor (expecting ~a)"
+		      (+fx n len))
+		   l)))))
+   
+   (let ((fields (class-all-fields native)))
+      (let loop ((i (-fx (vector-length fields) 1))
+		 (n 0))
+	 (cond
+	    ((=fx i -1)
+	     (make-create n))
+	    ((class-field-virtual? (vector-ref fields i))
+	     (loop (-fx i 1) n))
+	    (else
+	     (loop (-fx i 1) (+fx n 1)))))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    eval-allocator ...                                               */
@@ -245,16 +255,17 @@
 	  (slot-user-info s)
 	  (slot-default-value s)
 	  (slot-type s))))
-   
-   (append
-      (filter-map (lambda (slot index)
-		     (unless (slot-virtual? slot)
-			(make-class-field-plain slot index)))
-	 slots (iota size offset))
-      (filter-map (lambda (slot)
-		     (when (slot-virtual? slot)
-			(make-class-field-virtual slot)))
-	 slots)))
+
+   (list->vector
+      (append
+	 (filter-map (lambda (slot index)
+			(unless (slot-virtual? slot)
+			   (make-class-field-plain slot index)))
+	    slots (iota size offset))
+	 (filter-map (lambda (slot)
+			(when (slot-virtual? slot)
+			   (make-class-field-virtual slot)))
+	    slots))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-fields ...                                    */
@@ -287,15 +298,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    instantiate-fill ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (instantiate-fill op provided class fields init x e)
+(define (instantiate-fill op provided class fields::vector init x e)
 
    (define (collect-field-values fields)
-      (let ((vargs (make-vector (length fields))))
+      (let* ((len (vector-length fields))
+	     (vargs (make-vector len)))
 	 ;; collect the default values
-	 (let loop ((i 0)
-		    (fields fields))
-	    (when (pair? fields)
-	       (let ((s (car fields)))
+	 (let loop ((i 0))
+	    (when (<fx i len)
+	       (let ((s (vector-ref fields i)))
 		  (cond
 		     ((class-field-default-value? s)
 		      (vector-set! vargs
@@ -304,7 +315,7 @@
 		     (else
 		      (vector-set! vargs
 			 i (cons #f #unspecified))))
-		  (loop (+fx i 1) (cdr fields)))))
+		  (loop (+fx i 1)))))
 	 ;; collect the provided values
 	 (let loop ((provided provided))
 	    (when (pair? provided)
@@ -321,41 +332,62 @@
 		      (error op "Illegal argument" p)))
 		  (loop (cdr provided)))))
 	 ;; build the result
-	 (vector->list vargs)))
+	 vargs))
 
+   (define (check-all-values args fields)
+      (let ((len (vector-length fields)))
+	 (let loop ((i 0))
+	    (when (<fx i len)
+	       (let ((a (vector-ref args i))
+		     (s (vector-ref fields i)))
+		  (unless (car a)
+		     (unless (class-field-virtual? s)
+			;; value missing
+			(error op
+			   (format "Missing value for field \"~a\""
+			      (class-field-name s))
+			   x))))
+	       (loop (+fx i 1))))))
+   
    (let* ((new (gensym 'new))
 	  (args (collect-field-values fields)))
       ;; check that there is enough values
-      (for-each (lambda (a s)
-		   (unless (car a)
-		      (unless (class-field-virtual? s)
-			 ;; value missin
-			 (error op
-			    (format "Missing value for field \"~a\""
-			       (class-field-name s))
-			    x))))
-	 args fields)
+      (check-all-values args fields)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
       `(let ((,new ,(e init e)))
 	  ;; actual fields
-	  ,@(filter-map (lambda (field val)
-			   (unless (class-field-virtual? field)
-			      (let ((v (e (cdr val) e)))
-				 `(,(%class-field-mutator field) ,new ,v))))
+	  ,@(vector-filter-map
+	       (lambda (field val)
+		  (unless (class-field-virtual? field)
+		     (let ((v (e (cdr val) e)))
+			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; constructors
 	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
 	  ;; virtual fields
-	  ,@(filter-map (lambda (field val)
-			   (when (and (class-field-virtual? field)
-				      (class-field-mutable? field)
-				      (car val))
-			      (let ((v (e (cdr val) e)))
-				 `(,(%class-field-mutator field) ,new ,v))))
+	  ,@(vector-filter-map
+	       (lambda (field val)
+		  (when (and (class-field-virtual? field)
+			     (class-field-mutable? field)
+			     (car val))
+		     (let ((v (e (cdr val) e)))
+			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; return the new instance
 	  ,new)))
+
+;*---------------------------------------------------------------------*/
+;*    vector-filter-map ...                                            */
+;*---------------------------------------------------------------------*/
+(define (vector-filter-map f v1 v2)
+   (let ((len (vector-length v1)))
+      (let loop ((i 0)
+		 (acc '()))
+	 (if (=fx i len)
+	     (reverse! acc)
+	     (let ((v (f (vector-ref v1 i) (vector-ref v2 i))))
+		(loop (+fx i 1) (if v (cons v acc) acc)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-duplicate ...                                        */
@@ -382,7 +414,8 @@
 (define (duplicate-expander class duplicated provided x e)
    
    (define (collect-field-values fields dupvar)
-      (let ((vargs (make-vector (length fields))))
+      (let* ((len (vector-length fields))
+	     (vargs (make-vector len)))
 	 ;; we collect the provided values
 	 (let loop ((provided provided))
 	    (when (pair? provided)
@@ -398,20 +431,19 @@
 		      (error (car x) "Illegal form" x)))
 		  (loop (cdr provided)))))
 	 ;; we collect the duplicated values
-	 (let loop ((i 0)
-		    (fields fields))
-	    (when (pair? fields)
+	 (let loop ((i 0))
+	    (when (<fx i len)
 	       (let ((value (vector-ref vargs i)))
 		  (unless (pair? value)
-		     (let ((field (car fields)))
+		     (let ((field (vector-ref fields i)))
 			;; no value is provided for this object we pick
 			;; one from this duplicated object.
 			(vector-set! vargs
 			   i
 			   (cons #t `(,(class-field-accessor field) ,dupvar)))))
-		  (loop (+fx i 1) (cdr fields)))))
+		  (loop (+fx i 1)))))
 	 ;; build the result
-	 (vector->list vargs)))
+	 vargs))
 
    (let* ((fields (class-all-fields class))
 	  (new (gensym 'new))
@@ -422,19 +454,21 @@
       `(let ((,dupvar ,(e duplicated e))
 	     (,new ,(e `(,(class-allocator class)) e)))
 	  ;; actual fields
-	  ,@(filter-map (lambda (field val)
-			   (unless (class-field-virtual? field)
-			      (let ((v (e (cdr val) e)))
-				 `(,(%class-field-mutator field) ,new ,v))))
+	  ,@(vector-filter-map
+	       (lambda (field val)
+		  (unless (class-field-virtual? field)
+		     (let ((v (e (cdr val) e)))
+			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; constructors
 	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
 	  ;; virtual fields
-	  ,@(filter-map (lambda (field val)
-			   (when (and (class-field-virtual? field)
-				      (class-field-mutable? field))
-			      (let ((v (e (cdr val) e)))
-				 `(,(%class-field-mutator field) ,new ,v))))
+	  ,@(vector-filter-map
+	       (lambda (field val)
+		  (when (and (class-field-virtual? field)
+			     (class-field-mutable? field))
+		     (let ((v (e (cdr val) e)))
+			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; return the new instance
 	  ,new)))
@@ -454,18 +488,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-field-offset ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (find-field-offset fields::pair-nil name::symbol form sexp)
-   (let loop ((fields fields)
-	      (i 0))
-      (cond
-	 ((null? fields)
-	  (error #f
-	     (format "Illegal ~a, field unknown \"~a\"" form name)
-	     sexp))
-	 ((eq? (class-field-name (car fields)) name)
-	  i)
-	 (else   
-	  (loop (cdr fields) (+fx i 1))))))
+(define (find-field-offset fields::vector name::symbol form sexp)
+   (let ((len (vector-length fields)))
+      (let loop ((i 0))
+	 (cond
+	    ((=fx i len)
+	     (error #f
+		(format "Illegal ~a, field unknown \"~a\"" form name)
+		sexp))
+	    ((eq? (class-field-name (vector-ref fields i)) name)
+	     i)
+	    (else   
+	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-with-access ...                                      */

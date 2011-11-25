@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov 23 21:19:15 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 07:53:36 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -138,21 +138,19 @@
 	    (class-wide?::bool ::class)
 	    (class-super ::class)
 	    (class-subclasses::pair-nil ::class)
-	    (inline class-num::long class)
+	    (inline class-num::long ::class)
 	    (class-name::symbol ::class)
 	    (class-hash::long ::class)
-	    (class-fields::pair-nil ::class)
+	    (class-fields::vector ::class)
+	    (class-all-fields::vector ::class)
 	    (class-evdata::obj ::class)
 	    (class-evdata-set! ::class ::obj)
-	    (class-all-fields::pair-nil class)
-	    (find-class-field class ::symbol)
+	    (find-class-field ::class ::symbol)
 	    (class-constructor::obj ::class)
-	    (class-allocator::procedure class)
+	    (class-allocator::procedure ::class)
 	    (class-creator::obj ::class)
 	    (class-nil::obj ::class)
 	    (class-get-new-nil::obj ::class)
-	    (%make-class #!key name super alloc hash fields constructor
-	       virtuals new nil shrink evdata abstract)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
@@ -165,7 +163,7 @@
 	    (class-field-mutator::procedure ::class-field)
 	    (%class-field-mutator::procedure ::class-field)
 	    (class-field-type::obj ::class-field)
-	    (register-class!::class ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::pair-nil ::vector)
+	    (register-class!::class ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::obj ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
 	    (generic-add-eval-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -205,10 +203,6 @@
 	    *nb-generics-max*
 	    *nb-generics*
 	    *class-key*
-	    (make-class ::symbol ::long ::long
-			::obj ::obj ::obj ::obj ::long ::obj
-			::obj ::vector ::obj
-			::procedure ::obj ::obj ::bool)
 	    (inline generic-default-set! ::procedure ::procedure)
 	    (inline generic-method-array-set! ::procedure ::vector))
 
@@ -273,51 +267,46 @@
        %object-type-number))
 
 ;*---------------------------------------------------------------------*/
-;*    %make-class ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (%make-class #!key name super alloc hash fields constructor
-	   virtuals new nil shrink evdata abstract)
-   (make-class name -1 -1 super -1 -1
-      alloc hash fields constructor virtuals
-      new nil shrink  evdata abstract))
-   
-;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name num min super sub max alloc ha fd constr virt new nil shrink evdata abstract)
+(define (make-class name::symbol num::long min::long
+	   super::obj sub::pair-nil max
+	   alloc ha
+	   fd::vector allfd::vector
+	   constr virt new nil shrink evdata)
    (let ((v ($create-vector-uncollectable 17)))
-      ;;  the class name
+      ;; the class name
       (vector-set-ur! v 0 name)
-      ;;  the class number
+      ;; the class number
       (vector-set-ur! v 1 num)
-      ;;  the min-number in the class inheritance tree
+      ;; the min-number in the class inheritance tree
       (vector-set-ur! v 2 min)
-      ;;  the unique super class
+      ;; the unique super class
       (vector-set-ur! v 3 super)
-      ;;  the subclasses
+      ;; the subclasses
       (vector-set-ur! v 4 sub)
-      ;;  the max-num in the class inheritance tree
+      ;; the max-num in the class inheritance tree
       (vector-set-ur! v 5 max)
-      ;;  the class allocator
+      ;; the class allocator
       (vector-set-ur! v 6 alloc)
-      ;;  the class hashing function
+      ;; the class hashing function
       (vector-set-ur! v 7 ha)
-      ;;  the class fields
+      ;; the class fields
       (vector-set-ur! v 8 fd)
-      ;;  the class constructor
+      ;; the class constructor
       (vector-set-ur! v 9 constr)
-      ;;  the class virtual getter and setter
+      ;; the class virtual getter and setter
       (vector-set-ur! v 10 virt)
-      ;;  the function that creates instances
+      ;; the function that creates instances
       (vector-set-ur! v 11 new)
-      ;;  the function that return the NIL object
+      ;; the function that return the NIL object
       (vector-set-ur! v 12 (cons #t nil))
-      ;;  the class shrink
+      ;; the class shrink
       (vector-set-ur! v 13 shrink)
-      ;;  field used when declaring a class within eval
+      ;; field used when declaring a class within eval
       (vector-set-ur! v 14 evdata)
-      ;;  is the class abstract
-      (vector-set-ur! v 15 abstract)
+      ;; all the fields
+      (vector-set-ur! v 15 allfd)
       ;;  a stamp to implement class?
       (vector-set-ur! v 16 *class-key*)
       v))
@@ -345,7 +334,8 @@
 ;*---------------------------------------------------------------------*/
 (define (class? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 17) (eq? (vector-ref obj 16) *class-key*)))
+	(=fx (vector-length obj) 17)
+	(eq? (vector-ref-ur obj 16) *class-key*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-class? ...                                                  */
@@ -417,30 +407,20 @@
 ;*    class-all-fields ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-all-fields class)
-   (let ((fields (class-fields class))
-	 (super (class-super class)))
-      (if (class? super)
-	  (append (class-all-fields super) fields)
-	  fields)))
+   (vector-ref-ur class 15))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (find-class-field class name::symbol)
-   (define (search fields)
-      (cond
-         ((null? fields)
-          #f)
-         ((eq? (class-field-name (car fields)) name)
-          (car fields))
-         (else
-          (search (cdr fields)))))
-   (let loop ((class class))
-      (if (class? class)
-	  (let ((fields (class-fields class)))
-	     (let ((res (search fields)))
-		(or res (loop (class-super class)))))
-	  #f)))
+   (let ((fields (class-all-fields class)))
+      (let loop ((i (-fx (vector-length fields) 1)))
+	 (if (=fx i -1)
+	     #f
+	     (let ((f (vector-ref-ur fields i)))
+		(if (eq? (class-field-name f) name)
+		    f
+		    (loop (-fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-field ...                                             */
@@ -455,7 +435,7 @@
 (define (class-field? obj)
    (and (vector? obj)
 	(=fx (vector-length obj) 9)
-	(eq? (vector-ref obj 4) make-class-field)))
+	(eq? (vector-ref-ur obj 4) make-class-field)))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-name ...                                             */
@@ -544,7 +524,7 @@
 ;*    class-subclasses ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses class)
-   (vector-ref class 4))
+   (vector-ref-ur class 4))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses-set! ...                                        */
@@ -632,7 +612,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-shrink class)
    (if (class? class)
-       (vector-ref class 13)
+       (vector-ref-ur class 13)
        (bigloo-type-error "class-shrink" "class" class)))
 
 ;*---------------------------------------------------------------------*/
@@ -701,7 +681,7 @@
    ;; we have to enlarge the method vector for each generic
    (let loop ((i 0))
       (when (<fx i *nb-generics*)
-	 (let* ((gen (vector-ref *generics* i))
+	 (let* ((gen (vector-ref-ur *generics* i))
 		(default-bucket (generic-default-bucket gen))
 		(old-method-array (generic-method-array gen)))
 	    (generic-method-array-set!
@@ -808,11 +788,13 @@
 		`((generic ,*nb-generics*)
 		  (class ,*nb-classes*)
 		  (mtable-size ,size)
-		  (method-array-size ,(vector-length (generic-method-array (vector-ref *generics* 0))))
+		  (method-array-size ,(vector-length
+					 (generic-method-array
+					    (vector-ref-ur *generics* 0))))
 		  (generic-bucket-size ,(bigloo-generic-bucket-size))
 		  (max-class ,*nb-classes-max*)
 		  (max-generic ,*nb-generics-max*))
-		(let* ((gen (vector-ref *generics* g))
+		(let* ((gen (vector-ref-ur *generics* g))
 		       (dbuck (generic-default-bucket gen))
 		       (dz 0)
 		       (sz (apply + (map (lambda (b)
@@ -835,7 +817,7 @@
 (define (generics-add-class! class-num super-num)
    (let loop ((g 0))
       (when (<fx g *nb-generics*)
-	 (let* ((gen (vector-ref *generics* g))
+	 (let* ((gen (vector-ref-ur *generics* g))
 		(method-array (generic-method-array gen))
 		(method (method-array-ref gen method-array super-num)))
 	    (method-array-set! gen method-array class-num method)
@@ -853,6 +835,8 @@
 	 (when (=fx *nb-classes* *nb-classes-max*)
 	    (double-nb-classes!))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
+		;; MS CARE 25 nov 2011: to be removed after bootstrap
+		(plain (if (list? plain) (list->vector plain) plain))
 		(class (make-class name
 			  num
 			  -1
@@ -862,13 +846,15 @@
 			  allocator
 			  hash
 			  plain
+			  (if (class? super)
+			      (vector-append (class-all-fields super) plain)
+			      plain)
 			  constructor
 			  (make-class-virtual-slots-vector super virtual)
 			  creator
 			  nil
 			  shrink
-			  #f
-			  'abstract-to-be-removed)))
+			  #f)))
 	    ;; we set the sub field of the super class
 	    (if (class? super)
 		(begin
@@ -910,7 +896,7 @@
 	     (if (=fx i olen)
 		 (fill-vector-with-virtuals! vec)
 		 (begin
-		    (vector-set! vec i (vector-ref ovec i))
+		    (vector-set! vec i (vector-ref-ur ovec i))
 		    (loop (+fx i 1))))))))
 	 
 ;*---------------------------------------------------------------------*/
@@ -991,7 +977,7 @@
 		       (alen (vector-length marray)))
 		   (let loop ((i 0))
 		      (if (<fx i alen)
-			  (let ((bucket (vector-ref marray i)))
+			  (let ((bucket (vector-ref-ur marray i)))
 			     (if (eq? bucket old-def-bucket)
 				 (begin
 				    (vector-set! marray i new-def-bucket)
@@ -1000,7 +986,7 @@
 				    (cond
 				       ((=fx j (bigloo-generic-bucket-size))
 					(loop (+fx i 1)))
-				       ((eq? (vector-ref bucket j) old-default)
+				       ((eq? (vector-ref-ur bucket j) old-default)
 					(vector-set! bucket j default)
 					(laap (+fx j 1)))
 				       (else
@@ -1245,50 +1231,53 @@
 ;*---------------------------------------------------------------------*/
 ;*    object->struct ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-generic (object->struct::struct object::object)
-   (let* ((klass (object-class object))
+(define-generic (object->struct::struct obj::object)
+   (let* ((klass (object-class obj))
 	  (fields (class-all-fields klass))
-	  (len (+fx 1 (length fields)))
-	  (res (make-struct (class-name klass) len #unspecified)))
+	  (len (vector-length fields))
+	  (res (make-struct (class-name klass) (+fx len 1) #unspecified)))
       (struct-set! res 0 #f)
-      (for-each (lambda (f i)
-		   (unless (class-field-virtual? f)
-		      (struct-set! res i ((class-field-accessor f) object))))
-	 fields (iota len 1))
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (let ((f (vector-ref-ur fields i)))
+	       (unless (class-field-virtual? f)
+		  (struct-set! res (+fx i 1) ((class-field-accessor f) obj)))
+	       (loop (+fx i 1)))))
       res))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct+object->object ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-generic (struct+object->object::object object::object struct::struct)
-   (let* ((klass (object-class object))
+(define-generic (struct+object->object::object obj::object stu::struct)
+   (let* ((klass (object-class obj))
 	  (fields (class-all-fields klass))
-	  (len (length fields)))
+	  (len (vector-length fields)))
       ;; MS CARE: test + then to be removed after bootstrap. Only the else
       ;; part must remain
-      (if (struct-ref struct 0)
-	  (let* ((x (struct-ref struct 0))
-		 (xlen (struct-length x)))
-	     ;; restore the plain fields
-	     (for-each (lambda (f i)
-			  (unless (class-field-virtual? f)
-			     ((%class-field-mutator f)
-			      object (struct-ref struct i))))
-		(take fields (-fx len xlen))
-		(iota (-fx len xlen) 1))
-	     ;; restore the wide fields
-	     (for-each (lambda (f i)
-			  (unless (class-field-virtual? f)
-			     ((%class-field-mutator f)
-			      object (struct-ref x i))))
-		(list-tail fields (-fx len xlen))
-		(iota xlen)))
-	  (for-each (lambda (f i)
-		       (unless (class-field-virtual? f)
-			  ((%class-field-mutator f)
-			   object (struct-ref struct i))))
-	     fields (iota len 1)))
-      object))
+;*       (if (struct-ref struct 0)                                     */
+;* 	  (let* ((x (struct-ref struct 0))                             */
+;* 		 (xlen (struct-length x)))                             */
+;* 	     ;; restore the plain fields                               */
+;* 	     (for-each (lambda (f i)                                   */
+;* 			  (unless (class-field-virtual? f)             */
+;* 			     ((%class-field-mutator f)                 */
+;* 			      object (struct-ref struct i))))          */
+;* 		(take fields (-fx len xlen))                           */
+;* 		(iota (-fx len xlen) 1))                               */
+;* 	     ;; restore the wide fields                                */
+;* 	     (for-each (lambda (f i)                                   */
+;* 			  (unless (class-field-virtual? f)             */
+;* 			     ((%class-field-mutator f)                 */
+;* 			      object (struct-ref x i))))               */
+;* 		(list-tail fields (-fx len xlen))                      */
+;* 		(iota xlen)))                                          */
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (let ((f (vector-ref-ur fields i)))
+	       (unless (class-field-virtual? f)
+		  ((%class-field-mutator f) obj (struct-ref stu (+fx i 1))))
+	       (loop (+fx i 1)))))
+      obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-hashnumber ...                                            */
@@ -1299,8 +1288,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    struct->object ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (struct->object::object struct::struct)
-   (struct+object->object (allocate-instance (struct-key struct)) struct))
+(define (struct->object::object stu::struct)
+   (struct+object->object (allocate-instance (struct-key stu)) stu))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocate-instance ...                                            */
@@ -1346,26 +1335,18 @@
 
    (let* ((class (object-class obj))
 	  (class-name (class-name class))
-	  (fields (class-fields class)))
+	  (fields (class-all-fields class))
+	  (len (vector-length fields)))
       (display "#|" port)
       (display class-name port)
       (if (nil? obj)
 	  (display " nil|" port)
-	  (let loop ((fields fields)
-		     (class class))
-	     (cond
-		((null? fields)
-		 (let ((super (class-super class)))
-		    (if (class? super)
-			;; super class fields
-			(loop (class-fields super) super)
-			(display #\| port))))
-		((eq? fields #unspecified)
-		 (display "..." port)
-		 (loop '() class))
-		(else
-		 (class-field-write/display (car fields))
-		 (loop (cdr fields) class)))))))
+	  (let loop ((i 0))
+	     (if (=fx i len)
+		 (display #\| port)
+		 (begin
+		    (class-field-write/display (vector-ref-ur fields i))
+		    (loop (+fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */
@@ -1376,24 +1357,16 @@
 	 (equal? (get-value obj1) (get-value obj2))))
    (let ((class1 (object-class obj1))
 	 (class2 (object-class obj2)))
-      (cond
-	 ((not (eq? class1 class2))
-	  #f)
-	 (else
-	  (let loop ((fields (class-fields class1))
-		     (class  class1))
-	     (cond
-		((null? fields)
-		 (let ((super (class-super class)))
-		    (if (class? super)
-			;; we have now to check the super class fields
-			(loop (class-fields super) super)
-			;; ok we are done with return value #t
-			#t)))
-		((class-field-equal? (car fields))
-		 (loop (cdr fields) class))
-		(else
-		 #f)))))))
+      (when (eq? class1 class2))
+      (let ((fields (class-all-fields class1)))
+	 (let loop ((i (-fx (vector-length fields) 1)))
+	    (cond
+	       ((=fx i -1)
+		#t)
+	       ((class-field-equal? (vector-ref-ur fields i))
+		(loop (-fx i 1)))
+	       (else
+		#f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::obj ...                                       */
@@ -1431,7 +1404,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call-virtual-getter obj::object num::int)
    (let* ((class (object-class obj))
-	  (getter (car (vector-ref (class-virtual class) num))))
+	  (getter (car (vector-ref-ur (class-virtual class) num))))
       (getter obj)))
 
 ;*---------------------------------------------------------------------*/
@@ -1444,7 +1417,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call-virtual-setter obj::object num::int value)
    (let* ((class (object-class obj))
-	  (setter (cdr (vector-ref (class-virtual class) num))))
+	  (setter (cdr (vector-ref-ur (class-virtual class) num))))
       (setter obj value)))
 
 ;*---------------------------------------------------------------------*/
@@ -1467,7 +1440,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call-next-virtual-getter class obj::object num::int)
    (let ((next-class (class-super class)))
-      ((car (vector-ref (class-virtual next-class) num)) obj)))
+      ((car (vector-ref-ur (class-virtual next-class) num)) obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-next-virtual-setter ...                                     */
@@ -1479,7 +1452,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call-next-virtual-setter class obj::object num::int value)
    (let ((next-class (class-super class)))
-      ((cdr (vector-ref (class-virtual next-class) num)) obj value)))
+      ((cdr (vector-ref-ur (class-virtual next-class) num)) obj value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %object-widening ...                                             */

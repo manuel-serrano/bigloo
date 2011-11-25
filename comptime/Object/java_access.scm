@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Thu Nov 17 05:46:02 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 06:41:42 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -69,15 +69,6 @@
 					   constrs src)))
 			   `(,@pred ,@creator ,@fields ,@const)))))))
        '()))
-
-;*---------------------------------------------------------------------*/
-;*    heap-java-class-accessors! ...                                   */
-;*---------------------------------------------------------------------*/
-(define (heap-java-class-accessors! class)
-   (let ((src-def '(no def found)))
-      (with-access::jclass class (id)
-	 ;; we produces the user access functions
-	 (gen-class-slots-access! class class #f src-def))))
 
 ;*---------------------------------------------------------------------*/
 ;*    correct-java-class? ...                                          */

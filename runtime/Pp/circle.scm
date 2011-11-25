@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Fri Nov  4 16:43:04 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 06:49:12 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -100,26 +100,18 @@
 			    (lambda ()
 			       (set! serial (+fx 1 serial))
 			       serial))))
+      
       (define (register-object obj)
 	 (let* ((class (object-class obj))
 		(class-name (class-name class))
-		(fields (class-fields class)))
-	    (let loop ((fields fields)
-		       (class class))
-	       (cond
-		  ((null? fields)
-		   (let ((super (class-super class)))
-		      (if (class? super)
-			  ;; we have to register
-			  ;; the super class fields
-			  (loop (class-fields super) super))))
-		  ((eq? fields #unspecified)
-		   (loop '() class))
-		  (else
-		   (let* ((f (car fields))
-			  (gv (class-field-accessor f)))
-		      (register (gv obj))
-		      (loop (cdr fields) class)))))))
+		(fields (class-all-fields class))
+		(len (vector-length fields)))
+	    (let loop ((i 0))
+	       (when (<fx i len)
+		  (let* ((f (vector-ref fields 0))
+			 (gv (class-field-accessor f)))
+		     (register (gv obj)))))))
+
       ;; first stage: register object components
       (define (register obj)
 	 ;; do not register objects unique by their nature
