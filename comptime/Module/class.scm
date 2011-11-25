@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 25 16:26:07 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 18:25:53 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -319,12 +319,29 @@
 ;*    make-class-virtual-fields ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-class-virtual-fields class)
+   
+   (define (getter slot)
+      `(lambda (o)
+	  (define (call-next-slot)
+	     (call-next-virtual-getter ,(tclass-id class) o
+		,(slot-virtual-num slot)))
+	  (,(slot-getter slot) o)))
+
+   (define (setter slot)
+      (if (slot-read-only? slot)
+	  #f
+	  `(lambda (o v)
+	      (define (call-next-slot)
+		 (call-next-virtual-setter ,(tclass-id class) o
+		    ,(slot-virtual-num slot) v))
+	      (,(slot-setter slot) o v))))
+   
    `(vector
        ,@(filter-map (lambda (s)
 			(when (and (slot-virtual? s)
 				   (eq? (slot-class-owner s) class))
 			   `(cons ,(slot-virtual-num s)
-			       (cons ,(slot-getter s) ,(slot-setter s)))))
+			       (cons ,(getter s) ,(setter s)))))
 	    (tclass-slots class))))
 
 ;*---------------------------------------------------------------------*/
