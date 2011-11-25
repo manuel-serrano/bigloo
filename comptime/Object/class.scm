@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Fri Nov 18 07:22:51 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:29:37 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -73,7 +73,7 @@
 	    (declare-java-class-type!::type ::symbol ::obj ::bstring ::bstring ::pair)
 	    (final-class?::bool ::obj)
 	    (wide-class?::bool ::obj)
-	    (find-class-constructors ::tclass)
+	    (find-class-constructor ::tclass)
 	    (find-common-super-class ::tclass ::tclass)
 	    (type-subclass?::bool ::type ::type)
 	    (class-make::obj ::tclass)
@@ -259,23 +259,16 @@
        #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    find-class-constructors ...                                      */
-;*    -------------------------------------------------------------    */
-;*    I just don't know what to do here. i) Shall we invoke the        */
-;*    all constructors (a la C++). ii) Shall we call the first         */
-;*    constructor defined? iii) Shall we call the constructor          */
-;*    if it exists? For now I have chosen ii) because it fits the need */
-;*    for all the code I have currently that make use of constructors. */
+;*    find-class-constructor ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (find-class-constructors class::tclass)
+(define (find-class-constructor class::tclass)
    (let loop ((class class))
-      (if (not (tclass? class))
-	  '()
-	  (with-access::tclass class (constructor its-super)
-	     (cond
-		((eq? class its-super) '())
-		(constructor (list constructor))
-		(else (loop its-super)))))))
+      (when (tclass? class)
+	 (with-access::tclass class (constructor its-super)
+	    (cond
+	       ((eq? class its-super) #f)
+	       (constructor constructor)
+	       (else (loop its-super)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-common-super-class ...                                      */

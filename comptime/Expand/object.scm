@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri Nov 25 15:22:53 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:33:55 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -252,8 +252,12 @@
 				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e))
-	       (find-class-constructors class))
+	  ,(when (find-class-constructor class)
+	      (let ((g (tclass-holder class)))
+		 (e `(((@ class-constructor __object)
+		       (@ ,(global-id g) ,(global-module g)))
+		      ,new)
+		     e)))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
@@ -412,8 +416,12 @@
 				 `(set! ,(field-access new id) ,v))))
 	       slots args)
 	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e))
-	       (find-class-constructors class))
+	  ,(when (find-class-constructor class)
+	      (let ((g (tclass-holder class)))
+		 (e `(((@ class-constructor __object)
+		       (@ ,(global-id g) ,(global-module g)))
+		      ,new)
+		     e)))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov 25 07:54:58 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:37:56 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -363,8 +363,10 @@
 		     (let ((v (e (cdr val) e)))
 			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
-	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ;; constructor
+	  ,(let ((constr (find-class-constructor class)))
+	      (when constr
+		 (e `(,constr ,new) e)))
 	  ;; virtual fields
 	  ,@(vector-filter-map
 	       (lambda (field val)
@@ -460,8 +462,10 @@
 		     (let ((v (e (cdr val) e)))
 			`(,(%class-field-mutator field) ,new ,v))))
 	       fields args)
-	  ;; constructors
-	  ,@(map (lambda (c) (e `(,c ,new) e)) (find-class-constructors class))
+	  ;; constructor
+	  ,(let ((constr (find-class-constructor class)))
+	      (when constr
+		 (e `(,constr ,new) e)))
 	  ;; virtual fields
 	  ,@(vector-filter-map
 	       (lambda (field val)
@@ -472,18 +476,6 @@
 	       fields args)
 	  ;; return the new instance
 	  ,new)))
-
-;*---------------------------------------------------------------------*/
-;*    find-class-constructors ...                                      */
-;*---------------------------------------------------------------------*/
-(define (find-class-constructors class)
-   (let ((const (class-constructor class)))
-      (if const
-	  (list const)
-	  (let ((super (class-super class)))
-	     (if (class? super)
-		 (find-class-constructors super)
-		 '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-field-offset ...                                            */

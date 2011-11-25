@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 25 07:54:11 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 15:30:43 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -223,7 +223,7 @@
 				 ;; to build the nil instance
 				 (classgen-allocate-anonymous class)))
 			    ;; constructor
-			    ,(tclass-constructor class)
+			    ,(find-class-constructor class)
 			    ;; nil
 			    ,(classgen-nil-anonymous class)
 			    ;; predicate
