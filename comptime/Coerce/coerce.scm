@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Nov 16 08:47:31 2011 (serrano)                */
+;*    Last change :  Sat Nov 26 06:58:07 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -243,7 +243,6 @@
    (with-access::cast node (arg type)
       (trace (coerce 2) "coerce-cast!: " (shape node) " -> " (shape to)
 	     #\Newline)
-      ;;(set! arg (coerce! arg caller to safe))
       (set! arg (coerce! arg caller (get-type arg) safe))
       (convert! node type to safe)))
 

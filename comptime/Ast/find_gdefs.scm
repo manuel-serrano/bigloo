@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Thu Sep  9 15:13:41 2010 (serrano)                */
+;*    Last change :  Sat Nov 26 07:04:11 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */
@@ -143,7 +143,7 @@
    (define (define-global var arity exp)
       (match-case var
 	 ((or (@ ?pre-id ?-) ?pre-id)
-	  (let* ((id      (id-of-id pre-id (find-location exp)))
+	  (let* ((id (id-of-id pre-id (find-location exp)))
 		 (old-def (find-global-def id)))
 	     (if (def? old-def)
 		 (user-error var "Illegal duplicated definition" exp '())

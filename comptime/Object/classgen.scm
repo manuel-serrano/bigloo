@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Wed Nov 16 19:03:08 2011 (serrano)                */
+;*    Last change :  Sat Nov 26 06:45:52 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -328,6 +328,12 @@
    (define (nopragma-allocate w)
       (make-private-sexp 'new (type-id w)))
    
+   (define (unsafe expr)
+      (if (eq? *pass* 'classgen)
+	  ;; cannot extern private unsafe form
+	  expr
+	  (make-private-sexp 'unsafe (type-id c) expr)))
+   
    (let* ((w (tclass-wide-type c))
 	  (s (tclass-its-super c))
 	  (wid (type-id w))
@@ -341,11 +347,13 @@
 	     (,twide ,(if (backend-pragma-support (the-backend))
 			  (pragma-allocate w)
 			  (nopragma-allocate w))))
-	  (object-widening-set! ,tmp ,wide)
-	  ((@ object-class-num-set! __object)
-	   ,tmp
-	   ((@ class-num __object)
-	    (@ ,(global-id holder) ,(global-module holder))))
+	  ,(unsafe
+	      `(begin
+		  (object-widening-set! ,tmp ,wide)
+		  ((@ object-class-num-set! __object)
+		   ,tmp
+		   ((@ class-num __object)
+		    (@ ,(global-id holder) ,(global-module holder))))))
 	  ,tmp)))
 
 ;*---------------------------------------------------------------------*/

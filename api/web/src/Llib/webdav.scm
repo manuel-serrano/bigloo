@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Wed Nov 16 11:17:11 2011 (serrano)                */
+;*    Last change :  Fri Nov 25 20:11:03 2011 (serrano)                */
 ;*    Copyright   :  2007-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -252,7 +252,8 @@
 			   (lambda (e)
 			      (socket-close socket)
 			      (cond
-				 ((and (socket? socket) (&io-parse-error e))
+				 ((and (socket? socket)
+				       (isa? e &io-parse-error))
 				  (liip #f))
 				 ((isa? e &http-redirection)
 				  (with-access::&http-redirection e (url)

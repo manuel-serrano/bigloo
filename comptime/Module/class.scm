@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Nov 25 19:23:46 2011 (serrano)                */
+;*    Last change :  Sat Nov 26 06:52:51 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -129,7 +129,7 @@
       (delay-class-accessors!
 	 tclass
 	 (delay
-	    (register-class-sans-accessors! cdef holder tclass src-def)))))
+	    (gen-register-class! cdef holder tclass src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
@@ -183,11 +183,11 @@
 (define *declared-classes* '())
 
 ;*---------------------------------------------------------------------*/
-;*    register-class-sans-accessors! ...                               */
+;*    ge-register-class! ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    @label register-class@                                           */
 ;*---------------------------------------------------------------------*/
-(define (register-class-sans-accessors! class-def holder class src-def)
+(define (gen-register-class! class-def holder class src-def)
    (if (check-class-declaration? class src-def)
        (begin
 	  ;; store inside the class structure some information about its slots
