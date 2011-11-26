@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sat Nov 26 07:05:15 2011 (serrano)                */
+;*    Last change :  Sat Nov 26 07:15:02 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -200,7 +200,8 @@
 				(reverse! res) 
 				(let ((type (car res)))
 				   (cond
-				      ((eq? type *obj*)
+				      ((or (eq? type *obj*)
+					   (eq? type *pair-nil*))
 				       (reverse! res))
 				      ((eq? type *_*)
 				       (reverse! (cons *obj* (cdr res))))

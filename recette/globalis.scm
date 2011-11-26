@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */
-;*    Last change :  Wed Mar 23 15:42:45 2011 (serrano)                */
+;*    Last change :  Sat Nov 26 07:16:20 2011 (serrano)                */
 ;*                                                                     */
 ;*    Des tests qui globalisent des fonctions locales par la passe Glo */
 ;*---------------------------------------------------------------------*/
@@ -67,8 +67,8 @@
 ;*---------------------------------------------------------------------*/
 (define (test5 a b . c)
    (labels ((foo (x y) (set! c y) y)
-	    (bar (z)   (foo 2 1))
-	    (hux (t)   (set! a (foo t t)) c))
+	    (bar (z) (foo 2 1))
+	    (hux (t) (set! a (foo t t)) c))
       hux))
 
 ;*---------------------------------------------------------------------*/
