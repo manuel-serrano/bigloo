@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov 25 19:45:13 2011 (serrano)                */
+;*    Last change :  Tue Nov 29 05:37:04 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -202,12 +202,14 @@
 		    (eval-nil native length classnum)
 		    ;; shrink
 		    #f
-		    ;; fields
-		    (make-class-fields id super slots size offset)
+		    ;; fields are set after the class is created
+		    '#()
 		    ;; virtual fields
 		    (make-class-virtual-fields slots))))
       (cell-set! classnum (class-num clazz))
       (class-evdata-set! clazz length)
+      ;; once we have created the class, set the fields
+      (class-evfields-set! clazz (make-class-fields id clazz slots size offset))
       clazz))
 
 ;*---------------------------------------------------------------------*/
@@ -228,17 +230,21 @@
 ;*    Keep in a separate function for the sake of the symmetry with    */
 ;*    the compiler code.                                               */
 ;*---------------------------------------------------------------------*/
-(define (classgen-slot-anonymous index)
+(define (classgen-slot-anonymous index s class)
    (list
       (lambda (o)
-	 (vector-ref-ur (%object-widening o) index))
+	 (if (isa? o class)
+	     (vector-ref-ur (%object-widening o) index)
+	     (bigloo-type-error (slot-id s) (class-name class) o)))
       (lambda (o v)
-	 (vector-set-ur! (%object-widening o) index v))))
+	 (if (isa? o class)
+	     (vector-set-ur! (%object-widening o) index v)
+	     (bigloo-type-error (slot-id s) (class-name class) o)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (make-class-fields id super slots size offset)
+(define (make-class-fields id class slots size offset)
    
    (define (make-class-field-virtual s)
       ((@ make-class-field __object)
@@ -249,8 +255,8 @@
 	(slot-default-value s)
 	(slot-type s)))
    
-   (define (make-class-field-plain s i)
-      (let ((defs (classgen-slot-anonymous i)))
+   (define (make-class-field-plain s i class)
+      (let ((defs (classgen-slot-anonymous i s class)))
 	 ((@ make-class-field __object)
 	  (slot-id s)
 	  (car defs) (cadr defs) (slot-read-only? s)
@@ -263,7 +269,7 @@
       (append
 	 (filter-map (lambda (slot index)
 			(unless (slot-virtual? slot)
-			   (make-class-field-plain slot index)))
+			   (make-class-field-plain slot index class)))
 	    slots (iota size offset))
 	 (filter-map (lambda (slot)
 			(when (slot-virtual? slot)

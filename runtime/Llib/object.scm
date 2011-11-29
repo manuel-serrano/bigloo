@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Nov 25 19:24:51 2011 (serrano)                */
+;*    Last change :  Tue Nov 29 05:35:44 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -146,6 +146,7 @@
 	    (inline class-all-fields::vector ::class)
 	    (class-evdata::obj ::class)
 	    (class-evdata-set! ::class ::obj)
+	    (class-evfields-set! ::class ::vector)
 	    (find-class-field ::class ::symbol)
 	    (class-constructor::obj ::class)
 	    (class-allocator::procedure ::class)
@@ -406,6 +407,20 @@
 ;*---------------------------------------------------------------------*/
 (define (class-evdata-set! class data)
    (vector-set-ur! class 14 data))
+
+;*---------------------------------------------------------------------*/
+;*    class-evfields-set! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (class-evfields-set! class fields)
+   (cond
+      ((not (eval-class? class))
+       (error "class-evfields-set!" "Not an eval class" class))
+      ((>fx (vector-length (class-fields class)) 0)
+       (error "class-evfields-set!" "Fields already set" class))
+      (else
+       (let ((sfields (class-all-fields (class-super class))))
+	  (vector-set-ur! class 8 fields)
+	  (vector-set-ur! class 15 (vector-append sfields fields))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-fields ...                                                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Nov 18 15:59:26 2011 (serrano)                */
+;*    Last change :  Tue Nov 29 05:37:41 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -442,7 +442,7 @@
 ;*    bigloo-type-error-msg ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-type-error-msg prefix from to)
-   (string-append prefix " `" from "' expected, `" to "' provided"))
+   (string-append prefix " \"" from "\" expected, \"" to "\" provided"))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-type-error ...                                            */
