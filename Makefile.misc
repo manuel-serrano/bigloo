@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Thu Nov 24 06:51:36 2011 (serrano)                */
+#*    Last change :  Wed Nov 30 11:11:14 2011 (serrano)                */
 #*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -28,7 +28,7 @@ shared-link-lib:
 	else \
 	  cd `dirname $(LIBDEST)` && \
 	  $(RM) -f `basename $(LIBDEST)` && \
-          $(LN_S) $(LIBSRC) `basename $(LIBDEST)`; \
+          $(LN_S) `basename $(LIBSRC)` `basename $(LIBDEST)`; \
 	fi
 
 shared-lib:
@@ -157,7 +157,7 @@ install-shared-lib:
 	      $(RM) -f $(LIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
               (cd $(LIBDIR) && \
 	       $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
-               $(LN_S) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+               $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                 $(LIB).$(SHAREDSUFFIX) \
                || \
                $(INSTALL) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
@@ -170,8 +170,7 @@ install-link-lib:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	  (cd $(LIBDIR)/$(FILDIR)/$(SUBDIR) && \
            $(RM) -f $(LIB).a && \
-           $(LN_S) $(LIBDIR)/$(FILDIR)/$(SUBDIR)/$(LN).a $(LIB).a && \
-           $(RANLIB) $(LIB).a) \
+           $(LN_S) $(LN).a $(LIB).a && $(RANLIB) $(LIB).a) \
         fi
 	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
           $(MAKE) install-shared-lib; \
@@ -181,19 +180,18 @@ install-link-lib:
 
 install-shared-ln-lib:
 	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
+	  $(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX) && \
 	  (cd $(LIBDIR)/$(FILDIR) && \
-	   $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
            if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \
-             $(LN_S) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \
+             $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
              $(INSTALL) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
                 $(LIB).$(SHAREDSUFFIX); \
            fi); \
 	  (cd $(LIBDIR) && \
-           $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-             $(LN_S) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+             $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
              $(INSTALL) $(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \
