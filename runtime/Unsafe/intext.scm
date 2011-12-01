@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Mar 30 16:33:30 2011 (serrano)                */
+;*    Last change :  Thu Dec  1 09:57:01 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -500,6 +500,7 @@
 	    ((#\e) (read-special s *string->process*))
 	    ((#\o) (read-special s *string->opaque*))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
+	    ((#\k) (find-class (read-symbol)))
 	    (else  (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (let ((d (string-ref s *pointer*)))
@@ -882,6 +883,9 @@
 	  (print-composite item (lambda (i m) (print-special #\e i m))))
 	 ((opaque? item)
 	  (print-composite item (lambda (i m) (print-special #\o i m))))
+	 ((class? item)
+	  (!print-markup #\k)
+	  (print-item (symbol->string! (class-name item))))
 	 (else
 	  (error "obj->string" "Unknown object" item))))
 
@@ -1016,12 +1020,12 @@
 	  (mark-composite obj mark-cell))
 	 ((weakptr? obj)
 	  (mark-composite obj mark-weakptr))
-	 ((symbol? obj)
-	  (mark (symbol->string obj)))
-	 ((keyword? obj)
-	  (mark (keyword->string obj)))
 	 ((string? obj)
 	  (mark-composite obj mark-string))
+	 ((symbol? obj)
+	  (mark (symbol->string! obj)))
+	 ((keyword? obj)
+	  (mark (keyword->string! obj)))
 	 ((ucs2-string? obj)
 	  (mark-composite obj mark-ucs2string))
 	 ((vector? obj)
@@ -1039,7 +1043,9 @@
 	 ((opaque? obj)
 	  (mark-composite obj mark-opaque))
 	 ((pointer? obj)
-	  (mark-composite obj (lambda (obj) #f)))))
+	  (mark-composite obj (lambda (obj) #f)))
+	 ((class? obj)
+	  (mark (symbol->string! (class-name obj))))))
 
    (mark obj)
 
