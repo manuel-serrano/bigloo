@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Apr  3 14:42:11 1997                          */
-;*    Last change :  Fri Jul 30 09:02:10 2010 (serrano)                */
-;*    Copyright   :  1997-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec  1 18:36:01 2011 (serrano)                */
+;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some dsssl goodies (see also runtime/Llib/dsssl.scm).            */
 ;*=====================================================================*/

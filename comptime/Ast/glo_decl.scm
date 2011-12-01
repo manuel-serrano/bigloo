@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sat Nov 26 07:15:02 2011 (serrano)                */
+;*    Last change :  Thu Dec  1 18:59:38 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -100,6 +100,21 @@
 		      import))
 	  (loc (find-location srce))
 	  (loci (find-location/loc srci loc))
+	  (args (if (pair? keys)
+		    ;; keys are sorted so we have to adjust the actual
+		    ;; argument list
+		    (let loop ((args args))
+		       (cond
+			  ((null? args)
+			   '())
+			  ((eq? (car args) #!key)
+			   (cons (car args)
+			      (append 
+				 keys
+				 (loop (drop (cdr args) (length keys))))))
+			  (else
+			   (cons (car args) (loop (cdr args))))))
+		    args))
 	  (args-type (let loop ((args   args)
 				(res    '()))
 			(cond
