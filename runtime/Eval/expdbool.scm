@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:12:21 1993                          */
-;*    Last change :  Fri Feb 18 15:04:12 2011 (serrano)                */
+;*    Last change :  Thu Dec  1 08:38:11 2011 (serrano)                */
 ;*                                                                     */
 ;*    Les expanseurs des formes booleenes.                             */
 ;*---------------------------------------------------------------------*/
@@ -60,16 +60,20 @@
       symbol))
 
 ;*---------------------------------------------------------------------*/
+;*    xcons ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (xcons a d e)
+   (if e
+       (econs a d e)
+       (cons a d)))
+
+;*---------------------------------------------------------------------*/
 ;*    expand-cond ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (expand-cond exp)
-   (let* ((clauses  (cdr exp))
-	  (clause1  (if (pair? clauses)
-			(car clauses)
-			'()))
-	  (clause2+ (if (pair? clause1)
-			(cdr clauses)
-			#f)))
+   (let* ((clauses (cdr exp))
+	  (clause1 (if (pair? clauses) (car clauses) '()))
+	  (clause2+ (if (pair? clause1) (cdr clauses) #f)))
       (cond
 	 ((null? clause1)
 	  '#f)
@@ -102,15 +106,18 @@
 			       (econs (car nc) (cdr nc) (cer (car clause2+))))
 			      (else
 			       nc))))
-		 (res `(if ,(car clause1)
-			   ,(expand-progn (cdr clause1))
-			   ,ncond)))
-	     (cond
-		((epair? (car clause1))
-		 (econs (car res) (cdr res) (cer (car clause1))))
-		((epair? clause1)
-		 (econs (car res) (cdr res) (cer clause1)))
-		((and (pair? (cdr clause1)) (epair? (cadr clause1)))
-		 (econs (car res) (cdr res) (cer (cadr clause1))))
-		(else
-		 (evepairify res exp))))))))
+		 (loc (when (epair? exp) (cer exp)))
+		 (loc1 (when (epair? clause1) (cer clause1)))
+		 (loc1-car (when (epair? (car clause1)) (cer (car clause1))))
+		 (loc1-cdr (when (epair? (cdr clause1)) (cer (cdr clause1))))
+		 (locn (when (epair? clause2+) (cer clause2+))))
+	     (xcons 'if
+		(xcons (car clause1)
+		   (xcons (expand-progn (cdr clause1))
+		      (xcons
+			 ncond
+			 '()
+			 (or locn loc1 loc))
+		      (or loc1-cdr loc1 loc))
+		   (or loc1-car loc))
+		(or loc1 loc)))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Fri Feb 18 15:07:12 2011 (serrano)                */
+;*    Last change :  Wed Nov 30 15:22:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -77,9 +77,12 @@
 	  (if (if (eq? mode 'compiler)
 		  (>fx (bigloo-compiler-debug) 0)
 		  (>fx (bigloo-debug) 0))
-	      (e `(if (>fx (bigloo-debug) 0)
-		      (%with-trace ,level ,lbl (lambda () (begin ,@arg*)))
-		      (begin ,@arg*)) e)
+	      (let* ((f (gensym 'f))
+		     (nx `(let ((,f (lambda () (begin ,@arg*))))
+			     (if (>fx (bigloo-debug) 0)
+				 (%with-trace ,level ,lbl ,f)
+				 (,f)))))
+		 (e nx e))
 	      (e `(begin ,@arg*) e)))
 	 (else
 	  (error "with-trace" "Illegal form" x)))))

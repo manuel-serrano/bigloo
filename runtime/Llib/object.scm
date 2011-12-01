@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Nov 29 05:35:44 2011 (serrano)                */
+;*    Last change :  Wed Nov 30 17:15:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -856,7 +856,7 @@
       (lambda ()
 	 (initialize-objects!)
 	 (when (and super (not (class? super)))
-	    (error "add-class!" "Illegal super class for class" name))
+	    (error name "Illegal super-class for class" super))
 	 (when (=fx *nb-classes* *nb-classes-max*)
 	    (double-nb-classes!))
 	 (unless (vector? plain)
