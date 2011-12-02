@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Feb 18 14:56:23 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 09:34:38 2011 (serrano)                */
 ;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -87,13 +87,6 @@
 	   (macro $configure-java-shell::string "BGL_JAVA_SHELL")
 	   (macro $configure-jflags::string "BGL_JAVA_OPT")
 	   (macro $configure-jvflags::string "BGL_JAVA_VOPT")
-	   (macro $configure-dotnet-shell::string "BGL_DOTNET_SHELL")
-	   (macro $configure-dotnet-ld::string "BGL_DOTNET_LD")
-	   (macro $configure-dotnet-ld-style::string "BGL_DOTNET_LD_STYLE")
-	   (macro $configure-dotnet-clr::string "BGL_DOTNET_CLR")
-	   (macro $configure-dotnet-clr-style::string "BGL_DOTNET_CLR_STYLE")
-	   (macro $configure-dotnet-clr-opt::string "BGL_DOTNET_CLR_OPT")
-	   (macro $configure-dotnet-asm::string "BGL_DOTNET_ASM")
 	   (macro $configure-default-back-end::string "BGL_DEFAULT_BACK_END")
 	   (macro $configure-gc-lib::string "BGL_GC_LIBRARY")
 	   (macro $configure-gc-custom::bool "BGL_GC_CUSTOM")
@@ -144,13 +137,6 @@
 	      (field static java-shell::string "BGL_JAVA_SHELL")
 	      (field static jflags::string "BGL_JAVA_OPT")
 	      (field static jvflags::string "BGL_JAVA_VOPT")
-	      (field static dotnet-shell::string "BGL_DOTNET_SHELL")
-	      (field static dotnet-ld::string "BGL_DOTNET_LD")
-	      (field static dotnet-ld-style::string "BGL_DOTNET_LD_STYLE")
-	      (field static dotnet-clr::string "BGL_DOTNET_CLR")
-	      (field static dotnet-clr-style::string "BGL_DOTNET_CLR_STYLE")
-	      (field static dotnet-clr-opt::string "BGL_DOTNET_CLR_OPT")
-	      (field static dotnet-asm::string "BGL_DOTNET_ASM")
 	      (field static default-back-end::string "BGL_DEFAULT_BACK_END")
 	      (field static gc-lib::string "BGL_GC_LIBRARY")
 	      (field static gc-custom::bool "BGL_GC_CUSTOM")
@@ -218,13 +204,6 @@
      (java-shell . ,$configure-java-shell)
      (jflags . ,$configure-jflags)
      (jvflags . ,$configure-jvflags)
-     (dotnet-shell . ,$configure-dotnet-shell)
-     (dotnet-ld . ,$configure-dotnet-ld)
-     (dotnet-ld-style . ,$configure-dotnet-ld-style)
-     (dotnet-clr . ,$configure-dotnet-clr)
-     (dotnet-clr-style . ,$configure-dotnet-clr-style)
-     (dotnet-clr-opt . ,$configure-dotnet-clr-opt)
-     (dotnet-asm . ,$configure-dotnet-asm)
      (default-back-end . ,$configure-default-back-end)
      (gc-lib . ,$configure-gc-lib)
      (gc-custom . ,$configure-gc-custom)
