@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Thu Dec  1 18:37:25 2011 (serrano)                */
+;*    Last change :  Thu Dec  1 19:14:49 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -182,9 +182,6 @@
 	     ((not (equal? (sfun-dsssl-keywords old-value)
 			   (dsssl-formals args)))
 	      (mismatch-error old src-exp "(incompatible Dsssl prototype)")))))
-      (when (eq? (global-id old) 'hop-discover)
-	 (tprint "locals=" (map shape locals)
-	    " args=" (map shape (sfun-args old-value))))
       (let loop ((locals locals)
 		 (types  (map (lambda (a)
 				 (cond
