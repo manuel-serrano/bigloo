@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 17 08:49:19 2011 (serrano)                */
+#*    Last change :  Fri Dec  2 09:27:43 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -98,18 +98,6 @@ java=java
 jflags=
 jvflags=-noverify
 jshell=sh
-
-#*--- .NET back-end user configuration --------------------------------*/
-dotnetbackend=no  # set to "yes" to install the .NET back-end
-dotnetclrstyle=pnet
-dotnetcsccstyle=pnet
-dotnetldstyle=pnet
-dotnetcscc=cscc
-dotnetld=cscc
-dotnetclr=ilrun
-dotnetclropt="-S 4000 -C 256"
-dotnetshell=sh
-dotnetasm=ilasm
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
@@ -250,7 +238,6 @@ buildcpu=
 # The location where cygwin is installed
 cygwindospath=
 cygwindosjvm="yes"
-cygwindosdotnet="yes"
 
 #*--- mingw/macosx specific configuration ------------------------------------*/
 mingw="no"
@@ -326,12 +313,10 @@ bigloo_h=
 bigloo_gc_h=
 bigloo_config_h=
 bigloo_config_jvm=
-bigloo_config_dotnet=
 bigloo_config_sch=
 bigloo_config_el=
 summary=yes
 java_configured=no
-dotnet_configured=no
 os=posix
 gcspecial=
 gcthread=
@@ -377,15 +362,6 @@ while : ; do
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
       bootflags="$bootflags -cg";
       jvmbackend="force";
-      dotnetbackend="force";
-      dotnetclr=mono;
-      dotnetclropt="";
-      dotnetcscc=cscc;
-      dotnetld=cscc;
-      dotnetasm=ilasm.pnet;
-      dotnetclrstyle=mono;
-      dotnetcsccstyle=mono;
-      dotnetldstyle=mono;
       mode=standard;
       configureinfo="yes";
       bee="full";
@@ -417,10 +393,6 @@ while : ; do
     --bigloo_config.jvm=*)
       action="bigloo_config";
       bigloo_config_jvm="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --bigloo_config.dotnet=*)
-      action="bigloo_config";
-      bigloo_config_dotnet="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --bigloo_config.sch=*)
       action="bigloo_config";
@@ -600,33 +572,6 @@ while : ; do
     --jvm-default-backend)
       defaultbackend="jvm";;
 
-    --dotnet=*)
-      dotnetbackend="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetld=*)
-      dotnetld="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetldlibopt=*)
-      dotnetldlibopt="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetldlibdiropt=*)
-      dotnetldlibdiropt="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetclr=*)
-      dotnetclr="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetclropt=*)
-      dotnetclropt="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetshell=sh)
-      jshell="sh";;
-
-    --dotnetshell=msdos)
-      jshell="msdos";;
-
-    --dotnetasm=*)
-      dotnetasm="`echo $1 | sed 's/^[^=]*=//'`";;
-
     --no-share)
       ldopt="no-share";;
 
@@ -668,12 +613,6 @@ while : ; do
 
     --cygwin-dos-jvm=no)
       cygwindosjvm="no";;
-
-    --cygwin-dos-dotnet=yes)
-      cygwindosdotnet="yes";;
-
-    --cygwin-dos-dotnet=no)
-      cygwindosdotnet="no";;
 
     --arch=athlon)
       hardtune="athlon";
@@ -730,35 +669,6 @@ while : ; do
     --strip=no)
       cstrip="no";
       strip="no";;
-
-    --pnet)
-      dotnetclrstyle=pnet;
-      dotnetcsccstyle=pnet;
-      dotnetldstyle=pnet;
-      dotnetclr=ilrun;
-      dotnetclropt="-S 4000 -C 256";
-      dotnetcscc=cscc;
-      dotnetld=cscc;
-      dotnetasm=ilasm;;
-
-    --mono)
-      dotnetclrstyle=mono;
-      dotnetcsccstyle=mono;
-      dotnetldstyle=mono;
-      dotnetclr=mono;
-      dotnetclropt="";
-      dotnetcscc=cscc;
-      dotnetld=cscc;
-      dotnetasm=ilasm;;
-
-    --dotnetldstyle=*)
-      dotnetldstyle="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetcsccstyle=*)
-      dotnetcsccstyle="`echo $1 | sed 's/^[^=]*=//'`";;
-
-    --dotnetclrstyle=*)
-      dotnetclrstyle="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --customgc=yes|--customgc)
       customgc=yes;;
@@ -935,7 +845,6 @@ while : ; do
       echo "Bigloo compiler:"  >&2;
       echo "   --native=yes|no [default yes]" >&2;
       echo "   --jvm=yes|no|force [default no]" >&2;
-      echo "   --dotnet=yes|no|force [default no]" >&2;
       echo "   --bee=partial|full [default partial]" >&2;
       echo "" >&2;
       echo "API:" >&2;
@@ -1017,15 +926,6 @@ while : ; do
       echo ".NET configuration:"  >&2;
       echo "   --pnet (configure for GNU pnet)"  >&2;
       echo "   --mono (configure for Ximian Mono)"  >&2;
-      echo "   --dotnetldstyle=style [should be pnet, mono]" >&2;
-      echo "   --dotnetcsccstyle=style [should be pnet, mono]" >&2;
-      echo "   --dotnetclrstyle=style [should be pnet, mono]" >&2;
-      echo "   --dotnetcscc=file" >&2;
-      echo "   --dotnetld=file" >&2;
-      echo "   --dotnetclr=file" >&2;
-      echo "   --dotnetclropt=options" >&2;
-      echo "   --dotnetshell=shell [should be sh or msdos (default sh)]" >&2;
-      echo "   --dotnetasm=asm [optional]" >&2;
       echo "" >&2;
       echo "Misc:"  >&2;
       echo "   --finalization=yes|no [default no]" >&2;
@@ -1084,11 +984,6 @@ fi
 # The bigloo_config.jvm file
 if [ "$bigloo_config_jvm " = " " ]; then
   bigloo_config_jvm=runtime/Jlib/configure.java
-fi
-
-# The bigloo_config.dotnet file
-if [ "$bigloo_config_dotnet " = " " ]; then
-  bigloo_config_dotnet=runtime/CSlib/configure.cs
 fi
 
 # The bigloo_config.sch file
@@ -1511,9 +1406,6 @@ case $hostos in
     if [ "$cygwindosjvm" = "yes" ]; then
       jshell="msdos"
     fi
-    if [ "$cygwindosdotnet" = "yes" ]; then
-      dotnetshell="msdos"
-    fi
     ;;
 
   mingw)
@@ -1764,19 +1656,6 @@ fi
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
 jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
 jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
-echo >> $configurelog
-
-#*---------------------------------------------------------------------*/
-#*    Dotnet configuration                                             */
-#*---------------------------------------------------------------------*/
-echo "+ .NET specific configuration ($dotnetldstyle)..." >> $configurelog
-case $dotnetldstyle in
-  pnet|mono)
-    ;;
-  *)
-    echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
-    exit 3;;
-esac
 echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
@@ -2100,7 +1979,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Tell what we are doing
   echo ""
-  echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_dotnet, $bigloo_config_sch:"
+  echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
 
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
@@ -2586,45 +2465,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     jar=
   fi
 
-  # .NET configuration
-  if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
-    if [ "$dotnetshell" != "sh" ]; then
-       if [ "$dotnetshell" != "msdos" ]; then
-          echo "*** ERROR:configure:Illegal .NET shell \"$dotnetshell\" (should be either \"sh\" or \"msdos\")";
-          exit 3
-       fi
-    fi
-
-    if [ "$dotnetbackend" = "yes" ]; then
-      if [ "$HOSTOS " = "cygwin " -a "$cygwindosdotnet" = "yes" ]; then
-        cpsep=";";
-      else
-        cpsep=":";
-      fi
-
-      dntest=`$autoconf dotnettest --clr=$dotnetclr \
-                                   --clropt="$dotnetclropt" \
-                                   --clrld=$dotnetclrld \
-                                   --cscc=$dotnetcscc \
-                                   --user=$user \
-                                   --cpsep="$cpsep"` || exit 1
-
-      if [ $dntest != 0 ]; then
-        echo "*** ERROR:configure:Can't configure .NET (see $configurelog for details)."
-        exit 1
-      fi
-    fi
-    dotnet_configured=yes
-  else
-    dotnetld=""
-    dotnetldstyle=""
-    dotnetclr=""
-    dotnetclrstyle=""
-    dotnetclropt=""
-    dotnetshell=""
-    dotnetasm=""
-  fi
-
   # Posix Os
   case $hostos in
     mingw)
@@ -2655,8 +2495,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     ostmp=/tmp
   fi
 
-  # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet bigloo_config_sch
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet $bigloo_config_sch; do
+  # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -2781,13 +2621,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_JAVA_VOPT@|$jvflags|" \
               -e "s|@BGL_JAR@|$jar|" \
               -e "s|@BGL_JAVA_SHELL@|$jshell|" \
-              -e "s|@BGL_DOTNET_LD@|$dotnetld|" \
-              -e "s|@BGL_DOTNET_LD_STYLE@|$dotnetldstyle|" \
-              -e "s|@BGL_DOTNET_CLR@|$dotnetclr|" \
-              -e "s|@BGL_DOTNET_CLR_STYLE@|$dotnetclrstyle|" \
-              -e "s|@BGL_DOTNET_CLR_OPT@|$dotnetclropt|" \
-              -e "s|@BGL_DOTNET_SHELL@|$dotnetshell|" \
-              -e "s|@BGL_DOTNET_ASM@|$dotnetasm|" \
               -e "s|@BGL_IMPORT@|extern|" \
               -e "s|@BGL_EXPORTED_DECL@|extern|" \
               -e "s|@BGL_EXPORTED_DEF@||" \
@@ -3537,27 +3370,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "JVMBACKEND=no" >> $makefile_cfg
   fi
 
-  # The dotnet configuration
-  if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
-
-    # Dotnet configuration
-    echo "" >> $makefile_cfg
-    echo "DOTNETBACKEND=yes" >> $makefile_cfg
-    echo "DOTNETCSCC=$dotnetcscc" >> $makefile_cfg
-    echo "DOTNETCSCCSTYLE=$dotnetcsccstyle" >> $makefile_cfg
-    echo "DOTNETASM=$dotnetasm" >> $makefile_cfg
-    echo "DOTNETLD=$dotnetld" >> $makefile_cfg
-    echo "DOTNETLDSTYLE=$dotnetldstyle" >> $makefile_cfg
-    echo "DOTNETCLRSTYLE=$dotnetclrstyle" >> $makefile_cfg
-    echo "DOTNETCLROPT=$dotnetclropt" >> $makefile_cfg
-    echo "DOTNETCLR=$dotnetclr" >> $makefile_cfg
-    echo "" >> $makefile_cfg
-    echo "DOTNETFTDLLPATH=-L\$(BOOTDIR)/lib/$release" >> $makefile_cfg
-    echo "DOTNETLINKBIGLOODLL=-lbigloo_s-$release.dll" >> $makefile_cfg
-  else
-    echo "" >> $makefile_cfg
-    echo "DOTNETBACKEND=no" >> $makefile_cfg
-  fi
 fi
 
 # Bigloo compilation flags
@@ -3603,11 +3415,6 @@ if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
   bcke="$bcke JVM:yes"
 else
   bcke="$bcke JVM:no"
-fi
-if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
-  bcke="$bcke .NET:yes"
-else
-  bcke="$bcke .NET:no"
 fi
 echo  >> $configurelog
 echo  >> $configurelog
@@ -3706,17 +3513,6 @@ if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
   echo "  jar................................... $jar" >> $configurelog
 fi
 echo >> $configurelog
-if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
-  echo ".NET:" >> $configurelog
-  if [ "$hostos" = "cygwin" ]; then
-    echo "  Cygwin dos path....................... $cygwindospath" >> $configurelog
-  fi
-  echo "  .NET default shell.................... $dotnetshell" >> $configurelog
-  echo "  .NET linker........................... $dotnetld (style=$dotnetldstyle)" >> $configurelog
-  echo "  .C# compiler.......................... $dotnetcscc (style=$dotnetcsccstyle)" >> $configurelog
-  echo "  clr................................... $dotnetclr (style=$dotnetclrstyle)" >> $configurelog
-  echo "  options to run the clr................ $dotnetclropt" >> $configurelog
-fi
 echo >> $configurelog
 echo "GC configuration:" >> $configurelog
 if [ $customgc = "yes" ]; then
@@ -3807,9 +3603,6 @@ if [ "$summary" = "yes" ]; then
   fi
   if [ "$java_configured " = "yes " ]; then
     echo "  Java version................ $java_version"
-  fi
-  if [ "$dotnet_configured " = "yes " ]; then
-    echo "  Dotnet CLR.................. $dotnetclr"
   fi
   if [ "$gmpversion" = "no" ]; then
     echo "  bignum support.............. scheme implementation"

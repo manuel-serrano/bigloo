@@ -77,13 +77,6 @@ public class configure {
   public static final byte[] BGL_JAVA_VOPT = "@BGL_JAVA_VOPT@".getBytes();
   public static final byte[] BGL_JAVA_SHELL = "@BGL_JAVA_SHELL@".getBytes();
   public static final byte[] BGL_JAR = "@BGL_JAR@".getBytes();
-  public static final byte[] BGL_DOTNET_LD = "@BGL_DOTNET_LD@".getBytes();
-  public static final byte[] BGL_DOTNET_LD_STYLE = "@BGL_DOTNET_LD_STYLE@".getBytes();
-  public static final byte[] BGL_DOTNET_CLR = "@BGL_DOTNET_CLR@".getBytes();
-  public static final byte[] BGL_DOTNET_CLR_STYLE = "@BGL_DOTNET_CLR_STYLE@".getBytes();
-  public static final byte[] BGL_DOTNET_CLR_OPT = "@BGL_DOTNET_CLR_OPT@".getBytes();
-  public static final byte[] BGL_DOTNET_SHELL = "@BGL_DOTNET_SHELL@".getBytes();
-  public static final byte[] BGL_DOTNET_ASM = "@BGL_DOTNET_ASM@".getBytes();
   public static final boolean BGL_DNS_CACHE = false;
   public static final byte[] OS_CHARSET = "@OS_CHARSET@".getBytes();
 }

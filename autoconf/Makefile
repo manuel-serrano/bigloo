@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Jul 22 11:04:03 2011 (serrano)                */
+#*    Last change :  Fri Dec  2 09:29:39 2011 (serrano)                */
 #*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -20,7 +20,7 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 POPULATION	= Makefile \
                   bigloo_config.h.in bigloo_gc.h.in \
-                  configure.java.in configure.cs.in \
+                  configure.java.in \
                   bigloo_config.sch.in \
                   mkruntest runtest.in \
                   os osversion cpu \
@@ -43,7 +43,7 @@ POPULATION	= Makefile \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
                   thread pthread pthreadlock pthreadlocalstorage \
-                  processor dotnettest sendfile sleep posixfileops \
+                  processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
                   openssl openssl-dtls openssl-v2 openssl-v23 \
                   stdint stdlibint unistdint maemo.arm android \
