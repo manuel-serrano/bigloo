@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Nov 18 10:01:28 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 14:28:01 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -379,6 +379,7 @@
       (let ( (e (comp e stk)) )
 	 (EVA '(global write define) (name)
 	    (let ( (g (evmodule-find-global mod name)) )
+	       
 	       (if g
 		   (begin
 		      (case (eval-global-tag g)

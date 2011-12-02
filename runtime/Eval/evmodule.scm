@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Nov 24 16:02:02 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 14:40:34 2011 (serrano)                */
 ;*    Copyright   :  2006-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -269,6 +269,15 @@
    (mark-global! id mod 4 loc))
 
 ;*---------------------------------------------------------------------*/
+;*    bind-global! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (bind-global! id mod loc)
+;* 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod) */
+   (let ((g (make-eval-global id mod loc)))
+      (evmodule-bind-global! mod id g loc)
+      g))
+   
+;*---------------------------------------------------------------------*/
 ;*    evmodule-static ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-static mod clause loc classp)
@@ -277,7 +286,7 @@
 	 ((? symbol?)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
+		(bind-global! id mod loc)
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
@@ -303,7 +312,7 @@
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
-		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
+		(bind-global! id mod loc)
 		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
@@ -337,8 +346,9 @@
 	 ((? symbol?)
 	  (unless classp
 	     (let ((id (untype-ident s)))
+		(bind-global! id mod loc)
+;* 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod) */
 		(evmodule-export! mod id mod)
-		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
@@ -370,8 +380,8 @@
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
+		(bind-global! id mod loc)
 		(evmodule-export! mod id mod)
-		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 (else
 	  (evcompile-error
