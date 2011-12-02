@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Nov 17 05:27:04 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 09:19:48 2011 (serrano)                */
 ;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -84,8 +84,7 @@
 	    backend_walk)
 
    (with    backend_c
-	    backend_jvm
-	    backend_dotnet)
+	    backend_jvm)
    
    (export  (compiler)))
 

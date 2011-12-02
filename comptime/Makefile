@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Nov 17 05:40:02 2011 (serrano)                */
+#*    Last change :  Fri Dec  2 09:24:19 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -36,7 +36,6 @@ DEFAULT		= plain
 # These variables control how we are booting (from Scheme or C)
 SCMOBJSUFFIX	= %.o
 SCMCLASSSUFFIX	= %.class
-DOTNETOBJSUFFIX	= %.obj
 COBJSUFFIX	= 
 CSRCSUFFIX	= 
 
@@ -63,8 +62,6 @@ EFLAGS		=
 BDISTFLAGS	= $(COMMONFLAGS) -O2 -rm -unsafe -s
 # Distribution Jvm flag
 BJVMFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
-# Distribution Dotnet flag
-BDOTNETFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
 # Link flag
 LDBOOTFLAGS     = -static-bigloo $(LDSTRIPFLAGS)
 # C compiler flag
@@ -235,8 +232,7 @@ JVM_OBJ		= $(JVM_FILE:%=Jvm/%.o)
 #*--- BackEnd ---------------------------------------------------------*/
 BACKEND_FILE    = backend walk init lib cplib cvm bvm \
                   c c_main c_proto c_emit  \
-                  jvm jvm_class \
-                  dotnet dotnet_class
+                  jvm jvm_class
 
 BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 
@@ -251,11 +247,6 @@ SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
 SAW_C_FILE      = compile code
 
 SAW_C_OBJ	= $(SAW_C_FILE:%=SawC/%.o)
-
-#*--- SawMsil ---------------------------------------------------------*/
-SAW_MSIL_FILE	= compile type code inline maxstack funcall names out dnld
-
-SAW_MSIL_OBJ	= $(SAW_MSIL_FILE:%=SawMsil/%.o)
 
 #*--- SawJvm ----------------------------------------------------------*/
 SAW_JVM_FILE	= compile type code inline funcall names out jld
@@ -339,13 +330,12 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SAW_MSIL_OBJ)
+                  $(SAW_JVM_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
 O_OBJECTS       = $(O_OBJECTS_NOINIT) $(INIT_OBJ)
 CLASS_OBJECTS	= $(O_OBJECTS:%.o=%.class)
-DOTNET_OBJECTS	= $(O_OBJECTS:%.o=%.obj)
 
 # This entry is used by QNC, for building bigloo++. Mainly Christian
 # defines is own main entry point. This list does not contains the
@@ -368,7 +358,7 @@ POPULATION	= $(SOURCE_FILES) \
 		  Module/libinfo.sch Module/impuse.sch Module/module.sch \
                   Module/java.sch \
                   BackEnd/backend.sch BackEnd/cvm.sch BackEnd/bvm.sch \
-                  BackEnd/jvm_class.sch BackEnd/dotnet_class.sch \
+                  BackEnd/jvm_class.sch \
                   Object/class.sch Object/slots.sch \
                   Inline/inline.sch Inline/size.sch Inline/variant.sch \
                   Foreign/ctype.sch Foreign/jtype.sch \
@@ -390,7 +380,6 @@ POPULATION	= $(SOURCE_FILES) \
                   SawMill/expr.sch SawMill/regset.sch \
                   SawC/code.sch \
                   SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \
-                  SawMsil/funcall.sch SawMsil/code.sch SawMsil/maxstack.sch \
                   Makefile
 
 #*---------------------------------------------------------------------*/
@@ -414,16 +403,6 @@ jvm: $(CLASS_OBJECTS)
              -jvm-classpath $(CLASSPATH) -jvm-jarpath $(JARPATH) \
              $(BDISTFLAGS) -o $(BIGLOO_DEST).jvm $(CLASS_OBJECTS)
 	@ echo "$(BIGLOO_DEST).jvm done..."
-	@ echo "-------------------------------"
-
-#*---------------------------------------------------------------------*/
-#*    dotnet                                                           */
-#*---------------------------------------------------------------------*/
-dotnet: $(DOTNET_OBJECTS)
-	@ echo "Linking..."
-	$(BIGLOO) $(EFLAGS) -dotnet $(BDISTFLAGS) \
-              -o $(BIGLOO_DEST)-dotnet$(SCRIPTEXTENSION) $(DOTNET_OBJECTS)
-	@ echo "$(BIGLOO_DEST)-dotnet$(SCRIPTEXTENSION) done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
@@ -713,12 +692,7 @@ clean-jvm:
 	- $(RM) -f $(BIGLOO_DEST).jvm
 	- $(RM) -f $(BIGLOO_DEST).jar
 
-clean-dotnet:
-	- $(RM) -f $(DOTNET_OBJECTS)
-	- $(RM) -f $(BIGLOO_DEST)-dotnet$(SCRIPTEXTENSION)
-	- $(RM) -f $(BIGLOO_DEST)-dotnet$(EXE_SUFFIX)
-
-clean: clean-common clean-c clean-jvm clean-dotnet
+clean: clean-common clean-c clean-jvm
 	@ echo "cleanup done..."
 	@ echo "-------------------------------"
 
@@ -761,12 +735,6 @@ $(SCMOBJSUFFIX): %.scm
 #*---------------------------------------------------------------------*/
 $(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BBFLAGS) $(BJVMFLAGS) $(EFLAGS) -c $*.scm -o $*.class
-
-#*---------------------------------------------------------------------*/
-#*     .scm --> .obj                                                   */
-#*---------------------------------------------------------------------*/
-$(DOTNETOBJSUFFIX): %.scm
-	$(BIGLOO) -dotnet $(BBFLAGS) $(BDOTNETFLAGS) $(EFLAGS) -c $*.scm -o $*.obj
 
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */

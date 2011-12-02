@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Nov 17 05:47:22 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 09:17:40 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -144,9 +144,6 @@
       (case *target-language*
 	 ((jvm)
 	  (register-srfi! 'bigloo-jvm))
-	 ((.net)
-	  (register-srfi! 'bigloo-.net)
-	  (register-srfi! 'bigloo-dotnet))
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
@@ -328,10 +325,6 @@
 	     (set! *heap-name* *heap-jvm-name*)
 	     (set! *obj-suffix* '("class"))
 	     (set! *target-language* 'jvm)))
-      (("-dotnet" (help "Compile module to .NET object files"))
-       (set! *heap-name* *heap-jvm-name*)
-       (set! *obj-suffix* '("obj"))
-       (set! *target-language* '.net))
       ;; Bigloo Assembly code generation
       (("-saw" (help "Cut the AST in the saw-mill"))
        (set! *force-saw* #t))
@@ -773,63 +766,6 @@
       (("-jvm-opt" ?string (help "JVM invocation option"))
        (set! *jvm-options* (string-append *jvm-options* " " string)))
       
-;*--- Dotnet specific options -----------------------------------------*/
-      (section ".NET specific options")
-      ;; dotnet bytecode verifier compliance
-      (("-dotnet-managed" (help "Produce byte code verifier compliant .NET code (default)"))
-       (set! *purify* #t))
-      (("-dotnet-unmanaged" (help "Don't care about .NET code verifier"))
-       (set! *purify* #f))
-      (("-dotnet-linux-mono" (help "Compile for Mono on a Linux"))
-       (set! *dotnet-clr-opt* "")
-       (set! *dotnet-ld-style* "mono")
-       (set! *dotnet-clr-style* "mono")
-       (set! *dotnet-clr* "mono"))
-      (("-dotnet-clr" ?file (help "Use FILE as .NET CLR"))
-       (set! *dotnet-clr* file))
-      (("-dotnet-clr-style" ?style (help "Use CLR invokation style"))
-       (set! *dotnet-clr-style* style))
-      (("-dotnet-clr-opt" ?s (help "Set the .NET CLR options"))
-       (set! *dotnet-clr-opt* s))
-      (("-dotnet-ld" ?file (help "Use FILE as .NET LD"))
-       (set! *dotnet-ld* file))
-      (("-dotnet-ld-style" ?style (help "Use LD invokation style"))
-       (set! *dotnet-ld-style* style))
-      (("-dotnet-dll-path" ?name (help "Set the .NET DLL search path"))
-       (set! *dotnet-dll-path* name))
-      (("-dotnet-external-asm" (help "Enable external assembler (default)"))
-       (set! *dotnet-use-external-asm* #t))
-      (("-no-dotnet-external-asm" (help "Disable external assembler"))
-       (set! *dotnet-use-external-asm* #f))
-      (("-ilasm" ?asm (help "Specify external IL assembler"))
-       (set! *dotnet-external-asm* asm))
-      (("-fdotnet-tailc" (help "Flag tail calls for inside module calls"))
-       (set! *dotnet-tail* #t))
-      (("-fno-dotnet-tailc" (help "Don't flag tail calls"))
-       (set! *dotnet-tail* #f))
-      (("-fdotnet-tailc-full" (help "Flag tail calls everywhere"))
-       (set! *dotnet-tail* #t)
-       (set! *dotnet-tail-across-modules* #t)
-       (set! *dotnet-tail-funcall* #t))
-      (("-fdotnet-tailc-module" (help "Flag tail calls across modules"))
-       (set! *dotnet-tail* #t)
-       (set! *dotnet-tail-across-modules* #t))
-      (("-fno-dotnet-tailc-module" (help "Don't flag tail calls across modules"))
-       (set! *dotnet-tail-across-modules* #f))
-      (("-fdotnet-tailc-funcall" (help "Flag tail calls for funcalls"))
-       (set! *dotnet-tail* #t)
-       (set! *dotnet-tail-funcall* #t))
-      (("-fno-dotnet-tailc-funcall" (help "Don't flag tail call for funcalls"))
-       (set! *dotnet-tail-funcall* #f))
-      (("-dotnet-mono-workaround" (help "Workaround Mono .NET buts (switch)"))
-       (set! *dotnet-mono-workaround-switch* #t))
-      (("-no-dotnet-mono-workaround" (help "Disable workaround Mono .NET buts (switch)"))
-       (set! *dotnet-mono-workaround-switch* #f))
-      (("-dotnet-pnet-workaround" (help "Workaround pnet swich bug"))
-       (set! *dotnet-pnet-workaround-switch* #t))
-      (("-no-dotnet-pnet-workaround" (help "Disable Workaround pnet swich bug"))
-       (set! *dotnet-pnet-workaround-switch* #f))
-      
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
       ;; traces
@@ -996,7 +932,7 @@
       (("-fread-plain" (help "Read source from plain text file"))
        (set! *reader* 'plain))
       ;; target
-      (("-target" ?lang (help "DON'T USE, (see -native, -jvm, -dotnet)"))
+      (("-target" ?lang (help "DON'T USE, (see -native, -jvm)"))
        (case (string->symbol lang)
 	  ((c)
 	   'nothing)
@@ -1262,7 +1198,6 @@
    (print "*heap-name*            : " *heap-name*)
    (print "*target-language*      : " *target-language*)
    (print "*jvm-shell*            : " *jvm-shell*)
-   (print "*dot-shell*            : " *dotnet-shell*)
    (newline)
    (print "Too see all variables enter the interpreter")
    (print "or use the -help2 option.")

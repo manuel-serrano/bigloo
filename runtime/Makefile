@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Nov 18 06:38:58 2011 (serrano)                */
+#*    Last change :  Fri Dec  2 09:24:49 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -37,13 +37,8 @@ COBJSUFFIX	=
 # Default class file locations
 CLASSDIR_SYS	= class_s
 CLASSDIR_USR	= class_s
-# Default class file locations
-DOTNETDIR_SYS	= dotnet_s
-DOTNETDIR_USR	= dotnet_s
 # The class suffix
 SCMCLASSSUFFIX	= %.class
-# The dotnet suffix
-SCMDOTNETSUFFIX = %.obj
 # The module association file
 AFILE		= .afile
 AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
@@ -72,9 +67,6 @@ CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
 BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile $(JFILE)
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
-#*--- Bigloo .NET flags -----------------------------------------------*/
-BDOTNETFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-mono-workaround -dotnet-pnet-workaround
-BDOTNETSFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -dotnet-managed
 #*--- Bigloo, safe, debug ---------------------------------------------*/
 BGSAFEFLAGS	= $(BSAFEFLAGS) -g 
 #*--- Bigloo, unsafe, optimize ----------------------------------------*/
@@ -164,42 +156,6 @@ JLIB		= foreign buffer configure stackwriter\
 
 JLIB_SRC	= $(JLIB:%=%.java)
 JAVA_JLIB	= $(JLIB:%=Jlib/%.java)
-
-#*---------------------------------------------------------------------*/
-#*    C# objects                                                       */
-#*---------------------------------------------------------------------*/
-CSLIB		= foreign buffer configure stackwriter\
-		  bbool output_string_port output_procedure_port \
-		  bchar input_console_port pair \
-		  bexception input_file_port \
-                  procedure \
-		  bignum bint input_port real \
-		  bllong belong input_string_port input_pipe_port rest \
-		  key struct \
-		  callcc keyword symbol \
-		  cobj cell magic \
-		  cnst nil \
-		  numeral \
-		  custom opaque obj unspecified \
-		  eof object generic \
-		  exit optional \
-		  extended_pair output_port binary_port \
-		  socket client_socket server_socket input_socket_port \
-                  datagram_socket datagram_client_socket datagram_server_socket \
-		  process flusher stack_trace dlopen \
-		  bucs2 ucs2string bgldynamic date \
-		  output_stream_port output_socket_port os \
-		  input_procedure_port input_gzip_port \
-                  mutex condvar mmap mmaps \
-                  hvector \
-                  s8vector u8vector s16vector u16vector \
-                  s32vector u32vector s64vector u64vector \
-                  f32vector f64vector \
-                  weakptr \
-                  callback \
-                  BigInteger
-
-CS_CSLIB	= $(CSLIB:%=CSlib/%.cs)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme IEEE objects                                              */
@@ -308,7 +264,6 @@ SCM_SYS_SRC	= $(SCM_READ) $(SCM_RGC) $(SCM_PP) \
 SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) \
                   $(C_CLIB) \
                   $(JAVA_JLIB:%/configure.java=) \
-                  $(CS_CSLIB:%/configure.cs=) \
                   Mlib/mach_dep.c \
                   Mlib/sparc_sunos4_mach_dep.s Mlib/sparc_sunos5_mach_dep.s \
                   Ilib/realcallback.il
@@ -342,13 +297,6 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 #*---------------------------------------------------------------------*/
 JAS		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.jas) \
                   $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.jas)
-
-#*---------------------------------------------------------------------*/
-#*    .NET obj files                                                  */
-#*---------------------------------------------------------------------*/
-DOTNETOBJ 	= $(SCM_SYS_SRC:%.scm=objs/$(DOTNETDIR_SYS)/%.obj) \
-                  $(SCM_USR_SRC:%.scm=objs/$(DOTNETDIR_USR)/%.obj) \
-                  objs/$(DOTNETDIR_SYS)/Ilib/realcallback.obj
 
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
@@ -611,45 +559,6 @@ class_p/jlib:
                   $(JCFLAGS) $(JLIB_SRC))
 
 #*---------------------------------------------------------------------*/
-#*    Bigloo .Net libraries compilation                                */
-#*---------------------------------------------------------------------*/
-.PHONY: lib-dotnet lib-dotnet_s lib-dotnet_p libs-dotnet
-
-libs-dotnet:
-	@ $(MAKE) lib-dotnet_u
-	@ $(MAKE) lib-dotnet
-
-lib-dotnet: lib-dotnet_s
-lib-dotnet_s: includes
-	$(MAKE) one-lib-dotnet \
-                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDOTNETSFLAGS) $(BDOTNETFLAGS)" \
-                BFLAGS_USR="$(BSAFEFLAGS) $(BDOTNETSFLAGS) $(BDOTNETFLAGS)" \
-                DOTNETDIR_USR=dotnet_s DOTNETDIR_SYS=dotnet_s \
-                LIBQ=_s
-
-lib-dotnet_u: includes
-	$(MAKE) one-lib-dotnet \
-                BFLAGS_SYS="$(BUNSAFEFLAGS) $(BDOTNETFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEFLAGS) $(BDOTNETFLAGS)" \
-                DOTNETDIR_USR=dotnet_u DOTNETDIR_SYS=dotnet_u \
-                LIBQ=_u
-
-lib-dotnet_p: includes
-	$(MAKE) one-lib-dotnet \
-                BFLAGS_SYS="$(BUNSAFEPFLAGS) $(BDOTNETFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEPFLAGS) $(BDOTNETFLAGS)" \
-                DOTNETDIR_USR=dotnet_p DOTNETDIR_SYS=dotnet_p \
-                LIBQ=_p
-
-one-lib-dotnet: $(DOTNETOBJ) one-lib-dotnet-$(DOTNETLDSTYLE)
-
-one-lib-dotnet-$(DOTNETLDSTYLE): $(DOTNETOBJ)
-	$(DOTNETLD) -L$(BOOTLIBDIR)/$(RELEASE) -shared \
-                    -l System.dll \
-                    -o $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ)-$(RELEASE).dll \
-                    -- $(DOTNETOBJ) $(CS_CSLIB)
-
-#*---------------------------------------------------------------------*/
 #*    pop                                                              */
 #*    -------------------------------------------------------------    */
 #*    This entry is used by the bigloo/Makefile (the main Bigloo       */
@@ -707,8 +616,6 @@ boot-jvm:
 	@ $(MAKE) lib-jvm_s
 	@ $(MAKE) lib-jvm_u
 
-boot-dotnet: heap-jvm lib-dotnet_s lib-dotnet_u
-
 #*---------------------------------------------------------------------*/
 #*    bigboot                                                          */
 #*    -------------------------------------------------------------    */
@@ -727,16 +634,13 @@ compile-bee: lib_p
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-bee install-c install-jvm install-dotnet \
-        uninstall uninstall-bee uninstall-jvm uninstall-dotnet
+.PHONY: install install-bee install-c install-jvm \
+        uninstall uninstall-bee uninstall-jvm
 
 install:
 	@ $(MAKE) install-c
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) install-jvm; \
-          fi
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) install-dotnet; \
           fi
 
 install-c:
@@ -763,20 +667,10 @@ install-jvm:
              chmod $(MODFILE) $(ZIPDIR)/bigloo_u.zip; \
         fi
 
-install-dotnet:
-	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/bigloo.jheap $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-             chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.jheap && \
-	  cp $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
-             chmod $(MODFILE) $(ZIPDIR)/bigloo_s-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll $(ZIPDIR)/bigloo_u-$(RELEASE).dll && \
-             chmod $(MODFILE) $(ZIPDIR)/bigloo_u-$(RELEASE).dll; \
-        fi
-
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)
 
-uninstall: uninstall-bee uninstall-jvm uninstall-dotnet
+uninstall: uninstall-bee uninstall-jvm
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
           $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.h && \
           $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
@@ -792,11 +686,6 @@ uninstall-jvm:
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.jheap
 	-$(RM) -f $(ZIPDIR)/bigloo_s.zip
 	-$(RM) -f $(ZIPDIR)/bigloo_u.zip
-
-uninstall-dotnet:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.jheap
-	-$(RM) -f $(ZIPDIR)/bigloo_s-$(RELEASE).dll
-	-$(RM) -f $(ZIPDIR)/bigloo_u-$(RELEASE).dll
 
 uninstall-bee:
 	- $(MAKE) uninstall-lib LIB=libbigloo-$(RELEASE)_p
@@ -829,25 +718,11 @@ clean-jvm:
 	$(RM) -f $(BOOTLIBDIR)/bigloo_u.zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo_s.zip
 
-clean-dotnet:
-	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
-	$(RM) -rf objs/dotnet*/bigloo/*.dotnet
-	$(RM) -rf objs/dotnet*/bigloo/runtime/*/*.dotnet
-	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_s DOTNETDIR_SYS=dotnet_u
-	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_u DOTNETDIR_SYS=dotnet_u
-	$(MAKE) cleandotnet DOTNETDIR_USR=dotnet_p DOTNETDIR_SYS=dotnet_p
-	$(RM) -f $(BOOTLIBDIR)/bigloo_s-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo_u-$(RELEASE).dll
-
 cleanobj:
 	$(RM) -f $(OBJECTS)
 
 cleanclass:
 	$(RM) -f $(CLASSES) $(JAS)
-
-cleandotnet:
-	$(RM) -f $(DOTNETOBJ)
-	$(RM) -f $(DOTNETOBJ:%.obj=%.il)
 
 clean: clean-c clean-jvm
 
@@ -859,7 +734,6 @@ cleanall: clean-c clean
 
 distclean: cleanall
 	$(RM) -rf objs/class*
-	$(RM) -f CSlib/configure.cs
 	$(RM) -f Jlib/configure.java
 	$(MAKE) dirs
 
@@ -934,12 +808,6 @@ generic_mach_dep: Mlib/mach_dep.c
         mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
 
 #*---------------------------------------------------------------------*/
-#*    realcallback.obj                                                 */
-#*---------------------------------------------------------------------*/
-objs/$(DOTNETDIR_SYS)/Ilib/realcallback.obj: Ilib/realcallback.il
-	$(DOTNETASM) Ilib/realcallback.il && mv Ilib/realcallback.obj objs/$(DOTNETDIR_SYS)/Ilib/realcallback.obj
-
-#*---------------------------------------------------------------------*/
 #*     .scm --> .class                                                 */
 #*---------------------------------------------------------------------*/
 objs/class_u/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
@@ -950,21 +818,6 @@ objs/class_s/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 
 objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
-
-#*---------------------------------------------------------------------*/
-#*     .scm --> .obj                                                   */
-#*---------------------------------------------------------------------*/
-objs/dotnet_u/$(SCMDOTNETSUFFIX): %.scm
-	$(BIGLOO) -dotnet $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/dotnet_s/$(SCMDOTNETSUFFIX): %.scm
-	$(BIGLOO) -dotnet $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
-
-objs/dotnet_p/$(SCMDOTNETSUFFIX): %.scm
-	$(BIGLOO) -dotnet $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
-
-objs/dotnet_s/Eval/evmeaning.obj: Eval/evmeaning.scm
-	$(BIGLOO) -unsafe -dotnet $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c Eval/evmeaning.scm -o $@
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */
@@ -979,12 +832,8 @@ objs-sans-dirs: Jlib/configure.java
 	mkdir -p objs/obj_s/Ieee
 	mkdir -p objs/obj_s/Llib
 	mkdir -p objs/obj_s/R5rs
-	mkdir -p objs/dotnet_s/Clib
-	mkdir -p objs/dotnet_s/Ieee
-	mkdir -p objs/dotnet_s/Llib
-	mkdir -p objs/dotnet_s/R5rs
 	(dirs="Clib Ieee Llib Mlib Ilib R5rs Rgc Eval Lalr Match Pp Read Unsafe"; \
-         objs="obj_u obj_p dotnet_s dotnet_u dotnet_p"; \
+         objs="obj_u obj_p"; \
          for o in $$objs; do \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -1057,16 +906,6 @@ $(BOOTLIBDIR)/bigloo_config.h: $(BOOTDIR)/configure $(BOOTDIR)/Makefile
 Jlib/configure.java: $(BOOTDIR)/configure $(BOOTDIR)/Makefile
 	@ if [ "$(DISTRIB) " != "true " ]; then \
 	    echo "*** ERRORRR: $@ is out of date (older than $?)"; \
-	    echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""; \
-	    exit 1; \
-          fi
-
-#*---------------------------------------------------------------------*/
-#*    CSlib/configure.cs                                               */
-#*---------------------------------------------------------------------*/
-CSlib/configure.cs: $(BOOTDIR)/configure $(BOOTDIR)/Makefile
-	@ if [ "$(DISTRIB) " != "true " ]; then \
-	    echo "*** ERROR: $@ is out of date (older than $?)"; \
 	    echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""; \
 	    exit 1; \
           fi

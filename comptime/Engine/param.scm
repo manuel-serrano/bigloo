@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Nov 17 05:26:21 2011 (serrano)                */
+;*    Last change :  Fri Dec  2 09:20:14 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -186,21 +186,6 @@
 	    *jvm-directory*
 	    *jvm-catch*
 	    *jvm-cinit-module*
-	    *dotnet-shell*
-	    *dotnet-ld*
-	    *dotnet-ld-style*
-	    *dotnet-clr*
-	    *dotnet-clr-style*
-	    *dotnet-clr-opt*
-	    *dotnet-dll-path*
-	    *dotnet-external-asm*
-	    *dotnet-external-asm-style*
-	    *dotnet-use-external-asm*
-	    *dotnet-mono-workaround-switch*
-	    *dotnet-pnet-workaround-switch*
-	    *dotnet-tail*
-	    *dotnet-tail-across-modules*
-	    *dotnet-tail-funcall*
 	    *module-checksum-object?*
 	    *heap-base-name*
 	    *heap-name*
@@ -727,51 +712,6 @@
    #t)
 (param-define *jvm-cinit-module*
    "Enable JVM class constructors to initiliaze bigloo modules"
-   #f)
-(param-define *dotnet-shell*
-   ".NET object file linker"
-   (bigloo-config 'dotnet-shell))
-(param-define *dotnet-ld-style*
-   ".NET object file linker style"
-   (bigloo-config 'dotnet-ld-style))
-(param-define *dotnet-ld*
-   ".NET object file linker"
-   (bigloo-config 'dotnet-ld))
-(param-define *dotnet-clr*
-   "CLR to be used to run .NET programs"
-   (bigloo-config 'dotnet-clr))
-(param-define *dotnet-clr-style*
-   "CLR style to be used to run .NET programs"
-   (bigloo-config 'dotnet-clr-style))
-(param-define *dotnet-clr-opt*
-   "CLR extra options to be used to run .NET programs"
-   (bigloo-config 'dotnet-clr-opt))
-(param-define *dotnet-dll-path*
-   "Bigloo.dll path"
-   #f)
-(param-define *dotnet-external-asm*
-   "Force using and external assembler for .NET code"
-   (bigloo-config 'dotnet-asm))
-(param-define *dotnet-use-external-asm*
-   "Force using and external assembler for .NET code"
-   #t)
-(param-define *dotnet-external-asm-style*
-   "Force using and external assembler for .NET code"
-   'pnet)
-(param-define *dotnet-mono-workaround-switch*
-   "Workaround mono 0.23..0.30 bug"
-   #t)
-(param-define *dotnet-pnet-workaround-switch*
-   "Workaround pnet switch bug"
-   #t)
-(param-define *dotnet-tail*
-   "Enable/disable tail call generations"
-   #f)
-(param-define *dotnet-tail-across-modules*
-   "Enable/disable tail call generations across modules"
-   #f)
-(param-define *dotnet-tail-funcall*
-   "Enable/disable tail call generations for funcall"
    #f)
 (param-define *module-checksum-object?*
    "Produce a module checksum object (.mco)"
