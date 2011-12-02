@@ -13,11 +13,11 @@
 ;*---------------------------------------------------------------------*/
 (module __macro
    
-   (export  (install-eval-expander     <keyword> <expander>)
+   (export  (install-eval-expander <keyword> <expander>)
 	    (install-compiler-expander <keyword> <expander>)
-	    (install-expander          <keyword> <expander>)
-	    (get-eval-expander         <keyword>)
-	    (get-compiler-expander     <keyword>))
+	    (install-expander <keyword> <expander>)
+	    (get-eval-expander <keyword>)
+	    (get-compiler-expander <keyword>))
 
    (import  __error
 	    __hash
@@ -107,16 +107,8 @@
        (error "install-eval-expander" "Illegal expander expander" expander))
       (else
        (mutex-lock! *eval-macro-mutex*)
-       (let ((mtable (module-macro-table)))
-	  (if mtable
-	      (begin
-		 (put-macro! mtable keyword expander "eval")
-		 (when (hashtable-get *eval-macro-table* keyword)
-		    (evwarning #f
-			       "install-eval-expander"
-			       "Redefinition of expander -- "
-			       keyword)))
-	      (put-macro! *eval-macro-table* keyword expander "eval")))
+       (put-macro! (or (module-macro-table) *eval-macro-table*)
+	  keyword expander "eval")
        (mutex-unlock! *eval-macro-mutex*))))
 
 ;*---------------------------------------------------------------------*/

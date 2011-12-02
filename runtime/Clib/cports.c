@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Nov 18 15:48:06 2011 (serrano)                */
+/*    Last change :  Fri Dec  2 13:39:48 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -417,13 +417,13 @@ sysread_with_timeout( obj_t port, char *ptr, long num ) {
    /* wait for characters to be available */
    to = tmt->timeout;
    
+loop:
    FD_ZERO( &readfds );
    FD_SET( fd, &readfds );
 
    timeout.tv_sec = to / 1000000;
    timeout.tv_usec = to % 1000000;
 
-loop:
    if( (n = select( fd + 1, &readfds, NULL, NULL, &timeout )) <= 0 ) {
       if( n == 0 ) {
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR,
@@ -434,11 +434,6 @@ loop:
 	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
 	 /* I'm not 100% sure that this new test is correct */
 	 if( errno == EINTR ) {
-	    FD_ZERO( &readfds );
-	    FD_SET( fd, &readfds );
-
-	    timeout.tv_sec = to / 1000000;
-	    timeout.tv_usec = to % 1000000;
 	    goto loop;
 	 }
 	 
