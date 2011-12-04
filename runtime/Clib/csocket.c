@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Dec  2 13:40:15 2011 (serrano)                */
+/*    Last change :  Sat Dec  3 21:09:48 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -855,9 +855,10 @@ bgl_gethostname() {
    obj_t res;
 
    gethostname( h, MAXHOSTNAME );
+
    hp = bglhostbyname( string_to_bstring( h ), 1 );
 
-   res = string_to_bstring( hp ? hp->h_name : "localhost" );
+   res = string_to_bstring( hp ? hp->h_name : h );
 
    return res;
 #undef MAXHOSTNAME
@@ -1991,7 +1992,11 @@ bgl_make_datagram_server_socket( int portnum ) {
       socket_error( msg, "bad port number", BINT( portnum ) );
 
    memset( &hints, 0, sizeof( hints ) );
+#ifdef BGL_ANDROID   
+   hints.ai_family = AF_INET; // set to AF_INET to force IPv4
+#else   
    hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
+#endif
    hints.ai_socktype = SOCK_DGRAM;
 #if( !defined( AI_NUMERICSERV ) )
    hints.ai_flags = AI_PASSIVE;
@@ -2019,7 +2024,7 @@ bgl_make_datagram_server_socket( int portnum ) {
    }
 
    freeaddrinfo( servinfo );
-   
+
    /* Now we can create the socket object */
    a_socket = GC_MALLOC( SOCKET_SIZE );
    a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
@@ -2040,7 +2045,8 @@ bgl_make_datagram_server_socket( int portnum ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_datagram_socket_hostname( obj_t sock ) {
-   if( BGL_DATAGRAM_SOCKET( sock ).hostname == BUNSPEC ) {
+   if( BGL_DATAGRAM_SOCKET( sock ).hostname == BUNSPEC &&
+       BGL_DATAGRAM_SOCKET( sock ).hostip != BFALSE ) {
       return BGL_DATAGRAM_SOCKET( sock ).hostname =
 	 get_socket_hostname( BGL_DATAGRAM_SOCKET( sock ).fd,
 			      BGL_DATAGRAM_SOCKET( sock ).hostip );
@@ -2089,7 +2095,7 @@ bgl_datagram_socket_close( obj_t sock ) {
 static const char *
 get_hostip( struct sockaddr *sa ) {
    char s[ INET6_ADDRSTRLEN ];
-   
+
    return inet_ntop( sa->sa_family,
 		     &(((struct sockaddr_in *)sa)->sin_addr),
 		     s, sizeof( s ) );
