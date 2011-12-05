@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Nov 15 10:12:09 2011 (serrano)                */
+;*    Last change :  Mon Dec  5 19:52:06 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -203,6 +203,7 @@
 					       (%playlistid playlistid)
 					       (%playlistlength playlistlength)
 					       (%xfade xfade)
+					       (%songid songid)
 					       (%song song)
 					       (%songpos songpos)
 					       (%songlength songlength)
@@ -216,6 +217,7 @@
 						   playlistid
 						   playlistlength
 						   xfade
+						   songid
 						   song
 						   songpos
 						   songlength
@@ -229,6 +231,7 @@
 		  (set! playlistid %playlistid)
 		  (set! playlistlength %playlistlength)
 		  (set! xfade %xfade)
+		  (set! songid %songid)
 		  (set! song %song)
 		  (set! songpos %songpos)
 		  (set! bitrate %bitrate)
@@ -345,7 +348,7 @@
 	       (set! songpos 0)
 	       (set! songlength 0)
 	       (set! song n)
-	       (set! songid (+fx (* 10000 playlistid) n))
+	       (set! songid (+fx (* 100 playlistid) n))
 	       (let loop ((decoders decoders))
 		  (if (pair? decoders)
 		      (let ((d (car decoders)))

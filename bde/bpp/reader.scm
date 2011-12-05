@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 15:23:18 1992                          */
-;*    Last change :  Tue Jan 18 15:34:45 2011 (serrano)                */
+;*    Last change :  Mon Dec  5 12:09:57 2011 (serrano)                */
 ;*                                                                     */
 ;*    Le reader de `Bigloo'                                            */
 ;*---------------------------------------------------------------------*/
@@ -122,7 +122,7 @@
 		   (string->symbol (the-string)) 
 		   (the-symbol)))
 	      ((: "|" (+ (or (out #a000 #\\ #\|) (: #\\ all))) "|")
-	       (let ((str (the-substring 0 (-fx (the-length) 1))))
+	       (let ((str (the-string)))
 		  (string->symbol (string-as-read str))))
 	      (#\'                     ;; Les simples quotations
 	       (cons 'quote (cons (ignore) '())))
