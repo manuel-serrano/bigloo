@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Wed Sep  8 09:10:20 2010 (serrano)                */
-/*    Copyright   :  2002-10 Manuel Serrano                            */
+/*    Last change :  Tue Dec  6 16:39:21 2011 (serrano)                */
+/*    Copyright   :  2002-11 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -127,6 +127,8 @@ bgl_debug_header( obj_t obj ) {
 	 case 25: fprintf( stderr, "(ELONG_TYPE) " ); break;
 	 case 26: fprintf( stderr, "(LLONG_TYPE) " ); break;
 	 case 43: fprintf( stderr, "(BIGNUM_TYPE) " ); break;
+	 case 44: fprintf( stderr, "(DATAGRAM_SOCKET_TYPE) " ); break;
+	 case 45: fprintf( stderr, "(REGEXP_TYPE) " ); break;
 	 default:
 	    if( TYPE( obj ) > OBJECT_TYPE )
 	       fprintf( stderr, "(a CLASS) " );

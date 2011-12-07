@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Nov 29 05:37:41 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 11:02:23 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -167,6 +167,7 @@
 	    __bignum
 	    __date
 	    __srfi4
+	    __pregexp
 	    
 	    __pp_circle
 	    
@@ -209,7 +210,7 @@
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
 
 	    (type-error fname loc proc type obj)
-	    (index-out-of-bounds-error fname loc proc len obj)
+	    (index-out-of-bounds-error fname loc proc i len obj)
 
 	    (module-init-error ::string ::string)
 
@@ -310,7 +311,7 @@
       ((=fx sysno $errno-typename-error)
        (raise (typename-error #f #f proc msg obj)))
       ((=fx sysno $errno-index-out-of-bound-error)
-       (raise (index-out-of-bounds-error #f #f proc msg obj)))
+       (raise (index-out-of-bounds-error #f #f proc msg obj -1)))
       (else
        (error proc msg obj))))
 
@@ -506,14 +507,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    index-out-of-bounds-error ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (index-out-of-bounds-error fname loc proc len obj)
+(define (index-out-of-bounds-error fname loc proc len obj i)
    (let* ((len (cond
 		  ((fixnum? len) len)
 		  ((string? len) (string->integer len))
 		  (else 0)))
-	  (msg (string-append "index out of range [0.."
-			      (integer->string (-fx len 1))
-			      "]")))
+	  (msg (if (>=fx i 0)
+		   ;; we have a significant info about the wrong index
+		   (string-append
+		      "index " (integer->string i) " out of range [0.."
+		      (integer->string (-fx len 1))
+		      "]")
+		   ;; no real info about the index
+		   (string-append "index out of range [0.."
+		      (integer->string (-fx len 1))
+		      "]"))))
       (instantiate::&index-out-of-bounds-error
 	 (fname fname)
 	 (location loc)
@@ -1032,6 +1040,8 @@
        "bignum")
       (($mmap? obj)
        "mmap")
+      ((regexp? obj)
+       "regexp")
       (else
        ($foreign-typeof obj))))
 

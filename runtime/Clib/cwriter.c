@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Thu Jun  9 10:07:24 2011 (serrano)                */
+/*    Last change :  Wed Dec  7 11:35:25 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -475,6 +475,19 @@ bgl_write_datagram_socket( obj_t o, obj_t op ) {
 	    BGL_DATAGRAM_SOCKET( o ).portnum );
 
    return op;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_write_regexp ...                                             */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_write_regexp( obj_t o, obj_t op ) {
+   PRINTF1( op,
+	    11 + STRING_LENGTH( BGL_REGEXP( o ).pat ),
+	    "#<regexp:%s>",
+	    BSTRING_TO_STRING( BGL_REGEXP( o ).pat ) );
+   return o;
 }
 
 /*---------------------------------------------------------------------*/

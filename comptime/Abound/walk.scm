@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Nov 15 08:19:07 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 09:38:09 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -112,7 +112,7 @@
 			    (args (cons* s i (cddr args))))
 			(failure
 			 ((@ index-out-of-bounds-error __error)
-			  ,lname ,lpos ,name ,i ,s)
+			  ,lname ,lpos ,name ,i ,s ,l)
 			 #f #f))))
 	     loc))))
 
@@ -180,7 +180,7 @@
 			    (expr* (list v i)))
 			(failure
 			 ((@ index-out-of-bounds-error __error)
-			  ,lname ,lpos "vector-ref" ,v ,i)
+			  ,lname ,lpos "vector-ref" ,v ,i ,l)
 			 #f #f))))
 	     loc))))
 
@@ -217,7 +217,7 @@
 			    (expr* (list v i (caddr expr*))))
 			(failure
 			 ((@ index-out-of-bounds-error __error)
-			  ,lname ,lpos "vector-set!" ,i ,v)
+			  ,lname ,lpos "vector-set!" ,i ,v ,l)
 			 #f #f))))
 	     loc))))
 

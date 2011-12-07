@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Sat Mar 31 06:13:36 2007 (serrano)                */
+;*    Last change :  Wed Dec  7 11:15:59 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions test suit for Scheme                */
 ;*    Dorai Sitaram                                                    */
@@ -69,8 +69,8 @@
    
    (pregexp-test
 
-    (pregexp "c.r")
-    (:sub (:or (:seq #\c :any #\r)))
+    (regexp? (pregexp "c.r"))
+    #t
 
     (pregexp-match-positions "brain" "bird")
     #f

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 18 15:58:51 2011 (serrano)                */
+/*    Last change :  Wed Dec  7 11:36:57 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -117,6 +117,13 @@ extern "C" {
      typedef unsigned long uint32_t;
 #  endif
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    regex include                                                    */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_REGEX )
+#  include <regex.h>
+#endif   
    
 /*---------------------------------------------------------------------*/
 /*    GMP include                                                      */
@@ -461,7 +468,7 @@ typedef union scmobj {
       void *userdata;            /*   - a user data                    */
    } socket_t;
 
-   struct datagram_socket {      /* First class datagram-sockets:      */
+   struct bgl_datagram_socket {  /* First class datagram-sockets:      */
       header_t header;           /*   - a header for type checking     */
       int portnum;               /*   - a port number                  */
       union scmobj *hostname;    /*   - a host name                    */
@@ -472,6 +479,16 @@ typedef union scmobj {
       union scmobj *chook;       /*   - the close hook                 */
       void *server;              /*   - socket server                  */
    } datagram_socket_t;
+
+   struct bgl_regexp {           /* Regular expressions                */
+      header_t header;           /*   - a header for type checking     */
+      union scmobj *pat;         /*   - regexp source                  */
+#if( BGL_HAVE_REGEX )      
+      regex_t preg;              /*   - posix regular expression       */
+#else
+      union scmobj *preg;
+#endif
+   } regexp_t;
       
    struct custom {               /* Custom objects                     */
       header_t header;           /*   - a header for type checking     */
@@ -672,6 +689,7 @@ struct bgl_input_timeout {
 #define DYNAMIC_ENV_TYPE            42
 #define BIGNUM_TYPE                 43
 #define DATAGRAM_SOCKET_TYPE        44
+#define REGEXP_TYPE                 45
 /* OBJECT must be the last defined type because new classes   */
 /* will be allocated TYPE number starting at OBJECT_TYPE + 1. */
 #define OBJECT_TYPE                 100
@@ -2655,7 +2673,7 @@ struct befored {
 /*---------------------------------------------------------------------*/
 #define BGL_DATAGRAM_SOCKETP( o ) \
    (POINTERP( o ) && (TYPE( o ) == DATAGRAM_SOCKET_TYPE))
-#define BGL_DATAGRAM_SOCKET_SIZE (sizeof( struct datagram_socket ))
+#define BGL_DATAGRAM_SOCKET_SIZE (sizeof( struct bgl_datagram_socket ))
 #define BGL_DATAGRAM_SOCKET( o ) (CREF( o )->datagram_socket_t)
 
 #define BGL_DATAGRAM_SOCKET_HOSTNAME( o ) bgl_datagram_socket_hostname( o )
@@ -2670,6 +2688,17 @@ struct befored {
    (BGL_DATAGRAM_SOCKETP( o ) \
     && (BGL_DATAGRAM_SOCKET( o ).stype >= BGL_SOCKET_CLIENT))
    
+/*---------------------------------------------------------------------*/
+/*    Regexp ...                                                       */
+/*---------------------------------------------------------------------*/
+#define BGL_REGEXPP( o ) \
+   (POINTERP( o ) && (TYPE( o ) == REGEXP_TYPE))
+#define BGL_REGEXP_SIZE (sizeof( struct bgl_regexp ))
+#define BGL_REGEXP( o ) (CREF( o )->regexp_t)
+#define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
+#define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
+#define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)   
+
 /*---------------------------------------------------------------------*/
 /*    opaque                                                           */
 /*---------------------------------------------------------------------*/

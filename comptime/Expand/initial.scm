@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Mon Nov 14 18:46:11 2011 (serrano)                */
+;*    Last change :  Tue Dec  6 17:32:54 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -997,24 +997,24 @@
        (bound-check x 'mmap-length '$mmap-bound-check? e)))
 
    ;; pregexp
-   (let ((pregexp-expander (lambda (x::obj e::procedure)
-			      (match-case x
-				 ((?k (and (? string?) ?regexp) . ?rest)
-				  ;; the pregexp functions are not re-entrant!
-				  ;; they change their argument when its
-				  ;; a U-regexp. Hence, we have to copy it
-				  ;; first!
-				  `(,k (tree-copy ',(pregexp regexp))
+   '(let ((pregexp-expander (lambda (x::obj e::procedure)
+			       (match-case x
+				  ((?k (and (? string?) ?regexp) . ?rest)
+				   ;; the pregexp functions are not re-entrant!
+				   ;; they change their argument when its
+				   ;; a U-regexp. Hence, we have to copy it
+				   ;; first!
+				   `(,k (tree-copy ',(pregexp regexp))
 				       ,@(map (lambda (x) (e x e)) rest)))
-				 ((?k . ?rest)
-				  `(,k ,@(map (lambda (x) (e x e)) rest)))
-				 (else
-				  (error #f "Illegal `pregexp' form" x))))))
-      (install-O-comptime-expander 'pregexp-match-positions pregexp-expander)
-      (install-O-comptime-expander 'pregexp-match pregexp-expander)
-      (install-O-comptime-expander 'pregexp-replace pregexp-expander)
-      (install-O-comptime-expander 'pregexp-replace* pregexp-expander)
-      (install-O-comptime-expander 'pregexp-split pregexp-expander)))
+				  ((?k . ?rest)
+				   `(,k ,@(map (lambda (x) (e x e)) rest)))
+				  (else
+				   (error #f "Illegal `pregexp' form" x))))))
+     (install-O-comptime-expander 'pregexp-match-positions pregexp-expander)
+     (install-O-comptime-expander 'pregexp-match pregexp-expander)
+     (install-O-comptime-expander 'pregexp-replace pregexp-expander)
+     (install-O-comptime-expander 'pregexp-replace* pregexp-expander)
+     (install-O-comptime-expander 'pregexp-split pregexp-expander)))
 			 
 ;*---------------------------------------------------------------------*/
 ;*    call-check ...                                                   */

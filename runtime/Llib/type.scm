@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Nov 18 09:32:28 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 11:04:12 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -88,6 +88,7 @@
     (subtype process "obj_t" (obj))
     (subtype socket "obj_t" (obj))
     (subtype datagram-socket "obj_t" (obj))
+    (subtype regexp "obj_t" (obj))
     (subtype custom "obj_t" (obj))
     (subtype date "obj_t" (obj))
     (subtype mutex "obj_t" (obj))
@@ -191,6 +192,7 @@
     (coerce obj process (c-process?) ())
     (coerce obj socket (c-socket?) ())
     (coerce obj datagram-socket ($datagram-socket?) ())
+    (coerce obj regexp (regexp?) ())
     (coerce obj custom (c-custom?) ())
     (coerce obj date (c-date?) ())
     (coerce obj mutex ($mutex?) ())
@@ -272,6 +274,7 @@
     (coerce process obj () ())
     (coerce socket obj () ())
     (coerce datagram-socket obj () ())
+    (coerce regexp obj () ())
     (coerce custom obj () ())
     (coerce date obj () ())
     (coerce mutex obj () ())
@@ -583,6 +586,9 @@
     ;; socket
     (coerce socket bool () ((lambda (x) #t)))
     (coerce datagram-socket bool () ((lambda (x) #t)))
+
+    ;; regexp
+    (coerce regexp bool () ((lambda (x) #t)))
 
     ;; custom
     (coerce custom bool () ((lambda (x) #t)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Dec  1 09:57:01 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 11:48:11 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -37,6 +37,7 @@
 	    __ucs2
 	    __unicode
 	    __bignum
+	    __pregexp
 	    
 	    __process
 	    __custom
@@ -501,6 +502,7 @@
 	    ((#\o) (read-special s *string->opaque*))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
 	    ((#\k) (find-class (read-symbol)))
+	    ((#\r) (pregexp (read-string s)))
 	    (else  (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (let ((d (string-ref s *pointer*)))
@@ -886,6 +888,9 @@
 	 ((class? item)
 	  (!print-markup #\k)
 	  (print-item (symbol->string! (class-name item))))
+	 ((regexp? item)
+	  (!print-markup #\r)
+	  (print-item (regexp-pattern item)))
 	 (else
 	  (error "obj->string" "Unknown object" item))))
 

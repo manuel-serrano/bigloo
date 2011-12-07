@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Dec  2 09:24:49 2011 (serrano)                */
+#*    Last change :  Wed Dec  7 11:42:04 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -101,7 +101,7 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cwriter capply cstruct csystem ccontrol ceval chash \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
-                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum
+                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregex
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
 
@@ -151,7 +151,7 @@ JLIB		= foreign buffer configure stackwriter\
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
                   f32vector f64vector \
-                  weakptr \
+                  weakptr regexp \
 	          $(JDK_LIBS)
 
 JLIB_SRC	= $(JLIB:%=%.java)
@@ -311,6 +311,7 @@ POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
                   Llib/make_lib.scm \
 		  Ieee/bignum.sch \
+                  Llib/pregexp.sch Llib/regex.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \
@@ -936,3 +937,5 @@ $(JFILE):
 #*---------------------------------------------------------------------*/
 objs/obj_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
+objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch
+objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch

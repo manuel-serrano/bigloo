@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  2 09:27:43 2011 (serrano)                */
+#*    Last change :  Wed Dec  7 10:37:26 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1968,6 +1968,13 @@ fi
 havemixer=`$autoconf mixer` || exit 1
 
 #*---------------------------------------------------------------------*/
+#*    Regexp                                                           */
+#*---------------------------------------------------------------------*/
+haveregex=0
+featureflags="-srfi enable-regex"
+featureflags=""
+
+#*---------------------------------------------------------------------*/
 #*    bigloo_config.h / configure.java / configure.cs / ...            */
 #*    -------------------------------------------------------------    */
 #*    This part of the configure script produces the files             */
@@ -2645,6 +2652,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
               -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
+              -e "s|@BGL_HAVE_REGEX@|$haveregex|" \
         > $p
     fi
   done

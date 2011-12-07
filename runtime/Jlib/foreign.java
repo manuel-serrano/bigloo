@@ -4893,6 +4893,30 @@ public final class foreign
    }
 
    //////
+   // REGEXP
+   //////
+   public static boolean BGL_REGEXPP(Object o) {
+      return o instanceof regexp;
+   }
+
+   public static regexp bgl_make_regexp(byte[] pat) {
+      return new regexp(pat);
+   }
+   
+   public static byte[] BGL_REGEXP_PAT(regexp o) {
+      return o.pat;
+   }
+   
+   public static Object BGL_REGEXP_PREG(regexp o) {
+      return o.preg;
+   }
+   
+   public static Object BGL_REGEXP_PREG_SET(regexp o, Object v) {
+      o.preg = v;
+      return o;
+   }
+   
+   //////
    // INPUT
    //////
    public static final int default_io_bufsiz = 1024;
