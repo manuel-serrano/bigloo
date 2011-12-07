@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Dec  6 17:32:54 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 13:48:56 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -997,15 +997,18 @@
        (bound-check x 'mmap-length '$mmap-bound-check? e)))
 
    ;; pregexp
-   '(let ((pregexp-expander (lambda (x::obj e::procedure)
+   (let ((pregexp-expander (lambda (x::obj e::procedure)
 			       (match-case x
 				  ((?k (and (? string?) ?regexp) . ?rest)
 				   ;; the pregexp functions are not re-entrant!
 				   ;; they change their argument when its
 				   ;; a U-regexp. Hence, we have to copy it
 				   ;; first!
-				   `(,k (tree-copy ',(pregexp regexp))
-				       ,@(map (lambda (x) (e x e)) rest)))
+				   (let ((id (gensym 'pregexp)))
+				      (add-O-macro-toplevel!
+					 (e `(define ,id (pregexp ,regexp)) e))
+				      `(,k ,id
+					  ,@(map (lambda (x) (e x e)) rest))))
 				  ((?k . ?rest)
 				   `(,k ,@(map (lambda (x) (e x e)) rest)))
 				  (else

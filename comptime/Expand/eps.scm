@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Tue Nov 15 08:15:06 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 13:48:58 2011 (serrano)                */
 ;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -160,7 +160,8 @@
 		       (let loop ((src (unit-sexp* unit))
 				  (res '()))
 			  (if (null? src)
-			      (unit-sexp*-set! unit (reverse! res))
+			      (unit-sexp*-set! unit
+				 (append (get-O-macro-toplevel) (reverse! res)))
 			      (let* ((obody (car src))
 				     (nbody (bind-exit (skip)
 					       (with-exception-handler

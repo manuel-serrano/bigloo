@@ -101,7 +101,7 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cwriter capply cstruct csystem ccontrol ceval chash \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
-                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregex
+                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregexp
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 16:05:29 1994                          */
-;*    Last change :  Mon Aug  9 12:39:17 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec  7 13:53:06 2011 (serrano)                */
+;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The O-expander creation.                                         */
 ;*=====================================================================*/
@@ -18,6 +18,8 @@
 	    engine_param
 	    tools_misc)
    (export  (initialize-Oenv!)
+	    (get-O-macro-toplevel)
+	    (add-O-macro-toplevel!       ::obj)
 	    (install-O-comptime-expander ::symbol ::procedure)
 	    (find-O-expander             ::symbol)
 	    (unbind-O-expander!          ::symbol)
@@ -38,6 +40,25 @@
 ;*---------------------------------------------------------------------*/
 (define (initialize-Oenv!)
    (set! *Oenv* (make-hashtable)))
+
+;*---------------------------------------------------------------------*/
+;*    *O-macro-toplevel* ...                                           */
+;*---------------------------------------------------------------------*/
+(define *O-macro-toplevel* '())
+
+;*---------------------------------------------------------------------*/
+;*    add-O-macro-toplevel! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (add-O-macro-toplevel! exp)
+   (set! *O-macro-toplevel* (cons exp *O-macro-toplevel*)))
+
+;*---------------------------------------------------------------------*/
+;*    get-O-macro-toplevel ...                                         */
+;*---------------------------------------------------------------------*/
+(define (get-O-macro-toplevel)
+   (let ((v *O-macro-toplevel*))
+      (set! *O-macro-toplevel* '())
+      v))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-O-comptime-expander ...                                  */
