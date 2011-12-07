@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Wed Dec  7 11:22:04 2011 (serrano)                */
+/*    Last change :  Wed Dec  7 13:39:00 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -25,7 +25,7 @@ bgl_make_regexp( obj_t pat ) {
    return BREF( re );
 }
 
-#if( BGL_HAVE_REGEX )
+#if( BGL_REGEXP_TYPE == BGL_REGEXP_REGEX )
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

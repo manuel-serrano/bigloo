@@ -52,4 +52,5 @@
   (have-bdb . ,(not (=fx @BGL_HAVE_BDB@ 0)))
   (dns-cache-enabled . ,(not (=fx @DNS_CACHE@ 0)))
   (shell-mv . "@SHELL_MV@")
-  (shell-rm . "@SHELL_RM@"))
+  (shell-rm . "@SHELL_RM@")
+  (regexp . "@BGL_REGEXP_FAMILY@"))

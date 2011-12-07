@@ -383,7 +383,12 @@
 
 #define BGL_HAVE_MIXER @BGL_HAVE_MIXER@
 
-#define BGL_HAVE_REGEX @BGL_HAVE_REGEX@
+#define BGL_REGEXP_REGEX 1
+#define BGL_REGEXP_PREGEXP 2
+#define BGL_REGEXP_PCRE 3
+
+#define BGL_REGEXP_TYPE @BGL_REGEXP_FAMILY@
+#define BGL_REGEXP_FAMILY "@BGL_REGEXP_FAMILY@"
 
 /*---------------------------------------------------------------------*/
 /*    DNS caching                                                      */
