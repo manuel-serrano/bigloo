@@ -387,7 +387,7 @@
 #define BGL_REGEXP_PREGEXP 2
 #define BGL_REGEXP_PCRE 3
 
-#define BGL_REGEXP_TYPE @BGL_REGEXP_FAMILY@
+#define BGL_REGEXP_TYPE BGL_REGEXP_@BGL_REGEXP_FAMILY@
 #define BGL_REGEXP_FAMILY "@BGL_REGEXP_FAMILY@"
 
 /*---------------------------------------------------------------------*/

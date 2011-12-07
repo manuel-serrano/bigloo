@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Dec  7 11:46:11 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 17:58:48 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*=====================================================================*/
@@ -24,6 +24,8 @@
 	    __bignum
 	    __object
 	    __thread
+	    
+	    __r4_output_6_10_3
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
@@ -62,6 +64,8 @@
    (cond-expand
       ((and enable-regex bigloo-c)
        (include "Llib/regex.sch"))
+      ((and enable-pcre bigloo-c)
+       (include "Llib/pcre.sch"))
       (else
        (include "Llib/pregexp.sch")))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Wed Dec  7 11:15:59 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 18:25:24 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions test suit for Scheme                */
 ;*    Dorai Sitaram                                                    */
@@ -43,6 +43,9 @@
   | 2[0-4]\\d  ;200 through 249
   | 25[0-5]    ;250 through 255
   )")
+
+(when (string=? (bigloo-config 'regexp) "PCRE")
+   (set! n0-255 (string-replace! n0-255 #\; #\#)))
 
 (define ip-re1
   (string-append
@@ -123,10 +126,10 @@
     (pregexp-match "[[:alpha:]_]" "--:--")
     #f
 
-    (pregexp-match "[:alpha:]" "--a--")
+    (pregexp-match "[[:alpha:]]" "--a--")
     ("a")
 
-    (pregexp-match "[:alpha:]" "--_--")
+    (pregexp-match "[[:alpha:]]" "--_--")
     #f
 
     (pregexp-match-positions "c[ad]*r" "cadaddadddr")
@@ -242,19 +245,31 @@
     (pregexp-match "(?x: a  \\  lot)" "a lot")
     ("a lot")
 
-    (pregexp-match "(?x:
+    (pregexp-match (if (string=? (bigloo-config 'regexp) "PCRE")
+		       "(?x:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+		    "(?x:
     a \\ man  \\; \\   ; ignore
     a \\ plan \\; \\   ; me
     a \\ canal         ; completely
-    )"
+    )")
 		   "a man; a plan; a canal")
     ("a man; a plan; a canal")
 
-    (pregexp-match "(?ix:
+    (pregexp-match (if (string=? (bigloo-config 'regexp) "PCRE")
+		       "(?ix:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+		       "(?ix:
     a \\ man  \\; \\   ; ignore
     a \\ plan \\; \\   ; me
     a \\ canal         ; completely
-    )"
+    )")
 		   "A Man; a Plan; a Canal")
     ("A Man; a Plan; a Canal")
 
@@ -364,12 +379,19 @@
     (pregexp-match "(?x: s  e  * k )" "seeeeek")
     ("seeeeek")
 
-    (pregexp-match "(?x: t  ;matches t
+    (pregexp-match (if (string=? (bigloo-config 'regexp) "PCRE")
+       "(?x: t  #matches t
+    h          #   matches h
+    e           ###   matches e
+    \\              # # # matches space
+    \\;          #  matches ;
+    )"
+       "(?x: t  ;matches t
     h          ;   matches h
     e           ;;;   matches e
     \\              ; ; ; matches space
     \\;          ;  matches ;
-    )"
+    )")
 		   "the ;")
     ("the ;")
 

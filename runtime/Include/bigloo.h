@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  7 13:39:23 2011 (serrano)                */
+/*    Last change :  Wed Dec  7 16:57:50 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -486,8 +486,14 @@ typedef union scmobj {
 #if( BGL_REGEXP_TYPE == BGL_REGEXP_REGEX )      
       regex_t preg;              /*   - posix regular expression       */
 #else
+#  if( BGL_REGEXP_TYPE == BGL_REGEXP_PCRE )      
+      void *preg;                /*   - posix regular expression       */
+      void *study;
+      int capturecount;
+#  else
       union scmobj *preg;
-#endif
+#  endif
+#endif      
    } regexp_t;
       
    struct custom {               /* Custom objects                     */

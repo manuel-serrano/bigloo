@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Dec  7 11:42:04 2011 (serrano)                */
+#*    Last change :  Wed Dec  7 16:18:43 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -311,7 +311,7 @@ POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
                   Llib/make_lib.scm \
 		  Ieee/bignum.sch \
-                  Llib/pregexp.sch Llib/regex.sch \
+                  Llib/pregexp.sch Llib/regex.sch Llib/pcre.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \
@@ -937,5 +937,5 @@ $(JFILE):
 #*---------------------------------------------------------------------*/
 objs/obj_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
-objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch
-objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch
+objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
+objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch

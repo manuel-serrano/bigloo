@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/regex.sch               */
+;*    serrano/prgm/project/bigloo/runtime/Llib/pcre.sch                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Wed Dec  7 17:16:53 2011 (serrano)                */
+;*    Last change :  Wed Dec  7 18:20:27 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
@@ -28,79 +28,17 @@
 	  ,l)))
 
 ;*---------------------------------------------------------------------*/
-;*    pregexp-normalize ...                                            */
-;*---------------------------------------------------------------------*/
-(define (pregexp-normalize re)
-   
-   (define (count re)
-      (let ((len (string-length re)))
-	 (let loop ((i 0)
-		    (c 0))
-	    (cond
-	       ((>=fx i (-fx len 1))
-		c)
-	       ((char=? (string-ref re i) #\\)
-		(loop (+fx i 2)
-		   (+fx c (case (string-ref re (+fx i 1))
-			     ((#\w) (-fx (string-length "[A-Za-z0-9_]") 2))
-			     ((#\W) (-fx (string-length "[^A-Za-z0-9_]") 2))
-			     ((#\d) (-fx (string-length "[0-9]") 2))
-			     ((#\D) (-fx (string-length "[^0-9]") 2))
-			     ((#\s) (-fx (string-length "[ \t\r\n\v\f]") 2))
-			     ((#\S) (-fx (string-length "[^ \t\r\n\v\f]") 2))
-			     (else 0)))))
-	       (else
-		(loop (+fx i 1) c))))))
-
-   (define (normalize re c)
-      (let* ((len (string-length re))
-	     (new (make-string (+fx len c))))
-	 (let loop ((i 0)
-		    (j 0))
-	    (cond
-	       ((>=fx i (-fx len 1))
-		(when (<fx i len)
-		   (string-set! new j (string-ref re i)))
-		new)
-	       ((char=? (string-ref re i) #\\)
-		(case (string-ref re (+fx i 1))
-		   ((#\w)
-		    (loop (+fx i 2) (+fx j (blit! "[A-Za-z0-9_]" new j))))
-		   ((#\W)
-		    (loop (+fx i 2) (+fx j (blit! "[^A-Za-z0-9_]" new j))))
-		   ((#\d)
-		    (loop (+fx i 2) (+fx j (blit! "[0-9]" new j))))
-		   ((#\D)
-		    (loop (+fx i 2) (+fx j (blit! "[^0-9]" new j))))
-		   ((#\s)
-		    (loop (+fx i 2) (+fx j (blit! "[ \t\r\n\v\f]" new j))))
-		   ((#\S)
-		    (loop (+fx i 2) (+fx j (blit! "[^ \t\r\n\v\f]" new j))))
-		   (else
-		    (string-set! new j #\\)
-		    (string-set! new (+fx j 1) (string-ref re (+fx i 1)))
-		    (loop (+fx i 2) (+fx j 2)))))
-	       (else
-		(string-set! new j (string-ref re i))
-		(loop (+fx i 1) (+fx j 1)))))))
-
-   (let ((c (count re)))
-      (if (=fx c 0)
-	  re
-	  (normalize re c))))
-		   
-;*---------------------------------------------------------------------*/
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (pregexp re)
-   ($regcomp (pregexp-normalize re)))
+   ($regcomp re))
 
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (match pat str stringp opt-args)
    (let ((beg 0)
-	 (end -1))
+	 (end (string-length str)))
       (when (pair? opt-args)
 	 (set! beg (car opt-args))
 	 (when (pair? (cdr opt-args))
@@ -193,15 +131,12 @@
 		(lambda (y)
 		   (let ((jk (car y)))
 		      (let ((j (car jk)) (k (cdr jk)))
-			 ;(printf "j = ~a; k = ~a; i = ~a~n" j k i)
 			 (cond ((= j k)
-				;(printf "producing ~s~n" (substring str i (+ j 1)))
 				(loop (+ k 1) 
 				   (cons (substring str i (+ j 1)) r) #t))
 			       ((and (= j i) picked-up-one-undelimited-char?)
 				(loop k r #f))
 			       (else
-				;(printf "producing ~s~n" (substring str i j))
 				(loop k (cons (substring str i j) r) #f)))))))
 	       (else (loop n (cons (substring str i n) r) #f))))))
 
