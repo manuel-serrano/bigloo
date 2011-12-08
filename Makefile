@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov  9 17:19:38 2011 (serrano)                */
+#*    Last change :  Thu Dec  8 18:00:54 2011 (serrano)                */
 #*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -675,7 +675,7 @@ c-test:
           if [ -d api/$$p/recette ]; then \
             echo "*** $$p ********** "; \
             (cd api/$$p/recette && \
-             $(MAKE) c EFLAGS="-static-all-bigloo" && \
+             $(MAKE) c && \
 	     test -x ./recette && \
              ./recette $(RECETTEFLAGS)) || exit 1; \
           fi; \
