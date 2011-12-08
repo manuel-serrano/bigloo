@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec  7 17:21:48 2011 (serrano)                */
+#*    Last change :  Thu Dec  8 08:12:36 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -180,8 +180,7 @@ flaclibs=
 flaccflags=
 
 #*--- regexp ----------------------------------------------------------*/
-regexp=pregexp
-pcre=
+regexp=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
@@ -1974,13 +1973,19 @@ havemixer=`$autoconf mixer` || exit 1
 #*---------------------------------------------------------------------*/
 #*    Regexp                                                           */
 #*---------------------------------------------------------------------*/
-# find out the C library for pcre
-if [ "$pcre " = " " ]; then
-   pcrelibs=`$autoconf pcre --cflags="$cflags"` || exit 1;
-   featureflags="-srfi enable-pcre $featureflags";
-   extralibs="-lpcre $extralibs"
-   regexp=pcre
+if [ "$regexp " = " " ]; then
+  # find out the C library for pcre
+  pcrelibs=`$autoconf pcre --cflags="$cflags"` || exit 1;
+
+  if [ "$pcrelibs " != "no " ]; then
+    featureflags="-srfi enable-pcre $featureflags";
+    extralibs="-lpcre $extralibs"
+    regexp=pcre
+  else
+    regexp=pregexp
+  fi
 fi
+
 featureflags="-srfi enable-$regexp"
 
 #*---------------------------------------------------------------------*/
