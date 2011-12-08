@@ -60,9 +60,7 @@ declaration is:
      | @code{(abstract-class} <ident> <constructor>? <field>+@code{)}
 <constructor> @expansion{} @code{(} <expr> @code{)}
 <field> @expansion{} <ident>
-     | @code{(*} <ident>@code{)}
      | @code{(}<ident> <field-prop>@code{)}
-     | @code{(*} <ident> <field-prop>@code{)}
 <field-prop> @expansion{} @code{read-only}
      | @code{(get} <bigloo-exp>@code{)}
      | @code{(set} <bigloo-exp>@code{)}
@@ -74,7 +72,7 @@ declaration is:
 @pindex wide-class
 @pindex abstract-class
 
-A class is a Bigloo type (see Section@ref{Atomic types}) and the class
+A class is a Bigloo type (see Section @ref{Atomic types}) and the class
 identifier is extracted from the <ident> of the class definition. If
 <ident> is also a <typed-ident>, the type part of this identifier
 denote the super-class of the class. If <ident> is a
@@ -100,10 +98,6 @@ A class field may be a @emph{typed class field} which is achieved
 by using a <typed-ident> instead of a <@sc{Ieee}-ident>
 for the <ident> value. 
 
-A class field defined as @code{(* ...)} is an indexed field and holds a
-sequence of items. The length of this sequence is defined at allocation
-time.
-
 Field marked with @code{read-only} declaration are immutables.
 
 @code{Default} declarations allow default field values. For
@@ -122,13 +116,13 @@ can be defined as:
               (color::string read-only))))
 @end smalllisp
 
-We illustrate indexed fields, final and wide classes by the example:
+We illustrate final and wide classes by the example:
 @smalllisp
 (module example
    (export (final-class person 
                (name::string (default "Jones"))
                (sex read-only)
-               (* children::person))
+               children::pair-nil)
            (wide-class married-person::person
                mate::person)))
 @end smalllisp
@@ -188,21 +182,40 @@ the point class.
 @section Creating and accessing objects
 @cindex Creating and accessing objects
 
-Bigloo automatically creates functions to allocate and manipulate objects.
-Let us suppose the class declaration:
-@smalllisp
-(class @var{class}
-   @var{field1}::@var{type1}
-   (* @var{field2}::@var{type2}))
-@end smalllisp
+Objects and classes are created and manipulated via library functions
+and forms created automatically by Bigloo when a new class is defined.
 
-Theses functions are:
-@itemize @bullet
+@deffn {bigloo procedure} isa? obj class
 
-@item A nil instance:
+This function returns @code{#t} if @var{obj} is an instance
+of @var{class} or an instance of a sub-class of @var{class}, otherwise,
+it returns @code{#f}.
+@end deffn
+
+@deffn {bigloo syntax} instantiate::@var{class} (ident value)@dots{}
+@pindex instantiate
+This forms allocates object of class @var{class} and fills the fields with
+values found in the list of parameters (note that field are explicitly
+named and that there is no ordering for field naming). Field values which
+are not provided in the parameter list must have been declared with a
+@code{default} value which is used to initialize the corresponding
+field.
+
+For instance:
 @smalllisp
-(@var{class}-nil::@var{class})
+(module example
+   (export 
+      (class point (x (default 0)))
+      (class point2d::point y)))
+
+(instantiate::point (x 0) (y 0))
+(instantiate::point (y 0))
+(instantiate::point (x 0))
+  @result{} Error because @var{y} has no default value
 @end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} class-nil class
 
 This function returns the NIL pre-existing class instance. This instance plays 
 the role of @code{void *} in C or @code{null} in Java. The value of each field
@@ -210,68 +223,19 @@ is unspecified but correct with respect to the Bigloo type system. Each
 call to @code{@var{class}-nil} returns the same object (in the sense of 
 @code{eq?}).
 
-@item A creator:
 @smalllisp
-(make-@var{class}::@var{class} ::@var{type1} ::long ::@var{type2})
+(module example
+   (export 
+      (class point x)
+      (class point2d::point y)))
+
+(eq? (class-nil point) (class-nil point))
+  @result{} #t
+(eq? (class-nil point) (class-nil point2d))
+  @result{} #f
 @end smalllisp
+@end deffn
 
-This function allocates a fresh instance of @var{class} and fills the field
-values with the argument. The length of the indexed field @var{field2} is
-given as argument of the function.
-
-Example:
-@smalllisp
-(class truc 
-   x::char 
-   (* y::bstring))
-@end smalllisp
-
-The prototype of the allocation function is:
-@smalllisp
-(make-truc::truc x::char 
-                 y-len::long 
-                 y::bstring)
-@end smalllisp
-
-The indexed values of the @code{y} and @code{z} fields will be set
-to the values of the formal parameters @code{y} and @code{z} respectively. 
-
-@item A filler:
-@smalllisp
-(fill-@var{class}! ::@var{class} ::@var{type1} ::long ::@var{type2})
-@end smalllisp
-
-This function accepts the same arguments as the creator augmented with
-one allocated instance. This instance is filled up with the provided values.
-For indexed fields, the same initial value is used to fill up the array
-of values.
-
-@item A type checker:
-@smalllisp
-(@var{class}?::bool @var{obj}::obj)
-@end smalllisp
-
-This function returns @code{#t} if @var{obj} is an instance
-of @var{class} or an instance of a sub-class of @var{class}, otherwise,
-it returns @code{#f}.
-
-@item Accessors and mutators:
-@smalllisp
-(@var{class}-@var{field_1}::@var{type_1} ::@var{class})
-(@var{class}-@var{field_1}-set!::obj ::@var{class} ::@var{type_1})
-(@var{class}-@var{field_2}-len::long ::@var{class})
-(@var{class}-@var{field_2}-ref::@var{type_2} ::@var{class} ::long)
-(@var{class}-@var{field_2}-set!::obj ::@var{class} ::long ::@var{type_2})
-@end smalllisp
-
-Declaring a field @code{read-only} prevents Bigloo from
-generating an associated @code{@var{class}-@var{field_i}-set!}
-function. The length of the indexed field is @code{
-read-only}. Thus they do not have mutator functions.
-
-@end itemize
-
-Some syntax helps with allocation and access to objects.
 @deffn {bigloo syntax} with-access::@var{class} obj (binding@dots{}) body
 @pindex with-access
 
@@ -287,58 +251,32 @@ For instance:
    (with-access::point p2 (y)
       (set! x (- x))
       (set! y1 (- y1 y))))
-@r{is equivalent to:}
-(begin
-   (point-x-set! p (- (point-x p)))
-   (point-y-set! p (- (point-y p) (point-y p2))))
 @end smalllisp
-
-When an indexed field is referenced inside the binding part of a
-@code{with-access} form, the functions that accesses and changes the
-fields are bound inside the body of the @code{with-access}. In addition,
-a variable reporting the length of the field is also bound. For a field
-@var{fd}, the getter function is @code{(@var{fd}-ref @var{offset})}, the
-setter is @code{(@var{fd}-set! @var{offset} @var{value})}, the length
-variable is @code{@var{fd}-len}.
-For instance:
-@smalllisp
-(with-access::truc o (y)
-   (print "length: " y-len)
-   (print "old y-ref(0): " (y-ref 0))
-   (y-set! 0 "foo")
-   (print "new y-ref(0): " (y-ref 0)))
-@r{is equivalent to:}
-(begin
-   (print "length: " (truc-y-len o))
-   (print "old y-ref(0): " (truc-y-ref o 0))
-   (truc-y-set! o 0 "foo")
-   (print "new y-ref(0): " (truc-y-ref o 0)))
-@end smalllisp
-
 @end deffn
 
-@deffn {bigloo syntax} instantiate::@var{class} (ident value)@dots{}
-@pindex instantiate
-This forms allocates object of class @var{class} and fills the fields with
-values found in the list of parameters (note that field are explicitly
-named and that there is no ordering for field naming). Field values which
-are not provided in the parameter list must have been declared with a
-@code{default} value which is used to initialize the corresponding
-field.
+@deffn {bigloo syntax} -> @var{var} @var{field} 
+@pindex ->
+Class instances can be accesses using the @code{->} special form. The 
+the first argument must be the identifier of a local typed variable, otherwise
+an error is raised. The form @code{->} can be used to get or set value of
+an instance field. For instance:
 
-For instance:
 @smalllisp
-(make-point 0 0)
-@end smalllisp
-is equivalent to:
-@smalllisp
-(instantiate::point (x 0) (y 0))
+(define (example p1::point p2::point)
+   (set! (-> p1 x (- (-> p1 x))))
+   (set! (-> p1 y (- (-> y1 y)))))
 @end smalllisp
 
-Indexed field must be provided with exactly two values. The first is the 
-length of the indexed field and the second is the default value of each 
-element of the indexed field.
+This is equivalent to:
+@smalllisp
+(define (example p1::point p2::point)
+   (with-access::point p1 (x (y1 y))
+      (with-access::point p2 (y)
+         (set! x (- x))
+         (set! y1 (- y1 y)))))
+@end smalllisp
 @end deffn
+
 
 @deffn {bigloo syntax} co-instantiate ((@var{var} @var{value}) @dots{}) body
 
@@ -370,8 +308,10 @@ calculus. Example:
                         (x 10)
                         (y 20)
                         (o1 o1))))
-   (+ (c2-x (c1-o2 o1)) (c2-y (c1-o2 o1))))
-                                       @result{} 30
+   (with-access::c1 o1 (o2)
+      (with-access::c2 o2 (x y)
+         (+ x y))))
+   @result{} 30
 @end smalllisp
 @end deffn
 
@@ -385,65 +325,15 @@ list.
 For instance:
 @smalllisp
 (with-access::point old (x)
-   (make-point x 10))
+   (instantiate::point 
+      (x x)
+      (y 10)))
 @end smalllisp
 is equivalent to:
 @smalllisp
 (duplicate::point old (y 10))
 @end smalllisp
 
-Indexed field must be provided with exactly two values. The first is the 
-length of the indexed field and the second is the default value of each 
-element of the indexed field.
-
-Here is an example of creations and mutations of a complex object:
-@smalllisp
-(module foo
-   (export (class named-tab
-              name::string
-              (* els::int))))
-
-;; a function that prints a named-tab
-(define (print-tab tab)
-   (display* (named-tab-name tab) ": ")
-   (let loop ((i (-fx (named-tab-els-len tab) 1)))
-      (if (=fx i -1)
-          (newline)
-          (begin
-             (display* #\( i 
-                       " "
-                       (named-tab-els-ref tab i)
-                       ") ")
-             (loop (-fx i 1))))))
-
-;; we allocate a named-tab object with
-;; 5 els, each of them initialized to 0
-(define a-tab (instantiate::named-tab
-                 (name "example")
-                 (els 5 0)))
-
-;; we print its elements
-(print-tab a-tab) 
-
-;; we change the values of the indexed field
-;; els by setting values from 0 to 4
-(let loop ((i (-fx (named-tab-els-len a-tab) 1)))
-   (if (=fx i -1)
-       'done
-       (begin
-          (named-tab-els-set! a-tab i i)
-          (loop (-fx i 1)))))
-
-;; we re-print it
-(print-tab a-tab)
-@end smalllisp
-
-@noindent
-This will produce the following output:
-@smalllisp
-example: (4 0) (3 0) (2 0) (1 0) (0 0) 
-example: (4 4) (3 3) (2 2) (1 1) (0 0) 
-@end smalllisp
 @end deffn
 
 @c ------------------------------------------------------------------- @c
@@ -502,9 +392,9 @@ example:
    (let ((port (if (pair? op) 
                    (car op) 
                    (current-output-port))))
-      (fprint port "firstname : " (person-fname p))
-      (fprint port "name      : " (person-name p))
-      (fprint port "sex       : " (person-sex p))
+      (fprint port "firstname : " (-> p fname))
+      (fprint port "name      : " (-> p name))
+      (fprint port "sex       : " (-> p sex))
       p))
 @end smalllisp
 @end deffn
@@ -561,8 +451,8 @@ Two classes have been declared and an instance @code{*point*} of
 of @code{point} but not an instance of @code{named-point} and this can
 be checked by:
 @smalllisp
-(print (named? *point*))           @expansion{} #t
-(print (named-point? *point*))     @expansion{} #f
+(print (isa? *point* named))           @expansion{} #t
+(print (isa? *point* named-point))     @expansion{} #f
 @end smalllisp
 
 Now, we @emph{widen} @code{*point*}...
@@ -576,8 +466,8 @@ And we check that now, @code{n-point} is an instance of
 @code{point}, @code{n-point} still is an instance of @code{point}.
 
 @smalllisp
-(print (named-point? n-point))  @expansion{} #t
-(print (named? n-point))        @expansion{} #t
+(print (isa? n-point named-point))  @expansion{} #t
+(print (isa? n-point named))        @expansion{} #t
 @end smalllisp
 
 
@@ -592,7 +482,7 @@ To end this example, we @emph{shrink} @code{n-point} and check
 its class.
 @smalllisp
 (shrink! n-point)
-(print (named-point? *point*))) @expansion{} #f
+(print (isa? *point* named-point))) @expansion{} #f
 @end smalllisp
 
 Here is a more complex example:
@@ -630,9 +520,7 @@ definition for married-man)
 (define-method (object-display p::married-woman . op)
    (with-access::married-woman p (name fname sex mate)
       (call-next-method)
-      (print "married to: " (person-fname mate) 
-                            " " 
-                            (person-name mate))
+      (print "married to: " mate) 
       p))
 @end smalllisp
 
@@ -649,16 +537,16 @@ We create a person with the @code{birth} function:
 We celebrate a wedding using the @code{get-married!} function:
 @smalllisp
 (define (get-married! woman::person man::person)
-   (if (not (and (eq? (person-sex woman) 'female)
-                 (eq? (person-sex man) 'male)))
+   (if (not (and (eq? (-> woman sex) 'female)
+                 (eq? (-> man sex) 'male)))
        (error "get-married" 
               "Illegal wedding" 
               (cons woman man))
-       (let* ((mname (person-name woman))
+       (let* ((mname (-> woman name))
               (wife  (widen!::married-woman woman
                       (maiden-name mname)
                       (mate man))))
-          (person-name-set! wife (person-name man))
+          (person-name-set! wife (-> man name))
           (widen!::married-man man
              (mate woman)))))
 @end smalllisp
@@ -666,10 +554,10 @@ We celebrate a wedding using the @code{get-married!} function:
 We can check if two people are married by
 @smalllisp
 (define (couple? woman::person man::person)
-   (and (married-woman? woman)
-        (married-man? man)
-        (eq? (married-woman-mate woman) man)
-        (eq? (married-man-mate man) woman)))
+   (and (isa? woman married-woman)
+        (isa? man married-man)
+        (eq? (with-access::married-woman woman (mate) mate) man)
+        (eq? (with-access::married-man man (mate) mate) woman)))
 @end smalllisp
 
 Now let us study the life a @code{Junior} @code{Jones} and
@@ -715,11 +603,10 @@ Unfortunately all days are not happy days. After having been married
        (error "divorce!"
               "Illegal divorce"
               (cons woman man))
-       (let ((mname (married-woman-maiden-name 
-                      woman)))
+       (with-access::married-woman woman (maiden-name)
           (begin
              (shrink! woman)
-             (person-name-set! woman mname))
+             (set! (-> woman name) maiden-name))
           (shrink! man))))
 
 (divorce! *pamela* *junior*)
@@ -1015,10 +902,6 @@ field. The second value denotes the initial values of the fields. For instance:
 
 Produces
   @print{} #|POINT [X: 10] [Y: 23] [Z: 3 3 3 3 3]|
-@end deffn
-
-@deffn {bigloo procedure} class-nil class
-Returns the NIL creator for @var{class}.
 @end deffn
 
 @deffn {bigloo procedure} class-predicate class
