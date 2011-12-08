@@ -7,6 +7,9 @@ repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
 bglconfigureopt=$1
 
+bglpcre=libpcre3
+bglpcredev=libpcre3-dev
+
 if [ "$REPODIR " != " " ]; then
   repodir=$REPODIR;
 fi
@@ -53,15 +56,23 @@ for p in control rules postinst changelog; do
       | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
       | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
       | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
+      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
+      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
       > debian/$p
   elif [ -f $basedir/$p.$pkg ]; then
     cat $basedir/$p.$pkg \
       | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
-      | sed -e "s|@BGLPREFIX@|$bglprefix|g" > debian/$p
+      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
+      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
+      | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
+      > debian/$p
   elif [ -f $basedir/$p ]; then
     cat $basedir/$p \
       | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
-      | sed -e "s|@BGLPREFIX@|$bglprefix|g" > debian/$p
+      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
+      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
+      | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
+      > debian/$p
   fi
 done
 
