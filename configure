@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec  8 19:29:35 2011 (serrano)                */
+#*    Last change :  Fri Dec  9 11:43:41 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1991,7 +1991,6 @@ cat runtime/Unsafe/$regexp.scm >>  runtime/Unsafe/regexp.scm
 
 if [ -f runtime/objs/obj_u/Unsafe/$regexp.c ]; then
   cp runtime/objs/obj_u/Unsafe/$regexp.c regexp.c;
-  cp runtime/objs/obj_s/Unsafe/$regexp.c regexp.c;
 fi
 
 featureflags="-srfi enable-$regexp"

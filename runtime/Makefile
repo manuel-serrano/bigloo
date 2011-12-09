@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Dec  9 11:36:06 2011 (serrano)                */
+#*    Last change :  Fri Dec  9 11:44:08 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -303,6 +303,8 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 #*---------------------------------------------------------------------*/
 C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
                   $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c) \
+		  objs/$(OBJDIR_SYS)/Unsafe/pregexp.c \
+		  objs/$(OBJDIR_SYS)/Unsafe/pcre.c \
 		  objs/$(OBJDIR_SYS)/Unsafe/regexp.c
 
 #*---------------------------------------------------------------------*/
