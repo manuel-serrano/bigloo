@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 22 12:11:43 2002                          */
-;*    Last change :  Mon Oct 31 15:39:54 2005 (serrano)                */
-;*    Copyright   :  2002-05 Manuel Serrano                            */
+;*    Last change :  Fri Dec  9 11:13:40 2011 (serrano)                */
+;*    Copyright   :  2002-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bdl constructor                                                  */
 ;*=====================================================================*/
@@ -73,20 +73,20 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (make-new-sans-bind type . args)
    (let ((id (symbol-append 'new- type))
-	 (id? (symbol-append 'bdl- type '?))
+	 (id? (symbol-append 'bdl- type ))
 	 (make-id (symbol-append 'make- type))
 	 (inst (symbol-append 'instantiate (string->symbol "::") 'bdl- type))
 	 (tmp (gensym 'tmp)))
       `(begin
 	  (define (,id ,@args)
 	     (let ((,tmp (,make-id ,@args)))
-		(if (,id? ,tmp)
+		(if (isa? ,tmp ,id? )
 		    ,tmp
 		    (bdl-error ,id
-			       (string-append
-				"Illegal instantiation, result not a "
-				,(symbol->string type))
-			       ,tmp))))
+		       (string-append
+			  "Illegal instantiation, result not a "
+			  ,(symbol->string type))
+		       ,tmp))))
 	  (define (,make-id ,@args)
 	     (,inst ,@(map (lambda (a) (list a a)) args))))))
 
@@ -95,67 +95,67 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (make-new type . args)
    (let ((id (symbol-append 'new- type))
-	 (id? (symbol-append 'bdl- type '?))
+	 (id? (symbol-append 'bdl- type ))
 	 (make-id (symbol-append 'make- type))
 	 (inst (symbol-append 'instantiate (string->symbol "::") 'bdl- type))
 	 (tmp (gensym 'tmp))
 	 (find-id (symbol-append 'find-bdl- type))
 	 (get-id (symbol-append 'get-bdl- type
-				(let* ((s (symbol->string type))
-				       (l (string-length s)))
-				   (if (char=? (string-ref s (-fx l 1)) #\s)
-				       'es
-				       's))))
-	 (env (symbol-append 'bdl-program- type 's)))
+		    (let* ((s (symbol->string type))
+			   (l (string-length s)))
+		       (if (char=? (string-ref s (-fx l 1)) #\s)
+			   'es
+			   's))))
+	 (env (symbol-append type 's)))
       `(begin
-	  (define (,find-id prgm obj) (hashtable-get (,env prgm) obj))
+	  (define (,find-id prgm::bdl-program obj) (hashtable-get (-> prgm ,env ) obj))
 	  (define (,id prgm ,@args)
-	     (let ((,tmp (,make-id ,@args)))
-		(if (,id? ,tmp)
+	     (let ((,(symbol-append tmp '::bdl-entity) (,make-id ,@args)))
+		(if (isa?  ,tmp ,id?)
 		    (begin
-		       (hashtable-put! (,env prgm) (bdl-entity-ident ,tmp) ,tmp)
+		       (hashtable-put! (-> prgm ,env) (-> ,tmp ident ) ,tmp)
 		       ,tmp)
 		    (bdl-error ,id
-			       (string-append
-				"Illegal instantiation, result not a "
-				,(symbol->string type))
-			       ,tmp))))
+		       (string-append
+			  "Illegal instantiation, result not a "
+			  ,(symbol->string type))
+		       ,tmp))))
 	  (define (,make-id ,@args)
 	     (,inst ,@(map (lambda (a) (list a a)) args)))
-	  (define (,get-id prgm)
-	     (hashtable->list (,env prgm))))))
+	  (define (,get-id prgm::bdl-program)
+	     (hashtable->list (-> prgm ,env ))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-bdl-ident ...                                               */
 ;*    -------------------------------------------------------------    */
 ;*    Find the exact match of an identifier in all the environments.   */
 ;*---------------------------------------------------------------------*/
-(define (find-bdl-ident prgm ident)
+(define (find-bdl-ident prgm::bdl-program ident)
    (apply append
-	  (map (lambda (e)
-		  (or (hashtable-get e ident) '()))
-	       (bdl-program-hashtables prgm))))
+      (map (lambda (e)
+	      (or (hashtable-get e ident) '()))
+	 (-> prgm hashtables))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-bdl-regexp-ident ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    Find all objects whose identifier match the regular expression.  */
 ;*---------------------------------------------------------------------*/
-(define (find-bdl-regexp-ident prgm regexp)
+(define (find-bdl-regexp-ident prgm::bdl-program regexp)
    (define (find-regexp-ident-env env)
       (let ((res '()))
 	 (hashtable-for-each env
-			     (lambda (key obj)
-				(if (pregexp-match regexp key)
-				    (set! res (cons obj res)))))
+	    (lambda (key obj)
+	       (if (pregexp-match regexp key)
+		   (set! res (cons obj res)))))
 	 res))
-   (apply append (map find-regexp-ident-env (bdl-program-hashtables prgm))))
+   (apply append (map find-regexp-ident-env (-> prgm hashtables))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-bdl-files ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (get-bdl-files prgm)
-   (bdl-program-files prgm))
+(define (get-bdl-files prgm::bdl-program)
+   (-> prgm files))
 
 ;*---------------------------------------------------------------------*/
 ;*    Constructors                                                     */

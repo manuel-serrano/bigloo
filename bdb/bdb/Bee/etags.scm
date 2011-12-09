@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 29 09:18:33 1999                          */
-;*    Last change :  Fri Aug 11 14:59:51 2006 (serrano)                */
+;*    Last change :  Fri Dec  9 11:11:28 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The debugger tries to load the etags file for the project in     */
 ;*    order to be able to do some eager demangling. This is important  */
@@ -43,16 +43,18 @@
 		(read-etags! prgm '()))
 	     (verbose 4 #"done.\n"))
 	  (error 'read-etags-file
-		 (format "Can't find .etags file in path ~a, please generate one with bgltags"
-			 *etags* (list "." *root-directory*))
-		 *etags*))))
+	     (format "Can't find .etags file in path ~a, please generate one with bgltags"
+		*etags* (list "." *root-directory*))
+	     *etags*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-symbol-etags-source-location ...                          */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-symbol-etags-source-location id)
    (let ((e (find-bdl-ident *prgm* id)))
-      (if (bdl-entity? e)
-	  (with-access::bdl-location (bdl-entity-loc e) (file line)
-	     (string-append file ":" (integer->string line)))
+      (if (isa? e bdl-entity)
+          (let ((e::bdl-entity e))
+	     (with-access::bdl-location (-> e loc) (file line)
+		(string-append file ":" 
+		   (integer->string line))))
 	  #f)))

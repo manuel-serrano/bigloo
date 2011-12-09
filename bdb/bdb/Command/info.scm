@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 28 12:51:32 1999                          */
-;*    Last change :  Sat Jan 27 15:51:07 2001 (serrano)                */
+;*    Last change :  Fri Dec  9 11:12:16 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The info command and sub-commands.                               */
 ;*=====================================================================*/
@@ -149,13 +149,14 @@
        (console-newline))
       ((?id . ?rest)
        (let ((cmd (find-command id env)))
-	  (if (not (command? cmd))
+	  (if (not (isa? cmd command))
 	      ;; if we do not override the command, simply calls gdb
 	      (console-echo (gdb-call->string source))
-	      ((command-parser cmd) rest
-				    source
-				    (+fx level 1)
-				    (command-env cmd)))))))
+	      (let ((cmd::command cmd))
+		 ((-> cmd parser) rest
+				  source
+				  (+fx level 1)
+				  (-> cmd env ))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    info-stack-parser ...                                            */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  8 10:23:12 1999                          */
-;*    Last change :  Fri Nov  5 15:59:59 2004 (serrano)                */
-;*    Copyright   :  2000-04 Manuel Serrano                            */
+;*    Last change :  Fri Dec  9 11:13:58 2011 (serrano)                */
+;*    Copyright   :  2000-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The grammar parsing the etags file entries.                      */
 ;*=====================================================================*/
@@ -95,16 +95,16 @@
 		      (cond
 			 ((eof-object? entry)
 			  (sort modules
-				(lambda (l r)
-				   (string>?
-				    (bdl-module-ident l)
-				    (bdl-module-ident r)))))
-			 ((not (bdl-module? entry))
+			     (lambda (l::bdl-module r::bdl-module)
+				(string>?
+				   (-> l ident )
+				   (-> r ident)))))
+			 ((not (isa?  entry bdl-module))
 			  (loop (read-etags-file-entry prgm port mods)
-				modules))
+			     modules))
 			 (else
 			  (loop (read-etags-file-entry prgm port mods)
-				(cons entry modules))))))
+			     (cons entry modules))))))
 		(close-input-port port))))))
 
 ;*---------------------------------------------------------------------*/
@@ -183,10 +183,10 @@
 ;*    read-etags-module ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (read-etags-module prgm port fname mod::bstring)
-   (let ((minfo (new-module prgm
-			    mod
-			    (list fname)
-			    (new-location fname 1))))
+   (let ((minfo::bdl-module (new-module prgm
+			       mod
+			       (list fname)
+			       (new-location fname 1))))
       (let loop ((line      (read-line port))
 		 (fundef    '())
 		 (vardef    '())
@@ -197,13 +197,13 @@
 		 (macrodef  '()))
 	 (if (or (eof-object? line) (string=? line ""))
 	     (begin
-		(bdl-module-functions-set! minfo (reverse! fundef))
-		(bdl-module-variables-set! minfo (reverse! vardef))
-		(bdl-module-classes-set! minfo (reverse! classdef))
-		(bdl-module-methods-set! minfo (reverse! metdef))
-		(bdl-module-structures-set! minfo (reverse! structdef))
-		(bdl-module-externs-set! minfo (reverse! externdef))
-		(bdl-module-macros-set! minfo (reverse! macrodef))
+		(set! (-> minfo functions) (reverse! fundef))
+		(set! (-> minfo variables) (reverse! vardef))
+		(set! (-> minfo classes) (reverse! classdef))
+		(set! (-> minfo methods) (reverse! metdef))
+		(set! (-> minfo structures) (reverse! structdef))
+		(set! (-> minfo externs)  (reverse! externdef))
+		(set! (-> minfo macros) (reverse! macrodef))
 		minfo)
 	     (match-case (parse-etags-entry-line line)
 		((define (?name ?line))
@@ -211,47 +211,47 @@
 		    (parse-string-id name "obj")
 		    ;; a function definition
 		    (loop (read-line port)
-			  (cons (new-function prgm
-					      name
-					      minfo
-					      (new-location fname line))
-				fundef)
-			  vardef
-			  metdef
-			  classdef
-			  structdef
-			  externdef
-			  macrodef)))
-		((define ?name ?line)
-		 (multiple-value-bind (name type)
-		    (parse-string-id name "obj")
-		    ;; a variable definition
-		    (loop (read-line port)
-			  fundef
-			  (cons (new-variable prgm
-					      name
-					      minfo
-					      (new-location fname line))
-				vardef)
-			  metdef
-			  classdef
-			  structdef
-			  externdef
-			  macrodef)))
-		((define-generic (?name ?line))
-		 ;; a generic function definition
-		 (loop (read-line port)
-		       (cons (new-generic prgm
-					  name
-					  minfo
-					  (new-location fname line))
-			     fundef)
+		       (cons (new-function prgm
+				name
+				minfo
+				(new-location fname line))
+			  fundef)
 		       vardef
 		       metdef
 		       classdef
 		       structdef
 		       externdef
-		       macrodef))
+		       macrodef)))
+		((define ?name ?line)
+		 (multiple-value-bind (name type)
+		    (parse-string-id name "obj")
+		    ;; a variable definition
+		    (loop (read-line port)
+		       fundef
+		       (cons (new-variable prgm
+				name
+				minfo
+				(new-location fname line))
+			  vardef)
+		       metdef
+		       classdef
+		       structdef
+		       externdef
+		       macrodef)))
+		((define-generic (?name ?line))
+		 ;; a generic function definition
+		 (loop (read-line port)
+		    (cons (new-generic prgm
+			     name
+			     minfo
+			     (new-location fname line))
+		       fundef)
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    externdef
+		    macrodef))
 		((define-method (?id ?arg ?line))
 		 ;; a method function definition
 		 (multiple-value-bind (name rtype)
@@ -259,146 +259,146 @@
 		    (multiple-value-bind (- type)
 		       (parse-string-id arg "obj")
 		       (let ((met (new-method prgm
-					      name
-					      minfo
-					      (new-location fname line)
-					      type
-					      rtype)))
+				     name
+				     minfo
+				     (new-location fname line)
+				     type
+				     rtype)))
 			  (loop (read-line port)
-				fundef
-				vardef
-				(cons met metdef)
-				classdef
-				structdef
-				externdef
-				macrodef)))))
+			     fundef
+			     vardef
+			     (cons met metdef)
+			     classdef
+			     structdef
+			     externdef
+			     macrodef)))))
 		((class ?id ?line)
 		 (multiple-value-bind (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)
-			  fundef
-			  vardef
-			  metdef
-			  (cons (new-class prgm
-					   name
-					   minfo
-					   (new-location fname line)
-					   (find-bdl-class prgm type)
-					   'plain)
-				classdef)
-			  structdef
-			  externdef
-			  macrodef)))
+		       fundef
+		       vardef
+		       metdef
+		       (cons (new-class prgm
+				name
+				minfo
+				(new-location fname line)
+				(find-bdl-class prgm type)
+				'plain)
+			  classdef)
+		       structdef
+		       externdef
+		       macrodef)))
 		((wide-class ?id ?line)
 		 (multiple-value-bind (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)
-			  fundef
-			  vardef
-			  metdef
-			  (cons (new-class prgm
-					   name
-					   minfo
-					   (new-location fname line)
-					   (find-bdl-class prgm type)
-					   'wide)
-				classdef)
-			  structdef
-			  externdef
-			  macrodef)))
+		       fundef
+		       vardef
+		       metdef
+		       (cons (new-class prgm
+				name
+				minfo
+				(new-location fname line)
+				(find-bdl-class prgm type)
+				'wide)
+			  classdef)
+		       structdef
+		       externdef
+		       macrodef)))
 		((final-class ?id ?line)
 		 (multiple-value-bind (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)
-			  fundef
-			  vardef
-			  metdef
-			  (cons (new-class prgm
-					   name
-					   minfo
-					   (new-location fname line)
-					   (find-bdl-class prgm type)
-					   'final)
-				classdef)
-			  structdef
-			  externdef
-			  macrodef)))
+		       fundef
+		       vardef
+		       metdef
+		       (cons (new-class prgm
+				name
+				minfo
+				(new-location fname line)
+				(find-bdl-class prgm type)
+				'final)
+			  classdef)
+		       structdef
+		       externdef
+		       macrodef)))
 		((define-struct ?name ?line)
 		 ;; a struct definition
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       (cons (new-structure prgm
-					    name
-					    minfo
-					    (new-location fname line))
-			     structdef)
-		       externdef
-		       macrodef))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    (cons (new-structure prgm
+			     name
+			     minfo
+			     (new-location fname line))
+		       structdef)
+		    externdef
+		    macrodef))
 		((extern ?name ?line)
 		 ;; an extern definition
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       structdef
-		       (cons (new-extern prgm
-					 name
-					 minfo
-					 (new-location fname line))
-			     externdef)
-		       macrodef))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    (cons (new-extern prgm
+			     name
+			     minfo
+			     (new-location fname line))
+		       externdef)
+		    macrodef))
 		((define-macro (?name ?line))
 		 ;; a macro definition
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       structdef
-		       externdef
-		       (cons (new-macro prgm
-					name
-					minfo
-					(new-location fname line))
-			     macrodef)))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    externdef
+		    (cons (new-macro prgm
+			     name
+			     minfo
+			     (new-location fname line))
+		       macrodef)))
 		((module ?name ?line)
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       structdef
-		       externdef
-		       macrodef))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    externdef
+		    macrodef))
 		((ignore)
 		 ;; an entry to be ignored
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       structdef
-		       externdef
-		       macrodef))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    externdef
+		    macrodef))
 		(else
 		 (bdl-error "read-etags-file-entry"
-			    "Illegal entry format (illegal line)"
-			    line)
+		    "Illegal entry format (illegal line)"
+		    line)
 		 (loop (read-line port)
-		       fundef
-		       vardef
-		       metdef
-		       classdef
-		       structdef
-		       externdef
-		       macrodef)))))))
+		    fundef
+		    vardef
+		    metdef
+		    classdef
+		    structdef
+		    externdef
+		    macrodef)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-etags-entry-line ...                                       */

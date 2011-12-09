@@ -60,7 +60,7 @@
 ;*    bind-sub-command! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bind-sub-command! main name abbrev-len parser help)
-   (if (not (command? main))
+   (if (not (isa?  main command))
        ;; this is an internal error, thus no need to call bdb-error
        (error "bind-sub-command!" "Illegal command" main)
        (let ((new (instantiate::command

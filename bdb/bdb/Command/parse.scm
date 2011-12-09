@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 27 10:10:53 1999                          */
-;*    Last change :  Sun Jul 30 08:57:22 2006 (serrano)                */
+;*    Last change :  Fri Dec  9 11:12:39 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The command parser                                               */
 ;*=====================================================================*/
@@ -37,16 +37,16 @@
 (define (command-parse cmd-list::pair source::bstring)
    (let* ((env        (toplevel-command-env))
 	  (sub-cmd-id (car cmd-list))
-	  (sub-cmd    (find-command sub-cmd-id env)))
-      (if (not (command? sub-cmd))
+	  (sub-cmd::command    (find-command sub-cmd-id env)))
+      (if (not (isa? sub-cmd command))
 	  ;; unknown command are simply pass to gdb without filtering
 	  (begin 
 	     (gdb-enable-print!)
 	     (console-echo (gdb-call->string source)))
-	  ((command-parser sub-cmd) (cdr cmd-list)
-				    source
-				    1
-				    (command-env sub-cmd)))))
+	  ((-> sub-cmd parser ) (cdr cmd-list)
+				source
+				1
+				(-> sub-cmd env)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-parse ...                                                */
@@ -61,13 +61,13 @@
 	  ;; intercepted by a sub command parser
 	  'nop
 	  (let* ((sub-cmd-id (car cmd-list))
-		 (sub-cmd    (find-command sub-cmd-id env)))
-	     (if (not (command? sub-cmd))
+		 (sub-cmd::command    (find-command sub-cmd-id env)))
+	     (if (not (isa? sub-cmd command))
 		 (parse-error "Unknown command" sub-cmd-id source level)
-		 ((command-parser sub-cmd) (cdr cmd-list)
-					   source
-					   (+fx level 1)
-					   (command-env sub-cmd)))))))
+		 ((-> sub-cmd parser ) (cdr cmd-list)
+				       source
+				       (+fx level 1)
+				       (-> sub-cmd env)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-stop-parse ...                                              */
@@ -89,8 +89,8 @@
    (let* ((len  (find-pattern pattern source err-level))
 	  (sstr (if (>fx len 0)
 		    (fix-tabulation! len
-				     source
-				     (make-string len #\space))
+		       source
+		       (make-string len #\space))
 		    "")))
       (console-error (string-append "#" source #"\n#" sstr #"^\n"))))
 

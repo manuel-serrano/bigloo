@@ -712,29 +712,29 @@ with a backslash.
  @result{} ("a lot")
 
 (pregexp-match "(?x:
-   a \\ man  \\; \\   ; ignore
-   a \\ plan \\; \\   ; me
-   a \\ canal         ; completely
+   a \\ man  \\; \\   # ignore
+   a \\ plan \\; \\   # me
+   a \\ canal         # completely
    )" 
  "a man; a plan; a canal")
  @result{} ("a man; a plan; a canal")
 @end smalllisp
 
-@noindent The global variable @code{*pregexp-comment-char*}
-contains the comment character (@code{#\;}).  
-For Perl-like comments,  
-
-@smalllisp
-(set! *pregexp-comment-char* #\#)
-@end smalllisp
+@c  @noindent The global variable*}ode{*pregexp-comment-char*}         @c
+@c  contains the comment character (@code{#\;}).                       @c
+@c  For Perl-like comments,                                            @c
+@c                                                                     @c
+@c  @smalllisp                                                         @c
+@c  (set! *pregexp-comment-char* #\#)                                  @c
+@c  @end smalllisp                                                     @c
 
 You can put more than one modifier in the cloister.
 
 @smalllisp
 (pregexp-match "(?ix:
-   a \\ man  \\; \\   ; ignore
-   a \\ plan \\; \\   ; me
-   a \\ canal         ; completely
+   a \\ man  \\; \\   # ignore
+   a \\ plan \\; \\   # me
+   a \\ canal         # completely
    )" 
  "A Man; a Plan; a Canal")
  @result{} ("A Man; a Plan; a Canal")

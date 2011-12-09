@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  3 09:10:58 1999                          */
-;*    Last change :  Wed Aug  9 09:26:41 2000 (serrano)                */
+;*    Last change :  Fri Dec  9 11:12:52 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The set command                                                  */
 ;*=====================================================================*/
@@ -70,17 +70,18 @@
       (()
        (console-echo (gdb-call->string source))
        (console-echo (string-append "mode: The Bdb mode is "
-				    (symbol->string *bdb-mode*)))
+			(symbol->string *bdb-mode*)))
        (console-newline))
       ((?id . ?rest)
        (let ((cmd (find-command id env)))
-	  (if (not (command? cmd))
+	  (if (not (isa? cmd command))
 	      ;; if we do not override the command, simply calls gdb
 	      (console-echo (gdb-call->string source))
-	      ((command-parser cmd) rest
-				    source
-				    (+fx level 1)
-				    (command-env cmd)))))))
+	      (let ((cmd::command cmd))
+		 ((-> cmd parser) rest
+				  source
+				  (+fx level 1)
+				  (-> cmd env))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-parser ...                                                   */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 27 11:40:27 1999                          */
-;*    Last change :  Wed Aug  9 09:25:59 2000 (serrano)                */
+;*    Last change :  Fri Dec  9 11:12:03 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The help command (it is really necessary to bother with it...).  */
 ;*=====================================================================*/
@@ -75,20 +75,20 @@
       (if (null? cmd-list)
 	  (help)
 	  (let* ((sub-cmd-id (car cmd-list))
-		 (sub-cmd    (find-command sub-cmd-id env)))
-	     (if (not (command? sub-cmd))
+		 (sub-cmd::command (find-command sub-cmd-id env)))
+	     (if (not (isa? sub-cmd command))
 		 (gdb-help-callback source)
 		 (loop (cdr cmd-list)
 		       (sub-help-command sub-cmd)
-		       (command-env sub-cmd)
+		       (-> sub-cmd env)
 		       (+fx err-level 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    The help command                                                 */
 ;*---------------------------------------------------------------------*/
 (bind-toplevel-command! "help"
-			1
-			help-command-parse
-			"Print list of commands.")
+   1
+   help-command-parse
+   "Print list of commands.")
 			   
 	   

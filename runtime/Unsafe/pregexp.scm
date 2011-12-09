@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Fri Dec  9 07:56:23 2011 (serrano)                */
+;*    Last change :  Fri Dec  9 11:09:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -101,7 +101,7 @@
 
 (define *pregexp-version* 20050502) ;last change
 
-(define *pregexp-comment-char* #\;)
+(define *pregexp-comment-char* #\#)
 
 (define *pregexp-nul-char-int*
   ;can't assume #\nul maps to 0 because of Scsh

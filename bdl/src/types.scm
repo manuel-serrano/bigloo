@@ -36,17 +36,17 @@
 	      (externs read-only (default (make-hashtable)))
 	      ;; a virtual slots for getting all the hashtables
 	      (hashtables read-only
-			  (get (lambda (p)
-				  (list (bdl-program-modules p)
-					(bdl-program-functions p)
-					(bdl-program-generics p)
-					(bdl-program-methods p)
-					(bdl-program-macros p)
-					(bdl-program-variables p)
-					(bdl-program-types p)
-					(bdl-program-classs p)
-					(bdl-program-structures p)
-					(bdl-program-externs p))))))
+			  (get (lambda (p::bdl-program)
+				  (list (-> p modules)
+					(-> p functions)
+					(-> p generics)
+					(-> p methods)
+					(-> p macros )
+					(-> p variables)
+					(-> p types)
+					(-> p classs)
+					(-> p structures)
+					(-> p externs))))))
 	   
 	   ;; a general Bdl entity
 	   (abstract-class bdl-entity
@@ -111,7 +111,5 @@
 	   
 	   ;; an external (foreign) binding
 	   (class bdl-extern::bdl-binding)))
-
-
 
 

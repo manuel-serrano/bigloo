@@ -259,7 +259,7 @@
 ;* 	       "___"))                                                 */
    (if (or *gdb-annotate-reg-breakpoint?*
 	   (and (not *bdb-gui-host?*)
-		(stack-frame? *gdb-annotate-reg-stack-frame*)
+		(isa? *gdb-annotate-reg-stack-frame* stack-frame)
 		(and (not (equal? *gdb-annotate-reg-stack-frame-previous*
 				  *gdb-annotate-reg-stack-frame*))
 		     *gdb-annotate-reg-stack-frame-invalid?*
@@ -286,7 +286,7 @@
 ;*    gdb-annotate-running? ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (gdb-annotate-running?)
-   (stack-frame? *gdb-annotate-reg-stack-frame*))
+   (isa?  *gdb-annotate-reg-stack-frame* stack-frame))
 
 ;*---------------------------------------------------------------------*/
 ;*    gdb-annotate-current-function ...                                */
