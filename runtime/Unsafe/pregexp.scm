@@ -1,10 +1,11 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/pregexp.sch             */
+;*    serrano/prgm/project/bigloo/runtime/Unsafe/pregexp.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Dec  7 11:47:15 2011 (serrano)                */
+;*    Last change :  Fri Dec  9 07:56:23 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
+;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
 ;*    Dorai Sitaram                                                    */
 ;*    http://www.ccs.neu.edu/~dorai                                    */
@@ -12,21 +13,82 @@
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
-;*    directives                                                       */
+;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(directives
-   (extern
-      ($make-regexp::regexp (::bstring) "bgl_make_regexp")
-      (macro $regexp-preg::obj (::regexp) "BGL_REGEXP_PREG")
-      (macro $regexp-preg-set!::obj (::regexp ::obj) "BGL_REGEXP_PREG_SET"))
-   (java
-      (class foreign
-	 (method static $make-regexp::regexp (::bstring) "bgl_make_regexp")
-	 (method static $regexp-preg::obj (::regexp)
-	    "BGL_REGEXP_PREG")
-	 (method static $regexp-preg-set!::obj (::regexp ::obj)
-	    "BGL_REGEXP_PREG_SET"))))
-      
+(module __regexp
+   
+   (import  __error)
+   
+   (use     __type
+	    __bigloo
+	    __tvector
+	    __ucs2
+	    __dsssl
+	    __bexit
+	    __bignum
+	    __object
+	    __thread
+	    
+	    __r4_output_6_10_3
+	    
+	    __r4_numbers_6_5_fixnum
+	    __r4_numbers_6_5_flonum
+	    __r4_numbers_6_5
+	    __r4_equivalence_6_2
+	    __r4_vectors_6_8
+	    __r4_booleans_6_1
+	    __r4_characters_6_6
+	    __r4_symbols_6_4
+	    __r4_pairs_and_lists_6_3
+	    __r4_strings_6_7
+	    __r4_ports_6_10_1
+	    __r4_control_features_6_9
+
+	    __evenv)
+
+   (extern ($make-regexp::regexp (::bstring) "bgl_make_regexp")
+           (macro $regexp?::bool (::obj) "BGL_REGEXPP")
+           (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
+	   (macro $regexp-preg::obj (::regexp) "BGL_REGEXP_PREG")
+	   (macro $regexp-preg-set!::obj (::regexp ::obj) "BGL_REGEXP_PREG_SET"))
+   
+   (java   (class foreign
+	      (method static $make-regexp::regexp (::bstring)
+		 "bgl_make_regexp")
+	      (method static $regexp-preg::obj (::regexp)
+		 "BGL_REGEXP_PREG")
+	      (method static $regexp-preg-set!::obj (::regexp ::obj)
+		 "BGL_REGEXP_PREG_SET")
+	      (method static $regexp?::bool (::obj)
+		 "BGL_REGEXPP")
+	      (method static $regexp-pattern::bstring (::obj)
+		 "BGL_REGEXP_PAT")))
+ 
+   (export (inline regexp?::bool ::obj)
+	   (inline regexp-pattern::bstring ::regexp)
+	   (pregexp ::bstring)
+	   (pregexp-match-positions pat ::bstring . opt-args)
+	   (pregexp-match pat ::bstring . opt-args)
+	   (pregexp-replace::bstring pat ::bstring ins::bstring)
+	   (pregexp-split::pair-nil pat ::bstring)
+	   (pregexp-replace*::bstring pat ::bstring ins::bstring)
+	   (pregexp-quote::bstring ::bstring))
+
+   (option (set! *arithmetic-genericity* #f)
+           (set! *arithmetic-overflow* #f)))
+
+;*---------------------------------------------------------------------*/
+;*    regexp? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp? obj)
+   ($regexp? obj))
+
+;*---------------------------------------------------------------------*/
+;*    regexp-pattern ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (regexp-pattern re)
+   ($regexp-pattern re))
+
 (define (pregexp-error msg . opt)
    (error "pregexp" msg (if (pair? opt) (car opt) #unspecified)))
 
@@ -674,7 +736,7 @@
 (define pregexp
    (lambda (s)
       (let ((re ($make-regexp s)))
-	 ($regexp-preg-set! re (tree-copy (%pregexp s)))
+	 ($regexp-preg-set!  re (tree-copy (%pregexp s)))
 	 re)))
 
 (define %pregexp

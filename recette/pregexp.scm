@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Thu Dec  8 17:35:32 2011 (serrano)                */
+;*    Last change :  Fri Dec  9 09:35:43 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions test suit for Scheme                */
 ;*    Dorai Sitaram                                                    */

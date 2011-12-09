@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Fri Nov 18 16:02:47 2011 (serrano)                */
+;*    Last change :  Fri Dec  9 07:55:32 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -42,7 +42,7 @@
 	    __unicode
 	    __process
 	    __socket
- 	    __pregexp
+ 	    __regexp
 	    __date
 	    __custom
 	    __trace

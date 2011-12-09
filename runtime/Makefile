@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Dec  7 16:18:43 2011 (serrano)                */
+#*    Last change :  Fri Dec  9 08:03:10 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -180,7 +180,7 @@ C_SCM_R5RS	= $(R5RS:%=R5rs/%.c)
 #*---------------------------------------------------------------------*/
 LLIB		= bexit type bigloo object error struct os hash weakhash \
                   tvector bit binary foreign dsssl ucs2 weakptr \
-                  unicode process socket custom pregexp date \
+                  unicode process socket custom date \
                   param thread trace bconfigure mmap srfi4 module
 
 SCM_LLIB	= $(LLIB:%=Llib/%.scm)
@@ -238,10 +238,14 @@ C_SCM_READ	= $(READ:%=Read/%.c)
 #*---------------------------------------------------------------------*/
 UNSAFE		= intext hmac md5 crc16 sha1 sha2 gunzip tar kmp \
                   base64 bignumber aes rsa url http crc uuid ftp
-                
+
+REGEXP		= pregexp pcre regex
  
 SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.scm)
 C_SCM_UNSAFE	= $(UNSAFE:%=Unsafe/%.c)
+
+SCM_REGEXP	= $(REGEXP:%=Unsafe/%.scm)
+C_SCM_REGEXP	= $(REGEXP:%=Unsafe/%.c)
 
 #*---------------------------------------------------------------------*/
 #*    The Lalr compiler objects                                        */
@@ -261,7 +265,7 @@ SCM_SYS_SRC	= $(SCM_READ) $(SCM_RGC) $(SCM_PP) \
 #*---------------------------------------------------------------------*/
 #*    Src files                                                        */
 #*---------------------------------------------------------------------*/
-SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) \
+SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_REGEXP_SRC) \
                   $(C_CLIB) \
                   $(JAVA_JLIB:%/configure.java=) \
                   Mlib/mach_dep.c \
@@ -282,7 +286,8 @@ INCLUDE_FILE	= Include/bigloo.h
 OBJECTS		= $(C_CLIB:%.c=objs/$(OBJDIR_SYS)/%.o) \
                   objs/$(OBJDIR_SYS)/Mlib/mach_dep.o \
                   $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.o) \
-                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.o)
+                  $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.o) \
+		  objs/$(OBJDIR_SYS)/Unsafe/regexp.o
 
 GCSTDOBJECTS	= $(GCSTDOBJ:%.o=objs/$(OBJDIR_SYS)/%.o)
 
@@ -290,13 +295,8 @@ GCSTDOBJECTS	= $(GCSTDOBJ:%.o=objs/$(OBJDIR_SYS)/%.o)
 #*    JVM class files                                                  */
 #*---------------------------------------------------------------------*/
 CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
-                  $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.class)
-
-#*---------------------------------------------------------------------*/
-#*    JVM class files                                                  */
-#*---------------------------------------------------------------------*/
-JAS		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.jas) \
-                  $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.jas)
+                  $(SCM_USR_SRC:%.scm=objs/$(CLASSDIR_USR)/bigloo/runtime/%.class) \
+	          objs/$(CLASSDIR_SYS)/bigloo/runtime/Unsafe/regexp.class
 
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
@@ -311,7 +311,6 @@ POPULATION_SI	= $(SRC_FILES) \
                   Makefile \
                   Llib/make_lib.scm \
 		  Ieee/bignum.sch \
-                  Llib/pregexp.sch Llib/regex.sch Llib/pcre.sch \
 		  Lalr/lalr.sch \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \
@@ -495,6 +494,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip: $(CLASSES) class$(LIBQ)/jlib Jlib/confi
 	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
+		 bigloo/runtime/Unsafe/regexp.class \
                  bigloo/runtime/*/_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
@@ -504,45 +504,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBQ).zip: $(CLASSES) class$(LIBQ)/jlib Jlib/confi
 #*---------------------------------------------------------------------*/
 #*    Bigloo JAS libraries compilation                                 */
 #*---------------------------------------------------------------------*/
-.PHONY: lib-jas lib-jas_u lib-jas_p libs-jas jlib
-
-libs-jas:
-	@ $(MAKE) lib-jas_u
-	@ $(MAKE) lib-jas
-	@ $(MAKE) lib-jas_p
-
-lib-jas: includes
-	@ $(RM) -f $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a.old
-	@ if [ -f $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a ]; then \
-            mv $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a.old; \
-          fi
-	$(MAKE) one-lib-jas \
-                SCMCLASSSUFFIX="%.jas" \
-                BGLJFLAGS="$(BGLJFLAGS) -jast" \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BSAFEFLAGS)" \
-                CLASSDIR_USR=class_s CLASSDIR_SYS=class_u \
-                LIBQ=
-
-lib-jas_u: includes
-	$(MAKE) one-lib-jas \
-                SCMCLASSSUFFIX="%.jas" \
-                BGLJFLAGS="$(BGLJFLAGS) -jvmas" \
-                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEFLAGS)" \
-                CLASSDIR_USR=class_u CLASSDIR_SYS=class_u \
-                LIBQ=_u
-
-lib-jas_p: includes
-	$(MAKE) one-lib-jas \
-                SCMCLASSSUFFIX="%.jas" \
-                BGLJFLAGS="$(BGLJFLAGS) -jvmas" \
-                BFLAGS_SYS="$(BUNSAFEPFLAGS)" \
-                BFLAGS_USR="$(BUNSAFEPFLAGS)" \
-                CLASSDIR_USR=class_p CLASSDIR_SYS=class_p \
-                LIBQ=_p
-
-one-lib-jas: $(JAS)
+.PHONY: jlib
 
 class_s/jlib:
 	(cd Jlib && \
@@ -923,14 +885,14 @@ ude: $(AFILE) $(JFILE)
 #*---------------------------------------------------------------------*/
 afile: $(AFILE)
 $(AFILE):
-	$(AFILE_BIN) -o $(AFILE) $(SCM_USR_SRC) $(SCM_SYS_SRC)
+	$(AFILE_BIN) -o $(AFILE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm
 
 #*---------------------------------------------------------------------*/
 #*    $(JFILE)                                                         */
 #*---------------------------------------------------------------------*/
 jfile: $(JFILE)
 $(JFILE):
-	$(JFILE_BIN) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > $(JFILE)
+	$(JFILE_BIN) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm > $(JFILE)
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

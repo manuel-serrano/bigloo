@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Wed Jul 13 07:56:45 2011 (serrano)                */
+;*    Last change :  Fri Dec  9 07:55:54 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -35,7 +35,7 @@
 	    __unicode
 	    __process
 	    __socket
-	    __pregexp
+	    __regexp
 	    __date
 	    __thread
 	    __mmap

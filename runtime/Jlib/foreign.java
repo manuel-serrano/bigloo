@@ -4900,7 +4900,7 @@ public final class foreign
    }
 
    public static regexp bgl_make_regexp(byte[] pat) {
-      return new regexp(pat);
+      return new regexp(pat,false);
    }
    
    public static byte[] BGL_REGEXP_PAT(regexp o) {
@@ -4915,7 +4915,18 @@ public final class foreign
       o.preg = v;
       return o;
    }
+
+   public static regexp bgl_regcomp(byte[] pat) {
+      return new regexp(pat,true);
+   }
+
+   public static Object bgl_regmatch(regexp o, byte[] string, boolean stringp, int beg, int end) {
+      return o.match(new String(string, beg, end-beg), stringp, beg);
+   }
    
+   public static Object bgl_regfree(regexp o) {
+      return o;
+   }
    //////
    // INPUT
    //////
