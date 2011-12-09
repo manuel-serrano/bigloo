@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  9 11:51:50 2011 (serrano)                */
+#*    Last change :  Fri Dec  9 12:42:54 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1898,12 +1898,15 @@ fi
 #*    gstreamer                                                        */
 #*---------------------------------------------------------------------*/
 # find out the C library for gstreamer
+pkg="gstreamer-@VERSION@ gstreamer-base-@VERSION@ gstreamer-plugins-base-@VERSION@"
+
 if [ "$gstreamer " = " " ]; then
-   gstreamer=`$autoconf gstreamer --cflags="$cflags"` || exit 1;
+   gstreamer=`$autoconf gstreamer --cflags="$cflags" --pkg="$pkg"` || exit 1;
 fi
 
 if [ "$gstreamer " != " " ]; then
-  gstreamercflags=`pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer`
+  pkgv=`echo $pkg | sed "s/@VERSION@/$gstreamer/g"`
+  gstreamercflags="`pkg-config --cflags $pkgv`"
 
   if [ "gstreamercflags " = " " ]; then
     echo "*** ERROR: Cannot configure gstreamer, cflags are empty";
@@ -1912,15 +1915,18 @@ if [ "$gstreamer " != " " ]; then
   fi
 
   if [ "$gstreameraudio " = " " ]; then
-    gstreameraudio=`$autoconf gstreameraudio --cflags="$gstreamercflags $gstreamerlibs"` || exit 1;
+    pkgaudio="$pkgv gstreamer-audio-$gstreamer"
+    audioflags="`pkg-config --cflags --libs $pkgaudio`"
+
+    gstreameraudio=`$autoconf gstreameraudio --cflags="$audioflags"` || exit 1;
     if [ "$gstreameraudio " != " " ]; then
       gstaudio="#t"
       gsthaveaudio="1"
-      gstreamerlibs="`pkg-config --libs gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer` -lgstaudio-$gstreamer"
+      gstreamerlibs="`pkg-config --libs $pkgaudio`"
     else
       gstaudio="#f"
       gsthaveaudio="0"
-      gstreamerlibs=`pkg-config --libs gstreamer-$gstreamer`
+      gstreamerlibs=`pkg-config --libs $pkgv`
     fi
   fi
 fi

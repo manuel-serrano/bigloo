@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Mon Dec 13 13:46:03 2010 (serrano)                */
-#*    Copyright   :  2007-10 Manuel Serrano                            */
+#*    Last change :  Fri Dec  9 12:42:52 2011 (serrano)                */
+#*    Copyright   :  2007-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstream is available.                                   */
 #*=====================================================================*/
@@ -16,6 +16,7 @@
 cflags=
 gstversion=0.10
 pkgconfig=pkg-config
+pkg=
 
 #*---------------------------------------------------------------------*/
 #*    We parse the arguments                                           */
@@ -30,6 +31,9 @@ while : ; do
 
     --pkg-config=*|-pkg-config=*)
       pkgconfig="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --pkg=*|-pkg=*)
+      pkg="`echo $1 | sed 's/^[-a-z]*=//'`";;
 
     --gstversion=*|-gstversion=*)
       gstversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
@@ -47,10 +51,15 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    cflags                                                           */
 #*---------------------------------------------------------------------*/
-cflags=`pkg-config --cflags --libs gstreamer-$gstversion` > /dev/null
+pkgv=`echo $pkg | sed "s/@VERSION@/$gstversion/g"`
+
+cflags=`pkg-config --cflags --libs $pkgv` > /dev/null
 
 if [ $? != 0 ]; then
-  cflags=`pkg-config --cflags --libs gstreamer-0.10` > /dev/null
+  gstversion=0.10
+  pkgv=`echo $pkg | sed "s/@VERSION@/$gstversion/g"`
+
+  cflags=`pkg-config --cflags --libs $pkgv` > /dev/null
   if [ $? != 0 ]; then
     echo ""
     exit 0
@@ -75,6 +84,7 @@ fi
 cat > $file.c <<EOF
 #include <glib.h>
 #include <gst/gst.h>
+#include <gst/base/gstbasesink.h>
 
 GstElement *pipeline, *source, *parser, *decoder, *conv, *sink;
 
@@ -165,7 +175,7 @@ int main (int argc, char *argv[]) {
   g_print ("Deleting pipeline\n");
   gst_object_unref (GST_OBJECT (pipeline));
 
-  return 0;
+  return &gst_base_sink_set_sync != 0;
 }
 EOF
 

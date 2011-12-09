@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 11 08:05:48 2008                          */
-#*    Last change :  Sat Sep  5 06:36:38 2009 (serrano)                */
-#*    Copyright   :  2008-09 Manuel Serrano                            */
+#*    Last change :  Fri Dec  9 12:31:00 2011 (serrano)                */
+#*    Copyright   :  2008-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if gstreameraudio is available                             */
 #*=====================================================================*/
@@ -46,7 +46,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout -lgstaudio-$gstversion >/dev/null"
+compile="$CC $cflags $file.c -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
