@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Dec  9 08:03:10 2011 (serrano)                */
+#*    Last change :  Fri Dec  9 11:26:50 2011 (serrano)                */
 #*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -343,6 +343,7 @@ all-jvm: heap-jvm libs-jvm
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
+	cp Unsafe/pcre.scm Unsafe/regexp.scm
 	$(MAKE) DISTRIB=true dodistrib
 
 dodistrib: $(AFILE)
