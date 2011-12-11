@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Dec  9 12:42:54 2011 (serrano)                */
+#*    Last change :  Sun Dec 11 06:38:02 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -925,10 +925,6 @@ while : ; do
       echo "   --javashell=shell [should be sh or msdos (default sh)]" >&2;
       echo "   --native-default-backend" >&2;
       echo "   --jvm-default-backend" >&2;
-      echo "" >&2;
-      echo ".NET configuration:"  >&2;
-      echo "   --pnet (configure for GNU pnet)"  >&2;
-      echo "   --mono (configure for Ximian Mono)"  >&2;
       echo "" >&2;
       echo "Misc:"  >&2;
       echo "   --finalization=yes|no [default no]" >&2;
