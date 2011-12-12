@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Dec  5 19:52:17 2011 (serrano)                */
+;*    Last change :  Sun Dec 11 20:27:01 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -149,13 +149,13 @@
 		  (set! state 'play)))
 
 	    (define (abort st)
-	       (mutex-lock! %dmutex)
+	       (mutex-lock! %bmutex)
 	       (with-access::musicstatus %status (state)
 		  (set! state st))
 	       (set! %!bstate (if (eq? st 'ended) 4 3))
 	       (pcm-cleanup pcm)
-	       (condition-variable-broadcast! %dcondv)
-	       (mutex-unlock! %dmutex))
+	       (condition-variable-broadcast! %bcondv)
+	       (mutex-unlock! %bmutex))
 	    
 	    (let loop ()
 	       (when (>fx debug 1)

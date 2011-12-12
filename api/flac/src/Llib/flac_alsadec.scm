@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Nov 15 10:40:40 2011 (serrano)                */
+;*    Last change :  Sun Dec 11 20:23:11 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -227,7 +227,7 @@
 		  " %eof=" %eof " inlen=" inlen))
 	    (cond
 	       ((=fx %!bstate 3)
-		;; buffer sop, the buffer is done reading
+		;; buffer stop, the buffer is done reading
 		-1)
 	       ((=fx %!bstate 0)
 		;; buffer empty
