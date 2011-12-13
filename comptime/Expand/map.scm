@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Mon Apr 11 11:29:01 2011 (serrano)                */
+;*    Last change :  Tue Dec 13 14:36:30 2011 (serrano)                */
 ;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
@@ -13,16 +13,18 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module expand_map
-   (import tools_misc
-	   tools_error
-	   engine_param
-	   type_type
-	   ast_ident)
-   (export (expand-map      ::obj ::procedure)
-	   (expand-for-each ::obj ::procedure)
-	   (expand-any?     ::obj ::procedure)
-	   (expand-every?   ::obj ::procedure)
-	   (expand-reduce   ::obj ::procedure)))
+   (include "Tools/location.sch")
+   (import  tools_misc
+	    tools_error
+	    tools_location
+	    engine_param
+	    type_type
+	    ast_ident)
+   (export  (expand-map      ::obj ::procedure)
+	    (expand-for-each ::obj ::procedure)
+	    (expand-any?     ::obj ::procedure)
+	    (expand-every?   ::obj ::procedure)
+	    (expand-reduce   ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    epairify! ...                                                    */
@@ -43,7 +45,19 @@
        (inline-map-lambda? expr))
       (else
        #f)))
-      
+
+;*---------------------------------------------------------------------*/
+;*    list-expected ...                                                */
+;*---------------------------------------------------------------------*/
+(define (list-expected proc var loc)
+   (if (location? loc)
+       `((@ bigloo-type-error/location __error)
+	 ,proc "list" ,var
+	 ,(location-full-fname loc)
+	 ,(location-pos loc))
+       `((@ bigloo-type-error __error)
+	 ,proc "list" ,var)))
+
 ;*---------------------------------------------------------------------*/
 ;*    expand-map ...                                                   */
 ;*---------------------------------------------------------------------*/
@@ -58,6 +72,7 @@
 	      (head  (mark-symbol-non-user! (gensym 'head)))
 	      (tail  (mark-symbol-non-user! (gensym 'tail)))
 	      (ntail (mark-symbol-non-user! (gensym 'newtail)))
+	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
 			 `(let ((,l ,list))
 			     (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
@@ -113,10 +128,7 @@
 						  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 						   ,head)
 						  (else
-						   ((@ error __error)
-						    "map"
-						    "argument not a list"
-						    (typeof ,l)))))))
+						   ,(list-expected "map" l loc))))))
 				     (else
 				      `(let ((,head ((@ cons __r4_pairs_and_lists_6_3) '() '())))
 					  (let ,lname ((,l    ,l)
@@ -132,10 +144,7 @@
 						  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 						   ((@ cdr __r4_pairs_and_lists_6_3) ,head))
 						  (else
-						   ((@ error __error)
-						    "map"
-						    "argument not a list"
-						    (typeof ,l))))))))))))
+						   ,(list-expected "map" l loc)))))))))))
 	      (body (epairify-propagate loop x))
 	      (res (e body e)))
 	  (epairify! x res)))
@@ -145,7 +154,8 @@
 	      (head  (mark-symbol-non-user! (gensym 'head)))
 	      (tail  (mark-symbol-non-user! (gensym 'tail)))
 	      (ntail (mark-symbol-non-user! (gensym 'newtail)))
-	      (lfun   (mark-symbol-non-user! (gensym 'fun)))
+	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
+	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
 			      `(let ((,l ,list))
@@ -202,10 +212,7 @@
 						       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 							,head)
 						       (else
-							((@ error __error)
-							 "map"
-							 "argument not a list"
-							 (typeof ,l)))))))
+							,(list-expected "map" l loc))))))
 					  (else
 					   `(let ((,head ((@ cons __r4_pairs_and_lists_6_3) '() '())))
 					       (let ,lname ((,l    ,l)
@@ -221,10 +228,7 @@
 						       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 							((@ cdr __r4_pairs_and_lists_6_3) ,head))
 						       (else
-							((@ error __error)
-							 "map"
-							 "argument not a list"
-							 (typeof ,l)))))))))))))
+							,(list-expected "map" l loc))))))))))))
 	      (body (epairify-propagate loop x))
 	      (res (e body e)))
 	  (epairify! x res)))
@@ -234,7 +238,8 @@
 	     (head  (mark-symbol-non-user! (gensym 'head)))
 	     (tail  (mark-symbol-non-user! (gensym 'tail)))
 	     (ntail (mark-symbol-non-user! (gensym 'newtail)))
-	     (lname (mark-symbol-non-user! (gensym 'map))))
+	     (lname (mark-symbol-non-user! (gensym 'map)))
+	     (loc   (find-location x)))
 	  (let* ((body (epairify-propagate
 			`(let ((,ll1 ,l1)
 			       (,ll2 ,l2))
@@ -287,7 +292,8 @@
 	     (tail  (mark-symbol-non-user! (gensym 'tail)))
 	     (ntail (mark-symbol-non-user! (gensym 'newtail)))
 	     (lname (mark-symbol-non-user! (gensym 'map)))
-	     (lfun  (mark-symbol-non-user! (gensym 'fun))))
+	     (lfun  (mark-symbol-non-user! (gensym 'fun)))
+	     (loc   (find-location x)))
 	  (let* ((body (epairify-propagate
 			`(let ((,ll1 ,l1)
 			       (,ll2 ,l2)
@@ -351,6 +357,7 @@
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'for-each)))
+	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
 			 `(let ,lname ((,l ,list))
 			       (cond
@@ -367,15 +374,14 @@
 				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 				   #t)
 				  (else
-				   ((@ error __error) "for-each"
-						      "argument not a list"
-						      (typeof ,l))))))))
+				   ,(list-expected "for-each" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'for-each)))
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
+	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
 			      `(let ,lname ((,l ,list))
@@ -393,9 +399,7 @@
 				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 					#t)
 				       (else
-					((@ error __error) "for-each"
-							   "argument not a list"
-							   (typeof ,l)))))))))
+					,(list-expected "for-each" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- (and ?fun (? inline-map-lambda?)) ?l1 ?l2)
@@ -440,6 +444,7 @@
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'any)))
+	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
 			 `(let ,lname ((,l ,list))
 			       (cond
@@ -458,15 +463,14 @@
 				       #t
 				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))
 				  (else
-				   ((@ error __error) "any?"
-						      "argument not a list"
-						      (typeof ,l))))))))
+				   ,(list-expected "any?" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'any)))
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
+	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
 			      `(let ,lname ((,l ,list))
@@ -486,9 +490,7 @@
 					    #t
 					    (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))
 				       (else
-					((@ error __error) "any?"
-							   "argument not a list"
-							   (typeof ,l)))))))))
+					,(list-expected "any?" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
@@ -505,6 +507,7 @@
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
+	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
 			 `(let ,lname ((,l ,list))
 			       (cond
@@ -523,15 +526,14 @@
 				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
 				       #f))
 				  (else
-				   ((@ error __error) "every?"
-						      "argument not a list"
-						      (typeof ,l))))))))
+				   ,(list-expected "every?" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
+	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 (if *unsafe-type*
 			     `(let ,lname ((,l ,list))
@@ -551,9 +553,7 @@
 					   (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
 					   #f))
 				      (else
-				       ((@ error __error) "every?"
-							  "argument not a list"
-							  (typeof ,l)))))))))
+				       ,(list-expected "every?" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
