@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Dec 11 06:38:02 2011 (serrano)                */
+#*    Last change :  Wed Dec 14 08:11:44 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -178,6 +178,11 @@ mpg123cflags=
 flac=
 flaclibs=
 flaccflags=
+
+#*--- avahi (left blank for autoconfiguration) ------------------------*/
+avahi=
+avahilibs=
+avahicflags=
 
 #*--- regexp ----------------------------------------------------------*/
 regexp=
@@ -1998,6 +2003,17 @@ fi
 featureflags="-srfi enable-$regexp"
 
 #*---------------------------------------------------------------------*/
+#*    avahi                                                            */
+#*---------------------------------------------------------------------*/
+# find out the C library for avahi
+if [ "$avahi " = " " ]; then
+   avahilibs=`pkg-config --libs avahi-client`
+   avahicflags=`pkg-config --cflags avahi-client`
+
+   avahi=`$autoconf avahi --cflags="$avahicflags" --libs="$avahilibs"` || exit 1;
+fi
+
+#*---------------------------------------------------------------------*/
 #*    bigloo_config.h / configure.java / configure.cs / ...            */
 #*    -------------------------------------------------------------    */
 #*    This part of the configure script produces the files             */
@@ -3231,7 +3247,36 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     apis=$napis;
     echo "FLAC=" >> $makefile_cfg
     echo "FLACLIBS=" >> $makefile_cfg
-    echo "FLACFLAGS=" >> $makefile_cfg
+    echo "FLACCFLAGS=" >> $makefile_cfg
+  fi
+
+  # AVAHI
+  if [ "$avahilibs " != "no " ]; then
+    echo "AVAHI=$avahi" >> $makefile_cfg
+    echo "AVAHILIBS=$avahilibs" >> $makefile_cfg
+    echo "AVAHICFLAGS=$avahicflags" >> $makefile_cfg
+
+    # Patch the code of the AVAHI init file
+    echo ";; automatically generated. Don't edit" >  api/avahi/src/Misc/avahi.init
+    cat api/avahi/src/Misc/avahi.init.in \
+      | sed -e "s|@AVAHILIBS@|$avahilibs|g" \
+            -e "s|@AVAHICFLAGS@|$avahicflags|g" \
+      >>  api/avahi/src/Misc/avahi.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "avahi" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "AVAHI=" >> $makefile_cfg
+    echo "AVAHILIBS=" >> $makefile_cfg
+    echo "AVAHICFLAGS=" >> $makefile_cfg
   fi
 
   # DBUS

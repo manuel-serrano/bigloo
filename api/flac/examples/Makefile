@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Sep 21 19:03:06 2011 (serrano)                */
+#*    Last change :  Wed Dec 14 08:42:21 2011 (serrano)                */
 #*    Copyright   :  2002-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the flac examples                          */
@@ -55,7 +55,7 @@ distclean: clean
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .bgl .scm .o .class .obj
+.SUFFIXES: .bgl .scm .o .class
 
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
@@ -65,6 +65,3 @@ distclean: clean
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
-
-.scm.obj: $*.scm
-	$(BIGLOO) -c -dotnet -dotnet-managed $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.obj

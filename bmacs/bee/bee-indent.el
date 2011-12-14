@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Tue Jul 12 11:31:05 2011 (serrano)                */
+;*    Last change :  Wed Dec 14 09:42:56 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -614,15 +614,15 @@ of the start of the containing expression."
 (put 'or                        'bee-indent-hook -1)
 (put 'and                       'bee-indent-hook -1)
 (put 'else                      'bee-indent-hook -1)
-(put 'static                    'bee-indent-hook -1)
-(put 'import                    'bee-indent-hook -1)
-(put 'extern                    'bee-indent-hook -1)
-(put 'export                    'bee-indent-hook -1)
-(put 'include                   'bee-indent-hook -1)
-(put 'library                   'bee-indent-hook -1)
-(put 'use                       'bee-indent-hook -1)
-(put 'from                      'bee-indent-hook -1)
-(put 'pragma                    'bee-indent-hook -1)
+;* (put 'static                    'bee-indent-hook -1)                */
+;* (put 'import                    'bee-indent-hook -1)                */
+;* (put 'extern                    'bee-indent-hook -1)                */
+;* (put 'export                    'bee-indent-hook -1)                */
+;* (put 'include                   'bee-indent-hook -1)                */
+;* (put 'library                   'bee-indent-hook -1)                */
+;* (put 'use                       'bee-indent-hook -1)                */
+;* (put 'from                      'bee-indent-hook -1)                */
+;* (put 'pragma                    'bee-indent-hook -1)                */
 
 ;; binding forms
 (put 'let                       'bee-indent-hook 'bee-let-indent)
