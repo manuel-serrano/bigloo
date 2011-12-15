@@ -1,0 +1,3 @@
+This directory contains a binding to the Biglo AVAHI library.
+
+AVAHI is the Linux Zeroconf implementation, compatible with Apple's BONJOUR. 

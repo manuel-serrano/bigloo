@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Mon Nov  7 12:28:12 2011 (serrano)                */
+#*    Last change :  Thu Dec 15 21:08:36 2011 (serrano)                */
 #*    Copyright   :  2005-11 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -19,7 +19,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 DIRECTORIES= pthread fthread mail ssl web multimedia sqlite calendar \
              srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto \
-             openpgp phone alsa mpg123 flac
+             openpgp phone alsa mpg123 flac avahi
 
 #*---------------------------------------------------------------------*/
 #*    Booting on a bare system                                         */
