@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 31 07:37:29 1998                          */
-;*    Last change :  Wed Aug  2 09:22:41 2006 (serrano)                */
+;*    Last change :  Thu Dec 15 18:31:04 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo depend utility.                                       */
 ;*=====================================================================*/
@@ -551,6 +551,11 @@
 			  (if (pair? aux)
 			      (append aux res)
 			      res))))))
+	 ((cond-expand . ?eclauses)
+	  (append-map
+	     (lambda (c)
+		(find-imported-modules/clause (cadr c)))
+	     eclauses))
  	 ((extern . ?eclauses)
 	  ;; we only fetch external include clauses
  	  (let loop ((clauses eclauses)
