@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Sun May 30 08:00:46 2010 (serrano)                */
+;*    Last change :  Fri Dec 16 11:58:50 2011 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -32,7 +32,8 @@
 	    __r4_pairs_and_lists_6_3
 	    __r5_control_features_6_4
 	    
-	    __evenv)
+	    __evenv
+	    __evaluate)
    
    (extern  (macro c-procedure?::bool (::obj) "PROCEDUREP")
 	    (call-cc::obj (::procedure) "call_cc")
@@ -319,12 +320,14 @@
 ;*---------------------------------------------------------------------*/
 (define (call/cc proc)
    (call-cc (lambda (cont)
-	       (proc (lambda vals
-			(if (and (pair? vals) (null? (cdr vals)))
-			    (cont (car vals))
-			    (begin
-			       (%set-mvalues-number! -1)
-			       (cont vals))))))))
+	       (let ((evc (get-evaluation-context)))
+		  (proc (lambda vals
+			   (set-evaluation-context! evc)
+			   (if (and (pair? vals) (null? (cdr vals)))
+			       (cont (car vals))
+			       (begin
+				  (%set-mvalues-number! -1)
+				  (cont vals)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-with-current-continuation ...                               */

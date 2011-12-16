@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Dec  2 14:21:15 2011 (serrano)                */
+;*    Last change :  Fri Dec 16 11:57:48 2011 (serrano)                */
 ;*    Copyright   :  2010-11 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -63,8 +63,8 @@
 	    __evaluate_comp)
 
    (export  (evaluate2 sexp env loc)
-	    (get-evaluation-contexte)
-	    (set-evaluation-contexte! v)))
+	    (get-evaluation-context)
+	    (set-evaluation-context! v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
@@ -85,9 +85,9 @@
 	     (loop (+fx walker 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-evaluation-contexte ...                                      */
+;*    get-evaluation-context ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (get-evaluation-contexte)
+(define (get-evaluation-context)
    (let ( (s (find-state)) )
       (let ( (bp (vector-ref s 0)) )
 	 (let ( (r (make-vector bp "")) )
@@ -98,9 +98,9 @@
 	    r ))))
 
 ;*---------------------------------------------------------------------*/
-;*    set-evaluation-contexte! ...                                     */
+;*    set-evaluation-context! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (set-evaluation-contexte! v)
+(define (set-evaluation-context! v)
    (let ( (s (find-state)) )
       (let ( (bp (vector-ref v 0)) )
 	 (let rec ( (i 0) )
