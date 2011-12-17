@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 14 08:11:44 2011 (serrano)                */
+#*    Last change :  Sat Dec 17 07:16:50 2011 (serrano)                */
 #*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3251,8 +3251,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # AVAHI
-  if [ "$avahilibs " != "no " ]; then
-    echo "AVAHI=$avahi" >> $makefile_cfg
+  echo "AVAHI=$avahi" >> $makefile_cfg
+  if [ "$avahi " != "no " ]; then
     echo "AVAHILIBS=$avahilibs" >> $makefile_cfg
     echo "AVAHICFLAGS=$avahicflags" >> $makefile_cfg
 
@@ -3274,7 +3274,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        fi
     done
     apis=$napis;
-    echo "AVAHI=" >> $makefile_cfg
     echo "AVAHILIBS=" >> $makefile_cfg
     echo "AVAHICFLAGS=" >> $makefile_cfg
   fi
