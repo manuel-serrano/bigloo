@@ -493,4 +493,13 @@ extern union scmobj * an_object;
 #undef LONGJMP
 #define LONGJMP @LONGJMP@
 
+/*---------------------------------------------------------------------*/
+/*    BGL_ECONNEREST                                                   */
+/*---------------------------------------------------------------------*/
+#if( defined( WSAECONNRESET ) )
+#  define BGL_ECONNRESET WSAECONNRESET
+#else
+#  define BGL_ECONNRESET ECONNRESET
+#endif
+
 #endif

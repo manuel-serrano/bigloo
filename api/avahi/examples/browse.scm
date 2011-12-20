@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 14 14:28:34 2011                          */
-;*    Last change :  Wed Dec 14 17:53:29 2011 (serrano)                */
+;*    Last change :  Mon Dec 19 10:24:48 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Browse an AVAHI server mimicking the avahi-browse.c example.     */
@@ -20,15 +20,18 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main argv)
-   (let* ((type (if (pair? (cdr argv)) (cadr argv) "_printer._tcp"))
-	  (poll (instantiate::avahi-simple-poll))
+   (let* ((poll (instantiate::avahi-simple-poll))
 	  (client (instantiate::avahi-client
 		     (poll poll)
 		     (proc client-callback)))
-	  (sb (instantiate::avahi-service-browser
-		 (client client)
-		 (type type)
-		 (proc browser-callback))))
+	  (sb (if (pair? (cdr argv))
+		  (instantiate::avahi-service-browser
+		     (client client)
+		     (type (cadr argv))
+		     (proc service-browser-callback))
+		  (instantiate::avahi-service-type-browser
+		     (client client)
+		     (proc type-browser-callback)))))
       (avahi-simple-poll-loop poll)))
 
 ;*---------------------------------------------------------------------*/
@@ -39,12 +42,11 @@
       (avahi-simple-poll-quit (-> client poll))))
 
 ;*---------------------------------------------------------------------*/
-;*    browser-callback ...                                             */
+;*    service-browser-callback ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (browser-callback browser::avahi-service-browser
+(define (service-browser-callback browser::avahi-service-browser
 	   interface protocol event name type domain flags)
    (let ((client::avahi-client (-> browser client)))
-      (tprint "event=" event)
       (case event
 	 ((avahi-browser-failure)
 	  'todo)
@@ -58,6 +60,27 @@
 			     (domain domain)
 			     (proc resolver-callback))))
 	     resolver))
+	 ((avahi-browser-remove)
+	  'todo)
+	 ((avahi-browser-all-for-now avahi-browser-cache-exhausted)
+	  'todo)
+	 (else
+	  (fprintf (current-error-port) "Unknown browser event \"~a\"\n" event)))))
+   
+;*---------------------------------------------------------------------*/
+;*    type-browser-callback ...                                        */
+;*---------------------------------------------------------------------*/
+(define (type-browser-callback browser::avahi-service-type-browser
+	   interface protocol event type domain flags)
+   (let ((client::avahi-client (-> browser client)))
+      (case event
+	 ((avahi-browser-failure)
+	  'todo)
+	 ((avahi-browser-new)
+	  (instantiate::avahi-service-browser
+	     (client client)
+	     (type type)
+	     (proc service-browser-callback)))
 	 ((avahi-browser-remove)
 	  'todo)
 	 ((avahi-browser-all-for-now avahi-browser-cache-exhausted)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec  7 16:57:50 2011 (serrano)                */
+/*    Last change :  Tue Dec 20 09:17:06 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3022,7 +3022,7 @@ BGL_RUNTIME_DECL bool_t (*bgl_condvar_broadcast)( obj_t );
 
 BGL_RUNTIME_DECL obj_t bgl_open_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_string_to_mmap( obj_t, bool_t, bool_t );
-BGL_RUNTIME_DEF obj_t bgl_close_mmap( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_close_mmap( obj_t );
    
 #if !HAVE_MMAP   
 BGL_RUNTIME_DECL unsigned char bgl_mmap_nommap_ref( obj_t, long );
@@ -3060,6 +3060,10 @@ BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 
 BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 
+BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
+   
 #ifdef __cplusplus
 }
 #endif

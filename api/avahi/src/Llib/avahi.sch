@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Thu Dec 15 18:05:09 2011 (serrano)                */
+;*    Last change :  Mon Dec 19 10:19:14 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
@@ -244,16 +244,16 @@
 	 (::avahi-service-browser)
 	 "bgl_avahi_service_browser_close")
 
-      ;; avahi-service-resolver
-      (type $avahi-service-resolver void* "AvahiServiceResolver *")
-      (infix macro $avahi-service-resolver-nil::$avahi-service-resolver () "0L")
+      ;; avahi-service-type-browser
+      (type $avahi-service-type-browser void* "AvahiServiceTypeBrowser *")
+      (infix macro $avahi-service-type-browser-nil::$avahi-service-type-browser () "0L")
 
-      (macro $bgl-avahi-service-resolver-new::void
-	 (::avahi-service-resolver)
-	 "bgl_avahi_service_resolver_new")
-      (macro $bgl-avahi-service-resolver-close::void
-	 (::avahi-service-resolver)
-	 "bgl_avahi_service_resolver_close")
+      (macro $bgl-avahi-service-type-browser-new::void
+	 (::avahi-service-type-browser)
+	 "bgl_avahi_service_type_browser_new")
+      (macro $bgl-avahi-service-type-browser-close::void
+	 (::avahi-service-type-browser)
+	 "bgl_avahi_service-type_browser_close")
 
       ;; avahi-domain-browser
       (type $avahi-domain-browser void* "AvahiDomainBrowser *")
@@ -265,6 +265,18 @@
       (macro $bgl-avahi-domain-browser-close::void
 	 (::avahi-domain-browser)
 	 "bgl_avahi_domain_browser_close")
+
+
+      ;; avahi-service-resolver
+      (type $avahi-service-resolver void* "AvahiServiceResolver *")
+      (infix macro $avahi-service-resolver-nil::$avahi-service-resolver () "0L")
+
+      (macro $bgl-avahi-service-resolver-new::void
+	 (::avahi-service-resolver)
+	 "bgl_avahi_service_resolver_new")
+      (macro $bgl-avahi-service-resolver-close::void
+	 (::avahi-service-resolver)
+	 "bgl_avahi_service_resolver_close")
 
       (type $avahi-browser-event long "AvahiBrowserEvent")
       (macro $avahi-browser-new::$avahi-browser-event

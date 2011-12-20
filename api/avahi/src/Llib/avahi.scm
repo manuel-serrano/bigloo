@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Thu Dec 15 18:40:02 2011 (serrano)                */
+;*    Last change :  Mon Dec 19 10:17:39 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -102,6 +102,19 @@
 	 (type::bstring read-only)
 	 (domain::bstring read-only (default "")))
 
+      (class avahi-service-type-browser::avahi-object
+	 ($builtin::$avahi-service-type-browser read-only (default ($avahi-service-browser-nil)))
+	 (client::avahi-client read-only)
+	 (proc::procedure read-only)
+	 (domain::bstring read-only (default "")))
+
+      (class avahi-domain-browser::avahi-object
+	 ($builtin::$avahi-domain-browser read-only (default ($avahi-service-browser-nil)))
+	 (client::avahi-client read-only)
+	 (proc::procedure read-only)
+	 (btype::symbol read-only (default 'avahi-domain-browser-browse))
+	 (domain::bstring read-only (default "")))
+      
       (class avahi-service-resolver::avahi-object
 	 ($builtin::$avahi-service-resolver read-only (default ($avahi-service-resolver-nil)))
 	 (client::avahi-client read-only)
@@ -112,13 +125,6 @@
 	 (type::bstring read-only)
 	 (domain::bstring read-only (default "")))
 
-      (class avahi-domain-browser::avahi-object
-	 ($builtin::$avahi-domain-browser read-only (default ($avahi-service-browser-nil)))
-	 (client::avahi-client read-only)
-	 (proc::procedure read-only)
-	 (btype::symbol read-only (default 'avahi-domain-browser-browse))
-	 (domain::bstring read-only (default "")))
-      
       (generic avahi-init ::avahi-object)
       
       (avahi-error ::string ::string ::obj ::int)
@@ -402,20 +408,20 @@
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
-;*    avahi-init ::avahi-service-resolver ...                          */
+;*    avahi-init ::avahi-service-type-browser ...                      */
 ;*---------------------------------------------------------------------*/
-(define-method (avahi-init o::avahi-service-resolver)
-   (with-access::avahi-service-resolver o (proc)
-      (if (correct-arity? proc 12)
-	  ($bgl-avahi-service-resolver-new o)
-	  (avahi-error "avahi-service-resolver" "Illegal callback" proc
+(define-method (avahi-init o::avahi-service-type-browser)
+   (with-access::avahi-service-type-browser o (proc)
+      (if (correct-arity? proc 7)
+	  ($bgl-avahi-service-type-browser-new o)
+	  (avahi-error "avahi-service-type-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
 
 ;*---------------------------------------------------------------------*/
-;*    avahi-service-resolver-close ...                                 */
+;*    avahi-service-type-browser-close ...                             */
 ;*---------------------------------------------------------------------*/
-(define (avahi-service-resolver-close o::avahi-service-resolver)
-   ($bgl-avahi-service-resolver-close o)
+(define (avahi-service-type-browser-close o::avahi-service-type-browser)
+   ($bgl-avahi-service-type-browser-close o)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -433,6 +439,23 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-domain-browser-close o::avahi-domain-browser)
    ($bgl-avahi-domain-browser-close o)
+   #unspecified)
+   
+;*---------------------------------------------------------------------*/
+;*    avahi-init ::avahi-service-resolver ...                          */
+;*---------------------------------------------------------------------*/
+(define-method (avahi-init o::avahi-service-resolver)
+   (with-access::avahi-service-resolver o (proc)
+      (if (correct-arity? proc 12)
+	  ($bgl-avahi-service-resolver-new o)
+	  (avahi-error "avahi-service-resolver" "Illegal callback" proc
+	     $avahi-err-invalid-object))))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-service-resolver-close ...                                 */
+;*---------------------------------------------------------------------*/
+(define (avahi-service-resolver-close o::avahi-service-resolver)
+   ($bgl-avahi-service-resolver-close o)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/

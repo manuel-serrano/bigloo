@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Jun  6 15:25:47 2011 (serrano)                */
+#*    Last change :  Tue Dec 20 09:09:26 2011 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -38,7 +38,7 @@ done
 if [ "$openssllibs " = " " ]; then
   case $HOSTOS in
     mingw)
-      openssllibs="-leay32 -lssleay32";;
+      openssllibs="-lssl -lcrypto -lws2_32 -lgdi32 -lcrypt32";;
     darwin)
       openssllibs="-lcrypto -lssl";;
     *)

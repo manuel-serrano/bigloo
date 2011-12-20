@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/avahi.scm)                                                        */
 /*   Bigloo (3.8a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Mon Dec 19 07:39:07 CET 2011        */
+/*   Inria -- Sophia Antipolis (c)       Tue Dec 20 09:28:38 CET 2011        */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/3.8a -unsafe -safee -srfi avahi -copt -D_REENTRANT   -copt -fPIC -copt -IClib -copt -D_REENTRANT   Llib/avahi.scm -o Clib/bglavahi.h -hgen)*/
 
@@ -68,6 +68,25 @@ typedef struct BgL_avahizd2servicezd2browserz00_bgl {
    obj_t BgL_domainz00;
 } *BgL_avahizd2servicezd2browserz00_bglt;
 
+typedef struct BgL_avahizd2servicezd2typezd2browserzd2_bgl {
+   header_t header;
+   obj_t widening;
+   AvahiServiceTypeBrowser * BgL_z42builtinz42;
+   struct BgL_avahizd2clientzd2_bgl * BgL_clientz00;
+   obj_t BgL_procz00;
+   obj_t BgL_domainz00;
+} *BgL_avahizd2servicezd2typezd2browserzd2_bglt;
+
+typedef struct BgL_avahizd2domainzd2browserz00_bgl {
+   header_t header;
+   obj_t widening;
+   AvahiDomainBrowser * BgL_z42builtinz42;
+   struct BgL_avahizd2clientzd2_bgl * BgL_clientz00;
+   obj_t BgL_procz00;
+   obj_t BgL_btypez00;
+   obj_t BgL_domainz00;
+} *BgL_avahizd2domainzd2browserz00_bglt;
+
 typedef struct BgL_avahizd2servicezd2resolverz00_bgl {
    header_t header;
    obj_t widening;
@@ -80,15 +99,5 @@ typedef struct BgL_avahizd2servicezd2resolverz00_bgl {
    obj_t BgL_typez00;
    obj_t BgL_domainz00;
 } *BgL_avahizd2servicezd2resolverz00_bglt;
-
-typedef struct BgL_avahizd2domainzd2browserz00_bgl {
-   header_t header;
-   obj_t widening;
-   AvahiDomainBrowser * BgL_z42builtinz42;
-   struct BgL_avahizd2clientzd2_bgl * BgL_clientz00;
-   obj_t BgL_procz00;
-   obj_t BgL_btypez00;
-   obj_t BgL_domainz00;
-} *BgL_avahizd2domainzd2browserz00_bglt;
 
 

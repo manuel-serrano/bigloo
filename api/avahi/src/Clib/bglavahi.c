@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Thu Dec 15 18:42:21 2011 (serrano)                */
+/*    Last change :  Mon Dec 19 10:19:45 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -78,6 +78,36 @@ extern int bgl_avahi_error( char *, char *, obj_t, int );
    (((bgl_avahi_service_browser_t)o)->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
+/*    avahi_service_type_browser                                       */
+/*---------------------------------------------------------------------*/
+#define bgl_avahi_service_type_browser_t BgL_avahizd2servicezd2typezd2browserzd2_bglt
+
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) \
+   (((bgl_avahi_service_type_browser_t)o)->BgL_z42builtinz42)
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o ) \
+   (((bgl_avahi_service_type_browser_t)o)->BgL_clientz00)
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ) \
+   (((bgl_avahi_service_type_browser_t)o)->BgL_procz00)
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_TYPE( o ) \
+   (((bgl_avahi_service_type_browser_t)o)->BgL_typez00)
+#define BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN( o ) \
+   (((bgl_avahi_service_type_browser_t)o)->BgL_domainz00)
+
+/*---------------------------------------------------------------------*/
+/*    avahi_domain_browser                                             */
+/*---------------------------------------------------------------------*/
+#define bgl_avahi_domain_browser_t BgL_avahizd2domainzd2browserz00_bglt
+
+#define BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) \
+   (((bgl_avahi_domain_browser_t)o)->BgL_z42builtinz42)
+#define BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ) \
+   (((bgl_avahi_domain_browser_t)o)->BgL_clientz00)
+#define BGL_AVAHI_DOMAIN_BROWSER_PROC( o ) \
+   (((bgl_avahi_domain_browser_t)o)->BgL_procz00)
+#define BGL_AVAHI_DOMAIN_BROWSER_DOMAIN( o ) \
+   (((bgl_avahi_domain_browser_t)o)->BgL_domainz00)
+
+/*---------------------------------------------------------------------*/
 /*    avahi_service_resolver                                           */
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_service_resolver_t BgL_avahizd2servicezd2resolverz00_bglt
@@ -98,20 +128,6 @@ extern int bgl_avahi_error( char *, char *, obj_t, int );
    (((bgl_avahi_service_resolver_t)o)->BgL_interfacez00)
 #define BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) \
    (((bgl_avahi_service_resolver_t)o)->BgL_protocolz00)
-
-/*---------------------------------------------------------------------*/
-/*    avahi_domain_browser                                             */
-/*---------------------------------------------------------------------*/
-#define bgl_avahi_domain_browser_t BgL_avahizd2domainzd2browserz00_bglt
-
-#define BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_z42builtinz42)
-#define BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_clientz00)
-#define BGL_AVAHI_DOMAIN_BROWSER_PROC( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_procz00)
-#define BGL_AVAHI_DOMAIN_BROWSER_DOMAIN( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -298,7 +314,7 @@ bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
 				    const char *type,
 				    const char *domain,
 				    AvahiLookupResultFlags flags,
-				    void *udata ){
+				    void *udata ) {
    obj_t o = (obj_t)udata;
    obj_t proc = BGL_AVAHI_SERVICE_BROWSER_PROC( o );
    
@@ -360,87 +376,71 @@ bgl_avahi_service_browser_close( bgl_avahi_service_browser_t o ) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bgl_avahi_service_resolver_callback ...                          */
+/*    bgl_avahi_service_type_browser_callback ...                      */
 /*---------------------------------------------------------------------*/
 static void
-bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
-				     AvahiIfIndex interface,
-				     AvahiProtocol protocol,
-				     AvahiResolverEvent event,
-				     const char *name,
-				     const char *type,
-				     const char *domain,
-				     const char *hostname,
-				     const AvahiAddress *address,
-				     uint16_t port,
-				     AvahiStringList *txt,
-				     AvahiLookupResultFlags flags,
-				     void *udata ){
+bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
+					 AvahiIfIndex interface,
+					 AvahiProtocol protocol,
+					 AvahiBrowserEvent event,
+					 const char *type,
+					 const char *domain,
+					 AvahiLookupResultFlags flags,
+					 void *udata ) {
    obj_t o = (obj_t)udata;
-   obj_t proc = BGL_AVAHI_SERVICE_RESOLVER_PROC( o );
-   char a[ AVAHI_ADDRESS_STR_MAX ];
-
-   avahi_address_snprint( a, sizeof( a ), address );
+   obj_t proc = BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o );
    
-   if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
-      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+   if( !BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) )
+      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
       
    PROCEDURE_ENTRY( proc )(
       proc,
       o,
       BINT( interface ),
       bgl_avahi_protocol_to_symbol( protocol ),
-      bgl_avahi_resolver_event_to_symbol( event ),
-      string_to_bstring( (char *)name ),
+      bgl_avahi_browser_event_to_symbol( event ),
       string_to_bstring( (char *)type ),
       string_to_bstring( (char *)domain ),
-      string_to_bstring( (char *)hostname ),
-      string_to_bstring( a ),
-      BINT( port ),
-      bgl_avahi_string_list_to_list( txt ),
       BINT( flags ) );
 }
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bgl_avahi_service_resolver_new ...                               */
+/*    bgl_avahi_service_type_browser_new ...                           */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
+bgl_avahi_service_type_browser_new( bgl_avahi_service_type_browser_t o ) {
    int error;
    AvahiClient *client =
-      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ) );
-   AvahiServiceResolver *resolver =
-      avahi_service_resolver_new(
+      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o ) );
+   AvahiServiceTypeBrowser *browser =
+      avahi_service_type_browser_new(
 	 client,
-	 BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ),
-	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) ),
+	 AVAHI_IF_UNSPEC,
 	 AVAHI_PROTO_UNSPEC,
+	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN( o ) ),
 	 0,
-	 bgl_avahi_service_resolver_callback,
+	 bgl_avahi_service_type_browser_callback,
 	 o );
 
-   if( !resolver ) {
-      bgl_avahi_error( "avahi-service-resolver-new",
+   if( !browser ) {
+      bgl_avahi_error( "avahi-service-type-browser-new",
 		       (char *)avahi_strerror( error ),
 		       (obj_t)o,
 		       error );
    } else {
-      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+      BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
    }
 }
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bgl_avahi_service_resolver_close ...                             */
+/*    bgl_avahi_service_type_browser_close ...                         */
 /*---------------------------------------------------------------------*/
 void
-bgl_avahi_service_resolver_close( bgl_avahi_service_resolver_t o ) {
-   if( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) ) {
-      avahi_service_resolver_free( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) );
+bgl_avahi_service_type_browser_close( bgl_avahi_service_type_browser_t o ) {
+   if( BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) ) {
+      avahi_service_type_browser_free( BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) );
    }
 }
 
@@ -510,5 +510,91 @@ void
 bgl_avahi_domain_browser_close( bgl_avahi_domain_browser_t o ) {
    if( BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) ) {
       avahi_domain_browser_free( BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_avahi_service_resolver_callback ...                          */
+/*---------------------------------------------------------------------*/
+static void
+bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
+				     AvahiIfIndex interface,
+				     AvahiProtocol protocol,
+				     AvahiResolverEvent event,
+				     const char *name,
+				     const char *type,
+				     const char *domain,
+				     const char *hostname,
+				     const AvahiAddress *address,
+				     uint16_t port,
+				     AvahiStringList *txt,
+				     AvahiLookupResultFlags flags,
+				     void *udata ) {
+   obj_t o = (obj_t)udata;
+   obj_t proc = BGL_AVAHI_SERVICE_RESOLVER_PROC( o );
+   char a[ AVAHI_ADDRESS_STR_MAX ];
+
+   avahi_address_snprint( a, sizeof( a ), address );
+   
+   if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+      
+   PROCEDURE_ENTRY( proc )(
+      proc,
+      o,
+      BINT( interface ),
+      bgl_avahi_protocol_to_symbol( protocol ),
+      bgl_avahi_resolver_event_to_symbol( event ),
+      string_to_bstring( (char *)name ),
+      string_to_bstring( (char *)type ),
+      string_to_bstring( (char *)domain ),
+      string_to_bstring( (char *)hostname ),
+      string_to_bstring( a ),
+      BINT( port ),
+      bgl_avahi_string_list_to_list( txt ),
+      BINT( flags ) );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_avahi_service_resolver_new ...                               */
+/*---------------------------------------------------------------------*/
+void
+bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
+   int error;
+   AvahiClient *client =
+      BGL_AVAHI_CLIENT_BUILTIN( BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ) );
+   AvahiServiceResolver *resolver =
+      avahi_service_resolver_new(
+	 client,
+	 BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ),
+	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
+	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) ),
+	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
+	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) ),
+	 AVAHI_PROTO_UNSPEC,
+	 0,
+	 bgl_avahi_service_resolver_callback,
+	 o );
+
+   if( !resolver ) {
+      bgl_avahi_error( "avahi-service-resolver-new",
+		       (char *)avahi_strerror( error ),
+		       (obj_t)o,
+		       error );
+   } else {
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_avahi_service_resolver_close ...                             */
+/*---------------------------------------------------------------------*/
+void
+bgl_avahi_service_resolver_close( bgl_avahi_service_resolver_t o ) {
+   if( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) ) {
+      avahi_service_resolver_free( BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) );
    }
 }

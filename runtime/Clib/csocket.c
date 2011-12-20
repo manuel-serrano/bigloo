@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Dec  3 21:09:48 2011 (serrano)                */
+/*    Last change :  Tue Dec 20 09:23:00 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -43,6 +43,7 @@
 #   endif
 #   include <winsock2.h>
 #   include <mswsock.h>
+#   include <ws2tcpip.h>
 #   include <io.h>
 #endif
 #include <fcntl.h>
@@ -2093,12 +2094,16 @@ bgl_datagram_socket_close( obj_t sock ) {
 /*    get_hostip ...                                                   */
 /*---------------------------------------------------------------------*/
 static const char *
-get_hostip( struct sockaddr *sa ) {
-   char s[ INET6_ADDRSTRLEN ];
-
+get_hostip( struct sockaddr *sa, char *s ) {
+#ifndef _BGL_WIN32_VER    
    return inet_ntop( sa->sa_family,
 		     &(((struct sockaddr_in *)sa)->sin_addr),
 		     s, sizeof( s ) );
+#else
+   DWORD dwLength = INET6_ADDRSTRLEN;
+   WSAAddressToString( sa, sizeof(struct sockaddr_storage), NULL, s, &dwLength );
+   return s;
+#endif
 }
    
 /*---------------------------------------------------------------------*/
@@ -2134,7 +2139,8 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
    } else {
       obj_t env = BGL_CURRENT_DYNAMIC_ENV();
       struct sockaddr *sa = (struct sockaddr *)&their_addr;
-      const char *c = get_hostip( sa );
+      char buf[ INET6_ADDRSTRLEN ];
+      const char *c = get_hostip( sa, buf );
       
       BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
       BGL_ENV_MVALUES_VAL_SET( env, 1, string_to_bstring( (char *)c ) );
