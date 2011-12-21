@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Dec 19 10:17:39 2011 (serrano)                */
+;*    Last change :  Tue Dec 20 12:26:05 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -132,6 +132,7 @@
       (avahi-simple-poll-close ::avahi-simple-poll)
       (avahi-simple-poll-loop ::avahi-simple-poll)
       (avahi-simple-poll-quit ::avahi-simple-poll)
+      (avahi-simple-poll-timeout ::avahi-simple-poll ::long ::procedure)
       
       (avahi-client-close ::avahi-client)
       (avahi-client-error-message::bstring ::avahi-client)
@@ -199,6 +200,16 @@
    (with-access::avahi-simple-poll o ($builtin)
       ($avahi-simple-poll-loop $builtin)
       o))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-simple-poll-timeout ...                                    */
+;*---------------------------------------------------------------------*/
+(define (avahi-simple-poll-timeout o::avahi-simple-poll t::long proc::procedure)
+   (if (correct-arity? proc 0)
+       (with-access::avahi-simple-poll o ($builtin)
+	  ($bgl-avahi-simple-poll-timeout $builtin t proc))
+       (avahi-error "avahi-client-init" "Illegal callback" proc
+	  $avahi-err-invalid-object)))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-simple-poll-quit ...                                       */

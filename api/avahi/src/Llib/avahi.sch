@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Dec 19 10:19:14 2011 (serrano)                */
+;*    Last change :  Tue Dec 20 10:29:15 2011 (serrano)                */
 ;*    Copyright   :  2011 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
@@ -109,6 +109,9 @@
       (macro $avahi-simple-poll-quit::void
 	 (::$avahi-simple-poll)
 	 "avahi_simple_poll_quit")
+      (macro $bgl-avahi-simple-poll-timeout::void
+	 (::$avahi-simple-poll ::elong ::procedure)
+	 "bgl_avahi_simple_poll_timeout")
 
       ;; avahi-client
       (type $avahi-client void* "AvahiClient *")

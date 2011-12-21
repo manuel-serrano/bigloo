@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Dec 19 10:19:45 2011 (serrano)                */
+/*    Last change :  Tue Dec 20 12:26:35 2011 (serrano)                */
 /*    Copyright   :  2011 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -16,6 +16,7 @@
 
 #include <avahi-common/simple-watch.h>
 #include <avahi-common/error.h>
+#include <avahi-common/timeval.h>
 
 #include "bglavahi.h"
 
@@ -180,6 +181,30 @@ bgl_avahi_simple_poll_new( bgl_avahi_simple_poll_t o ) {
       BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) = simple_poll;
    }
 }
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    timeout_callback ...                                             */
+/*---------------------------------------------------------------------*/
+static void
+timeout_callback( AvahiTimeout *e, void *udata ) {
+   obj_t proc = (obj_t)udata;
+   PROCEDURE_ENTRY( proc )( proc, BEOA );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_avahi_simple_poll_timeout ...                                */
+/*---------------------------------------------------------------------*/
+void
+bgl_avahi_simple_poll_timeout( AvahiSimplePoll *o, long t, obj_t proc ) {
+   struct timeval tv;
+   const AvahiPoll *poll = avahi_simple_poll_get( o );
+
+   poll->timeout_new( poll,
+		      avahi_elapse_time( &tv, t, 0 ),
+		      timeout_callback,
+		      proc );
+}
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -210,7 +235,8 @@ bgl_avahi_client_callback( AvahiClient *client,
    PROCEDURE_ENTRY( proc )(
       proc,
       o,
-      bgl_avahi_client_state_to_symbol( state ) );
+      bgl_avahi_client_state_to_symbol( state ),
+      BEOA );
 }
 
 /*---------------------------------------------------------------------*/
@@ -262,7 +288,8 @@ bgl_avahi_entry_group_callback( AvahiEntryGroup *group,
    PROCEDURE_ENTRY( proc )(
       proc,
       o,
-      bgl_avahi_entry_group_state_to_symbol( state ) );
+      bgl_avahi_entry_group_state_to_symbol( state ),
+      BEOA );
 }
    
 /*---------------------------------------------------------------------*/
@@ -330,7 +357,8 @@ bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
       string_to_bstring( (char *)name ),
       string_to_bstring( (char *)type ),
       string_to_bstring( (char *)domain ),
-      BINT( flags ) );
+      BINT( flags ),
+      BEOA );
 }
    
 /*---------------------------------------------------------------------*/
@@ -401,7 +429,8 @@ bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
       bgl_avahi_browser_event_to_symbol( event ),
       string_to_bstring( (char *)type ),
       string_to_bstring( (char *)domain ),
-      BINT( flags ) );
+      BINT( flags ),
+      BEOA );
 }
    
 /*---------------------------------------------------------------------*/
@@ -468,7 +497,8 @@ bgl_avahi_domain_browser_callback( AvahiDomainBrowser *browser,
       BINT( interface ),
       bgl_avahi_protocol_to_symbol( protocol ),
       string_to_bstring( (char *)domain ),
-      BINT( flags ) );
+      BINT( flags ),
+      BEOA );
 }
    
 /*---------------------------------------------------------------------*/
@@ -553,7 +583,8 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
       string_to_bstring( a ),
       BINT( port ),
       bgl_avahi_string_list_to_list( txt ),
-      BINT( flags ) );
+      BINT( flags ),
+      BEOA );
 }
    
 /*---------------------------------------------------------------------*/
