@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Sep 16 11:15:46 2011 (serrano)                */
+;*    Last change :  Thu Dec 22 15:09:32 2011 (serrano)                */
 ;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -99,7 +99,8 @@
 			;; we are sure that global closures will
 			;; be correctly traced and not labeled
 			;; [toplevel-init].
-			(if (or (eq? (global-id var) 'method-init)
+			(if (or (local? var)
+				(eq? (global-id var) 'method-init)
 			        (eq? (global-id var) 'generic-init))
 			    (trace-node body stack)
 			    (trace-node body (cons var stack)))
