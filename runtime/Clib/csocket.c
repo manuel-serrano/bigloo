@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Dec 21 20:22:58 2011 (serrano)                */
+/*    Last change :  Thu Dec 22 18:28:36 2011 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2139,8 +2139,8 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
    } else {
       obj_t env = BGL_CURRENT_DYNAMIC_ENV();
       struct sockaddr *sa = (struct sockaddr *)&their_addr;
-      char buf[ INET6_ADDRSTRLEN ];
-      const char *c = get_hostip( sa, buf, sizeof( buf ) );
+      char addrbuf[ INET6_ADDRSTRLEN ];
+      const char *c = get_hostip( sa, addrbuf, sizeof( addrbuf ) );
       
       BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
       BGL_ENV_MVALUES_VAL_SET( env, 1, string_to_bstring( (char *)c ) );
