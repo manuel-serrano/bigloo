@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sat Nov 26 06:52:51 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jan  6 09:45:01 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/
@@ -240,7 +240,7 @@
 			    (econs (car decl) (cdr decl) (cer src-def))
 			    decl)))
 	     (set! *declared-classes* (cons edecl *declared-classes*))
-	     (classgen-struct-methods class)))
+	     '()))
        ;; the class is incorrect, an error has been signaled, keep going
        ;; as if everything is fine
        (begin

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Dec  9 07:56:07 2011 (serrano)                */
+;*    Last change :  Fri Jan  6 10:18:29 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -415,11 +415,28 @@
 	     (key (read-item))
 	     (sz (read-size s))
 	     (res (make-struct key sz #unspecified)))
-	 (if (fixnum? defining)
-	     (vector-set! *definitions* defining res))
+	 (when (fixnum? defining)
+	    (vector-set! *definitions* defining res))
 	 (for i 0 sz (struct-set! res i (read-item)))
 	 res))
-
+   
+;*    ;; read-object                                                   */
+;*    (define (read-object-no-longer-used)                             */
+;*       (let* ((defining (let ((old *defining*))                      */
+;*                           (set! *defining* #f)                      */
+;*                           old))                                     */
+;*              (key (read-item))                                      */
+;*              (sz (read-size s))                                     */
+;*              (struct (make-struct key sz (unspecified)))            */
+;*              (object (allocate-instance key)))                      */
+;*          (if (fixnum? defining)                                     */
+;*              (vector-set! *definitions* defining object))           */
+;*          (for i 0 sz (struct-set! struct i (read-item)))            */
+;*          (let ((hash (read-item)))                                  */
+;*             (if (=fx hash (class-hash (object-class object)))       */
+;*                 (struct+object->object object struct)               */
+;*                 (error "string->obj" "corrupted class" key)))))     */
+   
    ;; read-object
    (define (read-object)
       (let* ((defining (let ((old *defining*))
@@ -427,14 +444,22 @@
 			  old))
 	     (key (read-item))
 	     (sz (read-size s))
-	     (struct (make-struct key sz (unspecified)))
-	     (object (allocate-instance key)))
-	 (if (fixnum? defining)
-	     (vector-set! *definitions* defining object))
-	 (for i 0 sz (struct-set! struct i (read-item)))
+	     (obj (allocate-instance key))
+	     (klass (object-class obj))
+	     (fields (class-all-fields klass)))
+	 (when (fixnum? defining)
+	    (vector-set! *definitions* defining obj))
+	 ;; skip the first field (that is no longer used)
+	 (read-item)
+	 ;; the -1 corresponds to the read-item above
+	 (for i 0 (-fx sz 1)
+	    (begin
+	       (let ((f (vector-ref-ur fields i)))
+		  (unless (class-field-virtual? f)
+		     ((%class-field-mutator f) obj (read-item))))))
 	 (let ((hash (read-item)))
-	    (if (=fx hash (class-hash (object-class object)))
-		(struct+object->object object struct)
+	    (if (=fx hash (class-hash klass))
+		obj
 		(error "string->obj" "corrupted class" key)))))
 
    ;; read-custom-object
@@ -450,7 +475,7 @@
 	     (vector-set! *definitions* defining object))
 	 (if (=fx hash (class-hash (object-class object)))
 	     object
-	     (error "string->obj" "corrupted custom" object))))
+	     (error "string->obj" "corrupted custom object" object))))
    
    ;; read-procedure
    (define (read-procedure s)
@@ -472,7 +497,6 @@
 	    ((#\') (read-symbol))
 	    ((#\:) (read-keyword))
 	    ((#\a) (read-char s))
-	    ((#\u) (read-ucs2))
 	    ((#\F) #f)
 	    ((#\T) #t)
 	    ((#\;) #unspecified)
@@ -497,12 +521,13 @@
 	    ((#\+) (read-custom))
 	    ((#\E) (read-elong))
 	    ((#\L) (read-llong))
-	    ((#\p) (read-special s *string->process*))
-	    ((#\e) (read-special s *string->process*))
-	    ((#\o) (read-special s *string->opaque*))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
 	    ((#\k) (find-class (read-symbol)))
 	    ((#\r) (pregexp (read-string s)))
+	    ((#\u) (read-ucs2))
+	    ((#\p) (read-special s *string->process*))
+	    ((#\e) (read-special s *string->process*))
+	    ((#\o) (read-special s *string->opaque*))
 	    (else  (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (let ((d (string-ref s *pointer*)))
@@ -1198,7 +1223,18 @@
 ;*    object-serializer ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-serializer obj::object)
-   (object->struct obj))
+   (let* ((klass (object-class obj))
+	  (fields (class-all-fields klass))
+	  (len (vector-length fields))
+	  (res (make-struct (class-name klass) (+fx len 1) #unspecified)))
+      (struct-set! res 0 #f)
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (let ((f (vector-ref-ur fields i)))
+	       (unless (class-field-virtual? f)
+		  (struct-set! res (+fx i 1) ((class-field-accessor f) obj)))
+	       (loop (+fx i 1)))))
+      res))
 
 ;*---------------------------------------------------------------------*/
 ;*    *class-serialization* ...                                        */

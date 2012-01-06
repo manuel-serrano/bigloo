@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Sat Nov 26 06:45:52 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Fri Jan  6 09:45:41 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -38,8 +38,7 @@
 	    (classgen-widen-expr ::tclass ::obj)
 	    (classgen-widen-anonymous ::tclass)
 	    (classgen-shrink-anonymous ::tclass)
-	    (classgen-slot-anonymous ::tclass ::slot)
-	    (classgen-struct-methods ::tclass)))
+	    (classgen-slot-anonymous ::tclass ::slot)))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-walk ...                                                */
@@ -455,119 +454,3 @@
 		      (tlam (make-typed-ident 'lambda (type-id (cdr pid)))))
 		  `(,tlam ,args ,body))))
 	 d)))
-
-;*---------------------------------------------------------------------*/
-;*    classgen-struct-methods ...                                      */
-;*---------------------------------------------------------------------*/
-(define (classgen-struct-methods c)
-   (cond
-      ((tclass-abstract? c) '())
-      ((wide-class? c) (classgen-struct-wide c))
-      (else (classgen-struct-plain c))))
-
-;*---------------------------------------------------------------------*/
-;*    classgen-struct-plain ...                                        */
-;*---------------------------------------------------------------------*/
-(define (classgen-struct-plain c)
-   
-   (define (classgen-class->struct slots)
-      (let* ((len (+fx 1 (length slots)))
-	     (id (type-id c))
-	     (o (gensym 'o))
-	     (to (make-typed-ident o id))
-	     (r (gensym 'r))
-	     (tr (make-typed-ident r 'struct))
-	     (waccess (make-typed-ident 'with-access id)))
-	 `(define-method (object->struct::struct ,to)
-	     (let ((,tr (make-struct ',id ,len #unspecified)))
-		(struct-set! ,r 0 #f)
-		,@(map (lambda (s i)
-			  (unless (slot-virtual? s)
-			     `(,waccess ,o (,(slot-id s))
-				 (struct-set! ,r ,i ,(slot-id s)))))
-		     slots (iota len 1))
-		,r))))
-   
-   (define (classgen-struct->class slots)
-      (let* ((len (+fx 1 (length slots)))
-	     (id (type-id c))
-	     (o (gensym 'o))
-	     (to (make-typed-ident o id))
-	     (r (gensym 'r))
-	     (tr (make-typed-ident r 'struct))
-	     (waccess (make-typed-ident 'with-access id)))
-	 `(define-method (struct+object->object::object ,to ,tr)
-	     ,@(map (lambda (s i)
-		       (unless (slot-virtual? s)
-			  `(set! ,(field-access o (slot-id s))
-			      (struct-ref ,r ,i))))
-		  slots (iota len 1))
-	     ,o)))
-   
-   (if *optim-object-serialization*
-       (let ((slots (tclass-slots c)))
-	  (list (classgen-class->struct slots) (classgen-struct->class slots)))
-       '()))
-
-;*---------------------------------------------------------------------*/
-;*    classgen-struct-wide ...                                         */
-;*---------------------------------------------------------------------*/
-(define (classgen-struct-wide c)
-   
-   (define (classgen-class->struct slots)
-      (let* (
-	     (len (+fx 1 (length slots)))
-	     (id (type-id c))
-	     (o (gensym 'o))
-	     (to (make-typed-ident o id))
-	     (r (gensym 'r))
-	     (tr (make-typed-ident r 'struct))
-	     (plain (gensym 'plain))
-	     (tplain (make-typed-ident plain 'struct))
-	     (waccess (make-typed-ident 'with-access id)))
-	 `(define-method (object->struct::struct ,to)
-	     (let ((,tplain (call-next-method))
-		   (,tr (make-struct ',id ,len #unspecified)))
-		(struct-set! ,r 0 #f)
-		,@(map (lambda (s i)
-			  (unless (slot-virtual? s)
-			     `(,waccess ,o (,(slot-id s))
-				 (struct-set! ,r ,i ,(slot-id s)))))
-		     slots (iota len 1))
-		(struct-set! ,plain 0 ,r)
-		;; we now swap the structures' keys
-		(struct-key-set! ,r (struct-key ,plain))
-		(struct-key-set! ,plain ',id)
-		,plain))))
-   
-   (define (classgen-struct->class slots)
-      (let* ((len (+fx 1 (length slots)))
-	     (id (type-id c))
-	     (super (tclass-its-super c))
-	     (sid (type-id super))
-	     (o (gensym 'o))
-	     (to (make-typed-ident o id))
-	     (r (gensym 'r))
-	     (tr (make-typed-ident r 'struct))
-	     (plain (gensym 'plain))
-	     (tplain (make-typed-ident plain sid))
-	     (aux (gensym 'aux))
-	     (taux (make-typed-ident aux 'struct))
-	     (widen (make-typed-ident 'widen! id)))
-	 `(define-method (struct+object->object::object ,to ,tr)
-	     (let* ((,plain (call-next-method))
-		    (,taux (struct-ref ,r 0)))
-		(,widen ,plain
-		   ,@(map (lambda (s i)
-			     (unless (slot-virtual? s)
-				`(,(slot-id s) (struct-ref ,aux ,i))))
-			slots (iota len 1)))
-		,plain))))
-   
-   (let ((slots (filter (lambda (s)
-			   (eq? (slot-class-owner s) c))
-		   (tclass-slots c))))
-      (if *optim-object-serialization*
-	  (list (classgen-class->struct slots)
-	     (classgen-struct->class slots))
-	  '())))

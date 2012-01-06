@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Nov 30 17:15:16 2011 (serrano)                */
+;*    Last change :  Fri Jan  6 10:15:58 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -181,14 +181,11 @@
 	    (generic object-print ::object ::output-port ::procedure)
 	    (generic object-display ::object . port)
 	    (generic object-write ::object . port)
-	    (generic object->struct::struct ::object)
-	    (generic struct+object->object::object ::object ::struct)
 	    (generic object-hashnumber::int ::object)
 	    (generic object-equal?::bool ::object ::object)
 	    
 	    (generic exception-notify exc)
 	    
-	    (struct->object::object ::struct)
 	    (allocate-instance::object ::symbol)
 	    (inline wide-object?::bool ::object)
 	    (inline class-virtual::vector ::vector)
@@ -223,9 +220,6 @@
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
 	    (isa? side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%object? (predicate-of object) no-cfa-top nesting)
-	    (struct->object no-cfa-top no-trace nesting)
-	    (struct+object->object no-cfa-top no-trace nesting)
-	    (object->struct side-effect-free no-cfa-top no-trace nesting)
 	    (wide-object? side-effect-free no-cfa-top no-trace nesting)
 	    (object-widening side-effect-free no-cfa-top nesting)
 	    (register-class! no-init-flow)))
@@ -1254,48 +1248,10 @@
       (object-print obj port write)))
 
 ;*---------------------------------------------------------------------*/
-;*    object->struct ...                                               */
-;*---------------------------------------------------------------------*/
-(define-generic (object->struct::struct obj::object)
-   (let* ((klass (object-class obj))
-	  (fields (class-all-fields klass))
-	  (len (vector-length fields))
-	  (res (make-struct (class-name klass) (+fx len 1) #unspecified)))
-      (struct-set! res 0 #f)
-      (let loop ((i 0))
-	 (when (<fx i len)
-	    (let ((f (vector-ref-ur fields i)))
-	       (unless (class-field-virtual? f)
-		  (struct-set! res (+fx i 1) ((class-field-accessor f) obj)))
-	       (loop (+fx i 1)))))
-      res))
-
-;*---------------------------------------------------------------------*/
-;*    struct+object->object ...                                        */
-;*---------------------------------------------------------------------*/
-(define-generic (struct+object->object::object obj::object stu::struct)
-   (let* ((klass (object-class obj))
-	  (fields (class-all-fields klass))
-	  (len (vector-length fields)))
-      (let loop ((i 0))
-	 (when (<fx i len)
-	    (let ((f (vector-ref-ur fields i)))
-	       (unless (class-field-virtual? f)
-		  ((%class-field-mutator f) obj (struct-ref stu (+fx i 1))))
-	       (loop (+fx i 1)))))
-      obj))
-
-;*---------------------------------------------------------------------*/
 ;*    object-hashnumber ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-hashnumber::int object::object)
    (%object-hashnumber object))
-
-;*---------------------------------------------------------------------*/
-;*    struct->object ...                                               */
-;*---------------------------------------------------------------------*/
-(define (struct->object::object stu::struct)
-   (struct+object->object (allocate-instance (struct-key stu)) stu))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocate-instance ...                                            */
