@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Nov 29 05:37:04 2011 (serrano)                */
-;*    Copyright   :  2006-11 Manuel Serrano                            */
+;*    Last change :  Sat Jan  7 06:36:23 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -715,7 +715,7 @@
    
    (define (gethash v)
       (bit-and (get-hashnumber v) #xffff))
-   
+
    (let loop ((def def)
 	      (hash 1705))
       (cond

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Jan  6 10:18:29 2012 (serrano)                */
+;*    Last change :  Fri Jan  6 16:42:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -471,8 +471,8 @@
 	     (hash (read-item))
 	     (unserializer (find-class-unserializer hash))
 	     (object (unserializer obj)))
-	 (if (fixnum? defining)
-	     (vector-set! *definitions* defining object))
+	 (when (fixnum? defining)
+	    (vector-set! *definitions* defining object))
 	 (if (=fx hash (class-hash (object-class object)))
 	     object
 	     (error "string->obj" "corrupted custom object" object))))
@@ -576,14 +576,6 @@
 ;*---------------------------------------------------------------------*/
 (define (get-mark table obj)
    (hashtable-get table obj))
-
-;*---------------------------------------------------------------------*/
-;*    objcustom ...                                                    */
-;*    -------------------------------------------------------------    */
-;*    This structure is used for representing custom serlialization    */
-;*    of objects.                                                      */
-;*---------------------------------------------------------------------*/
-(define-struct objcustom val)
 
 ;*---------------------------------------------------------------------*/
 ;*    *max-size-word* ...                                              */
@@ -748,19 +740,29 @@
    ;; print-object
    (define (print-object item mark)
       (let ((v (mark-value mark)))
-	 (if (objcustom? v)
-	     (print-object-custom item v)
-	     (print-object-struct item v))))
+	 (if (eq? item v)
+	     (print-object-plain item v)
+	     (print-object-custom item v))))
 
+   ;; print-object-plain
+   (define (print-object-plain item o)
+      (let* ((klass (object-class item))
+	     (fields (class-all-fields klass))
+	     (len (vector-length fields)))
+	 (!print-markup #\|)
+	 (print-item (class-name klass))
+	 ;; MS, 6 jan 2012: + 1 and #f are for backward compatibility
+	 (print-word (+fx 1 len))
+	 (print-item #f)
+	 (for i 0 len
+	    (let ((f (vector-ref-ur fields i)))
+	       (print-item ((class-field-accessor f) item))))
+	 (print-item (class-hash (object-class item)))))
+   
    ;; print-object-custom
    (define (print-object-custom item o)
       (!print-markup #\O)
-      (print-item (objcustom-val o))
-      (print-item (class-hash (object-class item))))
-   
-   ;; print-object-struct
-   (define (print-object-struct item o)
-      (print-struct #\| o)
+      (print-item o)
       (print-item (class-hash (object-class item))))
    
    ;; print-struct
@@ -967,10 +969,18 @@
 
    ;; mark-class-instance
    (define (mark-class-instance obj custom)
-      (put-mark! table obj custom)
-      (mark (class-hash (object-class obj)))
-      (mark custom)
-      custom)
+      (let ((klass (object-class obj)))
+	 (put-mark! table obj custom)
+	 (mark (class-hash klass))
+	 (mark (class-name klass))
+	 ;; custom might differ from obj when object-serializer is overriden
+	 (if (eq? obj custom)
+	     (let* ((fields (class-all-fields klass))
+		    (len (vector-length fields)))
+		(for i 0 len
+		   (let ((f (vector-ref-ur fields i)))
+		      (mark ((class-field-accessor f) obj)))))
+	     (mark custom))))
    
    ;; mark-struct
    (define (mark-struct obj)
@@ -1223,18 +1233,7 @@
 ;*    object-serializer ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-serializer obj::object)
-   (let* ((klass (object-class obj))
-	  (fields (class-all-fields klass))
-	  (len (vector-length fields))
-	  (res (make-struct (class-name klass) (+fx len 1) #unspecified)))
-      (struct-set! res 0 #f)
-      (let loop ((i 0))
-	 (when (<fx i len)
-	    (let ((f (vector-ref-ur fields i)))
-	       (unless (class-field-virtual? f)
-		  (struct-set! res (+fx i 1) ((class-field-accessor f) obj)))
-	       (loop (+fx i 1)))))
-      res))
+   obj)
 
 ;*---------------------------------------------------------------------*/
 ;*    *class-serialization* ...                                        */
@@ -1247,10 +1246,9 @@
 (define (register-class-serialization! class serializer unserializer)
    (generic-add-method! object-serializer
 			class
-			(lambda (o)
-			   (objcustom (serializer o)))
-			(string-append (symbol->string! (class-name class))
-				       "-serializer"))
+			serializer
+			(string-append
+			   (symbol->string! (class-name class)) "-serializer"))
    (let* ((hash (class-hash class))
 	  (cell (assq hash *class-serialization*)))
       (if (not (pair? cell))
