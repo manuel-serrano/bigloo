@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Jan  6 16:42:25 2012 (serrano)                */
+;*    Last change :  Sun Jan  8 18:51:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -420,36 +420,19 @@
 	 (for i 0 sz (struct-set! res i (read-item)))
 	 res))
    
-;*    ;; read-object                                                   */
-;*    (define (read-object-no-longer-used)                             */
-;*       (let* ((defining (let ((old *defining*))                      */
-;*                           (set! *defining* #f)                      */
-;*                           old))                                     */
-;*              (key (read-item))                                      */
-;*              (sz (read-size s))                                     */
-;*              (struct (make-struct key sz (unspecified)))            */
-;*              (object (allocate-instance key)))                      */
-;*          (if (fixnum? defining)                                     */
-;*              (vector-set! *definitions* defining object))           */
-;*          (for i 0 sz (struct-set! struct i (read-item)))            */
-;*          (let ((hash (read-item)))                                  */
-;*             (if (=fx hash (class-hash (object-class object)))       */
-;*                 (struct+object->object object struct)               */
-;*                 (error "string->obj" "corrupted class" key)))))     */
-   
    ;; read-object
    (define (read-object)
       (let* ((defining (let ((old *defining*))
 			  (set! *defining* #f)
 			  old))
-	     (key (read-item))
+	     (cname (read-item))
 	     (sz (read-size s))
-	     (obj (allocate-instance key))
+	     (obj (allocate-instance cname))
 	     (klass (object-class obj))
 	     (fields (class-all-fields klass)))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining obj))
-	 ;; skip the first field (that is no longer used)
+	 ;; skip the class fields
 	 (read-item)
 	 ;; the -1 corresponds to the read-item above
 	 (for i 0 (-fx sz 1)
@@ -460,7 +443,7 @@
 	 (let ((hash (read-item)))
 	    (if (=fx hash (class-hash klass))
 		obj
-		(error "string->obj" "corrupted class" key)))))
+		(error "string->obj" "corrupted class" cname)))))
 
    ;; read-custom-object
    (define (read-custom-object)
@@ -476,6 +459,11 @@
 	 (if (=fx hash (class-hash (object-class object)))
 	     object
 	     (error "string->obj" "corrupted custom object" object))))
+
+   (define (read-class)
+      (let ((name (read-symbol)))
+	 (read-item)
+	 (find-class name)))
    
    ;; read-procedure
    (define (read-procedure s)
@@ -522,7 +510,7 @@
 	    ((#\E) (read-elong))
 	    ((#\L) (read-llong))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
-	    ((#\k) (find-class (read-symbol)))
+	    ((#\k) (read-class))
 	    ((#\r) (pregexp (read-string s)))
 	    ((#\u) (read-ucs2))
 	    ((#\p) (read-special s *string->process*))
@@ -735,7 +723,12 @@
 				   (mark-defined? mark))))
 		       (print-item vcdr)
 		       (loop (+fx i 1) vcdr))))))))
-   
+
+   ;; print-class
+   (define (print-class item mark)
+      (!print-markup #\k)
+      (print-item (symbol->string! (class-name item)))
+      (print-item (mark-value mark)))
    
    ;; print-object
    (define (print-object item mark)
@@ -751,9 +744,8 @@
 	     (len (vector-length fields)))
 	 (!print-markup #\|)
 	 (print-item (class-name klass))
-	 ;; MS, 6 jan 2012: + 1 and #f are for backward compatibility
 	 (print-word (+fx 1 len))
-	 (print-item #f)
+	 (print-item klass)
 	 (for i 0 len
 	    (let ((f (vector-ref-ur fields i)))
 	       (print-item ((class-field-accessor f) item))))
@@ -850,6 +842,8 @@
 	  (print-composite item (lambda (item mark) (print-string #\" item))))
 	 ((object? item)
 	  (print-composite item print-object))
+	 ((class? item)
+	  (print-composite item print-class))
 	 ((struct? item)
 	  (print-composite item (lambda (item mark) (print-struct #\{ item))))
 	 ((char? item)
@@ -912,9 +906,6 @@
 	  (print-composite item (lambda (i m) (print-special #\e i m))))
 	 ((opaque? item)
 	  (print-composite item (lambda (i m) (print-special #\o i m))))
-	 ((class? item)
-	  (!print-markup #\k)
-	  (print-item (symbol->string! (class-name item))))
 	 ((regexp? item)
 	  (!print-markup #\r)
 	  (print-item (regexp-pattern item)))
@@ -971,6 +962,7 @@
    (define (mark-class-instance obj custom)
       (let ((klass (object-class obj)))
 	 (put-mark! table obj custom)
+	 (mark klass)
 	 (mark (class-hash klass))
 	 (mark (class-name klass))
 	 ;; custom might differ from obj when object-serializer is overriden
@@ -981,6 +973,13 @@
 		   (let ((f (vector-ref-ur fields i)))
 		      (mark ((class-field-accessor f) obj)))))
 	     (mark custom))))
+
+   ;; mark-class
+   (define (mark-class obj)
+      (let ((f (list->vector
+		  (map class-field-name (vector->list (class-all-fields obj))))))
+	 (put-mark! table obj f)
+	 (mark f)))
    
    ;; mark-struct
    (define (mark-struct obj)
@@ -1054,6 +1053,9 @@
 	  (mark-composite obj mark-pair))
 	 ((object? obj)
 	  (mark-composite obj mark-object))
+	 ((class? obj)
+	  (mark (symbol->string! (class-name obj)))
+	  (mark-composite obj mark-class))
  	 ((struct? obj)
 	  (mark-composite obj mark-struct))
 	 ((cell? obj)
@@ -1083,9 +1085,7 @@
 	 ((opaque? obj)
 	  (mark-composite obj mark-opaque))
 	 ((pointer? obj)
-	  (mark-composite obj (lambda (obj) #f)))
-	 ((class? obj)
-	  (mark (symbol->string! (class-name obj))))))
+	  (mark-composite obj (lambda (obj) #f)))))
 
    (mark obj)
 

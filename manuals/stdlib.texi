@@ -1750,6 +1750,18 @@ Examples:
 
 @end deffn
 
+@deffn {bigloo procedure} vector-map proc vector @dots{}
+@deffnx {bigloo procedure} vector-map! proc vector @dots{}
+
+The function @code{vector-map} creates a new vector whose size the is
+the size of its argument @var{vector}. Each elements of the new vector
+is the result of apply @var{proc} to the corresponding elements of the 
+initial vectors.
+
+The function @code{vector-map!} modifies the elements of the argument
+@var{vector}.
+@end deffn
+
 @c -- Homogenous Vectors --------------------------------------------- @c
 @node Homogeneous Vectors (SRFI-4), Control Features, Vectors, Scheme Library
 @comment  node-name,  next,  previous,  up

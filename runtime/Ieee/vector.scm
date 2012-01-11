@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Fri Dec  3 18:37:32 2010 (serrano)                */
+;*    Last change :  Wed Jan 11 09:22:50 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -103,7 +103,9 @@
 	    (vector-copy::vector ::vector . args)
 	    (vector-copy! target tstart source #!optional (sstart 0) (send (vector-length source)))
 	    (vector-append::vector ::vector . args)
-	    (sort ::obj ::obj))
+	    (sort ::obj ::obj)
+	    (vector-map::vector ::procedure ::vector . rests)
+	    (vector-map!::vector ::procedure ::vector . rests))
    
    (pragma  ($make-vector no-cfa-top nesting)
 	    ($create-vector no-cfa-top nesting)
@@ -326,3 +328,55 @@
 	     (if (pair? obj)
 		 (vector->list res)
 		 res))))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-map2! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (vector-map2! proc vdest vsrc)
+   (let ((len (vector-length vdest)))
+      (let loop ((i 0))
+	 (if (<fx i len)
+	     (begin
+		(vector-set-ur! vdest i (proc (vector-ref-ur vsrc i)))
+		(loop (+fx i 1)))
+	     vdest))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-mapN! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (vector-mapN! proc vdest vsrc vrest)
+   (let ((len (vector-length vdest)))
+      (let loop ((i 0))
+	 (if (<fx i len)
+	     (let* ((args (map (lambda (v) (vector-ref v i)) vrest))
+		    (nval (apply proc (vector-ref vsrc i) args)))
+		(vector-set-ur! vdest i nval)
+		(loop (+fx i 1)))
+	     vdest))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-map ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (vector-map proc v . rest)
+   (let* ((len (vector-length v))
+	  (nv ($create-vector len)))
+      (cond
+	 ((null? rest)
+	  (vector-map2! proc nv v))
+	 ((every? (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
+	  (vector-mapN! proc nv v rest))
+	 (else
+	  (error "vector-map" "Illegal arguments" rest)))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-map! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (vector-map! proc v . rest)
+   (let ((len (vector-length v)))
+      (cond
+	 ((null? rest)
+	  (vector-map2! proc v v))
+	 ((every? (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
+	  (vector-mapN! proc v v rest))
+	 (else
+	  (error "vector-map" "Illegal arguments" rest)))))

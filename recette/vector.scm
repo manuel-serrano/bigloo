@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Tue Mar 29 08:18:53 2011 (serrano)                */
+;*    Last change :  Wed Jan 11 09:19:02 2012 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -75,4 +75,10 @@
    (test "vector-append.3" (vector-append '#(a)) '#(a))
    (test "vector-append.4" (vector-append '#(a b) '#(c d)) '#(a b c d))
    (test "vector-append.5" (vector-append '#(a b) '#(c d) '#()) '#(a b c d))
-   (test "vector-append.6" (vector-append '#(a b) '#(c d) '#(e)) '#(a b c d e)))
+   (test "vector-append.6" (vector-append '#(a b) '#(c d) '#(e)) '#(a b c d e))
+   (test "vector-map" (vector-map (lambda (x) (+ 1 x)) '#(1 2 3)) '#(2 3 4))
+   (test "vector-map" (vector-map (lambda (x y) (+ x y)) '#(1 2 3) '#(4 5 6))
+      '#(5 7 9))
+   (let ((v (vector 1 2 3)))
+      (vector-map! (lambda (x) (+ 1 x)) v)
+      (test "vector-map!" v '#(2 3 4))))
