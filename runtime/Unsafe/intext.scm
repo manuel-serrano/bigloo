@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Jan  8 18:51:09 2012 (serrano)                */
+;*    Last change :  Wed Jan 11 09:23:51 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -749,7 +749,7 @@
 	 (for i 0 len
 	    (let ((f (vector-ref-ur fields i)))
 	       (print-item ((class-field-accessor f) item))))
-	 (print-item (class-hash (object-class item)))))
+	 (print-item (class-hash klass))))
    
    ;; print-object-custom
    (define (print-object-custom item o)
@@ -976,8 +976,7 @@
 
    ;; mark-class
    (define (mark-class obj)
-      (let ((f (list->vector
-		  (map class-field-name (vector->list (class-all-fields obj))))))
+      (let ((f (vector-map class-field-name (class-all-fields obj))))
 	 (put-mark! table obj f)
 	 (mark f)))
    
