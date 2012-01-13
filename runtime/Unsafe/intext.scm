@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Jan 11 09:23:51 2012 (serrano)                */
+;*    Last change :  Wed Jan 11 18:34:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */

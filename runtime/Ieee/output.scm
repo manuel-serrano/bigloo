@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Fri Dec  9 07:55:39 2011 (serrano)                */
+;*    Last change :  Fri Jan 13 08:06:31 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -423,20 +423,27 @@
 	    (if (not (number? num))
 		(error procname "Illegal number" num)
 		(display (number->string num radix) p)))
-	 (define (print-flat-list l p)
+	 (define (print-flat-list l p sep)
 	    (cond
 	       ((pair? l)
 		(let loop ((l l))
-		   (print-flat-list (car l) p)
+		   (print-flat-list (car l) p sep)
 		   (cond
 		      ((pair? (cdr l))
-		       (display " " p)
+		       (display sep p)
 		       (loop (cdr l)))
 		      ((not (null? (cdr l)))
 		       (display " . " p)
-		       (print-flat-list (cdr l) p)))))
+		       (print-flat-list (cdr l) p sep)))))
 	       ((not (null? l))
 		(display l p))))
+	 (define (print-list i l p)
+	    (let ((j (string-index fmt #\) i)))
+	       (if (not j)
+		   (error procname "Illegal tag" fmt)
+		   (let ((sep (substring fmt (+fx i 1) j)))
+		      (print-flat-list l p sep)
+		      (+fx j 1)))))
 	 (define (print-padded-number i num mincol padding)
 	    (if (=fx i len)
 		(error procname "Illegal tag" fmt)
@@ -521,8 +528,11 @@
 		(write-char #\return p)
 		(loop (+fx i 1) os))
 	       ((#\l #\L)
-		(print-flat-list (next os f) p)
+		(print-flat-list (next os f) p " ")
 		(loop (+fx i 1) (cdr os)))
+	       ((#\()
+		(let ((ni (print-list i (next os f) p)))
+		   (loop ni (cdr os))))
 	       ((#\~)
 		(write-char #\~ p)
 		(loop (+fx i 1) os))

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Tue Jan 18 15:01:55 2011 (serrano)                */
+;*    Last change :  Fri Jan 13 10:06:41 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -139,28 +139,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    test-sha1 ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (test-sha1 num str sum)
-   (let ((n (* num 3)))
-      (test (string-append "sha1." (integer->string n)) (sha1sum str) sum)
-      (with-input-from-string str
-	 (lambda ()
-	    (test (string-append "sha1." (integer->string (+fx n 1)))
-		  (sha1sum (current-input-port)) sum)))
-      (test (string-append "sha1." (integer->string (+fx n 2)))
-	    (sha1sum (string->mmap str)) sum)))
+(define (test-sha1 n str sum)
+   (test (string-append "sha1-string." (integer->string n)) (sha1sum str) sum)
+   (with-input-from-string str
+      (lambda ()
+	 (test (string-append "sha1-port." (integer->string n))
+	    (sha1sum (current-input-port)) sum)))
+   (test (string-append "sha1-mmap." (integer->string n))
+      (sha1sum (string->mmap str)) sum))
    
 ;*---------------------------------------------------------------------*/
 ;*    test-sha256 ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (test-sha256 num str sum)
-   (let ((n (* num 3)))
-      (test (string-append "sha256." (integer->string n)) (sha256sum str) sum)
-      (with-input-from-string str
-	(lambda ()
-	   (test (string-append "sha256." (integer->string (+fx n 1)))
-		 (sha256sum (current-input-port)) sum)))
-      (test (string-append "sha256." (integer->string (+fx n 2)))
-	    (sha256sum (string->mmap str)) sum)))
+(define (test-sha256 n str sum)
+   (test (string-append "sha256-string." (integer->string n)) (sha256sum str) sum)
+   (with-input-from-string str
+      (lambda ()
+	 (test (string-append "sha256-port." (integer->string n))
+	    (sha256sum (current-input-port)) sum)))
+   (test (string-append "sha256-mmap." (integer->string n))
+      (sha256sum (string->mmap str)) sum))
    
 ;*---------------------------------------------------------------------*/
 ;*    test-string ...                                                  */
@@ -168,31 +166,31 @@
 (define (test-string)
    (test-module "string" "string.scm")
    (test "literal" "\342\202\254"
-	 (apply string (map integer->char '(#o342 #o202 #o254))))
+      (apply string (map integer->char '(#o342 #o202 #o254))))
    (test "string=?" (string=? "toto n'est pas content"
-			      "toto n'est pas content")
-	 #t)
+		       "toto n'est pas content")
+      #t)
    (test "string=?" (string=? "ToTo" "tOtO") #f)
    (test "string=?" (let ((s (make-string 3 (integer->char 0))))
 		       (string=? s #"\000\000\000"))
-	 #t)
+      #t)
    (test "string=?" (let ((s (make-string 3 (integer->char 0))))
 		       (string=? s #"\000\001\000"))
-	 #f)
+      #f)
    (test "string-length" (string-length "12345") 5)
    (test "string" (equal? "toto n'est pas content" "toto est content")
-	 #f)
+      #f)
    (test "make-string" (string-ref (make-string 1 #\a) 0) #\a)
    (test "string-append" (string-append "Toto " "est content")
-	 "Toto est content")
+      "Toto est content")
    (test "string-append" (string-append "toto" " n'est" " pas" " content")
-	 "toto n'est pas content")
+      "toto n'est pas content")
    (test "string-upcase" (string-upcase "toto TOTO ToTo") "TOTO TOTO TOTO")
    (test "string-ci=?"     (string-ci=? "Toto" "tOtO") #t)
    (test "string-set"    (let ((s (string-copy "0123456789")))
 			    (string-set! s 0 (string-ref s 1))
 			    s)
-	 "1123456789")
+      "1123456789")
    (test "string-copy" (test-string-copy (make-string 3 #\6)) "666")
    (test "list->string" (list->string '(#\t #\o #\t #\o)) "toto")
    (test "string->list" (string->list "toto") '(#\t #\o #\t #\o))
@@ -206,14 +204,14 @@
    (test "integer->string" (integer->string -1234) "-1234")
    (test "unsigned->string.1" (unsigned->string 1234 16) "4d2")
    (test "unsigned->string.2" (pair?
-			       (member (unsigned->string -1234 16)
-				       '("fffffb2e"  "fffffffffffffb2e")))
-	 #t)
+				 (member (unsigned->string -1234 16)
+				    '("fffffb2e"  "fffffffffffffb2e")))
+      #t)
    (test "unsigned->string.3" (unsigned->string #e1234 16) "4d2")
    (test "unsigned->string.4" (pair?
-			       (member (unsigned->string #e-1234 16)
-				       '("fffffb2e" "fffffffffffffb2e")))
-	 #t)
+				 (member (unsigned->string #e-1234 16)
+				    '("fffffb2e" "fffffffffffffb2e")))
+      #t)
    (test "unsigned->string.5" (unsigned->string #l1234 16) "4d2")
    (test "unsigned->string.6" (unsigned->string #l-1234 16) "fffffffffffffb2e")
    (test "string->real" (string->real "1234.25") 1234.25)
@@ -223,7 +221,7 @@
 	 (src (make-string 5 #\1)))
       (test "blit-string" (begin (blit-string! src 1 dst 1 3)
 				 dst)
-	    "0111000000"))
+	 "0111000000"))
    (test "string<?" (string<? "012345" "123456") #t)
    (test "string<=?" (string<=? "012345" "012345") #t)
    (test "string>?" (string>? "012345" "123456") #f)
@@ -271,14 +269,14 @@
    (test "8bits-string-ci>?" (string-ci>? "abécd" "abecd") #t)
    (test "8bits-string-ci>=?" (string-ci>=? "abécd" "abecd") #t)
    (test "foreign" (let ((x "\n\t\\\"")) (string->list x))
-	 '(#\newline #\tab #\\ #\"))
+      '(#\newline #\tab #\\ #\"))
    (test "foreign" (let ((x #"\n\\\"")) (string->list x))
-	 '(#\newline #\\ #\"))
+      '(#\newline #\\ #\"))
    (test "symbol" (symbol->string (string->symbol "tOtO")) "tOtO")
    (test "symbol" (eq? (string->symbol "ToTo") 'toto) #f)
    (test "symbol" (eq? (string->symbol "TOTO") 'TOTO) #t)
    (test "string-copy" (string-copy "toto n'est pas content")
-	 "toto n'est pas content")
+      "toto n'est pas content")
    (test "escape.1" (string-length #"\000") 1)
    (test "escape.2" (string-length #"\x00") 1)
    (test "escape.3" (char->integer (string-ref #"\000" 0)) 0)
@@ -292,8 +290,8 @@
    (test "escape.11" (char->integer (string-ref #"\XAE" 0)) #xae)
    (test "escape(8bits)" (list "böig") '("böig"))
    (test "id"
-	 (scheme-id->c-id "INITIALIZE-IMPORTED-MODULES!_FOO")
-	 "initialize_imported_modules__foo_7")
+      (scheme-id->c-id "INITIALIZE-IMPORTED-MODULES!_FOO")
+      "initialize_imported_modules__foo_7")
    (test "trigraph" "??-" (string-append "?" "?" "-"))
    (test "suffix.1" (suffix "toto.scm") "scm")
    (test "suffix.2" (suffix "toto") "")
@@ -302,9 +300,9 @@
    (test "suffix.5" (suffix (string-append (string (file-separator)) "etc" (string (file-separator)) "rc.d" (string (file-separator)) "rc.3" (string (file-separator)) "K70syslogd")) "")
    (test "path" (unix-path->list ".") '("."))
    (test "path" (unix-path->list (string-append "/" (string (path-separator))
-						"." (string (path-separator))
-						"/usr/local"))
-	 '("/" "." "/usr/local"))
+				    "." (string (path-separator))
+				    "/usr/local"))
+      '("/" "." "/usr/local"))
    (test "string-compare3.1" (< (string-compare3 "abc" "def") 0) #t)
    (test "string-compare3.2" (> (string-compare3 "def" "abc") 0) #t)
    (test "string-compare3.3" (= (string-compare3 "def" "abc") 0) #f)
@@ -340,29 +338,29 @@
       (let ((ip (open-input-string s))
 	    (op (open-output-string)))
 	 (test "base64.7"
-	       (begin
-		  (base64-encode-port ip op)
-		  (close-output-port op))
-	       (base64-encode s)))
+	    (begin
+	       (base64-encode-port ip op)
+	       (close-output-port op))
+	    (base64-encode s)))
       (let ((ip (open-input-string s))
 	    (op (open-output-string)))
 	 (test "base64.8"
-	       (begin
-		  (base64-encode-port ip op)
-		  (let* ((ip (open-input-string (close-output-port op)))
-			 (op (open-output-string)))
-		     (base64-decode-port ip op)
-		     (close-output-port op)))
-	       s))
+	    (begin
+	       (base64-encode-port ip op)
+	       (let* ((ip (open-input-string (close-output-port op)))
+		      (op (open-output-string)))
+		  (base64-decode-port ip op)
+		  (close-output-port op)))
+	    s))
       (let ((ip (open-input-string s))
 	    (op (open-output-string)))
 	 (test "base64.9"
-	       (begin
-		  (base64-encode-port ip op)
-		  (let* ((ip (open-input-string (close-output-port op)))
-			 (s (read-string ip)))
-		     (base64-decode s)))
-	       s))
+	    (begin
+	       (base64-encode-port ip op)
+	       (let* ((ip (open-input-string (close-output-port op)))
+		      (s (read-string ip)))
+		  (base64-decode s)))
+	    s))
       (let* ((base64encode (lambda (obj)
 			      (base64-encode (obj->string obj))))
 	     (base64unencode (lambda (obj)
@@ -375,7 +373,7 @@
    (test "hex-string.2" (string-hex-intern "414141") "AAA")
    (test "hex-string.3" (string-hex-intern! (string-copy "414141")) "AAA")
    (test "hex-string.4" (string-hex-intern (string-hex-extern "foo bar0x12"))
-	 "foo bar0x12")
+      "foo bar0x12")
    (test "md5.1" (md5sum "") "d41d8cd98f00b204e9800998ecf8427e")
    (test "md5.2" (md5sum "a") "0cc175b9c0f1b6a831c399e269772661")
    (test "md5.3" (md5sum "abc") "900150983cd24fb0d6963f7d28e17f72")
@@ -384,157 +382,175 @@
    (test "md5.6" (md5sum "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") "d174ab98d277d9f5a5611c2c9f419d9f")
    (test "md5.7" (md5sum "12345678901234567890123456789012345678901234567890123456789012345678901234567890") "57edf4a22be3c955ac49da2e2107b67a")
    (test "hmac-md5.1" (hmac-md5sum-string (make-string 16 #a011)
-					  "Hi There")
-	 "9294727a3638bb1c13f48ef8158bfc9d")
+			 "Hi There")
+      "9294727a3638bb1c13f48ef8158bfc9d")
    (test "hmac-md5.2" (hmac-md5sum-string "Jefe"
-					  "what do ya want for nothing?")
-	 "750c783e6ab0b503eaa86e310a5db738")
+			 "what do ya want for nothing?")
+      "750c783e6ab0b503eaa86e310a5db738")
    (test "hmac-md5.3" (hmac-md5sum-string (make-string 16 #a170)
-					  (make-string 50 #a221))
-	 "56be34521d144c88dbb8c733f0e8b3f6")
+			 (make-string 50 #a221))
+      "56be34521d144c88dbb8c733f0e8b3f6")
    (test "hmac-md5.4" (hmac-md5sum-string (string-hex-intern
-					   "0102030405060708090a0b0c0d0e0f10111213141516171819")
-					  (make-string 50 #a205))
-	 "697eaf0aca3a3aea3a75164746ffaa79")
+					     "0102030405060708090a0b0c0d0e0f10111213141516171819")
+			 (make-string 50 #a205))
+      "697eaf0aca3a3aea3a75164746ffaa79")
    (test-sha1 1
-	      "abc"
-	      "a9993e364706816aba3e25717850c26c9cd0d89d")
+      "abc"
+      "a9993e364706816aba3e25717850c26c9cd0d89d")
    (test-sha1 2
-	      "The quick brown fox jumps over the lazy dog"
-	      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12")
+      "The quick brown fox jumps over the lazy dog"
+      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12")
    (test-sha1 3
-	      "The quick brown fox jumps over the lazy cog"
-	      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3")
+      "The quick brown fox jumps over the lazy cog"
+      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3")
    (test-sha1 4
-	      (make-string 63 #\a)
-	      "03f09f5b158a7a8cdad920bddc29b81c18a551f5")
+      (make-string 63 #\a)
+      "03f09f5b158a7a8cdad920bddc29b81c18a551f5")
    (test-sha1 5
-	      (make-string 64 #\a)
-	      "0098ba824b5c16427bd7a1122a5a442a25ec644d")
+      (make-string 64 #\a)
+      "0098ba824b5c16427bd7a1122a5a442a25ec644d")
    (test-sha1 6
-	      (make-string 65 #\a)
-	      "11655326c708d70319be2610e8a57d9a5b959d3b")
+      (make-string 65 #\a)
+      "11655326c708d70319be2610e8a57d9a5b959d3b")
    (test-sha1 7
-	      (make-string 127 #\a)
-	      "89d95fa32ed44a7c610b7ee38517ddf57e0bb975")
+      (make-string 127 #\a)
+      "89d95fa32ed44a7c610b7ee38517ddf57e0bb975")
    (test-sha1 8
-	      (make-string 128 #\a)
-	      "ad5b3fdbcb526778c2839d2f151ea753995e26a0")
+      (make-string 128 #\a)
+      "ad5b3fdbcb526778c2839d2f151ea753995e26a0")
    (test-sha1 9
-	      (make-string 129 #\a)
-	      "d96debf1bdcbc896e6c134ea76e8141f40d78536")
+      (make-string 129 #\a)
+      "d96debf1bdcbc896e6c134ea76e8141f40d78536")
+   (test-sha1 10
+      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+      "84983e441c3bd26ebaae4aa1f95129e5e54670f1")
+   (test-sha1 11
+      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnop"
+      "47b172810795699fe739197d1a1f5960700242f1")
+   (test-sha1 12
+      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopqr"
+      "e4690e96180cb89fdd79a3ba0f2a741224a50e62")
+   (test-sha1 13
+      ""
+      "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+   (test-sha1 14
+      "The quick brown fox jumps over the lazy dog"
+      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12")
+   (test-sha1 15
+      "The quick brown fox jumps over the lazy cog"
+      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3")
    (test-sha256 1
-		"abc"
-		"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+      "abc"
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
    (test-sha256 2
-		"The quick brown fox jumps over the lazy dog"
-		"d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592")
+      "The quick brown fox jumps over the lazy dog"
+      "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592")
    (test-sha256 3
-		"The quick brown fox jumps over the lazy cog"
-		"e4c4d8f3bf76b692de791a173e05321150f7a345b46484fe427f6acc7ecc81be")
+      "The quick brown fox jumps over the lazy cog"
+      "e4c4d8f3bf76b692de791a173e05321150f7a345b46484fe427f6acc7ecc81be")
    (test-sha256 4
-		(make-string 63 #\a)
-		"7d3e74a05d7db15bce4ad9ec0658ea98e3f06eeecf16b4c6fff2da457ddc2f34")
+      (make-string 63 #\a)
+      "7d3e74a05d7db15bce4ad9ec0658ea98e3f06eeecf16b4c6fff2da457ddc2f34")
    (test-sha256 5
-		(make-string 64 #\a)
-		"ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb")
+      (make-string 64 #\a)
+      "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb")
    (test-sha256 6
-		(make-string 65 #\a)
-		"635361c48bb9eab14198e76ea8ab7f1a41685d6ad62aa9146d301d4f17eb0ae0")
+      (make-string 65 #\a)
+      "635361c48bb9eab14198e76ea8ab7f1a41685d6ad62aa9146d301d4f17eb0ae0")
    (test-sha256 7
-		(make-string 127 #\a)
-		"c57e9278af78fa3cab38667bef4ce29d783787a2f731d4e12200270f0c32320a")
+      (make-string 127 #\a)
+      "c57e9278af78fa3cab38667bef4ce29d783787a2f731d4e12200270f0c32320a")
    (test-sha256 8
-		(make-string 128 #\a)
-		"6836cf13bac400e9105071cd6af47084dfacad4e5e302c94bfed24e013afb73e")
+      (make-string 128 #\a)
+      "6836cf13bac400e9105071cd6af47084dfacad4e5e302c94bfed24e013afb73e")
    (test-sha256 9
-		(make-string 129 #\a)
-		"c12cb024a2e5551cca0e08fce8f1c5e314555cc3fef6329ee994a3db752166ae")
+      (make-string 129 #\a)
+      "c12cb024a2e5551cca0e08fce8f1c5e314555cc3fef6329ee994a3db752166ae")
    (test-sha256 10
-		(make-string 56 #\a)
-		"b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a")
+      (make-string 56 #\a)
+      "b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a")
    (test "string-prefix-length.1"
-	 (string-prefix-length "abcde" "abcdef") 5)
+      (string-prefix-length "abcde" "abcdef") 5)
    (test "string-prefix-length.2"
-	 (string-prefix-length "0abcde" "abcdef" 1) 5)
+      (string-prefix-length "0abcde" "abcdef" 1) 5)
    (test "string-prefix-length.3"
-	 (string-prefix-length "0abcde" "abcdef" 1 3) 2)
+      (string-prefix-length "0abcde" "abcdef" 1 3) 2)
    (test "string-prefix-length.4"
-	 (string-prefix-length "0abcde" "aabcdef" 1 3 1) 2)
+      (string-prefix-length "0abcde" "aabcdef" 1 3 1) 2)
    (test "string-prefix-length.5"
-	 (string-prefix-length "0abcde" "aabcdef" 1 4 1 3) 2)
+      (string-prefix-length "0abcde" "aabcdef" 1 4 1 3) 2)
    (test "string-suffix-length.1"
-	 (string-suffix-length "abcde" "fabcde") 5)
+      (string-suffix-length "abcde" "fabcde") 5)
    (test "string-suffix-length.2"
-	 (string-suffix-length "0abcde" "fabcde" 1) 5)
+      (string-suffix-length "0abcde" "fabcde" 1) 5)
    (test "string-suffix-length.3"
-	 (string-suffix-length "0cdef" "fabcde" 1 4) 3)
+      (string-suffix-length "0cdef" "fabcde" 1 4) 3)
    (test "string-suffix-length.4"
-	 (string-suffix-length "0cdef" "aabcde" 1 4 1) 3)
+      (string-suffix-length "0cdef" "aabcde" 1 4 1) 3)
    (test "string-suffix-length.5"
-	 (string-suffix-length "0abcde" "aaabcde" 1 3 2 4) 2)
+      (string-suffix-length "0abcde" "aaabcde" 1 3 2 4) 2)
    (test "string-suffix-length.6"
-	 (string-suffix-length "ab" "-") 0)
+      (string-suffix-length "ab" "-") 0)
    (test "string-prefix-length-ci.1"
-	 (string-prefix-length-ci "AbCde" "abcdef") 5)
+      (string-prefix-length-ci "AbCde" "abcdef") 5)
    (test "string-prefix-length-ci.2"
-	 (string-prefix-length-ci "0ABCDE" "abcdef" 1) 5)
+      (string-prefix-length-ci "0ABCDE" "abcdef" 1) 5)
    (test "string-prefix?.1"
-	 (string-prefix? "abc" "abcde") #t)
+      (string-prefix? "abc" "abcde") #t)
    (test "string-prefix?.2"
-	 (string-prefix? "abcf" "abcde") #f)
+      (string-prefix? "abcf" "abcde") #f)
    (test "string-prefix?.3"
-	 (string-prefix? "0abc" "abcde" 1) #t)
+      (string-prefix? "0abc" "abcde" 1) #t)
    (test "string-suffix?.3b"
-	 (string-suffix? "0CDE" "abcde" 1) #f)
+      (string-suffix? "0CDE" "abcde" 1) #f)
    (test "string-prefix?.4"
-	 (string-prefix? "0Abc" "abcde" 1) #f)
+      (string-prefix? "0Abc" "abcde" 1) #f)
    (test "string-prefix?.5"
-	 (string-prefix? "0abcf" "abcde" 1 4) #t)
+      (string-prefix? "0abcf" "abcde" 1 4) #t)
    (test "string-prefix?.6"
-	 (string-prefix? "0abcf" "abcde" 1 5) #f)
+      (string-prefix? "0abcf" "abcde" 1 5) #f)
    (test "string-prefix?.7"
-	 (string-prefix? "0abcf" "0abcde" 1 4 1) #t)
+      (string-prefix? "0abcf" "0abcde" 1 4 1) #t)
    (test "string-prefix?.8"
-	 (string-prefix? "0abcf" "0abcde" 1 4 2) #f)
+      (string-prefix? "0abcf" "0abcde" 1 4 2) #f)
    (test "string-prefix?.9"
-	 (string-prefix? "0abcf" "00abcde" 1 4 2 5) #t)
+      (string-prefix? "0abcf" "00abcde" 1 4 2 5) #t)
    (test "string-prefix?.10"
-	 (string-prefix? "0abcf" "0abcde" 1 4 2 2) #f)
+      (string-prefix? "0abcf" "0abcde" 1 4 2 2) #f)
    (test "string-prefix-ci?.1"
-	 (string-prefix-ci? "abc" "ABCDE") #t)
+      (string-prefix-ci? "abc" "ABCDE") #t)
    (test "string-prefix-ci?.2"
-	 (string-prefix-ci? "abcf" "ABCDE") #f)
+      (string-prefix-ci? "abcf" "ABCDE") #f)
    (test "string-prefix-ci?.3"
-	 (string-prefix-ci? "0abc" "ABCDE" 1) #t)
+      (string-prefix-ci? "0abc" "ABCDE" 1) #t)
    (test "string-suffix?.1"
-	 (string-suffix? "cde" "abcde") #t)
+      (string-suffix? "cde" "abcde") #t)
    (test "string-suffix?.2"
-	 (string-suffix? "cdef" "abcde") #f)
+      (string-suffix? "cdef" "abcde") #f)
    (test "string-suffix?.3"
-	 (string-suffix? "0cde" "abcde" 1) #t)
+      (string-suffix? "0cde" "abcde" 1) #t)
    (test "string-suffix?.4"
-	 (string-suffix? "0cdf" "abcde" 1) #f)
+      (string-suffix? "0cdf" "abcde" 1) #f)
    (test "string-suffix?.5"
-	 (string-suffix? "0cdef" "abcde" 1 4) #t)
+      (string-suffix? "0cdef" "abcde" 1 4) #t)
    (test "string-suffix?.6"
-	 (string-suffix? "0abcf" "abcde" 1 5) #f)
+      (string-suffix? "0abcf" "abcde" 1 5) #f)
    (test "string-suffix?.7"
-	 (string-suffix? "0cdef" "0abcde" 1 4 1) #t)
+      (string-suffix? "0cdef" "0abcde" 1 4 1) #t)
    (test "string-suffix?.8"
-	 (string-suffix? "0abcf" "0abcde" 1 4 2) #f)
+      (string-suffix? "0abcf" "0abcde" 1 4 2) #f)
    (test "string-suffix?.9"
-	 (string-suffix? "0cdef" "0abcde" 1 4 2 6) #t)
+      (string-suffix? "0cdef" "0abcde" 1 4 2 6) #t)
    (test "string-suffix?.10"
-	 (string-suffix? "0abcf" "0abcde" 1 4 2 2) #f)
+      (string-suffix? "0abcf" "0abcde" 1 4 2 2) #f)
    (test "string-suffix?.11"
-	 (string-suffix? "-" "ab") #f)
+      (string-suffix? "-" "ab") #f)
    (test "string-suffix-ci?.1"
-	 (string-suffix-ci? "CDE" "abcde") #t)
+      (string-suffix-ci? "CDE" "abcde") #t)
    (test "string-suffix-ci?.2"
-	 (string-suffix-ci? "cdef" "ABCDE") #f)
+      (string-suffix-ci? "cdef" "ABCDE") #f)
    (test "string-suffix-ci?.3"
-	 (string-suffix-ci? "0CDE" "abcde" 1) #t)
+      (string-suffix-ci? "0CDE" "abcde" 1) #t)
    (test "string-index.1" (string-index "foobar-gee" #\-) 6)
    (test "string-index.2" (string-index "foobar-gee" "-") 6)
    (test "string-index.3" (string-index "foobar-gee" "-g") 6)
@@ -572,7 +588,7 @@
    (test "string-skip-right.9" (string-skip-right "foobar-gee" "fobar-ge") #f)
    (test "string-natural-compare3.1" (string-natural-compare3 "foo" "foo") 0)
    (test "string-natural-compare3.2"
-	 (string-natural-compare3 "foo0" "foo1") -1)
+      (string-natural-compare3 "foo0" "foo1") -1)
    (test "string-natural-compare3.3" (string-natural-compare3 "foo1" "foo0") 1)
    (test "string-natural<?.1" (string-natural<? "rfc1.txt" "rfc822.txt") #t)
    (test "string-natural<?.1b" (string-natural<? "rfc822.txt" "rfc1.txt") #f)
@@ -597,15 +613,15 @@
    (test "string-natural<?.9" (string-natural<? "1.1" "1.02") #f)
    (test "string-natural<?.10" (string-natural<? "1.02" "1.3") #t)
    (test "string-natural-compare3-ci.1"
-	 (string-natural-compare3-ci "foo" "foo") 0)
+      (string-natural-compare3-ci "foo" "foo") 0)
    (test "string-natural-compare3-ci.2"
-	 (string-natural-compare3-ci "foo" "Foo") 0)
+      (string-natural-compare3-ci "foo" "Foo") 0)
    (test "string-natural-compare3-ci.3"
-	 (string-natural-compare3-ci "foo1" "foo0") 1)
+      (string-natural-compare3-ci "foo1" "foo0") 1)
    (test "string-natural-compare3-ci.4"
-	 (string-natural-compare3-ci "foo1" "FOO0") 1)
+      (string-natural-compare3-ci "foo1" "FOO0") 1)
    (test "string-natural-compare3-ci.5"
-	 (string-natural-compare3-ci "FOO1" "foo0") 1) substring
+      (string-natural-compare3-ci "FOO1" "foo0") 1) substring
    (test "number->string.1" (number->string 10) "10")
    (test "number->string.2" (number->string 10 16) "a")
    (test "number->string.3" (number->string 10 2) "1010")
@@ -623,14 +639,14 @@
    (test "string-contains-ci.3" (string-contains-ci "foo bar" "bar" 10) #f)
    (test "string-contains-ci.4" (string-contains-ci "foo bar" "bar" -1) 4)
    (test "string-as-read" (string-as-read (string #\\ #\n #\o #\\ #\t))
-	 (string #\newline #\o #\tab))
+      (string #\newline #\o #\tab))
    (test "string-for-read" (string-for-read (string #\newline #\o #\tab))
-	 (string #\\ #\n #\o #\\ #\t))
+      (string #\\ #\n #\o #\\ #\t))
    (test "string-delete.1" (string-delete "abcedfghij" "fgh")
-	 "abcedij")
+      "abcedij")
    (test "string-delete.2" (string-delete "abcedfghij" "fgh" 6)
-	 "ij")
+      "ij")
    (test "string-delete.3" (string-delete "abcedfghij" #\b 1 5)
-	 "ced")
+      "ced")
    (test "string-delete.4" (string-delete "abcedfghij" (lambda (c) #t) 7)
-	 ""))
+      ""))

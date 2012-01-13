@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Fri Jul  1 08:09:02 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Last change :  Fri Jan 13 10:07:01 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -59,12 +59,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    for ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-macro (for decl test incr . body)
-   (let ((loop (gensym (symbol-append 'loop- (car decl) '-))))
-      `(let ,loop (,decl)
-	    (when ,test
-	       ,@body
-	       (,loop ,incr)))))
+(define-macro (for range . body)
+   (let ((for (gensym 'for))
+	 (stop (gensym 'stop)))
+      `(let ((,stop ,(caddr range)))
+	  (let ,for ((,(car range) ,(cadr range)))
+	       (when (<fx ,(car range) ,stop)
+		  ,@body
+		  (,for (+fx ,(car range) 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32 ...                                                          */
@@ -204,46 +206,46 @@
 	     (h4::ulong (u32 #xC3D2 #xE1F0)))
 	 
 	 ;; HASH computation
-	 (for (i 0) (<fx i N) (+fx i 1)
-	      
-	      ;; 1 - prepare message schedule 'W'
-	      (for (t 0) (<fx t 16) (+fx t 1)
-		   (u32vector-set! W t (u32matrix-ref M i t)))
-	      (for (t 16) (<fx t 80) (+fx t 1)
-		   (let* ((w0::ulong (u32vector-ref W (-fx t 3)))
-			  (w1::ulong (u32vector-ref W (-fx t 8)))
-			  (w2::ulong (u32vector-ref W (-fx t 14)))
-			  (w3::ulong (u32vector-ref W (-fx t 16)))
-			  (v::ulong (bit-xor w0 (bit-xor w1 (bit-xor w2 w3)))))
-		      (u32vector-set! W t (rotl32 v 1))))
-	      
-	      ;; 2 - initialize five working variables a, b, c, d, e
-	      ;; with previous hash value
-	      (let ((a::ulong h0)
-		    (b::ulong h1)
-		    (c::ulong h2)
-		    (d::ulong h3)
-		    (e::ulong h4))
-		 
-		 ;; 3 - main loop
-		 (for (t 0) (<fx t 80) (+fx t 1)
-		      (let* ((s (/fx t 20))
-			     (a5::ulong (rotl32 a 5))
-			     (f::ulong (f s b c d))
-			     (k::ulong (u32vector-ref K s))
-			     (w::ulong (u32vector-ref W t))
-			     (y::ulong (+fx a5 (+fx f (+fx e (+fx k w))))))
-			 (set! e d)
-			 (set! d c)
-			 (set! c (rotl32 b 30))
-			 (set! b a)
-			 (set! a (bit-and y (u32 #xffff #xffff)))))
-
-		 (set! h0 (bit-and (+fx h0 a) (u32 #xffff #xffff)))
-		 (set! h1 (bit-and (+fx h1 b) (u32 #xffff #xffff)))
-		 (set! h2 (bit-and (+fx h2 c) (u32 #xffff #xffff)))
-		 (set! h3 (bit-and (+fx h3 d) (u32 #xffff #xffff)))
-		 (set! h4 (bit-and (+fx h4 e) (u32 #xffff #xffff)))))
+	 (for (i 0 N)
+	    
+	    ;; 1 - prepare message schedule 'W'
+	    (for (t 0 16)
+	       (u32vector-set! W t (u32matrix-ref M i t)))
+	    (for (t 16 80)
+	       (let* ((w0::ulong (u32vector-ref W (-fx t 3)))
+		      (w1::ulong (u32vector-ref W (-fx t 8)))
+		      (w2::ulong (u32vector-ref W (-fx t 14)))
+		      (w3::ulong (u32vector-ref W (-fx t 16)))
+		      (v::ulong (bit-xor w0 (bit-xor w1 (bit-xor w2 w3)))))
+		  (u32vector-set! W t (rotl32 v 1))))
+	    
+	    ;; 2 - initialize five working variables a, b, c, d, e
+	    ;; with previous hash value
+	    (let ((a::ulong h0)
+		  (b::ulong h1)
+		  (c::ulong h2)
+		  (d::ulong h3)
+		  (e::ulong h4))
+	       
+	       ;; 3 - main loop
+	       (for (t 0 80)
+		  (let* ((s (/fx t 20))
+			 (a5::ulong (rotl32 a 5))
+			 (f::ulong (f s b c d))
+			 (k::ulong (u32vector-ref K s))
+			 (w::ulong (u32vector-ref W t))
+			 (y::ulong (+fx a5 (+fx f (+fx e (+fx k w))))))
+		     (set! e d)
+		     (set! d c)
+		     (set! c (rotl32 b 30))
+		     (set! b a)
+		     (set! a (bit-and y (u32 #xffff #xffff)))))
+	       
+	       (set! h0 (bit-and (+fx h0 a) (u32 #xffff #xffff)))
+	       (set! h1 (bit-and (+fx h1 b) (u32 #xffff #xffff)))
+	       (set! h2 (bit-and (+fx h2 c) (u32 #xffff #xffff)))
+	       (set! h3 (bit-and (+fx h3 d) (u32 #xffff #xffff)))
+	       (set! h4 (bit-and (+fx h4 e) (u32 #xffff #xffff)))))
 	 
 	 (u160->string h0 h1 h2 h3 h4))))
 
@@ -251,24 +253,24 @@
 ;*    sha1sum-string ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (sha1sum-string str::bstring)
-
+   
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (string-length str))
-	  (l::long (+fx (inexact->exact (ceiling (/ len 4))) 2))
+	  (l::long (+fx (inexact->exact (ceiling (/ (+fx len 1) 4))) 2))
 	  (N::long (inexact->exact (ceiling (/ l 16))))
 	  (M::vector (make-vector N)))
-
-      (for (i 0) (<fx i N) (+fx i 1)
-	   (let ((vec (make-u32vector 16)))
-	      (for (j 0) (<fx j 16) (+fx j 1)
-		   (let* ((n::int (+fx (*fx i 64) (*fx j 4)))
-			  (v0::ulong (u32string-ref str n))
-			  (v1::ulong (u32string-ref str (+fx n 1)))
-			  (v2::ulong (u32string-ref str (+fx n 2)))
-			  (v3::ulong (u32string-ref str (+fx n 3)))
-			  (v (u32 (u16 v0 v1) (u16 v2 v3))))
-		      (u32vector-set! vec j v))
-		   (vector-set! M i vec))))
+      
+      (for (i 0 N)
+	 (let ((vec (make-u32vector 16)))
+	    (for (j 0 16)
+	       (let* ((n::int (+fx (*fx i 64) (*fx j 4)))
+		      (v0::ulong (u32string-ref str n))
+		      (v1::ulong (u32string-ref str (+fx n 1)))
+		      (v2::ulong (u32string-ref str (+fx n 2)))
+		      (v3::ulong (u32string-ref str (+fx n 3)))
+		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
+		  (u32vector-set! vec j v))
+	       (vector-set! M i vec))))
 
       (sha1 len M)))
 
@@ -276,25 +278,25 @@
 ;*    sha1sum-mmap ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (sha1sum-mmap str::mmap)
-
+   
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (mmap-length str))
-	  (l::long (+fx (inexact->exact (ceiling (/ len 4))) 2))
+	  (l::long (+fx (inexact->exact (ceiling (/ (+fx len 1) 4))) 2))
 	  (N::long (inexact->exact (ceiling (/ l 16))))
 	  (M::vector (make-vector N)))
-
-      (for (i 0) (<fx i N) (+fx i 1)
-	   (let ((vec (make-u32vector 16)))
-	      (for (j 0) (<fx j 16) (+fx j 1)
-		   (let* ((n::elong (+fx (*fx i 64) (*fx j 4)))
-			  (v0::ulong (u32mmap-ref str n))
-			  (v1::ulong (u32mmap-ref str (+fx n 1)))
-			  (v2::ulong (u32mmap-ref str (+fx n 2)))
-			  (v3::ulong (u32mmap-ref str (+fx n 3)))
-			  (v (u32 (u16 v0 v1) (u16 v2 v3))))
-		      (u32vector-set! vec j v))
-		   (vector-set! M i vec))))
-
+      
+      (for (i 0 N)
+	 (let ((vec (make-u32vector 16)))
+	    (for (j 0 16)
+	       (let* ((n::elong (+fx (*fx i 64) (*fx j 4)))
+		      (v0::ulong (u32mmap-ref str n))
+		      (v1::ulong (u32mmap-ref str (+fx n 1)))
+		      (v2::ulong (u32mmap-ref str (+fx n 2)))
+		      (v3::ulong (u32mmap-ref str (+fx n 3)))
+		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
+		  (u32vector-set! vec j v))
+	       (vector-set! M i vec))))
+      
       (sha1 len M)))
 
 ;*---------------------------------------------------------------------*/
@@ -304,9 +306,9 @@
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let ((buf::bstring (make-string 64)))
-      
       (let loop ((len 0)
-		 (L '()))
+		 (L '())
+		 (nL 0))
 	 ;; fill the string
 	 (string-fill! buf #a000)
 	 (let* ((c (read-fill-string! buf 0 64 ip))
@@ -314,23 +316,25 @@
 		(nlen (+fx l len))
 		(vec (make-u32vector 16 0)))
 	    (when (<fx l 64) (string-set! buf l #a128))
-	    (for (j 0) (<fx j 16) (+fx j 1)
-		 (let* ((n::int (*fx j 4))
-			(v0::ulong (char->integer (string-ref buf n)))
-			(v1::ulong (char->integer (string-ref buf (+fx n 1))))
-			(v2::ulong (char->integer (string-ref buf (+fx n 2))))
-			(v3::ulong (char->integer (string-ref buf (+fx n 3))))
-			(v (u32 (u16 v0 v1) (u16 v2 v3))))
-		    (u32vector-set! vec j v)))
+	    (for (j 0 16)
+	       (let* ((n::int (*fx j 4))
+		      (v0::ulong (char->integer (string-ref buf n)))
+		      (v1::ulong (char->integer (string-ref buf (+fx n 1))))
+		      (v2::ulong (char->integer (string-ref buf (+fx n 2))))
+		      (v3::ulong (char->integer (string-ref buf (+fx n 3))))
+		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
+		  (u32vector-set! vec j v)))
 	    (if (<fx l 64)
 		;; we are done
-		(let ((M (list->vector
-			  (reverse!
-			   (if (=fx l 63)
-			       (cons* (make-u32vector 16 0) vec L)
-			       (cons vec L))))))
+		(let* ((fl::long (+fx (inexact->exact (ceiling (/ (+fx nlen 1) 4))) 2))
+		       (N::long (inexact->exact (ceiling (/ fl 16))))
+		       (M (list->vector
+			     (reverse!
+				(if (>fx N (+fx 1 nL))
+				    (cons* (make-u32vector 16 0) vec L)
+				    (cons vec L))))))
 		   (sha1 nlen M))
-		(loop nlen (cons vec L)))))))
+		(loop nlen (cons vec L) (+fx nL 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum-file ...                                                 */
