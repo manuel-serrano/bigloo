@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Fri Nov 25 16:21:04 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jan 14 19:36:53 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
 ;*=====================================================================*/
@@ -118,8 +118,8 @@
       (if (not (pair? attr))
 	  #f
 	  (match-case (car attr)
-	     ((info ?-)
-	      (car attr))
+	     ((info ?val)
+	      val)
 	     (else
 	      (find-info-attr (cdr attr))))))
    
@@ -251,6 +251,7 @@
 	 (name (scheme-symbol->c-string (car slot-id)))
 	 (src slot-id)
 	 (class-owner class)
+	 (user-info #f)
 	 (type (find-slot-type slot-id src))))
    
    (trace (ast 2) "make-class-slots: " clauses " " vnum #\Newline)

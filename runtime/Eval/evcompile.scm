@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Nov 18 14:01:07 2011 (serrano)                */
+;*    Last change :  Sun Jan 15 20:40:54 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -914,7 +914,9 @@
 			      (class-name klass) (car fields))
 			   exp)
 			(let ((node (make-field-ref klass field node)))
-			   (loop node (class-field-type field) (cdr fields)))))))))))
+			   (loop node
+			      (class-field-type field)
+			      (cdr fields)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-field-set ...                                          */
@@ -942,7 +944,9 @@
 			    (evcompile-error loc "eval" "Field read-only" exp)))
 		       (else
 			(let ((node (make-field-ref klass field node)))
-			   (loop node (class-field-type field) (cdr fields)))))))))))
+			   (loop node
+			      (class-field-type field)
+			      (cdr fields)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-ref ...                                               */

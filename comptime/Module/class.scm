@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Jan  6 09:45:01 2012 (serrano)                */
+;*    Last change :  Sat Jan 14 19:39:07 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -346,112 +346,6 @@
 			   `(cons ,(slot-virtual-num s)
 			       (cons ,(getter s) ,(setter s)))))
 	    (tclass-slots class))))
-
-;*---------------------------------------------------------------------*/
-;*    make-class-src-fields ...                                        */
-;*    -------------------------------------------------------------    */
-;*    We have not found a better way to do it. We re-parse the class   */
-;*    definition (according to module_prototype and object_slots)      */
-;*    to produce the correct proper list for the class declaration.    */
-;*---------------------------------------------------------------------*/
-(define (make-class-src-fields class-id slot-defs loc)
-   
-   (define (read-only? attr)
-      (let loop ((attr attr))
-	 (cond
-	    ((null? attr)
-	     #f)
-	    ((eq? (car attr) 'read-only)
-	     #t)
-	    (else
-	     (loop (cdr attr))))))
-   
-   (define (virtual? attr)
-      (let loop ((attr attr))
-	 (cond
-	    ((null? attr)
-	     #f)
-	    ((and (pair? (car attr)) (eq? (caar attr) 'get))
-	     #t)
-	    (else
-	     (loop (cdr attr))))))
-   
-   (define (find-info-attribute attr)
-      (if (not (pair? attr))
-	  #f
-	  (match-case (car attr)
-	     ((info ?value)
-	      value)
-	     (else
-	      (find-info-attribute (cdr attr))))))
-   
-   (define (find-default-attribute attr)
-      (if (not (pair? attr))
-	  #f
-	  (match-case (car attr)
-	     ((default ?value)
-	      `',value)
-	     (else
-	      (find-default-attribute (cdr attr))))))
-   
-   (define (type-default-id type)
-      (if (eq? (type-id type) '_)
-	  'obj
-	  (type-id type)))
-   
-   (define (make-slot-field slot)
-      (match-case slot
-	 ((? symbol?)
-	  ;; simple slot without any attributes
-	  (let* ((pid (parse-id slot loc))
-		 (id (car pid))
-		 (type (cdr pid)))
-	     `((@ make-class-field __object)
-	       ',id
-	       ,(symbol-append class-id '- id)
-	       ,(symbol-append class-id '- id '-set!)
-	       #f
-	       #f
-	       #f
-	       #f
-	       ,(if (tclass? type)
-		    (tclass-holder type)
-		    `',(type-default-id type)))))
-	 (((and ?id (? symbol?)) . ?att)
-	  ;; simple slot with attributes
-	  (let* ((pid (parse-id id loc))
-		 (id (car pid))
-		 (type (cdr pid)))
-	     `((@ make-class-field __object)
-	       ',id
-	       ,(symbol-append class-id '- id)
-	       ,(cond
-		   ((not (read-only? att))
-		    (symbol-append class-id '- id '-set!))
-		   ((virtual? att)
-		    #f)
-		   (else
-		    (let ((o (gensym))
-			  (v (gensym)))
-		       `(lambda (,(make-typed-ident o class-id)
-				 ,(make-typed-ident v (type-id type)))
-			   (set! ,(field-access o id) ,v)))))
-	       ,(read-only? att)
-	       ,(virtual? att)
-	       ,(find-info-attribute slot)
-	       ,(find-default-attribute slot)
-	       ,(if (tclass? type)
-		    (tclass-holder type)
-		    `',(type-default-id type)))))
-	 (else
-	  (internal-error "make-class-fields"
-	     "Illegal slot definition"
-	     slot))))
-   
-   (let ((slot-defs (match-case slot-defs
-		       (((?-) . ?rest) rest)
-		       (else slot-defs))))
-      `(list ,@(map make-slot-field slot-defs))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-finalizer ...                                              */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Fri Nov 25 06:49:12 2011 (serrano)                */
+;*    Last change :  Sat Jan 14 07:09:16 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -85,6 +85,18 @@
    (circle-write/display o port #f))
 
 ;*---------------------------------------------------------------------*/
+;*    for ...                                                          */
+;*---------------------------------------------------------------------*/
+(define-macro (for range . body)
+   (let ((for (gensym 'for))
+	 (stop (gensym 'stop)))
+      `(let ((,stop ,(caddr range)))
+	  (let ,for ((,(car range) ,(cadr range)))
+	       (when (<fx ,(car range) ,stop)
+		  ,@body
+		  (,for (+fx ,(car range) 1)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    write/display ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    As we can't be sure that this module is initialized before       */
@@ -101,23 +113,14 @@
 			       (set! serial (+fx 1 serial))
 			       serial))))
       
-      (define (register-object obj)
-	 (let* ((class (object-class obj))
-		(class-name (class-name class))
-		(fields (class-all-fields class))
-		(len (vector-length fields)))
-	    (let loop ((i 0))
-	       (when (<fx i len)
-		  (let* ((f (vector-ref fields 0))
-			 (gv (class-field-accessor f)))
-		     (register (gv obj)))))))
-
       ;; first stage: register object components
       (define (register obj)
 	 ;; do not register objects unique by their nature
 	 (if (not (or (number? obj)
 		      (symbol? obj)
 		      (string? obj)
+		      (ucs2-string? obj)
+		      (date? obj)
 		      (cnst? obj)
 		      (null? obj)
 		      (class? obj)))
@@ -131,166 +134,172 @@
 			   (register (car obj))
 			   (register (cdr obj)))
 			  ((vector? obj)
-			   (let ((len (vector-length obj)))
-			      (let loop-count ((count 0))
-				 (if (not (>=fx count len))
-				     (begin
-					(register (vector-ref obj count))
-					(loop-count (+fx count 1)))))))
+			   (for (i 0 (vector-length obj))
+			      (register (vector-ref obj i))))
 			  ((struct? obj)
-			   (let ((len (struct-length obj)))
-			      (let loop-count ((count 0))
-				 (if (not (>=fx count len))
-				     (begin
-					(register (struct-ref obj count))
-					(loop-count (+fx count 1)))))))
+			   (for (i 0 (struct-length obj))
+			      (register (struct-ref obj i))))
 			  ((object? obj)
-			   (register-object obj))))))))
+			   (let* ((klass (object-class obj))
+				  (fields (class-all-fields klass)))
+			      (for (i 0 (vector-length fields))
+				 (let* ((f (vector-ref fields i))
+					(gv (class-field-accessor f)))
+				    (register (gv obj))))))
+			  ((cell? obj)
+			   (register (cell-ref obj)))))))))
+
+      (define (putchar ch)
+	 ($display-char ch port))
+
+      (define (space)
+	 (putchar #\space))
+
+      (define (sharp)
+	 (putchar #\#))
+      
       ;; do register the value
       (register obj)
       ;; do output 
-      (let* ((putchar (lambda (ch) ($display-char ch port)))
-	     (space   (lambda () (putchar #\space)))
- 	     (sharp   (lambda () (putchar #\#))))
-	 (let output-component ((obj obj))
-	    (let loop-matched ((obj   obj)
-			       (match (assq obj cache)))
-	       (if match
-		   (let ((value (and match (cdr match))))
-		      (cond
-			 ((fixnum? value)
-			  ;; emit reference like #0#
-			  (sharp)
-			  (output-component value)
-			  (sharp))
-			 (value
-			  ;; emit target as #0=<the object>
-			  (let ((serial (next-cardinal)))
-			     (set-cdr! match serial)
-			     (sharp)
-			     (output-component serial)
-			     (putchar #\=)
-			     ;; emit object itself
-			     (loop-matched obj #f)))
-			 (else
-			  ;; object referenced just once, just emit it
-			  (loop-matched obj #f))))
+      (let output-component ((obj obj))
+	 (let loop-matched ((obj obj)
+			    (match (assq obj cache)))
+	    (if match
+		(let ((value (cdr match)))
 		   (cond
-		      ;; fixnum display
-		      ((fixnum? obj)
-		       ($display-fixnum obj port))
-		      ;; char display
-		      ((char? obj)
-		       (if flag
-			   ($display-char obj port)
-			   ($write-char obj port)))
-		      ;; symbol display
-		      ((symbol? obj)
-		       (if flag
-			   (display-symbol obj port)
-			   (write-symbol obj port)))
-		      ;; string display
-		      ((string? obj)
-		       (if flag
-			   (display-string obj port)
-			   (write-string (string-for-read obj) port)))
-		      ;; pair display
-		      ((pair? obj)
-		       (putchar #\()
-		       (let loop ((l obj))
-			  (output-component (car l))
-			  (let ((rest (cdr l)))
-			     (if (null? rest)
-				 (putchar #\))
-				 (let ((match (assq rest cache)))
-				    (if (or (not (pair? rest))
-					    (and match (cdr match)))
-					(begin
-					   (display-string " . " port)
-					   (loop-matched rest match)
-					   (putchar #\)))
-					(begin
-					   (space)
-					   (loop rest))))))))
-		      ;; classes
-		      ((class? obj)
-		       (display obj port))
-		      ;; vector display
-		      ((vector? obj)
+		      ((fixnum? value)
+		       ;; emit reference like #0#
 		       (sharp)
-		       (let ((tag (vector-tag obj)))
-			  (if (>fx tag 0)
-			      (if (<fx tag 100)
-				  (begin
-				     (if (>fx tag 10) (putchar #\0))
-				     (putchar #\0))
-				  (write tag port))))
-		       (let ((len (vector-length obj)))
-			  (putchar #\()
-			  (let loop ((i 0))
-			     (if (not (=fx i len))
-				 (begin
-				    (output-component (vector-ref obj i))
-				    (let ((next (+fx 1 i)))
-				       (if (not (=fx next len))
-					   (space))
-				       (loop (+fx 1 i))))))
-			  (putchar #\))))
-		      ;; struct display
-		      ((struct? obj)
-		       (display-string #"#{" port)
-		       (write (struct-key obj) port)
-		       (space)
-		       (let ((len (struct-length obj)))
-			  (let loop ((i 0))
-			     (if (not (=fx i len))
-				 (begin
-				    (output-component (struct-ref obj i))
-				    (let ((next (+fx 1 i)))
-				       (if (not (=fx next len))
-					   (space))
-				       (loop (+fx 1 i)))))))
-		       (putchar #\}))
-		      ;; cell display
-		      ((cell? obj)
-		       (display-string #"#<cell:" port)
-		       (output-component (cell-ref obj))
-		       (display-string #">" port))
-		      ;; object display
-		      ((object? obj)
-		       (object-print obj port (lambda (x . p)
-						 (output-component x))))
-		      ;; ucs2 string display
-		      ((ucs2-string? obj)
-		       (if flag
-			   (display-ucs2string obj port)
-			   (write-ucs2string obj port)))
-		      ;; ucs2 display
-		      ((ucs2? obj)
-		       (if flag
-			   ($display-ucs2 obj port)
-			   ($write-ucs2 obj port)))
-		      ;; flonum display
-		      ((flonum? obj)
-		       (display-flonum obj port))
-		      ;; date
-		      ((date? obj)
-		       (if flag
-			   (display obj port)
-			   (write obj port)))
-		      ;; mutex
-		      ((mutex? obj)
-		       (display-string "#<mutex:" port)
-		       (display (mutex-name obj) port)
-		       (display-string ">" port))
-		      ;; condition variable
-		      ((condition-variable? obj)
-		       (display-string "#<condition-variable:" port)
-		       (display (condition-variable-name obj) port)
-		       (display-string ">" port))
-		      ;; default displayer
+		       (output-component value)
+		       (sharp))
+		      (value
+		       ;;; emit target as #0=<the object>
+		       (let ((serial (next-cardinal)))
+			  (set-cdr! match serial)
+			  (sharp)
+			  (output-component serial)
+			  (putchar #\=)
+			  ;; emit object itself
+			  (loop-matched obj #f)))
 		      (else
-		       (write obj port))))))))
+		       ;; object referenced just once, just emit it
+		       (loop-matched obj #f))))
+		(cond
+		   ;; fixnum display
+		   ((fixnum? obj)
+		    ($display-fixnum obj port))
+		   ;; char display
+		   ((char? obj)
+		    (if flag
+			($display-char obj port)
+			($write-char obj port)))
+		   ;; symbol display
+		   ((symbol? obj)
+		    (if flag
+			(display-symbol obj port)
+			(write-symbol obj port)))
+		   ;; string display
+		   ((string? obj)
+		    (if flag
+			(display-string obj port)
+			(write-string (string-for-read obj) port)))
+		   ;; pair display
+		   ((pair? obj)
+		    (putchar #\()
+		    (let loop ((l obj))
+		       (output-component (car l))
+		       (let ((rest (cdr l)))
+			  (if (null? rest)
+			      (putchar #\))
+			      (let ((match (assq rest cache)))
+				 (if (or (not (pair? rest))
+					 (and match (cdr match)))
+				     (begin
+					(display-string " . " port)
+					(loop-matched rest match)
+					(putchar #\)))
+				     (begin
+					(space)
+					(loop rest))))))))
+		   ;; classes
+		   ((class? obj)
+		    (display obj port))
+		   ;; vector display
+		   ((vector? obj)
+		    (sharp)
+		    (let ((tag (vector-tag obj)))
+		       (if (>fx tag 0)
+			   (if (<fx tag 100)
+			       (begin
+				  (if (>fx tag 10) (putchar #\0))
+				  (putchar #\0))
+			       (write tag port))))
+		    (let ((len (vector-length obj)))
+		       (putchar #\()
+		       (let loop ((i 0))
+			  (if (not (=fx i len))
+			      (begin
+				 (output-component (vector-ref obj i))
+				 (let ((next (+fx 1 i)))
+				    (if (not (=fx next len))
+					(space))
+				    (loop (+fx 1 i))))))
+		       (putchar #\))))
+		   ;; struct display
+		   ((struct? obj)
+		    (display-string #"#{" port)
+		    (write (struct-key obj) port)
+		    (space)
+		    (let ((len (struct-length obj)))
+		       (let loop ((i 0))
+			  (if (not (=fx i len))
+			      (begin
+				 (output-component (struct-ref obj i))
+				 (let ((next (+fx 1 i)))
+				    (if (not (=fx next len))
+					(space))
+				    (loop (+fx 1 i)))))))
+		    (putchar #\}))
+		   ;; cell display
+		   ((cell? obj)
+		    (display-string #"#<cell:" port)
+		    (output-component (cell-ref obj))
+		    (display-string #">" port))
+		   ;; object display
+		   ((object? obj)
+		    (object-print obj port (lambda (x . p)
+					      (output-component x))))
+		   ;; ucs2 string display
+		   ((ucs2-string? obj)
+		    (if flag
+			(display-ucs2string obj port)
+			(write-ucs2string obj port)))
+		   ;; ucs2 display
+		   ((ucs2? obj)
+		    (if flag
+			($display-ucs2 obj port)
+			($write-ucs2 obj port)))
+		   ;; flonum display
+		   ((flonum? obj)
+		    (display-flonum obj port))
+		   ;; date
+		   ((date? obj)
+		    (if flag
+			(display obj port)
+			(write obj port)))
+		   ;; mutex
+		   ((mutex? obj)
+		    (display-string "#<mutex:" port)
+		    (display (mutex-name obj) port)
+		    (display-string ">" port))
+		   ;; condition variable
+		   ((condition-variable? obj)
+		    (display-string "#<condition-variable:" port)
+		    (display (condition-variable-name obj) port)
+		    (display-string ">" port))
+		   ;; default displayer
+		   (else
+		    (write obj port)))))))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Dec 16 11:57:48 2011 (serrano)                */
-;*    Copyright   :  2010-11 Manuel Serrano                            */
+;*    Last change :  Sun Jan 15 20:40:30 2012 (serrano)                */
+;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -188,13 +188,14 @@
 		(cond
 		   ((null? fields)
 		    node)
-		   (klass
-		    ;;;
+		   ((class? klass)
 		    (let ( (field (find-class-field klass (car fields))) )
 		       (if (class-field? field)
 			   (let ( (node (make-class-field-ref
 					   field node loc tail?)) )
-			      (loop node (class-field-type field) (cdr fields)) )
+			      (loop node
+				 (class-field-type field)
+				 (cdr fields)) )
 			   (evcompile-error loc type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
 			      e) )))
@@ -217,8 +218,7 @@
 		(cond
 		   ((null? fields)
 		    node)
-		   (klass
-		    ;;;
+		   ((class? klass)
 		    (let ( (field (find-class-field klass (car fields))) )
 		       (if (class-field? field)
 			   (if (null? (cdr fields))
@@ -230,7 +230,9 @@
 				      e))
 			       (let ( (node (make-class-field-ref
 					       field node loc tail?)) )
-				  (loop node (class-field-type field) (cdr fields)) ))
+				  (loop node
+				     (class-field-type field)
+				     (cdr fields)) ))
 			   (evcompile-error loc type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
 			      e) )))
