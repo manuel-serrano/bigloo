@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Dec  5 19:52:06 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Mon Jan 16 08:07:34 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
 ;*=====================================================================*/
@@ -290,14 +290,25 @@
 ;*    mime-type ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (mime-type path)
-   (cond
-      ((string-suffix? ".mp3" path) "audio/mpeg")
-      ((string-suffix? ".ogg" path) "application/ogg")
-      ((string-suffix? ".flac" path) "application/x-flac")
-      ((string-suffix? ".wav" path) "audio/x-wav")
-      ((string-suffix? ".swf" path) "application/x-shockwave-flash")
-      ((string-suffix? ".swfl" path) "application/x-shockwave-flash")
-      (else "audio/binary")))
+   
+   (define (mime-type-file path)
+      (cond
+	 ((string-suffix? ".mp3" path) "audio/mpeg")
+	 ((string-suffix? ".ogg" path) "application/ogg")
+	 ((string-suffix? ".flac" path) "application/x-flac")
+	 ((string-suffix? ".wav" path) "audio/x-wav")
+	 ((string-suffix? ".swf" path) "application/x-shockwave-flash")
+	 ((string-suffix? ".swfl" path) "application/x-shockwave-flash")
+	 (else "audio/binary")))
+   
+   (if (and (string-prefix? "http" path)
+	    (or (string-prefix? "http://" path)
+		(string-prefix? "https://" path)))
+       (let ((i (string-index-right path #\?)))
+	  (if (>fx i 0)
+	      (mime-type (substring path 6 i))
+	      (mime-type-file path)))
+       (mime-type-file path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    playlist-play! ...                                               */

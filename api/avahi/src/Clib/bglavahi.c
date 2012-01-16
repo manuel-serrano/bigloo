@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Dec 20 12:26:35 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Mon Jan 16 09:29:20 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*=====================================================================*/
@@ -417,7 +417,7 @@ bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
 					 void *udata ) {
    obj_t o = (obj_t)udata;
    obj_t proc = BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o );
-   
+
    if( !BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) )
       BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
       
