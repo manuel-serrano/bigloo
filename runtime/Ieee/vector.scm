@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Jan 11 09:22:50 2012 (serrano)                */
+;*    Last change :  Tue Jan 17 16:58:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -311,11 +311,11 @@
        (let ((vec (cond
 		     ((vector? obj)
 		      (let* ((len (vector-length obj))
-			     (new (make-vector len)))
+			     (new ($create-vector len)))
 			 (let loop ((i 0))
 			    (if (<fx i len)
 				(begin
-				   (vector-set! new i (vector-ref obj i))
+				   (vector-set-ur! new i (vector-ref-ur obj i))
 				   (loop (+fx i 1)))))
 			 new))
 		     ((pair? obj)
@@ -379,4 +379,4 @@
 	 ((every? (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
 	  (vector-mapN! proc v v rest))
 	 (else
-	  (error "vector-map" "Illegal arguments" rest)))))
+	  (error "vector-map!" "Illegal arguments" rest)))))

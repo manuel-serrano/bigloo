@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Dec 20 09:17:06 2011 (serrano)                */
+/*    Last change :  Tue Jan 17 17:19:12 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -976,7 +976,7 @@ struct bgl_input_timeout {
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      const na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -989,7 +989,7 @@ struct bgl_input_timeout {
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      const na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
              (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1035,7 +1035,7 @@ struct bgl_input_timeout {
       static const obj_t n = BREF( &(na.header) )
 
 #define DEFINE_BGL_L_PROCEDURE( n, na, e ) \
-   static struct { __CNST_ALIGN ; \
+   static const struct { __CNST_ALIGN ; \
                    union scmobj *(*entry)(); } \
       na = { __CNST_FILLER, (obj_t (*)())e }; \
       static const obj_t n = BLIGHT( &(na.entry) )
