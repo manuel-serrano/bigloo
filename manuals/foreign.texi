@@ -38,6 +38,39 @@ The C interface is active (that is the @code{extern} module clauses are
 read) only when compiling to C. So, when compiling to Jvm the binding
 declared in an @code{extern} clause are not bound.
 
+Connecting Bigloo code with C is generally straightforward. To illustrate
+this simplicity, let us consider a simple example involving two source
+files. First a simple C file @code{sum.c} containing a single declaration:
+
+@smalllisp
+int sum(int x, int y) { return x + y; }
+@end smalllisp
+
+Then, let us assume a Bigloo source code @code{main.scm} that makes
+uses of that C function:
+
+@smalllisp
+(module foo
+   (extern (sum::int (::int ::int) "sum"))
+   (main main))
+
+(define (main x)
+   (print (sum (length x) 10)))
+@end smalllisp
+
+With a Unix installation of Bigloo, this program can be compiled and
+executed with the following commands:
+
+@smalllisp
+  $ gcc sum.c -c
+  $ bigloo main.scm sum.o -o main
+  $ ./main 1 2 3
+@end smalllisp
+
+The connection between Scheme and C is made particularly easy by Bigloo
+because the programmer is free from inserting conversion between Scheme values
+and C values. When needed, these are automatically inserted by the compiler.
+
 @menu
 * The syntax of the foreign declarations::  
 * The very dangerous pragma Bigloo special forms::  

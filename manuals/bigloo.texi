@@ -284,9 +284,6 @@ simple tail recursions are compiled without stack consumption.
 @item Alternatively, Bigloo may produce JVM (Java Virtual Machine byte code)
 class files. These classes may use regular Java classes.
 
-@item Bigloo can also produce .NET class files. These classes may use 
-regular .NET machines such as mono.
-
 @item Bigloo is a module compiler. It compiles
 modules into `.o', `.class', or `.obj' files that must be linked together to 
 produce stand alone executable programs, JVM jar files, or .NET programs.
@@ -338,7 +335,7 @@ to the already existing outside world of C.
 This connection has two components: a function call interface and a data
 storage interface. Bigloo code is able to call C code and vice versa; Bigloo
 data storage is accessible from C and vice versa. There are no frontiers
-between the Bigloo and C worlds.
+between the Bigloo and C worlds. See @ref{C Interface} for details.
 
 @section Java interface
 
@@ -350,7 +347,8 @@ C connection.
 This connection has two components: a function call interface and a data
 storage interface. Bigloo code is able to call Java code and vice versa;
 Bigloo data storage is accessible from Java and vice versa. There are no
-frontiers between the Bigloo and Java worlds.
+frontiers between the Bigloo and Java worlds. See @ref{Java Interface} for 
+extra details.
 
 @section Object language
 
