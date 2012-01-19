@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  2 09:58:46 2008                          */
-;*    Last change :  Mon Dec  5 19:51:57 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Last change :  Thu Jan 19 17:12:47 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the Music Event Loop                       */
 ;*=====================================================================*/
@@ -85,36 +85,40 @@
 	    (mutex-unlock! %loop-mutex)
 	    (unless stop
 	       (music-update-status! m stat2)
-	       (when (newstate? stat2 stat1)
-		  (with-access::musicstatus stat2 (state err songig)
-		     (case state
-			((error)
-			 (when (and onerror err)
-			    ;; onerror
-			    (onerror err)))
-			((play)
-			 ;; onstate
-			 (when onstate
-			    (onstate stat2))
-			 ;; onmeta
-			 (when onmeta
-			    (onmeta (music-get-meta stat2 m))))
-			((ended)
-			 ;; onstate
-			 (when onstate
-			    (onstate stat2))
-			 (with-access::musicstatus stat2 (song playlistlength)
-			    (when (<fx song (-fx playlistlength 1))
-			       (music-next m))))
-			((skip)
-			 ;; as ended but do not raise the onstate event
-			 (with-access::musicstatus stat2 (song playlistlength)
-			    (when (<fx song (-fx playlistlength 1))
-			       (music-next m))))
-			(else
-			 ;; onstate
-			 (when onstate
-			    (onstate stat2))))))
+	       (cond
+		  ((newstate? stat2 stat1)
+		   (with-access::musicstatus stat2 (state err songig)
+		      (case state
+			 ((error)
+			  (when (and onerror err)
+			     ;; onerror
+			     (onerror err)))
+			 ((play)
+			  ;; onstate
+			  (when onstate
+			     (onstate stat2))
+			  ;; onmeta
+			  (when onmeta
+			     (onmeta (music-get-meta stat2 m))))
+			 ((ended)
+			  ;; onstate
+			  (when onstate
+			     (onstate stat2))
+			  (with-access::musicstatus stat2 (song playlistlength)
+			     (when (<fx song (-fx playlistlength 1))
+				(music-next m))))
+			 ((skip)
+			  ;; as ended but do not raise the onstate event
+			  (with-access::musicstatus stat2 (song playlistlength)
+			     (when (<fx song (-fx playlistlength 1))
+				(music-next m))))
+			 (else
+			  ;; onstate
+			  (when onstate
+			     (onstate stat2))))))
+		  ((newsong? stat2 stat1)
+		   (with-access::musicstatus stat2 (state)
+		      (set! state 'init))))
 	    
 	       (when (and onvol (newvolume? stat2 stat1))
 		  ;; onvolume

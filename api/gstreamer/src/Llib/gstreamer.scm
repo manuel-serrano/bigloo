@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Tue Nov 15 17:36:54 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Thu Jan 19 10:02:34 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of GSTREAMER applications.                      */
 ;*=====================================================================*/
@@ -105,6 +105,7 @@
 	 ;; the thread in charge of executing all callbacks
 	 (set! *gst-thread*
 	       (instantiate::pthread
+		  (name "gst")
 		  (body (lambda ()
 			   (mutex-lock! *gst-mutex*)
 			   (let loop ()

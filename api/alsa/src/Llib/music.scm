@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jan 16 08:07:34 2012 (serrano)                */
+;*    Last change :  Thu Jan 19 18:14:46 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -37,7 +37,7 @@
 	    (class alsabuffer
 	       (port::input-port read-only)
 	       (readsz::long read-only (default 8192))
-	       ;; the state is either empty:0, filled:1, full:2, stop:3, or ended:4
+	       ;; state is either empty:0, filled:1, full:2, stop:3, or ended:4
 	       (%!bstate::int (default 0))
 	       (%eof::bool (default #f))
 	       (%bcondv::condvar read-only (default (make-condition-variable)))
@@ -190,7 +190,7 @@
       %status))
 
 ;*---------------------------------------------------------------------*/
-;*    music-update-status! ::mpg123 ...                                */
+;*    music-update-status! ::alsamusic ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-update-status! o::alsamusic status)
    (with-access::alsamusic o (%amutex %status)
@@ -305,7 +305,7 @@
 	    (or (string-prefix? "http://" path)
 		(string-prefix? "https://" path)))
        (let ((i (string-index-right path #\?)))
-	  (if (>fx i 0)
+	  (if i
 	      (mime-type (substring path 6 i))
 	      (mime-type-file path)))
        (mime-type-file path)))
@@ -446,7 +446,7 @@
 	  (err "tail >= buffer.length"))
 	 ((>=fx %head inlen)
 	  (err "head >= buffer.length")))))
-	 
+
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
@@ -505,6 +505,7 @@
 	       " tl=" %!tail " hd=" %head " eof=" %eof))
 	 (cond
 	    ((or (>=fx %!bstate 3) %eof)
+	     (close-input-port port)
 	     (mutex-lock! %bmutex)
 	     (condition-variable-broadcast! %bcondv)
 	     (mutex-unlock! %bmutex))
