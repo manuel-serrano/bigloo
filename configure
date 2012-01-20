@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Dec 17 07:16:50 2011 (serrano)                */
-#*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jan 20 09:24:53 2012 (serrano)                */
+#*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -2388,10 +2388,17 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     echo "   shared library: no"
     haveshlib=0
   else
-    ldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt" --ldlibs="-lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
-    if [ "$ldopt" = "no-share" ]; then
-      ldopt=`$autoconf ldshare --ld="ld" --ldopt="$ldopt" --ldlibs="-lc" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
+    ldlibs=-lc
+
+    if [ "$hostos" = "mingw" ]; then
+      ldlibs=""
     fi
+    
+    ldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
+    if [ "$ldopt" = "no-share" ]; then
+      ldopt=`$autoconf ldshare --ld="ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"` || exit 1
+    fi
+
     if [ "$ldopt" = "no-share" ]; then
       haveshlib=0
       cpicflags="-DBGL_NO_PIC"

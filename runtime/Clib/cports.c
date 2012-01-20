@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec  2 13:39:48 2011 (serrano)                */
+/*    Last change :  Fri Jan 20 09:30:35 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -36,7 +36,11 @@
 #endif
 
 #if POSIX_FILE_OPS
-#   include <unistd.h>
+#  include <unistd.h>
+
+#  ifndef O_BINARY
+#    define O_BINARY 0
+#  endif 
 #endif
 
 #if HAVE_TERMIOS
@@ -79,7 +83,7 @@
 #  define _CLOSE close
 #  define _FILENO fileno
 #  define _FD int
-#  define _CREAT( name, mod ) creat( name, mod )
+#  define _CREAT( name, mod ) open( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mod )
 #  define _OPEN( name, flag, mod ) open( name, flag, mod )
 #  define _FSTAT fstat
 #  define _READ read
@@ -804,7 +808,7 @@ BGL_RUNTIME_DEF obj_t
 bgl_append_output_file( obj_t name, obj_t buf ) {
    _FD fd;
    
-   if( (fd = _OPEN( BSTRING_TO_STRING( name ), O_CREAT | O_WRONLY, OMOD )) < 0 )
+   if( (fd = _OPEN( BSTRING_TO_STRING( name ), O_CREAT | O_WRONLY | O_BINARY, OMOD )) < 0 )
       return BFALSE;
    else {
       if( _LSEEK( fd, 0, SEEK_END ) < 0 ) {
