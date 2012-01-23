@@ -6293,6 +6293,10 @@ public final class foreign
       return new mmaps( s, r, w );
    }
 
+   public static byte[] bgl_mmap_to_string( mmap m ) {
+      return m.map.array();
+   }
+
    public static Object bgl_close_mmap( mmap o ) {
       return o.close();
    }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Jan 22 21:02:24 2012 (serrano)                */
+;*    Last change :  Mon Jan 23 08:26:54 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -159,10 +159,11 @@
    
    (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
-	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate %inbuf
+	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate
+					     %inbuf %inbufp %inlen
 					     %!tail %head %eof)
 	    
-	    (define inlen (string-length %inbuf))
+	    (define inlen %inlen)
 	    
 	    (define flacbuf (custom-identifier %flacbuf))
 	    
@@ -212,9 +213,9 @@
 		   ;;; the decoder is asked to pause
 		   (with-access::alsamusic am (%status)
 		      (with-access::musicstatus %status (songpos)
-			 (with-access::alsabuffer %buffer (%inbuf)
+			 (with-access::alsabuffer %buffer (%inbufp)
 			    (set! songpos
-			       (alsadecoder-position %decoder %inbuf)))))
+			       (alsadecoder-position %decoder %inbufp)))))
 		   (mutex-lock! %dmutex)
 		   (if %!dpause
 		       (let liip ()
@@ -249,7 +250,7 @@
 				    (-fx %head %!tail)
 				    (-fx inlen %!tail)))))
 		      (when (>fx sz 0)
-			 ($flac-blit-string! %inbuf %!tail flacbuf 0 sz))
+			 ($flac-blit-string! %inbufp %!tail flacbuf 0 sz))
 		      (when (>fx debug 0)
 			 (tprint ">>> read.inc-tail sz=" sz))
 		      (inc-tail! sz)

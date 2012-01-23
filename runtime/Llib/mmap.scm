@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Mon Jan 23 07:49:52 2012 (serrano)                */
+;*    Last change :  Mon Jan 23 08:13:57 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
@@ -45,6 +45,7 @@
    (extern  (macro $mmap?::bool (::obj) "BGL_MMAPP")
 	    (macro $mmap-open::mmap (::bstring ::bool ::bool) "bgl_open_mmap")
 	    (macro $string->mmap::mmap (::bstring ::bool ::bool) "bgl_string_to_mmap")
+	    (macro $mmap->string::string (::mmap) "BGL_MMAP_TO_STRING")
 	    (macro $mmap-close::obj (::mmap) "bgl_close_mmap")
 	    (macro $mmap-length::elong (::mmap) "BGL_MMAP_LENGTH")
 	    (macro $mmap-name::obj (::mmap) "BGL_MMAP_NAME")
@@ -58,35 +59,38 @@
    
    (java    (class foreign
 	       (method static $mmap?::bool (::obj)
-		       "BGL_MMAPP")
+		  "BGL_MMAPP")
 	       (method static $mmap-open::mmap (::bstring ::bool ::bool)
-		       "bgl_open_mmap")
+		  "bgl_open_mmap")
 	       (method static $string->mmap::mmap (::bstring ::bool ::bool)
-		       "bgl_string_to_mmap")
+		  "bgl_string_to_mmap")
+	       (method static $mmap->string::string (::mmap)
+		  "bgl_mmap_to_string")
 	       (method static $mmap-close::obj (::mmap)
-		       "bgl_close_mmap")
+		  "bgl_close_mmap")
 	       (method static $mmap-length::elong (::mmap)
-		       "BGL_MMAP_LENGTH")
+		  "BGL_MMAP_LENGTH")
 	       (method static $mmap-name::obj (::mmap)
-		       "BGL_MMAP_NAME")
+		  "BGL_MMAP_NAME")
 	       (method static $mmap-ref::uchar (::mmap ::elong)
-		       "BGL_MMAP_REF")
+		  "BGL_MMAP_REF")
 	       (method static $mmap-set!::obj (::mmap ::elong ::uchar)
-		       "BGL_MMAP_SET")
+		  "BGL_MMAP_SET")
 	       (method static $mmap-rp::elong (::mmap)
-		       "BGL_MMAP_RP_GET")
+		  "BGL_MMAP_RP_GET")
 	       (method static $mmap-rp-set!::void (::mmap ::elong)
-		       "BGL_MMAP_RP_SET")
+		  "BGL_MMAP_RP_SET")
 	       (method static $mmap-wp::elong (::mmap)
-		       "BGL_MMAP_WP_GET")
+		  "BGL_MMAP_WP_GET")
 	       (method static $mmap-wp-set!::void (::mmap ::elong)
-		       "BGL_MMAP_WP_SET")	
+		  "BGL_MMAP_WP_SET")	
 	       (method static $mmap-bound-check?::bool (::elong ::elong)
-		       "BOUND_CHECK")))
+		  "BOUND_CHECK")))
    
    (export  (inline mmap?::bool ::obj)
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (string->mmap::mmap ::bstring #!key (read #t) (write #t))
+	    (inline mmap->string::string ::mmap)
 	    (inline close-mmap ::mmap)
 	    (inline mmap-length::elong ::mmap)
 	    (inline mmap-read-position::elong ::mmap)
@@ -121,7 +125,13 @@
 ;*---------------------------------------------------------------------*/
 (define (string->mmap s::bstring #!key (read #t) (write #t))
    ($string->mmap s read write))
-   
+
+;*---------------------------------------------------------------------*/
+;*    mmap->string ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap->string::string mmap::mmap)
+   ($mmap->string mmap))
+
 ;*---------------------------------------------------------------------*/
 ;*    close-mmap ...                                                   */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Fri Jan  6 09:45:41 2012 (serrano)                */
+;*    Last change :  Mon Jan 23 08:23:06 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -220,7 +220,7 @@
       `(lambda (,tnew)
 	  ,@(map (lambda (s)
 		    `(set! ,(field-access new (slot-id s))
-			,(type-nil-value (slot-type s))))
+			,(type-nil-value (slot-type s) s)))
 	       plain-slots)
 	  ,new)))
    

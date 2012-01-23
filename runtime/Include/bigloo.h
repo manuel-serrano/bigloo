@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 17 17:19:12 2012 (serrano)                */
+/*    Last change :  Mon Jan 23 08:09:38 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1996,6 +1996,8 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_MMAP( o ) CREF( o )->mmap_t
 
 #define BGL_MMAPP( o ) (POINTERP( o ) && (TYPE( o ) == MMAP_TYPE))
+
+#define BGL_MMAP_TO_STRING( s ) (BGL_MMAP( s ).map)
    
 #define BGL_MMAP_LENGTH( s ) BGL_MMAP( s ).length
 #define BGL_MMAP_NAME( s ) BGL_MMAP( s ).name

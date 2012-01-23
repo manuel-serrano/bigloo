@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Jan 23 07:52:37 2012 (serrano)                */
+;*    Last change :  Mon Jan 23 08:14:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -99,10 +99,11 @@
    (with-access::alsamusic am (pcm outbuf %status onerror)
       (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv
 					      %!dstate %!dabort %!dpause)
-	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate %inbuf
+	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate
+					    %inbufp %inlen
 					    %!tail %head %eof)
 	    
-	    (define inlen (string-length %inbuf))
+	    (define inlen %inlen)
 	    
 	    (define outlen (string-length outbuf))
 	    
@@ -159,8 +160,8 @@
 		  (%!dpause
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
-		      (with-access::alsabuffer buffer (%inbuf)
-			 (set! songpos (alsadecoder-position dec %inbuf))))
+		      (with-access::alsabuffer buffer (%inbufp)
+			 (set! songpos (alsadecoder-position dec %inbufp))))
 		   (mutex-lock! %dmutex)
 		   (if %!dpause
 		       (let liip ()
@@ -194,7 +195,7 @@
 					 (-fx %head %!tail)
 					 (-fx inlen %!tail)))))
 		      (let ((status ($bgl-mpg123-decode
-				       %mpg123 %inbuf %!tail s outbuf outlen)))
+				       %mpg123 %inbufp %!tail s outbuf outlen)))
 			 (when (>fx debug 3)
 			    (tprint "dec.2 s=" s
 			       " tl=" %!tail " hd=" %head
@@ -257,8 +258,8 @@
 	       :start-threshold 1
 	       :avail-min 1)))
       (with-access::musicstatus %status (songpos songlength bitrate khz)
-	 (with-access::alsabuffer buffer (%inbuf)
-	    (set! songpos (alsadecoder-position dec %inbuf)))
+	 (with-access::alsabuffer buffer (%inbufp)
+	    (set! songpos (alsadecoder-position dec %inbufp)))
 	 (set! songlength 0)
 	 (when (<fx songlength songpos)
 	    (set! songlength songpos))

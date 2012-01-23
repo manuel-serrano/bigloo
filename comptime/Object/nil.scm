@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Thu Nov 17 05:45:45 2011 (serrano)                */
-;*    Copyright   :  2004-11 Manuel Serrano                            */
+;*    Last change :  Mon Jan 23 08:24:47 2012 (serrano)                */
+;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
 ;*=====================================================================*/
@@ -36,7 +36,7 @@
    (export  (import-class-nil ::tclass ::pair ::symbol)
 	    (gen-plain-class-nil ::tclass ::pair ::symbol)
 	    (gen-wide-class-nil ::tclass ::pair ::symbol)
-	    (type-nil-value ::obj)))
+	    (type-nil-value ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    import-class-nil ...                                             */
@@ -156,7 +156,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-nil-value ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (type-nil-value type)
+(define (type-nil-value type slot)
    (cond
       ((tclass? type)
        `(class-nil ,(symbol-append (type-id type))))
@@ -196,6 +196,7 @@
 	  ((output-port) '(current-output-port))
 	  ((error-port) '(current-output-port))
 	  ((binary-port) '(current-output-port))
+	  ((mmap) '(string->mmap ""))
 	  ((date) '(current-date))
 	  ((obj unspec) #unspecified)
 	  ((cell) '(make-cell #unspecified))
