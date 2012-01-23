@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Thu Jan 19 16:35:58 2012 (serrano)                */
+;*    Last change :  Fri Jan 20 16:56:53 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -425,7 +425,6 @@
 			       (proc "alsa-snd-pcm-hw-set-params!")
 			       (msg (format "Missing value for param \"~a\"" (car rest)))
 			       (obj pcm))))
-;* 		  (tprint "hw params " (car rest) ": " (cadr rest))    */
 		  (check-error
 		     (car rest)
 		     (case (car rest)
@@ -433,11 +432,9 @@
 			 ($snd-pcm-hw-params-set-rate-resample!
 			    $builtin $hw (cadr rest)))
 			((:access)
-;* 			 (tprint (symbol->access (cadr rest)))         */
 			 ($snd-pcm-hw-params-set-access!
 			    $builtin $hw (symbol->access (cadr rest))))
 			((:format)
-;* 			 (tprint (symbol->format (cadr rest)))         */
 			 ($snd-pcm-hw-params-set-format!
 			    $builtin $hw (symbol->format (cadr rest))))
 			((:channels)
@@ -464,10 +461,10 @@
 			 ($bgl-snd-pcm-hw-params-set-buffer-size-near!
 			    $builtin $hw (cadr rest)))
 			((:buffer-size-near-ratio)
-;* 			 (tprint "size-near: " (/fx rate (cadr rest))) */
 			 (set! bufsize
 			    ($bgl-snd-pcm-hw-params-set-buffer-size-near!
-			       $builtin $hw (/fx rate (cadr rest)))))
+			       $builtin $hw (/fx rate (cadr rest))))
+			 bufsize)
 			((:period-size)
 			 ($snd-pcm-hw-params-set-period-size!
 			    $builtin $hw (cadr rest) 0))
@@ -484,7 +481,8 @@
 			 (raise (instantiate::&alsa-error
 				   (proc "alsa-snd-pcm-hw-set-params!")
 				   (msg (format "Unknown parameter \"~a\"" (car rest)))
-				   (obj pcm))))))
+				   (obj pcm)))
+			 0)))
 		  (loop (cddr rest))))
 	    ($snd-pcm-hw-params $builtin $hw))
 	 ($bgl-snd-pcm-hw-params-free $hw))
@@ -559,10 +557,11 @@
 			 (raise (instantiate::&alsa-error
 				   (proc "alsa-snd-pcm-sw-set-params!")
 				   (msg (format "Unknown parameter \"~a\"" (car rest)))
-				   (obj pcm))))))
+				   (obj pcm)))
+			 0)))
 		  (loop (cddr rest))))
 	    (check-error #f ($snd-pcm-sw-params $builtin $sw)))
-	 (check-error #f ($bgl-snd-pcm-sw-params-free $sw)))
+	 ($bgl-snd-pcm-sw-params-free $sw))
       #unspecified))
 		       
 ;*---------------------------------------------------------------------*/

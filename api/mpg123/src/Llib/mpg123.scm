@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Nov 15 20:47:09 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Sat Jan 21 18:56:04 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
 ;*=====================================================================*/
@@ -35,6 +35,7 @@
 	   (mpg123-param-get ::mpg123-handle ::symbol)
 	   (mpg123-error::int ::string ::string ::obj)
 	   (mpg123-decode ::mpg123-handle ::bstring ::long ::long ::bstring ::long)
+	   (mpg123-decode-status->symbol::symbol ::int)
 	   (mpg123-position::long ::mpg123-handle ::bstring)
 	   (mpg123-info::long ::mpg123-handle)
 	   (mpg123-seek::long ::mpg123-handle ::long)

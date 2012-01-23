@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Mon Oct 24 16:33:31 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Fri Jan 20 17:27:09 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
 ;*=====================================================================*/
@@ -71,6 +71,18 @@
 	  (set! device dev))
 	 (else
 	  (set! files (append (directory->files else) files))))
+
+      (define (onstate o state)
+	 (tprint "state: " state))
+
+      (define (onerror o e)
+	 (tprint "error: " e))
+
+      (define (onvolume o v)
+	 (tprint "volume: " v))
+
+      (define (onevent o e v)
+	 (tprint "event: " e " " v))
       
       (when (pair? files)
 	 (let* ((pcm (instantiate::alsa-snd-pcm
@@ -78,6 +90,10 @@
 		(decoder (instantiate::mpg123-alsadecoder
 			    (mimetypes '("audio/mpeg"))))
 		(player (instantiate::alsamusic
+			   (onstate onstate)
+			   (onerror onerror)
+			   (onvolume onvolume)
+			   (onevent onevent)
 			   (outbuf (make-string (* 16 1024)))
 			   (inbuf (make-string (* 16 1024)))
 			   (decoders (list decoder))
@@ -89,27 +105,5 @@
 			 (print "  " p)
 			 (music-playlist-add! player p))
 	       (reverse files))
-	    (music-play player)
-	    (music-event-loop player
-	       :frequency 2000000
-	       :onstate (lambda (status)
-			   (with-access::musicstatus status (state song volume
-							       songpos
-							       songlength)
-			      (print "state: " state)
-			      (case state
-				 ((play)
-				  (print "song: " (list-ref (music-playlist-get player)  song)
-				     " [" songpos "/" songlength "]"))
-				 ((ended)
-				  (newline)
-				  (when (=fx song (-fx (length files) 1))
-				     (exit 0))))))
-	       :onmeta (lambda (meta)
-			  (print "meta: " meta)
-			  (print "playlist: " (length (music-playlist-get player))))
-	       :onerror (lambda (err)
-			   (print "error: " err))
-	       :onvolume (lambda (volume)
-			    (print "volume: " volume)))))))
+	    (music-play player)))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  8 07:29:03 1998                          */
-;*    Last change :  Wed Jun 13 11:52:03 2007 (serrano)                */
+;*    Last change :  Fri Jan 20 11:05:33 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `Unix Development Environment' custom environment. This      */
 ;*    file contains all the Ude defcustom and Ude defface.             */
@@ -27,7 +27,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    URL browsers                                                     */
 ;*---------------------------------------------------------------------*/
-(defcustom ude-url-browser "netscape"
+(defcustom ude-url-browser "firefox"
   "*The binary file to run for browing URLs or nil for Emacs mode."
   :group 'ude
   :type '(choice string (const nil)))

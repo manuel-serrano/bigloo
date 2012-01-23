@@ -237,7 +237,7 @@ The function @var{with-lock} might be implemented as:
 @deffnx {SRFI-18 function} condition-variable-name @var{cv}
 @deffnx {SRFI-18 function} condition-variable-specific @var{cv}
 @deffnx {SRFI-18 function} condition-variable-specific-set! @var{cv} @var{obj}
-@deffnx {SRFI-18 function} condition-variable-wait! @var{cv} @var{mutex}
+@deffnx {SRFI-18 function} condition-variable-wait! @var{cv} @var{mutex} [timeout]
 @deffnx {SRFI-18 function} condition-variable-signal! @var{cv}
 @deffnx {SRFI-18 function} condition-variable-broadcast! @var{cv}
 @smalllisp

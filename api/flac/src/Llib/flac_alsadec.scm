@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Dec 11 20:23:11 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Sun Jan 22 21:02:24 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
 ;*=====================================================================*/
@@ -92,23 +92,6 @@
       (flac-decoder-seek %flac ms)))
 
 ;*---------------------------------------------------------------------*/
-;*    alsadecoder-stop ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-stop o::flac-alsadecoder am::alsamusic)
-   (with-access::flac-alsadecoder o (%flac %!pause %dcondv)
-      (with-access::alsamusic am (%buffer)
-	 (when (isa? %buffer alsabuffer)
-	    (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate)
-	       (when (<fx %!bstate 3)
-		  (set! %!bstate 3)
-		  (mutex-lock! %bmutex)
-		  (when %!pause
-		     (set! %!pause #f)
-		     (condition-variable-broadcast! %dcondv))
-		  (condition-variable-wait! %bcondv %bmutex)
-		  (mutex-unlock! %bmutex)))))))
-   
-;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::flac-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-decode dec::flac-alsadecoder
@@ -120,19 +103,20 @@
 	 (set! %alsamusic am)
 	 (set! %decoder dec)
 	 (with-access::alsamusic am (%amutex %status pcm)
-	    (with-access::musicstatus %status (state songpos songlength)
-	       (unwind-protect
-		  (flac-decoder-decode %flac)
-		  (with-access::alsabuffer %buffer (%!bstate  %bcondv %bmutex)
-		     (alsa-snd-pcm-cleanup pcm)
-		     (if (=fx %!bstate 3)
-			 (set! state 'stop)
-			 (begin
-			    (set! %!bstate 4)
-			    (set! state 'ended)))
-		     (mutex-lock! %bmutex)
-		     (condition-variable-broadcast! %bcondv)
-		     (mutex-unlock! %bmutex))))))))
+	    (unwind-protect
+	       (flac-decoder-decode %flac)
+	       (with-access::alsabuffer %buffer (%!bstate  %bcondv %bmutex %eof)
+		  (alsa-snd-pcm-cleanup pcm)
+		  (onstate am (if %eof 'ended 'stop))))))))
+
+;*---------------------------------------------------------------------*/
+;*    onstate ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (onstate am st)
+   (with-access::alsamusic am (onstate %status)
+      (with-access::musicstatus %status (state)
+	 (set! state st)
+	 (onstate am %status))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
@@ -164,8 +148,6 @@
 (define-method (flac-decoder-write o::flac-alsa size rate channels bps)
    (with-access::flac-alsa o (outbuf %alsamusic %buffer)
       (with-access::alsamusic %alsamusic (pcm %status)
-	 (with-access::musicstatus %status (state)
-	    (set! state 'play))
 	 (when (>fx size 0)
 	    (alsa-snd-pcm-write pcm outbuf size)
 	    #t))))
@@ -174,108 +156,103 @@
 ;*    flac-decoder-read ::flac-alsa ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
-   (with-access::flac-alsa o (port %flacbuf %buffer %alsamusic %decoder)
-      (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate %inbuf
-					  %!tail %head %eof)
-
-	 (define inlen (string-length %inbuf))
-	 
-	 (define flacbuf (custom-identifier %flacbuf))
-
-	 (define (available)
-	    (cond
-	       ((>fx %head %!tail) (-fx %head %!tail))
-	       ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
-	       (else 0)))
-
-	 (define (full-state?)
-	    (and (=fx %!bstate 2) (>fx inlen (*fx (available) 2))))
-	 
-	 (define (inc-tail! size)
-	    (set! %!tail (+fx %!tail size))
-	    (when (=fx %!tail inlen)
-	       (set! %!tail 0))
-	    (cond
-	       ((=fx %!tail %head)
-		;; set state empty
-		(mutex-lock! %bmutex)
-		(when (>fx debug 0)
-		   (with-access::alsabuffer %buffer (profile-lock)
-		      (set! profile-lock (+fx 1 profile-lock))
-		      (tprint "read.2, set empty (bs=0) size=" size
-			 " %eof=" %eof " mutex-lock=" profile-lock)))
-		(set! %!bstate 0)
-		(condition-variable-broadcast! %bcondv)
-		(mutex-unlock! %bmutex))
-	       ((full-state?)
-		;; set state filled
-		(mutex-lock! %bmutex)
-		(when (>fx debug 0)
-		   (with-access::alsabuffer %buffer (profile-lock)
-		      (set! profile-lock (+fx 1 profile-lock))
-		      (tprint "read.2, set filled (bs=1) size=" size
-			 " mutex-lock=" profile-lock)))
-		(set! %!bstate 1)
-		(condition-variable-broadcast! %bcondv)
-		(mutex-unlock! %bmutex)))
-	    (when (>fx debug 0)
-	       (alsabuffer-assert %buffer "decode")))
-	 
-	 (let loop ()
-	    (when (>fx debug 1)
-	       (tprint "read.1 bs=" %!bstate " tl=" %!tail " hd=" %head
-		  " %eof=" %eof " inlen=" inlen))
-	    (cond
-	       ((=fx %!bstate 3)
-		;; buffer stop, the buffer is done reading
-		-1)
-	       ((=fx %!bstate 0)
-		;; buffer empty
-		(if %eof
-		    (begin
-		       (when (>fx debug 1)
-			  (tprint "read.3 ended"))
-		       ;; buffer empty, and eof, we are done
-		       beof)
-		    (begin
-		       ;; buffer empty, wait to be filled
-		       (mutex-lock! %bmutex)
-		       (when (=fx %!bstate 0)
-			  ;; a kind of double check locking, correct, is
-			  ;; ptr read/write are atomic
-			  (when (>fx debug 0)
-			     (tprint ">>> read.2 bs=" 0))
-			  (condition-variable-wait! %bcondv %bmutex)
-			  (when (>fx debug 0)
-			     (tprint "<<< read.2 bs=" 0))
-			  (mutex-unlock! %bmutex))
-		       (loop))))
-	       ((with-access::alsadecoder %decoder (%!pause) %!pause)
-		;;; user request pause, swith to pause state and wait
-		;;; to be awaken
-		(with-access::alsamusic %alsamusic (%status)
-		   (with-access::musicstatus %status (state)
-		      (set! state 'pause))
-		   (with-access::alsadecoder %decoder (%dmutex %dcondv %!pause)
-		      (mutex-lock! %dmutex)
-		      (condition-variable-wait! %dcondv %dmutex)
-		      (mutex-unlock! %dmutex))
-		   (with-access::musicstatus %status (state)
-		      (set! state 'play)))
-		(loop))
-	       (else
-		(let ((sz (minfx size
-			     (if (>fx %head %!tail)
-				 (-fx %head %!tail)
-				 (-fx inlen %!tail)))))
-		   (when (>fx sz 0)
-		      (with-access::alsamusic %alsamusic (%status)
-			 (with-access::musicstatus %status (state)
-			    (set! state 'play)))
-		      ($flac-blit-string! %inbuf %!tail flacbuf 0 sz))
+   
+   (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder)
+      (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
+	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate %inbuf
+					     %!tail %head %eof)
+	    
+	    (define inlen (string-length %inbuf))
+	    
+	    (define flacbuf (custom-identifier %flacbuf))
+	    
+	    (define (available)
+	       (cond
+		  ((>fx %head %!tail) (-fx %head %!tail))
+		  ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
+		  (else 0)))
+	    
+	    (define (full-state?)
+	       (and (=fx %!bstate 2) (>fx inlen (*fx (available) 2))))
+	    
+	    (define (inc-tail! size)
+	       (set! %!tail (+fx %!tail size))
+	       (when (=fx %!tail inlen)
+		  (set! %!tail 0))
+	       (cond
+		  ((=fx %!tail %head)
+		   ;; set state empty
+		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (tprint ">>> read.inc-tail sz=" sz))
-		   (inc-tail! sz)
+		      (with-access::alsabuffer %buffer (profile-lock)
+			 (set! profile-lock (+fx 1 profile-lock))
+			 (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
+			    " %eof=" %eof " mutex-lock=" profile-lock)))
+		   (set! %!bstate 0)
+		   (condition-variable-broadcast! %bcondv)
+		   (mutex-unlock! %bmutex))
+		  ((full-state?)
+		   ;; set state filled
+		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (tprint "<<< read.inc-tail sz=" sz))
-		   sz)))))))
+		      (with-access::alsabuffer %buffer (profile-lock)
+			 (set! profile-lock (+fx 1 profile-lock))
+			 (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size
+			    " mutex-lock=" profile-lock)))
+		   (set! %!bstate 1)
+		   (condition-variable-broadcast! %bcondv)
+		   (mutex-unlock! %bmutex))))
+
+	    (let loop ()
+	       (when (>fx debug 1)
+		  (tprint "flac_decoder, read.1 bs=" %!bstate " tl=" %!tail " hd=" %head
+		     " %eof=" %eof " inlen=" inlen))
+	       (cond
+		  (%!dpause
+		   ;;; the decoder is asked to pause
+		   (with-access::alsamusic am (%status)
+		      (with-access::musicstatus %status (songpos)
+			 (with-access::alsabuffer %buffer (%inbuf)
+			    (set! songpos
+			       (alsadecoder-position %decoder %inbuf)))))
+		   (mutex-lock! %dmutex)
+		   (if %!dpause
+		       (let liip ()
+			  (onstate am 'pause)
+			  (condition-variable-wait! %dcondv %dmutex)
+			  (if %!dpause
+			      (liip)
+			      (begin
+				 (mutex-unlock! %dmutex)
+				 (onstate am 'play)
+				 (loop))))))
+		  (%!dabort
+		   -1)
+		  ((=fx %!bstate 0)
+		   ;; buffer empty
+		   (if %eof
+		       beof
+		       (begin
+			  ;; buffer empty, wait to be filled
+			  (mutex-lock! %bmutex)
+			  (when (=fx %!bstate 0)
+			     (when (>fx debug 0)
+				(tprint ">>> flac_decoder, wait empty"))
+			     (condition-variable-wait! %bcondv %bmutex)
+			     (when (>fx debug 0)
+				(tprint "<<< flac_decoder, wait empty"))
+			     (mutex-unlock! %bmutex))
+			  (loop))))
+		  (else
+		   (let ((sz (minfx size
+				(if (>fx %head %!tail)
+				    (-fx %head %!tail)
+				    (-fx inlen %!tail)))))
+		      (when (>fx sz 0)
+			 ($flac-blit-string! %inbuf %!tail flacbuf 0 sz))
+		      (when (>fx debug 0)
+			 (tprint ">>> read.inc-tail sz=" sz))
+		      (inc-tail! sz)
+		      (when (>fx debug 0)
+			 (tprint "<<< read.inc-tail sz=" sz))
+		      sz))))))))

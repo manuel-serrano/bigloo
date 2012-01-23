@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Tue Nov 15 18:27:20 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Fri Jan 20 18:07:56 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -18,10 +18,16 @@
    
    (export (class music
 	      (music-init)
+	      
+	      (onstate::procedure (default (lambda (o::music st::symbol) #f)))
+	      (onvolume::procedure (default (lambda (o::music vol::int) #f)))
+	      (onerror::procedure (default (lambda (o::music e) #f)))
+	      (onevent::procedure (default (lambda (o::music evt::symbol val) #f)))
+	      
 	      (%mutex::mutex (default (make-mutex)))
 	      (%loop-mutex::mutex (default (make-mutex)))
 	      (%loop-condv::condvar (default (make-condition-variable)))
-	      (%status::musicstatus (default (class-nil musicstatus)))
+	      (%status::musicstatus (default (instantiate::musicstatus)))
 	      (%abort-loop::bool (default #f))
 	      (%reset-loop::bool (default #f)))
 
@@ -103,7 +109,9 @@
 (define-generic (music-playlist-clear! m::music))
 
 (define-generic (music-update-status!::musicstatus m::music s::musicstatus))
-(define-generic (music-status::musicstatus m::music))
+(define-generic (music-status::musicstatus m::music)
+   (with-access::music m (%status)
+      %status))
 
 (define-generic (music-play m::music . song))
 (define-generic (music-seek m::music p::obj . song))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Thu Jan 19 16:36:14 2012 (serrano)                */
+;*    Last change :  Mon Jan 23 07:52:37 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -22,9 +22,15 @@
 	      (%mpg123 read-only (default (instantiate::mpg123-handle))))))
 
 ;*---------------------------------------------------------------------*/
+;*    $compiler-debug ...                                              */
+;*---------------------------------------------------------------------*/
+(define-macro ($compiler-debug)
+   (bigloo-compiler-debug))
+
+;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug 0)
+(define debug ($compiler-debug))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::mpg123-alsadecoder ...                            */
@@ -89,28 +95,28 @@
 (define-method (alsadecoder-decode dec::mpg123-alsadecoder
 		  am::alsamusic
 		  buffer::alsabuffer)
-
-   (with-access::alsamusic am (pcm outbuf %status %decoder)
-      (with-access::mpg123-alsadecoder %decoder (%!pause %mpg123
-						   %dmutex %dcondv)
+   
+   (with-access::alsamusic am (pcm outbuf %status onerror)
+      (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv
+					      %!dstate %!dabort %!dpause)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate %inbuf
 					    %!tail %head %eof)
-
+	    
 	    (define inlen (string-length %inbuf))
 	    
 	    (define outlen (string-length outbuf))
-
+	    
 	    (define decsz (minfx (*fx 2 outlen) inlen))
-
+	    
 	    (define (available)
 	       (cond
 		  ((>fx %head %!tail) (-fx %head %!tail))
 		  ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
 		  (else 0)))
-
+	    
 	    (define (full-state?)
 	       (and (=fx %!bstate 2) (>fx inlen (*fx (available) 2))))
-
+	    
 	    (define (inc-tail! size)
 	       (set! %!tail (+fx %!tail size))
 	       (when (=fx %!tail inlen)
@@ -137,63 +143,52 @@
 			    profile-lock)))
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex)))
-	       (when (>fx debug 0)
-		  (alsabuffer-assert buffer "decode")))
+		   (mutex-unlock! %bmutex))))
 
-	    (define (musicstatus-set-play!)
-	       (with-access::musicstatus %status (state songpos songlength)
-		  (set! songpos (alsadecoder-position dec %inbuf))
-		  (when (<fx songlength songpos)
-		     (set! songlength songpos))
-		  (set! state 'play)))
+	    (define (onstate am st)
+	       (with-access::alsamusic am (onstate %status)
+		  (with-access::musicstatus %status (state)
+		     (set! state st)
+		     (onstate am %status))))
 
-	    (define (abort st)
-	       (mutex-lock! %bmutex)
-	       (with-access::musicstatus %status (state)
-		  (set! state st))
-	       (set! %!bstate (if (eq? st 'ended) 4 3))
-	       (pcm-cleanup pcm)
-	       (condition-variable-broadcast! %bcondv)
-	       (mutex-unlock! %bmutex))
-	    
 	    (let loop ()
 	       (when (>fx debug 1)
-		  (tprint "dec.1 bs=" %!bstate " pa=" %!pause
+		  (tprint "dec.1 bs=" %!bstate " %!dstate=" %!dstate
 		     " tl=" %!tail " hd=" %head))
 	       (cond
-		  ((=fx %!bstate 3)
-		   ;; buffer stop, the buffer is done reading
-		   (abort 'stop))
-		  (%!pause
-		   ;;; user request pause, swith to pause state and wait
-		   ;;; to be awaken
-		   (with-access::musicstatus %status (state)
-		      (set! state 'pause))
+		  (%!dpause
+		   ;;; the decoder is asked to pause
+		   (with-access::musicstatus %status (songpos)
+		      (with-access::alsabuffer buffer (%inbuf)
+			 (set! songpos (alsadecoder-position dec %inbuf))))
 		   (mutex-lock! %dmutex)
-		   (condition-variable-wait! %dcondv %dmutex)
-		   (mutex-unlock! %dmutex)
-		   (musicstatus-set-play!)
-		   (loop))
+		   (if %!dpause
+		       (let liip ()
+			  (onstate am 'pause)
+			  (condition-variable-wait! %dcondv %dmutex)
+			  (if %!dpause
+			      (liip)
+			      (begin
+				 (mutex-unlock! %dmutex)
+				 (onstate am 'play)
+				 (loop))))))
+		  (%!dabort
+		   ;;; the decoder is asked to abort
+		   (onstate am 'stop))
 		  ((=fx %!bstate 0)
-		   ;; buffer empty
+		   ;; the buffer empty...
 		   (if %eof
+		       ;; ... because we are done playing
+		       (onstate am 'ended)
 		       (begin
-			  (when (>fx debug 1)
-			     (tprint "dec.4 ended"))
-			  ;; buffer empty, and eof, we are done
-			  (abort 'ended))
-		       (begin
-			  ;; buffer empty, wait to be filled
+			  ;; ... we have to wait for byte to be available
 			  (mutex-lock! %bmutex)
 			  (when (=fx %!bstate 0)
-			     ;; a kind of double check locking, correct, is
-			     ;; ptr read/write are atomic
 			     (condition-variable-wait! %bcondv %bmutex)
 			     (mutex-unlock! %bmutex))
 			  (loop))))
 		  (else
-		   ;; decode some more bytes
+		   ;; the buffer contains available bytes
 		   (let flush ((s (minfx decsz
 				     (if (>fx %head %!tail)
 					 (-fx %head %!tail)
@@ -203,19 +198,16 @@
 			 (when (>fx debug 3)
 			    (tprint "dec.2 s=" s
 			       " tl=" %!tail " hd=" %head
-			       " -> status=" status " size="
+			       " -> status=" (mpg123-decode-status->symbol status)
+			       " size="
 			       (with-access::mpg123-handle %mpg123 (size)
 				  size)))
-			 (when (>fx s 0)
-			    (inc-tail! s))
+			 (when (>fx s 0) (inc-tail! s))
 			 (cond
-			    ((or (=fx %!bstate 3) %!pause)
-			     (loop))
 			    ((=fx status $mpg123-ok)
 			     ;; play and keep decoding
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
-				   (musicstatus-set-play!)
 				   (alsa-snd-pcm-write pcm outbuf size)
 				   (flush 0))))
 			    ((=fx status $mpg123-need-more)
@@ -229,7 +221,6 @@
 			     (new-format dec am buffer)
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
-				   (musicstatus-set-play!)
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (flush 0))
 			    ((=fx status $mpg123-done)
@@ -237,21 +228,12 @@
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)))
-			     (abort 'ended))
+			     (onstate am 'ended))
 			    (else
 			     ;; an error occured
 			     (with-access::musicstatus %status (err)
 				(set! err "mp3 decoding error"))
-			     (abort 'error))))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    pcm-cleanup ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (pcm-cleanup pcm)
-   (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
-      (when (memq pcm-state '(running prepared))
-	 (alsa-snd-pcm-drop pcm)))
-   (alsa-snd-pcm-cleanup pcm))
+			     (onerror am "mp3 decoding error"))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    new-format ...                                                   */
@@ -265,12 +247,10 @@
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
 	    (alsa-snd-pcm-hw-set-params! pcm
-;* 	       :rate-resample 1                                        */
 	       :access 'rw-interleaved
 	       :format encoding
 	       :channels channels
 	       :rate-near rate
-;* 	       :buffer-time-near buffer-time-near                          */
 	       :buffer-size-near-ratio buffer-size-near-ratio
 	       :period-size-near-ratio period-size-near-ratio)
 	    (alsa-snd-pcm-sw-set-params! pcm

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Tue Sep  7 21:15:17 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Mon Jan 23 07:49:52 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
 ;*    -------------------------------------------------------------    */
@@ -50,8 +50,6 @@
 	    (macro $mmap-name::obj (::mmap) "BGL_MMAP_NAME")
 	    (macro $mmap-ref::uchar (::mmap ::elong) "BGL_MMAP_REF")
  	    (macro $mmap-set!::obj (::mmap ::elong ::uchar) "BGL_MMAP_SET")
-;* 	    (macro $mmap-long-ref::long (::mmap ::long) "BGL_MMAP_LONG_REF") */
-;*  	    (macro $mmap-long-set!::obj (::mmap ::elong ::long) "BGL_MMAP_LONG_SET") */
 	    (macro $mmap-rp::elong (::mmap) "BGL_MMAP_RP_GET")
 	    (macro $mmap-rp-set!::void (::mmap ::elong) "BGL_MMAP_RP_SET")
 	    (macro $mmap-wp::elong (::mmap) "BGL_MMAP_WP_GET")
@@ -75,10 +73,6 @@
 		       "BGL_MMAP_REF")
 	       (method static $mmap-set!::obj (::mmap ::elong ::uchar)
 		       "BGL_MMAP_SET")
-;* 	       (method static $mmap-long-ref::long (::mmap ::elong)    */
-;* 		       "BGL_MMAP_LONG_REF")                            */
-;* 	       (method static $mmap-set!::obj (::mmap ::elong ::long)  */
-;* 		       "BGL_MMAP_LONG_SET")                            */
 	       (method static $mmap-rp::elong (::mmap)
 		       "BGL_MMAP_RP_GET")
 	       (method static $mmap-rp-set!::void (::mmap ::elong)
