@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 11:44:28 2008                          */
-;*    Last change :  Tue Nov 15 19:20:57 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Last change :  Tue Jan 24 09:53:38 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player                                            */
 ;*=====================================================================*/
@@ -119,27 +119,17 @@
 		(begin
 		   (music-playlist-add! m (car files))
 		   (loop (cdr files))))))
-      
-      (thread-start!
-       (make-thread
-	(lambda ()
-	   (music-event-loop
-	    m
-	    :frequency frequency
-	    :onmeta (lambda (meta)
-		       (if (list? meta)
-			   (for-each (lambda (meta)
-					(verb 2
-					      "  " (car meta) ": " (cdr meta)))
-				     meta)
-			   (verb 2 meta)))
-	    :onstate (lambda (status)
-			(with-access::musicstatus status (state song playlistlength)
+
+      (with-access::music m (onevent onstate onerror)
+	 (set! onevent (lambda (m evt val)
+			  (verb 2 evt ": " val)))
+	 (set! onstate (lambda (m status)
+			  (with-access::musicstatus status (state song playlistlength)
 			   (when (eq? state 'play)
 			      (verb 1 "Playing: "
-				    (list-ref (music-playlist-get m) song)))))
-	    :onerror (lambda (err)
-			(print "*** ERROR: " err) )))))
+				    (list-ref (music-playlist-get m) song))))))
+	 (set! onerror (lambda (m err)
+			  (print "*** ERROR: " err))))
       
       (verb 3 "bgst-mm: " (version) " " backend)
       (verb 3 "gst-version: " (gst-version) "\n")

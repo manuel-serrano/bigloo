@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jan 23 08:32:03 2012 (serrano)                */
+;*    Last change :  Tue Jan 24 09:38:12 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -36,9 +36,8 @@
 	       (%decoder (default #f))
 	       (%buffer (default #f))
 	       
-	       (%song::int (default 0))
 	       (%playlist::pair-nil (default '()))
-	       (%toseek::long (default 0))
+	       (%toseek::long (default -1))
 	       (%aready::bool (default #t))
 	       (%!aabort::bool (default #f))
 	       (%amutex::mutex read-only (default (make-mutex)))
@@ -70,6 +69,7 @@
 	       (%!dpause::bool (default #f))
 	       (%!dabort::bool (default #f))
 	       (%!stop::bool (default #t))
+	       (%!dseek::long (default -1))
 	       (%dmutex::mutex read-only (default (make-mutex)))
 	       (%dcondv::condvar read-only (default (make-condition-variable)))
 	       (%doutcondv::condvar read-only (default (make-condition-variable))))
@@ -250,14 +250,15 @@
    (with-access::alsamusic o (%amutex %decoder %toseek)
       (with-lock %amutex
 	 (lambda ()
-	    (tprint "TODO")
-	    '(if (pair? song)
+	    (if (pair? song)
 		(begin
 		   (unless (integer? (car song))
 		      (bigloo-type-error '|music-seek ::alsamusic| 'int (car song)))
 		   (set! %toseek pos)
 		   (music-play o song))
-		(alsadecoder-seek %decoder pos))))))
+		(when (isa? %decoder alsadecoder)
+		   (with-access::alsadecoder %decoder (%!dseek)
+		      (set! %!dseek pos))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::alsamusic ...                                       */
@@ -271,14 +272,15 @@
 	       decoders))))
    
    (define (update-song-status! o n)
-      (with-access::alsamusic o (%status onstate)
-	 (with-access::musicstatus %status (state song songpos songid songlength playlistid)
+      (with-access::alsamusic o (%status onstate onvolume)
+	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume)
 	    (set! songpos 0)
 	    (set! songlength 0)
 	    (set! song n)
 	    (set! songid (+fx (* 100 playlistid) n))
-	    (set! state 'play))
-	 (onstate o %status)))
+	    (set! state 'play)
+	    (onstate o %status)
+	    (onvolume o volume))))
    
    (define (pcm-init o)
       (with-access::alsamusic o (pcm)
@@ -338,8 +340,8 @@
 		   (alsabuffer-fill! buffer o)
 		   (when playlist (onevent o 'playlist playlist))
 		   (alsadecoder-decode d o buffer)
-		   (close-mmap mmap)
-		   (alsadecoder-reset! d)))
+		   (alsadecoder-reset! d)
+		   (close-mmap mmap)))
 	     (with-access::alsamusic o (onerror %amutex)
 		(mutex-unlock! %amutex)
 		(onerror o
@@ -349,13 +351,12 @@
 		      (obj url)))))))
    
    (define (play-url o d::alsadecoder url::bstring playlist)
-      (tprint "PLAY-URL: " url)
       (if (file-exists? url)
 	  (play-url-mmap o d url playlist)
 	  (play-url-port o d url playlist)))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!aabort onerror %decoder)
+      (with-access::alsamusic o (%amutex %!aabort onerror %decoder %toseek)
 	 (let loop ((l urls)
 		    (n n))
 	    (unless %!aabort
@@ -363,7 +364,9 @@
 		  (let* ((url (car l))
 			 (decoder (find-decoder o url)))
 		     (if decoder
-			 (begin
+			 (with-access::alsadecoder decoder (%!dseek)
+			    (set! %!dseek %toseek)
+			    (set! %toseek -1)
 			    (set! %decoder decoder)
 			    (update-song-status! o n)
 			    (play-url o decoder url (and (eq? l urls) urls))
@@ -399,7 +402,7 @@
 	       (mutex-unlock! %dmutex)
 	       #t))))
    
-   (with-access::alsamusic o (%amutex %acondv %decoder %buffer %song %aready)
+   (with-access::alsamusic o (%amutex %acondv %decoder %buffer %aready %status)
       (with-lock %amutex
 	 (lambda ()
 	    (unwind-protect
@@ -413,7 +416,8 @@
 		   #unspecified)
 		  (else
 		   ;; play the playlist from the current position
-		   (play-playlist %song)))
+		   (with-access::musicstatus %status (song)
+		      (play-playlist song))))
 	       (begin
 		  ;; reset the player state
 		  (set! %aready #t)
@@ -451,9 +455,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    alsamusic-wait-ready! ...                                        */
-;*    -------------------------------------------------------------    */
-;*    This function waits the %aready state to be #t and then, it      */
-;*    acquire the ready lock, that is, it sets %aready to #f.          */
 ;*---------------------------------------------------------------------*/
 (define (alsamusic-wait-ready! o::alsamusic)
    ;; %amutex already locked
@@ -544,8 +545,17 @@
 		(i (read-fill-string! %inbuf %head sz port)))
 	    (if (eof-object? i)
 		(with-access::alsamusic o (onevent)
+		   (when (=fx %!bstate 0)
+		      (mutex-lock! %bmutex)
+		      (when (>fx debug 0)
+			 (with-access::alsabuffer buffer (profile-lock)
+			    (set! profile-lock (+fx 1 profile-lock))
+			    (tprint "fill.2a, set eof-filled (bs=1) mutex-lock="
+			       profile-lock)))
+		      (set! %!bstate 1)
+		      (mutex-unlock! %bmutex))
 		   (set! %eof #t)
-		   (onevent o 'loaded url))
+ 		   (onevent o 'loaded url))
 		(let ((nhead (+fx %head i)))
 		   (if (=fx nhead inlen)
 		       (set! %head 0)
@@ -557,7 +567,7 @@
 		       (when (>fx debug 0)
 			  (with-access::alsabuffer buffer (profile-lock)
 			     (set! profile-lock (+fx 1 profile-lock))
-			     (tprint "fill.2, set full (bs=2) mutex-lock="
+			     (tprint "fill.2b, set full (bs=2) mutex-lock="
 				profile-lock)))
 		       (set! %!bstate 2)
 		       (condition-variable-broadcast! %bcondv)
@@ -568,12 +578,12 @@
 		       (when (>fx debug 0)
 			  (with-access::alsabuffer buffer (profile-lock)
 			     (set! profile-lock (+fx 1 profile-lock))
-			     (tprint "fill.2, set filled (bs=1) mutex-lock="
+			     (tprint "fill.2c, set filled (bs=1) mutex-lock="
 				profile-lock)))
 		       (set! %!bstate 1)
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex)))))))
-      
+
       (let loop ()
 	 (when (>fx debug 1)
 	    (tprint "fill.1 %!bstate=" %!bstate
@@ -606,9 +616,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsammapbuffer o::alsamusic)
    (with-access::alsammapbuffer buffer (%!bstate %head %inbufp %eof mmap url)
-      (set! %head (mmap-length mmap))
       (set! %inbufp (mmap->string mmap))
-      (set! %!bstate 2)
+      (set! %head 0)
+      (set! %!bstate 1)
       (set! %eof #t)
       (with-access::alsamusic o (onevent)
 	 (onevent o 'loaded url))))
@@ -630,10 +640,11 @@
 ;*    music-volume-set! ::alsamusic ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! o::alsamusic vol)
-   (with-access::alsamusic o (decoders %status)
+   (with-access::alsamusic o (decoders %status onvolume)
       (for-each (lambda (d) (alsadecoder-volume-set! d vol)) decoders)
       (with-access::musicstatus %status (volume)
-	 (set! volume vol))))
+	 (set! volume vol)
+	 (onvolume vol))))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::alsadecoder ...                               */

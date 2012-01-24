@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Jan 23 08:14:32 2012 (serrano)                */
+;*    Last change :  Tue Jan 24 08:40:47 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -98,7 +98,7 @@
    
    (with-access::alsamusic am (pcm outbuf %status onerror)
       (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv
-					      %!dstate %!dabort %!dpause)
+					      %!dstate %!dabort %!dpause %!dseek)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate
 					    %inbufp %inlen
 					    %!tail %head %eof)
@@ -205,6 +205,11 @@
 				  size)))
 			 (when (>fx s 0) (inc-tail! s))
 			 (cond
+			    ((>fx %!dseek 0)
+			     (alsadecoder-seek dec %!dseek)
+			     (with-access::musicstatus %status (songpos)
+				(set! songpos %!dseek))
+			     (set! %!dseek -1))
 			    ((=fx status $mpg123-ok)
 			     ;; play and keep decoding
 			     (with-access::mpg123-handle %mpg123 (size)
@@ -266,8 +271,4 @@
 	 (multiple-value-bind (bitrate rate)
 	    (alsadecoder-info dec)
 	    (set! bitrate bitrate)
-	    (set! khz rate))
-	 (when (>fx %toseek 0)
-	    (alsadecoder-seek dec %toseek)
-	    (set! songpos %toseek)
-	    (set! %toseek 0)))))
+	    (set! khz rate)))))
