@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Dec  2 09:19:48 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 26 14:57:49 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -201,7 +201,7 @@
 	       (unit-sexp*-add-head! (get-toplevel-unit)
 				     (list (%append-2-define)))))
 			  
-	 ;; we check error occured while building the ast
+	 ;; we check error occurred while building the ast
 	 (pass-postlude #unspecified)
 
 	 ;; we check if all types are defined

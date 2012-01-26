@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Tue Jan 24 08:40:47 2012 (serrano)                */
+;*    Last change :  Thu Jan 26 14:57:41 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -236,7 +236,7 @@
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (onstate am 'ended))
 			    (else
-			     ;; an error occured
+			     ;; an error occurred
 			     (with-access::musicstatus %status (err)
 				(set! err "mp3 decoding error"))
 			     (onerror am "mp3 decoding error"))))))))))))

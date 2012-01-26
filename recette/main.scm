@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Sun Nov 13 18:55:13 2011 (serrano)                */
+;*    Last change :  Thu Jan 26 14:57:58 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -334,7 +334,7 @@
 	  (if (> *nb-err* 0)
 	      (begin
 		 (fprint (current-error-port) "recette failed: "
-			 *nb-err* " error(s) occured.")
+			 *nb-err* " error(s) occurred.")
 		 -1)
 	      (begin
 		 (print "recette succeeded: the " *nb-test*
