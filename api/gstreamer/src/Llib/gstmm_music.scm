@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Tue Jan 24 13:49:50 2012 (serrano)                */
+;*    Last change :  Wed Jan 25 17:08:04 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -79,33 +79,41 @@
 ;*---------------------------------------------------------------------*/
 (define-expander mutex-lock!
    (lambda (x e)
-      (e `(debug-mutex-lock! ,@(cdr x)) e)))
+      (if (=fx (bigloo-compiler-debug) 0)
+	  `(,(car x) ,@(map (lambda (x) (e x e)) (cdr x)))
+	  (e `(debug-mutex-lock! ,@(cdr x)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-unlock! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-expander mutex-unlock!
    (lambda (x e)
-      (e `(debug-mutex-unlock! ,@(cdr x)) e)))
+      (if (=fx (bigloo-compiler-debug) 0)
+	  `(,(car x) ,@(map (lambda (x) (e x e)) (cdr x)))
+	  (e `(debug-mutex-unlock! ,@(cdr x)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable-wait! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-expander condition-variable-wait!
    (lambda (x e)
-      (e `(debug-condv-wait! ,@(cdr x)) e)))
+      (if (=fx (bigloo-compiler-debug) 0)
+	  `(,(car x) ,@(map (lambda (x) (e x e)) (cdr x)))
+	  (e `(debug-condv-wait! ,@(cdr x)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-lock ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-expander with-lock
    (lambda (x e)
-      (e `(unwind-protect
-	     (begin
-		(mutex-lock! ,(cadr x))
-		(,(caddr x)))
-	     (mutex-unlock! ,(cadr x)))
-	 e)))
+      (if (=fx (bigloo-compiler-debug) 0)
+	  `(,(car x) ,@(map (lambda (x) (e x e)) (cdr x)))
+	  (e `(unwind-protect
+		 (begin
+		    (mutex-lock! ,(cadr x))
+		    (,(caddr x)))
+		 (mutex-unlock! ,(cadr x)))
+	     e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::gstmusic ...                                        */
@@ -319,9 +327,17 @@
 ;*    music-play ::gstmusic ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::gstmusic . s)
-
+   
+   (define (update-song-status! o n)
+      (with-access::gstmusic o (%status onstate onvolume)
+	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume)
+	    (set! songpos 0)
+	    (set! songlength 0)
+	    (set! song n)
+	    (set! songid (+fx (* 100 playlistid) n))
+	    (onvolume o volume))))
+   
    (define (play-url o::gstmusic url::bstring playlist)
-      (tprint "play-url: " url)
       (with-access::gstmusic o (%mutex %pipeline %audiosrc onevent)
 	 (let ((uri (gstmm-charset-convert url)))
 	    (gst-element-state-set! %pipeline 'null)
@@ -339,6 +355,7 @@
 		    (n n))
 	    (unless %!gabort
 	       (when (pair? l)
+		  (update-song-status! o n)
 		  (play-url o (car l) (and (eq? l urls) urls))
 		  (loop (cdr l) (+fx 1 n)))))))
 
@@ -422,25 +439,17 @@
 	    (let loop ((vol volume)
 		       (pid playlistid)
 		       (meta #f))
-	       (let* ((msg (gst-bus-poll bus :timeout #l1167000000))
+	       (let* ((msg (gst-bus-poll bus))
 		      (nvol volume)
 		      (npid playlistid))
-		  (tprint "msg=" msg)
 		  (cond
-		     ((not msg)
+		     (%!gabort
 		      ;; time out
-		      (unless (=fx vol nvol)
-			 (onvolume o nvol))
-		      (if %!gabort
-			  (begin
-			     (set! state 'stop)
-			     (onstate o %status))
-			  (loop nvol npid meta)))
+		      (set! state 'stop)
+		      (onstate o %status))
 		     ((gst-message-eos? msg)
-		      (tprint "EOS...")
 		      ;; end of stream
 		      (mutex-lock! %mutex)
-		      (gst-element-state-set! %pipeline 'null)
 		      (set! state 'ended)
 		      (set! songpos 0)
 		      (set! %meta '())
@@ -506,9 +515,7 @@
 		      (set! err (gst-message-error-string msg))
 		      (onerror o err)
 		      (loop nvol npid meta))
-		     ((gst-message-state-dirty? msg)
-		      ;; refresh
-		      (onstate o %status)
+		     (else
 		      (loop nvol npid meta)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -569,30 +576,6 @@
    (with-access::gstmusic o (%pipeline)
       (llong->fixnum
 	 (/llong (gst-element-query-duration %pipeline) #l1000000000))))
-
-;*---------------------------------------------------------------------*/
-;*    music-update-status! ::gstmusic ...                              */
-;*---------------------------------------------------------------------*/
-(define-method (music-update-status! o::gstmusic status::musicstatus)
-   (with-access::gstmusic o (%mutex %pipeline)
-      (with-access::musicstatus status (state songpos songlength volume)
-	 (mutex-lock! %mutex)
-	 (if (isa? %pipeline gst-element)
-	     (begin
-		(set! songpos (music-position o))
-		(set! songlength (music-duration o))
-		(set! volume (music-volume-get o)))
-	     (set! state 'stop))
-	 (mutex-unlock! %mutex)
-	 status)))
-
-;*---------------------------------------------------------------------*/
-;*    music-status ...                                                 */
-;*---------------------------------------------------------------------*/
-(define-method (music-status o::gstmusic)
-   (with-access::music o (%status)
-      (music-update-status! o %status)
-      %status))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-song ::gstmusic ...                                        */

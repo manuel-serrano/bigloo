@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Tue Nov 15 19:00:40 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Wed Jan 25 17:41:25 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
 ;*=====================================================================*/
@@ -15,8 +15,7 @@
 (module __multimedia-mplayer
    
    (import __multimedia-music
-	   __multimedia-musicproc
-	   __multimedia-music-event-loop)
+	   __multimedia-musicproc)
    
    (export (class mplayer::musicproc
 	      (frequency::long (default 2000000))
@@ -54,10 +53,9 @@
 ;*    musicproc-loadpaused ::mplayer ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (musicproc-loadpaused o::mplayer m::bstring)
-   (assert (o) (not (symbol? (mutex-state (musicproc-%mutex o)))))
    (with-access::musicproc o (%mutex %process %command-load %command-pause)
-      (musicproc-exec %process %command-load m)
-      (musicproc-exec %process %command-pause m)))
+      (musicproc-exec %process #f %command-load m)
+      (musicproc-exec %process #t %command-pause m)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-close ::mplayer ...                                        */
@@ -108,20 +106,6 @@
 	     (substring line (string-length prefix) (string-length line)))
 	    (else
 	     (loop))))))
-
-;*---------------------------------------------------------------------*/
-;*    read-playing ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (read-playing o)
-   (assert (o) (not (symbol? (mutex-state (mplayer-%mutex o)))))
-   (with-access::mplayer o (%process frequency)
-      (let ((p (process-output-port %process)))
-	 ;; timeout for input-port
-	 (input-port-timeout-set! p (*fx frequency 10))
-	 ;; flush the welcome output
-	 (read-answer "Playing " p #t)
-	 ;; timeout for input-port
-	 (input-port-timeout-set! p (/fx frequency 2)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cmd-integer ...                                                  */
@@ -180,7 +164,6 @@
 ;*    musicproc-start ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (musicproc-start o::mplayer)
-   (assert (o) (not (symbol? (mutex-state (mplayer-%mutex o)))))
    (with-access::mplayer o (%process
 			      path args ao ac charset
 			      %result-acknowledge
@@ -209,172 +192,63 @@
 			  (obj l)))
 		    (with-access::musicstatus %status (volume)
 		       ;; the lock is already acquired so don't call volume-set!
-		       (musicproc-exec proc %command-volume volume)
+		       (musicproc-exec o #f %command-volume volume)
 		       proc)))))))
-
-;*---------------------------------------------------------------------*/
-;*    music-play ...                                                   */
-;*---------------------------------------------------------------------*/
-(define-method (music-play o::mplayer . s)
-   (with-access::mplayer o (%user-state %mutex)
-      (set! %user-state 'play)
-      (when (call-next-method)
-	 (with-lock %mutex
-	    (lambda ()
-	       (read-playing o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::mplayer)
-   (with-access::mplayer o (%user-state %mutex)
+   (with-access::mplayer o (%user-state %mutex %status %process onstate)
       (mutex-lock! %mutex)
-      (if (eq? %user-state 'pause)
-	  (set! %user-state 'play)
-	  (set! %user-state 'pause))
-      (mutex-unlock! %mutex)))
-
-;*---------------------------------------------------------------------*/
-;*    music-seek ::mplayer ...                                         */
-;*---------------------------------------------------------------------*/
-(define-method (music-seek o::mplayer pos . s)
-   (with-access::mplayer o (%mutex)
-      (when (call-next-method)
-	 (with-lock %mutex
-	    (lambda ()
-	       (when (pair? s) (read-playing o)))))))
-   
-;*---------------------------------------------------------------------*/
-;*    music-next ...                                                   */
-;*---------------------------------------------------------------------*/
-(define-method (music-next o::mplayer)
-   (with-access::mplayer o (%mutex)
-      (when (call-next-method)
-	 (with-lock %mutex
-	    (lambda ()
-	       (read-playing o))))))
-
-;*---------------------------------------------------------------------*/
-;*    music-prev ...                                                   */
-;*---------------------------------------------------------------------*/
-(define-method (music-prev o::mplayer)
-   (with-access::mplayer o (%mutex)
-      (when (call-next-method)
-	 (with-lock %mutex
-	    (lambda ()
-	       (read-playing o))))))
-
-;*---------------------------------------------------------------------*/
-;*    music-update-status! ...                                         */
-;*---------------------------------------------------------------------*/
-(define-method (music-update-status! o::mplayer status)
-   
-   (define (update-inner! o)
-      (with-access::mplayer o (%process %status %user-state)
-	 (with-access::musicstatus %status (volume
-					    state err
-					    songpos songlength 
-					    bitrate khz
-					    playlistid playlistlength
-					    song songid)
-	    (cond
-	       ((not (process? %process))
-		(set! err #f)
-		(set! songpos 0)
-		(set! songlength 0)
-		(set! bitrate 0)
-		(set! khz 0)
-		(set! state 'stop))
-	       ((not (process-alive? %process))
-		(set! err (format "MPlayer process dead: ~a" %process))
-		(set! state 'error))
-	       ((eq? %user-state 'stop)
-		(set! err #f)
-		(set! songpos 0)
-		(set! songlength 0)
-		(set! bitrate 0)
-		(set! khz 0)
-		(set! state 'stop))
-	       (else
-		(let* ((po (process-output-port %process))
-		       (pi (process-input-port %process))
-		       (oslen songlength)
-		       (ospos songpos)
-		       (nslen (cmd-integer "get_time_length"
-					   "ANS_LENGTH=" po pi))
-		       (nspos (cmd-integer "get_time_pos"
-					   "ANS_TIME_POSITION=" po pi))
-		       (nbr (cmd-integer "get_audio_bitrate"
-					 "ANS_AUDIO_BITRATE='" po pi))
-		       (nvol (cmd-integer "get_property volume"
-					  "ANS_volume=" po pi)))
-		   (set! songpos nspos)
-		   (if (and (<=fx nslen 0) (>fx nspos 0))
-		       (set! songlength nspos)
-		       (set! songlength nslen))
-		   (set! err #f)
-		   (set! volume nvol)
-		   (set! bitrate nbr)
-		   (set! state
-			 (cond
-			    ((eq? %user-state 'pause) 'pause)
-			    ((=fx oslen nslen) 'play)
-			    (else 'start))))))
-	    (unless (eq? status %status)
-	       (with-access::musicstatus status ((volume2 volume)
-						 (state2 state)
-						 (err2 err)
-						 (song2 song)
-						 (songid2 songid)
-						 (songpos2 songpos)
-						 (songlength2 songlength)
-						 (bitrate2 bitrate)
-						 (playlistid2 playlistid)
-						 (playlistlength2 playlistlength))
-		  (set! volume2 volume)
-		  (set! state2 state)
-		  (set! err2 err)
-		  (set! song2 song)
-		  (set! songid2 songid)
-		  (set! songpos2 songpos)
-		  (set! songlength2 songlength)
-		  (set! bitrate2 bitrate)
-		  (set! playlistid2 playlistid)
-		  (set! playlistlength2 playlistlength))))
-	 %status))
-
-   (define (err e)
-      (with-access::mplayer o (%status)
-	 (with-access::musicstatus %status (state err)
-	    (set! state 'error)
-	    (set! err (with-error-to-string (lambda () (error-notify e)))))))
-   
-   (with-access::mplayer o (%process %status %user-state %mutex)
-      (mutex-lock! %mutex)
-      (let ((v (with-handler
-		  (lambda (e) e)
-		  (update-inner! o))))
+      (when (eq? %user-state 'play)
+	 (musicproc-exec o #f "get_time_pos"))
+      (mutex-unlock! %mutex)
+      (call-next-method)
+      (with-access::musicstatus %status (state)
+	 (mutex-lock! %mutex)
+	 (set! state %user-state)
 	 (mutex-unlock! %mutex)
-	 (cond
-	    ((isa? v musicstatus)
-	     v)
-	    ((or (eq? v 'end-of-song) (isa? v &io-timeout-error))
-	     (with-access::musicstatus %status (state err
-						      song songpos songlength 
-						      playlistlength
-						      repeat (ran random))
-		(if (and (>=fx songpos (-fx songlength 2))
-			 (eq? %user-state 'play))
-		    (with-handler
-		       (lambda (e) (err e))
-		       (cond
-			  (repeat
-			   (music-play o))
-			  (ran
-			   (music-play o (random playlistlength)))
-			  (else
-			   (music-next o))))
-		    (set! state 'stop))))
-	    (else
-	     (err v))))))
+	 (onstate o %status))))
 
+;*---------------------------------------------------------------------*/
+;*    musicproc-parse ::mplayer ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (musicproc-parse o::mplayer)
+   (with-access::mplayer o (%process %status onstate onerror onvolume onevent)
+      (when (process? %process)
+	 (let ((p (process-output-port %process)))
+	    (let loop ((eol #f))
+	       (let ((line (read-line p)))
+		  (cond
+		     ((eof-object? line)
+		      'eof)
+		     ((=fx (string-length line) 0)
+		      (unless eol (loop #f)))
+		     ((substring-at? line "ANS_" 0)
+		      (cond
+;* 			 ((substring-at? line "ANS_ERROR=" 0)          */
+;* 			  (loop eol))                                  */
+			 ((substring-at? line "ANS_TIME_POSITION=" 0)
+			  (let ((p (string->real (substring line 18))))
+			     (with-access::mplayer o (%status)
+				(with-access::musicstatus %status (songpos)
+				   (set! songpos (flonum->fixnum (round p)))))
+			     (loop eol)))
+			 (else
+			  (loop eol))))
+		     ((string=? line "Playing stop.")
+		      (with-access::mplayer o (%status)
+			 (with-access::musicstatus %status (state song songpos songlength)
+			    (set! state 'stop)
+			    (onstate o %status))))
+		     ((string=? line "Starting playback...")
+		      (with-access::mplayer o (%status)
+			 (with-access::musicstatus %status (state song songpos songlength)
+			    (set! state 'play)
+			    (onstate o %status)
+			    (loop #t)
+			    (set! state 'ended)
+			    (onstate o %status))))
+		     (else
+		      (loop eol)))))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Fri Jan 20 18:07:56 2012 (serrano)                */
+;*    Last change :  Wed Jan 25 13:45:45 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -14,8 +14,6 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-music
 
-   (import __multimedia-music-event-loop)
-   
    (export (class music
 	      (music-init)
 	      
@@ -25,11 +23,7 @@
 	      (onevent::procedure (default (lambda (o::music evt::symbol val) #f)))
 	      
 	      (%mutex::mutex (default (make-mutex)))
-	      (%loop-mutex::mutex (default (make-mutex)))
-	      (%loop-condv::condvar (default (make-condition-variable)))
-	      (%status::musicstatus (default (instantiate::musicstatus)))
-	      (%abort-loop::bool (default #f))
-	      (%reset-loop::bool (default #f)))
+	      (%status::musicstatus (default (instantiate::musicstatus))))
 
 	   (class musicstatus
 	      ;; init, stop, ended, play, pause, skip
@@ -72,7 +66,6 @@
 	   (generic music-reset-error! ::music)
 	   
 	   (generic music-status::musicstatus ::music)
-	   (generic music-update-status! ::music ::musicstatus)
 	   (generic music-song::int ::music)
 	   (generic music-songpos::int ::music)
 	   (generic music-meta::pair-nil ::music)
@@ -91,7 +84,6 @@
 (define-generic (music-close m::music)
    ;; this function assumes that the music mutex has already been
    ;; acquired by the submethods
-   (music-event-loop-abort! m)
    (with-access::music m (%status)
       (with-access::musicstatus %status (state)
 	 (set! state 'close))))

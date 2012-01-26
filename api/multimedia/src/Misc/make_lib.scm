@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sat Apr 23 17:53:19 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Wed Jan 25 13:44:24 2012 (serrano)                */
+;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -20,7 +20,6 @@
 	   __multimedia-mp3
 	   __multimedia-mpd
 	   __multimedia-music
-	   __multimedia-music-event-loop
 	   __multimedia-musicproc
 	   __multimedia-mpc
 	   __multimedia-mpg123

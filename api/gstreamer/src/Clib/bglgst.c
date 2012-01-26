@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Tue Dec 14 18:07:25 2010 (serrano)                */
-/*    Copyright   :  2007-10 Manuel Serrano                            */
+/*    Last change :  Tue Jan 24 16:16:27 2012 (serrano)                */
+/*    Copyright   :  2007-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
 /*=====================================================================*/
@@ -1212,6 +1212,19 @@ bgl_gst_message_pending_state( GstMessage *msg ) {
 obj_t
 bgl_gst_message_get_src( GstMessage *msg ) {
    return bgl_gst_object_to_obj( (GstObject *)GST_MESSAGE_SRC( msg ), BTRUE );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_gst_message_stream_status_type ...                           */
+/*---------------------------------------------------------------------*/
+int
+bgl_gst_message_stream_status_type( GstMessage *msg ) {
+   GstStreamStatusType type;
+   GstElement *el;
+   gst_message_parse_stream_status( msg, &type, &el );
+   
+   return (int)type;
 }
 
 /*---------------------------------------------------------------------*/

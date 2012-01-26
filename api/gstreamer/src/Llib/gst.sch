@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
-;*    Last change :  Tue Nov 15 17:40:50 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Tue Jan 24 16:16:01 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of GSTREAMER functions                                */
 ;*=====================================================================*/
@@ -293,6 +293,8 @@
        (::$gst-message) "bgl_gst_message_pending_state")
     (macro $gst-message-get-src::obj
        (::$gst-message) "bgl_gst_message_get_src")
+    (macro $gst-message-stream-status-type::int
+       (::$gst-message) "bgl_gst_message_stream_status_type")
     (macro $gst-message-new-application::$gst-message
        (::$gst-object ::$gst-structure) "gst_message_new_application")
     (macro $gst-message-new-custom::$gst-message
@@ -362,6 +364,23 @@
        "GST_MESSAGE_ASYNC_DONE")
     (macro $gst-message-any::$gst-message-type
        "GST_MESSAGE_ANY")
+
+    ;; gst-stream-status-type
+    (type $gst-stream-status-type long "GstStreamStatusType")
+    (macro $gst-stream-status-type-create::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_CREATE")
+    (macro $gst-stream-status-type-enter::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_ENTER")
+    (macro $gst-stream-status-type-leave::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_LEAVE")
+    (macro $gst-stream-status-type-destroy::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_DESTROY")
+    (macro $gst-stream-status-type-start::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_START")
+    (macro $gst-stream-status-type-pause::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_PAUSE")
+    (macro $gst-stream-status-type-stop::$gst-message-type
+       "GST_STREAM_STATUS_TYPE_STOP")
 
 ;*     ;; gst-mixer                                                    */
 ;*     (type $gst-mixer void* "GstMixer *")                            */

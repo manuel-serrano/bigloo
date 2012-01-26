@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  3 09:21:35 2008                          */
-;*    Last change :  Tue Nov 15 17:18:46 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Last change :  Tue Jan 24 16:19:10 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstMessage                                                       */
 ;*=====================================================================*/
@@ -51,6 +51,7 @@
 	    (gst-message-old-state::symbol ::gst-message)
 	    (gst-message-pending-state::symbol ::gst-message)
 	    (gst-message-structure::gst-structure ::gst-message)
+	    (gst-message-stream-status-type::symbol ::gst-message)
 
 	    (gst-message-tag?::bool ::gst-message)
 	    (gst-message-eos?::bool ::gst-message)
@@ -64,6 +65,7 @@
 	    (gst-message-state-dirty?::bool ::gst-message)
 	    (gst-message-info?::bool ::gst-message)
 	    (gst-message-application?::bool ::gst-message)
+	    (gst-message-stream-status?::bool ::gst-message)
 
 	    (gst-message-new-application::gst-message ::gst-object ::gst-structure)
 	    (gst-message-new-custom::gst-message ::$gst-message-type ::gst-object ::gst-structure)
@@ -204,6 +206,22 @@
 	 ($finalizer #f))))
 
 ;*---------------------------------------------------------------------*/
+;*    gst-message-stream-status-type ...                               */
+;*---------------------------------------------------------------------*/
+(define (gst-message-stream-status-type msg::gst-message)
+   (with-access::gst-message msg ($builtin)
+      (let ((status ($gst-message-stream-status-type $builtin)))
+	 (cond
+	    ((=fx status $gst-stream-status-type-create) 'create)
+	    ((=fx status $gst-stream-status-type-enter) 'enter)
+	    ((=fx status $gst-stream-status-type-leave) 'leave)
+	    ((=fx status $gst-stream-status-type-destroy) 'destroy)
+	    ((=fx status $gst-stream-status-type-start) 'start)
+	    ((=fx status $gst-stream-status-type-pause) 'pause)
+	    ((=fx status $gst-stream-status-type-stop) 'stop)
+	    (else 'unknown)))))
+
+;*---------------------------------------------------------------------*/
 ;*    gst-message-tag? ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (gst-message-tag? msg::gst-message)
@@ -272,6 +290,13 @@
 (define (gst-message-state-dirty? msg::gst-message)
    (with-access::gst-message msg (type)
       (=fx type $gst-message-state-dirty)))
+
+;*---------------------------------------------------------------------*/
+;*    gst-message-stream-status? ...                                   */
+;*---------------------------------------------------------------------*/
+(define (gst-message-stream-status? msg::gst-message)
+   (with-access::gst-message msg (type)
+      (=fx type $gst-message-stream-status)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gst-message-info? ...                                            */

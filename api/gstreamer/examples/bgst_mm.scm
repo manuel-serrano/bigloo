@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 11:44:28 2008                          */
-;*    Last change :  Tue Jan 24 09:53:38 2012 (serrano)                */
+;*    Last change :  Tue Jan 24 17:45:27 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player                                            */
@@ -51,8 +51,7 @@
 	 (command #f)
 	 (volume #f)
 	 (mpcport 6600)
-	 (mpchost "localhost")
-	 (frequency 2000000))
+	 (mpchost "localhost"))
       (args-parse (cdr args)
 	 (("--mpg123" (help "Select the mpg123 back-end"))
 	  (set! backend 'mpg123))
@@ -76,8 +75,6 @@
 	  (set! verbose 0))
 	 ((("-v" "--volume") ?vol (help "Set volume"))
 	  (set! volume (string->integer vol)))
-	 (("--frequency" ?freq (help "Set the event loop frequency (default 2000000)"))
-	  (set! frequency (string->integer freq)))
 	 (("--help" (help "This help"))
 	  (print "usage: music [options] file ...")
 	  (args-parse-usage #f)
@@ -134,6 +131,9 @@
       (verb 3 "bgst-mm: " (version) " " backend)
       (verb 3 "gst-version: " (gst-version) "\n")
       (verb 1 "The music object is bound to the variable `m'.")
-      
-      (music-play m)
+
+      (thread-start!
+	 (instantiate::pthread
+	    (body (lambda ()
+		     (music-play m)))))
       (repl)))

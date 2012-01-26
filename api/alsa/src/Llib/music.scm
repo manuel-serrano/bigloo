@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jan 24 09:38:12 2012 (serrano)                */
+;*    Last change :  Thu Jan 26 06:00:50 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -188,55 +188,6 @@
 	       (set! playlistlength 0))))))
 
 ;*---------------------------------------------------------------------*/
-;*    music-update-status! ::alsamusic ...                             */
-;*---------------------------------------------------------------------*/
-(define-method (music-update-status! o::alsamusic status)
-   (with-access::alsamusic o (%amutex %status)
-      (with-lock %amutex
-	 (lambda ()
-	    (with-access::musicstatus %status ((%volume volume)
-					       (%state state)
-					       (%repeat repeat)
-					       (%random random)
-					       (%playlistid playlistid)
-					       (%playlistlength playlistlength)
-					       (%xfade xfade)
-					       (%songid songid)
-					       (%song song)
-					       (%songpos songpos)
-					       (%songlength songlength)
-					       (%bitrate bitrate)
-					       (%khz khz)
-					       (%err err))
-	       (with-access::musicstatus status (volume
-						   state
-						   repeat
-						   random
-						   playlistid
-						   playlistlength
-						   xfade
-						   songid
-						   song
-						   songpos
-						   songlength
-						   bitrate
-						   khz
-						   err)
-		  (set! volume %volume)
-		  (set! state %state)
-		  (set! repeat %repeat)
-		  (set! random %random)
-		  (set! playlistid %playlistid)
-		  (set! playlistlength %playlistlength)
-		  (set! xfade %xfade)
-		  (set! songid %songid)
-		  (set! song %song)
-		  (set! songpos %songpos)
-		  (set! bitrate %bitrate)
-		  (set! khz %khz)
-		  (set! err %err)))))))
-
-;*---------------------------------------------------------------------*/
 ;*    music-can-play-type? ::alsamusic ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-can-play-type? o::alsamusic mimetype::bstring)
@@ -298,7 +249,7 @@
       (let ((ip (open-input-file url)))
 	 (if (input-port? ip)
 	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
-					  mkthread)
+					  mkthread %status)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
 				 (port ip)
@@ -314,7 +265,9 @@
 			       (alsabuffer-fill! buffer o)
 			       (close-input-port ip)))
 			 "alsamusic-buffer"))
-		   (when playlist (onevent o 'playlist playlist))
+		   (when playlist
+		      (with-access::musicstatus %status (playlistid)
+			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-decode d o buffer)
 		   (alsadecoder-reset! d)))
 	     (with-access::alsamusic o (onerror %amutex)
@@ -329,7 +282,7 @@
       (let ((mmap (open-mmap url :read #t :write #f)))
 	 (if (mmap? mmap)
 	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
-					  mkthread)
+					  %status)
 		(let ((buffer (instantiate::alsammapbuffer
 				 (url url)
 				 (mmap mmap)
@@ -338,7 +291,9 @@
 		   (set! %buffer buffer)
 		   (mutex-unlock! %amutex)
 		   (alsabuffer-fill! buffer o)
-		   (when playlist (onevent o 'playlist playlist))
+		   (when playlist
+		      (with-access::musicstatus %status (playlistid)
+			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-decode d o buffer)
 		   (alsadecoder-reset! d)
 		   (close-mmap mmap)))
