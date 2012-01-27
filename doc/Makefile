@@ -31,7 +31,7 @@ pop:
                doc/README.net doc/README.hppa \
                doc/README.aix doc/README.aix.html \
                doc/README.sparc-linux \
-               doc/README.mingw doc/README.mingw.html \
+               doc/README.mingw \
                doc/README.macosx doc/README.solaris \
                doc/README.android
 
