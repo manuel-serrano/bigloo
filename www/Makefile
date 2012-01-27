@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Mon Sep 26 12:45:08 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Fri Jan 27 11:11:25 2012 (serrano)                */
+#*    Copyright   :  2001-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
 #*=====================================================================*/
@@ -76,6 +76,7 @@ BIGLOOMACOSX	= $(MACOSXFTP)/macosx/bigloo-$(OFFICIALRELEASE).dmg
 BIGLOOFDR	= fedora
 BIGLOOWIN32	= http://www.yannis.bres.name/Bigloo
 BIGLOOWIN32b	= http://code.google.com/p/winbigloo/
+BIGLOOMINGW	= http://jwd.sandjsite.net/projects/mingw-bigloo
 
 CHANGELOG	= $(BOOTDIR)/ChangeLog
 
@@ -148,6 +149,7 @@ SKRIBEVARS	= --eval "(define *bigloo-version* \"$(OFFICIALRELEASE)\")" \
                   --eval "(define *bigloo.winzip* \"$(BIGLOOWINZIP)\")" \
                   --eval "(define *bigloo.win32* \"$(BIGLOOWIN32)\")" \
                   --eval "(define *bigloo.win32b* \"$(BIGLOOWIN32b)\")" \
+                  --eval "(define *bigloo.mingw* \"$(BIGLOOMINGW)\")" \
                   --eval "(define *bigloo.macosx* \"$(BIGLOOMACOSX)\")" \
                   --eval "(define *bigloo-changelog* \"$(CHANGELOG)\")" \
                   --eval "(define *ftp-dir* \"$(HOSTFTPDIR)\")" \

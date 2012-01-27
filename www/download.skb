@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Mon Sep 26 09:37:32 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Fri Jan 27 11:10:44 2012 (serrano)                */
+;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
 ;*=====================================================================*/
@@ -92,6 +92,8 @@ Bigloo is available on the ftp server
 	 ,*bigloo.tar.gz*)
 	(,[,(bold "MacOS X") bundle]
 	 ,*bigloo.macosx*)
+	(,[,(bold "MinGW") installer version (full back-ends support)]
+	 ,*bigloo.mingw*)
 	(,[,(bold "Win32") installer version (full back-ends support)]
 	 ,*bigloo.win32b* ,*bigloo.win32*)
 	(,[,(bold "Arm(el)") package]

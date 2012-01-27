@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Mon Sep 26 12:47:08 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Fri Jan 27 11:11:55 2012 (serrano)                */
+;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
 ;*=====================================================================*/
@@ -211,6 +211,8 @@ also be browsed at the ,(ref :url *scmpkg.url* :text "ScmPkg") web site.])
 ;*--- News ------------------------------------------------------------*/
 (section :title "Related" :number #f [
 ,(itemize 
+
+(item [,(bold "22 jan 2012:") ,(color :fg "red" "MingGW installer") released (see Section ,(ref :ident "Downloading" :text "download")).])
 
 (item [,(bold "1 aug 2011:") complete re-implementation of the ,(color :fg "red" "Interpreter").])
 
