@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jan 26 06:00:50 2012 (serrano)                */
+;*    Last change :  Fri Jan 27 19:09:06 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -599,7 +599,7 @@
       (for-each (lambda (d) (alsadecoder-volume-set! d vol)) decoders)
       (with-access::musicstatus %status (volume)
 	 (set! volume vol)
-	 (onvolume vol))))
+	 (onvolume o vol))))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::alsadecoder ...                               */

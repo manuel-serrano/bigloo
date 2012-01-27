@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Fri Jan 27 10:39:32 2012 (serrano)                */
+;*    Last change :  Fri Jan 27 19:10:09 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
@@ -405,7 +405,7 @@
 	    (musicproc-exec o #f %command-volume v)
 	    (with-access::musicstatus %status (volume)
 	       (set! volume v))))
-      (onvolume v)
+      (onvolume o v)
       v))
 
 ;*---------------------------------------------------------------------*/

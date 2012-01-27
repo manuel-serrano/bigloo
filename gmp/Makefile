@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Mon Sep 26 08:50:07 2011 (serrano)                */
-#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jan 27 17:42:27 2012 (serrano)                */
+#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
 #*=====================================================================*/

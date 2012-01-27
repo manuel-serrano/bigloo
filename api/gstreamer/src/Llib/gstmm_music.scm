@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Wed Jan 25 17:08:04 2012 (serrano)                */
+;*    Last change :  Fri Jan 27 19:10:26 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -428,7 +428,7 @@
 ;*---------------------------------------------------------------------*/
 (define (music-play-loop o::gstmusic)
    (with-access::gstmusic o (%mutex %pipeline %status %meta %!gabort
-			       onvolume onstate onevent onerror)
+			       onstate onevent onerror)
       (with-access::musicstatus %status (volume playlistid state
 					   song songpos songlength
 					   bitrate err playlistlength)
