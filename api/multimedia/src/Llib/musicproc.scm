@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Thu Jan 26 06:01:26 2012 (serrano)                */
+;*    Last change :  Fri Jan 27 10:39:32 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
@@ -398,13 +398,14 @@
 ;*    music-volume-set! ::musicproc ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! o::musicproc v)
-   (with-access::musicproc o (%mutex %status %process %command-volume)
+   (with-access::musicproc o (%mutex %status %process %command-volume onvolume)
       (with-lock %mutex
 	 (lambda ()
 	    (musicproc-connect! o)
 	    (musicproc-exec o #f %command-volume v)
 	    (with-access::musicstatus %status (volume)
 	       (set! volume v))))
+      (onvolume v)
       v))
 
 ;*---------------------------------------------------------------------*/
