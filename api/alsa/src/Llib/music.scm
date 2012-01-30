@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jan 30 11:01:02 2012 (serrano)                */
+;*    Last change :  Mon Jan 30 12:18:45 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -568,10 +568,8 @@
 		(with-access::alsamusic o (onevent)
 		   (when (>fx debug 0)
 		      (tprint "fill.2a, set eof-filled (bs=1)"))
-		   (when (=fx %!bstate 0)
-		      (mutex-lock! %bmutex)
-		      (set! %!bstate 1)
-		      (mutex-unlock! %bmutex))
+		   (when (and (=fx %!bstate 0) (>fx (available) 0))
+		      (set! %!bstate 1))
 		   (set! %eof #t)
  		   (onevent o 'loaded url))
 		(let ((nhead (+fx %head i)))
@@ -630,7 +628,7 @@
    (with-access::alsammapbuffer buffer (%!bstate %head %inbufp %eof mmap url)
       (set! %inbufp (mmap->string mmap))
       (set! %head 0)
-      (set! %!bstate 1)
+      (set! %!bstate (if (=fx (mmap-length mmap) 0) 0 1))
       (set! %eof #t)
       (with-access::alsamusic o (onevent)
 	 (onevent o 'loaded url))))
