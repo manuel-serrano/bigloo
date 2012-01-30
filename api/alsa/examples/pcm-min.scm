@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:03:11 2011                          */
-;*    Last change :  Tue Jun 28 08:23:44 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Mon Jan 30 08:35:16 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    pcm-min, an extra small demo sends a random samples to your      */
 ;*    speakers.                                                        */
@@ -48,17 +48,18 @@
    (let ((pcm (instantiate::alsa-snd-pcm
 		 (device device))))
 
-      (print "device=" (alsa-snd-pcm-name pcm))
-      
-      (alsa-snd-pcm-set-params! pcm :format 'u8
-	 :access 'rw-interleaved
-	 :channels 1
-	 :rate 48000
-	 :soft-resample 1
-	 :latency 500000)
-
-      ;; play the sound
-      (for (i 0 16)
-	 (alsa-snd-pcm-writei pcm buffer (string-length buffer)))
-      
-      (alsa-snd-pcm-close pcm)))
+      (with-access::alsa-snd-pcm pcm (name)
+	 (print "device=" name)
+	 
+	 (alsa-snd-pcm-set-params! pcm :format 'u8
+	    :access 'rw-interleaved
+	    :channels 1
+	    :rate 48000
+	    :soft-resample 1
+	    :latency 500000)
+	 
+	 ;; play the sound
+	 (for (i 0 16)
+	    (alsa-snd-pcm-writei pcm buffer (string-length buffer)))
+	 
+	 (alsa-snd-pcm-close pcm))))
