@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Jan 27 19:09:06 2012 (serrano)                */
+;*    Last change :  Mon Jan 30 08:28:17 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -55,8 +55,7 @@
 	       
 	       (%inbufp::string read-only)
 	       (%head::long (default 0))
-	       (%!tail::long (default 0))
-	       (profile-lock::long (default 0)))
+	       (%!tail::long (default 0)))
 	    
 	    (class alsadecoder
 	       (alsadecoder-init)
@@ -306,9 +305,9 @@
 		      (obj url)))))))
    
    (define (play-url o d::alsadecoder url::bstring playlist)
-      (if (file-exists? url)
-	  (play-url-mmap o d url playlist)
-	  (play-url-port o d url playlist)))
+      (cond
+	 ((file-exists? url) (play-url-mmap o d url playlist))
+	 (else (play-url-port o d url playlist))))
    
    (define (play-urls urls n)
       (with-access::alsamusic o (%amutex %!aabort onerror %decoder %toseek)
@@ -436,7 +435,7 @@
    (with-access::alsabuffer b (%bmutex %bcondv %!babort)
       (mutex-lock! %bmutex)
       (set! %!babort #t)
-      (condition-variable-signal! %bcondv)
+      (condition-variable-broadcast! %bcondv)
       (mutex-unlock! %bmutex)))
 
 ;*---------------------------------------------------------------------*/
@@ -500,15 +499,12 @@
 		(i (read-fill-string! %inbuf %head sz port)))
 	    (if (eof-object? i)
 		(with-access::alsamusic o (onevent)
-		   (when (=fx %!bstate 0)
-		      (mutex-lock! %bmutex)
-		      (when (>fx debug 0)
-			 (with-access::alsabuffer buffer (profile-lock)
-			    (set! profile-lock (+fx 1 profile-lock))
-			    (tprint "fill.2a, set eof-filled (bs=1) mutex-lock="
-			       profile-lock)))
-		      (set! %!bstate 1)
-		      (mutex-unlock! %bmutex))
+		   (when (>fx debug 0)
+		      (tprint "fill.2a, set eof-filled (bs=1)"))
+;* 		   (when (=fx %!bstate 0)                              */
+;* 		      (mutex-lock! %bmutex)                            */
+;* 		      (set! %!bstate 1)                                */
+;* 		      (mutex-unlock! %bmutex))                         */
 		   (set! %eof #t)
  		   (onevent o 'loaded url))
 		(let ((nhead (+fx %head i)))
@@ -520,10 +516,7 @@
 		       ;; set state full
 		       (mutex-lock! %bmutex)
 		       (when (>fx debug 0)
-			  (with-access::alsabuffer buffer (profile-lock)
-			     (set! profile-lock (+fx 1 profile-lock))
-			     (tprint "fill.2b, set full (bs=2) mutex-lock="
-				profile-lock)))
+			  (tprint "fill.2b, set full (bs=2)"))
 		       (set! %!bstate 2)
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex))
@@ -531,10 +524,7 @@
 		       ;; set state filled
 		       (mutex-lock! %bmutex)
 		       (when (>fx debug 0)
-			  (with-access::alsabuffer buffer (profile-lock)
-			     (set! profile-lock (+fx 1 profile-lock))
-			     (tprint "fill.2c, set filled (bs=1) mutex-lock="
-				profile-lock)))
+			  (tprint "fill.2c, set filled (bs=1)"))
 		       (set! %!bstate 1)
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex)))))))

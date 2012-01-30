@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Thu Jan 26 14:57:41 2012 (serrano)                */
+;*    Last change :  Mon Jan 30 08:16:41 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -127,10 +127,7 @@
 		   ;; set state empty
 		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (with-access::alsabuffer buffer (profile-lock)
-			 (set! profile-lock (+fx 1 profile-lock))
-			 (tprint "dec.3, set empty (bs=0) mutex-lock="
-			    profile-lock)))
+		      (tprint "dec.3, set empty (bs=0)"))
 		   (set! %!bstate 0)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))
@@ -138,10 +135,7 @@
 		   ;; set state filled
 		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (with-access::alsabuffer buffer (profile-lock)
-			 (set! profile-lock (+fx 1 profile-lock))
-			 (tprint "dec.3, set filled (bs=1) mutex-lock="
-			    profile-lock)))
+		      (tprint "dec.3, set filled (bs=1)"))
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))))

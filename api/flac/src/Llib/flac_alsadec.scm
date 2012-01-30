@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Jan 23 08:26:54 2012 (serrano)                */
+;*    Last change :  Mon Jan 30 08:18:41 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -105,7 +105,7 @@
 	 (with-access::alsamusic am (%amutex %status pcm)
 	    (unwind-protect
 	       (flac-decoder-decode %flac)
-	       (with-access::alsabuffer %buffer (%!bstate  %bcondv %bmutex %eof)
+	       (with-access::alsabuffer %buffer (%eof)
 		  (alsa-snd-pcm-cleanup pcm)
 		  (onstate am (if %eof 'ended 'stop))))))))
 
@@ -185,10 +185,8 @@
 		   ;; set state empty
 		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (with-access::alsabuffer %buffer (profile-lock)
-			 (set! profile-lock (+fx 1 profile-lock))
-			 (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
-			    " %eof=" %eof " mutex-lock=" profile-lock)))
+		      (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
+			    " %eof=" %eof))
 		   (set! %!bstate 0)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))
@@ -196,10 +194,7 @@
 		   ;; set state filled
 		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
-		      (with-access::alsabuffer %buffer (profile-lock)
-			 (set! profile-lock (+fx 1 profile-lock))
-			 (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size
-			    " mutex-lock=" profile-lock)))
+		      (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size))
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))))
