@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jan 31 07:23:46 2012 (serrano)                */
+;*    Last change :  Tue Jan 31 10:12:43 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -360,11 +360,9 @@
 		      #f))))))
    
    (define (play-url o d::alsadecoder url::bstring playlist notify)
-      (when (file-exists? url)
-	 (tprint "MMAP NOT ACTIVATE..."))
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ;; ((file-exists? url) (play-url-mmap o d url playlist notify))
+	 ((file-exists? url) (play-url-mmap o d url playlist notify))
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
