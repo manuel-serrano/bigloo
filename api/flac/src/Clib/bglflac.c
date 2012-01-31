@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Oct 25 15:31:38 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Tue Jan 31 07:18:26 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
 /*=====================================================================*/
@@ -85,6 +85,10 @@ bgl_error_callback( const FLAC__StreamDecoder *,
 		    FLAC__StreamDecoderErrorStatus,
 		    void *client_data );
 
+static FILE *foo = 0L;
+static int count = 0;
+static long pos = 0;
+
 /*---------------------------------------------------------------------*/
 /*    FLAC__StreamDecoderInitStatus                                    */
 /*    bgl_FLAC__stream_decoder_init_stream ...                         */
@@ -92,6 +96,18 @@ bgl_error_callback( const FLAC__StreamDecoder *,
 FLAC__StreamDecoderInitStatus
 bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
 				      obj_t obj ) {
+
+   if( foo ) {
+      fclose( foo );
+   }
+
+   {
+      char name[ 100 ];
+      sprintf( name, "/tmp/LOG-%d", count++ );
+      foo = fopen( name, "w" );
+      pos = 0;
+   }
+   
    return FLAC__stream_decoder_init_stream(
       decoder,
       bgl_read_callback,
@@ -123,14 +139,20 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
    if( EOF_OBJECTP( res ) ) {
       BGL_DECODER_EOF( obj ) = true;
       *size = 0;
+      // fprintf( stderr, "bgl_read_callback ... end_of_stream\n" );
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
       int cres = CINT( res );
+
+   fwrite( buffer, cres, 1, foo );
+   pos += cres;
+   fflush( foo );
 
       if( cres >= 0 ) {
 	 *size = cres;
 	 return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
       } else {
+	 // fprintf( stderr, "bgl_read_callback... abort\n" );
 	 *size = 0;
 	 return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
       }
@@ -214,6 +236,9 @@ bgl_eof_callback( const FLAC__StreamDecoder *decoder,
 		  void *client_data ) {
    obj_t obj = (obj_t)client_data;
 
+//   if( BGL_DECODER_EOF( obj ) ) {
+//      fprintf( stderr, "bgl_eof_callback... EOF\n" );
+//   }
    return BGL_DECODER_EOF( obj ) ? true : false;
 }
 
@@ -323,6 +348,7 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
    char *msg;
    obj_t res;
 
+   // fprintf( stderr, "!!!!!!!!!!!!!! bgl_error_callback: %d !!!!!!! pos=%d\n", status, pos );
    switch( status ) {
       case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
 	 msg = "lost sync"; break;

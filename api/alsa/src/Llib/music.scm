@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jan 30 12:18:45 2012 (serrano)                */
+;*    Last change :  Tue Jan 31 07:23:46 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -255,10 +255,12 @@
 	       (with-lock %amutex
 		  (lambda ()
 		     (unless %nextbuffer
-			(let ((ip (open-input-file (car playlist))))
+			(let* ((url (car playlist))
+			       (ip (open-input-file url)))
 			   (when (input-port? ip)
+			      ;; (tprint "PREPARE-NEXT-BUFFER... %head=" %head " %!tail=" %!tail)
 			      (let ((buf (instantiate::alsaportbuffer
-					    (url (car playlist))
+					    (url url)
 					    (port ip)
 					    (%inlen %inlen)
 					    (%inbuf %inbuf)
@@ -271,6 +273,7 @@
 	 
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
+      ;; (tprint ">>> PLAY-NEXT: " url)
       (let ((ip (open-input-file url)))
 	 (if (input-port? ip)
 	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
@@ -338,7 +341,8 @@
 
    (define (play-url-next o d::alsadecoder url::bstring playlist)
       (with-access::alsamusic o (%amutex %buffer %nextbuffer)
-	 (with-access::alsaportbuffer %nextbuffer (%nexttail %!tail)
+	 (with-access::alsaportbuffer %nextbuffer (%nexttail %!tail %head)
+	    ;; (tprint ">>> PLAY-URL-NEXT: " url " head=" %head " %!tail=" %nexttail)
 	    (set! %!tail %nexttail))
 	 (set! %buffer %nextbuffer)
 	 (set! %nextbuffer #f)
@@ -356,9 +360,11 @@
 		      #f))))))
    
    (define (play-url o d::alsadecoder url::bstring playlist notify)
+      (when (file-exists? url)
+	 (tprint "MMAP NOT ACTIVATE..."))
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ((file-exists? url) (play-url-mmap o d url playlist notify))
+	 ;; ((file-exists? url) (play-url-mmap o d url playlist notify))
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
@@ -376,15 +382,14 @@
 			    (set! %toseek -1)
 			    (set! %decoder decoder)
 			    (update-song-status! o n)
-			    ;; play-url unlock! %amutex
+			    ;; play-url unlocks %amutex
 			    (play-url o decoder url l notify)
 			    (mutex-lock! %amutex)
 			    (loop (cdr l) (+fx 1 n) #f))
 			 (begin
 			    (mutex-unlock! %amutex)
 			    (onerror o (format "Illegal format \"~a\"" url))
-			    (mutex-lock! %amutex)
-			    (loop (cdr l) (+fx 1 n) notify)))))))))
+			    (mutex-lock! %amutex)))))))))
 
    (define (play-playlist n)
       ;; start playing the playlist

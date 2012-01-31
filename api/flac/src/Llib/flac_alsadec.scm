@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Jan 30 08:18:41 2012 (serrano)                */
+;*    Last change :  Tue Jan 31 07:20:37 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -186,7 +186,7 @@
 		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
 		      (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
-			    " %eof=" %eof))
+			 " %eof=" %eof))
 		   (set! %!bstate 0)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))
@@ -198,8 +198,9 @@
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)
 		   (mutex-unlock! %bmutex))))
-
-	    (let loop ()
+	    
+	    (let loop ((size size)
+		       (i 0))
 	       (when (>fx debug 1)
 		  (tprint "flac_decoder, read.1 bs=" %!bstate " tl=" %!tail " hd=" %head
 		     " %eof=" %eof " inlen=" inlen))
@@ -221,9 +222,9 @@
 			      (begin
 				 (mutex-unlock! %dmutex)
 				 (onstate am 'play)
-				 (loop))))))
+				 (loop size i))))))
 		  (%!dabort
-		   -1)
+		     -1)
 		  ((=fx %!bstate 0)
 		   ;; buffer empty
 		   (if %eof
@@ -238,17 +239,19 @@
 			     (when (>fx debug 0)
 				(tprint "<<< flac_decoder, wait empty"))
 			     (mutex-unlock! %bmutex))
-			  (loop))))
+			  (loop size i))))
 		  (else
-		   (let ((sz (minfx size
-				(if (>fx %head %!tail)
-				    (-fx %head %!tail)
-				    (-fx inlen %!tail)))))
+		   (let* ((bsz (if (>fx %head %!tail)
+				   (-fx %head %!tail)
+				   (-fx inlen %!tail)))
+			  (sz (minfx size bsz)))
 		      (when (>fx sz 0)
-			 ($flac-blit-string! %inbufp %!tail flacbuf 0 sz))
+			 ($flac-blit-string! %inbufp %!tail flacbuf i sz))
 		      (when (>fx debug 0)
-			 (tprint ">>> read.inc-tail sz=" sz))
+			 (tprint ">>> read.inc-tail sz=" sz " %!tail=" %!tail))
 		      (inc-tail! sz)
 		      (when (>fx debug 0)
-			 (tprint "<<< read.inc-tail sz=" sz))
-		      sz))))))))
+			 (tprint "<<< read.inc-tail sz=" sz " %!tail=" %!tail))
+		      (if (<fx sz size)
+			  (loop (- size sz) (+fx i sz))
+			  (+fx i sz))))))))))
