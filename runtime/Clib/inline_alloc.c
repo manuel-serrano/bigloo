@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Wed Jun 15 13:48:33 2011 (serrano)                */
+/*    Last change :  Wed Feb  1 18:32:12 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -20,6 +20,38 @@
 #if( BGL_GC_VERSION >= 700 )
 #  define GRANULE_SIZE 1
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    gchook ...                                                       */
+/*---------------------------------------------------------------------*/
+static obj_t gchook = BUNSPEC;
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    gcollect_hook ...                                                */
+/*---------------------------------------------------------------------*/
+static void
+gcollect_hook( unsigned long heapsz, unsigned long use ) {
+   if( PROCEDUREP( gchook ) ) {
+      PROCEDURE_ENTRY( gchook )( gchook, LONG_TO_BLLONG( heapsz ), LONG_TO_BLLONG( use ) );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_gc_hook_set ...                                              */
+/*---------------------------------------------------------------------*/
+GC_API void
+bgl_gc_hook_set( obj_t proc ) {
+   if( !PROCEDURE_CORRECT_ARITYP( proc, 2 ) ) {
+      fprintf( stderr, "*** ERROR: bgl_gc_hook_set, illegal callback, ignoring...\n" );
+      gchook = BUNSPEC;
+   } else {
+      gchook = proc;
+      GC_add_gc_hook( &gcollect_hook );
+   }
+}
   
 /*---------------------------------------------------------------------*/
 /*    GC_INLINE_ALLOC_6xx                                              */
@@ -284,6 +316,15 @@ make_bllong( BGL_LONGLONG_T l ) {
 }
 
 #else /* BGL_GC == BGL_BOEHM_GC && BGL_GC_CUSTOM && !defined(BGL_GC_THREADS) */
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_gc_hook_set ...                                              */
+/*---------------------------------------------------------------------*/
+void
+bgl_gc_hook_set( obj_t proc ) {
+   ;
+}
 
 /*---------------------------------------------------------------------*/
 /*    make_pair ...                                                    */

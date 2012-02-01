@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Mar 30 08:07:50 2011 (serrano)                */
+;*    Last change :  Wed Feb  1 18:09:05 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -130,14 +130,7 @@
 		   "GC_ADD_GLOBV")
 	    (macro GC-add-roots!::obj (::obj ::obj)
 		   "GC_ADD_ROOTS")
- 
-	    (macro GC-profile-push::long (::string ::obj)
-		    "GC_profile_push")
-	    (macro GC-collect-profile-push::long (::string ::obj)
-		   "GC_collect_profile_push")
-	    (macro GC-profile-pop::long  ()
-		   "GC_profile_pop")
-	    
+
 	    (macro %exit::obj (::obj)
 		   "BIGLOO_EXIT")
 
@@ -145,6 +138,7 @@
 		   "bgl_time")
 
 	    ($bgl-bmem-reset::obj () "bgl_bmem_reset")
+	    ($bgl-gc-hook-set!::void (::procedure) "bgl_gc_hook_set")
 
 	    (export bigloo-mangle "bigloo_mangle")
 	    (export bigloo-module-mangle "bigloo_module_mangle")
@@ -285,7 +279,8 @@
 
 	    (bmem-reset!)
 	    
-	    (time::obj ::procedure))
+	    (time::obj ::procedure)
+	    (bigloo-gc-hook-set! ::procedure))
 
    (pragma  (c-procedure-light? nesting)
 	    (va-procedure? nesting)
@@ -652,3 +647,12 @@
    (cond-expand
       (bigloo-c ($bgl-bmem-reset))
       (else #f)))
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-gc-hook-set! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (bigloo-gc-hook-set! proc)
+   (cond-expand
+      (bigloo-c ($bgl-gc-hook-set! proc))
+      (else #f)))
+   

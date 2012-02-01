@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Feb  1 17:17:14 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 17:58:55 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -301,8 +301,8 @@
 		   (when notify
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
-		   (alsadecoder-decode d o buffer)
-		   (alsadecoder-reset! d)))
+		   (alsadecoder-reset! d)
+		   (alsadecoder-decode d o buffer)))
 	     (with-access::alsamusic o (onerror %amutex)
 		(mutex-unlock! %amutex)
 		(onerror o
@@ -328,8 +328,8 @@
 		   (when notify
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
-		   (alsadecoder-decode d o buffer)
 		   (alsadecoder-reset! d)
+		   (alsadecoder-decode d o buffer)
 		   (close-mmap mmap)))
 	     (with-access::alsamusic o (onerror %amutex)
 		(mutex-unlock! %amutex)
@@ -347,8 +347,8 @@
 	 (set! %buffer %nextbuffer)
 	 (set! %nextbuffer #f)
 	 (mutex-unlock! %amutex)
-	 (alsadecoder-decode d o %buffer)
-	 (alsadecoder-reset! d)))
+	 (alsadecoder-reset! d)
+	 (alsadecoder-decode d o %buffer)))
 
    (define (next-buffer? url)
       (with-access::alsamusic o (%nextbuffer)
