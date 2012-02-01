@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Feb  1 18:09:05 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 19:23:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -138,7 +138,7 @@
 		   "bgl_time")
 
 	    ($bgl-bmem-reset::obj () "bgl_bmem_reset")
-	    ($bgl-gc-hook-set!::void (::procedure) "bgl_gc_hook_set")
+	    ($bgl-gc-verbose-set!::void (::bool) "bgl_gc_verbose_set")
 
 	    (export bigloo-mangle "bigloo_mangle")
 	    (export bigloo-module-mangle "bigloo_module_mangle")
@@ -237,13 +237,6 @@
 	       (method static GC-add-roots!::obj (::obj ::obj)
 		       "GC_ADD_ROOTS")
 	       
-	       (method static GC-profile-push::long (::string ::obj)
-		       "GC_profile_push")
-	       (method static GC-collect-profile-push::long (::string ::obj)
-		       "GC_collect_profile_push")
-	       (method static GC-profile-pop::long  ()
-		       "GC_profile_pop")
-	       
 	       (method static %exit::obj (::obj)
 		       "BIGLOO_EXIT")
 
@@ -280,7 +273,7 @@
 	    (bmem-reset!)
 	    
 	    (time::obj ::procedure)
-	    (bigloo-gc-hook-set! ::procedure))
+	    (bigloo-gc-verbose-set! ::bool))
 
    (pragma  (c-procedure-light? nesting)
 	    (va-procedure? nesting)
@@ -649,10 +642,10 @@
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    bigloo-gc-hook-set! ...                                          */
+;*    bigloo-gc-verbose-set! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-gc-hook-set! proc)
+(define (bigloo-gc-verbose-set! proc)
    (cond-expand
-      (bigloo-c ($bgl-gc-hook-set! proc))
+      (bigloo-c ($bgl-gc-verbose-set! proc))
       (else #f)))
    
