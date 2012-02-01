@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Sep 16 10:33:51 2011 (serrano)                */
-/*    Copyright   :  2003-11 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 10:49:35 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -260,7 +260,7 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
       }
       return;
    }
-   
+
    fun = (esymbol_t *)CREF( id );
 
    if( !dsz && (fun->stamp == stamp) ) {

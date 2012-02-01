@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Jan 31 10:12:43 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 10:56:24 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -81,7 +81,7 @@
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
 	    
-	    (generic alsadecoder-position::long ::alsadecoder ::bstring)
+	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
 	    (generic alsadecoder-seek::long ::alsadecoder ::long)
 	    (generic alsadecoder-volume-set! ::alsadecoder ::long)))
@@ -362,7 +362,7 @@
    (define (play-url o d::alsadecoder url::bstring playlist notify)
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ((file-exists? url) (play-url-mmap o d url playlist notify))
+	 ;;((file-exists? url) (play-url-mmap o d url playlist notify))
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
@@ -569,11 +569,14 @@
 		(i (read-fill-string! %inbuf %head sz port)))
 	    (if (eof-object? i)
 		(with-access::alsamusic o (onevent)
+		   (mutex-lock! %bmutex)
 		   (when (>fx debug 0)
 		      (tprint "fill.2a, set eof-filled (bs=1)"))
 		   (when (and (=fx %!bstate 0) (>fx (available) 0))
 		      (set! %!bstate 1))
 		   (set! %eof #t)
+		   (condition-variable-broadcast! %bcondv)
+		   (mutex-unlock! %bmutex)
  		   (onevent o 'loaded url))
 		(let ((nhead (+fx %head i)))
 		   (if (=fx nhead inlen)
@@ -583,7 +586,7 @@
 		      ((=fx %head %!tail)
 		       ;; set state full
 		       (mutex-lock! %bmutex)
-		       (when (>fx debug 0)
+		       (when (>fx debug 1)
 			  (tprint "fill.2b, set full (bs=2)"))
 		       (set! %!bstate 2)
 		       (condition-variable-broadcast! %bcondv)
@@ -591,7 +594,7 @@
 		      ((empty-state?)
 		       ;; set state filled
 		       (mutex-lock! %bmutex)
-		       (when (>fx debug 0)
+		       (when (>fx debug 1)
 			  (tprint "fill.2c, set filled (bs=1)"))
 		       (set! %!bstate 1)
 		       (condition-variable-broadcast! %bcondv)
@@ -602,7 +605,11 @@
 	    (tprint "fill.1 %!bstate=" %!bstate
 	       " tl=" %!tail " hd=" %head " eof=" %eof))
 	 (cond
-	    ((or %eof %!babort)
+	    (%eof
+	     ;;; done looping
+	     #unspecified)
+	    (%!babort
+	     ;;; external abort
 	     (mutex-lock! %bmutex)
 	     (condition-variable-broadcast! %bcondv)
 	     (mutex-unlock! %bmutex))
@@ -691,7 +698,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsadecoder-position o::alsadecoder inbuf))
+(define-generic (alsadecoder-position o::alsadecoder b::alsabuffer))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-info ::alsadecoder ...                               */

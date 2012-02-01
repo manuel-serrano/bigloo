@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Jan 30 08:16:41 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 09:50:48 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -64,9 +64,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::mpg123-alsadecoder ...                    */
 ;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-position dec::mpg123-alsadecoder buf)
+(define-method (alsadecoder-position dec::mpg123-alsadecoder b)
    (with-access::mpg123-alsadecoder dec (%mpg123)
-      (/fx (mpg123-position %mpg123 buf) 1000)))
+      (/fx (mpg123-position %mpg123) 1000)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-info ::mpg123-alsadecoder ...                        */
@@ -154,8 +154,7 @@
 		  (%!dpause
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
-		      (with-access::alsabuffer buffer (%inbufp)
-			 (set! songpos (alsadecoder-position dec %inbufp))))
+		      (set! songpos (alsadecoder-position dec buffer)))
 		   (mutex-lock! %dmutex)
 		   (if %!dpause
 		       (let liip ()
@@ -257,8 +256,7 @@
 	       :start-threshold 1
 	       :avail-min 1)))
       (with-access::musicstatus %status (songpos songlength bitrate khz)
-	 (with-access::alsabuffer buffer (%inbufp)
-	    (set! songpos (alsadecoder-position dec %inbufp)))
+	 (set! songpos (alsadecoder-position dec buffer))
 	 (set! songlength 0)
 	 (when (<fx songlength songpos)
 	    (set! songlength songpos))

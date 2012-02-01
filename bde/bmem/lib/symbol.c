@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Thu Aug 28 15:20:52 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 10:48:38 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
@@ -41,7 +41,7 @@ make_symbol( obj_t name ) {
    symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
    symbol->symbol_t.string = name;
    symbol->symbol_t.cval   = BNIL;
-   
+
    ((esymbol_t *)(symbol))->alloc_info = 0;
    ((esymbol_t *)(symbol))->class_alloc = -1;
    ((esymbol_t *)(symbol))->stamp = -3;
@@ -103,7 +103,7 @@ string_to_symbol( char *cname ) {
    bucket = VECTOR_REF( ____bgl_get_symtab(), hash_number );
 
    if( NULLP( bucket ) ) {
-      obj_t symbol = make_symbol( (obj_t)____string_to_bstring( cname ) );
+      obj_t symbol = make_symbol( (obj_t)string_to_bstring( cname ) );
       obj_t pair   = MAKE_PAIR( symbol, BNIL );
       
       VECTOR_SET( ____bgl_get_symtab(), hash_number, pair );
@@ -120,7 +120,7 @@ string_to_symbol( char *cname ) {
       if( !NULLP( run ) )
          return CAR( run );
       else {
-         obj_t symbol = make_symbol( (obj_t)____string_to_bstring( cname ) );
+         obj_t symbol = make_symbol( (obj_t)string_to_bstring( cname ) );
 	 obj_t pair   = MAKE_PAIR( symbol, BNIL );
 	 
          SET_CDR( back, pair );

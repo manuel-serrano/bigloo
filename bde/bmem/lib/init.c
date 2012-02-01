@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Sep 16 10:33:42 2011 (serrano)                */
-/*    Copyright   :  2003-11 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 11:25:41 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -248,6 +248,7 @@ dump_statistics() {
    thread_dump_statistics( f );
    fprintf( f, ")\n" );
    
+   fprintf( stderr, "Dump done\n" );
    fclose( f );
 }
 
@@ -281,8 +282,15 @@ bigloo_abort( long n ) {
 /*---------------------------------------------------------------------*/
 static void
 bmem_dump( int _ ) {
-   ____GC_gcollect();
-   dump_statistics();
+   static indump = 0;
+
+   if( !indump ) {
+      indump = 1;
+      
+      ____GC_gcollect();
+      dump_statistics();
+      indump = 0;
+   }
 }
    
 /*---------------------------------------------------------------------*/

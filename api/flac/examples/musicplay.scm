@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Mon Sep 19 11:24:57 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Wed Feb  1 11:27:44 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of FLAC and ALSA.         */
 ;*=====================================================================*/
@@ -34,8 +34,8 @@
 (define (main args)
    
    (let ((files '())
-	 (volume 100)
-	 (device "default"))
+	 (volume 80)
+	 (device (or (getenv "ALSADEVICE") "default")))
       
       (args-parse (cdr args)
 	 ((("-h" "--help") (help "This message"))
@@ -50,40 +50,39 @@
 	  (set! device dev))
 	 (else
 	  (set! files (append (directory->files else) files))))
+
+      (define (onstate o status)
+	 (with-access::musicstatus status (state)
+	    (tprint "state: " state)))
+
+      (define (onerror o e)
+	 (tprint "error: " e))
+
+      (define (onvolume o v)
+	 (tprint "volume: " v))
+
+      (define (onevent o e v)
+	 (tprint "event: " e " " v))
       
-      (co-instantiate
-	    ((pcm (instantiate::alsa-snd-pcm
-		     (device device)))
-	     (decoder (instantiate::flac-alsadecoder
-			 (mimetypes '("audio/flac" "application/x-flac"))))
-	     (player (instantiate::alsamusic
-			(decoders (list decoder))
-			(pcm pcm))))
-	 (music-volume-set! player volume)
-	 (music-playlist-clear! player)
-	 (for-each (lambda (p) (music-playlist-add! player p)) (reverse files))
-	 (music-play player)
-	 (music-event-loop player
-	    :frequency 20000
-	    :onstate (lambda (status)
-			(with-access::musicstatus status (state song volume
-							    songpos
-							    songlength)
-			   (print "state: " state)
-			   (case state
-			      ((play)
-			       (print "song: " (list-ref (music-playlist-get player)  song)
-				  " [" songpos "/" songlength "]"))
-			      ((ended)
-			       (newline)
-			       (when (=fx song (-fx (length files) 1))
-				  (exit 0))))))
-	    :onmeta (lambda (meta)
-		       (print "meta: " meta)
-		       (print "playlist: " (length (music-playlist-get player))))
-	    :onerror (lambda (err)
-			(print "error: " err))
-	    :onvolume (lambda (volume)
-			 (print "volume: " volume))))))
+      (when (pair? files)
+	 (let* ((pcm (instantiate::alsa-snd-pcm
+			(device device)))
+		(decoder (instantiate::flac-alsadecoder
+			    (mimetypes '("audio/flac" "application/x-flac"))))
+		(player (instantiate::alsamusic
+			   (onstate onstate)
+			   (onerror onerror)
+			   (onvolume onvolume)
+			   (onevent onevent)
+			   (decoders (list decoder))
+			   (pcm pcm))))
+	    (music-volume-set! player volume)
+	    (music-playlist-clear! player)
+	    (print "playing (" (current-date) "): ")
+	    (for-each (lambda (p)
+			 (print "  " p)
+			 (music-playlist-add! player p))
+	       (reverse files))
+	    (music-play player)))))
    
 

@@ -133,7 +133,7 @@ it is illegal to include in the @code{:header} actual list value a
 value for the @code{Connection} HTTP connection.
 
 @smalllisp
-(define (wget uri)
+(define (wget url)
    
    (define (parser ip status-code header clen tenc)
       (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
@@ -142,17 +142,17 @@ value for the @code{Connection} HTTP connection.
 	      (raise (instantiate::&io-port-error
 			(proc 'open-input-file)
 			(msg "Cannot open URL, authentication required")
-			(obj uri))))
+			(obj url))))
 	     ((404)
 	      (raise (instantiate::&io-file-not-found-error
 			(proc 'open-input-file)
 			(msg "Cannot open URL")
-			(obj uri))))
+			(obj url))))
 	     (else
 	      (raise (instantiate::&io-port-error
 			(proc 'open-input-file)
 			(msg (format "Cannot open URL (~a)" status-code))
-			(obj uri)))))
+			(obj url)))))
 	  (cond
 	     ((not (input-port? ip))
 	      (open-input-string ""))
@@ -169,7 +169,7 @@ value for the @code{Connection} HTTP connection.
 	     (op (socket-output sock)))
 	 (with-handler
 	    (lambda (e)
-	       (if (&http-redirection? e)
+	       (if (isa? e &http-redirection)
 		   (wget (&http-redirection-url e))
 		   (raise e)))
 	    (read-string (http-parse-response ip op parser))))))
