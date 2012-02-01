@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jan 31 07:18:26 2012 (serrano)                */
+/*    Last change :  Wed Feb  1 20:21:43 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -96,18 +96,6 @@ static long pos = 0;
 FLAC__StreamDecoderInitStatus
 bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
 				      obj_t obj ) {
-
-   if( foo ) {
-      fclose( foo );
-   }
-
-   {
-      char name[ 100 ];
-      sprintf( name, "/tmp/LOG-%d", count++ );
-      foo = fopen( name, "w" );
-      pos = 0;
-   }
-   
    return FLAC__stream_decoder_init_stream(
       decoder,
       bgl_read_callback,
@@ -143,10 +131,6 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
       int cres = CINT( res );
-
-   fwrite( buffer, cres, 1, foo );
-   pos += cres;
-   fflush( foo );
 
       if( cres >= 0 ) {
 	 *size = cres;
