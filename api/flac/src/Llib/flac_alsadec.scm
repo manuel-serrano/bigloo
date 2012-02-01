@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Feb  1 11:03:05 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 17:22:47 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -184,7 +184,7 @@
 		  ((=fx %!tail %head)
 		   ;; set state empty
 		   (mutex-lock! %bmutex)
-		   (when (>fx debug 0)
+		   (when (>=fx debug 0)
 		      (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
 			 " %eof=" %eof))
 		   (set! %!bstate 0)
@@ -193,7 +193,7 @@
 		  ((full-state?)
 		   ;; set state filled
 		   (mutex-lock! %bmutex)
-		   (when (>fx debug 1)
+		   (when (>=fx debug 0)
 		      (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size))
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)

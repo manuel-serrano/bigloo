@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Feb  1 10:56:24 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 17:17:14 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -362,7 +362,7 @@
    (define (play-url o d::alsadecoder url::bstring playlist notify)
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ;;((file-exists? url) (play-url-mmap o d url playlist notify))
+	 ((file-exists? url) (play-url-mmap o d url playlist notify))
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
