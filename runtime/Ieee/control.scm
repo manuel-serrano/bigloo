@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Fri Dec 16 11:58:50 2011 (serrano)                */
+;*    Last change :  Wed Feb  1 08:11:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -270,27 +270,28 @@
 ;*---------------------------------------------------------------------*/
 (define (filter! pred lis)
    (let lp ((ans lis))
-      (cond ((null? ans)
-	     ans)
-	    ((not (pred (car ans)))
-	     (lp (cdr ans)))
-	    (else
-	     (letrec ((scan-in (lambda (prev lis)
-				  (if (pair? lis)
-				      (if (pred (car lis))
-					  (scan-in lis (cdr lis))
-					  (scan-out prev (cdr lis))))))
-		      (scan-out (lambda (prev lis)
-				   (let lp ((lis lis))
-				      (if (pair? lis)
-					  (if (pred (car lis))
-					      (begin
-						 (set-cdr! prev lis)
-						 (scan-in lis (cdr lis)))
-					      (lp (cdr lis)))
-					  (set-cdr! prev lis))))))
-		(scan-in ans (cdr ans))
-		ans)))))
+      (cond
+	 ((null? ans)
+	  ans)
+	 ((not (pred (car ans)))
+	  (lp (cdr ans)))
+	 (else
+	  (letrec ((scan-in (lambda (prev lis)
+			       (if (pair? lis)
+				   (if (pred (car lis))
+				       (scan-in lis (cdr lis))
+				       (scan-out prev (cdr lis))))))
+		   (scan-out (lambda (prev lis)
+				(let lp ((lis lis))
+				   (if (pair? lis)
+				       (if (pred (car lis))
+					   (begin
+					      (set-cdr! prev lis)
+					      (scan-in lis (cdr lis)))
+					   (lp (cdr lis)))
+				       (set-cdr! prev lis))))))
+	     (scan-in ans (cdr ans))
+	     ans)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    force ...                                                        */

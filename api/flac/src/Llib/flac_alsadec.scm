@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Jan 31 07:20:37 2012 (serrano)                */
+;*    Last change :  Wed Feb  1 09:34:17 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -235,9 +235,11 @@
 			  (when (=fx %!bstate 0)
 			     (when (>fx debug 0)
 				(tprint ">>> flac_decoder, wait empty"))
+			     (tprint ">>> FLAC DECODER, wait buffer empty...")
 			     (condition-variable-wait! %bcondv %bmutex)
 			     (when (>fx debug 0)
 				(tprint "<<< flac_decoder, wait empty"))
+			     (tprint "<<< FLAC DECODER, wait buffer empty...")
 			     (mutex-unlock! %bmutex))
 			  (loop size i))))
 		  (else
