@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Feb  1 17:58:55 2012 (serrano)                */
+;*    Last change :  Thu Feb  2 14:15:50 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -144,6 +144,19 @@
 (define-method (music-reset! o::alsamusic)
    (call-next-method))
 
+;*---------------------------------------------------------------------*/
+;*    music-status ::alsamusic ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (music-status o::alsamusic)
+   (with-access::alsamusic o (%amutex %decoder %buffer %status)
+      (with-lock %amutex
+	 (lambda ()
+	    (when (and (isa? %decoder alsadecoder)
+		       (isa? %buffer alsabuffer))
+	       (with-access::musicstatus %status (songpos)
+		  (set! songpos (alsadecoder-position %decoder %buffer))))))
+      %status))
+      
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-get ::alsamusic ...                               */
 ;*---------------------------------------------------------------------*/
