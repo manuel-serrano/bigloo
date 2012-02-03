@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Fri Feb  3 14:30:56 2012 (serrano)                */
+;*    Last change :  Fri Feb  3 14:46:50 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -72,7 +72,7 @@
 			   ((eq? vtype *_*) *obj*)
 			   ((bigloo-type? vtype) vtype)
 			   (else *obj*)))
-;* 		 (ntype *obj*)                                         */
+		 (ntype *obj*)
 		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o-n (cons (car formals) var)))
 	     (local-access-set! var 'cell-globalize)
