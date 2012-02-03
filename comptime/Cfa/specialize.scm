@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Mon Nov 14 17:11:25 2011 (serrano)                */
-;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:34:42 2012 (serrano)                */
+;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -324,7 +324,7 @@
 (define-method (patch! node::sequence)
    (with-access::sequence node (type nodes)
       (patch*! nodes)
-      (when (and *strict-node-type* (eq? type *obj*))
+      (when (eq? type *obj*)
 	 (set! type *_*)
 	 (set! type (get-type node)))
       node))
@@ -380,7 +380,7 @@
        (set! test (patch! test))
        (set! true (patch! true))
        (set! false (patch! false))
-       (when (and *strict-node-type* (eq? type *obj*))
+       (when (eq? type *obj*)
 	  (set! type *_*)
 	  (set! type (get-type node)))
        node))
@@ -413,7 +413,7 @@
    (with-access::let-fun node (type body locals)
       (for-each patch-fun! locals)
       (set! body (patch! body))
-      (when (and *strict-node-type* (eq? type *obj*))
+      (when (eq? type *obj*)
 	 (set! type *_*)
 	 (set! type (get-type node)))
       node))
@@ -428,7 +428,7 @@
 		      (set-cdr! binding (patch! val))))
 		bindings)
       (set! body (patch! body))
-       (when (and *strict-node-type* (eq? type *obj*))
+       (when (eq? type *obj*)
 	  (set! type *_*)
 	  (set! type (get-type node)))
       node))

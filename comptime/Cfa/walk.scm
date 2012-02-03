@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Apr  7 16:57:59 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:33:08 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
 ;*                                                                     */
@@ -84,10 +84,6 @@
 	       (profile clo (closure-optimization! globals)))
 	    ;; type settings
 	    (profile type (type-settings! globals))
-	    ;; we cleanup the arithmetic optimizer
-	    (unless *strict-node-type*
-	       ;; in strict-node-type this is implemented during the type stage
-	       (cleanup-arithmetic-nodes! globals))
 	    ;; generic arithmetic specialization
 	    (specialize! globals)
 	    ;; and we are done

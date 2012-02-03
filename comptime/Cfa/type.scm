@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Apr  8 10:18:41 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:34:14 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -58,9 +58,8 @@
 	     ;; the body
 	     (set! body (type-node! body))))
 	 ((sfun? fun)
-	  (when *strict-node-type*
-	     (with-access::sfun fun (body )
-		(set! body (type-node! body)))))
+	  (with-access::sfun fun (body )
+	     (set! body (type-node! body))))
 	 (else
 	  (internal-error "type-fun!" "Unknown value" (shape var))))))
 
@@ -198,7 +197,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::kwote)
    (with-access::kwote node (type value)
-      (when (and *strict-node-type* (eq? type *_*))
+      (when (eq? type *_*)
 	 (set! type (get-type-kwote value))))
    node)
 
@@ -234,11 +233,10 @@
 (define-method (type-node! node::sequence)
    (with-access::sequence node (type nodes)
       (type-node*! nodes)
-      (when *strict-node-type*
-	 (when (eq? type *_*)
-	    (if (pair? nodes)
-		(set! type (get-type (car (last-pair nodes))))
-		(set! type *unspec*))))
+      (when (eq? type *_*)
+	 (if (pair? nodes)
+	     (set! type (get-type (car (last-pair nodes))))
+	     (set! type *unspec*)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -269,22 +267,21 @@
    
    (call-next-method)
    
-   (when *strict-node-type*
-      (with-access::app node (fun type args)
-	 ;; cleanup the function type
-	 (let* ((v (var-variable fun))
-		(val (variable-value v)))
-	    (when (eq? (variable-type v) *_*)
-	       (variable-type-set! v *obj*))
-	    ;; cleanup the arguments type
-	    (cond
-	       ((sfun? val)
-		(map! cleanup-type (sfun-args val)))
-	       ((cfun? val)
-		(map! cleanup-type (cfun-args-type val)))))
-	 ;; cleanup the node type
-	 (when (eq? type *_*)
-	    (set! type *obj*))))
+   (with-access::app node (fun type args)
+      ;; cleanup the function type
+      (let* ((v (var-variable fun))
+	     (val (variable-value v)))
+	 (when (eq? (variable-type v) *_*)
+	    (variable-type-set! v *obj*))
+	 ;; cleanup the arguments type
+	 (cond
+	    ((sfun? val)
+	     (map! cleanup-type (sfun-args val)))
+	    ((cfun? val)
+	     (map! cleanup-type (cfun-args-type val)))))
+      ;; cleanup the node type
+      (when (eq? type *_*)
+	 (set! type *obj*)))
    
    node)
 
@@ -338,8 +335,7 @@
       (call-next-method)
       (let ((atype (get-approx-type approx node)))
 	 (unless (eq? atype *_*)
-	    (when *strict-node-type*
-	       (set! type atype))))
+	    (set! type atype)))
       node))
    
 ;*---------------------------------------------------------------------*/
@@ -404,8 +400,7 @@
    (with-access::vref node (ftype type)
       (when (eq? ftype *_*)
 	 (set! ftype *obj*))
-      (when *strict-node-type*
-	 (set! type ftype)))
+      (set! type ftype))
    node)
       
 ;*---------------------------------------------------------------------*/
@@ -445,8 +440,7 @@
        (set! test (type-node! test))
        (set! true (type-node! true))
        (set! false (type-node! false))
-       (when *strict-node-type*
-	  (set! type (get-type node)))
+       (set! type (get-type node))
        node))
 
 ;*---------------------------------------------------------------------*/
@@ -454,9 +448,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::conditional/Cinfo)
    (call-next-method)
-   (unless *strict-node-type*
-      (with-access::conditional/Cinfo node (type approx)
-	 (set! type (get-approx-type approx node))))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -478,11 +469,10 @@
       (for-each (lambda (clause)
 		   (set-cdr! clause (type-node! (cdr clause))))
 		clauses)
-       (when *strict-node-type*
-	  ;; we cannot use the type of the approximation here because the
-	  ;; approximated type might be more precise that the actual
-	  ;; code generation (for instance when some procedure-el are applied)
-	  (set! type (get-type node)))
+      ;; we cannot use the type of the approximation here because the
+      ;; approximated type might be more precise that the actual
+      ;; code generation (for instance when some procedure-el are applied)
+      (set! type (get-type node))
       node))
 
 ;* {*---------------------------------------------------------------------*} */

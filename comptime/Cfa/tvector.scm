@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Thu Apr  7 17:27:48 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:35:32 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -142,11 +142,10 @@
 	  (inline-setup! 'all)
 	  (multiple-value-bind (vectors tvectors)
 	     (get-tvectors)
-	     (when *strict-node-type*
-		(for-each (lambda (v)
-			     (when (eq? (node-type v) *_*)
-				(node-type-set! v *vector*)))
-			  vectors))
+	     (for-each (lambda (v)
+			  (when (eq? (node-type v) *_*)
+			     (node-type-set! v *vector*)))
+		vectors)
 	     (show-tvector tvectors)
 	     (trace (cfa 2) "tvectors: " (shape tvectors) #\Newline)
 	     (if (pair? tvectors)
@@ -154,8 +153,7 @@
 		    (trace (cfa 2)
 			   "additional-body: " (shape add-tree) #\Newline)
 		    (patch-tree! globals)
-		    (when *strict-node-type*
-		       (lvtype-ast! add-tree))
+		    (lvtype-ast! add-tree)
 		    add-tree)
 		 (begin
 		    (patch-tree! globals)
@@ -253,8 +251,7 @@
 			(let ((ast (build-ast-sans-remove (list tvector-unit))))
 			   (globalize-walk! ast 'no-remove))
 			'())))
-	    (when *strict-node-type*
-	       (lvtype-ast! res))
+	    (lvtype-ast! res)
 	    (set-default-type! old-default-type)
 	    res))))
  
@@ -584,12 +581,10 @@
 					   loc
 					   'value)))
 		(let ((n (inline-node new-node 1 '())))
-		   (if *strict-node-type*
-		       (lvtype-node! n))
+		   (lvtype-node! n)
 		   n))
 	     (begin
-		(when *strict-node-type*
-		   (set! ftype (get-approx-type value-approx node)))
+		(set! ftype (get-approx-type value-approx node))
 		node)))))
 	    
 ;*---------------------------------------------------------------------*/
@@ -600,16 +595,14 @@
       (patch*! expr*)
       (if tvector?
 	  (let ((ty (vref-ftype node)))
-	     (when *strict-node-type*
-		(set! type ty))
+	     (set! type ty)
 	     node)
 	  (let* ((vec-approx (cfa! (car expr*)))
 		 (tv (get-approx-type vec-approx node)))
 	     (if (not (tvec? tv))
 		 (let ((ty (get-approx-type approx node)))
-		    (when *strict-node-type*
-		       (set! ftype ty)
-		       (set! type ty))
+		    (set! ftype ty)
+		    (set! type ty)
 		    node)
 		 (let* ((ty (get-approx-type approx node))
 			(tv-ref (symbol-append (type-id tv) '-ref))

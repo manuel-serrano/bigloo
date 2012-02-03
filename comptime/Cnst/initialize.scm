@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Sun Mar 27 13:05:02 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:32:49 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -55,8 +55,7 @@
 	     (let ((ast (build-ast (list unit))))
 		(for-each (lambda (global)
 			     (let ((body (sfun-body (global-value global))))
-				(when *strict-node-type*
-				   (lvtype-node! body))
+				(lvtype-node! body)
 				(coerce! body global (global-type global) #f)))
 			  ast)
 		ast))

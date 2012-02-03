@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Mar 28 13:49:21 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:36:55 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -90,18 +90,9 @@
 						  from)))))
 	  (cvar (make-local-svar 'checksum *long*))
 	  (nvar (make-local-svar 'from *string*))
-	  (node (if *strict-node-type*
-		    (let ((node (sexp->node body (list cvar nvar) '() 'value)))
-		       (lvtype-node! node)
-		       (coerce!  node req *unspec* #f))
-		    (let ((_ *_*))
-		       (set! *_* *obj*)
-		       (let ((node (coerce! (sexp->node body (list cvar nvar) '() 'value)
-					    req
-					    *obj*
-					    #f)))
-			  (set! *_* _)
-			  node))))
+	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value)))
+		   (lvtype-node! node)
+		   (coerce!  node req *unspec* #f)))
 	  (init (def-global-sfun-no-warning!
 		   (module-initialization-id *module*)
 		   '(checksum from)

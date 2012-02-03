@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Thu Apr  7 17:27:22 2011 (serrano)                */
+;*    Last change :  Fri Feb  3 14:27:45 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -533,15 +533,10 @@
 	 ((c-eq?)
 	  ;; As for $VECTOR-SET in order to let the cfa specialize the
 	  ;; vector it is required to erase the type of the third argument
-	  (if *strict-node-type*
-	      (begin
-		 (when (and (var? (car args)) (not (closure? (car args))))
-		    (node-type-set! (car args) *_*))
-		 (when (and (var? (cadr args)) (not (closure? (cadr args))))
-		    (node-type-set! (cadr args) *_*)))
-	      (begin
-		 (node-type-set! (car args) *_*)
-		 (node-type-set! (cadr args) *_*)))
+	  (when (and (var? (car args)) (not (closure? (car args))))
+	     (node-type-set! (car args) *_*))
+	  (when (and (var? (cadr args)) (not (closure? (cadr args))))
+	     (node-type-set! (cadr args) *_*))
 	  (instantiate::app
 	     (loc loc)
 	     (type (strict-node-type *_* (variable-type variable)))

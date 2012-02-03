@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Mar 30 08:46:36 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:36:18 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -295,8 +295,6 @@
 					 #unspecified
 					 type
 					 #f)))
-		       (unless *strict-node-type*
-			  (lvtype-node! node))
 		       node))
 		   ((type-disjoint? typec typea)
 		    (set! *type-checks-removed*
@@ -312,8 +310,6 @@
 					 #unspecified
 					 type
 					 #f)))
-		       (unless *strict-node-type*
-			  (lvtype-node! node))
 		       node))
 		   (else
 		    (set! *type-checks-remaining*

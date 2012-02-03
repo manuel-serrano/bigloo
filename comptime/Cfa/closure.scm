@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Thu May  5 14:30:36 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:35:04 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -262,14 +262,12 @@
 		    (scnst-class-set! (global-value (sfun-the-closure sfun))
 				      'selfun))
 		(var-variable-set! fun *make-el-procedure*)
-		(when *strict-node-type*
-		   (var-type-set! fun *procedure-el*)
-		   (set! type *procedure-el*)))
+		(var-type-set! fun *procedure-el*)
+		(set! type *procedure-el*))
 	       (else
 		(var-variable-set! fun *make-el-procedure*)
-		(when *strict-node-type*
-		   (var-type-set! fun *procedure-el*)
-		   (set! type *procedure-el*)))))
+		(var-type-set! fun *procedure-el*)
+		(set! type *procedure-el*))))
 	 (set! args (cddr args))
 	 app))
    (define (make-light-procedure-app app)
@@ -283,10 +281,9 @@
 		(scnst-class-set! (global-value (sfun-the-closure sfun))
 				  'slfun))
 	    (var-variable-set! fun *make-l-procedure*)
-	    (when *strict-node-type*
-	       ;; l-procedures are typed as regular procedures
-	       (var-type-set! fun *procedure*)
-	       (set! type *procedure*))
+	    ;; l-procedures are typed as regular procedures
+	    (var-type-set! fun *procedure*)
+	    (set! type *procedure*)
 	    (set-cdr! args (cddr args))
 	    app)))
    ;; we change the procedure allocation sites

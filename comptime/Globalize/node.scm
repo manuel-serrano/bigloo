@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Thu Nov  3 14:26:12 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:30:56 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -72,6 +72,7 @@
 			   ((eq? vtype *_*) *obj*)
 			   ((bigloo-type? vtype) vtype)
 			   (else *obj*)))
+;* 		 (ntype *obj*)                                         */
 		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o-n (cons (car formals) var)))
 	     (local-access-set! var 'cell-globalize)
@@ -94,15 +95,16 @@
 	     (type (strict-node-type (node-type body) *_*))
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
-				     (a-make-cell (instantiate::var
-						     (type (strict-node-type
-							    (variable-type
-							     (car o-n))
-							    *_*))
-						     (loc loc)
-						     (variable (car o-n)))
-						  (car o-n))))
-			    celled))))))
+				  (a-make-cell
+				     (instantiate::var
+					(type (strict-node-type
+						 (variable-type
+						    (car o-n))
+						 *_*))
+					(loc loc)
+					(variable (car o-n)))
+				     (car o-n))))
+			  celled))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    a-make-cell ...                                                  */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Dec  7 09:38:09 2011 (serrano)                */
-;*    Copyright   :  2010-11 Manuel Serrano                            */
+;*    Last change :  Fri Feb  3 14:36:37 2012 (serrano)                */
+;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -123,8 +123,7 @@
 	 (cond
 	    ((or (eq? v *string-ref*) (eq? v *string-set!*))
 	     (let ((node (abound-string-access node)))
-		(when *strict-node-type*
-		   (lvtype-node! node))
+		(lvtype-node! node)
 		node))
 	    (else
 	     node)))))
@@ -189,8 +188,7 @@
       (if unsafe
 	  node
 	  (let ((node (abound-vref node)))
-	     (when *strict-node-type*
-		(lvtype-node! node))
+	     (lvtype-node! node)
 	     node))))
 
 ;*---------------------------------------------------------------------*/
@@ -226,8 +224,7 @@
       (if unsafe
 	  node
 	  (let ((node (abound-vset node)))
-	     (when *strict-node-type*
-		(lvtype-node! node))
+	     (lvtype-node! node)
 	     node))))
 
 ;*---------------------------------------------------------------------*/

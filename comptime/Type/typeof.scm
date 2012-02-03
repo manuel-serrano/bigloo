@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Wed Nov 16 08:07:01 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:30:34 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -94,27 +94,7 @@
 ;*    type of node.                                                    */
 ;*---------------------------------------------------------------------*/
 (define-generic (get-type::type node::node)
-   (if *strict-node-type*
-       (node-type node)
-       (error "get-type" "No method for this object" node)))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::atom ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::atom)
-   (if *strict-node-type*
-       (call-next-method)
-       (with-access::atom node (value)
-	  (get-type-atom value))))
- 
-;*---------------------------------------------------------------------*/
-;*    get-type ::kwote ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::kwote)
-   (if *strict-node-type*
-       (call-next-method)
-       (with-access::kwote node (value)
-	  (get-type-kwote value))))
+   (node-type node))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::var ...                                               */
@@ -151,82 +131,38 @@
    
    (with-access::var node (variable type)
       (with-access::variable variable ((vtype type))
-	 (if *strict-node-type*
-	     (cond
-		((eq? type *_*)
-		 vtype)
-		((and (tclass? vtype) (type-subclass? type vtype))
-		 vtype)
-		(else
-		 type))
-	     (let ((value (variable-value variable)))
-		(cond
-		   ((sfun? value)
-		    *procedure*)
-		   ((cfun? value)
-		    *obj*)
-		   (else
-		    (if (and *optim-dataflow-types?*
-			     (type-more-specific? type vtype))
-			(begin
-			   (verbose-type type vtype)
-			   type)
-			vtype))))))))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::closure ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::closure)
-   ;; don't call call-next-method because a closure < var
-   (if *strict-node-type*
-       (call-next-method)
-       *procedure*))
+	 (cond
+	    ((eq? type *_*) vtype)
+	    ((and (tclass? vtype) (type-subclass? type vtype)) vtype)
+	    (else type)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::sequence ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::sequence)
-   (if *strict-node-type*
-       (with-access::sequence node (type)
-	  (if (eq? type *_*)
-	      (with-access::sequence node (nodes)
-		 (get-type (car (last-pair nodes))))
-	      type))
-       (with-access::sequence node (nodes)
-	  (get-type (car (last-pair nodes))))))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::setq ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::setq)
-   (if *strict-node-type*
-       (call-next-method)
-       *unspec*))
+   (with-access::sequence node (type)
+      (if (eq? type *_*)
+	  (with-access::sequence node (nodes)
+	     (get-type (car (last-pair nodes))))
+	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::conditional ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::conditional)
-   (if *strict-node-type*
-       (with-access::conditional node (type test true false)
-	  (if (eq? type *_*)
-	      (with-access::conditional node (test true false)
-		 (let ((ttrue (get-type true))
-		       (tfalse (get-type false)))
-		    (cond
-		       ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
-		       ((eq? ttrue *magic*) tfalse)
-		       ((and (pair-nil? ttrue) (pair-nil? tfalse)) *pair-nil*)
-		       ((subtype? ttrue tfalse) tfalse)
-		       ((subtype? tfalse ttrue) ttrue)
-		       (else *obj*))))
-	      type))
-       (with-access::conditional node (test true false)
-	  (let ((ttrue (get-type true))
-		(tfalse (get-type false)))
-	     (cond ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
+   (with-access::conditional node (type test true false)
+      (if (eq? type *_*)
+	  (with-access::conditional node (test true false)
+	     (let ((ttrue (get-type true))
+		   (tfalse (get-type false)))
+		(cond
+		   ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
 		   ((eq? ttrue *magic*) tfalse)
-		   (else *obj*))))))
+		   ((and (pair-nil? ttrue) (pair-nil? tfalse)) *pair-nil*)
+		   ((subtype? ttrue tfalse) tfalse)
+		   ((subtype? tfalse ttrue) ttrue)
+		   (else *obj*))))
+	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    subtype? ...                                                     */
@@ -254,121 +190,51 @@
        (eq? t2 *obj*))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-type ::fail ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::fail)
-   (if *strict-node-type*
-       (call-next-method)
-       *magic*))
-
-;*---------------------------------------------------------------------*/
 ;*    get-type ::select ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::select)
-   (if *strict-node-type*
-       (with-access::select node (type clauses test)
-	  (if (eq? type *_*)
-	      (let loop ((clauses (cdr clauses))
-			 (type (get-type (cdr (car clauses)))))
-		 (if (null? clauses)
-		     type
-		     (let ((ntype (get-type (cdr (car clauses)))))
-			(cond
-			   ((eq? ntype type)
-			    (loop (cdr clauses) type))
-			   ((eq? type *magic*)
-			    (loop (cdr clauses) ntype))
-			   ((or (eq? ntype type) (eq? ntype *magic*))
-			    (loop (cdr clauses) type))
-			   ((and (pair-nil? type) (pair-nil? ntype))
-			    (loop (cdr clauses) *pair-nil*))
-			   (else *obj*)))))
-	      type))
-       (with-access::select node (clauses test)
+   (with-access::select node (type clauses test)
+      (if (eq? type *_*)
 	  (let loop ((clauses (cdr clauses))
 		     (type (get-type (cdr (car clauses)))))
 	     (if (null? clauses)
 		 type
 		 (let ((ntype (get-type (cdr (car clauses)))))
 		    (cond
+		       ((eq? ntype type)
+			(loop (cdr clauses) type))
 		       ((eq? type *magic*)
 			(loop (cdr clauses) ntype))
 		       ((or (eq? ntype type) (eq? ntype *magic*))
 			(loop (cdr clauses) type))
-		       (else *obj*))))))))
+		       ((and (pair-nil? type) (pair-nil? ntype))
+			(loop (cdr clauses) *pair-nil*))
+		       (else *obj*)))))
+	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::let-fun ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::let-fun)
-   (if *strict-node-type*
-       (with-access::let-fun node (type body)
-	  (if (eq? type *_*)
-	      (get-type body)
-	      type))
-       (with-access::let-fun node (body)
-	  (get-type body))))
+   (with-access::let-fun node (type body)
+      (if (eq? type *_*)
+	  (get-type body)
+	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::let-var ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::let-var)
-   (if *strict-node-type*
-       (with-access::let-var node (type body)
-	  (if (eq? type *_*)
-	      (get-type body)
-	      type))
-       (with-access::let-var node (body)
-	  (get-type body))))
+   (with-access::let-var node (type body)
+      (if (eq? type *_*)
+	  (get-type body)
+	  type)))
  
-;*---------------------------------------------------------------------*/
-;*    get-type ::set-ex-it ...                                         */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::set-ex-it)
-   (if *strict-node-type*
-       (call-next-method)
-       *obj*))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::jump-ex-it ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::jump-ex-it)
-   (if *strict-node-type*
-       (call-next-method)
-       *obj*))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::make-box ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::make-box)
-   (if *strict-node-type*
-       (call-next-method)
-       *obj*))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::box-ref ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::box-ref)
-   (if *strict-node-type*
-       (call-next-method)
-       *obj*))
-
-;*---------------------------------------------------------------------*/
-;*    get-type ::box-set! ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (get-type node::box-set!)
-   (if *strict-node-type*
-       (call-next-method)
-       *unspec*))
-
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::app ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (get-type node::app)
-   (if *strict-node-type*
-       (with-access::app node (type fun)
-	  (if (eq? type *_*)
-	      (variable-type (var-variable fun))
-	      type))
-       (with-access::app node (fun)
-	  (variable-type (var-variable fun)))))
+   (with-access::app node (type fun)
+      (if (eq? type *_*)
+	  (variable-type (var-variable fun))
+	  type)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Nov 26 06:58:07 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:31:38 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -447,13 +447,8 @@
 (define-method (coerce! node::jump-ex-it caller to safe)
    (with-access::jump-ex-it node (exit value type)
       (set! exit (coerce! exit caller *exit* safe))
-      (if *strict-node-type*
-	  (begin
-	     (set! value (coerce! value caller (get-type value) safe))
-	     (convert! node type to safe))
-	  (begin
-	     (set! value (coerce! value caller to safe))
-	     node))))
+      (set! value (coerce! value caller (get-type value) safe))
+      (convert! node type to safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::make-box ...                                           */

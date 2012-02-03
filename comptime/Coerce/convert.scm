@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed Nov 16 11:05:58 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:32:34 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -152,8 +152,7 @@
    (if (and (not (eq? to *obj*)) (sub-type? to *obj*))
        (let ((node (runtime-type-error loc (type-id to) node)))
 	  (type-warning/location loc (current-function) from to)
-	  (when *strict-node-type*
-	     (lvtype-node! node))
+	  (lvtype-node! node)
 	  (coerce! node #unspecified from #f))
        (type-error/location loc (current-function) from to)))
 
@@ -249,7 +248,6 @@
 			  ,(runtime-type-error/id loc (type-id to) aux)))
 		  loc)))
       (increment-stat-check! from to loc)
-      (unless *strict-node-type* (lvtype-node! lnode))
       (spread-side-effect! lnode)
       (let* ((var (car (car (let-var-bindings lnode))))
 	     (coerce-app (do-convert coerce-op
@@ -270,7 +268,7 @@
 					  #unspecified
 					  from
 					  #f))
-	 (when *strict-node-type* (lvtype-node! lnode))
+	 (lvtype-node! lnode)
 	 lnode)))
 
 ;*---------------------------------------------------------------------*/
@@ -292,7 +290,6 @@
 				 ,(runtime-type-error/id loc (type-id to) aux))))
 		      loc)))
 	  (increment-stat-check! from to loc)
-	  (unless *strict-node-type* (lvtype-node! lnode))
 	  (spread-side-effect! lnode)
 	  (let* ((var (car (car (let-var-bindings lnode))))
 		 (coerce-app (do-convert coerce-op
@@ -320,7 +317,7 @@
 					      #unspecified
 					      from
 					      #f))
-	     (when *strict-node-type* (lvtype-node! lnode))
+	     (lvtype-node! lnode)
 	     lnode))))
 
 ;*---------------------------------------------------------------------*/
@@ -341,9 +338,7 @@
 		 "   from: " (shape from) #\Newline)
 	  ;; we have to mark that the node has been converted and is
 	  ;; now of the correct type...
-	  (if *strict-node-type*
-	      (lvtype-node! nnode)
-	      (node-type-set! node from))
+	  (lvtype-node! nnode)
 	  (spread-side-effect! nnode)
 	  ;; we apply the conversion
 	  (cond

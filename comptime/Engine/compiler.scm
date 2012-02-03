@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Jan 26 14:57:49 2012 (serrano)                */
+;*    Last change :  Fri Feb  3 14:26:55 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -426,7 +426,7 @@
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.
 	    (set! ast (profile inline (inline-walk! ast 'reducer)))
-	    (when *strict-node-type* (set! ast (lvtype-ast! ast)))
+	    (set! ast (lvtype-ast! ast))
 	    (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 	    (check-sharing "inline+" ast)
 	    (check-type "inline+" ast #t #t)

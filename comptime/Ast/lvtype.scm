@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Tue Mar 29 19:27:46 2011 (serrano)                */
+;*    Last change :  Fri Feb  3 14:28:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -38,8 +38,7 @@
 ;*    lvtype-node ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (lvtype-node::node node::node)
-   (when *strict-node-type*
-      (lvtype-node! node))
+   (lvtype-node! node)
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -63,10 +62,9 @@
 ;*    lvtype-node! ::var ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::var)
-   (when *strict-node-type*
-      (with-access::var node (type variable)
-	 (when (eq? type *_*)
-	    (set! type (variable-type variable)))))
+   (with-access::var node (type variable)
+      (when (eq? type *_*)
+	 (set! type (variable-type variable))))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -81,7 +79,7 @@
 (define-method (lvtype-node! node::sequence)
    (with-access::sequence node (type nodes)
       (lvtype-node*! nodes)
-      (when (and *strict-node-type* (eq? type *_*))
+      (when (eq? type *_*)
 	 (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
@@ -90,7 +88,7 @@
 (define-method (lvtype-node! node::app)
    (with-access::app node (type fun args)
       (lvtype-node*! args)
-      (when (and *strict-node-type* (eq? type *_*))
+      (when (eq? type *_*)
 	 (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
@@ -139,7 +137,7 @@
        (lvtype-node! test)
        (lvtype-node! true)
        (lvtype-node! false)
-       (when (and *strict-node-type* (eq? type *_*))
+       (when (eq? type *_*)
 	  (set! type (get-type node)))))
 
 ;*---------------------------------------------------------------------*/
@@ -170,7 +168,7 @@
 		   (lvtype-node! (sfun-body (local-value local))))
 		locals)
       (lvtype-node! body)
-      (when (and *strict-node-type* (eq? type *_*))
+      (when (eq? type *_*)
 	 (set! type (get-type body)))))
 
 ;*---------------------------------------------------------------------*/
@@ -185,7 +183,7 @@
 		      (set-variable-type! var (get-type val))))
 		bindings)
       (lvtype-node! body)
-      (when (and *strict-node-type* (eq? type *_*))
+      (when (eq? type *_*)
 	 (set! type (get-type body)))))
 
 ;*---------------------------------------------------------------------*/

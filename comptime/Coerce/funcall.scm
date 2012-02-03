@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Tue Mar 29 19:30:38 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:31:55 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -80,7 +80,7 @@
 					      (type (strict-node-type
 						     (variable-type fun) *obj*))
 					      (variable fun)))
-		    (when *strict-node-type* (lvtype-node! lnode))
+		    (lvtype-node! lnode)
 		    lnode))))))
 
 ;*---------------------------------------------------------------------*/
@@ -110,7 +110,7 @@
 			      ,error-msg
 			      ,fun))
 		loc)))
-      (when *strict-node-type* (lvtype-node! node))
+      (lvtype-node! node)
       (coerce! node caller to #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -119,8 +119,7 @@
 (define (coerce-funcall-args! node caller to safe)
    (define (toplevel-exp node)
       (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
-	 (when *strict-node-type*
-	    (lvtype-node! n))
+	 (lvtype-node! n)
 	 n))
    (if (null? (funcall-args node))
        (funcall-args-set! node (list (toplevel-exp node)))

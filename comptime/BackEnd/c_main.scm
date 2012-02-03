@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Sun Mar 27 14:55:30 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:37:10 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -53,15 +53,9 @@
 			     (let ((z::bint ($int->bint 0)))
 				(%exit z))
 			     #unspecified)))
-	  (node (if *strict-node-type*
-		    (let ((node (sexp->node main-body args #f 'value)))
-		       (lvtype-node! node)
-		       node)
-		    (let ((_ *_*))
-		       (set! *_* *obj*)
-		       (let ((node (sexp->node main-body args #f 'value)))
-			  (set! *_* _)
-			  node))))
+	  (node (let ((node (sexp->node main-body args #f 'value)))
+		   (lvtype-node! node)
+		   node))
 	  (bigloo-main (def-global-sfun! 'bigloo_main::obj
 			  '(argv::obj)
 			  args

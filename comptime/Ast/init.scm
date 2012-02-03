@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 19 14:33:36 2005                          */
-;*    Last change :  Sun Mar 27 14:58:23 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Fri Feb  3 14:28:35 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization part of the AST                               */
 ;*=====================================================================*/
@@ -60,8 +60,7 @@
 			   (for-each (lambda (g)
 					(let ((n (sfun-body (global-value g))))
 					   (occur-node-in! n g)
-					   (when *strict-node-type*
-					      (lvtype-node! n))))
+					   (lvtype-node! n)))
 				     vars)
 			   vars)
 			'()))

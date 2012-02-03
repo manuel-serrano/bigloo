@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Sun Mar 27 15:02:07 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:36:00 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
 ;*    local functions and which adds the integrated ones.              */
@@ -89,9 +89,7 @@
 		(if (pair? added)
 		    (let ((new-body (instantiate::let-fun
 				       (loc (node-loc old-body))
-				       (type (if *strict-node-type*
-						 (get-type old-body)
-						 *_*))
+				       (type (get-type old-body))
 				       (locals added)
 				       (body old-body))))
 		       (trace (integrate 3)

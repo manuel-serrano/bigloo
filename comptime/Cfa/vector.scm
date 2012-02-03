@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Thu Apr  7 17:28:05 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:33:23 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The vector approximation management                              */
 ;*    -------------------------------------------------------------    */
@@ -69,11 +69,9 @@
 	 (let ((wnode (widen!::valloc/Cinfo+optim node
 			 (owner owner)
 			 (approx (make-empty-approx))
-			 (value-approx (if *strict-node-type*
-					   (if (eq? ftype *_*)
-					       (make-empty-approx)
-					       (make-type-approx ftype))
-					   (make-empty-approx))))))
+			 (value-approx (if (eq? ftype *_*)
+					   (make-empty-approx)
+					   (make-type-approx ftype))))))
 	    (trace (cfa 3) "  valloc(optim): " (shape node) #\Newline)
 	    (valloc/Cinfo+optim-approx-set!
 	       wnode

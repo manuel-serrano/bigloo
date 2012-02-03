@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sun Mar 27 15:55:08 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  3 14:35:46 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -140,7 +140,7 @@
    (with-access::var node (variable type)
       (when (and (global? variable) (eq? (global-import variable) 'static))
 	 (type-variable! (global-value variable) variable))
-      (when (and *strict-node-type* (eq? (variable-type variable) *procedure-el*))
+      (when (eq? (variable-type variable) *procedure-el*)
 	 (set! type *procedure-el*))))
 
 ;*---------------------------------------------------------------------*/

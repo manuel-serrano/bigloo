@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Nov 22 08:57:55 2011 (serrano)                */
+;*    Last change :  Fri Feb  3 14:27:16 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -245,9 +245,7 @@
 			 (true alors)
 			 (false sinon)))
 		   (let* ((v (mark-symbol-non-user! (gensym 'test)))
-			  (var (if *strict-node-type*
-				   (make-typed-ident v 'bool)
-				   v))
+			  (var (make-typed-ident v 'bool))
 			  (nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
 		      (replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
 		      (sexp->node exp stack loc site))))))
