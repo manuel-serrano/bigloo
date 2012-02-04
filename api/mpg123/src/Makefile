@@ -3,13 +3,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jan 24 17:49:24 2012 (serrano)                */
+#*    Last change :  Sat Feb  4 07:52:11 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    Standard Alsa configuration                                      */
+#*    Standard Bigloo configuration                                    */
 #*---------------------------------------------------------------------*/
 include ../../../Makefile.config
 include ../../../Makefile.misc
@@ -50,7 +50,11 @@ CEFLAGS		= $(MPG123CFLAGS)
 ifeq "$(MPG123LIBS) " " "
 EXTRALIBS	= 
 else
+ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= $(MPG123LIBS)
+else
+EXTRALIBS	= $(MPG123LIBS) $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
+endif
 endif
 
 #*---------------------------------------------------------------------*/

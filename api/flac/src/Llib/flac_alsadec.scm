@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Feb  1 17:22:47 2012 (serrano)                */
+;*    Last change :  Sat Feb  4 07:50:25 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -14,7 +14,9 @@
 ;*---------------------------------------------------------------------*/
 (module __flac_alsadec
 
-   (library alsa)
+   (cond-expand
+      ((library alsa)
+       (library alsa)))
 
    (import __flac_flac)
 
@@ -28,6 +30,13 @@
 
    (export (class flac-alsadecoder::alsadecoder
 	      (%flac::obj (default #unspecified)))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa dependency                                                  */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   ((library alsa)
+;;; compile only if alsa available
 
 ;*---------------------------------------------------------------------*/
 ;*    $compiler-debug ...                                              */
@@ -256,3 +265,8 @@
 		      (if (<fx sz size)
 			  (loop (- size sz) (+fx i sz))
 			  (+fx i sz))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa dependency                                                  */
+;*---------------------------------------------------------------------*/
+))

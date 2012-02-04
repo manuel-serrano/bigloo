@@ -3,13 +3,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Nov 15 10:38:53 2011 (serrano)                */
+#*    Last change :  Sat Feb  4 07:52:26 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    Standard Alsa configuration                                      */
+#*    Standard Bigloo configuration                                    */
 #*---------------------------------------------------------------------*/
 include ../../../Makefile.config
 include ../../../Makefile.misc
@@ -50,7 +50,11 @@ CEFLAGS		= $(FLACCFLAGS)
 ifeq "$(FLACLIBS) " " "
 EXTRALIBS	= 
 else
+ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= $(FLACLIBS)
+else
+EXTRALIBS	= $(FLACLIBS) $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
+endif
 endif
 
 #*---------------------------------------------------------------------*/

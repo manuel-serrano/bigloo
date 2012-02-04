@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Fri Feb  3 14:46:50 2012 (serrano)                */
+;*    Last change :  Fri Feb  3 16:15:47 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -68,11 +68,11 @@
 	  (loop celled (cdr formals)))
 	 (else
 	  (let* ((vtype (local-type (car formals)))
-		 (ntype (cond
-			   ((eq? vtype *_*) *obj*)
-			   ((bigloo-type? vtype) vtype)
-			   (else *obj*)))
-		 (ntype *obj*)
+;* 		 (ntype (cond                                          */
+;* 			   ((eq? vtype *_*) *obj*)                     */
+;* 			   ((bigloo-type? vtype) vtype)                */
+;* 			   (else *obj*)))                              */
+		 (ntype *obj*) ;; MS 3feb2012: used to be vtype or obj
 		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o-n (cons (car formals) var)))
 	     (local-access-set! var 'cell-globalize)

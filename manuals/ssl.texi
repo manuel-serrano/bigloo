@@ -209,10 +209,10 @@ using the @code{library-load} function (see @ref{Bigloo Libraries}).
        (cs (socket-accept s))
        (ip (socket-input cs))
        (op (socket-output cs)))
-   (let loop ((e (read i)))
+   (let loop ((e (read ip)))
       (when (not (eof-object? e))
-         (write e o)
-         (loop (read i))))
+         (write e op)
+         (loop (read ip))))
    (socket-close s))
 @end smalllisp
 
