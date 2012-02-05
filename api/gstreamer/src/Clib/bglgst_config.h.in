@@ -45,4 +45,32 @@
 #  define GST_MESSAGE_ASYNC_DONE (GST_MESSAGE_ANY - 2)
 #endif
 
+#if( !defined( GST_STREAM_STATUS_TYPE_CREATE ) )
+#  define GST_STREAM_STATUS_TYPE_CREATE 1
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_ENTER ) )
+#  define GST_STREAM_STATUS_TYPE_ENTER 2
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_LEAVE ) )
+#  define GST_STREAM_STATUS_TYPE_LEAVE 3
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_DESTROY ) )
+#  define GST_STREAM_STATUS_TYPE_DESTROY 4
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_START ) )
+#  define GST_STREAM_STATUS_TYPE_START 5
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_PAUSE ) )
+#  define GST_STREAM_STATUS_TYPE_PAUSE 6
+#endif
+
+#if( !defined( GST_STREAM_STATUS_TYPE_STOP ) )
+#  define GST_STREAM_STATUS_TYPE_STOP 7
+#endif
+
 #endif
