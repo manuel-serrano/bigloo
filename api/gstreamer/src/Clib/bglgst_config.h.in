@@ -22,6 +22,9 @@
 #undef BGL_GSTREAMER_USE_THREADS
 #define BGL_GSTREAMER_USE_THREADS @GSTREAMER_USE_THREADS@
 
+#undef BGL_GSTREAMER_HAVE_PARSE_STREAM_STATUS
+#define BGL_GSTREAMER_HAVE_PARSE_STREAM_STATUS @GSTREAMER_HAVE_PARSE_STREAM_STATUS@
+
 /*---------------------------------------------------------------------*/
 /*    Compatiblity kit                                                 */
 /*---------------------------------------------------------------------*/
@@ -34,7 +37,7 @@
 #  endif
 #endif
 
-#if( defined(  GST_MESSAGE_SRC_NAME ) )
+#if( defined( GST_MESSAGE_SRC_NAME ) )
 #  define BGL_GSTREAMER_HAVE_PARSE_INFO 1
 #else
 #  define BGL_GSTREAMER_HAVE_PARSE_INFO 0

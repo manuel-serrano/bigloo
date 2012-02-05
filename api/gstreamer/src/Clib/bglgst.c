@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Tue Jan 24 16:16:27 2012 (serrano)                */
+/*    Last change :  Sun Feb  5 19:31:17 2012 (serrano)                */
 /*    Copyright   :  2007-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
@@ -1131,7 +1131,7 @@ bgl_gst_message_error_string( GstMessage *msg ) {
 /*---------------------------------------------------------------------*/
 char *
 bgl_gst_message_info_string( GstMessage *msg ) {
-#if(  BGL_GSTREAMER_HAVE_PARSE_INFO )
+#if( BGL_GSTREAMER_HAVE_PARSE_INFO )
    /* gstreamer is recent enought, gst_message_parse_info is bound */
    return bgl_gst_message_error_parser( msg, &gst_message_parse_info );
 #else
@@ -1220,11 +1220,15 @@ bgl_gst_message_get_src( GstMessage *msg ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_gst_message_stream_status_type( GstMessage *msg ) {
+#if( defined( GST_MESSAGE_STREAM_STATUS ) )
    GstStreamStatusType type;
    GstElement *el;
    gst_message_parse_stream_status( msg, &type, &el );
    
    return (int)type;
+#else
+   return -1;
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
