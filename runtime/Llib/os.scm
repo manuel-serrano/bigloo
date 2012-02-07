@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Feb 18 15:17:31 2011 (serrano)                */
+;*    Last change :  Mon Feb  6 16:10:10 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -494,21 +494,25 @@
 	 (blit-string-ur! directory 0 str 0 ldir)
 	 (blit-string-ur! file 0 str (+fx 1 ldir) lfile)
 	 str))
-   (let* ((ldir (string-length directory)))
-      (if (=fx ldir 1)
-	  (cond
-	     ((char=? (string-ref directory 0) #\.)
-	      file)
-	     ((char=? (string-ref directory 0) runtime-file-separator)
-	      (let* ((lfile (string-length file))
-		     (len (+fx ldir lfile))
-		     (str (make-string len runtime-file-separator)))
-		 (blit-string-ur! directory 0 str 0 ldir)
-		 (blit-string-ur! file 0 str ldir lfile)
-		 str))
-	     (else
-	      (default ldir)))
-	  (default ldir))))
+   (let ((ldir (string-length directory)))
+      (cond
+	 ((and (=fx ldir 1) (char=? (string-ref directory 0) #\.))
+	  file)
+	 ((=fx ldir 0)
+	  (let* ((lfile (string-length file))
+		 (len (+fx 1 lfile))
+		 (str (make-string len runtime-file-separator)))
+	     (blit-string-ur! file 0 str 1 lfile)
+	     str))
+	 ((char=? (string-ref directory (-fx ldir 1)) runtime-file-separator)
+	  (let* ((lfile (string-length file))
+		 (len (+fx ldir lfile))
+		 (str (make-string len runtime-file-separator)))
+	     (blit-string-ur! directory 0 str 0 ldir)
+	     (blit-string-ur! file 0 str ldir lfile)
+	     str))
+	 (else
+	  (default ldir)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn make-file-path@ ...                                       */

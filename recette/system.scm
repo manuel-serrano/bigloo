@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct 17 07:53:29 2002                          */
-;*    Last change :  Tue Mar 29 07:39:18 2011 (serrano)                */
-;*    Copyright   :  2002-11 Manuel Serrano                            */
+;*    Last change :  Mon Feb  6 16:00:08 2012 (serrano)                */
+;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test system features                                             */
 ;*=====================================================================*/
@@ -33,13 +33,13 @@
    (test "executable-name" (string? (executable-name)) #t)
    (test "file-separator" (char? (file-separator)) #t)
    (test "path-separator" (char? (path-separator)) #t)
-   (test "make-file-name" (make-file-name "" "foo")
+   (test "make-file-name.1" (make-file-name "" "foo")
 	 (string-append (string (file-separator)) "foo"))
-   (test "make-file-name" (make-file-name "foo" "bar")
+   (test "make-file-name.2" (make-file-name "foo" "bar")
 	 (string-append "foo" (string (file-separator)) "bar"))
-   (test "make-file-path" (make-file-path "foo" "bar")
+   (test "make-file-path.3" (make-file-path "foo" "bar")
 	 (string-append "foo" (string (file-separator)) "bar"))
-   (test "make-file-path" (make-file-path "foo" "bar" "gee")
+   (test "make-file-path.4" (make-file-path "foo" "bar" "gee")
 	 (string-append "foo" (string (file-separator))
 			"bar" (string (file-separator))
 			"gee"))
