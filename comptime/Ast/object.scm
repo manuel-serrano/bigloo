@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Fri Nov 25 16:22:56 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Wed Feb  8 16:17:22 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
 ;*=====================================================================*/
@@ -69,24 +69,30 @@
 (define (field-ref->node l exp stack loc site)
    (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site)))
-      (with-access::variable (var-variable var) (type)
-	 (let loop ((node var)
-		    (klass type)
-		    (slots (cdr l2)))
-	    (cond
-	       ((null? slots)
-		node)
-	       ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-		(error-sexp->node "Static type not a class" exp loc))
-	       (else
-		(let ((slot (find-class-slot klass (car slots))))
-		   (if (not slot)
-		       (error-sexp->node
-			  (format "Class \"~a\" has not field \"~a\""
-			     (type-id klass) (car slots))
-			  exp loc)
-		       (let ((node (make-field-ref slot node stack loc site)))
-			  (loop node (slot-type slot) (cdr slots)))))))))))
+      (cond
+	 ((var? var)
+	  (with-access::variable (var-variable var) (type)
+	     (let loop ((node var)
+			(klass type)
+			(slots (cdr l2)))
+		(cond
+		   ((null? slots)
+		    node)
+		   ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
+		    (error-sexp->node "Static type not a class" exp loc))
+		   (else
+		    (let ((slot (find-class-slot klass (car slots))))
+		       (if (not slot)
+			   (error-sexp->node
+			      (format "Class \"~a\" has not field \"~a\""
+				 (type-id klass) (car slots))
+			      exp loc)
+			   (let ((node (make-field-ref slot node stack loc site)))
+			      (loop node (slot-type slot) (cdr slots))))))))))
+	 ((= *nb-error-on-pass* 0)
+	  (error-sexp->node "Unbound variable" exp loc))
+	 (else
+	  var))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-set->node ...                                              */
@@ -95,8 +101,8 @@
    (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
 	  (var (sexp->node (car l2) stack loc site))
 	  (val (sexp->node val stack loc site)))
-      (if (not (var? var))
-	  (error-sexp->node "Unbound variable" exp loc)
+      (cond
+	 ((var? var)
 	  (with-access::variable (var-variable var) (type)
 	     (let loop ((node var)
 			(klass type)
@@ -118,7 +124,11 @@
 			       (make-field-set! slot node val stack loc site)))
 			  (else
 			   (let ((node (make-field-ref slot node stack loc site)))
-			      (loop node (slot-type slot) (cdr slots))))))))))))
+			      (loop node (slot-type slot) (cdr slots))))))))))
+	 ((= *nb-error-on-pass* 0)
+	  (error-sexp->node "Unbound variable" exp loc))
+	 (else
+	  var))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-ref ...                                               */
