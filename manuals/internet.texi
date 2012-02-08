@@ -221,7 +221,19 @@ Parses the status-line of an HTTP response. This returns a three values:
 @end deffn
 
 @deffn {bigloo procedure} http-parse-header input-port output-port
-Parses the whole header of an HTTP response. This is an alist.
+Parses the whole header of an HTTP response. It returns multiple values
+which are:
+  
+@itemize @bullet
+@item the whole header as an alist.
+@item the host given in the @code{host} header.
+@item the port given @code{host} field.
+@item the optional @var{content-length} header field.
+@item the optional @var{transfer-encoding} header field.
+@item the optional @var{authorization} header field.
+@item the optional @var{proxy-authorization} header field.
+@item the optional @var{connection} header field.
+@end itemize
 @end deffn
 
 @deffn {bigloo procedure} http-parse-response input-port output-port procedure

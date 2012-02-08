@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Feb  2 14:15:50 2012 (serrano)                */
+;*    Last change :  Wed Feb  8 08:43:08 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -41,8 +41,8 @@
 	       (%playlist::pair-nil (default '()))
 	       (%toseek::long (default -1))
 	       (%aready::bool (default #t))
-	       (%!aabort::bool (default #f))
 	       (%amutex::mutex read-only (default (make-mutex)))
+	       (%!playid::int (default -1))
 	       (%acondv::condvar read-only (default (make-condition-variable))))
 
 	    (class alsabuffer
@@ -379,12 +379,12 @@
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!aabort onerror %decoder %toseek)
-	 (let loop ((l urls)
-		    (n n)
-		    (notify #t))
-	    (unless %!aabort
-	       (when (pair? l)
+      (with-access::alsamusic o (%amutex %!playid onerror %decoder %toseek)
+	 (let ((playid %!playid))
+	    (let loop ((l urls)
+		       (n n)
+		       (notify #t))
+	       (when (and (eq? playid %!playid) (pair? l))
 		  (let* ((url (car l))
 			 (decoder (find-decoder o url)))
 		     (if decoder
@@ -404,16 +404,18 @@
 
    (define (play-playlist n)
       ;; start playing the playlist
-      (with-access::alsamusic o (%playlist %aready)
-	 (let ((playlist %playlist))
+      (with-access::alsamusic o (%playlist %aready %!playid)
+	 (let ((playlist %playlist)
+	       (playid %!playid))
 	    (when (and (>=fx n 0) (<fx n (length playlist)))
 	       ;; init alsa pcm
 	       (pcm-init o)
 	       ;; wait the the music player to be ready
 	       (alsamusic-wait-ready! o)
-	       (set! %aready #f)
-	       ;; play the list of urls
-	       (play-urls (list-tail playlist n) n)))))
+	       (when (=fx %!playid playid)
+		  (set! %aready #f)
+		  ;; play the list of urls
+		  (play-urls (list-tail playlist n) n))))))
 
    (define (resume-from-pause o)
       (with-access::alsamusic o (%decoder)
@@ -483,9 +485,10 @@
 ;*    music-stop ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::alsamusic)
-   (with-access::alsamusic o (%amutex onstate %status)
+   (with-access::alsamusic o (%amutex onstate %status %!playid)
       (with-lock %amutex
 	 (lambda ()
+	    (set! %!playid (+fx 1 %!playid))
 	    (alsamusic-wait-ready! o)))))
 
 ;*---------------------------------------------------------------------*/
@@ -500,16 +503,14 @@
 	 (alsabuffer-abort! %buffer))
       (when (isa? %nextbuffer alsabuffer)
 	 (alsabuffer-abort! %nextbuffer))
-      (with-access::alsamusic o (%aready %!aabort %acondv %amutex)
+      (with-access::alsamusic o (%aready %!playid %acondv %amutex)
 	 (unless %aready
-	    (set! %!aabort #t)
 	    (let loop ()
 	       (unless %aready
 		  ;; keep waiting
 		  (condition-variable-wait! %acondv %amutex)
 		  (loop))))
-	 (set! %aready #t)
-	 (set! %!aabort #f))))
+	 (set! %aready #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-abort! ...                                            */
