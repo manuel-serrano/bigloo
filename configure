@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Feb 13 10:18:00 2012 (serrano)                */
+#*    Last change :  Wed Feb 15 17:02:08 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1907,7 +1907,7 @@ fi
 
 if [ "$gstreamer " != " " ]; then
   pkgv=`echo $pkg | sed "s/@VERSION@/$gstreamer/g"`
-  gstreamercflags="`pkg-config --cflags $pkgv`"
+  gstreamercflags="`$autoconf bgl-pkg-config --cflags $pkgv`"
 
   if [ "gstreamercflags " = " " ]; then
     echo "*** ERROR: Cannot configure gstreamer, cflags are empty";
@@ -1917,17 +1917,17 @@ if [ "$gstreamer " != " " ]; then
 
   if [ "$gstreameraudio " = " " ]; then
     pkgaudio="$pkgv gstreamer-audio-$gstreamer"
-    audioflags="`pkg-config --cflags --libs $pkgaudio`"
+    audioflags="`$autoconf bgl-pkg-config --cflags --libs $pkgaudio`"
 
     gstreameraudio=`$autoconf gstreameraudio --cflags="$audioflags"` || exit 1;
     if [ "$gstreameraudio " != " " ]; then
       gstaudio="#t"
       gsthaveaudio="1"
-      gstreamerlibs="`pkg-config --libs $pkgaudio`"
+      gstreamerlibs="`$autoconf bgl-pkg-config --libs $pkgaudio`"
     else
       gstaudio="#f"
       gsthaveaudio="0"
-      gstreamerlibs=`pkg-config --libs $pkgv`
+      gstreamerlibs=`$autoconf bgl-pkg-config --libs $pkgv`
     fi
   fi
 fi
@@ -1941,8 +1941,8 @@ if [ "$alsa " = " " ]; then
 fi
 
 if [ "$alsa " != "no " ]; then
-  alsacflags=`pkg-config --cflags alsa`
-  alsalibs="`pkg-config --libs alsa`"
+  alsacflags=`$autoconf bgl-pkg-config --cflags alsa`
+  alsalibs="`$autoconf bgl-pkg-config --libs alsa`"
 
   if [ "alsacflags " = " " -o "alsalibs " = " " ]; then
     echo "*** ERROR: Cannot configure alsa, cflags are empty";
@@ -2007,8 +2007,8 @@ featureflags="-srfi enable-$regexp"
 #*---------------------------------------------------------------------*/
 # find out the C library for avahi
 if [ "$avahi " = " " ]; then
-   avahilibs=`pkg-config --libs avahi-client`
-   avahicflags=`pkg-config --cflags avahi-client`
+   avahilibs=`$autoconf bgl-pkg-config --libs avahi-client`
+   avahicflags=`$autoconf bgl-pkg-config --cflags avahi-client`
 
    avahi=`$autoconf avahi --cflags="$avahicflags" --libs="$avahilibs"` || exit 1;
 fi
@@ -2703,7 +2703,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
               -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
-              -e "s|@BGL_REGEXP_FAMILY@|\U$regexp|" \
+              -e "s|@BGL_REGEXP_FAMILY@|$regexp|" \
         > $p
     fi
   done

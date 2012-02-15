@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Wed Dec  7 18:08:56 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Wed Feb 15 17:05:25 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -25,7 +25,7 @@ bgl_make_regexp( obj_t pat ) {
    return BREF( re );
 }
 
-#if( BGL_REGEXP_TYPE == BGL_REGEXP_REGEX )
+#if( BGL_REGEXP_TYPE == BGL_REGEXP_regex )
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -114,7 +114,7 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end ) {
 
 #endif
 
-#if( BGL_REGEXP_TYPE == BGL_REGEXP_PCRE )
+#if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
 #include <pcre.h>
 
 /*---------------------------------------------------------------------*/

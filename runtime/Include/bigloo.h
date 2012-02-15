@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jan 23 08:09:38 2012 (serrano)                */
+/*    Last change :  Wed Feb 15 17:07:50 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -483,10 +483,10 @@ typedef union scmobj {
    struct bgl_regexp {           /* Regular expressions                */
       header_t header;           /*   - a header for type checking     */
       union scmobj *pat;         /*   - regexp source                  */
-#if( BGL_REGEXP_TYPE == BGL_REGEXP_REGEX )      
+#if( BGL_REGEXP_TYPE == BGL_REGEXP_regex )      
       regex_t preg;              /*   - posix regular expression       */
 #else
-#  if( BGL_REGEXP_TYPE == BGL_REGEXP_PCRE )      
+#  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )      
       void *preg;                /*   - posix regular expression       */
       void *study;
       int capturecount;
