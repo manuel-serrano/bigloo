@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Feb  5 19:26:38 2012 (serrano)                */
+#*    Last change :  Mon Feb 13 10:18:00 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2250,6 +2250,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does this system implement pipe?
   pipe=`$autoconf pipe` || exit 1
 
+  # Does this system implement symlink?
+  symlink=`$autoconf symlink` || exit 1
+
   # Does this compiler implement labs?
   # llabs=`$autoconfdir/labs --user=$user --tmp=$buildtmp --cc="$cc"`
   # SE: fix, 27 oct 2006
@@ -2592,6 +2595,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@CONSTANT_ALIGNED@|$cnstalign|" \
               -e "s|@BGL_BIG_ENDIAN@|$endian|" \
               -e "s|@HAVE_PIPE@|$pipe|" \
+              -e "s|@HAVE_SYMLINK@|$symlink|" \
               -e "s|@BGL_LONGLONG_T@|$longlong|" \
               -e "s|@BGL_HAVE_LONGLONG@|$havelonglong|" \
               -e "s|@BGL_LONG_LIMBS@|$long_limbs|" \

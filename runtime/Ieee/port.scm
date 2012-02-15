@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon Nov 14 11:43:37 2011 (serrano)                */
+;*    Last change :  Mon Feb 13 10:19:26 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -179,7 +179,8 @@
 	    ($file-uid::int (::string) "bgl_file_uid")
 	    ($file-gid::int (::string) "bgl_file_gid")
 	    ($file-mode::int (::string) "bgl_file_mode")
-	    ($file-type::symbol (::string) "bgl_file_type"))
+	    ($file-type::symbol (::string) "bgl_file_type")
+	    ($symlink::int (::string ::string) "bgl_symlink"))
 
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)
@@ -342,7 +343,9 @@
 	       (method static $file-mode::int (::string)
 		       "bgl_file_mode")
 	       (method static $file-type::symbol (::string)
-		       "bgl_file_type")))
+		       "bgl_file_type")
+	       (method static $symlink::int (::string ::string)
+		       "bgl_symlink")))
 	    
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
@@ -438,6 +441,7 @@
 	    (inline file-gid::int ::string)
 	    (inline file-mode::int ::string)
 	    (inline file-type::symbol ::string)
+	    (inline make-symlink ::bstring ::bstring)
 	    (input-port-protocol prototcol)
 	    (input-port-protocol-set! protocol open)
 
@@ -1393,3 +1397,10 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (file-type file)
    ($file-type file))
+
+;*---------------------------------------------------------------------*/
+;*    make-symlink ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (make-symlink path1 path2)
+   ($symlink path1 path2))
+       

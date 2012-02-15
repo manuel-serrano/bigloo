@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Fri Oct  7 07:40:37 2011 (serrano)                */
-/*    Copyright   :  2002-11 Manuel Serrano                            */
+/*    Last change :  Mon Feb 13 10:26:27 2012 (serrano)                */
+/*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -321,6 +321,7 @@ bgl_file_type( char *file ) {
 /*    int                                                              */
 /*    bgl_chmod ...                                                    */
 /*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
 int
 bgl_chmod( char *file, int read, int write, int exec ) {
 # ifndef _BGL_WIN32_VER
@@ -339,7 +340,7 @@ bgl_chmod( char *file, int read, int write, int exec ) {
 /*    int                                                              */
 /*    bgl_setenv ...                                                   */
 /*---------------------------------------------------------------------*/
-int
+BGL_RUNTIME_DEF int
 bgl_setenv( char *id, char *val ) {
    size_t l1 = strlen( id ), l2 = strlen( val );
    char *s = malloc( l1 + l2 + 2 );
@@ -498,6 +499,26 @@ bgl_getpwuid( uid_t uid ) {
    return res;
 #else
    return BFALSE;
+#endif   
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_make_symlink ...                                             */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_symlink( char *s1, char *s2 ) {
+#if BGL_HAVE_SYMLINK   
+   if( symlink( s1, s2 ) ) {
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "make-symlink", strerror( errno ),
+			string_to_bstring( s2 ) );
+   }
+
+   return 0;
+#else
+   C_SYSTEM_FAILURE( BGL_IO_ERROR, "make-symlink", "Not supported",
+		     string_to_bstring( s2 ) );
+   return 1;
 #endif   
 }
 

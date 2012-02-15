@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Feb  8 08:43:08 2012 (serrano)                */
+;*    Last change :  Mon Feb 13 10:14:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -405,17 +405,18 @@
    (define (play-playlist n)
       ;; start playing the playlist
       (with-access::alsamusic o (%playlist %aready %!playid)
-	 (let ((playlist %playlist)
-	       (playid %!playid))
+	 (let ((playlist %playlist))
 	    (when (and (>=fx n 0) (<fx n (length playlist)))
 	       ;; init alsa pcm
 	       (pcm-init o)
 	       ;; wait the the music player to be ready
-	       (alsamusic-wait-ready! o)
-	       (when (=fx %!playid playid)
-		  (set! %aready #f)
-		  ;; play the list of urls
-		  (play-urls (list-tail playlist n) n))))))
+	       (set! %!playid (+fx 1 %!playid))
+	       (let ((playid %!playid))
+		  (alsamusic-wait-ready! o)
+		  (when (=fx %!playid playid)
+		     (set! %aready #f)
+		     ;; play the list of urls
+		     (play-urls (list-tail playlist n) n)))))))
 
    (define (resume-from-pause o)
       (with-access::alsamusic o (%decoder)
@@ -503,7 +504,7 @@
 	 (alsabuffer-abort! %buffer))
       (when (isa? %nextbuffer alsabuffer)
 	 (alsabuffer-abort! %nextbuffer))
-      (with-access::alsamusic o (%aready %!playid %acondv %amutex)
+      (with-access::alsamusic o (%aready %acondv %amutex)
 	 (unless %aready
 	    (let loop ()
 	       (unless %aready

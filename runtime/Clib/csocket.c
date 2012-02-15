@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Feb  4 06:59:43 2012 (serrano)                */
+/*    Last change :  Wed Feb 15 11:52:38 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -94,7 +94,7 @@ extern int close( int );
 #endif
 
 #define DEBUG_CACHE_DNS 1
-#undef DEBUG_CACHE_DNS
+//#undef DEBUG_CACHE_DNS
 
 /*---------------------------------------------------------------------*/
 /*    bglhostent ...                                                   */
@@ -476,7 +476,7 @@ make_bglhostent_from_addrinfo( obj_t hostaddr, struct addrinfo *ai ) {
 /*    static void                                                      */
 /*    bglhostentbyname ...                                             */
 /*    -------------------------------------------------------------    */
-/*    When getaddinfo is available, it is prefered because it is       */
+/*    When getaddrinfo is available, it is prefered because it is      */
 /*    re-entrant while gethostbyname is not.                           */
 /*---------------------------------------------------------------------*/
 static void
@@ -563,23 +563,26 @@ bglhostbyname( obj_t hostname, int canon ) {
       /* acquire the global socket lock */
       bgl_mutex_lock( socket_mutex );
 
+retry_cache:
+      
       bhp = (struct bglhostent *)VECTOR_REF( hosttable, key );
 
-retry_cache:      
       /* is it currently in the table? */
       if( bhp
 	  && bigloo_strcmp( bhp->hostaddr, hostname )
 	  && ((time( 0 ) - bhp->exptime) <= 0)
 	  && (!canon || bhp->hp.h_aliases ) ) {
-	 bgl_mutex_unlock( socket_mutex );
 
 	 /* we still have to check if the entry in the table corresponds */
 	 /* to a sucess, a failure, and pending request.                 */
 	 switch( bhp->state ) {
 	    case BGLHOSTENT_STATE_FAILURE:
 #if( DEBUG_CACHE_DNS )
-	       fprintf( stderr, ">>> bglhostbyname hostname=%s FAILURE CACHED...\n", BSTRING_TO_STRING( hostname ) );
+	       fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d FAILURE CACHED...\n",
+			__FILE__, __LINE__,
+			BSTRING_TO_STRING( hostname ), key );
 #endif	       
+	       bgl_mutex_unlock( socket_mutex );
 	       return 0L;
 
 	    case BGLHOSTENT_STATE_PENDING:
@@ -587,30 +590,34 @@ retry_cache:
 	       /* instead of spawing a new request, we wait for the */
 	       /* previous running one to complete.                 */
 #if( DEBUG_CACHE_DNS )
-	       fprintf( stderr, ">>> bglhostbyname hostname=%s PENDING...\n", BSTRING_TO_STRING( hostname ) );
+	       fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d PENDING...\n",
+			__FILE__, __LINE__,
+			BSTRING_TO_STRING( hostname ), key );
 #endif	       
-	       while( 1 ) {
-		  bgl_condvar_wait( socket_condv, socket_mutex );
+	       bgl_condvar_wait( socket_condv, socket_mutex );
 		  
-		  if( socket_condv_value == bhp ) {
-		     /* we got it */
 #if( DEBUG_CACHE_DNS )
-		     fprintf( stderr, ">>> bglhostbyname hostname=%s RECEIVED\n", BSTRING_TO_STRING( hostname ) );
-#endif			      
-		     goto retry_cache;
-		  }
-	       }
+	       fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d RECEIVED\n",
+			__FILE__, __LINE__,
+			BSTRING_TO_STRING( hostname ), key );
+#endif	       
+	       goto retry_cache;
+
 	    default:
 #if( DEBUG_CACHE_DNS )
-	       fprintf( stderr, ">>> bglhostbyname hostname=%s CACHED...\n", BSTRING_TO_STRING( hostname ) );
+	       fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d CACHED...\n",
+			__FILE__, __LINE__,
+			BSTRING_TO_STRING( hostname ), key );
 #endif	       
+	       bgl_mutex_unlock( socket_mutex );
 	       return &(bhp->hp);
 	 }
       } else {
 	 if( bhp ) {
 #if( DEBUG_CACHE_DNS )
-	    fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s EXPIRED...\n",
-		     __FILE__, __LINE__, BSTRING_TO_STRING( hostname ) );
+	    fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d EXPIRED...\n",
+		     __FILE__, __LINE__,
+		     BSTRING_TO_STRING( hostname ), key );
 #endif
 	 }
 	 
@@ -621,13 +628,14 @@ retry_cache:
 
 	 /* make the actual DNS call */
 #if( DEBUG_CACHE_DNS )
-	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s QUERYING DNS...\n",
-		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ) );
+	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d QUERYING DNS...\n",
+		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ), key );
 #endif	 
 	 bglhostentbyname( hostname, bhp, canon );
 	 
 #if( DEBUG_CACHE_DNS )
-	 fprintf( stderr, ">>> state=%d (ok=%d)\n",
+	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d -> state=%d (ok=%d)\n",
+		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ), key,
 		  bhp->state,
 		  BGLHOSTENT_STATE_OK );
 #endif	 

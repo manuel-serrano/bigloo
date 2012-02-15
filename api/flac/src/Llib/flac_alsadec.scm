@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Feb  4 07:50:25 2012 (serrano)                */
+;*    Last change :  Wed Feb 15 11:43:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -223,7 +223,9 @@
 		   (mutex-lock! %dmutex)
 		   (if %!dpause
 		       (let liip ()
+			  (mutex-unlock! %dmutex)
 			  (onstate am 'pause)
+			  (mutex-lock! %dmutex)
 			  (condition-variable-wait! %dcondv %dmutex)
 			  (if %!dpause
 			      (liip)

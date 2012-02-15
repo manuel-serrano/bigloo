@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Mon Nov 14 11:40:00 2011 (serrano)                */
-;*    Copyright   :  2006-11 Manuel Serrano                            */
+;*    Last change :  Mon Feb 13 10:27:36 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
 ;*    -------------------------------------------------------------    */
@@ -293,6 +293,11 @@
 			  (lambda ()
 			     (display (tar-read-block h ip))))
 		       (loop (cons path lst))))
+		   ((symlink)
+		    (with-access::tar-header h (linkname)
+		       (let ((path (make-file-name base name)))
+			  (make-symlink linkname path)
+			  (loop (cons path lst)))))
 		   (else
 		    (raise
 		       (instantiate::&io-parse-error

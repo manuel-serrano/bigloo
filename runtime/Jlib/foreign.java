@@ -4472,6 +4472,15 @@ public final class foreign
 	    return string_to_symbol( "regular" );
 	 }
       }
+
+   public static int bgl_symlink( byte[] path1, byte[] path2 ) {
+      bigloo.runtime.Llib.error.bgl_system_failure(
+	 BGL_IO_ERROR,
+	 stack_trace.get_top(),
+	 "make-symlink",
+	 "feature not supported" );
+      return 0;
+   }
 	 
    //////
    // SYSTEM and OS
