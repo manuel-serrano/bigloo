@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Feb 15 11:52:38 2012 (serrano)                */
+/*    Last change :  Wed Feb 15 17:37:34 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -94,7 +94,7 @@ extern int close( int );
 #endif
 
 #define DEBUG_CACHE_DNS 1
-//#undef DEBUG_CACHE_DNS
+#undef DEBUG_CACHE_DNS
 
 /*---------------------------------------------------------------------*/
 /*    bglhostent ...                                                   */
