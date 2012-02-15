@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sun Feb  5 19:33:29 2012 (serrano)                */
+#*    Last change :  Wed Feb 15 16:32:29 2012 (serrano)                */
 #*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -52,7 +52,8 @@ POPULATION	= Makefile \
                   alsa mpg123 flac pcre avahi \
                   dbus gmp limbs signbit \
                   getuid gecos getprotoent machdep arflags mixer \
-                  gcconfigureopt ccfortify environ setenv androidmkdir
+                  gcconfigureopt ccfortify environ setenv symlink \
+                  androidmkdir
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
