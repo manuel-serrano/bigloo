@@ -1,6 +1,6 @@
 diff -Naur gc-7.1.orig/Makefile.am gc-7.1/Makefile.am
 --- gc-7.1.orig/Makefile.am	2008-02-20 21:15:04.000000000 +0100
-+++ gc-7.1/Makefile.am	2010-06-18 18:19:46.000000000 +0200
++++ gc-7.1/Makefile.am	2012-02-15 16:41:57.000000000 +0100
 @@ -49,7 +49,7 @@
  
  lib_LTLIBRARIES += libgc.la
@@ -30,7 +30,7 @@ diff -Naur gc-7.1.orig/Makefile.am gc-7.1/Makefile.am
  
 diff -Naur gc-7.1.orig/Makefile.direct gc-7.1/Makefile.direct
 --- gc-7.1.orig/Makefile.direct	2008-03-09 07:38:45.000000000 +0100
-+++ gc-7.1/Makefile.direct	2010-06-18 18:22:07.000000000 +0200
++++ gc-7.1/Makefile.direct	2012-02-15 16:41:57.000000000 +0100
 @@ -1,3 +1,12 @@
 +#*---------------------------------------------------------------------*/
 +#*    Bigloo start                                                     */
@@ -189,7 +189,7 @@ diff -Naur gc-7.1.orig/Makefile.direct gc-7.1/Makefile.direct
 +#*---------------------------------------------------------------------*/
 diff -Naur gc-7.1.orig/alloc.c gc-7.1/alloc.c
 --- gc-7.1.orig/alloc.c	2008-02-20 01:07:53.000000000 +0100
-+++ gc-7.1/alloc.c	2010-06-18 18:19:46.000000000 +0200
++++ gc-7.1/alloc.c	2012-02-15 16:41:57.000000000 +0100
 @@ -447,9 +447,40 @@
      return(result);
  }
@@ -270,7 +270,7 @@ diff -Naur gc-7.1.orig/alloc.c gc-7.1/alloc.c
        GC_is_full_gc = FALSE;
 diff -Naur gc-7.1.orig/include/private/gcconfig.h gc-7.1/include/private/gcconfig.h
 --- gc-7.1.orig/include/private/gcconfig.h	2008-02-20 20:23:00.000000000 +0100
-+++ gc-7.1/include/private/gcconfig.h	2010-06-18 18:19:46.000000000 +0200
++++ gc-7.1/include/private/gcconfig.h	2012-02-15 16:41:57.000000000 +0100
 @@ -1994,6 +1994,16 @@
      /* We tried ...						*/
  #endif
@@ -288,9 +288,21 @@ diff -Naur gc-7.1.orig/include/private/gcconfig.h gc-7.1/include/private/gcconfi
  #if defined(LINUX) && defined(USE_MMAP)
      /* The kernel may do a somewhat better job merging mappings etc.	*/
      /* with anonymous mappings.						*/
+diff -Naur gc-7.1.orig/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h gc-7.1/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h
+--- gc-7.1.orig/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h	2008-01-06 04:34:51.000000000 +0100
++++ gc-7.1/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h	2012-02-15 16:42:15.000000000 +0100
+@@ -126,7 +126,7 @@
+   /* Note: the "xchg" instruction does not need a "lock" prefix */
+   __asm__ __volatile__("xchgb %0, %1"
+ 		: "=q"(oldval), "=m"(*addr)
+-		: "0"(0xff), "m"(*addr) : "memory");
++		: "0"((unsigned char)0xff), "m"(*addr) : "memory");
+   return (AO_TS_VAL_t)oldval;
+ }
+ 
 diff -Naur gc-7.1.orig/mark_rts.c gc-7.1/mark_rts.c
 --- gc-7.1.orig/mark_rts.c	2008-02-20 01:06:17.000000000 +0100
-+++ gc-7.1/mark_rts.c	2010-06-18 18:19:46.000000000 +0200
++++ gc-7.1/mark_rts.c	2012-02-15 16:41:57.000000000 +0100
 @@ -610,8 +610,32 @@
       * This is usually done by saving the current context on the
       * stack, and then just tracing from the stack.
@@ -327,7 +339,7 @@ diff -Naur gc-7.1.orig/mark_rts.c gc-7.1/mark_rts.c
          /* Note that without interior pointer recognition lots	*/
 diff -Naur gc-7.1.orig/win32_threads.c gc-7.1/win32_threads.c
 --- gc-7.1.orig/win32_threads.c	2008-02-24 20:51:26.000000000 +0100
-+++ gc-7.1/win32_threads.c	2010-06-18 18:19:46.000000000 +0200
++++ gc-7.1/win32_threads.c	2012-02-15 16:41:57.000000000 +0100
 @@ -29,7 +29,13 @@
  /* on THREAD_LOCAL_ALLOC, which is currently incompatible. 		    */
  /* It might be possible to get GC_DLL and DllMain-based	thread registration */
