@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Wed Mar 30 08:31:30 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 16 09:26:27 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -34,7 +34,8 @@
 	    cnst_node
 	    ast_ident
 	    ast_env
-	    type_env)
+	    type_env
+	    module_library)
    (export  (start-cnst-alloc!)
 	    (stop-cnst-alloc!)
 	    (get-cnst-offset)
@@ -843,6 +844,7 @@
 			     (car env))
 			    (else
 			     (loop (cdr env))))))))
+	 (force-initialize-srfi4-library-module!)
 	 (cond
 	    (old
 	     (if (eq? *init-mode* 'lib)
@@ -856,6 +858,16 @@
 	     (lib-alloc-vector))
 	    (else
 	     (read-alloc-vector))))))
+
+;*---------------------------------------------------------------------*/
+;*    force-initialize-srfi4-library-module! ...                       */
+;*---------------------------------------------------------------------*/
+(define (force-initialize-srfi4-library-module!)
+   ;; this module will have to initialize the srfi4 module,
+   ;; force its initialization
+   (let ((g (find-global 'make-s8vector)))
+      ;; grab any variable defined in srfi4 module and mark its module
+      (with-library-module! (global-module g))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-alloc-tvector ...                                           */
