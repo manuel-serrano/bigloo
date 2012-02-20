@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bmacs/bee/bee-config.el              */
+;*    serrano/emacs/site-lisp/bigloo/bee-config.el                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Tue Feb 14 17:05:26 2012 (serrano)                */
+;*    Last change :  Fri Feb 17 15:27:49 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -156,6 +156,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 1
 	 'ude-font-lock-face-3)
    (cons "~\\|with-hop" 'ude-font-lock-face-8)
+   (cons "[$][^( \t\n]*" 'ude-font-lock-face-10)
    (list (concat "\(\\(let\\|let[*]\\|letrec[*]\\|co-instantiate\\|define"
 		 "\\|let-values\\|let*-values"
 		 "\\|set[!]\\|with-access\\|instantiate\\|duplicate"
@@ -219,8 +220,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-7)
    (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"
 	 1
-	 'ude-font-lock-face-10)
-  (list "\(\\([$][^ \n\t:]+\\>\\)" 1 'ude-font-lock-face-8))
+	 'ude-font-lock-face-7))
   "The Bee font-lock specification."
   :group 'bee)
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sun Mar 20 08:51:24 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb 17 15:45:42 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	    type_type
 	    ast_var
 	    ast_node
+	    module_library
 	    inline_walk
 	    inline_inline
 	    inline_size
@@ -50,6 +51,10 @@
 	      (begin
 		 (if (not (eq? (sfun-class sfun) 'sifun))
 		     (set! *inlined-calls* (+fx *inlined-calls* 1)))
+		 (when (and (global? var) (global-library var))
+		    ;; MS 17feb2012, when inlining a library function,
+		    ;; marks that the module needs to be initialized
+		    (with-library-module! (global-module var)))
 		 (if (and *optim-loop-inlining?* (is-recursive? var))
 		     (inline-app-recursive node kfactor stack)
 		     (inline-app-simple node kfactor stack "simple")))
