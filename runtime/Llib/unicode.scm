@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sat Sep 17 05:58:10 2011 (serrano)                */
+;*    Last change :  Mon Feb 20 08:33:20 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -813,11 +813,25 @@
 		     (error-too-short r)
 		     (let* ((nc (string-ref str (+fx r 1)))
 			    (nn (char->integer nc)))
-			(if (and (>=fx nn #x80) (<fx nn #xc0))
-			    (let ((m (bit-or (bit-lsh (-fx n #xc2) 6) nn)))
-			       (string-set! nstr w (integer->char m))
-			       (loop (+fx r 2) (+fx w 1)))
-			    (error-ill r)))))
+			(let ((m (bit-or (bit-lsh (bit-and n #x1f) 6)
+				    (bit-and #x3f nn))))
+			   (if (>fx m #xff)
+			       (error-ill r)
+			       (begin
+				  (string-set! nstr w (integer->char m))
+				  (loop (+fx r 2) (+fx w 1))))))))
+;* 		;; MS 20feb2012, Bigloo was using the expression below */
+;* 		;; that appears to me wrong!                           */
+;* 		((<=fx n #xdf)                                         */
+;* 		 (if (=fx r (-fx len 1))                               */
+;* 		     (error-too-short r)                               */
+;* 		     (let* ((nc (string-ref str (+fx r 1)))            */
+;* 			    (nn (char->integer nc)))                   */
+;* 			(if (and (>=fx nn #x80) (<fx nn #xc0))         */
+;* 			    (let ((m (bit-or (bit-lsh (-fx n #xc2) 6) nn))) */
+;* 			       (string-set! nstr w (integer->char m))  */
+;* 			       (loop (+fx r 2) (+fx w 1)))             */
+;* 			    (error-ill r)))))                          */
 		(table
 		 (let liip ((subtable (assq n table))
 			    (nr (+fx r 1)))
