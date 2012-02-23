@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Sun Jan 30 13:29:03 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Tue Feb 21 07:19:37 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
 ;*=====================================================================*/
@@ -230,11 +230,12 @@
 			       ((category dc:subject)
 				(push! cat (cdata-decode (caddr e))))
 			       ((link)
-				(push! links
-				       `(alternate (href . ,(cdata-decode
-							     (caaddr e)))
-						   (title . ,title)
-						   (type . ,#f))))
+				(when (pair? (caddr e))
+				   (push! links
+				      `(alternate (href . ,(cdata-decode
+							      (caaddr e)))
+					  (title . ,title)
+					  (type . ,#f)))))
 			       ((enclosure)
 				(let ((lnk (rss-enclosure (cadr e))))
 				   (push! links (if title

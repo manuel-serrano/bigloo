@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Feb 15 17:02:08 2012 (serrano)                */
+#*    Last change :  Thu Feb 23 10:41:11 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi csv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -3310,6 +3310,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     done
     apis=$napis;
   fi
+
+  # CSV
+  echo ";; automatically generated. Don't edit" >  lib/$release/csv.init
+  cat api/csv/src/Misc/csv.init.in \
+      >>  api/csv/src/Misc/csv.init
 
   # SCMPKG
   configure=api/pkgcomp/src/Llib/configure.scm

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Fri Feb 17 15:27:49 2012 (serrano)                */
+;*    Last change :  Mon Feb 20 15:54:46 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -142,8 +142,8 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'font-lock-string-face)
    (cons "\\(?:::[^ \n)]+\\|#![a-zA-Z]+\\|:,@\\|[`,]\\)"
 	 'ude-font-lock-face-4)
-;*    (cons ":[^ :\n\t]+"                                              */
-;* 	 'ude-font-lock-face-11)                                       */
+   (cons "[ \n\t]:[^ :\n\t]+\\|[^ :\n\t]+:[ \n\t]"
+	 'ude-font-lock-face-11)
    (list (concat "\(\\(type\\|export\\|import\\|option\\|eval\\|eval!\\|main\\|with"
 		 "\\|from\\|static\\|use\\|library"
 		 "\\|include\\|foreign\\|extern\\|java\\|Cforeign"
@@ -220,7 +220,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-7)
    (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"
 	 1
-	 'ude-font-lock-face-7))
+	 'ude-font-lock-face-12))
   "The Bee font-lock specification."
   :group 'bee)
 

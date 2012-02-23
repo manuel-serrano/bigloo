@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bmacs/ude/ude-custom.el              */
+;*    serrano/emacs/site-lisp/bigloo/ude-custom.el                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  8 07:29:03 1998                          */
-;*    Last change :  Fri Jan 20 11:05:33 2012 (serrano)                */
+;*    Last change :  Wed Feb 22 14:42:08 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `Unix Development Environment' custom environment. This      */
 ;*    file contains all the Ude defcustom and Ude defface.             */
@@ -27,7 +27,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    URL browsers                                                     */
 ;*---------------------------------------------------------------------*/
-(defcustom ude-url-browser "firefox"
+(defcustom ude-url-browser "netscape"
   "*The binary file to run for browing URLs or nil for Emacs mode."
   :group 'ude
   :type '(choice string (const nil)))
@@ -432,6 +432,14 @@
   "Bee face 11."
   :group 'ude)
 (defvar ude-font-lock-face-11 'ude-font-lock-face-11)
+
+(defface ude-font-lock-face-12
+  '((((class color) (background light)) (:foreground "#87910F" :bold t))
+    (((class color) (background dark)) (:foreground "#701680" :bold t))
+    (t (:bold t)))
+  "Bee face 12."
+  :group 'ude)
+(defvar ude-font-lock-face-12 'ude-font-lock-face-12)
 
 ;; cf ude-invisible-face
 (if (featurep 'xemacs)
