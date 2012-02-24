@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 24 07:17:01 2012 (serrano)                */
+#*    Last change :  Fri Feb 24 17:40:26 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3291,7 +3291,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # DBUS
   if [ "$dbusld " != " " ]; then
-    echo ";; automatically generated. Don't edit" >  lib/$release/dbus.init
+    echo ";; automatically generated. Don't edit" >  api/dbus/src/Misc/dbus.init
     cat api/dbus/src/Misc/dbus.init.in \
         | sed -e "s|@DBUSLIBS@|$dbusld|g" \
               -e "s|@DBUSCFLAGS@|$dbusincl|g" \
@@ -3312,10 +3312,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   fi
 
   # CSV
-  echo ";; automatically generated. Don't edit" >  lib/$release/csv.init
+  echo ";; automatically generated. Don't edit" > api/csv/src/Misc/csv.init
   cat api/csv/src/Misc/csv.init.in \
       >>  api/csv/src/Misc/csv.init
-  cat api/csv/src/Lls/csv.sch \
+  cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
 
   # SCMPKG
