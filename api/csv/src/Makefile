@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Feb 23 18:59:53 2012 (serrano)                */
+#*    Last change :  Fri Feb 24 07:39:54 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -86,7 +86,7 @@ _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 SOURCES		= $(_BGL_SOURCES) \
                   $(_C_SOURCES) \
                   $(_JAVA_SOURCES)
-INCLUDES	= 
+INCLUDES	= $(BIGLOO_SRC_DIR)/csv.sch
 
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */

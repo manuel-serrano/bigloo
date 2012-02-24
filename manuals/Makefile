@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Tue Sep 27 08:28:26 2011 (serrano)                */
-#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Feb 24 07:11:47 2012 (serrano)                */
+#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
 #*=====================================================================*/
@@ -44,7 +44,7 @@ SOURCES		= modules.texi stdlib.texi rgc.texi lalr.texi match.texi \
                   thread.texi fthread.texi pthread.texi \
                   database.texi sqlite.texi search.texi digest.texi \
                   internet.texi multimedia.texi mail.texi cryptography.texi \
-                  trace.texi crc.texi date.texi cross.texi text.texi
+                  trace.texi crc.texi date.texi cross.texi text.texi csv.texi
 
 BDB_MASTER	= bdb.texi
 BDB_SOURCES	=

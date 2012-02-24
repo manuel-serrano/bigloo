@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Feb 23 10:41:11 2012 (serrano)                */
+#*    Last change :  Fri Feb 24 07:17:01 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3314,6 +3314,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # CSV
   echo ";; automatically generated. Don't edit" >  lib/$release/csv.init
   cat api/csv/src/Misc/csv.init.in \
+      >>  api/csv/src/Misc/csv.init
+  cat api/csv/src/Lls/csv.sch \
       >>  api/csv/src/Misc/csv.init
 
   # SCMPKG

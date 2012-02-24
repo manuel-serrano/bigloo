@@ -12,7 +12,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Text ...                                                         @c
 @c ------------------------------------------------------------------- @c
-@node Text, Eval, Mail, Top
+@node Text, CSV, Mail, Top
 @comment  node-name,  next,  previous,  up
 @chapter Text
 @cindex text

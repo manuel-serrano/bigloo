@@ -1,0 +1,137 @@
+@c =================================================================== @c
+@c    serrano/prgm/project/bigloo/manuals/text.texi                    @c
+@c    ------------------------------------------------------------     @c
+@c    Author      :  Joseph Donaldson                                  @c
+@c    Creation    :  Tue Aug 31 13:16:21 2010                          @c
+@c    Last change :                                                    @c
+@c    Copyright   :  2010 Manuel Serrano                               @c
+@c    ------------------------------------------------------------     @c
+@c    Text manipulations                                               @c
+@c =================================================================== @c
+
+@c ------------------------------------------------------------------- @c
+@c    Csv ...                                                          @c
+@c ------------------------------------------------------------------- @c
+@node CSV, Eval, Text, Top
+@comment  node-name,  next,  previous,  up
+@chapter CSV
+@cindex Csv
+
+This chapter describes the Bigloo API for processing CSV spreadsheets.
+This chapter has been written by Joseph Donaldson, as the implementation
+of the CSV library.
+
+@comment node-name, next,          previous, up
+@menu
+* CSV Overview::    What is this Bigloo csv library?.
+* API Reference::
+* Example::  
+@end menu
+
+@node CSV Overview, API Reference, , CSV
+@comment node-name,     next,          previous, up
+@section Overview
+
+The Bigloo csv library supports the parsing of csv and csv-like
+data. By default, it enables the parsing of comma, tab, and pipe
+separated data. In addition, facilities are provided that enable
+extending the library to support additonal csv-like formats.
+
+The rest of this document describes the Bigloo csv application programming
+interface.
+
+@node API Reference, Example, CSV Overview, CSV
+@comment node-name, next,          previous, up
+@section API Reference
+.
+
+@menu
+* read-csv-record::
+* read-csv-records::
+* csv-for-each::
+* csv-map::
+* make-csv-lexer::
+* +csv-lexer+:: comma separated values
+* +tsv-lexer+:: tab separated values
+* +psv-lexer+:: pipe separated values
+@end menu
+
+@node read-csv-record, read-csv-records, ,API Reference
+@comment node-name, next,          previous, up
+
+
+@defun read-csv-record input-port [custom-lexer]
+@code{read-csv-record} has one  required argument, the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns a single record, as a list, or @code{#eof-object}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error} exception.
+@end defun  
+
+@node read-csv-records, csv-for-each, read-csv-record ,API Reference
+@comment node-name, next,          previous, up
+
+@defun read-csv-records input-port [custom-lexer]
+@code{read-csv-records} has one  required argument, the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns all of the records, as a list of lists, or @code{#eof-object}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error exception}.
+@end defun  
+
+
+@node    csv-for-each,csv-map ,read-csv-records, API Reference
+@comment node-name, next,          previous, up
+
+@defun csv-for-each proc input-port [custom-lexer]
+@code{csv-for-each} has two required arguments, a procedure to apply to each record and the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns @code{#unspecified}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error exception}.
+@end defun  
+
+@node    csv-map,make-csv-lexer,csv-for-each, API Reference
+@comment node-name, next,          previous, up
+
+@defun csv-map proc input-port [custom-lexer]
+@code{csv-map} has two required arguments, a procedure to apply to each record and the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returnsthe results of applying @code{proc} to each record as a list. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error} exception.
+@end defun  
+
+
+@node    make-csv-lexer,+csv-lexer+,csv-map, API Reference
+@comment node-name, next,          previous, up
+
+@defmac make-csv-lexer sep  quot
+@code{make-csv-lexer} has two required arguments, a character used to separate records and a character for quoting. It returns custom lexer.
+@end defmac  
+
+@node    +csv-lexer+,+tsv-lexer+,make-csv-lexer, API Reference
+@comment node-name, next,          previous, up
+
+@defvar +csv-lexer+
+@var{+csv-lexer+} is a bigloo-csv lexer supporting the standard comma-separated value format.
+@end defvar  
+
+@node    +tsv-lexer+,+psv-lexer+,+csv-lexer+, API Reference
+@comment node-name, next,          previous, up
+
+@defvar +tsv-lexer+
+@var{+tsv-lexer+} is a bigloo-csv lexer supporting the tab-separated value format.
+@end defvar 
+
+@node    +psv-lexer+,,+tsv-lexer+, API Reference
+@comment node-name, next,          previous, up
+
+@defvar +psv-lexer+
+@var{+psv-lexer+} is a bigloo-csv lexer supporting the pipe-separated value format.
+@end defvar 
+
+@node    Example, ,API Reference, CSV
+@comment node-name, next,          previous, up
+The following is a simple example of using the bigloo-csv library. It parses a single record from the given csv data and prints it.
+
+@example
+@cartouche 
+(module example
+   (library bigloo-csv)
+   (main main))
+
+(define +csv-data+ "dog,cat,horse\npig,cow,squirrel")
+
+(define (main args)
+   (let ((in (open-input-string +csv-data+)))
+      (unwind-protect              
+         (print (read-csv-record in))
+         (close-input-port in)))) 
+@end cartouche
+@end example
+
