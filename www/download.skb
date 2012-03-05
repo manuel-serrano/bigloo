@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Fri Jan 27 11:10:44 2012 (serrano)                */
+;*    Last change :  Tue Feb 28 08:45:11 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -89,7 +89,7 @@ Bigloo is available on the ftp server
 						  (inexact->exact (/ (file-size path) 1024))))))))
 			     (cdr title.files))))))
       `((,[The source file distribution that can be used for ,(bold "Unix") systems and ,(bold "Win32/Cygwin") is]
-	 ,*bigloo.tar.gz*)
+ 	 ,(format "ftp://~a~a/~a" *ftp-host* *ftp-dir* *bigloo.tar.gz*))
 	(,[,(bold "MacOS X") bundle]
 	 ,*bigloo.macosx*)
 	(,[,(bold "MinGW") installer version (full back-ends support)]
