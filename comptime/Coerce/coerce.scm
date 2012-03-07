@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Feb  3 14:31:38 2012 (serrano)                */
+;*    Last change :  Wed Mar  7 18:29:42 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -338,8 +338,30 @@
 		(test-static-value (cdar bindings)))
 	       (else
 		#f)))))
+   (define (test-static-isa node typec)
+      (with-access::app node (args)
+	 (let ((typev (cond
+			 ((var? (car args))
+			  (get-type (car args)))
+			 ((cast? (car args))
+			  (with-access::cast (car args) (type arg)
+			     (when (and (eq? type *obj*) (var? arg))
+				(get-type arg)))))))
+	    (cond
+	       ((not (type? typev))
+		#f)
+	       ((type-less-specific? typec typev)
+		'true)
+	       ((type-disjoint? typec typev)
+		'false)
+	       (else
+		#f)))))
    (define (test-static-value node)
       (cond
+	 ((isa-of node)
+	  =>
+	  (lambda (t)
+	     (test-static-isa node t)))
 	 ((app? node)
 	  (test-static-app node))
 	 ((let-var? node)

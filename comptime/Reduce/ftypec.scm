@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu May  5 06:54:22 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar  7 18:14:37 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -132,16 +132,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::conditional stack)
    (define (type-checked node)
-      (and (app? node)
-	   (with-access::app node (fun args)
-	      (and (pair? args)
-		   (null? (cdr args))
-		   (var? (car args))
-		   (eq? (variable-access (var-variable (car args))) 'read)
-		   (let* ((fun (app-fun node))
-			  (val (variable-value (var-variable fun)))
-			  (typec (fun-predicate-of val)))
-		      typec)))))
+      (when (app? node)
+	 (cond
+	    ((isa-of node)
+	     =>
+	     (lambda (t)
+		(with-access::app node (args)
+		   (when (var? (car args))
+		      t))))
+	    (else
+	     (with-access::app node (fun args)
+		(and (pair? args)
+		     (null? (cdr args))
+		     (var? (car args))
+		     (eq? (variable-access (var-variable (car args))) 'read)
+		     (let* ((fun (app-fun node))
+			    (val (variable-value (var-variable fun)))
+			    (typec (fun-predicate-of val)))
+			typec)))))))
    (define (test-static-value node)
       (and (app? node)
 	   (with-access::app node (fun args)

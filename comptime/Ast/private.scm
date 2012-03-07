@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Tue Nov 22 08:58:16 2011 (serrano)                */
-;*    Copyright   :  2000-11 Manuel Serrano                            */
+;*    Last change :  Wed Mar  7 18:20:44 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -24,6 +24,8 @@
    (export (private-node ::pair ::obj ::obj ::symbol)
 	   (private-stamp::symbol)
 	   (private-sexp?::bool ::pair)
+	   (cast-sexp?::bool ::pair)
+	   (cast-sexp-type::symbol ::pair)
 	   (make-private-sexp::pair ::symbol ::symbol . objs)))
 
 ;*---------------------------------------------------------------------*/
@@ -45,6 +47,24 @@
 ;*---------------------------------------------------------------------*/
 (define (private-sexp?::bool sexp)
    (eq? (car sexp) *private-stamp*))
+
+;*---------------------------------------------------------------------*/
+;*    cast-sexp? ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (cast-sexp?::bool sexp)
+   (when (private-sexp? sexp)
+      (match-case sexp
+	 ((?- cast ?- ?-) #t)
+	 (else #f))))
+
+;*---------------------------------------------------------------------*/
+;*    cast-sexp-type ...                                               */
+;*---------------------------------------------------------------------*/
+(define (cast-sexp-type sexp)
+   (match-case sexp
+      ((?- cast ?type ?-) type)
+      (else
+       (error "cast-sexp-type" "Illegal cast sexp" sexp))))
 
 ;*---------------------------------------------------------------------*/
 ;*    private-node ...                                                 */

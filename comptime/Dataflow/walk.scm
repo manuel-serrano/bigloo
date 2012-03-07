@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Mon Nov 14 17:06:33 2011 (serrano)                */
-;*    Copyright   :  2010-11 Manuel Serrano                            */
+;*    Last change :  Wed Mar  7 18:13:56 2012 (serrano)                */
+;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -317,7 +317,9 @@
 	    ((isa-of node)
 	     =>
 	     (lambda (ty)
-		(list (cons (var-variable (car args)) ty))))
+		(if (var? (car args))
+		    (list (cons (var-variable (car args)) ty))
+		    '())))
 	    ((and (fun? funv)
 		  (fun-predicate-of funv)
 		  (pair? args) (null? (cdr args))

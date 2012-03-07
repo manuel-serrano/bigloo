@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Thu Nov 17 05:45:21 2011 (serrano)                */
-;*    Copyright   :  2000-11 Manuel Serrano                            */
+;*    Last change :  Wed Mar  7 11:37:37 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
 ;*    -------------------------------------------------------------    */
@@ -71,12 +71,12 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-coercion-clause! class c-id super . testing)
    (produce-module-clause!
-      (nopragma-make-coercion-clause class c-id super testing)))
+      (make-coercion-clause class c-id super testing)))
 
 ;*---------------------------------------------------------------------*/
-;*    nopragma-make-coercion-clause ...                                */
+;*    make-coercion-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (nopragma-make-coercion-clause class c-id super testing)
+(define (make-coercion-clause class c-id super testing)
    (let* ((class->obj `(lambda (x)
 			  ,(make-private-sexp 'cast 'obj 'x)))
 	  (obj->class `(lambda (x)

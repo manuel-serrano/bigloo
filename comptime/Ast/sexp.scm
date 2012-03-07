@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Feb  3 14:27:16 2012 (serrano)                */
+;*    Last change :  Wed Mar  7 18:21:44 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -321,6 +321,11 @@
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))
 ;*--- the direct lambda applications (see match-case ...) -------------*/
+      (((lambda (?var) (and ?body (?- . ?-) (? cast-sexp?))) (atom ?arg))
+       (instantiate::cast
+	  (loc loc)
+	  (type (use-type! (cast-sexp-type body) loc))
+	  (arg (sexp->node arg stack loc site))))
       (((lambda ?vars . ?body) . ?args)
        (let ((loc (find-location/loc exp loc))
 	     (nexp `(,(let-sym) ,(let loop ((vars vars)

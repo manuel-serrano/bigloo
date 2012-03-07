@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Fri Feb  3 14:27:45 2012 (serrano)                */
+;*    Last change :  Wed Mar  7 11:44:26 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -22,6 +22,7 @@
 	    ast_ident
 	    ast_local
 	    ast_let
+	    ast_private
 	    tools_dsssl
 	    expand_eps)
    (import type_typeof)
