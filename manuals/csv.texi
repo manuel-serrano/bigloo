@@ -43,7 +43,6 @@ interface.
 @node API Reference, Example, CSV Overview, CSV
 @comment node-name, next,          previous, up
 @section API Reference
-.
 
 @menu
 * read-csv-record::
@@ -60,31 +59,59 @@ interface.
 @comment node-name, next,          previous, up
 
 
-@defun read-csv-record input-port [custom-lexer]
-@code{read-csv-record} has one  required argument, the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns a single record, as a list, or @code{#eof-object}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error} exception.
-@end defun  
+@deffn read-csv-record input-port [custom-lexer]
+
+@code{read-csv-record} has one required argument, the input-port of
+the csv data to parse, and an optional argument indicating the lexer
+to use, by default the lexer supporting standard csv files. It returns
+a single record, as a list, or @code{#eof-object}. Upon error, it will
+throw an @code{&invalid-port-error} or @code{&io-parse-error}
+exception.
+
+@end deffn
 
 @node read-csv-records, csv-for-each, read-csv-record ,API Reference
 @comment node-name, next,          previous, up
 
-@defun read-csv-records input-port [custom-lexer]
-@code{read-csv-records} has one  required argument, the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns all of the records, as a list of lists, or @code{#eof-object}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error exception}.
-@end defun  
+@deffn read-csv-records input-port [custom-lexer]
+
+@code{read-csv-records} has one required argument, the input-port of
+the csv data to parse, and an optional argument indicating the lexer
+to use, by default the lexer supporting standard csv files. It returns
+all of the records, as a list of lists, or @code{#eof-object}. Upon
+error, it will throw an @code{&invalid-port-error} or
+@code{&io-parse-error exception}.
+
+@end deffn
 
 
 @node    csv-for-each,csv-map ,read-csv-records, API Reference
 @comment node-name, next,          previous, up
 
-@defun csv-for-each proc input-port [custom-lexer]
-@code{csv-for-each} has two required arguments, a procedure to apply to each record and the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returns @code{#unspecified}. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error exception}.
-@end defun  
+@deffn csv-for-each proc input-port [custom-lexer]
+
+@code{csv-for-each} has two required arguments, a procedure to apply
+to each record and the input-port of the csv data to parse, and an
+optional argument indicating the lexer to use, by default the lexer
+supporting standard csv files. It returns @code{#unspecified}. Upon
+error, it will throw an @code{&invalid-port-error} or
+@code{&io-parse-error exception}.
+
+@end deffn
 
 @node    csv-map,make-csv-lexer,csv-for-each, API Reference
 @comment node-name, next,          previous, up
 
-@defun csv-map proc input-port [custom-lexer]
-@code{csv-map} has two required arguments, a procedure to apply to each record and the input-port of the csv data to parse, and an optional argument indicating the lexer to use, by default the lexer supporting standard csv files. It returnsthe results of applying @code{proc} to each record as a list. Upon error, it will throw an @code{&invalid-port-error} or @code{&io-parse-error} exception.
-@end defun  
+@deffn csv-map proc input-port [custom-lexer]
+
+@code{csv-map} has two required arguments, a procedure to apply to
+each record and the input-port of the csv data to parse, and an
+optional argument indicating the lexer to use, by default the lexer
+supporting standard csv files. It returnsthe results of applying
+@code{proc} to each record as a list. Upon error, it will throw an
+@code{&invalid-port-error} or @code{&io-parse-error} exception.
+
+@end deffn
 
 
 @node    make-csv-lexer,+csv-lexer+,csv-map, API Reference
@@ -92,35 +119,34 @@ interface.
 
 @defmac make-csv-lexer sep  quot
 @code{make-csv-lexer} has two required arguments, a character used to separate records and a character for quoting. It returns custom lexer.
-@end defmac  
+@end defmac
 
 @node    +csv-lexer+,+tsv-lexer+,make-csv-lexer, API Reference
 @comment node-name, next,          previous, up
 
 @defvar +csv-lexer+
 @var{+csv-lexer+} is a bigloo-csv lexer supporting the standard comma-separated value format.
-@end defvar  
+@end defvar
 
 @node    +tsv-lexer+,+psv-lexer+,+csv-lexer+, API Reference
 @comment node-name, next,          previous, up
 
 @defvar +tsv-lexer+
 @var{+tsv-lexer+} is a bigloo-csv lexer supporting the tab-separated value format.
-@end defvar 
+@end defvar
 
 @node    +psv-lexer+,,+tsv-lexer+, API Reference
 @comment node-name, next,          previous, up
 
 @defvar +psv-lexer+
 @var{+psv-lexer+} is a bigloo-csv lexer supporting the pipe-separated value format.
-@end defvar 
+@end defvar
 
 @node    Example, ,API Reference, CSV
 @comment node-name, next,          previous, up
 The following is a simple example of using the bigloo-csv library. It parses a single record from the given csv data and prints it.
 
-@example
-@cartouche 
+@smalllisp 
 (module example
    (library bigloo-csv)
    (main main))
@@ -132,6 +158,6 @@ The following is a simple example of using the bigloo-csv library. It parses a s
       (unwind-protect              
          (print (read-csv-record in))
          (close-input-port in)))) 
-@end cartouche
-@end example
+@end smalllisp
+
 
