@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Feb 20 08:33:20 2012 (serrano)                */
+;*    Last change :  Tue Mar 13 09:21:30 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -412,9 +412,7 @@
 	     res
 	     (begin
 		(ucs2-string-set! res
-				  i
-				  (ucs2-upcase (ucs2-string-ref ucs2-string
-								i)))
+		   i (ucs2-upcase (ucs2-string-ref ucs2-string i)))
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -428,9 +426,7 @@
 	     res
 	     (begin
 		(ucs2-string-set! res
-				  i
-				  (ucs2-downcase (ucs2-string-ref ucs2-string
-								  i)))
+		   i (ucs2-downcase (ucs2-string-ref ucs2-string i)))
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -444,9 +440,7 @@
 	     res
 	     (begin
 		(ucs2-string-set! res
-				  i
-				  (ucs2-upcase (ucs2-string-ref ucs2-string
-								i)))
+		   i (ucs2-upcase (ucs2-string-ref ucs2-string i)))
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -460,9 +454,7 @@
 	     res
 	     (begin
 		(ucs2-string-set! res
-				  i
-				  (ucs2-downcase (ucs2-string-ref ucs2-string
-								  i)))
+		   i (ucs2-downcase (ucs2-string-ref ucs2-string i)))
 		(loop (+fx i 1)))))))
 		 		 
 ;*---------------------------------------------------------------------*/

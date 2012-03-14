@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Feb 13 10:14:32 2012 (serrano)                */
+;*    Last change :  Wed Mar 14 14:09:01 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -95,7 +95,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug ($compiler-debug))
+(define debug (begin ($compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -578,21 +578,32 @@
 
       (define (empty-state?)
 	 (and (=fx %!bstate 0) (>fx (*fx (available) 4) inlen)))
-      
+
+      (define (fill-eof)
+	 (with-access::alsamusic o (onevent)
+	    (mutex-lock! %bmutex)
+	    (when (>fx debug 0)
+	       (tprint "fill.2a, set eof-filled (bs=1)"))
+	    (when (and (=fx %!bstate 0) (>fx (available) 0))
+	       (set! %!bstate 1))
+	    (set! %eof #t)
+	    (condition-variable-broadcast! %bcondv)
+	    (mutex-unlock! %bmutex)
+	    (onevent o 'loaded url)))
+
+      (define (timed-read sz)
+	 (if (and (>fx debug 0) (=fx %!bstate 0))
+	     (let* ((d0 (current-microseconds))
+		    (v (read-fill-string! %inbuf %head sz port))
+		    (d1 (current-microseconds)))
+		(tprint "fill.2 read-on-empty sz=" sz " v=" v " time=" (-llong d1 d0))
+		v)
+	     (read-fill-string! %inbuf %head sz port)))
+
       (define (fill sz)
-	 (let* ((sz (minfx sz readsz))
-		(i (read-fill-string! %inbuf %head sz port)))
+	 (let ((i (timed-read (minfx sz readsz))))
 	    (if (eof-object? i)
-		(with-access::alsamusic o (onevent)
-		   (mutex-lock! %bmutex)
-		   (when (>fx debug 0)
-		      (tprint "fill.2a, set eof-filled (bs=1)"))
-		   (when (and (=fx %!bstate 0) (>fx (available) 0))
-		      (set! %!bstate 1))
-		   (set! %eof #t)
-		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex)
- 		   (onevent o 'loaded url))
+		(fill-eof)
 		(let ((nhead (+fx %head i)))
 		   (if (=fx nhead inlen)
 		       (set! %head 0)
@@ -609,7 +620,7 @@
 		      ((empty-state?)
 		       ;; set state filled
 		       (mutex-lock! %bmutex)
-		       (when (>fx debug 1)
+		       (when (>fx debug 0)
 			  (tprint "fill.2c, set filled (bs=1)"))
 		       (set! %!bstate 1)
 		       (condition-variable-broadcast! %bcondv)
