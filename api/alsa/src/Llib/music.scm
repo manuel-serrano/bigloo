@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Mar 14 14:09:01 2012 (serrano)                */
+;*    Last change :  Thu Mar 15 19:04:38 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -596,7 +596,8 @@
 	     (let* ((d0 (current-microseconds))
 		    (v (read-fill-string! %inbuf %head sz port))
 		    (d1 (current-microseconds)))
-		(tprint "fill.2 read-on-empty sz=" sz " v=" v " time=" (-llong d1 d0))
+		(tprint "fill.2 read-on-empty %head=" %head " %!tail=" %!tail
+		   " sz=" sz " v=" v " time=" (-llong d1 d0))
 		v)
 	     (read-fill-string! %inbuf %head sz port)))
 

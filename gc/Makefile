@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Fri Sep 30 09:50:44 2011 (serrano)                */
-#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Mar 16 08:21:11 2012 (serrano)                */
+#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -29,6 +29,7 @@ POPULATION = Makefile \
   $(POP72ALPHA4) \
   $(POP72ALPHA5) \
   $(POP72ALPHA6) \
+  $(POP73ALPHA1_20120316) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
@@ -93,6 +94,12 @@ POP72ALPHA6 = install-gc-7.2alpha6 \
   configure-gc-7.2alpha6-android \
   gc-7.2alpha6.patch \
   Makefile-gc-7.2alpha6
+
+POP73ALPHA1_20120316 = install-gc-7.3alpha1-20120316 \
+  configure-gc-7.3alpha1-20120316 \
+  configure-gc-7.3alpha1-20120316-android \
+  gc-7.3alpha1-20120316.patch \
+  Makefile-gc-7.3alpha1-20120316
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */

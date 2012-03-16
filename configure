@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 24 17:40:26 2012 (serrano)                */
+#*    Last change :  Fri Mar 16 08:27:56 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -189,7 +189,8 @@ regexp=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=gc-7.2alpha6
+gccustom=gc-7.3alpha1-20120316
+#gccustom=gc-7.2alpha6
 #gccustom=bdwgc-7_2alpha5-20110313
 #gccustom=bdwgc-7_2alpha5-20110107
 gcversion=
@@ -1433,7 +1434,7 @@ case $hostos in
 
   darwin)
     # MS: up to now I have not been able to get 7.2 compiled and linked on mac
-    gccustom=gc-7.1;
+    #gccustom=gc-7.1;
 
     sharedlibraryclosed=yes;
     if [ "$macosx " = "auto " ]; then

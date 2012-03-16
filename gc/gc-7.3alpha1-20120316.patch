@@ -1,0 +1,205 @@
+diff -Naur gc-7.3alpha1-20120316.orig/Makefile.am gc-7.3alpha1-20120316/Makefile.am
+--- gc-7.3alpha1-20120316.orig/Makefile.am	2012-03-16 07:45:51.000000000 +0100
++++ gc-7.3alpha1-20120316/Makefile.am	2012-03-16 08:13:41.767953234 +0100
+@@ -53,12 +53,24 @@
+ libgc_la_SOURCES = extra/gc.c
+ else
+ EXTRA_DIST += extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++#libgc_la_SOURCES = \
++#    allchblk.c alloc.c backgraph.c blacklst.c checksums.c dbg_mlc.c \
++#    dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
++#    mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
++#    obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
++#    specific.c stubborn.c thread_local_alloc.c typd_mlc.c
+ libgc_la_SOURCES = \
+-    allchblk.c alloc.c backgraph.c blacklst.c checksums.c dbg_mlc.c \
++    allchblk.c alloc.c inline_alloc.c backgraph.c blacklst.c checksums.c dbg_mlc.c \
+     dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
+     mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+     obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+     specific.c stubborn.c thread_local_alloc.c typd_mlc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ 
+ # C Library: Architecture Dependent
+ # ---------------------------------
+diff -Naur gc-7.3alpha1-20120316.orig/Makefile.direct gc-7.3alpha1-20120316/Makefile.direct
+--- gc-7.3alpha1-20120316.orig/Makefile.direct	2012-03-16 07:45:51.000000000 +0100
++++ gc-7.3alpha1-20120316/Makefile.direct	2012-03-16 07:53:29.241233243 +0100
+@@ -36,7 +36,14 @@
+ AO_SRC_DIR=$(srcdir)/libatomic_ops
+ AO_INSTALL_DIR=$(srcdir)/libatomic_ops-install
+ 
+-CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION -DALL_INTERIOR_POINTERS
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (14 dec 2010)                                       */
++#*---------------------------------------------------------------------*/
++#CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION -DALL_INTERIOR_POINTERS
++CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (14 dec 2010)                                        */
++#*---------------------------------------------------------------------*/
+ 
+ # To build the parallel collector on Linux, add to the above:
+ # -DGC_LINUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC
+diff -Naur gc-7.3alpha1-20120316.orig/Makefile.in gc-7.3alpha1-20120316/Makefile.in
+--- gc-7.3alpha1-20120316.orig/Makefile.in	2012-03-16 07:46:21.000000000 +0100
++++ gc-7.3alpha1-20120316/Makefile.in	2012-03-16 08:12:56.644617916 +0100
+@@ -177,7 +177,18 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
+ am__DEPENDENCIES_1 =
+-am__libgc_la_SOURCES_DIST = allchblk.c alloc.c backgraph.c blacklst.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++#am__libgc_la_SOURCES_DIST = allchblk.c alloc.c backgraph.c blacklst.c \
++#	checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c \
++#	gcj_mlc.c headers.c mach_dep.c malloc.c mallocx.c mark.c \
++#	mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c \
++#	pcr_interface.c ptr_chck.c real_malloc.c reclaim.c specific.c \
++#	stubborn.c thread_local_alloc.c typd_mlc.c win32_threads.c \
++#	pthread_start.c pthread_support.c darwin_stop_world.c \
++#	pthread_stop_world.c fnlz_mlc.c extra/gc.c
++am__libgc_la_SOURCES_DIST = allchblk.c alloc.c inline_alloc.c backgraph.c blacklst.c \
+ 	checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c \
+ 	gcj_mlc.c headers.c mach_dep.c malloc.c mallocx.c mark.c \
+ 	mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c \
+@@ -185,6 +196,9 @@
+ 	stubborn.c thread_local_alloc.c typd_mlc.c win32_threads.c \
+ 	pthread_start.c pthread_support.c darwin_stop_world.c \
+ 	pthread_stop_world.c fnlz_mlc.c extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@am__objects_1 =  \
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@	win32_threads.lo
+ @PTHREADS_TRUE@@SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_FALSE@am__objects_2 = pthread_start.lo \
+@@ -658,7 +672,11 @@
+ check_LTLIBRARIES = libstaticrootslib.la
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = bdw-gc.pc
+-@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c backgraph.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++#@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c backgraph.c \
++@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c inline_alloc.c backgraph.c \
+ @SINGLE_GC_OBJ_FALSE@	blacklst.c checksums.c dbg_mlc.c \
+ @SINGLE_GC_OBJ_FALSE@	dyn_load.c finalize.c gc_dlopen.c \
+ @SINGLE_GC_OBJ_FALSE@	gcj_mlc.c headers.c mach_dep.c malloc.c \
+@@ -675,6 +693,9 @@
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_5) $(am__append_6)
+ @NEED_ATOMIC_OPS_ASM_TRUE@nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops_sysdeps.S
+ @USE_INTERNAL_LIBATOMIC_OPS_TRUE@nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ 
+ # Include THREADDLLIBS here to ensure that the correct versions of
+ # linuxthread semaphore functions get linked:
+diff -Naur gc-7.3alpha1-20120316.orig/alloc.c gc-7.3alpha1-20120316/alloc.c
+--- gc-7.3alpha1-20120316.orig/alloc.c	2012-03-16 07:45:51.000000000 +0100
++++ gc-7.3alpha1-20120316/alloc.c	2012-03-16 07:55:48.254572705 +0100
+@@ -545,6 +545,40 @@
+     RESTORE_CANCEL(cancel_state);
+ }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++static void (*GC_gcollect_hook)() = 0;
++GC_add_gc_hook( void (*f)() ) {
++   GC_gcollect_hook = f;
++}
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: stop                                 */
++/*---------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++static long allocated_bytes = 0;
++
++GC_get_allocated_bytes() {
++   return allocated_bytes;
++}
++
++void GC_reset_allocated_bytes() {
++   GC_gcollect();
++   allocated_bytes = 0;
++}
++
++#ifdef KEEP_BACK_PTRS
++int GC_heap_info_available = 1;
++#else
++int GC_heap_info_available = 0;
++#endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ GC_INNER void (*GC_check_heap)(void) = 0;
+ GC_INNER void (*GC_print_all_smashed)(void) = 0;
+ 
+@@ -604,6 +638,15 @@
+         GC_cond_register_dynamic_libraries();
+ #   endif
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#   ifdef KEEP_BACK_PTRS
++    allocated_bytes += GC_get_bytes_since_gc();
++#   endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++
+ #   ifndef SMALL_CONFIG
+       if (GC_print_stats)
+         GET_TIME(start_time);
+@@ -908,6 +951,17 @@
+                     COMMA_IF_USE_MUNMAP((unsigned long)GC_unmapped_bytes));
+     }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    if( GC_gcollect_hook )
++       GC_gcollect_hook( GC_heapsize,
++			 (unsigned long)(GC_atomic_in_use)+
++			 (unsigned long)(GC_composite_in_use) );
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    
+     /* Reset or increment counters for next cycle */
+     GC_n_attempts = 0;
+     GC_is_full_gc = FALSE;
+diff -Naur gc-7.3alpha1-20120316.orig/configure.ac gc-7.3alpha1-20120316/configure.ac
+--- gc-7.3alpha1-20120316.orig/configure.ac	2012-03-16 07:45:51.000000000 +0100
++++ gc-7.3alpha1-20120316/configure.ac	2012-03-16 08:03:38.851260057 +0100
+@@ -652,10 +652,15 @@
+ dnl ALL_INTERIOR_POINTERS and NO_EXECUTE_PERMISSION can be overridden
+ dnl in the startup code.
+ AC_DEFINE([NO_EXECUTE_PERMISSION], [1],
+-          [Define to make the collector not allocate executable memory
+-           by default.])
+-AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
+-          [Define to recognise all pointers to the interior of objects.])
++          [Define to make the collector not allocate executable memory by default.])
++dnl ---------------------------------------------------------------------*/
++dnl Bigloo start                                                         */
++dnl ---------------------------------------------------------------------*/
++dnl AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
++dnl          [Define to recognise all pointers to the interior of objects.])
++dnl ---------------------------------------------------------------------*/
++dnl Bigloo stop                                                          */
++dnl ---------------------------------------------------------------------*/
+ 
+ 
+ dnl Interface Selection

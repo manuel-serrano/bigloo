@@ -1,0 +1,41 @@
+#*=====================================================================*/
+#*    .../prgm/project/bigloo/gc/Makefile-gc-7.3alpha1-20120316        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Sep  3 17:41:09 2009                          */
+#*    Last change :  Fri Mar 16 08:20:49 2012 (serrano)                */
+#*    Copyright   :  2009-12 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    gc-7.3alpha1 specific entries                                    */
+#*=====================================================================*/
+
+boot-gc:
+	$(MAKE) do-boot-gc
+
+boot-gc_fth:
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+          $(MAKE) LIBQ=_fth CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" do-boot-gc; \
+	fi
+
+OUTDIR=$(CUSTOMGC)$(LIBQ)/.libs
+
+# this will build the gc. We can then use its '.a' and '.o's
+$(OUTDIR)/libgc.$(SHAREDSUFFIX):
+	$(MAKE) -C $(CUSTOMGC)$(LIBQ) CFLAGS="$(CFLAGS) $(CGCFLAGS)"
+
+do-boot-gc: $(OUTDIR)/libgc.$(SHAREDSUFFIX)
+	$(MAKE) $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) && \
+	$(MAKE) $(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a
+
+$(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
+	$(MAKE) shared-lib \
+             LIBDEST=$@ \
+             SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
+             GCCLOSELIB= \
+             CLOSELIBS= \
+             LDLIBS=$(EXTRAGCLIBS) \
+             OBJECTS="$(OUTDIR)/*.o"
+
+$(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a:
+	cp $(OUTDIR)/libgc.a $@
+	$(RANLIB) $@

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Feb 15 11:43:35 2012 (serrano)                */
+;*    Last change :  Thu Mar 15 18:49:24 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -53,7 +53,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug ($compiler-debug))
+(define debug (begin ($compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
@@ -193,7 +193,7 @@
 		  ((=fx %!tail %head)
 		   ;; set state empty
 		   (mutex-lock! %bmutex)
-		   (when (>=fx debug 0)
+		   (when (>fx debug 0)
 		      (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
 			 " %eof=" %eof))
 		   (set! %!bstate 0)
@@ -202,7 +202,7 @@
 		  ((full-state?)
 		   ;; set state filled
 		   (mutex-lock! %bmutex)
-		   (when (>=fx debug 0)
+		   (when (>fx debug 1)
 		      (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size))
 		   (set! %!bstate 1)
 		   (condition-variable-broadcast! %bcondv)
@@ -243,11 +243,11 @@
 			  ;; buffer empty, wait to be filled
 			  (mutex-lock! %bmutex)
 			  (when (=fx %!bstate 0)
-			     (when (>=fx debug 0)
+			     (when (>fx debug 0)
 				(tprint ">>> flac_decoder, wait empty"
 				   " %!tail=" %!tail " head=" %head))
 			     (condition-variable-wait! %bcondv %bmutex)
-			     (when (>=fx debug 0)
+			     (when (>fx debug 0)
 				(tprint "<<< flac_decoder, wait empty"
 				   " %!tail=" %!tail " head=" %head))
 			     (mutex-unlock! %bmutex))
