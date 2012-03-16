@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Nov 15 11:17:24 2011 (serrano)                */
+#*    Last change :  Fri Mar 16 19:09:15 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -52,6 +52,9 @@ EXTRALIBS	=
 else
 EXTRALIBS	= $(GSTREAMERLIBS)
 endif
+
+EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
+EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
