@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Mon Apr 11 18:23:27 2011 (serrano)                */
-/*    Copyright   :  2004-11 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 18:08:11 2012 (serrano)                */
+/*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread setup                                                */
 /*=====================================================================*/
@@ -52,7 +52,8 @@ bglpth_setup_gc() {
 #endif
 
 #if( BGL_GC == BGL_BOEHM_GC && BGL_GC_HAVE_DO_BLOCKING )
-#if( BGL_GC_VERSION == 722 \
+#if( BGL_GC_VERSION == 731 \
+   || BGL_GC_VERSION == 722 \
    || BGL_GC_VERSION == 710 \
    || BGL_GC_VERSION == 700 || BGL_GC_VERSION == 707 )
    extern void *GC_do_blocking();
