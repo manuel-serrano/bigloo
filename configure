@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Mar 16 08:27:56 2012 (serrano)                */
+#*    Last change :  Sat Mar 17 07:07:28 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1074,6 +1074,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   srfi27_is_enabled=no
   crypto_is_enabled=no
   openpgp_is_enabled=no
+  gstreamer_is_enabled=no
   
   for a in $apis; do
     case $a in
@@ -1088,6 +1089,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       fthread) fthread_is_enabled="yes";;
       crypto) crypto_is_enabled="yes";;
       openpgp) openpgp_is_enabled="yes";;
+      gstreamer) gstreamer_is_enabled="yes";;
     esac
   done
   
@@ -1110,6 +1112,14 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
       echo "*** ERROR: fthread library requires pthread."
       echo "Either disable fthread or enable pthread."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $gstreamer_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
+      echo "*** ERROR: gstreamer library requires pthread."
+      echo "Either disable gstreamer or enable pthread."
       echo
       echo "Enabled apis: $apis"
       exit 1
@@ -3068,7 +3078,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   else
     napis=;
     for a in $apis; do
-      if [ "pthread" != "$a" -a "fthread" != "$a" ]; then
+      if [ "pthread" != "$a" -a "fthread" != "$a" -a "gstreamer" != "$a" ]; then
         if [ "$napis " = " " ]; then
           napis="$a";
         else

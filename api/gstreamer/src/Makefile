@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Mar 16 19:09:15 2012 (serrano)                */
+#*    Last change :  Sat Mar 17 07:12:00 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -18,7 +18,7 @@ include ../../../Makefile.misc
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the library name
-API	= gstreamer
+API		= gstreamer
 # Directories
 BIGLOO_SRC_DIR 	= Llib
 C_SRC_DIR 	= Clib
@@ -53,6 +53,7 @@ else
 EXTRALIBS	= $(GSTREAMERLIBS)
 endif
 
+GCCLOSELIB	= -l$(GCLIB)_fth-$(RELEASE)
 EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
 EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
 
