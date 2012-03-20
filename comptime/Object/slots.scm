@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Mar 20 13:45:17 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 14:04:29 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -265,11 +265,12 @@
 				    (format "Overriden \"~a\" virtual slot"
 				       (type-id (slot-class-owner slot)))
 				    (car id)))
-			      (let ((vn (slot-virtual-num slot)))
+			      (let ((vn (slot-virtual-num slot))
+				    (vi (slot-index slot)))
 				 (loop (cdr clauses)
 				    nslots
 				    (replace
-				       (make-attribute-slot s id attr vget vset vn #t index)
+				       (make-attribute-slot s id attr vget vset vn #t vi)
 				       slot sslots)
 				    vnum
 				    index))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Fri Nov 25 15:15:21 2011 (serrano)                */
+;*    Last change :  Tue Mar 20 14:10:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -373,7 +373,7 @@
    (test "virtual.6" (virtual-3-a (instantiate::virtual-3)) 'virtual-3-a)
    (test "virtual.7" (virtual-3-a (instantiate::virtual-4)) 'virtual-3-a)
    (test "virtual.8" (virtual-4-z (instantiate::virtual-4)) 'virtual-4-z)
-   (test "field.1" (let loop ((fs (vector->list (class-fields virtual-2))))
+   (test "field.1" (let loop ((fs (vector->list (class-all-fields virtual-2))))
 		      (cond
 			 ((null? fs)
 			  #f)
@@ -382,7 +382,7 @@
 			 (else
 			  (loop (cdr fs)))))
 	 #t)
-   (test "field.2" (let loop ((fs (vector->list (class-fields virtual-2))))
+   (test "field.2" (let loop ((fs (vector->list (class-all-fields virtual-2))))
 		      (cond
 			 ((null? fs)
 			  #f)
@@ -391,7 +391,7 @@
 			 (else
 			  (loop (cdr fs)))))
 	 #t)
-   (test "field.3" (let loop ((fs (vector->list (class-fields virtual-2))))
+   (test "field.3" (let loop ((fs (vector->list (class-all-fields virtual-2))))
 		      (cond
 			 ((null? fs)
 			  #f)

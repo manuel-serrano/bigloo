@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Tue Mar 20 13:52:47 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 14:06:20 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -315,8 +315,8 @@
        ,@(filter-map (lambda (s)
 			(when (eq? (slot-class-owner s) class)
 			   (if (slot-virtual? s)
-;* 			       (unless (slot-virtual-override s)       */
-				  (make-class-field-virtual s)
+			       (unless (slot-virtual-override s)
+				  (make-class-field-virtual s))
 			       (make-class-field-plain s))))
 	    (tclass-slots class))))
 

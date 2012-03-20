@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Mar 20 11:02:17 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 14:11:23 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -235,17 +235,18 @@
 	  (new (gensym 'new))
 	  (tnew (make-typed-ident new id))
 	  (args (collect-slot-values slots)))
+
+      #;(tprint "instantiate->fill id=" id " slots="
+	 (map (lambda (s)
+		 `(:id ,(slot-id s)
+		     :index ,(slot-index s)
+		     :vnum ,(slot-virtual-num s)))
+	    slots))
       
       ;; check that there is enough values
       (for-each (lambda (a s)
 		   (unless (or (car a) (slot-virtual? s))
 		      ;; value missing
-		      (tprint "args=" args " slots="
-			 (map (lambda (s)
-				 `(:id ,(slot-id s)
-				     :index ,(slot-index s)
-				     :vnum ,(slot-virtual-num s)))
-			    slots))
 		      (error op
 			 (format "Missing value for field \"~a\"" (slot-id s))
 			 x)))
