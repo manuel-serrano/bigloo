@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Nov 26 06:57:43 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 20 10:30:03 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -16,6 +16,7 @@
    (import  tools_args
 	    tools_misc
 	    tools_location
+	    tools_shape
 	    type_type
 	    type_env
 	    type_cache
@@ -228,6 +229,7 @@
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 (vector->list vargs)))
+
    
    (let* ((id (type-id class))
 	  (new (gensym 'new))

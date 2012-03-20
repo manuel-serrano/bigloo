@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Sat Jan 14 19:36:53 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 10:29:21 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -138,58 +138,17 @@
 		(else
 		 (loop (cdr attr) get set))))))
    
-   (define (slot-member? slot slot-list)
+   (define (slot-member? id slot-list)
       ;; this function returns true if there is a slot with the same name
       ;; in the list
-      (let ((id (slot-id slot)))
-	 (let loop ((slot-list slot-list))
-	    (cond
-	       ((null? slot-list)
-		#f)
-	       ((eq? (slot-id (car slot-list)) id)
-		(car slot-list))
-	       (else
-		(loop (cdr slot-list)))))))
-   
-   (define (unique-virtual-slots slots)
-      ;; this function removes overriden duplicated virtual slots
-      (let loop ((slots slots)
-		 (res   '()))
+      (let loop ((slot-list slot-list))
 	 (cond
-	    ((null? slots)
-	     res)
-	    ((null? (car slots))
-	     ;; this is an error, skip because the compilation will be
-	     ;; stopped soon
-	     (loop (cdr slots) '()))
-	    ((slot-virtual? (car slots))
-	     (let ((other (slot-member? (car slots) res)))
-		(if (slot? other)
-		    (let ((loc (find-location src))
-			  (id  (slot-id (car slots))))
-		       (if (eq? (slot-class-owner (car slots))
-				(slot-class-owner other))
-			   (user-error/location
-			    loc
-			    (type-id class)
-			    "Illegal duplicated virtual slot"
-			    id)
-			   (let ((new-num (slot-virtual-num (car slots))))
-			      ;; when we override a virtual slot we have to
-			      ;; adjust its numbering
-			      (slot-virtual-num-set! other new-num)
-			      ;; ...and we emit a warning
-			      (when (and (>= (bigloo-warning) 2)
-					 *warning-overriden-slots*)
-				 (user-warning/location
-				  loc
-				  (type-id class)
-				  (format "Overriden virtual slot of class \"~a\"" (type-id (slot-class-owner (car slots))))
-				  id))
-			      (loop (cdr slots) res))))
-		    (loop (cdr slots) (cons (car slots) res)))))
+	    ((null? slot-list)
+	     #f)
+	    ((eq? (slot-id (car slot-list)) id)
+	     (car slot-list))
 	    (else
-	     (loop (cdr slots) (cons (car slots) res))))))
+	     (loop (cdr slot-list))))))
    
    (define (make-attribute-slot s slot-id attr vget vset vnum index)
       ;; direct slot with attribute. Because of the presence of
@@ -198,22 +157,22 @@
 	 (cond
 	    ((and vset (not vget))
 	     (user-error/location (find-location s)
-				  (type-id class)
-				  "Illegal virtual slot (missing getter)"
-				  (car slot-id)
-				  '()))
+		(type-id class)
+		"Illegal virtual slot (missing getter)"
+		(car slot-id)
+		'()))
 	    ((and vset reado?)
 	     (user-error/location (find-location s)
-				  (type-id class)
-				  "Illegal virtual slot (read-only)"
-				  (car slot-id)
-				  '()))
+		(type-id class)
+		"Illegal virtual slot (read-only)"
+		(car slot-id)
+		'()))
 	    ((and vget (not vset) (not reado?))
 	     (user-error/location (find-location s)
-				  (type-id class)
-				  "Illegal virtual slot (missing setter)"
-				  (car slot-id)
-				  '()))
+		(type-id class)
+		"Illegal virtual slot (missing setter)"
+		(car slot-id)
+		'()))
 	    (else
 	     (instantiate::slot
 		(id (car slot-id))
@@ -234,14 +193,14 @@
 	 (let ((id (slot-id nslot)))
 	    (when (any? (lambda (ss) (eq? (slot-id ss) id)) sslots)
 	       (user-error/location (find-location (slot-src nslot))
-				    (tclass-id class)
-				    "slot already defined in super class"
-				    id)))))
-
+		  (tclass-id class)
+		  "slot already defined in super class"
+		  id)))))
+   
    (define (check-super-slots nslots sslots class)
       (for-each (lambda (slot)
 		   (check-super-slot slot sslots class))
-		nslots))
+	 nslots))
    
    (define (make-direct-slot slot-id index)
       ;; plain direct slot
@@ -264,30 +223,53 @@
 		     (tclass-slots super)))))
       (let loop ((clauses clauses)
 		 (nslots '())
+		 (sslots sslots)
 		 (vnum  vnum)
 		 (index (length sslots)))
 	 (if (null? clauses)
 	     (begin
 		;; check that this class does not re-define a super class slot
 		(check-super-slots nslots sslots class)
-		;; this is mandatory that unique-virtual-slots is called
-		;; on a reversed list. This function fixes up virtual slots
-		;; number. If the list is the wrong direction, numbers will get
-		;; mixed up.
-		(unique-virtual-slots (append nslots (reverse sslots))))
+		(append sslots (reverse nslots)))
 	     (let ((s (car clauses)))
 		(match-case s
 		   (((id ?id) . ?attr)
 		    (multiple-value-bind (vget vset)
 		       (find-virtual-attr attr)
-		       (loop (cdr clauses)
-			  (cons (make-attribute-slot s id attr vget vset vnum index)
-			     nslots)
-			  (if (or vget vset) (+ vnum 1) vnum)
-			  (+fx index 1))))
+		       (cond
+			  ((and vget (slot-member? (car id) nslots))
+			   (user-error/location (find-location s)
+			      (car id)
+			      "Illegal duplicated virtual slot"
+			      (car id)))
+			  ((and vget (slot-member? (car id) sslots))
+			   =>
+			   (lambda (slot)
+			      (when (and (>= (bigloo-warning) 2)
+					 *warning-overriden-slots*)
+				 (user-warning/location (find-location s)
+				    (car id)
+				    (format "Overriden \"~a\" virtual slot"
+				       (type-id (slot-class-owner slot)))
+				    (car id)))
+			      (let ((vn (slot-virtual-num slot)))
+				 (loop (cdr clauses)
+				    (cons (make-attribute-slot s id attr vget vset vn index)
+				       nslots)
+				    (remq slot sslots)
+				    vnum
+				    index))))
+			  (else
+			   (loop (cdr clauses)
+			      (cons (make-attribute-slot s id attr vget vset vnum index)
+				 nslots)
+			      sslots
+			      (if (or vget vset) (+ vnum 1) vnum)
+			      (+fx index 1))))))
 		   ((id ?id)
 		    (loop (cdr clauses)
 		       (cons (make-direct-slot id index) nslots)
+		       sslots
 		       vnum
 		       (+fx index 1)))
 		   (else
@@ -343,10 +325,6 @@
 		 (res sslots)
 		 (index (length sslots)))
 	 (if (null? clauses)
-	     ;; this is mandatory that unique-virtual-slots is called
-	     ;; on a reversed list. This function fixs up virtual slots
-	     ;; number. If the list is the wrong direction, numbers will get
-	     ;; mixed up.
 	     res
 	     (let* ((s (car clauses))
 		    (src (car s))
