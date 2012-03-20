@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Nov 14 18:23:16 2011 (serrano)                */
+;*    Last change :  Tue Mar 20 08:44:45 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -114,9 +114,9 @@
    (let* ((id      (global-id new))
 	  (type    (global-type new))
 	  (value   (global-value new))
-	  (type-id (type-id type)))
+	  (typeid  (type-id type)))
       ;; we restore type result
-      (global-type-set! new (find-type type-id))
+      (global-type-set! new (find-type typeid))
       ;; the parameters type
       (restore-value-types! value)
       ;; we restore the jvm qualified type name
@@ -187,9 +187,8 @@
 		(if (node? body)
 		    (let ((tres (node-type body)))
 		       (hrtype-node! body)
-		       (if (type? tres)
-			   (node-type-set! body
-					   (find-type (type-id tres))))))))
+		       (when (type? tres)
+			  (node-type-set! body (find-type (type-id tres))))))))
 	    (else
 	     (error "restore-value-types"
 		    "Illegal non pair argument"

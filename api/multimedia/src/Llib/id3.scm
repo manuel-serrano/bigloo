@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Tue Nov 15 18:22:04 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Sun Mar 18 09:52:11 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -692,7 +692,10 @@
        (let* ((comment-length (ulittlendian4 mm))
 	      ;; we really should check that comment-length is not too big.
 	      ;; does bigloo have a maximum string length?
-	      (comment-string (mmap-substring mm (mmap-read-position mm) (+fx comment-length (mmap-read-position mm))))
+	      (comment-string
+		 (mmap-substring mm
+		    (mmap-read-position mm)
+		    (+fx comment-length (mmap-read-position mm))))
 	      (comment (split-comment comment-string)))
 	  (parse-metadata-block-vorbis-comment-body mm (-elong i 1) (cons comment comments)))))
 
@@ -702,10 +705,15 @@
 (define (parse-metadata-block-vorbis-comment mm)
    (let* ((vendor-length (ulittlendian4 mm))
 	  ;; we really should check that this length is not too big.
-	  (vendor-string (mmap-substring mm (mmap-read-position mm) (+fx vendor-length (mmap-read-position mm))))
+	  (vendor-string
+	     (mmap-substring mm
+		(mmap-read-position mm)
+		(+fx vendor-length (mmap-read-position mm))))
 	  (user-comment-list-length (ulittlendian4 mm))
-	  (- (assert (user-comment-list-length) (<=fx user-comment-list-length 100)))) ;; 100 is an arbitrary limit
-      (parse-metadata-block-vorbis-comment-body mm user-comment-list-length `((vendor-string . ,vendor-string)))))
+	  (- (assert (user-comment-list-length)
+		(<=fx user-comment-list-length 100)))) ;; 100 is an arbitrary limit
+      (parse-metadata-block-vorbis-comment-body mm
+	 user-comment-list-length `((vendor-string . ,vendor-string)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-ogg-comments ...                                            */

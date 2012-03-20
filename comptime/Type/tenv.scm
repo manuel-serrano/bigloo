@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Nov 17 05:48:35 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 20 08:18:38 2012 (serrano)                */
+;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	    object_class
 	    object_predicate
 	    object_creator
+	    object_slots
 	    tvector_tvector
 	    foreign_access
 	    module_foreign
@@ -190,16 +191,16 @@
       ;; we have to walk thru the remember list in order to
       ;; setup the correct super class fields
       (for-each (lambda (new)
-		   (if (tclass? new)
-		       (let ((super (tclass-its-super new)))
-			  (if (tclass? super)
-			      (let* ((super-id (tclass-id super))
-				     (old-s (find-type super-id)))
-				 (if (not (tclass? old-s))
-				     (error 'add-Tenv
-					"Can't find super class of"
-					(tclass-name new))
-				     (tclass-its-super-set! new old-s)))))))
+		   (when (tclass? new)
+		      (let ((super (tclass-its-super new)))
+			 (if (tclass? super)
+			     (let* ((super-id (tclass-id super))
+				    (old-s (find-type super-id)))
+				(if (not (tclass? old-s))
+				    (error 'add-Tenv
+				       "Can't find super class of"
+				       (tclass-name new))
+				    (tclass-its-super-set! new old-s)))))))
 	 remember-list)
       ;; the tvector traversal
       (for-each (lambda (new)

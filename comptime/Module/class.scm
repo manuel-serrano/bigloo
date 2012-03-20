@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sat Jan 14 19:39:07 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 08:10:29 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -23,6 +23,7 @@
 	    tools_shape
 	    tools_error
 	    tools_location
+	    tools_misc
 	    type_type
 	    type_env
 	    ast_ident
@@ -322,22 +323,32 @@
 ;*    make-class-virtual-fields ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-class-virtual-fields class)
+
+   (define (epairify-slot def slot)
+      (with-access::slot slot (src)
+	 (if (epair? src)
+	     (epairify-rec def src)
+	     def)))
    
    (define (getter slot)
-      `(lambda (o)
-	  (define (call-next-slot)
-	     (call-next-virtual-getter ,(tclass-id class) o
-		,(slot-virtual-num slot)))
-	  (,(slot-getter slot) o)))
+      (epairify-slot
+	 `(lambda (o)
+	     (define (call-next-slot)
+		(call-next-virtual-getter ,(tclass-id class) o
+		   ,(slot-virtual-num slot)))
+	     (,(slot-getter slot) o))
+	 slot))
 
    (define (setter slot)
       (if (slot-read-only? slot)
 	  #f
-	  `(lambda (o v)
-	      (define (call-next-slot)
-		 (call-next-virtual-setter ,(tclass-id class) o
-		    ,(slot-virtual-num slot) v))
-	      (,(slot-setter slot) o v))))
+	  (epairify-slot
+	     `(lambda (o v)
+		 (define (call-next-slot)
+		    (call-next-virtual-setter ,(tclass-id class) o
+		       ,(slot-virtual-num slot) v))
+		 (,(slot-setter slot) o v))
+	     slot)))
    
    `(vector
        ,@(filter-map (lambda (s)

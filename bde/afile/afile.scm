@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:49:15 1993                          */
-;*    Last change :  Thu Feb 11 09:56:43 2010 (serrano)                */
+;*    Last change :  Tue Mar 20 05:34:23 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Module access file generator.                                    */
 ;*=====================================================================*/
@@ -126,6 +126,8 @@
 		    (match-case exp
 		       (((? module?) ?module-name . ?-)
 			module-name)
+		       ((directives . ?-)
+			#f)
 		       (else
 			(warning 'bglafile "Illegal file format: " file)
 			#f)))

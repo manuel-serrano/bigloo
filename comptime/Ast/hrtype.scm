@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Thu Mar 31 09:41:10 2011 (serrano)                */
+;*    Last change :  Tue Mar 20 08:38:27 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -141,6 +141,85 @@
 (define-method (hrtype-node! node::extern)
    (with-access::extern node (expr*)
       (hrtype-node*! expr*))
+   (call-next-method))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::getfield ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::getfield)
+   (with-access::getfield node (ftype otype)
+      (set! ftype (find-type (type-id ftype)))
+      (set! otype (find-type (type-id otype)))
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::setfield ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::setfield)
+   (with-access::setfield node (ftype otype)
+      (set! ftype (find-type (type-id ftype)))
+      (set! otype (find-type (type-id otype)))
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::widening ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::widening)
+   (with-access::widening node (otype)
+      (set! otype (find-type (type-id otype)))
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::new ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::new)
+   (with-access::new node (args-type)
+      (set! args-type (map! (lambda (t) (find-type (type-id t))) args-type))
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::valloc ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::valloc)
+   (with-access::valloc node (ftype otype)
+      (set! ftype (find-type (type-id ftype)))
+      (set! otype (find-type (type-id otype)))
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::vref ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::vref)
+   (with-access::vref node (ftype otype vtype)
+      (set! ftype (find-type (type-id ftype)))
+      (set! otype (find-type (type-id otype)))
+      (set! vtype (find-type (type-id vtype)))
+      (call-next-method)))
+      
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::vset! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::vset!)
+   (with-access::vset! node (ftype otype vtype)
+      (set! ftype (find-type (type-id ftype)))
+      (set! otype (find-type (type-id otype)))
+      (set! vtype (find-type (type-id vtype)))
+      (call-next-method)))
+      
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::vlength ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::vlength)
+   (with-access::vlength node (ftype otype vtype)
+      (set! vtype (find-type (type-id vtype)))
+      (call-next-method)))
+      
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::instanceof ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::instanceof)
+   (with-access::instanceof node (class)
+      (set! class (find-type (type-id class))))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/

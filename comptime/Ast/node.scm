@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Fri Feb  3 14:26:37 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 08:36:56 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -111,23 +111,23 @@
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field
-	      (ftype::type read-only)
+	      ftype::type
 	      ;; the type the field belongs to (i.e., the class)
-	      (otype::type read-only))
+	      otype::type)
 
 	   ;; the object field read and write
 	   (final-class setfield::private
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field
-	      (ftype::type read-only)
+	      ftype::type
 	      ;; the type the field belongs to (i.e., the class)
-	      (otype::type read-only))
+	      otype::type)
 
 	   ;; wide chunk access
 	   ;; MS CARE 16nov2011 (not used yet)
 	   (final-class widening::private
-	      (otype::type read-only))
+	      otype::type)
 
 	   ;; extern object creation
 	   (final-class new::private
@@ -138,16 +138,16 @@
 	      ;; the vector fields type
 	      ftype::type
 	      ;; the type of the dimension
-	      (otype::type read-only))
+	      otype::type)
 
 	   ;; vector reference
 	   (final-class vref::private
 	      ;; the vector fields type
 	      ftype::type
 	      ;; the type of the offset
-	      (otype::type read-only)
+	      otype::type
 	      ;; the type of the vector
-	      (vtype::type read-only)
+	      vtype::type
 	      ;; unsafe
 	      (unsafe::bool read-only (default #f)))
 
@@ -156,20 +156,20 @@
 	      ;; the vector fields type
 	      ftype::type
 	      ;; the type of the offset
-	      (otype::type read-only)
+	      otype::type
 	      ;; the type of the vector
-	      (vtype::type read-only)
+	      vtype::type
 	      ;; unsafe
 	      (unsafe::bool read-only (default #f)))
 
 	   ;; vector length
 	   (final-class vlength::private
 	      ;; the vector fields type
-	      (vtype::type read-only))
+	      vtype::type)
 	   
 	   ;; extern predicate
 	   (final-class instanceof::private
-	      (class::type read-only))
+	      class::type)
 	      
 	   ;; the null node
 	   (final-class cast-null::private)
