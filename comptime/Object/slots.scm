@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Mar 20 11:19:51 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 13:45:17 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -49,6 +49,8 @@
 	       (default-value read-only (default (slot-no-default-value)))
 	       ;; virtual slot number (> 0 if virtual)
 	       (virtual-num (default -1))
+	       ;; virtual override
+	       (virtual-override::bool read-only (default #f))
 	       ;; the virtual slot getter
 	       (getter (default #f))
 	       ;; the virtual slot setter
@@ -150,7 +152,7 @@
 	    (else
 	     (loop (cdr slot-list))))))
    
-   (define (make-attribute-slot s slot-id attr vget vset vnum index)
+   (define (make-attribute-slot s slot-id attr vget vset vnum vover index)
       ;; direct slot with attribute. Because of the presence of
       ;; the attributes, this slot may be virtual
       (let ((reado? (memq 'read-only attr)))
@@ -184,6 +186,7 @@
 		(read-only? reado?)
 		(default-value (find-default-attr attr))
 		(virtual-num (if vget vnum -1))
+		(virtual-override vover)
 		(getter vget)
 		(setter vset)
 		(user-info (find-info-attr attr)))))))
@@ -240,16 +243,7 @@
 	     (begin
 		;; check that this class does not re-define a super class slot
 		(check-super-slots nslots sslots class)
-		(let ((cslots (append sslots (reverse nslots))))
-		   (when (or (eq? (tclass-id class) 'canvas-text)
-			     (eq? (tclass-id class) 'canvas-item))
-		      (tprint "CLASS=" (shape class)
-			 " => " (map (lambda (s)
-					`(:id ,(slot-id s)
-					    :index ,(slot-index s)
-					    :vnum ,(slot-virtual-num s)))
-				   cslots)))
-		   cslots))
+		(append sslots (reverse nslots)))
 	     (let ((s (car clauses)))
 		(match-case s
 		   (((id ?id) . ?attr)
@@ -274,14 +268,14 @@
 			      (let ((vn (slot-virtual-num slot)))
 				 (loop (cdr clauses)
 				    nslots
-				    (replace 
-				       (make-attribute-slot s id attr vget vset vn index)
+				    (replace
+				       (make-attribute-slot s id attr vget vset vn #t index)
 				       slot sslots)
 				    vnum
 				    index))))
 			  (else
 			   (loop (cdr clauses)
-			      (cons (make-attribute-slot s id attr vget vset vnum index)
+			      (cons (make-attribute-slot s id attr vget vset vnum #f index)
 				 nslots)
 			      sslots
 			      (if (or vget vset) (+ vnum 1) vnum)

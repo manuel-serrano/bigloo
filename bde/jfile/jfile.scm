@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:49:15 1993                          */
-;*    Last change :  Fri Sep  5 22:00:40 2008 (serrano)                */
+;*    Last change :  Tue Mar 20 11:49:24 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Package access file generator.                                   */
 ;*=====================================================================*/
@@ -169,11 +169,13 @@
 	     (let ((suf (suffix (car access-list))))
 		(cond
 		   ((member suf *suffixes*)
-		    (fprint port
-			    "  ("
-			    (find-module-name (car access-list) path)
-			    " "
-			    #\" (make-package-name (car access-list)) #\" #\)))
+		    (let ((n (find-module-name (car access-list) path)))
+		       (when (symbol? n)
+			  (fprint port
+			     "  ("
+			     n
+			     " "
+			     #\" (make-package-name (car access-list)) #\" #\)))))
 		   ((string=? suf *gui-suffix*)
 		    (fprint port
 			    "  ("
@@ -213,12 +215,15 @@
 		       (((? module?) ?module-name . ?-)
 			(close-input-port port)
 			module-name)
+		       ((directives . ?-)
+			(close-input-port port)
+			#f)
 		       (else
 			(close-input-port port)
 			(fprint (current-error-port) "*** ERROR:bglfile:"
 				#\Newline
 				"Illegal file format -- " file)
-			'illegal-file-format))))))))
+			#f))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-gui-module-name ...                                         */
