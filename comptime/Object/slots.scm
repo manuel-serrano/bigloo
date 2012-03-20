@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Mar 20 10:29:21 2012 (serrano)                */
+;*    Last change :  Tue Mar 20 11:19:51 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -202,6 +202,16 @@
 		   (check-super-slot slot sslots class))
 	 nslots))
    
+   (define (replace new old lst)
+      (let loop ((lst lst))
+	 (cond
+	    ((null? lst)
+	     lst)
+	    ((eq? (car lst) old)
+	     (cons new (cdr lst)))
+	    (else
+	     (cons (car lst) (loop (cdr lst)))))))
+   
    (define (make-direct-slot slot-id index)
       ;; plain direct slot
       (instantiate::slot
@@ -230,7 +240,16 @@
 	     (begin
 		;; check that this class does not re-define a super class slot
 		(check-super-slots nslots sslots class)
-		(append sslots (reverse nslots)))
+		(let ((cslots (append sslots (reverse nslots))))
+		   (when (or (eq? (tclass-id class) 'canvas-text)
+			     (eq? (tclass-id class) 'canvas-item))
+		      (tprint "CLASS=" (shape class)
+			 " => " (map (lambda (s)
+					`(:id ,(slot-id s)
+					    :index ,(slot-index s)
+					    :vnum ,(slot-virtual-num s)))
+				   cslots)))
+		   cslots))
 	     (let ((s (car clauses)))
 		(match-case s
 		   (((id ?id) . ?attr)
@@ -254,9 +273,10 @@
 				    (car id)))
 			      (let ((vn (slot-virtual-num slot)))
 				 (loop (cdr clauses)
-				    (cons (make-attribute-slot s id attr vget vset vn index)
-				       nslots)
-				    (remq slot sslots)
+				    nslots
+				    (replace 
+				       (make-attribute-slot s id attr vget vset vn index)
+				       slot sslots)
 				    vnum
 				    index))))
 			  (else
