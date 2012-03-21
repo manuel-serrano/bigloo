@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Mar 15 19:04:38 2012 (serrano)                */
+;*    Last change :  Wed Mar 21 13:05:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -95,7 +95,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug                                                            */
 ;*---------------------------------------------------------------------*/
-(define debug (begin ($compiler-debug) 1))
+(define debug ($compiler-debug))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -270,8 +270,11 @@
 		     (unless %nextbuffer
 			(let* ((url (car playlist))
 			       (ip (open-input-file url)))
+			   (input-port-timeout-set! ip (* 1000 1000 10))
 			   (when (input-port? ip)
-			      ;; (tprint "PREPARE-NEXT-BUFFER... %head=" %head " %!tail=" %!tail)
+			      (when (>fx debug 0)
+				 (tprint "PREPARE-NEXT-BUFFER... %head="
+				    %head " %!tail=" %!tail))
 			      (let ((buf (instantiate::alsaportbuffer
 					    (url url)
 					    (port ip)
@@ -304,9 +307,13 @@
 			 (lambda ()
 			    (let loop ((buffer buffer)
 				       (playlist playlist))
+			       (when (>fx debug 0)
+				  (tprint ">>>> alsabuffer-fill! " url))
 			       (unwind-protect
 				  (alsabuffer-fill! buffer o)
 				  (close-input-port ip))
+			       (when (>fx debug 0)
+				  (tprint "<<<< alsabuffer-fill! " url))
 			       (let ((buffer (prepare-next-buffer o buffer (cdr playlist))))
 				  (when (isa? buffer alsabuffer)
 				     (loop buffer (cdr playlist))))))
@@ -582,22 +589,24 @@
       (define (fill-eof)
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
-	    (when (>fx debug 0)
-	       (tprint "fill.2a, set eof-filled (bs=1)"))
 	    (when (and (=fx %!bstate 0) (>fx (available) 0))
 	       (set! %!bstate 1))
+	    (when (>fx debug 0)
+	       (tprint "fill.2a, set eof-filled (bs=" %!bstate ")"))
 	    (set! %eof #t)
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
 	    (onevent o 'loaded url)))
 
       (define (timed-read sz)
-	 (if (and (>fx debug 0) (=fx %!bstate 0))
+	 (if (and (>fx debug 0) (or (=fx %!bstate 0) (>fx debug 1)))
 	     (let* ((d0 (current-microseconds))
+		    (_ (tprint ">>> fill.2 read-on-empty %head=" %head " %!tail=" %!tail
+			  " sz=" sz " d0=" d0))
 		    (v (read-fill-string! %inbuf %head sz port))
 		    (d1 (current-microseconds)))
-		(tprint "fill.2 read-on-empty %head=" %head " %!tail=" %!tail
-		   " sz=" sz " v=" v " time=" (-llong d1 d0))
+		(tprint "<<< fill.2 read-on-empty %head=" %head " %!tail=" %!tail
+		   " sz=" sz " v=" v " d1=" d1 " -> time = " (-llong d1 d0))
 		v)
 	     (read-fill-string! %inbuf %head sz port)))
 
@@ -627,36 +636,44 @@
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex)))))))
 
-      (let loop ()
-	 (when (>fx debug 1)
-	    (tprint "fill.1 %!bstate=" %!bstate
-	       " tl=" %!tail " hd=" %head " eof=" %eof))
-	 (cond
-	    (%eof
-	     ;;; done looping
-	     #unspecified)
-	    (%!babort
-	     ;;; external abort
-	     (mutex-lock! %bmutex)
-	     (condition-variable-broadcast! %bcondv)
-	     (mutex-unlock! %bmutex))
-	    ((=fx %!bstate 2)
-	     ;; buffer full, wait to be flushed
-	     (mutex-lock! %bmutex)
-	     (when (=fx %!bstate 2)
-		;; a kind of double check locking, correct, is
-		;; ptr read/write are atomic
-		(condition-variable-wait! %bcondv %bmutex))
-	     (mutex-unlock! %bmutex)
-	     (loop))
-	    ((<fx %head %!tail)
-	     ;; free space before the tail
-	     (fill (-fx %!tail %head))
-	     (loop))
-	    (else
-	     ;; free space after the tail (>=fx %head %!tail)
-	     (fill (-fx inlen %head))
-	     (loop))))))
+      (define (abort)
+	 (mutex-lock! %bmutex)
+	 (condition-variable-broadcast! %bcondv)
+	 (mutex-unlock! %bmutex))
+
+      (with-handler
+	 (lambda (e)
+	    (exception-notify e)
+	    (set! %!babort #t)
+	    (abort))
+	 (let loop ()
+	    (when (>fx debug 1)
+	       (tprint "fill.1 %!bstate=" %!bstate
+		  " tl=" %!tail " hd=" %head " eof=" %eof))
+	    (cond
+	       (%eof
+	        ;;; done looping
+		#unspecified)
+	       (%!babort
+   	        ;;; external abort
+		(abort))
+	       ((=fx %!bstate 2)
+		;; buffer full, wait to be flushed
+		(mutex-lock! %bmutex)
+		(when (=fx %!bstate 2)
+		   ;; a kind of double check locking, correct, is
+		   ;; ptr read/write are atomic
+		   (condition-variable-wait! %bcondv %bmutex))
+		(mutex-unlock! %bmutex)
+		(loop))
+	       ((<fx %head %!tail)
+		;; free space before the tail
+		(fill (-fx %!tail %head))
+		(loop))
+	       (else
+		;; free space after the tail (>=fx %head %!tail)
+		(fill (-fx inlen %head))
+		(loop)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */

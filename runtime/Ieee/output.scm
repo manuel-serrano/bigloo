@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Feb 16 07:58:16 2012 (serrano)                */
+;*    Last change :  Wed Mar 21 16:00:20 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -129,8 +129,6 @@
 	       "bgl_write_regexp")
 	    ($write-mmap::obj (::mmap ::output-port)
 	       "bgl_write_mmap")
-	    ($write-regexp::obj (::regexp ::output-port)
-	       "bgl_write_regexp")
 	    ($write-opaque::obj (::obj ::output-port)
 	       "bgl_write_opaque")
 	    ($write-custom::obj (::obj ::output-port)

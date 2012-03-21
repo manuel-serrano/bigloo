@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Mar 17 07:07:28 2012 (serrano)                */
+#*    Last change :  Tue Mar 20 19:17:14 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1443,9 +1443,6 @@ case $hostos in
     ;;
 
   darwin)
-    # MS: up to now I have not been able to get 7.2 compiled and linked on mac
-    #gccustom=gc-7.1;
-
     sharedlibraryclosed=yes;
     if [ "$macosx " = "auto " ]; then
       macosx=`$autoconf macosx` || exit 1

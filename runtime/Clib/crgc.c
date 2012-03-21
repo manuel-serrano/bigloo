@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Dec 20 09:15:40 2011 (serrano)                */
+/*    Last change :  Wed Mar 21 12:13:05 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -1057,10 +1057,9 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 	    l -= ml;
 
 	    while( (l > 0) && !(INPUT_PORT( p ).eof) ) {
-	       int m = (bsz <= l ? bsz : l);
 	       int r; 
 
-	       rgc_size_fill_buffer( p, &s[ o ], 1, m, 0 );
+	       rgc_size_fill_buffer( p, &s[ o ], 1, l, 0 );
 	       r = INPUT_PORT( p ).bufpos - 1;
 
 	       INPUT_PORT( p ).filepos += r;
@@ -1084,4 +1083,3 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
       }
    }
 }
- 

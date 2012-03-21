@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Jan 11 18:34:57 2012 (serrano)                */
+;*    Last change :  Wed Mar 21 19:32:50 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -25,7 +25,8 @@
 	    __thread
 	    __r4_symbols_6_4
 	    __bexit
-	    __param)
+	    __param
+	    __url)
 
    (use     __type
 	    __bigloo
@@ -491,6 +492,7 @@
 	    ((#\.) '())
 	    ((#\<) (read-cnst))
 	    ((#\") (read-string s))
+	    ((#\%) (url-decode (read-string s)))
 	    ((#\U) (utf8-string->ucs2-string (read-string s)))
 	    ((#\[) (read-vector))
 	    ((#\t) (read-tagged-vector))
@@ -516,7 +518,7 @@
 	    ((#\p) (read-special s *string->process*))
 	    ((#\e) (read-special s *string->process*))
 	    ((#\o) (read-special s *string->opaque*))
-	    (else  (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
+	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)

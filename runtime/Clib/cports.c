@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Jan 20 09:30:35 2012 (serrano)                */
+/*    Last change :  Wed Mar 21 13:17:29 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -286,8 +286,9 @@ bgl_read( obj_t port, char *ptr, long num ) {
    long n;
 
  loop:
-   if( (n = _READ( fileno( stream ), ptr, num ) ) < 0 )
+   if( (n = _READ( fileno( stream ), ptr, num ) ) < 0 ) {
       if( errno == EINTR ) goto loop;
+   }
 
    return n;
 }
