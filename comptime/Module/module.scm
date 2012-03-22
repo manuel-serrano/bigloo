@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Mon Nov 14 17:01:31 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 22 07:52:15 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
 ;*=====================================================================*/
@@ -139,7 +139,8 @@
 	     (let liip ((c (car clauses)))
 		(match-case c
 		   ((cond-expand . ?-)
-		    (let ((nc (progn-first-expression (comptime-expand/error c))))
+		    (let ((nc (progn-first-expression
+				 (comptime-expand-cond-expand-only c))))
 		       (if (or (eq? nc #unspecified) (eq? nc #f))
 			   (loop (cdr clauses) res)
 			   (liip nc))))
@@ -188,16 +189,14 @@
    (let loop ((c clause))
       (match-case c
 	 ((cond-expand . ?-)
-	  (let ((nc (progn-first-expression (comptime-expand/error c))))
+	  (let ((nc (progn-first-expression
+		       (comptime-expand-cond-expand-only c))))
 	     (unless (or (eq? nc #f) (eq? nc #unspecified))
 		(loop nc))))
 	 (((and (? symbol?) ?id) . ?-)
 	  ((find-clause-producer id clause) c))
 	 (else
-	  (user-error "Parse error"
-		      "Illegal module clause"
-		      clause
-		      '())))))
+	  (user-error "Parse error" "Illegal module clause" clause '())))))
 	     
 ;*---------------------------------------------------------------------*/
 ;*    *clause-compilers* ...                                           */
@@ -287,17 +286,15 @@
    (let loop ((c clause))
       (match-case c
 	 ((cond-expand . ?-)
-	  (let ((nc (progn-first-expression (comptime-expand/error clause))))
+	  (let ((nc (progn-first-expression
+		       (comptime-expand-cond-expand-only clause))))
 	     (if (or (eq? nc #unspecified) (eq? nc #f))
 		 '()
 		 (loop nc))))
 	 (((and (? symbol?) ?id) . ?values)
 	  ((find-clause-consumer id clause) module c))
 	 (else
-	  (user-error "Parse error"
-		      "Illegal module clause"
-		      clause
-		      '())))))
+	  (user-error "Parse error" "Illegal module clause" clause '())))))
 	     
 ;*---------------------------------------------------------------------*/
 ;*    find-clause-consumer ...                                         */

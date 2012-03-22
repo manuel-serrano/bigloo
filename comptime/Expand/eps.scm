@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Wed Dec  7 13:48:58 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 22 09:25:19 2012 (serrano)                */
+;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    Expansion-Passing Style: Beyond Conventional Macro,              */
@@ -36,6 +36,7 @@
 	    (add-macro-alias! ::symbol ::symbol)
 	    (comptime-expand ::obj)
 	    (comptime-expand/error ::obj)
+	    (comptime-expand-cond-expand-only ::obj)
 	    (compile-expand ::obj)
 	    (expand-units ::obj)))
 
@@ -197,7 +198,32 @@
 	    (comptime-expand x)))))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-expand ...                                              */
+;*    comptime-expand-cond-expand-only ...                             */
+;*---------------------------------------------------------------------*/
+(define (comptime-expand-cond-expand-only x)
+
+   (define (cond-expand-only-expander x e)
+      (match-case x
+	 ((cond-expand . ?-)
+	  (initial-expander x e))
+	 ((begin . ?rest)
+	  (set-cdr! x (map! (lambda (x) (e x e)) rest))
+	  x)
+	 (else
+	  x)))
+   
+   (bind-exit (escape)
+      (with-exception-handler
+	 (lambda (e)
+	    (when (isa? e &error)
+	       (user-error-notify e 'expand))
+	    (user-error "module" "Illegal module clause" x #f)
+	    (exit 1))
+	 (lambda ()
+	    (initial-expander x cond-expand-only-expander)))))
+
+;*---------------------------------------------------------------------*/
+;*    compile-expand ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (compile-expand x)
    (compile-expander x compile-expander '()))

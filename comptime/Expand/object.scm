@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Mar 20 14:11:23 2012 (serrano)                */
+;*    Last change :  Thu Mar 22 07:25:44 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -153,7 +153,7 @@
        (let ((class (type-of-id instantiate (find-location x))))
 	  (cond
 	     ((not (tclass? class))
-	      (error instantiate "Illegal form" x))
+	      (error instantiate "Cannot find class definition" x))
 	     ((tclass-abstract? class)
 	      (error instantiate "Abstract classes can't be instantiated" x))
 	     (else

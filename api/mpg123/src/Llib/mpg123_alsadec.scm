@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Mar 21 10:37:44 2012 (serrano)                */
+;*    Last change :  Thu Mar 22 07:03:56 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -20,8 +20,10 @@
    
    (import __mpg123_mpg123)
 
-   (export (class mpg123-alsadecoder::alsadecoder
-	      (%mpg123 read-only (default (instantiate::mpg123-handle))))))
+   (cond-expand
+      ((library alsa)
+       (export (class mpg123-alsadecoder::alsadecoder
+	          (%mpg123 read-only (default (instantiate::mpg123-handle))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
