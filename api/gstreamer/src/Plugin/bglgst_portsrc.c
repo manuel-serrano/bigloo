@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Sun May  9 06:09:06 2010 (serrano)                */
-/*    Copyright   :  2008-10 Manuel Serrano                            */
+/*    Last change :  Thu Mar 22 15:32:45 2012 (serrano)                */
+/*    Copyright   :  2008-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
 /*    -------------------------------------------------------------    */
@@ -863,9 +863,11 @@ bgl_gst_plugin_port_src_init() {
 		      PLUGIN_VERSION,
 		      PLUGIN_LICENSE,
 		      PLUGIN_PACKAGE,
-		      PLUGIN_URL )
+		      PLUGIN_URL );
 
    _gst_plugin_register_static( &gst_plugin_desc );
+
+   return TRUE;
 #else      
    gst_plugin_register_static( GST_VERSION_MAJOR,
 			       GST_VERSION_MINOR,

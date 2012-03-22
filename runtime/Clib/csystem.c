@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Mon Feb 13 10:26:27 2012 (serrano)                */
+/*    Last change :  Thu Mar 22 15:35:24 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -84,6 +84,8 @@ signal_handler( int num ) {
 
    if( PROCEDUREP( handler ) ) {
       return ((obj_t (*)())PROCEDURE_ENTRY(handler))( handler, BINT( num ), BEOA );
+   } else {
+      return BUNSPEC;
    }
 }
     

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Tue Jul 29 10:08:12 2008                          */
-/*    Last change :  Fri Aug  8 16:35:26 2008 (serrano)                */
-/*    Copyright   :  2008 Manuel Serrano                               */
+/*    Last change :  Thu Mar 22 15:33:11 2012 (serrano)                */
+/*    Copyright   :  2008-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo plugin declaration.                                       */
 /*    -------------------------------------------------------------    */
@@ -79,4 +79,6 @@ bgl_gst_plugin_port_init() {
                                PLUGIN_PACKAGE,
                                PLUGIN_URL);
 #endif
+
+   return TRUE;
 }

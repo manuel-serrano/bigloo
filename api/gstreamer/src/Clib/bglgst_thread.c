@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 25 15:39:16 2008                          */
-/*    Last change :  Tue Nov  3 09:35:28 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Thu Mar 22 15:34:52 2012 (serrano)                */
+/*    Copyright   :  2008-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo implementation for Glib threads                           */
 /*=====================================================================*/
@@ -226,6 +226,8 @@ bglgst_thread_run( void *self ) {
 
    /* Cleanup the Bigloo thread */
    bglpth_thread_cleanup( self );
+
+   return NULL;
 }
 		      
 /*---------------------------------------------------------------------*/

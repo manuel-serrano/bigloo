@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Wed Feb  1 19:29:38 2012 (serrano)                */
+/*    Last change :  Thu Mar 22 15:37:15 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -27,7 +27,7 @@ static long gcnum = 0;
 /*---------------------------------------------------------------------*/
 static void
 gcollect_verbose( unsigned long heapsz, unsigned long use ) {
-   fprintf( stderr, "gc %2d: %ld %ld\n", gcnum++, heapsz, use );
+   fprintf( stderr, "gc %2ld: %lu %lu\n", gcnum++, heapsz, use );
 }
 
 /*---------------------------------------------------------------------*/

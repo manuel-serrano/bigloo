@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Feb 15 17:37:34 2012 (serrano)                */
+/*    Last change :  Thu Mar 22 15:36:50 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1353,8 +1353,9 @@ socket_shutdown( obj_t sock, int close_socket ) {
 	 /* SOCKET(sock).output = BFALSE; */
       }
 
-      return BUNSPEC;
    }
+   
+   return BUNSPEC;
 }
 
 /*---------------------------------------------------------------------*/

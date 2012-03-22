@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Mon Apr 11 18:11:09 2011 (serrano)                */
-/*    Copyright   :  2004-11 Manuel Serrano                            */
+/*    Last change :  Thu Mar 22 15:36:25 2012 (serrano)                */
+/*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -30,6 +30,8 @@ static bool_t bgl_act3long_default( obj_t o1, obj_t o2, long o3 ) { return 1; }
 
 static void *bgl_gc_do_blocking_default( void (*fun)(), void *o2 ) {
    fun( o2 );
+
+   return 0L;
 }
 
 static obj_t bgl_mutex_state_default( obj_t mutex ) { return BUNSPEC; }

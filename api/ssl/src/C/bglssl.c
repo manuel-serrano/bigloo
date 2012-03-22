@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Jul 22 11:03:10 2011 (serrano)                */
-/*    Copyright   :  2005-11 Manuel Serrano                            */
+/*    Last change :  Thu Mar 22 15:31:47 2012 (serrano)                */
+/*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -200,6 +200,8 @@ socket_close_hook( obj_t env, obj_t s ) {
 static obj_t
 input_close_hook( obj_t env, obj_t ip ) {
    fclose( (FILE *)PORT_STREAM( ip ) );
+   
+   return ip;
 }
 
 /*---------------------------------------------------------------------*/
@@ -209,6 +211,8 @@ input_close_hook( obj_t env, obj_t ip ) {
 static obj_t
 output_close_hook( obj_t env, obj_t op ) {
    close( (long)(PORT( op ).userdata) );
+   
+   return op;
 }
 
 /*---------------------------------------------------------------------*/
