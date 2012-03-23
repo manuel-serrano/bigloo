@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Fri Jan 27 11:11:55 2012 (serrano)                */
+;*    Last change :  Fri Mar 23 08:59:07 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
@@ -174,9 +174,12 @@ C# programs.
 The highlights of this release are
 (see the ,(ref :chapter "ChangeLog") for a detailed
 list of novelties of this release):
-,(itemize (item [An experimental .NET bytecode generator.])
-          (item [New library facilities (date, IOs, timer).])
-	  (item [Improved code generation.]))
+,(itemize 
+    (item [modification of the object system (language design and implementation),])
+    (item [new APIs (alsa, flac, mpg123, avahi, csv parsing),])
+    (item [new library functions (UDP support),])
+    (item [new regular expressions support,])
+    (item [new garbage collector (Boehm's collection 7.3alpha1).]))
 
 You may also find simple examples illustrating original Bigloo
 features ,(ref :ident "Features" :text "here").

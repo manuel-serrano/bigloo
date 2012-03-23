@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Fri Jan 27 11:11:25 2012 (serrano)                */
+#*    Last change :  Fri Mar 23 08:48:11 2012 (serrano)                */
 #*    Copyright   :  2001-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -13,13 +13,12 @@ include /users/serrano/prgm/project/bigloo/Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Official release (not necessarily the configured release)        */
 #*---------------------------------------------------------------------*/
-OFFICIALRELEASE	= 3.7a
-OFFICIALDATE	= Sep 2011
+OFFICIALRELEASE	= 3.8a
+OFFICIALDATE	= Mar 2012
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */
 #*---------------------------------------------------------------------*/
-KAOLINHTTP	= kaolin.unice.fr
 INDESHTTP	= www-sop.inria.fr/indes/fp
 HOSTHTTP	= $(INDESHTTP)
 HOSTHTTPDIR	= /users/serrano/public_html/bigloo
