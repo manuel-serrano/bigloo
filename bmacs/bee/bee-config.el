@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/emacs/site-lisp/bigloo/bee-config.el                     */
+;*    serrano/prgm/project/bigloo/bmacs/bee/bee-config.el              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Mon Feb 20 15:54:46 2012 (serrano)                */
+;*    Last change :  Sat Mar 24 07:13:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -142,7 +142,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'font-lock-string-face)
    (cons "\\(?:::[^ \n)]+\\|#![a-zA-Z]+\\|:,@\\|[`,]\\)"
 	 'ude-font-lock-face-4)
-   (cons "[ \n\t]:[^ :\n\t]+\\|[^ :\n\t]+:[ \n\t]"
+   (cons "[ \n\t(]:[^ :\n\t]+\\|[^ :\n\t(]+:[ \n\t)]"
 	 'ude-font-lock-face-11)
    (list (concat "\(\\(type\\|export\\|import\\|option\\|eval\\|eval!\\|main\\|with"
 		 "\\|from\\|static\\|use\\|library"
@@ -215,7 +215,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|sqlite-last-insert-rowid\\>\\)")
 	 1
 	 'ude-font-lock-face-9)
-   (list "\(\\([a-zA-Z0-9_-]+&\\)[ \t\n]"
+   (list "\(\\([a-zA-Z0-9_-]+&\\)[ \t\n)]"
 	 1
 	 'ude-font-lock-face-7)
    (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"

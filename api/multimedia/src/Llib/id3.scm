@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sun Mar 18 09:52:11 2012 (serrano)                */
+;*    Last change :  Sun Mar 25 10:55:49 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -480,19 +480,27 @@
 ;*    id3v2-genre ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (id3v2-genre str)
+   
+   (define (number->genre n)
+      (cond
+	 ((<fx n 0)
+	  "unknown")
+	 ((>=fx n (vector-length *id3v2-genres*))
+	  "unknown")
+	 (else
+	  (vector-ref *id3v2-genres* n))))
+   
    (if (string=? str "")
        "unknown"
        (string-case str
 	  ((: "(" (+ digit) ")")
 	   (let ((n (string->integer (the-substring 1 -1))))
-	      (cond
-		 ((<fx n 0)
-		  "unknown")
-		 ((>=fx n (vector-length *id3v2-genres*))
-		  "unknown")
-		 (else
-		  (vector-ref *id3v2-genres* n)))))
-	  (else "unknown"))))
+	      (number->genre n)))
+	  (else
+	   (let ((n (string->integer str)))
+	      (if n
+		  (number->genre n)
+		  "unknown"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-picture ...                                                */
