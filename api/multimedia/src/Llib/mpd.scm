@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Mar 26 13:55:57 2012 (serrano)                */
+;*    Last change :  Mon Mar 26 17:45:46 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -1135,7 +1135,7 @@ db_update: ~a\n"
 (define-generic (mpd-database-listartistalbum o::mpd-database op artist)
    (for-each (lambda (a)
 		(display "Album: " op)
-		(display (car a) op)
+		(display (cadr a) op)
 		(newline op))
       (mpd-database-getartistalbum o artist)))
 
@@ -1150,8 +1150,8 @@ db_update: ~a\n"
       (filter (lambda (c)
 		 (let ((dir (cdr c)))
 		    (string=? (basename (dirname (dirname dir))) genre)))
-      (with-access::mpd-database o (%albums)
-	 %albums))))
+	 (with-access::mpd-database o (%albums)
+	    %albums))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listgenreartist ...                                 */
@@ -1387,11 +1387,12 @@ db_update: ~a\n"
 (define-generic (mpd-database-getartistalbum o::mpd-database artist)
    (with-access::mpd-database o (%albums)
       (if (string? artist)
-	  (filter (lambda (c)
-		     (let ((dir (cdr c)))
-			(string=? (basename (dirname dir)) artist)))
+	  (filter-map (lambda (c)
+			 (let ((dir (cdr c)))
+			    (when (string=? (basename (dirname dir)) artist)
+			       `(album: ,(car c)))))
 	     %albums)
-	  %albums)))
+	  (map (lambda (a) `(album: ,(car a))) %albums))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getinfofile ...                                                  */
