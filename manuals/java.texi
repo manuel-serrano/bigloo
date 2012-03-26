@@ -29,7 +29,6 @@ $ cat > foo.scm
 $ bigloo -jvm foo.scm
 $ a.out
   @print{} Hello world: (a.out)
-
 @end display
 
 @menu

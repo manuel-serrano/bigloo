@@ -3,7 +3,7 @@ This installer will install Bigloo into /usr/local (see attached 'Files' for a l
 Uninstall:
 To uninstall Bigloo use the following command (update the VERSION if necessary):
 
-export VERSION=3.3b;
+export VERSION=3.8a;
 bash -c "\
 lsbom -fls /Library/Receipts/bigloo-$VERSION.pkg/Contents/Archive.bom | (cd /; sudo xargs rm); \
 lsbom -ds /Library/Receipts/bigloo-$VERSION.pkg/Contents/Archive.bom | (cd /; sudo xargs rmdir -p); \

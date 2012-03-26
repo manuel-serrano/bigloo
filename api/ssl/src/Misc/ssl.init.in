@@ -29,7 +29,7 @@
 	  (cons "openssl/ssl.h" *additional-include-foreign*))
     (set! *ld-post-options* 
 	  (string-append "@OPENSSLLIBS@ " *ld-post-options*))
-    (set! *additional-bigloo-zips* (cons "commons-ssl.jar" *additional-bigloo-zips*)))
+    (set! *additional-bigloo-zips* (cons "commons-ssl.zip" *additional-bigloo-zips*)))
    (bigloo-eval
     #unspecified))
 

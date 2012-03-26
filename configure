@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 20 19:17:14 2012 (serrano)                */
+#*    Last change :  Mon Mar 26 10:00:01 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1440,6 +1440,9 @@ case $hostos in
     sharedlibraryclosed=yes
     extralibs="$extralibs -Wl,--stack,8000000"
     extragclibs=""
+    jshell="msdos"
+    syszipdir=$zipdir
+    syszipdirstr=$zipdir
     ;;
 
   darwin)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Nov 16 10:26:24 2011 (serrano)                */
+#*    Last change :  Mon Mar 26 10:06:10 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -66,7 +66,8 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class) \
                   $(_JAVA_ECLASSES:%=$(CLASS_DIR)/%.class)
-JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
+JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java) \
+                  $(_JAVA_ECLASSES:%=$(CLASS_DIR)/%.java)
 
 _WIN32_SRC	= 
 
