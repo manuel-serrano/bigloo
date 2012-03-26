@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Thu Sep 23 14:56:18 2010 (serrano)                */
+#*    Last change :  Mon Mar 26 10:47:44 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking native threads (quite obvious)                          */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ case $HOSTOS in
      if [ "$HOSTCPU " = "ppc " ]; then
        echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS $cflags";
      else
-       echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS -DTHREAD_LOCAL_ALLOC $cflags";
+       echo "-DGC_LINUX_THREADS -D_REENTRANT -DGC_THREADS -DNO_HANDLE_FORK -DTHREAD_LOCAL_ALLOC $cflags";
      fi;;
 
    cygwin)

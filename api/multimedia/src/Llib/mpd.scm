@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sun Mar 25 14:52:00 2012 (serrano)                */
+;*    Last change :  Mon Mar 26 10:53:42 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -699,8 +699,8 @@
        'ok)
       ((artist)
        (if (equal? string2 "genre")
-	   (mpd-database-listartist db op)
-	   (mpd-database-listgenreartist db op string3))
+	   (mpd-database-listgenreartist db op string3)
+	   (mpd-database-listartist db op))
        'ok)
       ((disc)
        'ok)
@@ -1389,21 +1389,20 @@ db_update: ~a\n"
 	      (Date: ,year)
 	      (Genre: ,genre)))))
       
-   (with-access::mpd-database db (directories)
-      (if (or (not (file-exists? file)) (directory? file))
-	  `((file: ,(uri->mpd file db)))
-	  (let ((tag (file-musictag file))
-		(info (file-musicinfo file))
-		(dt (seconds->date (file-modification-time file))))
-	     `((file: ,(uri->mpd file db))
-	       (Last-Modified: ,(last-modified dt))
-	       ,@(if (isa? info musicinfo)
-		     (with-access::musicinfo info (duration)
-			`((Time: ,duration))
-			'()))
-	       ,@(if (isa? tag musictag)
-		     (tag-props file tag)
-		     (file-props file)))))))
+   (if (or (not (file-exists? file)) (directory? file))
+       `((file: ,(uri->mpd file db)))
+       (let ((tag (file-musictag file))
+	     (info (file-musicinfo file))
+	     (dt (seconds->date (file-modification-time file))))
+	  `((file: ,(uri->mpd file db))
+	    (Last-Modified: ,(last-modified dt))
+	    ,@(if (isa? info musicinfo)
+		  (with-access::musicinfo info (duration)
+		     `((Time: ,duration))
+		     '()))
+	    ,@(if (isa? tag musictag)
+		  (tag-props file tag)
+		  (file-props file))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-music-file ...                                               */
