@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Mar 26 10:53:42 2012 (serrano)                */
+;*    Last change :  Mon Mar 26 13:55:57 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -22,8 +22,6 @@
 	      (directories::pair-nil read-only (default '()))
 	      (suffixes::pair-nil (default '("mp3" "flac" "ogg" "wav")))
 	      (%base::bstring (default "music"))
-	      (%roots read-only (default (make-hashtable 10)))
-	      (%prefixes read-only (default (make-hashtable 10)))
 	      (%artists::pair-nil (default '()))
 	      (%albums::pair-nil (default '()))
 	      (%genres::pair-nil (default '()))
@@ -45,7 +43,7 @@
 	   (generic mpd-database-listgenrealbum ::mpd-database ::output-port ::obj)
 	   (generic mpd-database-listgenre ::mpd-database ::output-port)
 	   (generic mpd-database-listartist ::mpd-database ::output-port)
-	   (generic mpd-database-lsinfo ::mpd-database ::output-port ::obj)
+	   (generic mpd-database-lsinfo ::mpd-database ::output-port ::bstring ::bool)
 	   (generic mpd-database-find-album ::mpd-database ::output-port ::obj)
 	   (generic mpd-database-find-artist ::mpd-database ::output-port ::obj)
 	   (generic mpd-database-search-artist-album ::mpd-database ::output-port ::obj ::obj)
@@ -417,14 +415,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    infofile ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (infofile db file num op #!optional artist album)
+(define (infofile db file op #!key artist album image)
    (with-access::mpd-database db (directories)
       (for-each (lambda (k)
 		   (display (keyword->string! (car k)) op)
 		   (display ": " op)
 		   (display (cadr k) op)
 		   (newline op))
-	 (getinfofile db file num artist album))))
+	 (getinfofile db file artist album image))))
 
 ;*---------------------------------------------------------------------*/
 ;*    playlistinfo ...                                                 */
@@ -433,11 +431,11 @@
    (with-access::mpd-database db (directories)
       (let ((plist (music-playlist-get backend)))
 	 (if (and (>=fx num 0) (<fx num (length plist)))
-	     (infofile db (list-ref plist num) num op)
+	     (infofile db (list-ref plist num) op)
 	     (let loop ((plist plist)
 			(num 0))
 		(when (pair? plist)
-		   (infofile db (car plist) num op)
+		   (infofile db (car plist) op)
 		   (loop (cdr plist) (+fx 1 num))))))
       'ok))
 
@@ -466,17 +464,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-uri-path ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (mpd-database-uri-path db uri)
+(define (mpd-database-uri-path db uri op cmd)
    (if (substring-at? uri "http://" 0)
        uri
-       (mpd->file uri db)))
+       (mpd->file uri db op cmd)))
        
 ;*---------------------------------------------------------------------*/
 ;*    add ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-command (add uri)
    (if uri
-       (let ((path (mpd-database-uri-path db uri)))
+       (let ((path (mpd-database-uri-path db uri op "add")))
 	  (if (directory? path)
 	      (for-each (lambda (f)
 			   (when (music-file? f db)
@@ -552,7 +550,7 @@
 	 (let* ((file (list-ref plist num))
 		(path (uri->mpd file db)))
 	    (if (file-exists? path)
-		(infofile db file num op)
+		(infofile db file op)
 		(metasong file path))))
       'ok))
 
@@ -713,10 +711,17 @@
 	   (format "unknown list type \"~a\"" sym)))))
 
 ;*---------------------------------------------------------------------*/
+;*    listallinfo ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-command (listallinfo dir)
+   (mpd-database-lsinfo db op (or dir (string (file-separator))) #t)
+   'ok)
+
+;*---------------------------------------------------------------------*/
 ;*    lsinfo ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-command (lsinfo dir)
-   (mpd-database-lsinfo db op dir)
+   (mpd-database-lsinfo db op (or dir (string (file-separator))) #f)
    'ok)
 
 ;*---------------------------------------------------------------------*/
@@ -884,30 +889,57 @@
 (define-notcommand (outputs))
 
 ;*---------------------------------------------------------------------*/
+;*    longest-prefix ...                                               */
+;*---------------------------------------------------------------------*/
+(define (longest-prefix l1 l2)
+   (let loop ((l1 l1)
+	      (l2 l2))
+      (cond
+	 ((or (null? l1) (null? l2))
+	  '())
+	 ((string=? (car l1) (car l2))
+	  (cons (car l1) (loop (cdr l1) (cdr l2))))
+	 (else
+	  '()))))
+
+;*---------------------------------------------------------------------*/
+;*    file-children? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (file-children? file dir)
+   (when (string-prefix? dir file)
+      (let ((blen (string-length dir))
+	    (bfile (string-length file)))
+	 (or (=fx blen bfile)
+	     (and (>fx bfile blen)
+		  (char=? (string-ref bfile blen)
+		     (char=? (string-ref dir 0) (file-separator))))))))
+
+;*---------------------------------------------------------------------*/
+;*    file-system-root? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (file-system-root? dir)
+   (and (=fx (string-length dir) 1)
+	(char=? (string-ref dir 0) (file-separator))))
+
+;*---------------------------------------------------------------------*/
 ;*    mpd-database-init! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (mpd-database-init! o::mpd-database)
    (with-access::mpd-database o (directories
-				 %base %roots %prefixes
-				 %albums %artists %genres
+				 %base %albums %artists %genres
 				 %nartists %nalbums %nsongs
 				 %uptime %db-update)
       ;; find a good base directory
       (when (pair? directories)
-	 (set! %base (basename (dirname (car directories)))))
-      ;; set the DB roots prefix
-      (for-each (lambda (d)
-		   (let ((l (reverse (file-name->list d))))
-		      (let loop ((f (make-file-name %base (car l)))
-				 (b (cdr l)))
-			 (let ((o (hashtable-get %prefixes f)))
-			    (if o
-				(when (pair? b)
-				   (loop (string-append (car b) "-" f) (cdr b)))
-				(begin
-				   (hashtable-put! %prefixes f d)
-				   (hashtable-put! %roots d f)))))))
-		directories)
+	 (if (null? (cdr directories))
+	     (set! %base (car directories))
+	     (let loop ((dirs (cdr directories))
+			(l (file-name->list (car directories))))
+		(if (null? dirs)
+		    (set! %base (apply make-file-path l))
+		    (loop (cdr dirs)
+		       (let ((nl (file-name->list (dirname (car directories)))))
+			  (loop (cdr dirs) (longest-prefix l nl))))))))
       ;; set the DB creation time
       (set! %db-update (- (current-seconds) (date->seconds (make-date))))
       (set! %uptime (- (current-seconds) (date->seconds (make-date))))
@@ -933,60 +965,48 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpd->file ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (mpd->file file db)
-   (with-access::mpd-database db (%prefixes)
-      (match-case (file-name->list file)
-	 ((?base ?dir . ?rest)
-	  (let* ((prefix (make-file-name base dir))
-		 (root (hashtable-get %prefixes prefix)))
-	     (if (not (string? root))
-		 (error 'mpd "Illegal file" file)
-		 (let ((len (string-length root)))
-		    (if (null? rest)
-			(values root len)
-			(values (apply make-file-path root rest) len))))))
-	 (else
-	  (error 'mpd "Illegal file" file)))))
+(define (mpd->file file db op cmd)
+   (with-access::mpd-database db (directories)
+      (let ((f (any (lambda (dir)
+		       (let ((p (make-file-name dir file)))
+			  (when (file-exists? p)
+			     p)))
+		  directories)))
+	 (if (string? f)
+	     f
+	     (mpd-err op "No such file" :err "50@0" :command cmd)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    file->mpd ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (file->mpd file db offset)
-   (with-access::mpd-database db (%roots)
-      (if (=fx offset 0)
-	  (let ((root (hashtable-get %roots file)))
-	     (if (string? root)
-		 root
-		 (error 'file->mpd "Illegal file" file)))
-	  (let* ((dir (substring file 0 offset))
-		 (root (hashtable-get %roots dir)))
-	     (if (string? root)
-		 (let ((len (string-length file)))
-		    (if (=fx len offset)
-			root
-			(let ((s (substring file (+fx offset 1) len)))
-			   (make-file-name root s))))
-		 (error 'file->mpd "Illegal file" file))))))
+(define (file->mpd file db)
+   (with-access::mpd-database db (%base)
+      (let ((blen (string-length %base)))
+	 (if (>fx (string-length file) blen)
+	     (substring file (+fx blen 1))
+	     ""))))
    
-;*---------------------------------------------------------------------*/
-;*    find-mpd-file-offset ...                                         */
-;*---------------------------------------------------------------------*/
-(define (find-mpd-file-offset file db)
-   (with-access::mpd-database db (directories)
-      (let loop ((dirs directories))
-	 (if (null? dirs)
-	     0
-	     (if (substring-at? file (car dirs) 0)
-		 (string-length (car dirs))
-		 (loop (cdr dirs)))))))
-
 ;*---------------------------------------------------------------------*/
 ;*    uri->mpd ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (uri->mpd uri db)
    (if (substring-at? uri "http://" 0)
        uri
-       (file->mpd uri db (find-mpd-file-offset uri db))))
+       (file->mpd uri db)))
+
+;*---------------------------------------------------------------------*/
+;*    image-file? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (image-file? f)
+   (any? (lambda (s) (string-suffix? s f)) '("jpg" "JPG" "png" "gif" "GIF")))
+
+;*---------------------------------------------------------------------*/
+;*    directory-image ...                                              */
+;*---------------------------------------------------------------------*/
+(define (directory-image dir)
+   (let ((f (find image-file? (directory->list dir))))
+      (when (string? f)
+	 (make-file-name dir f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-file? ...                                                  */
@@ -1078,20 +1098,19 @@ db_update: ~a\n"
 (define-generic (mpd-database-listall o::mpd-database op)
    
    (define (directory-list path)
-      (let ((offset (string-length path)))
-	 (let loop ((path path))
-	    (if (directory? path)
-		(begin
-		   (display "directory: " op)
-		   (display (file->mpd path o offset) op)
-		   (newline op)
-		   (for-each (lambda (f)
-				(loop (make-file-name path f)))
-			     (directory->sort-list path)))
-		(begin
-		   (display "file: " op)
-		   (display (file->mpd path o offset) op)
-		   (newline op))))))
+      (let loop ((path path))
+	 (if (directory? path)
+	     (begin
+		(display "directory: " op)
+		(display (file->mpd path o) op)
+		(newline op)
+		(for-each (lambda (f)
+			     (loop (make-file-name path f)))
+		   (directory->sort-list path)))
+	     (begin
+		(display "file: " op)
+		(display (file->mpd path o) op)
+		(newline op)))))
    
    (with-access::mpd-database o (directories %base)
       (display "directory: " op)
@@ -1167,54 +1186,63 @@ db_update: ~a\n"
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-lsinfo ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-generic (mpd-database-lsinfo o::mpd-database op dir)
+(define-generic (mpd-database-lsinfo o::mpd-database op dir::bstring rec)
    (with-access::mpd-database o (%base %prefixes %roots directories suffixes)
-      (cond
-	 ((or (not (string? dir))
-	      (=fx (string-length dir) 0)
-	      (and (=fx (string-length dir) 1)
-		   (char=? (string-ref dir 0) (file-separator))))
-	  (display "directory: " op)
-	  (display %base op)
-	  (newline op))
-	 ((string=? dir %base)
+      (if (or (file-system-root? dir) (string=? dir %base))
 	  (for-each (lambda (dir)
-		       (display "directory: " op)
-		       (display (file->mpd dir o 0) op)
-		       (newline op))
-		    directories))
-	 (else
-	  (multiple-value-bind (path offset)
-	     (mpd->file dir o)
+		       (for-each (lambda (dir)
+				    (let ((md (file->mpd dir o)))
+				       (display "directory: " op)
+				       (display md op)
+				       (newline op)
+				       (when rec
+					  (mpd-database-lsinfo o op md rec))))
+			  (directory->path-list dir)))
+	     directories)
+	  (let ((path (mpd->file dir o op "lsinfo")))
 	     (when (directory? path)
-		(for-each (lambda (f)
-			     (let ((p (make-file-name path f)))
-				(cond
-				   ((directory? p)
-				    (display "directory: " op)
-				    (display (file->mpd p o offset) op)
-				    (newline op))
-				   ((music-file? f o)
-				    (infofile o p offset op)))))
-			  (directory->sort-list path))))))))
+		(let* ((files (directory->sort-list path))
+		       (img (let ((f (find image-file? files)))
+			       (when (string? f)
+				  (make-file-name path f)))))
+		   (for-each (lambda (f)
+				(let ((p (make-file-name path f)))
+				   (cond
+				      ((directory? p)
+				       (let ((md (file->mpd p o)))
+					  (display "directory: " op)
+					  (display md op)
+					  (newline op)
+					  (when rec
+					     (mpd-database-lsinfo o op md rec))))
+				      ((music-file? f o)
+				       (infofile o p op :image img)))))
+		      files)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-music-file ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (find-music-file db dir op artist album)
    (let loop ((dir dir))
-      (let ((artist (or artist (basename (dirname dir))))
-	    (album (or album (basename dir))))
+      (let* ((artist (or artist (basename (dirname dir))))
+	     (album (or album (basename dir)))
+	     (files (sort (lambda (s1 s2)
+			     (<fx (string-natural-compare3 s1 s2) 0))
+		       (directory->list dir)))
+	     (img (let ((f (find image-file? files)))
+		     (when (string? f)
+			(make-file-name dir f)))))
 	 (for-each (lambda (f)
 		      (let ((p (make-file-name dir f)))
 			 (cond
 			    ((directory? p)
 			     (loop p))
 			    ((music-file? p db)
-			     (infofile db p #f op artist album)))))
-		   (sort (lambda (s1 s2)
-			    (<fx (string-natural-compare3 s1 s2) 0))
-			 (directory->list dir))))))
+			     (infofile db p op
+				:artist artist
+				:album album
+				:image img)))))
+	    files))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-find-album ...                                      */
@@ -1241,16 +1269,23 @@ db_update: ~a\n"
    (define (search-music-album-file db dir op)
       (let loop ((dir dir))
 	 (if (string=? (basename dir) album)
-	     (for-each (lambda (f)
-			  (let ((p (make-file-name dir f)))
-			     (cond
-				((directory? p)
-				 (loop p))
-				((music-file? p db)
-				 (infofile db p #f op artist album)))))
-		       (sort (lambda (s1 s2)
-				(<fx (string-natural-compare3 s1 s2) 0))
-			     (directory->list dir)))
+	     (let* ((files (sort (lambda (s1 s2)
+				    (<fx (string-natural-compare3 s1 s2) 0))
+			      (directory->list dir)))
+		    (img (let ((f (find image-file? files)))
+			    (when (string? f)
+			       (make-file-name dir f)))))
+		(for-each (lambda (f)
+			     (let ((p (make-file-name dir f)))
+				(cond
+				   ((directory? p)
+				    (loop p))
+				   ((music-file? p db)
+				    (infofile db p op
+				       :artist artist
+				       :album album
+				       :image img)))))
+		   files))
 	     (for-each (lambda (p)
 			  (when (directory? p)
 			     (loop p)))
@@ -1267,14 +1302,19 @@ db_update: ~a\n"
    
    (define (search-music-album-file db dir op)
       (let loop ((dir dir))
-	 (for-each (lambda (f)
-		      (let ((p (make-file-name dir f)))
-			 (cond
-			    ((directory? p)
-			     (loop p))
-			    ((and (music-file? p db) (string=? title (prefix f)))
-			     (infofile db p #f op artist title)))))
-		   (directory->path-list dir))))
+	 (let* ((files (directory->path-list dir))
+		(img (find image-file? files)))
+	    (for-each (lambda (f)
+			 (let ((p (make-file-name dir f)))
+			    (cond
+			       ((directory? p)
+				(loop p))
+			       ((and (music-file? p db) (string=? title (prefix f)))
+				(infofile db p op
+				   :artist artist
+				   :album title
+				   :image img)))))
+	       files))))
    
    (with-access::mpd-database o (%artists)
       (let ((c (assoc artist %artists)))
@@ -1291,7 +1331,7 @@ db_update: ~a\n"
 	 ((directory? dir)
 	  (any find-title (directory->path-list dir)))
 	 ((string=? (prefix (basename dir)) title)
-	  (infofile o dir #f op)
+	  (infofile o dir op)
 	  #t)
 	 (else
 	  #f)))
@@ -1309,7 +1349,7 @@ db_update: ~a\n"
 	 ((directory? dir)
 	  (any find-genre (directory->path-list dir)))
 	 ((string=? (basename (dirname dir)) genre)
-	  (infofile o dir #f op)
+	  (infofile o dir op)
 	  #t)
 	 (else
 	  #f)))
@@ -1356,19 +1396,19 @@ db_update: ~a\n"
 ;*---------------------------------------------------------------------*/
 ;*    getinfofile ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (getinfofile db file num #!optional artist album)
-
+(define (getinfofile db file #!optional artist album image)
+   
    (define (last-modified dt)
       (format "~a-~2,0d-~2,0dT~2,0d:~2,0d:~2,0dZ"
 	 (date-year dt) (date-month dt) (date-day dt)
 	 (date-hour dt) (date-minute dt) (date-second dt)))
-
+   
    (define (file-props file)
       (let ((dir (dirname file)))
 	 `((Artist: ,(or artist (string-capitalize (basename (dirname dir)))))
 	   (Title: ,(prefix (basename file)))
 	   (Album: ,(or album (string-capitalize (basename dir)))))))
-
+   
    (define (tag-props file tag)
       (with-access::musictag tag ((ar artist)
 				  (al album)
@@ -1388,21 +1428,25 @@ db_update: ~a\n"
 	      (Track: ,track)
 	      (Date: ,year)
 	      (Genre: ,genre)))))
-      
+   
    (if (or (not (file-exists? file)) (directory? file))
        `((file: ,(uri->mpd file db)))
        (let ((tag (file-musictag file))
 	     (info (file-musicinfo file))
-	     (dt (seconds->date (file-modification-time file))))
+	     (dt (seconds->date (file-modification-time file)))
+	     (img (if (string? image) (directory-image (dirname file)))))
 	  `((file: ,(uri->mpd file db))
 	    (Last-Modified: ,(last-modified dt))
 	    ,@(if (isa? info musicinfo)
 		  (with-access::musicinfo info (duration)
-		     `((Time: ,duration))
-		     '()))
+		     `((Time: ,duration)))
+		  '())
 	    ,@(if (isa? tag musictag)
 		  (tag-props file tag)
-		  (file-props file))))))
+		  (file-props file))
+	    ,@(if (string? img)
+		  `((Image: ,img))
+		  '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-music-file ...                                               */
@@ -1417,7 +1461,7 @@ db_update: ~a\n"
 		       ((directory? p)
 			(loop p))
 		       ((music-file? p db)
-			(getinfofile db p #f artist album)))))
+			(getinfofile db p artist album)))))
 	    (sort (lambda (s1 s2)
 		     (<fx (string-natural-compare3 s1 s2) 0))
 	       (directory->list dir))))))
