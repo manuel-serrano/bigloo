@@ -1,0 +1,91 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/phidget                     */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Tue Mar 27 12:11:53 2012 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host phidget library.                              */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+phidgetversion=21
+phidgetlib="-lphidget$phidgetversion"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      phidgetlib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --version=*|-version=*)
+      phidgetversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $phidgetlib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+echo "#include <phidget$phidgetversion.h>" > $file.c
+cat >> $file.c <<EOF 
+
+int main() {
+   CPhidgetManagerHandle man = 0;
+
+   CPhidget_enableLogging( PHIDGET_LOG_VERBOSE, 0L );
+
+   CPhidgetManager_create( &man );
+   CPhidgetManager_close( man );
+   CPhidgetManager_delete( man );
+}
+EOF
+
+
+if [ ! -f $file.c ]; then
+  exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "-lphidget$phidgetversion"
+   \rm -f $file.*
+   \rm -f $aout
+   \rm -f $aout*
+else
+   echo ""
+fi
+
+exit 0

@@ -1,0 +1,67 @@
+/*=====================================================================*/
+/*    .../prgm/project/bigloo/api/phidget/src/Clib/bglphidget.h        */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Sun Dec 30 08:37:50 2007                          */
+/*    Last change :  Tue Mar 27 10:47:32 2012 (serrano)                */
+/*    Copyright   :  2007-12 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    The source file for phidget.sch.                                 */
+/*=====================================================================*/
+#ifndef BGLPHIDGET_H 
+#define BGLPHIDGET_H
+
+#include <bigloo.h>
+
+/*---------------------------------------------------------------------*/
+/*    C functions and macros                                           */
+/*---------------------------------------------------------------------*/
+#define BGL_PHIDGET_MANAGER_BUILTIN( o ) \
+   (&(((BgL_phidgetzd2managerzd2_bglt)o)->BgL_z42builtinz42))
+
+#define BGL_PHIDGET_IFKIT_BUILTIN( o ) \
+   ((CPhidgetInterfaceKitHandle *)(&(((BgL_phidgetzd2ifkitzd2_bglt)o)->BgL_z42builtinz42)))
+
+#define BGL_PHIDGET_SPATIAL_BUILTIN( o ) \
+   ((CPhidgetSpatialHandle *)(&(((BgL_phidgetzd2spatialzd2_bglt)o)->BgL_z42builtinz42)))
+
+extern void bgl_phidget_init();
+
+extern int bgl_phidget_manager_add_event_listener(
+   CPhidgetManagerHandle, char *, obj_t, obj_t );
+
+extern int bgl_phidget_phidget_add_event_listener(
+   CPhidgetHandle, char *, obj_t, obj_t );
+
+extern int bgl_phidget_ifkit_add_event_listener(
+   CPhidgetInterfaceKitHandle, char *, obj_t, obj_t );
+
+extern obj_t bgl_phidget_event_error_new( obj_t, int, char * );
+extern obj_t bgl_phidget_event_attach_new( obj_t, CPhidgetHandle );
+extern obj_t bgl_phidget_event_detach_new( obj_t, CPhidgetHandle );
+extern obj_t bgl_phidget_event_inputchange_new( obj_t, int, int );
+extern obj_t bgl_phidget_event_outputchange_new( obj_t, int, int );
+extern obj_t bgl_phidget_event_sensorchange_new( obj_t, int, int );
+extern obj_t bgl_phidget_event_serverconnect_new( obj_t, CPhidgetHandle );
+extern obj_t bgl_phidget_event_serverdisconnect_new( obj_t, CPhidgetHandle );
+extern obj_t bgl_phidget_event_spatialdata_new( obj_t, int, int,
+						double, double, double,
+						double, double, double,
+						double, double, double );
+
+extern obj_t bgl_phidget_get_device_name( CPhidgetHandle );
+extern obj_t bgl_phidget_get_device_type( CPhidgetHandle );
+extern obj_t bgl_phidget_get_device_id( CPhidgetHandle );
+extern obj_t bgl_phidget_get_server_id( CPhidgetHandle );
+extern int bgl_phidget_get_serial_number( CPhidgetHandle );
+
+/*---------------------------------------------------------------------*/
+/*    Bigloo functions                                                 */
+/*---------------------------------------------------------------------*/
+extern obj_t bgl_phidget_lock();
+extern obj_t bgl_phidget_unlock();
+extern obj_t bgl_phidget_signal();
+
+extern obj_t bgl_phidget_new( CPhidgetHandle );
+
+#endif

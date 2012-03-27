@@ -1,21 +1,21 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/alsa/Makefile                    */
+#*    serrano/prgm/project/bigloo/api/phidget/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Mar 27 12:06:47 2012 (serrano)                */
+#*    Last change :  Tue Mar 27 12:07:15 2012 (serrano)                */
 #*    Copyright   :  2001-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile for alsa                                            */
+#*    The Makefile for phidget                                         */
 #*=====================================================================*/
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
 #*    The name of the API (used by Makefile.api)                       */
 #*---------------------------------------------------------------------*/
-API = alsa
+API = phidget
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
@@ -44,7 +44,13 @@ build-c:
           fi
 
 build-jvm:
-	@ echo "ALSA .jvm: Not implemented";
+	@ echo "PHIDGET .jvm: Not implemented";
+
+build-jvm.not-implemented:
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> JVM[0m"; \
+	    (cd src && $(MAKE) jvm); \
+          fi
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -54,7 +60,7 @@ build-jvm:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=alsa/%)
+	@ echo $(POPULATION:%=phidget/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;

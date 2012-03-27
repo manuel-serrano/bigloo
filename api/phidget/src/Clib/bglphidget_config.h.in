@@ -1,0 +1,20 @@
+/*=====================================================================*/
+/*    .../project/bigloo/api/phidget/src/Clib/phidget_config.h.in      */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Fri Jan 11 09:46:28 2008                          */
+/*    Last change :  Wed Apr  7 09:47:45 2010 (serrano)                */
+/*    Copyright   :  2008-10 Manuel Serrano                            */
+/*    -------------------------------------------------------------    */
+/*    phidget configuration (produced by configure).                   */
+/*=====================================================================*/
+
+#ifndef BIGLOO_PHIDGET_CONFIG_H
+#define BIGLOO_PHIDGET_CONFIG_H
+
+#undef BGL_PHIDGET_VERSION
+#define BGL_PHIDGET_VERSION "@PHIDGETVERSION@"
+
+#include <phidget@PHIDGETVERSION@.h>
+
+#endif

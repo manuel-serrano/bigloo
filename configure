@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar 26 10:00:01 2012 (serrano)                */
+#*    Last change :  Tue Mar 27 12:20:29 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi csv"
+apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi phidget csv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -183,6 +183,12 @@ flaccflags=
 avahi=
 avahilibs=
 avahicflags=
+
+#*--- phidget (left blank for autoconfiguration) ----------------------*/
+phidget=
+phidgetlibs=
+phidgetcflags=-Werror
+phidgetversion=21
 
 #*--- regexp ----------------------------------------------------------*/
 regexp=
@@ -2025,6 +2031,14 @@ if [ "$avahi " = " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    phidget                                                          */
+#*---------------------------------------------------------------------*/
+# find out the C library for phidget
+if [ "$phidget " = " " ]; then
+   phidgetlibs=`$autoconf phidget --cflags=$phidgetcflags --version=$phidgetversion`
+fi
+
+#*---------------------------------------------------------------------*/
 #*    bigloo_config.h / configure.java / configure.cs / ...            */
 #*    -------------------------------------------------------------    */
 #*    This part of the configure script produces the files             */
@@ -3298,6 +3312,43 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     apis=$napis;
     echo "AVAHILIBS=" >> $makefile_cfg
     echo "AVAHICFLAGS=" >> $makefile_cfg
+  fi
+
+  # PHIDGET
+  echo "PHIDGET=$phidget" >> $makefile_cfg
+  if [ "$phidget " != "no " ]; then
+    echo "PHIDGETLIBS=$phidgetlibs" >> $makefile_cfg
+    echo "PHIDGETCFLAGS=$phidgetcflags" >> $makefile_cfg
+
+    # Patch the code of the PHIDGET init file
+    echo ";; automatically generated. Don't edit" >  api/phidget/src/Misc/phidget.init
+    cat api/phidget/src/Misc/phidget.init.in \
+      | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
+            -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
+            -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
+      >>  api/phidget/src/Misc/phidget.init
+
+    # Patch the code of the bgphidget_config.h file
+    echo "/* automatically generated. Don't edit */" >  api/phidget/src/Clib/bglphidget_config.h
+    cat api/phidget/src/Clib/bglphidget_config.h.in \
+      | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
+            -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
+            -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
+      >>  api/phidget/src/Clib/bglphidget_config.h
+  else
+    napis=;
+    for a in $apis; do
+       if [ "phidget" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "PHIDGETLIBS=" >> $makefile_cfg
+    echo "PHIDGETCFLAGS=" >> $makefile_cfg
   fi
 
   # DBUS

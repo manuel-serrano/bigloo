@@ -1,0 +1,39 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/phidget/src/Misc/phidget.init.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Tue Nov 23 10:40:25 2010 (serrano)                */
+;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The PHIDGET Bigloo lib init file.                                */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'phidget
+		  :srfi '(phidget)
+		  :basename "bigloophidget"
+		  :module-init '__phidget_phidget
+		  :module-eval '__phidget_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; phidget includes
+    (set! *additional-include-foreign*
+	  (cons "phidget@PHIDGETVERSION@.h" *additional-include-foreign*))
+    ;; phidget C compilation options
+    (set! *cc-options*
+	  (string-append "@PHIDGETCFLAGS@ " *cc-options*))
+    ;; phidget libraries
+    (set! *ld-post-options*
+	  (string-append "@PHIDGETLIBS@ " *ld-post-options*)))
+   (bigloo-eval
+    (let ((lib (make-file-path "" "usr" "local" "lib"
+			       "libphidget@PHIDGETVERSION@.so")))
+       (dynamic-load lib))))
+
