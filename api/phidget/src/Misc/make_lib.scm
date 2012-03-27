@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Mar 27 09:12:13 2012 (serrano)                */
+;*    Last change :  Tue Mar 27 17:29:36 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -29,11 +29,20 @@
 	    (class &phidget-error)
 	    (class &phidget-log-error)
 	   
-	    (class %phidget)
 	    (class phidget-manager)
 	    (class phidget)
 
-	    (class %phidget-event)
+	    (class phidget-event)
+	    (class phidget-error-event)
+	    (class phidget-attach-event)
+	    (class phidget-detach-event)
+	    (class phidget-change-event)
+	    (class phidget-inputchange-event)
+	    (class phidget-outputchange-event)
+	    (class phidget-sensorchange-event)
+	    (class phidget-serverconnect-event)
+	    (class phidget-serverdisconnect-event)
+	    (class phidget-spatialdata-event)
 
 	    (class phidget-ifkit)
 	    (class phidget-spatial)))

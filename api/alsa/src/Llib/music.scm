@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Mar 21 13:05:32 2012 (serrano)                */
+;*    Last change :  Tue Mar 27 17:04:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -65,8 +65,6 @@
 	       (buffer-time-near::int (default 500000))
 	       (buffer-size-near-ratio::int (default 2))
 	       (period-size-near-ratio::int (default 8))
-	       ;; init: 0, playing: 1, pause: 2, stop: 3, ended: 4
-	       (%!dstate::int (default 0))
 	       (%!dpause::bool (default #f))
 	       (%!dabort::bool (default #f))
 	       (%!stop::bool (default #t))
@@ -473,23 +471,6 @@
 		     (condition-variable-signal! %acondv))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    alsamusic-state ...                                              */
-;*---------------------------------------------------------------------*/
-(define (alsamusic-state::symbol o::alsamusic)
-   ;; %amutex already locked
-   (with-access::alsamusic o (%decoder)
-      (if (isa? %decoder alsadecoder)
-	  (with-access::alsadecoder %decoder (%!dstate)
-	     (case %!dstate
-		((0) 'init)
-		((1) 'play)
-		((2) 'pause)
-		((3) 'stop)
-		((4) 'ended)
-		(else 'undefined)))
-	  'init)))
-
-;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::alsamusic)
@@ -586,13 +567,15 @@
       (define (empty-state?)
 	 (and (=fx %!bstate 0) (>fx (*fx (available) 4) inlen)))
 
+      (define debug-count 0)
+
       (define (fill-eof)
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
 	    (when (and (=fx %!bstate 0) (>fx (available) 0))
 	       (set! %!bstate 1))
 	    (when (>fx debug 0)
-	       (tprint "fill.2a, set eof-filled (bs=" %!bstate ")"))
+	       (tprint "fill.2a, set eof (bs=" %!bstate ") read=" debug-count))
 	    (set! %eof #t)
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
@@ -601,12 +584,12 @@
       (define (timed-read sz)
 	 (if (and (>fx debug 0) (or (=fx %!bstate 0) (>fx debug 1)))
 	     (let* ((d0 (current-microseconds))
-		    (_ (tprint ">>> fill.2 read-on-empty %head=" %head " %!tail=" %!tail
-			  " sz=" sz " d0=" d0))
+		    (_ (tprint ">>> fill.2 on-empty %head=" %head " %!tail=" %!tail
+			  " sz=" sz))
 		    (v (read-fill-string! %inbuf %head sz port))
 		    (d1 (current-microseconds)))
-		(tprint "<<< fill.2 read-on-empty %head=" %head " %!tail=" %!tail
-		   " sz=" sz " v=" v " d1=" d1 " -> time = " (-llong d1 d0))
+		(tprint "<<< fill.2 on-empty %head=" %head " %!tail=" %!tail
+		   " sz=" sz " v=" v " -> time = " (-llong d1 d0))
 		v)
 	     (read-fill-string! %inbuf %head sz port)))
 
@@ -615,6 +598,7 @@
 	    (if (eof-object? i)
 		(fill-eof)
 		(let ((nhead (+fx %head i)))
+		   (set! debug-count (+fx debug-count i))
 		   (if (=fx nhead inlen)
 		       (set! %head 0)
 		       (set! %head nhead))
@@ -623,7 +607,7 @@
 		       ;; set state full
 		       (mutex-lock! %bmutex)
 		       (when (>fx debug 1)
-			  (tprint "fill.2b, set full (bs=2)"))
+			  (tprint "fill.2b, set full (bs=2) read=" debug-count))
 		       (set! %!bstate 2)
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex))
@@ -631,7 +615,7 @@
 		       ;; set state filled
 		       (mutex-lock! %bmutex)
 		       (when (>fx debug 0)
-			  (tprint "fill.2c, set filled (bs=1)"))
+			  (tprint "fill.2c, set filled (bs=1) read=" debug-count))
 		       (set! %!bstate 1)
 		       (condition-variable-broadcast! %bcondv)
 		       (mutex-unlock! %bmutex)))))))
@@ -649,7 +633,8 @@
 	 (let loop ()
 	    (when (>fx debug 1)
 	       (tprint "fill.1 %!bstate=" %!bstate
-		  " tl=" %!tail " hd=" %head " eof=" %eof))
+		  " tl=" %!tail " hd=" %head " eof=" %eof
+		  " read=" debug-count))
 	    (cond
 	       (%eof
 	        ;;; done looping

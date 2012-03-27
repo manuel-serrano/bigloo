@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep 21 12:08:37 2010                          */
-/*    Last change :  Tue Mar 27 11:13:13 2012 (serrano)                */
+/*    Last change :  Tue Mar 27 18:13:10 2012 (serrano)                */
 /*    Copyright   :  2010-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper for the widget library                            */
@@ -76,8 +76,11 @@ struct callback {
 	 int istate;
       } change;
       struct {
-	 CPhidgetSpatial_SpatialEventDataHandle data;
-	 int count;
+	 int seconds;
+	 int microseconds;
+	 double acceleration[ 3 ];
+	 double angularRate[ 3 ];
+	 double magneticField[ 3 ];
       } spatial;
    } event;
 };
@@ -188,21 +191,23 @@ void bgl_phidget_invoke_callbacks() {
 	       cb->event.phidget.id );
 	    break;
 	 case EVENT_SPATIALDATA: {
-	    event = bgl_phidget_event_spatialdata_new( hdl->obj,
-						       cb->event.spatial.data->timestamp.seconds,
-						       cb->event.spatial.data->timestamp.microseconds,
-						       cb->event.spatial.data->acceleration[ 0 ],
-						       cb->event.spatial.data->acceleration[ 1 ],
-						       cb->event.spatial.data->acceleration[ 2 ],
-						       cb->event.spatial.data->angularRate[ 0 ],
-						       cb->event.spatial.data->angularRate[ 1 ],
-						       cb->event.spatial.data->angularRate[ 2 ],
-						       cb->event.spatial.data->magneticField[ 0 ],
-						       cb->event.spatial.data->magneticField[ 1 ],
-						       cb->event.spatial.data->magneticField[ 2 ] );
+	    event = bgl_phidget_event_spatialdata_new(
+	       hdl->obj,
+	       cb->event.spatial.seconds,
+	       cb->event.spatial.microseconds,
+	       cb->event.spatial.acceleration[ 0 ],
+	       cb->event.spatial.acceleration[ 1 ],
+	       cb->event.spatial.acceleration[ 2 ],
+	       cb->event.spatial.angularRate[ 0 ],
+	       cb->event.spatial.angularRate[ 1 ],
+	       cb->event.spatial.angularRate[ 2 ],
+	       cb->event.spatial.magneticField[ 0 ],
+	       cb->event.spatial.magneticField[ 1 ],
+	       cb->event.spatial.magneticField[ 2 ] );
 	    break;
 	 }
-	 default: 
+	 default:
+	    event = BUNSPEC;
 	    C_SYSTEM_FAILURE(
 	       BGL_ERROR, "phidget", "Unknown event", BINT( hdl->evtype ) );
       }
@@ -280,8 +285,28 @@ static int bgl_spatial_handler( CPhidgetSpatialHandle id, void *ptr, CPhidgetSpa
 
    if( callback_index == callback_length ) enlarge_callback_array();
 
-   callbacks[ callback_index ].event.spatial.data = data[ 0 ];
-   callbacks[ callback_index ].event.spatial.count = count;
+   callbacks[ callback_index ].event.spatial.seconds =
+      data[ 0 ]->timestamp.seconds;
+   callbacks[ callback_index ].event.spatial.microseconds =
+      data[ 0 ]->timestamp.microseconds;
+   callbacks[ callback_index ].event.spatial.acceleration[ 0 ] =
+      data[ 0 ]->acceleration[ 0 ];
+   callbacks[ callback_index ].event.spatial.acceleration[ 1 ] =
+      data[ 0 ]->acceleration[ 1 ];
+   callbacks[ callback_index ].event.spatial.acceleration[ 2 ] =
+      data[ 0 ]->acceleration[ 2 ];
+   callbacks[ callback_index ].event.spatial.angularRate[ 0 ] =
+      data[ 0 ]->angularRate[ 0 ];
+   callbacks[ callback_index ].event.spatial.angularRate[ 1 ] =
+      data[ 0 ]->angularRate[ 1 ];
+   callbacks[ callback_index ].event.spatial.angularRate[ 2 ] =
+      data[ 0 ]->angularRate[ 2 ];
+   callbacks[ callback_index ].event.spatial.magneticField[ 0 ] =
+      data[ 0 ]->magneticField[ 0 ];
+   callbacks[ callback_index ].event.spatial.magneticField[ 1 ] =
+      data[ 0 ]->magneticField[ 1 ];
+   callbacks[ callback_index ].event.spatial.magneticField[ 2 ] =
+      data[ 0 ]->magneticField[ 2 ];
    callbacks[ callback_index++ ].handler = (struct handler *)ptr;
 
    bgl_phidget_signal();

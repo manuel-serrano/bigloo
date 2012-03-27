@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 27 09:08:28 2012                          */
-;*    Last change :  Tue Mar 27 11:13:59 2012 (serrano)                */
+;*    Last change :  Tue Mar 27 15:54:54 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Spatial simple                                                   */

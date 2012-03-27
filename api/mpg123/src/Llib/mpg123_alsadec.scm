@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Thu Mar 22 07:03:56 2012 (serrano)                */
+;*    Last change :  Tue Mar 27 15:27:15 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -109,7 +109,7 @@
    
    (with-access::alsamusic am (pcm outbuf %status onerror)
       (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv
-					      %!dstate %!dabort %!dpause %!dseek)
+					      %!dabort %!dpause %!dseek)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate
 					    %inbufp %inlen
 					    %!tail %head %eof)
@@ -159,7 +159,7 @@
 
 	    (let loop ()
 	       (when (>fx debug 1)
-		  (tprint "dec.1 bs=" %!bstate " %!dstate=" %!dstate
+		  (tprint "dec.1 bs=" %!bstate 
 		     " tl=" %!tail " hd=" %head))
 	       (cond
 		  (%!dpause
