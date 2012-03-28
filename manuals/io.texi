@@ -663,8 +663,31 @@ less than @var{size} characters are available on the input port, the
 returned string is smaller than @var{size}. Its size is the number of
 available characters.
 
-The function @code{read-char!} fills the buffer @var{buf} with at most
+The function @code{read-chars!} fills the buffer @var{buf} with at most
 @var{size} characters.
+@end deffn
+
+@deffn {bigloo procedure} read-fill-string! s o len [input-port]
+Fills the string @var{s} starting at offset @var{o} with at
+most @var{len} characters read from the input port @var{input-port}
+(or from @code{(current-input-port)} if @var{input-port} is not provided).
+This function returns the number of read characters (which may be smaller
+than @var{len} if less characters are available) or the end of file object.
+The argument @code{len} is a small integer.
+
+The function @code{read-fill-string!} is similar to @code{read-chars!}
+except that it returns the @emph{end-of-file} object on termination while
+@code{read-chars!} returns 0.
+
+Example:
+@smalllisp
+(let ((s (make-string 10 #\-)))
+   (with-input-from-string "abcdefghijlkmnops"
+      (lambda ()
+         (read-fill-string! s 3 5)
+         s)))
+   @result{} ---abcde--
+@end smalllisp
 @end deffn
 
 @deffn {bigloo procedure} port->string-list input-port
@@ -700,24 +723,6 @@ than @code{send-chars} because it may avoid creating a full-fledged Bigloo
 
 Note that the type of @var{len} and @var{offset} is
 @code{elong} (i.e., exact long), which is also returned by @code{file-size}.
-@end deffn
-
-@deffn {bigloo procedure} read-fill-string! s o len [input-port]
-Fills the string @var{s} starting at offset @var{o} with at
-most @var{len} characters read from the input port @var{input-port}
-(or from @code{(current-input-port)} if @var{input-port} is not provided).
-This function returns the number of read characters (which may be smaller
-than @var{len} if less characters are available) or the end of file object.
-
-Example:
-@smalllisp
-(let ((s (make-string 10 #\-)))
-   (with-input-from-string "abcdefghijlkmnops"
-      (lambda ()
-         (read-fill-string! s 3 5)
-         s)))
-   @result{} ---abcde--
-@end smalllisp
 @end deffn
 
 @deffn {library procedure} write obj [output-port]

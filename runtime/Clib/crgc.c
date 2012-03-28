@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Mar 27 17:15:40 2012 (serrano)                */
+/*    Last change :  Wed Mar 28 10:06:12 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -49,6 +49,9 @@
 #define RGC_DEBUG
 #undef RGC_DEBUG
 
+#define RGC_DEBUG_EXTRA
+#undef RGC_DEBUG_EXTRA
+
 /*---------------------------------------------------------------------*/
 /*    C imports                                                        */
 /*---------------------------------------------------------------------*/
@@ -58,6 +61,7 @@ extern obj_t make_string_sans_fill( int );
 extern int bgl_debug();
 extern obj_t bgl_escape_C_string( unsigned char *, long, long );
 extern obj_t bgl_escape_scheme_string( unsigned char *, long, long );
+extern long default_io_bufsiz;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -120,9 +124,11 @@ shift_buffer( obj_t port ) {
    INPUT_PORT( port ).matchstart = 0;
 }
 
+#if defined( RGC_DEBUG_EXTRA )
 static int debug_arm = 0;
 static int debug_count_size = 0;
 static int debug_count_read = 0;
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static bool_t                                                    */
@@ -159,12 +165,14 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
 
    if((r = INPUT_PORT( port ).sysread( port, &buf[ bufpos - 1 ], size )) <= 0) {
       if( r == 0 ) {
+#if defined( RGC_DEBUG_EXTRA )	 
 	 if( debug_arm ) {
 	    fprintf( stderr, "sysread EOF after: port=%p:%d read=%5d/%5d READ=%8d/%8d\n",
 		     port, INPUT_PORT( port ).eof,
 		     r, size,
 		     debug_count_read, debug_count_size );
 	 }
+#endif	 
 	 INPUT_PORT( port ).eof = 1;
       } else {
 	 int e = (errno == BGL_ECONNRESET ?
@@ -173,6 +181,7 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
       }
    }
 
+#if defined( RGC_DEBUG_EXTRA )	 
    if( debug_arm ) {
       debug_count_size += size;
       debug_count_read += r;
@@ -181,6 +190,7 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
 	       r, size,
 	       debug_count_read, debug_count_size );
    }
+#endif
    
    if( mark ) buf[ bufpos - 1 + r ] = 0;
 #if defined( RGC_DEBUG )
@@ -1076,10 +1086,17 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 	    l -= ml;
 
 	    while( (l > 0) && !(INPUT_PORT( p ).eof) ) {
-	       int r; 
+	       int r;
+#if defined( RGC_DEBUG_EXTRA )
 debug_arm=1;
-	       rgc_size_fill_buffer( p, &s[ o ], 1, l, 0 );
+#endif
+	       rgc_size_fill_buffer(
+		  p, &s[ o ], 1,
+		  l < default_io_bufsiz ? l : default_io_bufsiz,
+		  0 );
+#if defined( RGC_DEBUG_EXTRA )
 debug_arm=0;
+#endif
 	       r = INPUT_PORT( p ).bufpos - 1;
 
 	       INPUT_PORT( p ).filepos += r;

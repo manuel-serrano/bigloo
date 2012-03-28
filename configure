@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 27 12:20:29 2012 (serrano)                */
+#*    Last change :  Wed Mar 28 10:00:49 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -187,7 +187,7 @@ avahicflags=
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
 phidgetlibs=
-phidgetcflags=-Werror
+phidgetcflags=
 phidgetversion=21
 
 #*--- regexp ----------------------------------------------------------*/

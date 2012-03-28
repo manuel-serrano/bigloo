@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Mar 22 15:36:50 2012 (serrano)                */
+/*    Last change :  Wed Mar 28 07:24:54 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -137,6 +137,8 @@ static obj_t so_rcvbuf;
 static obj_t so_sndbuf;
 static obj_t so_reuseaddr;
 static obj_t so_timeout;
+static obj_t so_rcvtimeo;
+static obj_t so_sndtimeo;
 static obj_t tcp_nodelay;
 static obj_t tcp_cork;
 static obj_t tcp_quickack;
@@ -1857,6 +1859,36 @@ bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
    if( option == so_timeout )
 #if( defined( SO_TIMEOUT ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_TIMEOUT, int, CINT( val ) );
+#else
+      return BFALSE;
+#endif      
+   
+      if( option == so_rcvtimeo )
+#if( defined( SO_RCVTIMEO ) )
+      {
+	 struct timeval timeout;
+	 long timeo = CINT( val );
+
+	 timeout.tv_sec = timeo / 1000000;;
+	 timeout.tv_usec = timeo % 1000000;
+	 
+	 SETSOCKOPT( socket, SOL_SOCKET, SO_RCVTIMEO, struct timeval, timeout );
+      }
+#else
+      return BFALSE;
+#endif      
+   
+      if( option == so_sndtimeo )
+#if( defined( SO_SNDTIMEO ) )
+      {
+	 struct timeval timeout;
+	 long timeo = CINT( val );
+
+	 timeout.tv_sec = timeo / 1000000;;
+	 timeout.tv_usec = timeo % 1000000;
+
+	 SETSOCKOPT( socket, SOL_SOCKET, SO_SNDTIMEO, struct timeval, timeout );
+      }
 #else
       return BFALSE;
 #endif      

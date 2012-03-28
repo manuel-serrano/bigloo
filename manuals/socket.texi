@@ -357,6 +357,8 @@ Here is a list of possibly supported option-name values:
 @item @code{:SO_SNDBUF}
 @item @code{:SO_REUSEADDR}
 @item @code{:SO_TIMEOUT}
+@item @code{:SO_SNDTIMEO}
+@item @code{:SO_RCVTIMEO}
 @item @code{:TCP_CORK}
 @item @code{:TCP_QUICKACK}
 @item @code{:TCP_NODELAY}
