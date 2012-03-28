@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 16:54:10 2010                          */
-;*    Last change :  Tue Mar 27 11:06:24 2012 (serrano)                */
+;*    Last change :  Wed Mar 28 10:42:19 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget objects                                                  */
@@ -24,6 +24,7 @@
    
    (export  (class phidget::%phidget
 	       ($builtin::$pdg-phidget (default (%$pdg-phidget-nil)))
+	       (%serial-number::int (default -1))
 	       (name::bstring
 		  read-only
 		  (get (lambda (o)
@@ -31,11 +32,24 @@
 			     ($pdg-phidget-get-device-name
 				$builtin)))))
 	       (serial-number::int
-		  read-only
 		  (get (lambda (o)
 			  (with-access::phidget o ($builtin)
 			     ($pdg-phidget-get-serial-number
-				$builtin)))))
+				$builtin))))
+		  (set (lambda (o v)
+			  (tprint "SERIAL-NUMBER: " v)
+			  (with-access::phidget o (%serial-number)
+			     (cond
+				((>=fx %serial-number 0)
+				 (error "serial-number"
+				    "serial number read-only"
+				    %serial-number))
+				((not (integer? v))
+				 (bigloo-type-error "serial-number"
+				    "integer"
+				    v))
+				(else
+				 (set! %serial-number v)))))))
 	       (device-version::int
 		  read-only
 		  (get (lambda (o)
@@ -63,7 +77,7 @@
 
 	    ($make-phidget::obj ::$pdg-phidget)
 	    (%$pdg-phidget-nil)
-	    (phidget-open ::phidget #!optional (serial-number -1))
+	    (phidget-open ::phidget)
 	    (phidget-close ::phidget)
 	    (phidget-wait-for-attachment ::phidget ::int)))
 
@@ -92,10 +106,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    phidget-open ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (phidget-open o::phidget #!optional (serial-number -1))
-   (with-access::phidget o ($builtin)
+(define (phidget-open o::phidget)
+   (with-access::phidget o ($builtin %serial-number)
+      (tprint "OPEN SERIAL=" %serial-number)
       (phidget-return
-       ($pdg-phidget-open $builtin serial-number)
+       ($pdg-phidget-open $builtin %serial-number)
        "phidget-open" o)))
 
 ;*---------------------------------------------------------------------*/
