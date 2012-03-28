@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 16:54:10 2010                          */
-;*    Last change :  Wed Mar 28 10:42:19 2012 (serrano)                */
+;*    Last change :  Wed Mar 28 12:31:36 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget objects                                                  */
@@ -37,7 +37,6 @@
 			     ($pdg-phidget-get-serial-number
 				$builtin))))
 		  (set (lambda (o v)
-			  (tprint "SERIAL-NUMBER: " v)
 			  (with-access::phidget o (%serial-number)
 			     (cond
 				((>=fx %serial-number 0)
@@ -108,7 +107,6 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-open o::phidget)
    (with-access::phidget o ($builtin %serial-number)
-      (tprint "OPEN SERIAL=" %serial-number)
       (phidget-return
        ($pdg-phidget-open $builtin %serial-number)
        "phidget-open" o)))
