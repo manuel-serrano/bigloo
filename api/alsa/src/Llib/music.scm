@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Mar 27 17:04:57 2012 (serrano)                */
+;*    Last change :  Thu Mar 29 06:47:34 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -224,6 +224,14 @@
 		      (set! %!dseek pos))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    open-file ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    Open a timeouted file.                                           */
+;*---------------------------------------------------------------------*/
+(define (open-file url)
+   (open-input-file url #t 1000000))
+
+;*---------------------------------------------------------------------*/
 ;*    music-play ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::alsamusic . s)
@@ -267,7 +275,7 @@
 		  (lambda ()
 		     (unless %nextbuffer
 			(let* ((url (car playlist))
-			       (ip (open-input-file url)))
+			       (ip (open-file url)))
 			   (input-port-timeout-set! ip (* 1000 1000 10))
 			   (when (input-port? ip)
 			      (when (>fx debug 0)
@@ -288,7 +296,7 @@
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
       ;; (tprint ">>> PLAY-NEXT: " url)
-      (let ((ip (open-input-file url)))
+      (let ((ip (open-file url)))
 	 (if (input-port? ip)
 	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
 					  mkthread %status)
