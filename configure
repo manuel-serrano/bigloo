@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Mar 28 10:00:49 2012 (serrano)                */
+#*    Last change :  Thu Mar 29 10:06:32 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2036,6 +2036,10 @@ fi
 # find out the C library for phidget
 if [ "$phidget " = " " ]; then
    phidgetlibs=`$autoconf phidget --cflags=$phidgetcflags --version=$phidgetversion`
+
+   if [ "$phidgetlibs " = " " ]; then
+      phidget=no;
+   fi
 fi
 
 #*---------------------------------------------------------------------*/

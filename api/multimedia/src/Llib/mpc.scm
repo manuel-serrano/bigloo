@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Jan 26 08:03:06 2012 (serrano)                */
+;*    Last change :  Thu Mar 29 09:42:54 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -393,6 +393,15 @@
 	 (lambda ()
 	    (mpc-cmd mpc "clear" ok-parser)))))
 
+;*---------------------------------------------------------------------*/
+;*    music-status ::mpc ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (music-status mpc::mpc)
+   (with-access::mpc mpc (%mutex %playid %status)
+      (when (mutex-lock! %mutex 1000)
+	 (music-update-status-sans-lock! mpc %status))
+      %status))
+   
 ;*---------------------------------------------------------------------*/
 ;*    music-update-status-sans-lock! ...                               */
 ;*---------------------------------------------------------------------*/
@@ -797,14 +806,14 @@
 				 (mutex-unlock! %mutex)
 				 (cond
 				    ((not (eq? s 'play))
-				     (onstate mpc %status))
+				     (onstate mpc state))
 				    ((not (=fx i songid))
 				     (set! state 'ended)
-				     (onstate mpc %status)))
+				     (onstate mpc state)))
 				 (sleep 1000000)
 				 (loop))))))
 		  (mutex-unlock! %mutex)
-		  (onstate mpc %status)))))))
+		  (onstate mpc state)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::mpc ...                                             */
@@ -836,7 +845,8 @@
 	    (mpc-cmd mpc "clearerror" ok-parser)
 	    (with-access::musicstatus %status (state)
 	       (set! state 'stop))))
-      (onstate mpc %status)))
+      (with-access::musicstatus %status (state)
+	 (onstate mpc state))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::mpc ...                                            */
