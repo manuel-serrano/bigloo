@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Mon Mar 26 17:45:46 2012 (serrano)                */
+;*    Last change :  Wed Mar 28 20:34:20 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -937,9 +937,8 @@
 			(l (file-name->list (car directories))))
 		(if (null? dirs)
 		    (set! %base (apply make-file-path l))
-		    (loop (cdr dirs)
-		       (let ((nl (file-name->list (dirname (car directories)))))
-			  (loop (cdr dirs) (longest-prefix l nl))))))))
+		    (let ((nl (file-name->list (dirname (car directories)))))
+		       (loop (cdr dirs) (longest-prefix l nl)))))))
       ;; set the DB creation time
       (set! %db-update (- (current-seconds) (date->seconds (make-date))))
       (set! %uptime (- (current-seconds) (date->seconds (make-date))))

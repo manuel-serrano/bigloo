@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Mar 28 07:24:54 2012 (serrano)                */
+/*    Last change :  Thu Mar 29 05:43:15 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -167,6 +167,8 @@ bgl_init_socket() {
       so_sndbuf = string_to_keyword( "SO_SNDBUF" );
       so_reuseaddr = string_to_keyword( "SO_REUSEADDR" );
       so_timeout = string_to_keyword( "SO_TIMEOUT" );
+      so_rcvtimeo = string_to_keyword( "SO_RCVTIMEO" );
+      so_sndtimeo = string_to_keyword( "SO_SNDTIMEO" );
       tcp_nodelay = string_to_keyword( "TCP_NODELAY" );
       tcp_cork = string_to_keyword( "TCP_CORK" );
       tcp_quickack = string_to_keyword( "TCP_QUICKACK" );
@@ -1728,70 +1730,121 @@ bgl_getprotobynumber( int number ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_getsockopt( obj_t socket, obj_t option ) {
-   if( option == tcp_nodelay )
+   if( option == tcp_nodelay ) {
 #if BGL_HAVE_SOCKET_TCP_NODELAY
       GETSOCKOPT( socket, IPPROTO_TCP, TCP_NODELAY, int, BBOOL );
 #else
       return BUNSPEC;
 #endif      
-
-   if( option == tcp_cork )
+   }
+   
+   if( option == tcp_cork ) {
 #if BGL_HAVE_SOCKET_TCP_CORK
       GETSOCKOPT( socket, IPPROTO_TCP, TCP_CORK, int, BBOOL );
 #else
       return BUNSPEC;
-#endif      
+#endif
+   }
 
-   if( option == tcp_quickack )
+   if( option == tcp_quickack ) {
 #if BGL_HAVE_SOCKET_TCP_QUICKACK
       GETSOCKOPT( socket, IPPROTO_TCP, TCP_QUICKACK, int, BBOOL );
 #else
       return BUNSPEC;
-#endif      
+#endif
+   }
 
-   if( option == so_keepalive )
+   if( option == so_keepalive ) {
 #if( defined( SO_KEEPALIVE ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_KEEPALIVE, int, BBOOL );
 #else
       return BUNSPEC;
 #endif
+   }
 
-   if( option == so_oobinline )
+   if( option == so_oobinline ) {
 #if( defined( SO_OOBINLINE ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_OOBINLINE, int, BBOOL );
 #else
       return BUNSPEC;
-#endif      
+#endif
+   }
 
-   if( option == so_rcvbuf )
+   if( option == so_rcvbuf ) {
 #if( defined( SO_RCVBUF ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_RCVBUF, int, BINT );
 #else
       return BINT( 0 );
 #endif      
-
-   if( option == so_sndbuf )
+   }
+   
+   if( option == so_sndbuf ) {
 #if( defined( SO_SNDBUF ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_SNDBUF, int, BINT );
 #else
       return BINT( 0 );
-#endif      
+#endif
+   }
 
-   if( option == so_reuseaddr )
+   if( option == so_reuseaddr ) {
 #if( defined( SO_REUSEADDR ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_REUSEADDR, int, BBOOL );
 #else
       return BUNSPEC;
-#endif      
+#endif
+   }
 
-   if( option == so_timeout )
+   if( option == so_timeout ) {
 #if( defined( SO_TIMEOUT ) )
       GETSOCKOPT( socket, SOL_SOCKET, SO_TIMEOUT, int, BINT );
 #else
       return BINT( 0 );
-#endif      
+#endif
+   }
+
+#define BTIMEVAL( x ) ELONG_TO_BELONG( _v.tv_sec * 1000000 + _v.tv_usec );
    
-   return BUNSPEC;
+   if( option == so_rcvtimeo ) {
+#if( defined( SO_RCVTIMEO ) )
+      GETSOCKOPT( socket, SOL_SOCKET, SO_RCVTIMEO, struct timeval, BTIMEVAL );
+#else
+      return BINT( 0 );
+#endif
+   }
+   
+   if( option == so_sndtimeo ) {
+#if( defined( SO_SNDTIMEO ) )
+      GETSOCKOPT( socket, SOL_SOCKET, SO_SNDTIMEO, struct timeval, BTIMEVAL );
+#else
+      return BINT( 0 );
+#endif
+   }
+   
+    return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    set_timeval ...                                                  */
+/*---------------------------------------------------------------------*/
+static void
+set_timeval( struct timeval *timeout, obj_t val ) {
+   if( INTEGERP( val ) ) {
+      long timeo = CINT( val );
+
+      timeout->tv_sec = timeo / 1000000;
+      timeout->tv_usec = timeo % 1000000;
+   } else if( ELONGP( val ) ) {
+      long timeo = BELONG_TO_LONG( val );
+
+      timeout->tv_sec = timeo / 1000000;
+      timeout->tv_usec = timeo % 1000000;
+   } else if( LLONGP( val ) ) {
+      BGL_LONGLONG_T timeo = BLLONG_TO_LLONG( val );
+
+      timeout->tv_sec = (long)(timeo / 1000000);
+      timeout->tv_usec = (long)(timeo % 1000000);
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -1800,98 +1853,99 @@ bgl_getsockopt( obj_t socket, obj_t option ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
-   if( option == tcp_nodelay )
+   if( option == tcp_nodelay ) {
 #if BGL_HAVE_SOCKET_TCP_NODELAY
       SETSOCKOPT( socket, IPPROTO_TCP, TCP_NODELAY, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == tcp_cork )
+   if( option == tcp_cork ) {
 #if BGL_HAVE_SOCKET_TCP_CORK
       SETSOCKOPT( socket, IPPROTO_TCP, TCP_CORK, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == tcp_quickack )
+   if( option == tcp_quickack ) {
 #if BGL_HAVE_SOCKET_TCP_QUICKACK
       SETSOCKOPT( socket, IPPROTO_TCP, TCP_QUICKACK, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_keepalive )
+   if( option == so_keepalive ) {
 #if( defined( SO_KEEPALIVE ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_KEEPALIVE, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_oobinline )
+   if( option == so_oobinline ) {
 #if( defined( SO_OOBINLINE ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_OOBINLINE, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_rcvbuf )
+   if( option == so_rcvbuf ) {
 #if( defined( SO_RCVBUF ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_RCVBUF, int, CINT( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_sndbuf )
+   if( option == so_sndbuf ) {
 #if( defined( SO_SNDBUF ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_SNDBUF, int, CINT( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_reuseaddr )
+   if( option == so_reuseaddr ) {
 #if( defined( SO_REUSEADDR ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_REUSEADDR, int, CBOOL( val ) );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
 
-   if( option == so_timeout )
+   if( option == so_timeout ) {
 #if( defined( SO_TIMEOUT ) )
       SETSOCKOPT( socket, SOL_SOCKET, SO_TIMEOUT, int, CINT( val ) );
 #else
       return BFALSE;
-#endif      
-   
-      if( option == so_rcvtimeo )
+#endif
+   }
+
+   if( option == so_rcvtimeo ) {
 #if( defined( SO_RCVTIMEO ) )
-      {
-	 struct timeval timeout;
-	 long timeo = CINT( val );
-
-	 timeout.tv_sec = timeo / 1000000;;
-	 timeout.tv_usec = timeo % 1000000;
+      struct timeval timeout;
+      set_timeval( &timeout, val );
 	 
-	 SETSOCKOPT( socket, SOL_SOCKET, SO_RCVTIMEO, struct timeval, timeout );
-      }
+      SETSOCKOPT( socket, SOL_SOCKET, SO_RCVTIMEO, struct timeval, timeout );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
    
-      if( option == so_sndtimeo )
+   if( option == so_sndtimeo ) {
 #if( defined( SO_SNDTIMEO ) )
-      {
-	 struct timeval timeout;
-	 long timeo = CINT( val );
+      struct timeval timeout;
+      set_timeval( &timeout, val );
 
-	 timeout.tv_sec = timeo / 1000000;;
-	 timeout.tv_usec = timeo % 1000000;
-
-	 SETSOCKOPT( socket, SOL_SOCKET, SO_SNDTIMEO, struct timeval, timeout );
-      }
+      SETSOCKOPT( socket, SOL_SOCKET, SO_SNDTIMEO, struct timeval, timeout );
 #else
       return BFALSE;
-#endif      
+#endif
+   }
    
    return BFALSE;
 }

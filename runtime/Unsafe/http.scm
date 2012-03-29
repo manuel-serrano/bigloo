@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Aug 23 06:17:11 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Thu Mar 29 05:26:42 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -217,7 +217,9 @@
       ((not (integer? port))
        (bigloo-type-error 'http "integer" port))
       (else
-       (make-client-socket host port :timeout timeout))))
+       (let ((s (make-client-socket host port :timeout timeout)))
+	  (socket-option-set! s :SO_RCVTIMEO timeout)
+	  s))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generate-http-post-body ...                                      */
