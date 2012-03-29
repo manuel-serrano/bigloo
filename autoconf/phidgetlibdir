@@ -1,0 +1,40 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/phidgetlibdir               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Mar 29 14:04:18 2012 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the actual path of the phidget library.                */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+phidgetversion=21
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --version=*|-version=*)
+      phidgetversion="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+for p in /usr/lib /usr/local/lib /opt/lib /lib; do
+  if [ -f $p/libphidget$phidgetversion.so ]; then
+    echo $p; exit 0
+  fi
+done
+
+echo ""

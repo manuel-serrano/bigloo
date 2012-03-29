@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Tue Nov 23 10:40:25 2010 (serrano)                */
-;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    Last change :  Thu Mar 29 13:58:28 2012 (serrano)                */
+;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The PHIDGET Bigloo lib init file.                                */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
     (set! *ld-post-options*
 	  (string-append "@PHIDGETLIBS@ " *ld-post-options*)))
    (bigloo-eval
-    (let ((lib (make-file-path "" "usr" "local" "lib"
-			       "libphidget@PHIDGETVERSION@.so")))
-       (dynamic-load lib))))
+    (let ((file (make-file-name "@PHIDGETLIBDIR@" "libphidget@PHIDGETVERSION@.so")))
+       (when (file-exists? file)
+          (dynamic-load lib #f)))))
 

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Mar 29 11:22:06 2012 (serrano)                */
+#*    Last change :  Thu Mar 29 14:01:39 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -187,6 +187,7 @@ avahicflags=
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
 phidgetlibs=
+phidgetlibdir=$PHIDGETLIBDIR
 phidgetcflags=
 phidgetversion=21
 
@@ -2042,6 +2043,10 @@ if [ "$phidget " = " " ]; then
 
    if [ "$phidgetlibs " = " " ]; then
       phidget=no;
+   else
+      if [ "$phidgetlibdir " = " " ]; then
+        phidgetlibdir=`$autoconf phidgetlibdir --version=$phidgetversion`
+      fi
    fi
 fi
 
@@ -3326,6 +3331,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$phidget " != "no " ]; then
     echo "PHIDGETLIBS=$phidgetlibs" >> $makefile_cfg
     echo "PHIDGETCFLAGS=$phidgetcflags" >> $makefile_cfg
+    echo "PHIDGETLIBDIR=$phidgetlibdir" >> $makefile_cfg
 
     # Patch the code of the PHIDGET init file
     echo ";; automatically generated. Don't edit" >  api/phidget/src/Misc/phidget.init
@@ -3333,6 +3339,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
             -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
             -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
+            -e "s|@PHIDGETLIBDIR@|$phidgetlibdir|g" \
       >>  api/phidget/src/Misc/phidget.init
 
     # Patch the code of the bgphidget_config.h file
@@ -3341,6 +3348,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
             -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
             -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
+            -e "s|@PHIDGETLIBDIR@|$phidgetlibdir|g" \
       >>  api/phidget/src/Clib/bglphidget_config.h
   else
     napis=;
@@ -3356,6 +3364,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     apis=$napis;
     echo "PHIDGETLIBS=" >> $makefile_cfg
     echo "PHIDGETCFLAGS=" >> $makefile_cfg
+    echo "PHIDGETLIBDIR=" >> $makefile_cfg
   fi
 
   # DBUS

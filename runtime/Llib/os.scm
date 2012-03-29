@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Mon Feb  6 16:10:10 2012 (serrano)                */
+;*    Last change :  Thu Mar 29 13:58:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -927,8 +927,8 @@
 		  "")))
       (if (not (string? flib))
 	  (err "Can't find library" lib)
-	  (let ((init (if (not init) "" init)))
-	     (case (%dload flib init mod)
+	  (let ((ini (if (not init) "" init)))
+	     (case (%dload flib ini mod)
 		((0)
 		 flib)
 		((1)
@@ -939,10 +939,8 @@
 		     (warning (string-append "dynamic-load: " flib)
 			      "Cannot find library init entry point -- "
 			      init))
-		    ((string=? init "")
-		     (proc-err flib
-			       "Cannot find library init module"
-			       module))
+		    ((not init)
+		     #unspecified)
 		    (else
 		     (proc-err flib
 			       "Cannot find library init entry point"
