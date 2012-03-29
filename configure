@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Mar 29 10:06:32 2012 (serrano)                */
+#*    Last change :  Thu Mar 29 11:22:06 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1492,6 +1492,9 @@ case $hostos in
         ln -s lib Frameworks || exit 3
       fi
     fi
+
+    syszipdir=$zipdir
+    syszipdirstr=$zipdir
     ;;
 
   win32)
