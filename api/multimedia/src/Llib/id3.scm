@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri Mar 30 15:19:57 2012 (serrano)                */
+;*    Last change :  Fri Mar 30 19:12:02 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -378,17 +378,22 @@
 ;*    id3v2.2-frames ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (id3v2.2-frames mm)
-   (let* ((size (id3v2-size mm #e6))
+   (let* ((i0 (mmap-read-position mm))
+	  (size (id3v2-size mm #e6))
 	  (end (+ #e11 size))
 	  (flags (mmap-ref mm #e4)))
       (let loop ((i #e10)
 		 (frames '()))
 	 (if (>=elong i end)
-	     frames
+	     (begin
+		(mmap-read-position-set! mm (+elong i0 end))
+		frames)
 	     (multiple-value-bind (id sz flag)
 		(id3v2.2-frame mm i)
 		(if (or (=elong sz #e0) (>elong (+elong i sz) end))
-		    frames
+		    (begin
+		       (mmap-read-position-set! mm (+elong i0 end))
+		       frames)
 		    (case (string-ref id 0)
 		       ((#\T #\A #\W)
 			(loop (+elong i (+elong sz 6))
@@ -417,7 +422,8 @@
 ;*    id3v2.3-frames ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (id3v2.3-frames mm)
-   (let* ((size (id3v2-size mm #e6))
+   (let* ((i0 (mmap-read-position mm))
+	  (size (id3v2-size mm #e6))
 	  (end (+ 11 size))
 	  (flags (mmap-ref mm #e4)))
       (if (> size (mmap-length mm))
@@ -428,11 +434,15 @@
 	  (let loop ((i #e10)
 		     (frames '()))
 	     (if (>= i end)
-		 frames
+		 (begin
+		    (mmap-read-position-set! mm (+elong i0 size))
+		    frames)
 		 (multiple-value-bind (id sz flag)
 		    (id3v2.3-frame mm i)
 		    (if (or (= sz 0) (> (+ i sz) end))
-			frames
+			(begin
+			   (mmap-read-position-set! mm (+elong i0 size))
+			   frames)
 			(case (string-ref id 0)
 			   ((#\T #\A #\W)
 			    (loop (+ i (+ sz 10))
@@ -986,7 +996,7 @@
       ((id3v2.3? mm) (mp3-id3v2.3 mm))
       ((id3v2.2? mm) (mp3-id3v2.2 mm))
       (else (mmap-read-position-set! mm 0)))
-   
+
    (let* ((len (mmap-length mm))
 	  (i0 (mmap-read-position mm))
 	  (f0 (read-mp3-frame mm i0 (instantiate::mp3frame))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Fri Mar 30 11:36:07 2012 (serrano)                */
+;*    Last change :  Sat Mar 24 07:13:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -156,7 +156,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 1
 	 'ude-font-lock-face-3)
    (cons "~\\|with-hop" 'ude-font-lock-face-8)
-   (cons "[$][^() \t\n]*" 'ude-font-lock-face-2)
+   (cons "[$][^( \t\n]*" 'ude-font-lock-face-10)
    (list (concat "\(\\(let\\|let[*]\\|letrec[*]\\|co-instantiate\\|define"
 		 "\\|let-values\\|let*-values"
 		 "\\|set[!]\\|with-access\\|instantiate\\|duplicate"
@@ -186,8 +186,6 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|condition-variable-wait!\\>"
 		 "\\|condition-variable-signal!\\>"
 		 "\\|condition-variable-broadcast!\\>"
-		 "\\|hop-event-signal!\\>"
-		 "\\|hop-event-broadcast!\\>"
 		 "\\|thread-sleep!\\>\\|thread-join!\\>"
 		 "\\|thread-terminate!\\>\\|thread-suspend!\\>"
 		 "\\|thread-resume!\\>\\|thread-yield!\\>"
@@ -220,9 +218,9 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
    (list "\(\\([a-zA-Z0-9_-]+&\\)[ \t\n)]"
 	 1
 	 'ude-font-lock-face-7)
-   (list "\\(<[^> \t\n]+>\\)[ \n\t)]"
+   (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"
 	 1
-	 'ude-font-lock-face-10))
+	 'ude-font-lock-face-12))
   "The Bee font-lock specification."
   :group 'bee)
 
