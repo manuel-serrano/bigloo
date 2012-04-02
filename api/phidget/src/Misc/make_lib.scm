@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Mar 27 17:29:36 2012 (serrano)                */
+;*    Last change :  Sun Apr  1 10:09:05 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -22,7 +22,8 @@
 	    __phidget_logging
 	    __phidget_manager
 	    __phidget_ifkit
-	    __phidget_spatial)
+	    __phidget_spatial
+	    __phidget_servo)
 
    (eval    (export-all)
 
@@ -45,4 +46,5 @@
 	    (class phidget-spatialdata-event)
 
 	    (class phidget-ifkit)
-	    (class phidget-spatial)))
+	    (class phidget-spatial)
+	    (class phidget-servo)))

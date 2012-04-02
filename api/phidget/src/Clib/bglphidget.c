@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep 21 12:08:37 2010                          */
-/*    Last change :  Tue Mar 27 18:13:10 2012 (serrano)                */
+/*    Last change :  Mon Apr  2 08:34:59 2012 (serrano)                */
 /*    Copyright   :  2010-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper for the widget library                            */
@@ -46,6 +46,7 @@ struct handler {
 #define EVENT_SERVERCONNECT 7
 #define EVENT_SERVERDISCONNECT 8
 #define EVENT_SPATIALDATA 9
+#define EVENT_SERVOPOSITION 10
 
 #define INITIAL_MAX_HANDLER 40
 static struct handler *handlers;
@@ -82,6 +83,10 @@ struct callback {
 	 double angularRate[ 3 ];
 	 double magneticField[ 3 ];
       } spatial;
+      struct {
+	 int index;
+	 double position;
+      } servo;
    } event;
 };
 
@@ -206,6 +211,14 @@ void bgl_phidget_invoke_callbacks() {
 	       cb->event.spatial.magneticField[ 2 ] );
 	    break;
 	 }
+	 case EVENT_SERVOPOSITION: {
+	    event = bgl_phidget_event_servo_new(
+	       hdl->obj,
+	       cb->event.servo.index,
+	       cb->event.servo.position );
+	    break;
+	 }
+	    
 	 default:
 	    event = BUNSPEC;
 	    C_SYSTEM_FAILURE(
@@ -308,6 +321,25 @@ static int bgl_spatial_handler( CPhidgetSpatialHandle id, void *ptr, CPhidgetSpa
    callbacks[ callback_index ].event.spatial.magneticField[ 2 ] =
       data[ 0 ]->magneticField[ 2 ];
    callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_servo_handler ...                                            */
+/*---------------------------------------------------------------------*/
+static int
+bgl_servo_handler( CPhidgetServoHandle id, void *ptr, int index, double position ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servo.index = index;
+   callbacks[ callback_index ].event.servo.position = position;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -434,6 +466,23 @@ bgl_phidget_spatial_add_event_listener( CPhidgetSpatialHandle id, char *event, o
       
       return CPhidgetSpatial_set_OnSpatialData_Handler(
 	 id, &bgl_spatial_handler, hdl );
+   } else {
+      return bgl_phidget_phidget_add_event_listener(
+	 (CPhidgetHandle)id, event, obj, proc );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_servo_add_event_listener ...                         */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_servo_add_event_listener( CPhidgetServoHandle id, char *event, obj_t obj, obj_t proc ) {
+   if( !strcmp( event, "position" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_SERVOPOSITION );
+      
+      return CPhidgetServo_set_OnPositionChange_Handler(
+	 id, &bgl_servo_handler, hdl );
    } else {
       return bgl_phidget_phidget_add_event_listener(
 	 (CPhidgetHandle)id, event, obj, proc );
@@ -632,4 +681,74 @@ bgl_phidget_spatial_get_datarate_max( CPhidgetSpatialHandle phid ) {
    
    return r ? -1 : i;
 }
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_servo_get_motor_count ...                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_servo_get_motor_count( CPhidgetServoHandle phid ) {
+   int i;
+   int r = CPhidgetServo_getMotorCount( phid, &i );
    
+   return r ? -1 : i;
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_servo_get_position ...                               */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_servo_get_position( CPhidgetServoHandle phid, int i ) {
+   double d;
+   int r = CPhidgetServo_getPosition( phid, i, &d );
+   
+   return r ? 0.0 : d;
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_servo_get_position_max ...                           */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_servo_get_position_max( CPhidgetServoHandle phid, int i ) {
+   double d;
+   int r = CPhidgetServo_getPositionMax( phid, i, &d );
+   
+   return r ? 0.0 : d;
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_servo_get_position_min ...                           */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_servo_get_position_min( CPhidgetServoHandle phid, int i ) {
+   double d;
+   int r = CPhidgetServo_getPositionMin( phid, i, &d );
+   
+   return r ? 0.0 : d;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_phidget_servo_get_engaged ...                                */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_servo_get_engaged( CPhidgetServoHandle phid, int i ) {
+   int b;
+   int r = CPhidgetServo_getEngaged( phid, i, &b );
+   
+   return (r || b == PFALSE) ? 0 : 1;
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_servo_set_engaged ...                                */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_servo_set_engaged( CPhidgetServoHandle phid, int i, bool_t b ) {
+   int r = CPhidgetServo_setEngaged( phid, i, b == 1 ? PTRUE : PFALSE );
+   
+   return r ? -1 : b;
+}

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 15:52:42 2010                          */
-;*    Last change :  Tue Mar 27 10:48:56 2012 (serrano)                */
+;*    Last change :  Mon Apr  2 08:38:15 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget listener machinery (complex because of Phidget           */
@@ -33,7 +33,8 @@
 	   (export phidget-event-sensorchange-new "bgl_phidget_event_sensorchange_new")
 	   (export phidget-event-serverconnect-new "bgl_phidget_event_serverconnect_new")
 	   (export phidget-event-serverdisconnect-new "bgl_phidget_event_serverdisconnect_new")
-	   (export phidget-event-spatialdata-new "bgl_phidget_event_spatialdata_new"))
+	   (export phidget-event-spatialdata-new "bgl_phidget_event_spatialdata_new")
+	   (export phidget-event-servo-new "bgl_phidget_event_servo_new"))
 
    (export (%phidget-thread-init!)
 	   (%phidget-lock!)
@@ -53,7 +54,8 @@
 	   (phidget-event-spatialdata-new::obj ::obj ::int ::int
 	      ::double ::double ::double
 	      ::double ::double ::double
-	      ::double ::double ::double)))
+	      ::double ::double ::double)
+	   (phidget-event-servo-new::obj ::obj ::int ::double)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *phidget-mutex* ...                                              */
@@ -202,3 +204,11 @@
       (mfy mfy)
       (mfz mfz)))
       
+;*---------------------------------------------------------------------*/
+;*    phidget-event-servo-new ...                                      */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-servo-new target index position)
+   (instantiate::phidget-servo-event
+      (target target)
+      (index index)
+      (position position)))

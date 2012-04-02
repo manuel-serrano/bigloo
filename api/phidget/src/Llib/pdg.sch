@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
-;*    Last change :  Tue Mar 27 11:14:28 2012 (serrano)                */
+;*    Last change :  Mon Apr  2 08:30:36 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of PHIDGET functions                                  */
@@ -164,7 +164,41 @@
     (macro $pdg-phidget-spatial-get-datarate-max::int (::$pdg-phidget)
 	   "bgl_phidget_spatial_get_datarate_max")
 
-    ))
+    ;; servo
+    (type $pdg-servo void* "CPhidgetServoHandle")
+    (type $pdg-servo* void* "CPhidgetServoHandle *")
+    (macro $pdg-servo-create::int (::$pdg-servo*)
+	   "CPhidgetServo_create")
+
+    (macro $pdg-servo->phidget::$pdg-phidget (::$pdg-servo)
+	   "(CPhidgetHandle)")
+    (macro $pdg-phidget->servo::$pdg-servo (::$pdg-phidget)
+	   "(CPhidgetServoHandle)")
+
+    (macro $pdg-phidget-servo-get-motor-count::int (::$pdg-phidget)
+	   "bgl_phidget_servo_get_motor_count")
+
+    (macro $pdg-phidget-servo-get-position::double (::$pdg-phidget ::int)
+	   "bgl_phidget_servo_get_position")
+    (macro $pdg-phidget-servo-set-position!::int (::$pdg-phidget ::int ::double)
+	   "CPhidgetServo_setPosition")
+    (macro $pdg-phidget-servo-get-position-max::double (::$pdg-phidget ::int)
+	   "bgl_phidget_servo_get_position_max")
+    (macro $pdg-phidget-servo-get-position-min::double (::$pdg-phidget ::int)
+	   "bgl_phidget_servo_get_position_min")
+
+    (macro $pdg-phidget-servo-get-engaged::bool (::$pdg-phidget ::int)
+	   "bgl_phidget_servo_get_engaged")
+    (macro $pdg-phidget-servo-set-engaged!::int (::$pdg-phidget ::int ::bool)
+	   "bgl_phidget_servo_set_engaged")
+
+    (macro $pdg-phidget-servo-set-parameters!::int (::$pdg-phidget ::int
+						      ::double ::double ::double)
+	   "CPhidgetServo_setServoParameters")
+    
+    (macro $pdg-phidget-servo-add-event-listener!::int
+       (::$pdg-servo ::string ::obj ::procedure)
+       "bgl_phidget_servo_add_event_listener")))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-return ...                                               */

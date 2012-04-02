@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 27 12:23:48 2012 (serrano)                */
+#*    Last change :  Mon Apr  2 08:22:20 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -62,7 +62,7 @@ endif
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= phidget pdgtypes pdglogging pdgmanager \
-                  pdgphidget pdgifkit pdgspatial pdgevent
+                  pdgphidget pdgifkit pdgspatial pdgservo pdgevent
 
 _C_OBJECTS	= bglphidget
 _JAVA_CLASSES	= 
@@ -181,6 +181,8 @@ include ../../Makefile.api
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/pdgmanager.o: Clib/pdgtypes.h
+objs/pdgspatial.o: Clib/pdgtypes.h
+objs/pdgservo.o: Clib/pdgtypes.h
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/
