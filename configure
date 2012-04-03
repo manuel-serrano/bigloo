@@ -2536,7 +2536,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if echo "$java_version" | grep "1.6" > /dev/null
+    if echo "$java_version" | grep "1.7" > /dev/null
+      then java_version=1.7
+    elif echo "$java_version" | grep "1.6" > /dev/null
       then java_version=1.6
     elif echo "$java_version" | grep "1.5" > /dev/null
       then java_version=1.5

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Mar 26 10:06:10 2012 (serrano)                */
+#*    Last change :  Mon Apr  2 19:42:39 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -84,11 +84,15 @@ INCLUDES	= $(C_SRC_DIR)/bglssl.h
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
-ifeq ($(JAVA_VERSION), 1.6)
+ifeq ($(JAVA_VERSION), 1.7)
   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
 else
- ifeq ($(JAVA_VERSION), 1.5)
-   JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+ ifeq ($(JAVA_VERSION), 1.6)
+  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+ else
+  ifeq ($(JAVA_VERSION), 1.5)
+    JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
+  endif
  endif
 endif
 
@@ -149,13 +153,17 @@ jvm-extra: $(JAVA_CLASSES_SRC) $(BOOTLIBDIR)/$(SSL_ZIP)
 #*---------------------------------------------------------------------*/
 #*    Java auconfiguration                                             */
 #*---------------------------------------------------------------------*/
-ifeq ($(JAVA_VERSION), 1.6)
+ifeq ($(JAVA_VERSION), 1.7)
   JDK=15
+else
+ ifeq ($(JAVA_VERSION), 1.6)
+   JDK=15
  else
   ifeq ($(JAVA_VERSION), 1.5)
     JDK=15
   else
     JDK=13
+  endif
  endif
 endif
 
