@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Apr  3 09:26:28 2012 (serrano)                */
+#*    Last change :  Tue Apr  3 14:27:56 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ else
 ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= $(MPG123LIBS)
 else
-EXTRALIBS	= $(MPG123LIBS) $(ALSALIBS) -lmultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	= $(MPG123LIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
 endif
 endif
 
