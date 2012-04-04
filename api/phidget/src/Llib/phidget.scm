@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Wed Sep 22 11:34:48 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Wed Apr  4 11:08:29 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of PHIDGET applications.                        */
 ;*=====================================================================*/
@@ -20,11 +20,13 @@
 	   __phidget_event)
 
    (extern (include "bglphidget_config.h")
-	   (macro $configure-phidget-version::string "BGL_PHIDGET_VERSION"))
+	   (macro $configure-phidget-version::string "BGL_PHIDGET_VERSION")
+	   (export phidget-error "bgl_phidget_error"))
 	   
    (export (phidget-init!)
 	   (phidget-version::string)
-	   (phidget-strerror::bstring ::int)))
+	   (phidget-strerror::bstring ::int)
+	   (phidget-error ::string ::int ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-initializedp ...                                         */
@@ -116,3 +118,13 @@
        "Power supply problem detected")
       (else
        (integer->string status))))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-error ...                                                */
+;*---------------------------------------------------------------------*/
+(define (phidget-error proc status obj)
+   (raise
+      (instantiate::&phidget-error
+	 (proc proc)
+	 (msg (phidget-strerror status))
+	 (obj obj))))

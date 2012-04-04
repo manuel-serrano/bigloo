@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 15:52:42 2010                          */
-;*    Last change :  Mon Apr  2 08:38:15 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 10:19:18 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget listener machinery (complex because of Phidget           */
@@ -34,7 +34,9 @@
 	   (export phidget-event-serverconnect-new "bgl_phidget_event_serverconnect_new")
 	   (export phidget-event-serverdisconnect-new "bgl_phidget_event_serverdisconnect_new")
 	   (export phidget-event-spatialdata-new "bgl_phidget_event_spatialdata_new")
-	   (export phidget-event-servo-new "bgl_phidget_event_servo_new"))
+	   (export phidget-event-servoposition-new "bgl_phidget_event_servoposition_new")
+	   (export phidget-event-servovelocity-new "bgl_phidget_event_servovelocity_new")
+	   (export phidget-event-servocurrent-new "bgl_phidget_event_servocurrent_new"))
 
    (export (%phidget-thread-init!)
 	   (%phidget-lock!)
@@ -55,7 +57,9 @@
 	      ::double ::double ::double
 	      ::double ::double ::double
 	      ::double ::double ::double)
-	   (phidget-event-servo-new::obj ::obj ::int ::double)))
+	   (phidget-event-servoposition-new::obj ::obj ::int ::double)
+	   (phidget-event-servovelocity-new::obj ::obj ::int ::double)
+	   (phidget-event-servocurrent-new::obj ::obj ::int ::double)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *phidget-mutex* ...                                              */
@@ -205,10 +209,28 @@
       (mfz mfz)))
       
 ;*---------------------------------------------------------------------*/
-;*    phidget-event-servo-new ...                                      */
+;*    phidget-event-servoposition-new ...                              */
 ;*---------------------------------------------------------------------*/
-(define (phidget-event-servo-new target index position)
-   (instantiate::phidget-servo-event
+(define (phidget-event-servoposition-new target index position)
+   (instantiate::phidget-servoposition-event
       (target target)
       (index index)
       (position position)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-servovelocity-new ...                              */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-servovelocity-new target index velocity)
+   (instantiate::phidget-servovelocity-event
+      (target target)
+      (index index)
+      (velocity velocity)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-servocurrent-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-servocurrent-new target index current)
+   (instantiate::phidget-servocurrent-event
+      (target target)
+      (index index)
+      (current current)))

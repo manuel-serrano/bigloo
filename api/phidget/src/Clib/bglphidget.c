@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep 21 12:08:37 2010                          */
-/*    Last change :  Mon Apr  2 08:34:59 2012 (serrano)                */
+/*    Last change :  Wed Apr  4 13:05:45 2012 (serrano)                */
 /*    Copyright   :  2010-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper for the widget library                            */
@@ -47,6 +47,8 @@ struct handler {
 #define EVENT_SERVERDISCONNECT 8
 #define EVENT_SPATIALDATA 9
 #define EVENT_SERVOPOSITION 10
+#define EVENT_SERVOVELOCITY 11
+#define EVENT_SERVOCURRENT 12
 
 #define INITIAL_MAX_HANDLER 40
 static struct handler *handlers;
@@ -86,7 +88,15 @@ struct callback {
       struct {
 	 int index;
 	 double position;
-      } servo;
+      } servoposition;
+      struct {
+	 int index;
+	 double velocity;
+      } servovelocity;
+      struct {
+	 int index;
+	 double current;
+      } servocurrent;
    } event;
 };
 
@@ -212,10 +222,24 @@ void bgl_phidget_invoke_callbacks() {
 	    break;
 	 }
 	 case EVENT_SERVOPOSITION: {
-	    event = bgl_phidget_event_servo_new(
+	    event = bgl_phidget_event_servoposition_new(
 	       hdl->obj,
-	       cb->event.servo.index,
-	       cb->event.servo.position );
+	       cb->event.servoposition.index,
+	       cb->event.servoposition.position );
+	    break;
+	 }
+	 case EVENT_SERVOVELOCITY: {
+	    event = bgl_phidget_event_servovelocity_new(
+	       hdl->obj,
+	       cb->event.servovelocity.index,
+	       cb->event.servovelocity.velocity );
+	    break;
+	 }
+	 case EVENT_SERVOCURRENT: {
+	    event = bgl_phidget_event_servocurrent_new(
+	       hdl->obj,
+	       cb->event.servocurrent.index,
+	       cb->event.servocurrent.current );
 	    break;
 	 }
 	    
@@ -330,16 +354,73 @@ static int bgl_spatial_handler( CPhidgetSpatialHandle id, void *ptr, CPhidgetSpa
 
 /*---------------------------------------------------------------------*/
 /*    static int                                                       */
-/*    bgl_servo_handler ...                                            */
+/*    bgl_servoposition_handler ...                                    */
 /*---------------------------------------------------------------------*/
 static int
-bgl_servo_handler( CPhidgetServoHandle id, void *ptr, int index, double position ) {
+bgl_servoposition_handler( CPhidgetServoHandle id, void *ptr, int index, double position ) {
    bgl_phidget_lock();
 
    if( callback_index == callback_length ) enlarge_callback_array();
 
-   callbacks[ callback_index ].event.servo.index = index;
-   callbacks[ callback_index ].event.servo.position = position;
+   callbacks[ callback_index ].event.servoposition.index = index;
+   callbacks[ callback_index ].event.servoposition.position = position;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_advanced_servoposition_handler ...                           */
+/*---------------------------------------------------------------------*/
+static int
+bgl_advanced_servoposition_handler( CPhidgetAdvancedServoHandle id, void *ptr, int index, double position ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servoposition.index = index;
+   callbacks[ callback_index ].event.servoposition.position = position;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_advanced_servovelocity_handler ...                           */
+/*---------------------------------------------------------------------*/
+static int
+bgl_advanced_servovelocity_handler( CPhidgetAdvancedServoHandle id, void *ptr, int index, double velocity ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servovelocity.index = index;
+   callbacks[ callback_index ].event.servovelocity.velocity = velocity;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_advanced_servocurrent_handler ...                            */
+/*---------------------------------------------------------------------*/
+static int
+bgl_advanced_servocurrent_handler( CPhidgetAdvancedServoHandle id, void *ptr, int index, double current ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servocurrent.index = index;
+   callbacks[ callback_index ].event.servocurrent.current = current;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -482,7 +563,36 @@ bgl_phidget_servo_add_event_listener( CPhidgetServoHandle id, char *event, obj_t
       struct handler *hdl = bgl_add_handler( obj, proc, EVENT_SERVOPOSITION );
       
       return CPhidgetServo_set_OnPositionChange_Handler(
-	 id, &bgl_servo_handler, hdl );
+	 id, &bgl_servoposition_handler, hdl );
+   } else {
+      return bgl_phidget_phidget_add_event_listener(
+	 (CPhidgetHandle)id, event, obj, proc );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_advanced_servo_add_event_listener ...                */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_advanced_servo_add_event_listener( CPhidgetAdvancedServoHandle id, char *event, obj_t obj, obj_t proc ) {
+   if( !strcmp( event, "position" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_SERVOPOSITION );
+      
+      return CPhidgetAdvancedServo_set_OnPositionChange_Handler(
+	 id, &bgl_advanced_servoposition_handler, hdl );
+   }
+   if( !strcmp( event, "velocity" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_SERVOVELOCITY );
+      
+      return CPhidgetAdvancedServo_set_OnVelocityChange_Handler(
+	 id, &bgl_advanced_servovelocity_handler, hdl );
+   }
+   if( !strcmp( event, "current" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_SERVOCURRENT );
+      
+      return CPhidgetAdvancedServo_set_OnCurrentChange_Handler(
+	 id, &bgl_advanced_servocurrent_handler, hdl );
    } else {
       return bgl_phidget_phidget_add_event_listener(
 	 (CPhidgetHandle)id, event, obj, proc );
@@ -507,6 +617,26 @@ bgl_phidget_servo_add_event_listener( CPhidgetServoHandle id, char *event, obj_t
    int r = CPhidget_get##field( phid, &i ); \
  \
    return r ? -1 : i; \
+}
+   
+/*---------------------------------------------------------------------*/
+/*    FIELD_GET                                                        */
+/*---------------------------------------------------------------------*/
+#define FIELD_GET( _phid, _field, _atype, _rtype, _o ) { \
+   _rtype _v; \
+   int _r = _atype##_get##_field( _phid, &_v ); \
+   return _r == EPHIDGET_OK ? \
+      _v : (bgl_phidget_error( "" # _field "", _r, _o ), _v); \
+}
+   
+/*---------------------------------------------------------------------*/
+/*    FIELD_INDEXED_GET                                                */
+/*---------------------------------------------------------------------*/
+#define FIELD_INDEXED_GET( _phid, _field, _atype, _rtype, _i, _o ) { \
+   _rtype _v; \
+   int _r = _atype##_get##_field( _phid, _i, &_v ); \
+   return _r == EPHIDGET_OK ? \
+      _v : (bgl_phidget_error( "" # _field "", _r, _o ), _v); \
 }
    
 /*---------------------------------------------------------------------*/
@@ -651,11 +781,8 @@ obj_t bgl_phidget_get_server_id( CPhidgetHandle phid ) {
 /*    bgl_phidget_spatial_get_datarate ...                             */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_spatial_get_datarate( CPhidgetSpatialHandle phid ) {
-   int i;
-   int r = CPhidgetSpatial_getDataRate( phid, &i );
-   
-   return r ? -1 : i;
+bgl_phidget_spatial_get_datarate( CPhidgetSpatialHandle phid, obj_t o ) {
+   FIELD_GET( phid, DataRate, CPhidgetSpatial, int, o );
 }
    
 /*---------------------------------------------------------------------*/
@@ -663,11 +790,8 @@ bgl_phidget_spatial_get_datarate( CPhidgetSpatialHandle phid ) {
 /*    bgl_phidget_spatial_get_datarate_min ...                         */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_spatial_get_datarate_min( CPhidgetSpatialHandle phid ) {
-   int i;
-   int r = CPhidgetSpatial_getDataRateMin( phid, &i );
-   
-   return r ? -1 : i;
+bgl_phidget_spatial_get_datarate_min( CPhidgetSpatialHandle phid, obj_t o ) {
+   FIELD_GET( phid, DataRateMin, CPhidgetSpatial, int, o );
 }
    
 /*---------------------------------------------------------------------*/
@@ -675,11 +799,8 @@ bgl_phidget_spatial_get_datarate_min( CPhidgetSpatialHandle phid ) {
 /*    bgl_phidget_spatial_get_datarate_max ...                         */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_spatial_get_datarate_max( CPhidgetSpatialHandle phid ) {
-   int i;
-   int r = CPhidgetSpatial_getDataRateMax( phid, &i );
-   
-   return r ? -1 : i;
+bgl_phidget_spatial_get_datarate_max( CPhidgetSpatialHandle phid, obj_t o ) {
+   FIELD_GET( phid, DataRateMax, CPhidgetSpatial, int, o );
 }
 
 /*---------------------------------------------------------------------*/
@@ -687,68 +808,173 @@ bgl_phidget_spatial_get_datarate_max( CPhidgetSpatialHandle phid ) {
 /*    bgl_phidget_servo_get_motor_count ...                            */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_servo_get_motor_count( CPhidgetServoHandle phid ) {
-   int i;
-   int r = CPhidgetServo_getMotorCount( phid, &i );
-   
-   return r ? -1 : i;
+bgl_phidget_servo_get_motor_count( CPhidgetServoHandle phid , obj_t o ) {
+   FIELD_GET( phid, MotorCount, CPhidgetServo, int, o );
 }
 
 /*---------------------------------------------------------------------*/
 /*    double                                                           */
 /*    bgl_phidget_servo_get_position ...                               */
 /*---------------------------------------------------------------------*/
-double
-bgl_phidget_servo_get_position( CPhidgetServoHandle phid, int i ) {
-   double d;
-   int r = CPhidgetServo_getPosition( phid, i, &d );
-   
-   return r ? 0.0 : d;
+double bgl_phidget_servo_get_position( CPhidgetServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Position, CPhidgetServo, double, i, o );
 }
 
 /*---------------------------------------------------------------------*/
 /*    double                                                           */
 /*    bgl_phidget_servo_get_position_max ...                           */
 /*---------------------------------------------------------------------*/
-double
-bgl_phidget_servo_get_position_max( CPhidgetServoHandle phid, int i ) {
-   double d;
-   int r = CPhidgetServo_getPositionMax( phid, i, &d );
-   
-   return r ? 0.0 : d;
+double bgl_phidget_servo_get_position_max( CPhidgetServoHandle phid, int i, obj_t o ) { 
+   FIELD_INDEXED_GET( phid, PositionMax, CPhidgetServo, double, i, o );
 }
 
 /*---------------------------------------------------------------------*/
 /*    double                                                           */
 /*    bgl_phidget_servo_get_position_min ...                           */
 /*---------------------------------------------------------------------*/
-double
-bgl_phidget_servo_get_position_min( CPhidgetServoHandle phid, int i ) {
-   double d;
-   int r = CPhidgetServo_getPositionMin( phid, i, &d );
-   
-   return r ? 0.0 : d;
+double bgl_phidget_servo_get_position_min( CPhidgetServoHandle phid, int i, obj_t o ) { 
+   FIELD_INDEXED_GET( phid, PositionMin, CPhidgetServo, double, i, o );
 }
 
 /*---------------------------------------------------------------------*/
-/*    bool_t                                                           */
+/*    int                                                              */
 /*    bgl_phidget_servo_get_engaged ...                                */
 /*---------------------------------------------------------------------*/
-double
-bgl_phidget_servo_get_engaged( CPhidgetServoHandle phid, int i ) {
-   int b;
-   int r = CPhidgetServo_getEngaged( phid, i, &b );
-   
-   return (r || b == PFALSE) ? 0 : 1;
+int bgl_phidget_servo_get_engaged( CPhidgetServoHandle phid, int i, obj_t o ) { 
+   FIELD_INDEXED_GET( phid, Engaged, CPhidgetServo, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_advanced_servo_get_motor_count ...                   */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_advanced_servo_get_motor_count( CPhidgetAdvancedServoHandle phid, obj_t o ) {
+   FIELD_GET( phid, MotorCount, CPhidgetAdvancedServo, int, o );
 }
 
 /*---------------------------------------------------------------------*/
 /*    double                                                           */
-/*    bgl_phidget_servo_set_engaged ...                                */
+/*    bgl_phidget_advanced_servo_get_acceleration ...                  */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_acceleration( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Acceleration, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_acceleration_max ...              */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_acceleration_max( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMax, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_acceleration_min ...              */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_acceleration_min( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMin, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_velocity_limit ...                */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_velocity_limit( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityLimit, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_velocity ...                      */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_velocity( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Velocity, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_velocity_max ...                  */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_velocity_max( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityMax, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_velocity_min ...                  */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_velocity_min( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityMin, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_position ...                      */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_position( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Position, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_position_max ...                  */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_position_max( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, PositionMax, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_position_min ...                  */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_position_min( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, PositionMin, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_advanced_servo_get_current ...                       */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_advanced_servo_get_current( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Current, CPhidgetAdvancedServo, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_advanced_servo_get_engaged ...                       */
 /*---------------------------------------------------------------------*/
 int
-bgl_phidget_servo_set_engaged( CPhidgetServoHandle phid, int i, bool_t b ) {
-   int r = CPhidgetServo_setEngaged( phid, i, b == 1 ? PTRUE : PFALSE );
-   
-   return r ? -1 : b;
+bgl_phidget_advanced_servo_get_engaged( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Engaged, CPhidgetAdvancedServo, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_advanced_servo_get_stopped ...                       */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_advanced_servo_get_stopped( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Stopped, CPhidgetAdvancedServo, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_advanced_servo_get_speed_ramping_on ...              */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_advanced_servo_get_speed_ramping_on( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, SpeedRampingOn, CPhidgetAdvancedServo, int, i, o );
 }

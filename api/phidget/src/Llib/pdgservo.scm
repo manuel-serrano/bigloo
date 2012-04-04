@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 27 09:11:24 2012                          */
-;*    Last change :  Mon Apr  2 08:26:17 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 11:39:23 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget Servo                                                    */
@@ -31,7 +31,7 @@
 		  (get (lambda (o)
 			  (with-access::phidget o ($builtin)
 			     ($pdg-phidget-servo-get-motor-count
-				($pdg-phidget->servo $builtin)))))))
+				($pdg-phidget->servo $builtin) o))))))
 
       (phidget-servo-position::double ::phidget-servo ::int)
       (phidget-servo-position-set! ::phidget-servo ::int ::double)
@@ -79,7 +79,7 @@
    (with-access::phidget o ($builtin)
       ($pdg-phidget-servo-get-position
 	 ($pdg-phidget->servo $builtin)
-	 i)))
+	 i o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-servo-position-set! ...                                  */
@@ -99,7 +99,7 @@
    (with-access::phidget o ($builtin)
       ($pdg-phidget-servo-get-position-max
 	 ($pdg-phidget->servo $builtin)
-	 i)))
+	 i o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-servo-position-min ...                                   */
@@ -108,16 +108,23 @@
    (with-access::phidget o ($builtin)
       ($pdg-phidget-servo-get-position-min
 	 ($pdg-phidget->servo $builtin)
-	 i)))
+	 i o)))
+
+;*---------------------------------------------------------------------*/
+;*    pdgbool->bool ...                                                */
+;*---------------------------------------------------------------------*/
+(define (pdgbool->bool::bool i::int)
+   (=fx i $pdg-true))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-servo-engaged ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (phidget-servo-engaged o i)
    (with-access::phidget o ($builtin)
-      ($pdg-phidget-servo-get-engaged
-	 ($pdg-phidget->servo $builtin)
-	 i)))
+      (pdgbool->bool
+	 ($pdg-phidget-servo-get-engaged
+	    ($pdg-phidget->servo $builtin)
+	    i o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-servo-engaged-set! ...                                   */
@@ -127,7 +134,7 @@
       (phidget-return
 	 ($pdg-phidget-servo-set-engaged!
 	    ($pdg-phidget->servo $builtin)
-	    i d)
+	    i (if d $pdg-true $pdg-false))
 	 "phidget-servo-engaged-set!" o)))
 
 ;*---------------------------------------------------------------------*/

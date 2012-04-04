@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:37:50 2007                          */
-/*    Last change :  Mon Apr  2 08:37:19 2012 (serrano)                */
+/*    Last change :  Wed Apr  4 10:20:35 2012 (serrano)                */
 /*    Copyright   :  2007-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The source file for phidget.sch.                                 */
@@ -28,6 +28,9 @@
 #define BGL_PHIDGET_SERVO_BUILTIN( o ) \
    ((CPhidgetServoHandle *)(&(((BgL_phidgetzd2servozd2_bglt)o)->BgL_z42builtinz42)))
 
+#define BGL_PHIDGET_ADVANCED_SERVO_BUILTIN( o ) \
+   ((CPhidgetAdvancedServoHandle *)(&(((BgL_phidgetzd2advancedzd2servoz00_bglt)o)->BgL_z42builtinz42)))
+
 extern void bgl_phidget_init();
 
 extern int bgl_phidget_manager_add_event_listener(
@@ -51,7 +54,9 @@ extern obj_t bgl_phidget_event_spatialdata_new( obj_t, int, int,
 						double, double, double,
 						double, double, double,
 						double, double, double );
-extern obj_t bgl_phidget_event_servo_new( obj_t, int, double );
+extern obj_t bgl_phidget_event_servoposition_new( obj_t, int, double );
+extern obj_t bgl_phidget_event_servovelocity_new( obj_t, int, double );
+extern obj_t bgl_phidget_event_servocurrent_new( obj_t, int, double );
 
 extern obj_t bgl_phidget_get_device_name( CPhidgetHandle );
 extern obj_t bgl_phidget_get_device_type( CPhidgetHandle );

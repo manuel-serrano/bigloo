@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 10:06:00 2010                          */
-;*    Last change :  Mon Apr  2 08:35:29 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 09:34:11 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget types                                                    */
@@ -59,9 +59,17 @@
 	       (mfy::double read-only)
 	       (mfz::double read-only))
 
-	    (class phidget-servo-event::%phidget-event
+	    (class phidget-servoposition-event::%phidget-event
 	       (index::int read-only)
 	       (position::double read-only))
+	    
+	    (class phidget-servovelocity-event::%phidget-event
+	       (index::int read-only)
+	       (velocity::double read-only))
+	    
+	    (class phidget-servocurrent-event::%phidget-event
+	       (index::int read-only)
+	       (current::double read-only))
 	    
 	    (generic %phidget-init ::%phidget)))
 

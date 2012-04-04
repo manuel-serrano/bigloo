@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 27 09:11:24 2012                          */
-;*    Last change :  Mon Apr  2 08:19:49 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 11:47:05 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget Spatial                                                  */
@@ -30,7 +30,7 @@
 		  (get (lambda (o)
 			  (with-access::phidget o ($builtin)
 			     ($pdg-phidget-spatial-get-datarate
-				($pdg-phidget->spatial $builtin)))))
+				($pdg-phidget->spatial $builtin) o))))
 		  (set (lambda (o v)
 			  (with-access::phidget o ($builtin)
 			     (phidget-return
@@ -43,13 +43,13 @@
 		  (get (lambda (o)
 			  (with-access::phidget o ($builtin)
 			     ($pdg-phidget-spatial-get-datarate-max
-				($pdg-phidget->spatial $builtin))))))
+				($pdg-phidget->spatial $builtin) o)))))
 	       (datarate-min::int
 		  read-only
 		  (get (lambda (o)
 			  (with-access::phidget o ($builtin)
 			     ($pdg-phidget-spatial-get-datarate-min
-				($pdg-phidget->spatial $builtin)))))))
+				($pdg-phidget->spatial $builtin) o))))))
 
 	    ($make-spatial::obj ::$pdg-spatial)))
 

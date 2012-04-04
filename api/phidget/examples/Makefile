@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Tue Apr  3 16:39:57 2012 (serrano)                */
+#*    Last change :  Wed Apr  4 12:07:14 2012 (serrano)                */
 #*    Copyright   :  2002-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Phidget examples                       */
@@ -24,7 +24,7 @@ BCFLAGS		=
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 SOURCES		= manager_simple interfacekit_simple spatial_simple \
-		  servo_simple
+		  servo_simple advancedservo_simple
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -46,6 +46,9 @@ spatial_simple: spatial_simple.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 servo_simple: servo_simple.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+advancedservo_simple: advancedservo_simple.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:
