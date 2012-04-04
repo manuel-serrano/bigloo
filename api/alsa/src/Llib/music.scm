@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Apr  4 10:31:30 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 15:25:07 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -31,9 +31,11 @@
    (export  (class alsamusic::music
 	       (inbuf::bstring read-only (default (make-string (*fx 512 1024))))
 	       (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
+	       
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil read-only (default '()))
 	       (mkthread::procedure read-only (default make-thread))
+	       (timeout (default (* 1000 1000 10)))
 	       (%decoder (default #f))
 	       (%buffer (default #f))
 	       (%nextbuffer (default #f))
@@ -228,8 +230,9 @@
 ;*    -------------------------------------------------------------    */
 ;*    Open a timeouted file.                                           */
 ;*---------------------------------------------------------------------*/
-(define (open-file url)
-   (open-input-file url #t 5000000))
+(define (open-file url o::alsamusic)
+   (with-access::alsamusic o (timeout)
+      (open-input-file url #t timeout)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::alsamusic ...                                       */
@@ -275,8 +278,7 @@
 		  (lambda ()
 		     (unless %nextbuffer
 			(let* ((url (car playlist))
-			       (ip (open-file url)))
-			   (input-port-timeout-set! ip (* 1000 1000 10))
+			       (ip (open-file url o)))
 			   (when (input-port? ip)
 			      (when (>fx debug 0)
 				 (tprint "PREPARE-NEXT-BUFFER... %head="
@@ -296,7 +298,7 @@
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
       ;; (tprint ">>> PLAY-NEXT: " url)
-      (let ((ip (open-file url)))
+      (let ((ip (open-file url o)))
 	 (if (input-port? ip)
 	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
 					  mkthread %status)
@@ -637,7 +639,11 @@
 	 (lambda (e)
 	    (exception-notify e)
 	    (set! %!babort #t)
-	    (abort))
+	    (set! %eof #t)
+	    (abort)
+	    (with-access::alsamusic o (onerror)
+	       (onerror o e)
+	       (sleep (*fx 1000 1000))))
 	 (let loop ()
 	    (when (>fx debug 1)
 	       (tprint "fill.1 %!bstate=" %!bstate

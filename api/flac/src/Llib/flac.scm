@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jan 30 22:17:08 2012 (serrano)                */
+;*    Last change :  Wed Apr  4 15:39:03 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -237,7 +237,10 @@
    (with-access::flac-decoder m ($builtin %sample)
       (if (<fx %sample 0)
 	  0
-	  (/fx %sample ($flac-decoder-get-sample-rate $builtin)))))
+	  (let ((srate ($flac-decoder-get-sample-rate $builtin)))
+	     (if (=fx srate 0)
+		 0
+		 (/fx %sample srate))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-volume-get ...                                              */
