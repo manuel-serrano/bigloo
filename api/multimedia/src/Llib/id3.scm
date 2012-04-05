@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri Mar 30 19:12:02 2012 (serrano)                */
+;*    Last change :  Thu Apr  5 07:36:05 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -294,7 +294,7 @@
 	  (n1 (char->integer (mmap-ref mm (+ o 1))))
 	  (sz (/fx sz 2))
 	  (len (- sz 1))
-	  (res (make-ucs2-string (elong->fixnum len))))
+	  (res (make-ucs2-string (if (elong? len) (elong->fixnum len) len))))
       ;; debug
       (assert (n0 n1) (or (and (=fx n0 #xfe) (=fx n1 #xff)
 			       (and (=fx n0 #xff) (=fx n1 #xfe)))))
@@ -503,7 +503,7 @@
 	  "unknown")
 	 (else
 	  (vector-ref *id3v2-genres* n))))
-   
+
    (if (string=? str "")
        "unknown"
        (string-case str
@@ -511,10 +511,10 @@
 	   (let ((n (string->integer (the-substring 1 -1))))
 	      (number->genre n)))
 	  (else
-	   (let ((n (string->integer str)))
+	   (let ((n (string->number str)))
 	      (if n
 		  (number->genre n)
-		  "unknown"))))))
+		  str))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-picture ...                                                */
