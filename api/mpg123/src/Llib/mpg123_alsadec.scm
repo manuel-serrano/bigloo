@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Tue Mar 27 15:27:15 2012 (serrano)                */
+;*    Last change :  Fri Apr  6 17:35:13 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -23,6 +23,7 @@
    (cond-expand
       ((library alsa)
        (export (class mpg123-alsadecoder::alsadecoder
+		  (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
 	          (%mpg123 read-only (default (instantiate::mpg123-handle))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -36,12 +37,14 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
-;*    debug                                                            */
+;*    mpg123-debug ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define debug ($compiler-debug))
+(define (mpg123-debug)
+   (when (>fx ($compiler-debug) 0)
+      (bigloo-debug)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::mpg123-alsadecoder ...                            */
@@ -107,49 +110,56 @@
 		  am::alsamusic
 		  buffer::alsabuffer)
    
-   (with-access::alsamusic am (pcm outbuf %status onerror)
-      (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv
+   (with-access::alsamusic am (pcm %status onerror)
+      (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv outbuf
 					      %!dabort %!dpause %!dseek)
-	 (with-access::alsabuffer buffer (%bmutex %bcondv %!bstate
+	 (with-access::alsabuffer buffer (%bmutex %bcondv
 					    %inbufp %inlen
-					    %!tail %head %eof)
+					    %tail %head %eof %empty %full
+					    url)
 	    
 	    (define inlen %inlen)
 	    
 	    (define outlen (string-length outbuf))
 	    
 	    (define decsz (minfx (*fx 2 outlen) inlen))
-	    
-	    (define (available)
+
+	    (define (buffer-available)
 	       (cond
-		  ((>fx %head %!tail) (-fx %head %!tail))
-		  ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
+		  ((>fx %head %tail) (-fx %head %tail))
+		  ((<fx %head %tail) (+fx (-fx inlen %tail) %head))
 		  (else 0)))
+
+	    (define (buffer-filled?)
+	       ;; filled when > 25%
+	       (>fx (*fx 4 (buffer-available)) inlen))
 	    
-	    (define (full-state?)
-	       (and (=fx %!bstate 2) (>fx inlen (*fx (available) 2))))
+	    (define (buffer-flushed?)
+	       ;; flushed when < 75%
+	       (>fx (*fx 4 (-fx inlen (buffer-available))) inlen))
 	    
+	    (define (debug-inc-tail)
+	       (when (>=fx (mpg123-debug) 3)
+		  (tprint "--- mpg123_decoder, count=" (buffer-available)
+		     " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
+		     %eof " url=" url)))
+
 	    (define (inc-tail! size)
-	       (set! %!tail (+fx %!tail size))
-	       (when (=fx %!tail inlen)
-		  (set! %!tail 0))
-	       (cond
-		  ((=fx %!tail %head)
-		   ;; set state empty
-		   (mutex-lock! %bmutex)
-		   (when (>fx debug 0)
-		      (tprint "dec.3, set empty (bs=0)"))
-		   (set! %!bstate 0)
-		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex))
-		  ((full-state?)
-		   ;; set state filled
-		   (mutex-lock! %bmutex)
-		   (when (>fx debug 0)
-		      (tprint "dec.3, set filled (bs=1)"))
-		   (set! %!bstate 1)
-		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex))))
+	       ;; increment the tail
+	       (let ((ntail (+fx %tail size)))
+		  (if (=fx ntail inlen)
+		      (set! %tail 0)
+		      (set! %tail ntail)))
+	       ;; check buffer emptyness
+	       (when (=fx %tail %head)
+		  (set! %empty #t))
+	       ;; notify the buffer no longer full
+	       (when (and %full (buffer-flushed?))
+		  (mutex-lock! %bmutex)
+		  (condition-variable-broadcast! %bcondv)
+		  (mutex-unlock! %bmutex))
+	       ;; debug 
+	       (debug-inc-tail))
 
 	    (define (onstate am st)
 	       (with-access::alsamusic am (onstate %status)
@@ -157,59 +167,65 @@
 		     (set! state st)
 		     (onstate am %status))))
 
+	    (set! %empty (and (not %full) (=fx %tail %head)))
+	    
 	    (let loop ()
-	       (when (>fx debug 1)
-		  (tprint "dec.1 bs=" %!bstate 
-		     " tl=" %!tail " hd=" %head))
 	       (cond
 		  (%!dpause
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
 		      (set! songpos (alsadecoder-position dec buffer)))
 		   (mutex-lock! %dmutex)
-		   (if %!dpause
-		       (let liip ()
-			  (mutex-unlock! %dmutex)
-			  (onstate am 'pause)
-			  (mutex-lock! %dmutex)
-			  (condition-variable-wait! %dcondv %dmutex)
-			  (if %!dpause
-			      (liip)
-			      (begin
-				 (mutex-unlock! %dmutex)
-				 (onstate am 'play)
-				 (loop))))))
+		   (let liip ()
+		      (if %!dpause
+			  (begin
+			     (mutex-unlock! %dmutex)
+			     (onstate am 'pause)
+			     (mutex-lock! %dmutex)
+			     (condition-variable-wait! %dcondv %dmutex)
+			     (liip))
+			  (begin
+			     (mutex-unlock! %dmutex)
+			     (onstate am 'play)
+			     (loop)))))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
 		   (onstate am 'stop))
-		  ((=fx %!bstate 0)
-		   ;; the buffer empty...
+		  (%empty
+		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
-		       ;; ... because we are done playing
 		       (onstate am 'ended)
 		       (begin
-			  ;; ... we have to wait for byte to be available
-			  (mutex-lock! %bmutex)
-			  (when (=fx %!bstate 0)
-			     (condition-variable-wait! %bcondv %bmutex)
-			     (mutex-unlock! %bmutex))
-			  (loop))))
+			  (when (>=fx (mpg123-debug) 2)
+			     (tprint "!!! mpg123_decoder, buffer empty url="
+				url))
+			  (let ((d0 (current-microseconds)))
+			     (onstate am 'buffering)
+			     (mutex-lock! %bmutex)
+			     (let liip ()
+				;; wait until the full is 25% filled
+				(unless (or %eof (buffer-filled?))
+				   (condition-variable-wait! %bcondv %bmutex)
+				   (liip)))
+			     (mutex-unlock! %bmutex)
+			     (set! %empty #f)
+			     (onstate am 'play)
+			     (loop)))))
 		  (else
 		   ;; the buffer contains available bytes
 		   (let flush ((s (minfx decsz
-				     (if (>fx %head %!tail)
-					 (-fx %head %!tail)
-					 (-fx inlen %!tail)))))
+				     (if (>fx %head %tail)
+					 (-fx %head %tail)
+					 (-fx inlen %tail)))))
 		      (let ((status ($bgl-mpg123-decode
-				       %mpg123 %inbufp %!tail s outbuf outlen)))
-			 (when (>fx debug 3)
-			    (tprint "dec.2 s=" s
-			       " tl=" %!tail " hd=" %head
-			       " -> status=" (mpg123-decode-status->symbol status)
-			       " size="
-			       (with-access::mpg123-handle %mpg123 (size)
-				  size)))
-			 (when (>fx s 0) (inc-tail! s))
+				       %mpg123 %inbufp %tail s outbuf outlen)))
+			 (when (>=fx (mpg123-debug) 4)
+			    (tprint "~~~ mpg123_decoder, s=" s
+			       " tl=" %tail " hd=" %head
+			       " -> status="
+			       (mpg123-decode-status->symbol status)))
+			 (when (>fx s 0)
+			    (inc-tail! s))
 			 (cond
 			    ((>fx %!dseek 0)
 			     (alsadecoder-seek dec %!dseek)

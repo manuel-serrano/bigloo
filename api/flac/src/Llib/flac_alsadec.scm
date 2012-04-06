@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Mar 22 07:02:45 2012 (serrano)                */
+;*    Last change :  Fri Apr  6 17:35:26 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -44,7 +44,14 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
+
+;*---------------------------------------------------------------------*/
+;*    flac-debug ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (flac-debug)
+   (when (>fx ($compiler-debug) 0)
+      (bigloo-debug)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::flac-alsadecoder ...                              */
@@ -52,11 +59,6 @@
 (define-method (object-print o::flac-alsadecoder port print-slot)
    (display "#|flac-alsadecoder|" port))
    
-;*---------------------------------------------------------------------*/
-;*    debug                                                            */
-;*---------------------------------------------------------------------*/
-(define debug (begin ($compiler-debug) 1))
-
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
@@ -113,6 +115,8 @@
 	 (set! %buffer buffer)
 	 (set! %alsamusic am)
 	 (set! %decoder dec)
+	 (with-access::alsabuffer buffer (%tail %head %empty %full)
+	    (set! %empty (and (not %full) (=fx %tail %head))))
 	 (with-access::alsamusic am (%amutex %status pcm)
 	    (unwind-protect
 	       (flac-decoder-decode %flac)
@@ -170,51 +174,54 @@
    
    (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
-	 (with-access::alsabuffer %buffer (%bmutex %bcondv %!bstate
+	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
-					     %!tail %head %eof)
+					     %tail %head %eof %full %empty
+					     url)
 	    
 	    (define inlen %inlen)
 	    
 	    (define flacbuf (custom-identifier %flacbuf))
 	    
-	    (define (available)
+	    (define (buffer-available)
 	       (cond
-		  ((>fx %head %!tail) (-fx %head %!tail))
-		  ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
+		  ((>fx %head %tail) (-fx %head %tail))
+		  ((<fx %head %tail) (+fx (-fx inlen (-fx %tail 1)) %head))
 		  (else 0)))
 	    
-	    (define (full-state?)
-	       (and (=fx %!bstate 2) (>fx inlen (*fx (available) 2))))
+	    (define (buffer-filled?)
+	       ;; filled when > 25%
+	       (>fx (*fx 4 (buffer-available)) inlen))
 	    
+	    (define (buffer-flushed?)
+	       ;; flushed when < 75%
+	       (>fx (*fx 4 (-fx inlen (buffer-available))) inlen))
+	    
+	    (define (debug-inc-tail)
+	       (when (>=fx (flac-debug) 3)
+		  (tprint "--- flac_decoder, count=" (buffer-available)
+		     " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
+		     %eof " url=" url)))
+
 	    (define (inc-tail! size)
-	       (set! %!tail (+fx %!tail size))
-	       (when (=fx %!tail inlen)
-		  (set! %!tail 0))
-	       (cond
-		  ((=fx %!tail %head)
-		   ;; set state empty
-		   (mutex-lock! %bmutex)
-		   (when (>fx debug 0)
-		      (tprint "flac_decoder, read.2a, set empty (bs=0) size=" size
-			 " %eof=" %eof))
-		   (set! %!bstate 0)
-		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex))
-		  ((full-state?)
-		   ;; set state filled
-		   (mutex-lock! %bmutex)
-		   (when (>fx debug 1)
-		      (tprint "flac_decoder, read.2b, set filled (bs=1) size=" size))
-		   (set! %!bstate 1)
-		   (condition-variable-broadcast! %bcondv)
-		   (mutex-unlock! %bmutex))))
-	    
+	       ;; increment the tail
+	       (let ((ntail (+fx %tail size)))
+		  (if (=fx ntail inlen)
+		      (set! %tail 0)
+		      (set! %tail ntail)))
+	       ;; check buffer emptyness
+	       (when (=fx %tail %head)
+		  (set! %empty #t))
+	       ;; notify the buffer no longer full
+	       (when (and %full (buffer-flushed?))
+		  (mutex-lock! %bmutex)
+		  (condition-variable-broadcast! %bcondv)
+		  (mutex-unlock! %bmutex))
+	       ;; debug
+	       (debug-inc-tail))
+
 	    (let loop ((size size)
 		       (i 0))
-	       (when (>fx debug 1)
-		  (tprint "flac_decoder, read.1 bs=" %!bstate " tl=" %!tail " hd=" %head
-		     " %eof=" %eof " inlen=" inlen))
 	       (cond
 		  (%!dpause
 		   ;;; the decoder is asked to pause
@@ -236,39 +243,37 @@
 				 (onstate am 'play)
 				 (loop size i))))))
 		  (%!dabort
-		     -1)
-		  ((=fx %!bstate 0)
-		   ;; buffer empty
+		   ;;; the decoder is asked to abort
+		   -1)
+		  (%empty
+		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
 		       beof
-		       (begin
-			  ;; buffer empty, wait to be filled
+		       (let ((d0 (current-microseconds)))
+			  (when (>=fx (flac-debug) 2)
+			     (tprint "!!! flac_decoder, buffer empty url=" url))
+			  (onstate am 'buffering)
 			  (mutex-lock! %bmutex)
-			  (when (=fx %!bstate 0)
-			     (when (>fx debug 0)
-				(tprint ">>> flac_decoder, wait empty"
-				   " %!tail=" %!tail " head=" %head))
-			     (condition-variable-wait! %bcondv %bmutex)
-			     (when (>fx debug 0)
-				(tprint "<<< flac_decoder, wait empty"
-				   " %!tail=" %!tail " head=" %head))
-			     (mutex-unlock! %bmutex))
+			  (let liip ()
+			     ;; wait until the full is 25% filled
+			     (unless (or %eof (buffer-filled?))
+				(condition-variable-wait! %bcondv %bmutex)
+				(liip)))
+			  (mutex-unlock! %bmutex)
+			  (set! %empty #f)
+			  (onstate am 'play)
 			  (loop size i))))
 		  (else
-		   (let* ((bsz (if (>fx %head %!tail)
-				   (-fx %head %!tail)
-				   (-fx inlen %!tail)))
-			  (sz (minfx size bsz)))
-		      (when (>fx sz 0)
-			 ($flac-blit-string! %inbufp %!tail flacbuf i sz))
-		      (when (>fx debug 1)
-			 (tprint ">>> read.inc-tail sz=" sz " %!tail=" %!tail))
-		      (inc-tail! sz)
-		      (when (>fx debug 1)
-			 (tprint "<<< read.inc-tail sz=" sz " %!tail=" %!tail))
-		      (if (<fx sz size)
-			  (loop (- size sz) (+fx i sz))
-			  (+fx i sz))))))))))
+		   (let ((s (minfx size
+			       (if (>fx %head %tail)
+				   (-fx %head %tail)
+				   (-fx inlen %tail)))))
+		      (when (>fx s 0)
+			 ($flac-blit-string! %inbufp %tail flacbuf i s)
+			 (inc-tail! s))
+		      (if (<fx s size)
+			  (loop (- size s) (+fx i s))
+			  (+fx i s))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */

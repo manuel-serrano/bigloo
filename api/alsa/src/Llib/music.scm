@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Apr  4 15:25:07 2012 (serrano)                */
+;*    Last change :  Fri Apr  6 17:35:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -30,7 +30,6 @@
 	    
    (export  (class alsamusic::music
 	       (inbuf::bstring read-only (default (make-string (*fx 512 1024))))
-	       (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
 	       
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil read-only (default '()))
@@ -49,8 +48,6 @@
 
 	    (class alsabuffer
 	       (url::bstring read-only)
-	       ;; state is either empty:0, filled:1, full:2
-	       (%!bstate::int (default 0))
 	       (%eof::bool (default #f))
 	       (%!babort::bool (default #f))
 	       (%bcondv::condvar read-only (default (make-condition-variable)))
@@ -59,7 +56,9 @@
 	       
 	       (%inbufp::string read-only)
 	       (%head::long (default 0))
-	       (%!tail::long (default 0)))
+	       (%tail::long (default 0))
+	       (%empty::bool (default #t))
+	       (%full::bool (default #f)))
 	    
 	    (class alsadecoder
 	       (alsadecoder-init)
@@ -90,31 +89,22 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
-;*    debug                                                            */
+;*    alsa-debug ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define debug ($compiler-debug))
+(define (alsa-debug)
+   (when (>fx ($compiler-debug) 0)
+      (bigloo-debug)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-init o::alsamusic)
-   (with-access::alsamusic o (%amutex %status inbuf outbuf)
+   (with-access::alsamusic o (%amutex %status inbuf)
       (with-lock %amutex
 	 (lambda ()
-	    (cond
-	       ((<fx (string-length outbuf) 1024)
-		(raise (instantiate::&alsa-error
-			  (proc "alsamusic")
-			  (msg "outbuf must be at least 1024 bytes")
-			  (obj (string-length inbuf)))))
-	       ((<fx (string-length inbuf) (string-length outbuf))
-		(raise (instantiate::&alsa-error
-			  (proc "alsamusic")
-			  (msg "inbuf length must be greater that outbuf length")
-			  (obj (cons (string-length inbuf) (string-length outbuf) ))))))
 	    (with-access::musicstatus %status (volume state)
 	       (set! volume 100)
 	       (set! state 'uninitialized))))))
@@ -271,8 +261,7 @@
 
    (define (prepare-next-buffer o buffer playlist::pair-nil)
       (when (pair? playlist)
-	 (with-access::alsaportbuffer buffer (%head %!tail
-						%inlen %inbuf %inbufp)
+	 (with-access::alsaportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
 	    (with-access::alsamusic o (%amutex %nextbuffer %status)
 	       (with-lock %amutex
 		  (lambda ()
@@ -280,9 +269,6 @@
 			(let* ((url (car playlist))
 			       (ip (open-file url o)))
 			   (when (input-port? ip)
-			      (when (>fx debug 0)
-				 (tprint "PREPARE-NEXT-BUFFER... %head="
-				    %head " %!tail=" %!tail))
 			      (let ((buf (instantiate::alsaportbuffer
 					    (url url)
 					    (port ip)
@@ -290,17 +276,16 @@
 					    (%inbuf %inbuf)
 					    (%inbufp %inbufp)
 					    (%head %head)
-					    (%!tail %!tail)
+					    (%tail %tail)
 					    (%nexttail %head))))
 				 (set! %nextbuffer buf)
 				 buf))))))))))
 	 
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
-      ;; (tprint ">>> PLAY-NEXT: " url)
       (let ((ip (open-file url o)))
 	 (if (input-port? ip)
-	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
+	     (with-access::alsamusic o (%amutex inbuf %buffer onevent
 					  mkthread %status)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
@@ -315,13 +300,9 @@
 			 (lambda ()
 			    (let loop ((buffer buffer)
 				       (playlist playlist))
-			       (when (>fx debug 0)
-				  (tprint ">>>> alsabuffer-fill! " url))
 			       (unwind-protect
 				  (alsabuffer-fill! buffer o)
 				  (close-input-port ip))
-			       (when (>fx debug 0)
-				  (tprint "<<<< alsabuffer-fill! " url))
 			       (let ((buffer (prepare-next-buffer o buffer (cdr playlist))))
 				  (when (isa? buffer alsabuffer)
 				     (loop buffer (cdr playlist))))))
@@ -343,8 +324,7 @@
 	      playlist::pair-nil notify::bool)
       (let ((mmap (open-mmap url :read #t :write #f)))
 	 (if (mmap? mmap)
-	     (with-access::alsamusic o (%amutex outbuf inbuf %buffer onevent
-					  %status)
+	     (with-access::alsamusic o (%amutex inbuf %buffer onevent %status)
 		(let ((buffer (instantiate::alsammapbuffer
 				 (url url)
 				 (mmap mmap)
@@ -369,9 +349,8 @@
 
    (define (play-url-next o d::alsadecoder url::bstring playlist)
       (with-access::alsamusic o (%amutex %buffer %nextbuffer)
-	 (with-access::alsaportbuffer %nextbuffer (%nexttail %!tail %head)
-	    ;; (tprint ">>> PLAY-URL-NEXT: " url " head=" %head " %!tail=" %nexttail)
-	    (set! %!tail %nexttail))
+	 (with-access::alsaportbuffer %nextbuffer (%nexttail %tail %head)
+	    (set! %tail %nexttail))
 	 (set! %buffer %nextbuffer)
 	 (set! %nextbuffer #f)
 	 (mutex-unlock! %amutex)
@@ -564,72 +543,71 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsaportbuffer o::alsamusic)
-   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!bstate %!babort %head %!tail %inbuf %inlen %eof readsz port url)
+   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %full readsz port url)
       
       (define inlen %inlen)
-      
-      (define (available)
+
+      (define (buffer-available)
 	 (cond
-	    ((>fx %head %!tail) (-fx %head %!tail))
-	    ((<fx %head %!tail) (+fx (-fx inlen (-fx %!tail 1)) %head))
-	    (else inlen)))
+	    ((>fx %head %tail) (-fx %head %tail))
+	    ((<fx %head %tail) (+fx (-fx inlen %tail) %head))
+	    (else 0)))
+      
+      (define (read-fill-string-debug! %inbuf %head sz port)
+	 (when (>=fx (alsa-debug) 4)
+	    (tprint ">>> alsa: read sz=" sz))
+	 (let* ((d0 (current-microseconds))
+		(r (read-fill-string! %inbuf %head sz port))
+		(d1 (current-microseconds)))
+	    (tprint "<<< alsa: read "
+	       r "/" sz " (" (-llong d1 d0) "us)")
+	    r))
+      
+      (define (timed-read sz)
+	 (if (>=fx (alsa-debug) 3)
+	     (read-fill-string-debug! %inbuf %head sz port)
+	     (read-fill-string! %inbuf %head sz port)))
 
-      (define (empty-state?)
-	 (and (=fx %!bstate 0) (>fx (*fx (available) 4) inlen)))
-
-      (define debug-count 0)
-
-      (define (fill-eof)
+      (define (debug-inc-head)
+	 (when (>=fx (alsa-debug) 3)
+	    (tprint "--- alsa, count=" (buffer-available)
+	       " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
+	       %eof " url=" url)))
+      
+      (define (inc-head! i)
+	 (let ((nhead (+fx %head i)))
+	    (if (=fx nhead inlen)
+		(set! %head 0)
+		(set! %head nhead))
+	    (debug-inc-head)
+	    (when %empty
+	       (mutex-lock! %bmutex)
+	       (condition-variable-broadcast! %bcondv)
+	       (mutex-unlock! %bmutex))
+	    (let liip ()
+	       (when (=fx %head %tail)
+		  (wait-buffer-full)
+		  (liip)))))
+      
+      (define (set-eof!)
+	 (when (>=fx (alsa-debug) 2)
+	    (tprint "### alsa: set eof url=" url))
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
-	    (when (and (=fx %!bstate 0) (>fx (available) 0))
-	       (set! %!bstate 1))
-	    (when (>fx debug 0)
-	       (tprint "fill.2a, set eof (bs=" %!bstate ") read=" debug-count))
 	    (set! %eof #t)
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
 	    (onevent o 'loaded url)))
-
-      (define (timed-read sz)
-	 (if (and (>fx debug 0) (or (=fx %!bstate 0) (>fx debug 1)))
-	     (let* ((d0 (current-microseconds))
-		    (_ (tprint ">>> fill.2 on-empty %head=" %head " %!tail=" %!tail
-			  " sz=" sz))
-		    (v (read-fill-string! %inbuf %head sz port))
-		    (d1 (current-microseconds)))
-		(tprint "<<< fill.2 on-empty %head=" %head " %!tail=" %!tail
-		   " sz=" sz " v=" v " -> time = " (-llong d1 d0))
-		v)
-	     (read-fill-string! %inbuf %head sz port)))
-
-      (define (fill sz)
-	 (let ((i (timed-read (minfx sz readsz))))
-	    (if (eof-object? i)
-		(fill-eof)
-		(let ((nhead (+fx %head i)))
-		   (set! debug-count (+fx debug-count i))
-		   (if (=fx nhead inlen)
-		       (set! %head 0)
-		       (set! %head nhead))
-		   (cond
-		      ((=fx %head %!tail)
-		       ;; set state full
-		       (mutex-lock! %bmutex)
-		       (when (>fx debug 1)
-			  (tprint "fill.2b, set full (bs=2) read=" debug-count))
-		       (set! %!bstate 2)
-		       (condition-variable-broadcast! %bcondv)
-		       (mutex-unlock! %bmutex))
-		      ((empty-state?)
-		       ;; set state filled
-		       (mutex-lock! %bmutex)
-		       (when (>fx debug 0)
-			  (tprint "fill.2c, set filled (bs=1) read=" debug-count))
-		       (set! %!bstate 1)
-		       (condition-variable-broadcast! %bcondv)
-		       (mutex-unlock! %bmutex)))))))
-
+      
+      (define (wait-buffer-full)
+	 (set! %full #t)
+	 (mutex-lock! %bmutex)
+	 (when (>=fx (alsa-debug) 2)
+	    (tprint "!!! alsa: wait buffer full url=" url))
+	 (condition-variable-wait! %bcondv %bmutex)
+	 (mutex-unlock! %bmutex)
+	 (set! %full #f))
+      
       (define (abort)
 	 (mutex-lock! %bmutex)
 	 (condition-variable-broadcast! %bcondv)
@@ -645,44 +623,33 @@
 	       (onerror o e)
 	       (sleep (*fx 1000 1000))))
 	 (let loop ()
-	    (when (>fx debug 1)
-	       (tprint "fill.1 %!bstate=" %!bstate
-		  " tl=" %!tail " hd=" %head " eof=" %eof
-		  " read=" debug-count))
 	    (cond
-	       (%eof
-	        ;;; done looping
-		#unspecified)
 	       (%!babort
    	        ;;; external abort
 		(abort))
-	       ((=fx %!bstate 2)
-		;; buffer full, wait to be flushed
-		(mutex-lock! %bmutex)
-		(when (=fx %!bstate 2)
-		   ;; a kind of double check locking, correct, is
-		   ;; ptr read/write are atomic
-		   (condition-variable-wait! %bcondv %bmutex))
-		(mutex-unlock! %bmutex)
-		(loop))
-	       ((<fx %head %!tail)
-		;; free space before the tail
-		(fill (-fx %!tail %head))
-		(loop))
+	       (%eof
+	        ;;; done looping
+		#unspecified)
 	       (else
-		;; free space after the tail (>=fx %head %!tail)
-		(fill (-fx inlen %head))
-		(loop)))))))
+		(let* ((s (minfx readsz
+			     (if (<fx %head %tail)
+				 (-fx %tail %head)
+				 (-fx inlen %head))))
+		       (i (timed-read s)))
+		   (cond
+		      ((eof-object? i) (set-eof!))
+		      ((>fx i 0) (inc-head! i)))
+		   (loop))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsammapbuffer o::alsamusic)
-   (with-access::alsammapbuffer buffer (%!bstate %head %inbufp %eof mmap url)
+   (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof %full mmap url)
       (set! %inbufp (mmap->string mmap))
       (set! %head 0)
-      (set! %!bstate (if (=fx (mmap-length mmap) 0) 0 1))
       (set! %eof #t)
+      (set! %full #t)
       (with-access::alsamusic o (onevent)
 	 (onevent o 'loaded url))))
 
