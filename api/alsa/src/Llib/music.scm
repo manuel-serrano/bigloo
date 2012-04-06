@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Apr  6 17:35:35 2012 (serrano)                */
+;*    Last change :  Fri Apr  6 17:42:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -53,7 +53,6 @@
 	       (%bcondv::condvar read-only (default (make-condition-variable)))
 	       (%bmutex::mutex read-only (default (make-mutex)))
 	       (%inlen::long read-only)
-	       
 	       (%inbufp::string read-only)
 	       (%head::long (default 0))
 	       (%tail::long (default 0))
@@ -328,7 +327,7 @@
 		(let ((buffer (instantiate::alsammapbuffer
 				 (url url)
 				 (mmap mmap)
-				 (%inlen (mmap-length mmap))
+				 (%inlen (elong->fixnum (mmap-length mmap)))
 				 (%inbufp (mmap->string mmap)))))
 		   (set! %buffer buffer)
 		   (mutex-unlock! %amutex)
@@ -645,9 +644,9 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsammapbuffer o::alsamusic)
-   (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof %full mmap url)
+   (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof %full mmap url %inlen)
       (set! %inbufp (mmap->string mmap))
-      (set! %head 0)
+      (set! %head %inlen)
       (set! %eof #t)
       (set! %full #t)
       (with-access::alsamusic o (onevent)

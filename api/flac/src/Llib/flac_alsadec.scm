@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Apr  6 17:35:26 2012 (serrano)                */
+;*    Last change :  Fri Apr  6 17:46:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -200,7 +200,9 @@
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 3)
 		  (tprint "--- flac_decoder, count=" (buffer-available)
-		     " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
+		     " (" (/llong (*llong #l100
+				     (fixnum->llong (buffer-available)))
+			     (fixnum->llong inlen)) "%) eof="
 		     %eof " url=" url)))
 
 	    (define (inc-tail! size)
