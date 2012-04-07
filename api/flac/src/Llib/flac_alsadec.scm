@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Apr  7 07:26:40 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 07:37:42 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -210,7 +210,7 @@
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 3)
-		  (tprint "--- flac_decoder, count=" (buffer-available)
+		  (tprint "--- FLAC_DECODER, count=" (buffer-available)
 		     " (" (/llong (*llong #l100
 				     (fixnum->llong (buffer-available)))
 			     (fixnum->llong inlen)) "%) eof="
@@ -265,7 +265,7 @@
 		       beof
 		       (let ((d0 (current-microseconds)))
 			  (when (>=fx (flac-debug) 2)
-			     (tprint "!!! flac_decoder, buffer empty url=" url))
+			     (tprint "!!! FLAC_DECODER, buffer empty url=" url))
 			  (onstate am 'buffering)
 			  (mutex-lock! %bmutex)
 			  (let liip ()

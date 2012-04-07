@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Apr  7 07:27:06 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 07:38:01 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -143,7 +143,7 @@
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (mpg123-debug) 3)
-		  (tprint "--- mpg123_decoder, count=" (buffer-available)
+		  (tprint "--- MPG123_DECODER, count=" (buffer-available)
 		     " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
 		     %eof " url=" url)))
 
@@ -201,7 +201,7 @@
 		       (onstate am 'ended)
 		       (begin
 			  (when (>=fx (mpg123-debug) 2)
-			     (tprint "!!! mpg123_decoder, buffer empty url="
+			     (tprint "!!! MPG123_DECODER, buffer empty url="
 				url))
 			  (let ((d0 (current-microseconds)))
 			     (onstate am 'buffering)
@@ -224,7 +224,7 @@
 		      (let ((status ($bgl-mpg123-decode
 				       %mpg123 %inbufp %tail s outbuf outlen)))
 			 (when (>=fx (mpg123-debug) 4)
-			    (tprint "~~~ mpg123_decoder, s=" s
+			    (tprint "~~~ MPG123_DECODER, s=" s
 			       " tl=" %tail " hd=" %head
 			       " -> status="
 			       (mpg123-decode-status->symbol status)))

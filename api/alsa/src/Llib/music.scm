@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Apr  6 17:42:32 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 07:41:38 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -553,23 +553,21 @@
 	    (else 0)))
       
       (define (read-fill-string-debug! %inbuf %head sz port)
-	 (when (>=fx (alsa-debug) 4)
-	    (tprint ">>> alsa: read sz=" sz))
+	 (tprint ">>> ALSA: read sz=" sz)
 	 (let* ((d0 (current-microseconds))
 		(r (read-fill-string! %inbuf %head sz port))
 		(d1 (current-microseconds)))
-	    (tprint "<<< alsa: read "
-	       r "/" sz " (" (-llong d1 d0) "us)")
+	    (tprint "<<< ALSA: read " r "/" sz " (" (-llong d1 d0) "us)")
 	    r))
       
       (define (timed-read sz)
-	 (if (>=fx (alsa-debug) 3)
+	 (if (>=fx (alsa-debug) 4)
 	     (read-fill-string-debug! %inbuf %head sz port)
 	     (read-fill-string! %inbuf %head sz port)))
 
       (define (debug-inc-head)
 	 (when (>=fx (alsa-debug) 3)
-	    (tprint "--- alsa, count=" (buffer-available)
+	    (tprint "--- ALSA, count=" (buffer-available)
 	       " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
 	       %eof " url=" url)))
       
@@ -590,7 +588,7 @@
       
       (define (set-eof!)
 	 (when (>=fx (alsa-debug) 2)
-	    (tprint "### alsa: set eof url=" url))
+	    (tprint "### ALSA: set eof url=" url))
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
 	    (set! %eof #t)
@@ -602,7 +600,7 @@
 	 (set! %full #t)
 	 (mutex-lock! %bmutex)
 	 (when (>=fx (alsa-debug) 2)
-	    (tprint "!!! alsa: wait buffer full url=" url))
+	    (tprint "!!! ALSA: wait buffer full url=" url))
 	 (condition-variable-wait! %bcondv %bmutex)
 	 (mutex-unlock! %bmutex)
 	 (set! %full #f))
