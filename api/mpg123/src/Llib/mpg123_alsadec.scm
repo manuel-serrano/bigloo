@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Fri Apr  6 17:35:13 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 07:27:06 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -130,13 +130,16 @@
 		  ((<fx %head %tail) (+fx (-fx inlen %tail) %head))
 		  (else 0)))
 
+	    (define has-been-empty-once #f)
+
 	    (define (buffer-filled?)
 	       ;; filled when > 25%
 	       (>fx (*fx 4 (buffer-available)) inlen))
 	    
 	    (define (buffer-flushed?)
-	       ;; flushed when < 75%
-	       (>fx (*fx 4 (-fx inlen (buffer-available))) inlen))
+	       ;; flushed when slow fill or buffer fill < 75%
+	       (or has-been-empty-once
+		   (>fx (*fx 4 (-fx inlen (buffer-available))) inlen)))
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (mpg123-debug) 3)
@@ -152,6 +155,7 @@
 		      (set! %tail ntail)))
 	       ;; check buffer emptyness
 	       (when (=fx %tail %head)
+		  (set! has-been-empty-once #t)
 		  (set! %empty #t))
 	       ;; notify the buffer no longer full
 	       (when (and %full (buffer-flushed?))

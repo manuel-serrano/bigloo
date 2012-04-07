@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Apr  6 17:46:32 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 07:26:40 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -26,7 +26,8 @@
    (static (class flac-alsa::flac-decoder
 	      (%alsamusic (default #f))
 	      (%buffer (default #f))
-	      (%decoder (default #f))))
+	      (%decoder (default #f))
+	      (%has-been-empty-once (default #f))))
 
    (cond-expand
       ((library alsa)
@@ -67,6 +68,14 @@
       (when (null? mimetypes)
 	 (set! mimetypes '("audio/flac" "application/x-flac")))
       (set! %flac (instantiate::flac-alsa))))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-reset! ::flac-alsa ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (flac-decoder-reset! o::flac-alsa)
+   (with-access::flac-alsa o (%has-been-empty-once)
+      (set! %has-been-empty-once #f)
+      (call-next-method)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-reset! ::flac-alsadecoder ...                        */
@@ -172,7 +181,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
    
-   (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder)
+   (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder
+				%has-been-empty-once)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
@@ -194,8 +204,9 @@
 	       (>fx (*fx 4 (buffer-available)) inlen))
 	    
 	    (define (buffer-flushed?)
-	       ;; flushed when < 75%
-	       (>fx (*fx 4 (-fx inlen (buffer-available))) inlen))
+	       ;; flushed when slow fill or buffer fill < 75%
+	       (or %has-been-empty-once
+		   (>fx (*fx 4 (-fx inlen (buffer-available))) inlen)))
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 3)
@@ -213,6 +224,7 @@
 		      (set! %tail ntail)))
 	       ;; check buffer emptyness
 	       (when (=fx %tail %head)
+		  (set! %has-been-empty-once #t)
 		  (set! %empty #t))
 	       ;; notify the buffer no longer full
 	       (when (and %full (buffer-flushed?))
