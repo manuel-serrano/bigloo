@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Apr  7 07:41:38 2012 (serrano)                */
+;*    Last change :  Sat Apr  7 08:22:33 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -599,7 +599,7 @@
       (define (wait-buffer-full)
 	 (set! %full #t)
 	 (mutex-lock! %bmutex)
-	 (when (>=fx (alsa-debug) 2)
+	 (when (>=fx (alsa-debug) 3)
 	    (tprint "!!! ALSA: wait buffer full url=" url))
 	 (condition-variable-wait! %bcondv %bmutex)
 	 (mutex-unlock! %bmutex)
