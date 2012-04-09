@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Dec 20 09:09:26 2011 (serrano)                */
+#*    Last change :  Mon Apr  9 13:51:01 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -49,6 +49,7 @@ fi
 file=$TMP/actest$USER
 aout=$TMP/Xactest$USER
 
+
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
@@ -90,7 +91,21 @@ EOF
 if eval "$BUILDSH $compile"; then
    echo "$openssllibs"
 else
-   echo "no"
+   openssllibs="-lcrypto $openssllibs"
+   compile="$CC $cflags $file.c -o $aout $openssllibs >/dev/null"
+
+   if eval "$BUILDSH $compile"; then
+     echo "$openssllibs"
+   else
+     openssllibs="-lz $openssllibs"
+     compile="$CC $cflags $file.c -o $aout $openssllibs >/dev/null"
+
+     if eval "$BUILDSH $compile"; then
+       echo "$openssllibs"
+     else
+       echo "no"
+     fi
+  fi
 fi
 
 \rm -f $file.*

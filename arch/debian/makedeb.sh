@@ -7,8 +7,10 @@ repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
 bglconfigureopt=$1
 
-bglpcre=libpcre3
-bglpcredev=libpcre3-dev
+#* bglpcre=libpcre3                                                    */
+#* bglpcredev=libpcre3-dev                                             */
+bglpcre=
+bglpcredev=
 
 if [ "$REPODIR " != " " ]; then
   repodir=$REPODIR;
