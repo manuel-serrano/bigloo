@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Apr 10 15:49:06 2012 (serrano)                */
+/*    Last change :  Tue Apr 10 17:36:29 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -175,14 +175,6 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
       }
    }
 
-#if defined( RGC_DEBUG_EXTRA )	 
-   if( INPUT_PORT_ON_SOCKETP( port ) ) {
-      fprintf( stderr, "sysread: port=%p:%d [%s] read=%5d/%5d\n", 
-	       port, INPUT_PORT( port ).eof, BSTRING_TO_STRING( INPUT_PORT_NAME( port ) ), 
-	       r, size );
-   }
-#endif
-   
    if( mark ) buf[ bufpos - 1 + r ] = 0;
 #if defined( RGC_DEBUG )
    if( bgl_debug() >= 1 ) {

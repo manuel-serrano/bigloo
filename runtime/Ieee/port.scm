@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon Feb 13 10:19:26 2012 (serrano)                */
+;*    Last change :  Tue Apr 10 17:34:05 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -883,6 +883,9 @@
 		      :header '()))
 	     (ip (socket-input sock))
 	     (op (socket-output sock)))
+	 (when (and (integer? timeout) (> timeout 0))
+	    (input-port-timeout-set! ip timeout)
+	    (output-port-timeout-set! op timeout))
 	 (input-port-close-hook-set! ip (lambda (ip) (socket-close sock)))
 	 (with-handler
 	    (lambda (e)

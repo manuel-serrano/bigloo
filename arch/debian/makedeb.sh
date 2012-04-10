@@ -5,7 +5,7 @@ version=3.8a
 minor=
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
-bglconfigureopt=$1
+bglconfigureopt=$*
 
 #* bglpcre=libpcre3                                                    */
 #* bglpcredev=libpcre3-dev                                             */
