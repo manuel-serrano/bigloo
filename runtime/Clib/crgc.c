@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Wed Apr  4 14:50:50 2012 (serrano)                */
+/*    Last change :  Tue Apr 10 15:49:06 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -50,7 +50,7 @@
 #undef RGC_DEBUG
 
 #define RGC_DEBUG_EXTRA
-#undef RGC_DEBUG_EXTRA
+//#undef RGC_DEBUG_EXTRA
 
 /*---------------------------------------------------------------------*/
 /*    C imports                                                        */
@@ -124,12 +124,6 @@ shift_buffer( obj_t port ) {
    INPUT_PORT( port ).matchstart = 0;
 }
 
-#if defined( RGC_DEBUG_EXTRA )
-static int debug_arm = 0;
-static int debug_count_size = 0;
-static int debug_count_read = 0;
-#endif
-
 /*---------------------------------------------------------------------*/
 /*    static bool_t                                                    */
 /*    rgc_size_fill_buffer ...                                         */
@@ -165,31 +159,27 @@ rgc_size_fill_buffer( obj_t port, char *buf, int bufpos, int size, bool_t mark )
 
    if((r = INPUT_PORT( port ).sysread( port, &buf[ bufpos - 1 ], size )) <= 0) {
       if( r == 0 ) {
-#if defined( RGC_DEBUG_EXTRA )	 
-	 if( debug_arm ) {
-	    fprintf( stderr, "sysread EOF after: port=%p:%d read=%5d/%5d READ=%8d/%8d\n",
-		     port, INPUT_PORT( port ).eof,
-		     r, size,
-		     debug_count_read, debug_count_size );
-	 }
-#endif	 
 	 INPUT_PORT( port ).eof = 1;
       } else {
-	 fprintf( stderr, "ERROR: %s (%d)\n", strerror( errno ), errno );
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
+	 
+#if defined( RGC_DEBUG_EXTRA )	 
+	 fprintf( stderr, "sysread: ERROR \"%s\" (%d) port=%p:%d [%s] read=%5d/%5d\n",
+		  strerror( errno ), errno,
+		  port, INPUT_PORT( port ).eof, BSTRING_TO_STRING( INPUT_PORT_NAME( port ) ), 
+		  r, size );
+#endif
+	 
 	 C_SYSTEM_FAILURE( e, "read", strerror( errno ), port );
       }
    }
 
 #if defined( RGC_DEBUG_EXTRA )	 
-   if( debug_arm ) {
-      debug_count_size += size;
-      debug_count_read += r;
-      fprintf( stderr, "sysread: port=%p:%d read=%5d/%5d READ=%8d/%8d\n",
-	       port, INPUT_PORT( port ).eof,
-	       r, size,
-	       debug_count_read, debug_count_size );
+   if( INPUT_PORT_ON_SOCKETP( port ) ) {
+      fprintf( stderr, "sysread: port=%p:%d [%s] read=%5d/%5d\n", 
+	       port, INPUT_PORT( port ).eof, BSTRING_TO_STRING( INPUT_PORT_NAME( port ) ), 
+	       r, size );
    }
 #endif
    
@@ -1088,16 +1078,12 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 
 	    while( (l > 0) && !(INPUT_PORT( p ).eof) ) {
 	       int r;
-#if defined( RGC_DEBUG_EXTRA )
-debug_arm=1;
-#endif
+	       
 	       rgc_size_fill_buffer(
 		  p, &s[ o ], 1,
 		  l < default_io_bufsiz ? l : default_io_bufsiz,
 		  0 );
-#if defined( RGC_DEBUG_EXTRA )
-debug_arm=0;
-#endif
+	       
 	       r = INPUT_PORT( p ).bufpos - 1;
 
 	       INPUT_PORT( p ).filepos += r;

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr  9 13:39:14 2012 (serrano)                */
+#*    Last change :  Tue Apr 10 17:19:49 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -264,6 +264,10 @@ droidroot=$DROID_ROOT
 droidsdkroot=$DROID_SDK_ROOT
 droidtarget=generic
 droidtmp=
+
+
+#*--- companion packages ----------------------------------------------*/
+companions=
 
 #*---------------------------------------------------------------------*/
 #*    Hacker variables                                                 */
@@ -838,6 +842,9 @@ while : ; do
 
     --hostsh=*)
       hostsh="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --companion=*)
+      companions="`echo $1 | sed 's/^[^=]*=//'` $companions";;
 
     -*)
       if [ "$1" != "-h" -a "$1" != "-help" -a "$1" != "--help" ]; then
@@ -2122,15 +2129,15 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # setjmp/longjmp
   if [ "$HOSTOS " = "cygwin " ]; then
-    prefix="_";
+    setjmpprefix="_";
   else
-    prefix=`$autoconf setjmp` || exit 1
+    setjmpprefix=`$autoconf setjmp` || exit 1
   fi
 
-  setjmp="$prefix"setjmp
-  longjmp="$prefix"longjmp
+  setjmp="$setjmpprefix"setjmp
+  longjmp="$setjmpprefix"longjmp
 
-  if [ "$prefix" = "sig" ]; then
+  if [ "$setjmpprefix" = "sig" ]; then
     # MS 10 dec 2010: used to be: setjmp="sigsetjmp(__jb,1)";
     # I don't think signal have to be saved/restore thus we switched
     # to not restoring them. Switching from 0 to 1 significantly improve
@@ -3724,6 +3731,31 @@ if [ -x configure.postcmd ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    configure the companion packages                                 */
+#*---------------------------------------------------------------------*/
+if [ "$companions " != " " ]; then
+  mkdir -p companion
+
+  for p in $companions; do
+    echo "installing $p..."
+    tar -C companion -xf $p
+  done
+
+  opt=;
+
+  if [ "$prefix " != " " ]; then
+    opt="--prefix=$prefix";
+  fi
+
+echo $opt
+
+  for p in companion/*; do
+    echo "configuing $p..."
+    (cd $p && ./configure $opt)
+  done
+fi
+
+#*---------------------------------------------------------------------*/
 #*    Generate the config.status file for debian packages              */
 #*---------------------------------------------------------------------*/
 echo "configuration completed" > config.status
@@ -3741,6 +3773,7 @@ if [ "$summary" = "yes" ]; then
   echo "  supported backends.......... $bcke"
   echo "  default backend............. $defaultbackend"
   echo "  additional APIs............. $apis"
+  echo "  companion packages.......... $companions"
   if [ "$pthreadlibs" = "no" ]; then
     echo "  native threads support...... no"
   else

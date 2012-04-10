@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sun May  1 06:40:35 2011 (serrano)                */
+;*    Last change :  Tue Apr 10 14:47:52 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -363,8 +363,8 @@
        ($socket-accept-many socket errp inbufs outbufs result))
       (else
        (let ((sock (socket-accept socket
-				  :inbuf (vector-ref inbufs 0)
-				  :outbuf (vector-ref outbufs 0))))
+		      :inbuf (vector-ref inbufs 0)
+		      :outbuf (vector-ref outbufs 0))))
 	  (vector-set! result 0 sock)
 	  1))))
 

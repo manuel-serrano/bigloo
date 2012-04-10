@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Feb 15 17:07:50 2012 (serrano)                */
+/*    Last change :  Tue Apr 10 14:08:59 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1939,6 +1939,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define INPUT_PORT_ON_STRINGP( o ) (PORT( o ).kindof == KINDOF_STRING)
 #define INPUT_PORT_ON_PROCP( o ) (PORT( o ).kindof == KINDOF_PROCEDURE)
 #define INPUT_PORT_ON_GZIPP( o ) (PORT( o ).kindof == KINDOF_GZIP)
+#define INPUT_PORT_ON_SOCKETP( o ) (PORT( o ).kindof == KINDOF_SOCKET)
 
 #define BGL_INPUT_GZIP_PORT_INPUT_PORT( o ) ((obj_t)(INPUT_GZIP_PORT( o ).gzip))
    

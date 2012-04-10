@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Mar 29 05:43:15 2012 (serrano)                */
+/*    Last change :  Tue Apr 10 16:50:47 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -995,8 +995,6 @@ set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
 						 close );
    SOCKET( sock ).output->output_port_t.sysflush = &bgl_socket_flush;
       
-/*    if( STRING_LENGTH( inb ) <= 1 )                                  */
-/*       OUTPUT_PORT( SOCKET( sock ).output ).syswrite = (size_t (*)())&write; */
    if( STRING_LENGTH( outb ) <= 1 )
       OUTPUT_PORT( SOCKET( sock ).output ).bufmode = BGL_IONB;
 }
