@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr 10 17:19:49 2012 (serrano)                */
+#*    Last change :  Tue Apr 10 17:28:56 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -264,7 +264,6 @@ droidroot=$DROID_ROOT
 droidsdkroot=$DROID_SDK_ROOT
 droidtarget=generic
 droidtmp=
-
 
 #*--- companion packages ----------------------------------------------*/
 companions=

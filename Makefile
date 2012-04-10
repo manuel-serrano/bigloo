@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Apr 10 17:20:19 2012 (serrano)                */
+#*    Last change :  Tue Apr 10 17:29:44 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -153,7 +153,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*---------------------------------------------------------------------*/
 .PHONY: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
 
-build: checkconf boot companion
+build: checkconf boot companions
 
 checkconf:
 	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
@@ -193,11 +193,11 @@ boot: checkgmake
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
 
-companion:
+companions:
 	for p in companion/*; do \
-	  $(MAKE) -C $p; \
+	  $(MAKE) -C $$p; \
         done
-	@ echo "Companion done..."
+	@ echo "Companions done..."
 	@ echo "-------------------------------"
 
 boot-jvm:
@@ -805,7 +805,7 @@ install-dirs:
 
 install-companions:
 	for p in companion/*; do \
-	  (cd $p && $(MAKE) install); \
+	  (cd $$p && $(MAKE) install); \
 	done
 
 uninstall: uninstall-bee
@@ -837,7 +837,7 @@ uninstall-bee: uninstall-bee0
 
 uninstall-companions:
 	for p in companion/*; do \
-	  (cd $p && $(MAKE) uninstall); \
+	  (cd $$p && $(MAKE) uninstall); \
 	done
 
 #*---------------------------------------------------------------------*/

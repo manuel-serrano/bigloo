@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Apr 10 16:50:47 2012 (serrano)                */
+/*    Last change :  Tue Apr 10 17:26:18 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1060,7 +1060,6 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 #if( BGL_HAVE_SELECT && BGL_HAVE_FCNTL )
    if( timeo > 0 ) set_socket_blocking( s, 1 );
 #endif
-
    
    /* Try to connect */
    while( (err = connect( s,
