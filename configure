@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Mar 29 14:01:39 2012 (serrano)                */
+#*    Last change :  Mon Apr  9 13:39:14 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1852,7 +1852,7 @@ if [ $hostos != "cygwin" -a "$hostos" != "mingw" ]; then
     if [ "$s " != "0 " ]; then
       echo "*** ERROR:configure:the execution stack is too small.";
       echo ""
-      echo "Bigloo REQUIRES a larger stack (it needs a stack of about $stacksize required MB to compile).";
+      echo "Bigloo REQUIRES a larger stack (it needs a stack of about $stacksizerequired MB to compile).";
       echo "In general, it is possible to adjust the stack size by the means of";
       echo "a shell command.";
       echo "On most Unix systems, it is frequently called \"ulimit\" or \"unlimit\".";
