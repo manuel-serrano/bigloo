@@ -19,7 +19,7 @@ fi
 pkg=bigloo
 bglprefix=/opt/bigloo
 
-maemo=`pkg-config maemo-version --modversion`
+maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Apr 10 17:29:44 2012 (serrano)                */
+#*    Last change :  Wed Apr 11 09:00:34 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -194,9 +194,11 @@ boot: checkgmake
 	@ echo "-------------------------------"
 
 companions:
-	for p in companion/*; do \
-	  $(MAKE) -C $$p; \
-        done
+	if [ "$(COMPANIONS) " != " " ]; then \
+	  for p in companion/*; do \
+	    $(MAKE) -C $$p; \
+          done; \
+        fi
 	@ echo "Companions done..."
 	@ echo "-------------------------------"
 
@@ -804,9 +806,11 @@ install-dirs:
         fi
 
 install-companions:
-	for p in companion/*; do \
-	  (cd $$p && $(MAKE) install); \
-	done
+	if [ "$(COMPANIONS) " != " " ]; then \
+	  for p in companion/*; do \
+	    (cd $$p && $(MAKE) install); \
+	  done; \
+        fi
 
 uninstall: uninstall-bee
 	$(MAKE) -C autoconf uninstall
@@ -836,9 +840,11 @@ uninstall-bee0:
 uninstall-bee: uninstall-bee0
 
 uninstall-companions:
-	for p in companion/*; do \
-	  (cd $$p && $(MAKE) uninstall); \
-	done
+	if [ "$(COMPANIONS) " != " " ]; then \
+	  for p in companion/*; do \
+	    (cd $$p && $(MAKE) uninstall); \
+	  done; \
+        fi
 
 #*---------------------------------------------------------------------*/
 #*    unconfigure                                                      */
