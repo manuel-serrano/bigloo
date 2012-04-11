@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Apr  7 07:38:01 2012 (serrano)                */
+;*    Last change :  Wed Apr 11 13:32:54 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -133,8 +133,8 @@
 	    (define has-been-empty-once #f)
 
 	    (define (buffer-filled?)
-	       ;; filled when > 25%
-	       (>fx (*fx 4 (buffer-available)) inlen))
+	       ;; filled when > 12%
+	       (>fx (*fx 8 (buffer-available)) inlen))
 	    
 	    (define (buffer-flushed?)
 	       ;; flushed when slow fill or buffer fill < 75%
