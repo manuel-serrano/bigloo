@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Apr 11 09:00:34 2012 (serrano)                */
+#*    Last change :  Wed Apr 11 09:45:01 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -153,7 +153,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*---------------------------------------------------------------------*/
 .PHONY: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
 
-build: checkconf boot companions
+build: checkconf boot
 
 checkconf:
 	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
@@ -191,15 +191,6 @@ boot: checkgmake
 	  $(MAKE) boot-bglpkg; \
         fi
 	@ echo "Boot done..."
-	@ echo "-------------------------------"
-
-companions:
-	if [ "$(COMPANIONS) " != " " ]; then \
-	  for p in companion/*; do \
-	    $(MAKE) -C $$p; \
-          done; \
-        fi
-	@ echo "Companions done..."
 	@ echo "-------------------------------"
 
 boot-jvm:
@@ -717,12 +708,11 @@ jvm-test:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-progs install-devel install-libs install-runtime \
-  install-companions
+.PHONY: install install-progs install-devel install-libs install-runtime
 
 .PHONY: uninstall
 
-install: install-progs install-docs install-companions
+install: install-progs install-docs
 
 install-progs: install-devel install-libs
 
@@ -805,13 +795,6 @@ install-dirs:
 	  mkdir -p $(INFODIR) && chmod $(MODDIR) $(INFODIR); \
         fi
 
-install-companions:
-	if [ "$(COMPANIONS) " != " " ]; then \
-	  for p in companion/*; do \
-	    (cd $$p && $(MAKE) install); \
-	  done; \
-        fi
-
 uninstall: uninstall-bee
 	$(MAKE) -C autoconf uninstall
 	$(MAKE) -C bde uninstall
@@ -838,13 +821,6 @@ uninstall-bee0:
 	-$(MAKE) -C bmacs uninstall
 
 uninstall-bee: uninstall-bee0
-
-uninstall-companions:
-	if [ "$(COMPANIONS) " != " " ]; then \
-	  for p in companion/*; do \
-	    (cd $$p && $(MAKE) uninstall); \
-	  done; \
-        fi
 
 #*---------------------------------------------------------------------*/
 #*    unconfigure                                                      */
