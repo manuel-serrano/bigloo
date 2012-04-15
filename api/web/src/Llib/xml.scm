@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Thu Sep 15 10:37:07 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Sat Apr 14 13:07:49 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -115,7 +115,6 @@
 		   (if (memq (special-tag item) tags)
 		       (loop acc nitem)
 		       (begin
-			  (tprint "PAS GLOP(" tag "): " nitem)
 			  (list (make tag attributes (reverse! acc)) nitem)))))
 	       ((eof-object? item)
 		(if strict

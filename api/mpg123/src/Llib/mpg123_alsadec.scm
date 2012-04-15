@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Apr 11 13:32:54 2012 (serrano)                */
+;*    Last change :  Sun Apr 15 08:46:06 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -115,7 +115,8 @@
 					      %!dabort %!dpause %!dseek)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv
 					    %inbufp %inlen
-					    %tail %head %eof %empty %full
+					    %tail %head
+					    %eof %empty %filled
 					    url)
 	    
 	    (define inlen %inlen)
@@ -124,46 +125,48 @@
 	    
 	    (define decsz (minfx (*fx 2 outlen) inlen))
 
-	    (define (buffer-available)
-	       (cond
-		  ((>fx %head %tail) (-fx %head %tail))
-		  ((<fx %head %tail) (+fx (-fx inlen %tail) %head))
-		  (else 0)))
-
 	    (define has-been-empty-once #f)
 
+	    (define (buffer-percentage-filled)
+	       (llong->fixnum
+		  (/llong (*llong #l100
+			     (fixnum->llong (alsabuffer-available buffer)))
+		     (fixnum->llong inlen))))
+	    
 	    (define (buffer-filled?)
 	       ;; filled when > 12%
-	       (>fx (*fx 8 (buffer-available)) inlen))
+	       (>fx (*fx 8 (alsabuffer-available buffer)) inlen))
 	    
 	    (define (buffer-flushed?)
 	       ;; flushed when slow fill or buffer fill < 75%
 	       (or has-been-empty-once
-		   (>fx (*fx 4 (-fx inlen (buffer-available))) inlen)))
+		   (>fx (*fx 4 (-fx inlen (alsabuffer-available buffer)))
+		      inlen)))
 	    
 	    (define (debug-inc-tail)
-	       (when (>=fx (mpg123-debug) 3)
-		  (tprint "--- MPG123_DECODER, count=" (buffer-available)
-		     " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
-		     %eof " url=" url)))
+	       (when (>=fx (mpg123-debug) 2)
+		  (tprint "--- MPG123_DECODER, buffer: "
+		     (buffer-percentage-filled) "%"
+		     (if %eof " EOF" "")
+		     " url=" url)))
 
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
-		  (if (=fx ntail inlen)
-		      (set! %tail 0)
-		      (set! %tail ntail)))
-	       ;; check buffer emptyness
-	       (when (=fx %tail %head)
-		  (set! has-been-empty-once #t)
-		  (set! %empty #t))
+		  (when (=fx ntail inlen) (set! ntail 0))
+		  ;; check buffer emptyness
+		  (when (=fx ntail %head)
+		     (set! has-been-empty-once #t)
+		     (set! %empty #t)
+		     (set! %filled #f))
+		  (set! %tail ntail))
+	       ;; debug 
+	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
-	       (when (and %full (buffer-flushed?))
+	       (when (buffer-flushed?)
 		  (mutex-lock! %bmutex)
 		  (condition-variable-broadcast! %bcondv)
-		  (mutex-unlock! %bmutex))
-	       ;; debug 
-	       (debug-inc-tail))
+		  (mutex-unlock! %bmutex)))
 
 	    (define (onstate am st)
 	       (with-access::alsamusic am (onstate %status)
@@ -171,8 +174,6 @@
 		     (set! state st)
 		     (onstate am %status))))
 
-	    (set! %empty (and (not %full) (=fx %tail %head)))
-	    
 	    (let loop ()
 	       (cond
 		  (%!dpause
@@ -201,18 +202,24 @@
 		       (onstate am 'ended)
 		       (begin
 			  (when (>=fx (mpg123-debug) 2)
-			     (tprint "!!! MPG123_DECODER, buffer empty url="
-				url))
+			     (tprint "!!! MPG123_DECODER, buffer empty "
+				(if %eof " EOF" " ")
+				" url=" url))
 			  (let ((d0 (current-microseconds)))
 			     (onstate am 'buffering)
 			     (mutex-lock! %bmutex)
 			     (let liip ()
-				;; wait until the full is 25% filled
+				;; wait until the buffer is filled
 				(unless (or %eof (buffer-filled?))
 				   (condition-variable-wait! %bcondv %bmutex)
+				   (with-access::alsamusic am (%status)
+				      (with-access::musicstatus %status (buffering)
+					 (set! buffering
+					    (buffer-percentage-filled))))
+				   (onstate am 'buffering)
 				   (liip)))
+			     (set! %filled #t)
 			     (mutex-unlock! %bmutex)
-			     (set! %empty #f)
 			     (onstate am 'play)
 			     (loop)))))
 		  (else

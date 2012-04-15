@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Wed Feb  8 08:32:57 2012 (serrano)                */
+;*    Last change :  Sun Apr 15 06:00:51 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -40,7 +40,8 @@
 	      (songlength::int (default 0))
 	      (bitrate::int (default 0))
 	      (khz::int (default 0))
-	      (err::obj (default #f)))
+	      (err::obj (default #f))
+	      (buffering::int (default 0)))
 	   
 	   (generic music-init ::music)
 	   

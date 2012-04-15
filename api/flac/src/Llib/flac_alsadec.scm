@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Apr  7 08:22:59 2012 (serrano)                */
+;*    Last change :  Sun Apr 15 06:17:10 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -124,8 +124,6 @@
 	 (set! %buffer buffer)
 	 (set! %alsamusic am)
 	 (set! %decoder dec)
-	 (with-access::alsabuffer buffer (%tail %head %empty %full)
-	    (set! %empty (and (not %full) (=fx %tail %head))))
 	 (with-access::alsamusic am (%amutex %status pcm)
 	    (unwind-protect
 	       (flac-decoder-decode %flac)
@@ -139,10 +137,10 @@
 (define (onstate am st)
    (with-access::alsamusic am (onstate %status)
       (with-access::musicstatus %status (state)
-	 (set! state st)
-	 (onstate am %status))))
+         (set! state st)
+         (onstate am %status))))
 
-;*---------------------------------------------------------------------*/
+;;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-metadata o::flac-alsa total rate channels bps)
@@ -186,54 +184,59 @@
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
-					     %tail %head %eof %full %empty
+					     %tail %head %eof
+					     %empty %filled
 					     url)
 	    
 	    (define inlen %inlen)
 	    
 	    (define flacbuf (custom-identifier %flacbuf))
 	    
-	    (define (buffer-available)
-	       (cond
-		  ((>fx %head %tail) (-fx %head %tail))
-		  ((<fx %head %tail) (+fx (-fx inlen (-fx %tail 1)) %head))
-		  (else 0)))
+	    (define (buffer-percentage-filled)
+	       (llong->fixnum
+		  (/llong (*llong #l100
+			     (fixnum->llong (alsabuffer-available %buffer)))
+		     (fixnum->llong inlen))))
 	    
 	    (define (buffer-filled?)
 	       ;; filled when > 25%
-	       (>fx (*fx 4 (buffer-available)) inlen))
+	       (>fx (*fx 4 (alsabuffer-available %buffer)) inlen))
 	    
 	    (define (buffer-flushed?)
-	       ;; flushed when slow fill or buffer fill < 75%
+	       ;; flushed when slow fill or buffer fill < 80%
 	       (or %has-been-empty-once
-		   (>fx (*fx 4 (-fx inlen (buffer-available))) inlen)))
+		   (>fx (*fx 5 (-fx inlen (alsabuffer-available %buffer)))
+		      inlen)))
+	    
+	    (define (buffer-full?)
+	       (and (=fx %head %tail) (not %empty)))
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 2)
-		  (tprint "--- FLAC_DECODER, count=" (buffer-available)
-		     " (" (/llong (*llong #l100
-				     (fixnum->llong (buffer-available)))
-			     (fixnum->llong inlen)) "%) eof="
-		     %eof " url=" url)))
-
+		  (tprint "--- FLAC_DECODER, buffer: "
+		     (buffer-percentage-filled) "%"
+		     (if %eof " EOF" "")
+		     " url=" url)))
+	    
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
-		  (if (=fx ntail inlen)
-		      (set! %tail 0)
-		      (set! %tail ntail)))
-	       ;; check buffer emptyness
-	       (when (=fx %tail %head)
-		  (set! %has-been-empty-once #t)
-		  (set! %empty #t))
+		  (when (=fx ntail inlen) (set! ntail 0))
+		  ;; check buffer emptyness
+		  (when (=fx ntail %head)
+		     (set! %has-been-empty-once #t)
+		     (set! %empty #t)
+		     (set! %filled #f))
+		  ;; increment the shared %tail
+		  (set! %tail ntail))
+	       ;; debug
+	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
-	       (when (and %full (buffer-flushed?))
+	       (when (buffer-flushed?)
 		  (mutex-lock! %bmutex)
 		  (condition-variable-broadcast! %bcondv)
-		  (mutex-unlock! %bmutex))
-	       ;; debug
-	       (debug-inc-tail))
-
+		  (mutex-unlock! %bmutex)))
+	    
 	    (let loop ((size size)
 		       (i 0))
 	       (cond
@@ -265,16 +268,22 @@
 		       beof
 		       (let ((d0 (current-microseconds)))
 			  (when (>=fx (flac-debug) 2)
-			     (tprint "!!! FLAC_DECODER, buffer empty url=" url))
-			  (onstate am 'buffering)
+			     (tprint "!!! FLAC_DECODER, buffer empty "
+				(if %eof " EOF" "")
+				" url=" url))
 			  (mutex-lock! %bmutex)
 			  (let liip ()
-			     ;; wait until the full is 25% filled
+			     ;; wait until the buffer is filled
 			     (unless (or %eof (buffer-filled?))
 				(condition-variable-wait! %bcondv %bmutex)
+				(with-access::alsamusic am (%status)
+				   (with-access::musicstatus %status (buffering)
+				      (set! buffering
+					 (buffer-percentage-filled))))
+				(onstate am 'buffering)
 				(liip)))
+			  (set! %filled #t)
 			  (mutex-unlock! %bmutex)
-			  (set! %empty #f)
 			  (onstate am 'play)
 			  (loop size i))))
 		  (else

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Apr  7 20:16:27 2012 (serrano)                */
+;*    Last change :  Sun Apr 15 10:33:10 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -57,7 +57,7 @@
 	       (%head::long (default 0))
 	       (%tail::long (default 0))
 	       (%empty::bool (default #t))
-	       (%full::bool (default #f)))
+	       (%filled::bool (default #f)))
 	    
 	    (class alsadecoder
 	       (alsadecoder-init)
@@ -78,6 +78,8 @@
 	    (generic alsadecoder-close ::alsadecoder)
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
+
+	    (generic alsabuffer-available::long ::alsabuffer)
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
@@ -302,15 +304,19 @@
 			       (unwind-protect
 				  (alsabuffer-fill! buffer o)
 				  (close-input-port ip))
-			       (let ((buffer (prepare-next-buffer o buffer (cdr playlist))))
-				  (when (isa? buffer alsabuffer)
-				     (loop buffer (cdr playlist))))))
+			       (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
+				  (when (isa? nbuffer alsabuffer)
+				     (loop nbuffer (cdr playlist))))))
 			 "alsamusic-buffer"))
 		   (when notify
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-reset! d)
-		   (alsadecoder-decode d o buffer)))
+		   (with-handler
+		      (lambda (e)
+			 (exception-notify e)
+			 (raise e))
+		      (alsadecoder-decode d o buffer))))
 	     (with-access::alsamusic o (onerror %amutex)
 		(mutex-unlock! %amutex)
 		(onerror o
@@ -542,16 +548,10 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsaportbuffer o::alsamusic)
-   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %full readsz port url)
+   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %filled readsz port url)
       
       (define inlen %inlen)
 
-      (define (buffer-available)
-	 (cond
-	    ((>fx %head %tail) (-fx %head %tail))
-	    ((<fx %head %tail) (+fx (-fx inlen %tail) %head))
-	    (else 0)))
-      
       (define (read-fill-string-debug! %inbuf %head sz port)
 	 (tprint ">>> ALSA: read sz=" sz)
 	 (let* ((d0 (current-microseconds))
@@ -565,45 +565,25 @@
 	     (read-fill-string-debug! %inbuf %head sz port)
 	     (read-fill-string! %inbuf %head sz port)))
 
-      (define (debug-inc-head)
-	 (when (>=fx (alsa-debug) 3)
-	    (tprint "--- ALSA, count=" (buffer-available)
-	       " (" (/fx (*fx 100 (buffer-available)) inlen) "%) eof="
-	       %eof " url=" url)))
-      
-      (define (inc-head! i)
-	 (let ((nhead (+fx %head i)))
-	    (if (=fx nhead inlen)
-		(set! %head 0)
-		(set! %head nhead))
-	    (debug-inc-head)
-	    (when %empty
-	       (mutex-lock! %bmutex)
-	       (condition-variable-broadcast! %bcondv)
-	       (mutex-unlock! %bmutex))
-	    (let liip ()
-	       (when (=fx %head %tail)
-		  (wait-buffer-full)
-		  (liip)))))
-      
       (define (set-eof!)
-	 (when (>=fx (alsa-debug) 2)
-	    (tprint "### ALSA: set eof url=" url))
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
 	    (set! %eof #t)
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
 	    (onevent o 'loaded url)))
-      
-      (define (wait-buffer-full)
-	 (set! %full #t)
-	 (mutex-lock! %bmutex)
-	 (when (>=fx (alsa-debug) 3)
-	    (tprint "!!! ALSA: wait buffer full url=" url))
-	 (condition-variable-wait! %bcondv %bmutex)
-	 (mutex-unlock! %bmutex)
-	 (set! %full #f))
+
+      (define (inc-head! i)
+	 (let ((nhead (+fx %head i)))
+	    (if (=fx nhead inlen)
+		(set! %head 0)
+		(set! %head nhead))
+	    (when (or %empty (not %filled))
+	       ;; buffer was empty
+	       (mutex-lock! %bmutex)
+	       (set! %empty #f)
+	       (condition-variable-broadcast! %bcondv)
+	       (mutex-unlock! %bmutex))))
       
       (define (abort)
 	 (mutex-lock! %bmutex)
@@ -627,6 +607,14 @@
 	       (%eof
 	        ;;; done looping
 		#unspecified)
+	       ((and (=fx %head %tail) (not %empty))
+		;; buffer full
+		(mutex-lock! %bmutex)
+		(when (>=fx (alsa-debug) 3)
+		   (tprint "!!! ALSA: wait buffer full url=" url))
+		(condition-variable-wait! %bcondv %bmutex)
+		(mutex-unlock! %bmutex)
+		(loop))
 	       (else
 		(let* ((s (minfx readsz
 			     (if (<fx %head %tail)
@@ -642,11 +630,11 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsammapbuffer o::alsamusic)
-   (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof %full mmap url %inlen)
+   (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof mmap url %inlen)
       (set! %inbufp (mmap->string mmap))
       (set! %head %inlen)
       (set! %eof #t)
-      (set! %full #t)
+      (set! %empty #f)
       (with-access::alsamusic o (onevent)
 	 (onevent o 'loaded url))))
 
@@ -702,6 +690,17 @@
    (with-access::alsadecoder o (mimetypes)
       (member mime mimetypes)))
 
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-available ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-available o::alsabuffer)
+   (with-access::alsabuffer o (%head %tail %empty %inlen)
+      (cond
+	 ((>fx %head %tail) (-fx %head %tail))
+	 ((<fx %head %tail) (+fx (-fx %inlen (-fx %tail 1)) %head))
+	 (%empty 0)
+	 (else %inlen))))
+	 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
 ;*---------------------------------------------------------------------*/
