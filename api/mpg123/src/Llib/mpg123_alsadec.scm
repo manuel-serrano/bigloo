@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sun Apr 15 08:46:06 2012 (serrano)                */
+;*    Last change :  Mon Apr 16 10:26:43 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -210,7 +210,7 @@
 			     (mutex-lock! %bmutex)
 			     (let liip ()
 				;; wait until the buffer is filled
-				(unless (or %eof (buffer-filled?))
+				(unless (or %eof %!dabort (buffer-filled?))
 				   (condition-variable-wait! %bcondv %bmutex)
 				   (with-access::alsamusic am (%status)
 				      (with-access::musicstatus %status (buffering)

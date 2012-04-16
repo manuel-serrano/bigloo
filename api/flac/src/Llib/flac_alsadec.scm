@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Apr 15 06:17:10 2012 (serrano)                */
+;*    Last change :  Mon Apr 16 14:35:00 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -213,10 +213,16 @@
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 2)
-		  (tprint "--- FLAC_DECODER, buffer: "
-		     (buffer-percentage-filled) "%"
-		     (if %eof " EOF" "")
-		     " url=" url)))
+		  (let ((p (buffer-percentage-filled)))
+		     (tprint "--- FLAC_DECODER, buffer: "
+			(cond
+			   ((>= p 80) "")
+			   ((> p 25) "[0m[1;33m")
+			   (else "[0m[1;32m"))
+			p
+			"%[0m"
+			(if %eof " EOF" "")
+			" url=" url))))
 	    
 	    (define (inc-tail! size)
 	       ;; increment the tail
@@ -274,7 +280,7 @@
 			  (mutex-lock! %bmutex)
 			  (let liip ()
 			     ;; wait until the buffer is filled
-			     (unless (or %eof (buffer-filled?))
+			     (unless (or %eof %!dabort (buffer-filled?))
 				(condition-variable-wait! %bcondv %bmutex)
 				(with-access::alsamusic am (%status)
 				   (with-access::musicstatus %status (buffering)
