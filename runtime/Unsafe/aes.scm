@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Sun May 30 07:58:01 2010 (serrano)                */
-;*    Copyright   :  2005-10 Chris Veness                              */
+;*    Last change :  Tue Apr 17 07:53:13 2012 (serrano)                */
+;*    Copyright   :  2005-12 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -25,6 +25,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

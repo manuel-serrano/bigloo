@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Fri Feb 18 15:14:47 2011 (serrano)                */
-;*    Copyright   :  2005-11 Chris Veness                              */
+;*    Last change :  Tue Apr 17 07:53:25 2012 (serrano)                */
+;*    Copyright   :  2005-12 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -21,6 +21,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

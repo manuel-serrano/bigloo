@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sun Jan 15 20:40:30 2012 (serrano)                */
+;*    Last change :  Tue Apr 17 07:48:51 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -40,7 +40,6 @@
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_pairs_and_lists_6_3
-	    __r4_input_6_10_2
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1

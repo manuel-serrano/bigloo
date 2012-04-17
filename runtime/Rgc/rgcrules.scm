@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Thu Nov  3 14:29:40 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:40:02 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -37,6 +37,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

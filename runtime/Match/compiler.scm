@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Jean-Marie Geffroy                                */
 ;*    Creation    :  Thu Jan 14 10:29:50 1993                          */
-;*    Last change :  Thu Nov  3 14:31:25 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:50:17 2012 (serrano)                */
 ;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    A hand-written pattern "compiler"                                */
@@ -41,6 +41,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __rgc
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

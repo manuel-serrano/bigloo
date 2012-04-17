@@ -24,6 +24,7 @@
 	    __structure
 	    __tvector
 	    __bignum
+	    __rgc
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

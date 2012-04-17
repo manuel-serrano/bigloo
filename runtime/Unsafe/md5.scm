@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  6 14:35:24 2005                          */
-;*    Last change :  Thu Sep  3 11:54:06 2009 (serrano)                */
-;*    Copyright   :  2002-09 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 07:52:27 2012 (serrano)                */
+;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MD5 encryption                                                   */
 ;*    -------------------------------------------------------------    */
@@ -22,6 +22,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

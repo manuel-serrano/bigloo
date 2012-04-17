@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Fri Feb 18 15:04:34 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:45:37 2012 (serrano)                */
 ;*                                                                     */
 ;*    On macro-expanse ce satane-case                                  */
 ;*---------------------------------------------------------------------*/
@@ -34,7 +34,6 @@
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_pairs_and_lists_6_3
-	    __r4_input_6_10_2
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1

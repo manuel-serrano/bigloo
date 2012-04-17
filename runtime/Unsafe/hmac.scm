@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  5 08:31:42 2008                          */
-;*    Last change :  Sat Oct 16 20:31:01 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 07:52:18 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HMAC and CRAM                                                    */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

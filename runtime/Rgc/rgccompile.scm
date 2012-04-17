@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Fri Feb 18 14:59:41 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:40:18 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -31,6 +31,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

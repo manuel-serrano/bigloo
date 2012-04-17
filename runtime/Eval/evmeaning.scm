@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Wed Jun 15 16:12:32 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:46:13 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -29,6 +29,7 @@
 	    __bexit
 	    __object
 	    __thread
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

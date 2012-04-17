@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb  3 14:26:55 2012 (serrano)                */
+;*    Last change :  Tue Apr 17 06:55:28 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -160,8 +160,13 @@
 
       ;; before parsing the modules, declare that we are currently compiling
       (register-srfi! 'bigloo-compile)
-      (when (>=fx (bigloo-compiler-debug) 1)
-	 (register-srfi! 'bigloo-debug))
+      (when (>=fx (bigloo-compiler-debug) 1) (register-srfi! 'bigloo-debug))
+      (when *unsafe-type* (register-srfi! 'bigloo-unsafe-type))
+      (when *unsafe-range* (register-srfi! 'bigloo-unsafe-range))
+      (when *unsafe-arity* (register-srfi! 'bigloo-unsafe-arity))
+      (when *unsafe-library* (register-srfi! 'bigloo-unsafe-library))
+      (when *unsafe-eval* (register-srfi! 'bigloo-unsafe-eval))
+      (when *unsafe-version* (register-srfi! 'bigloo-unsafe-version))
       
       ;; we install macros ...
       (install-initial-expander)

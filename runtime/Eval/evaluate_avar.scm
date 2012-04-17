@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Mon Nov 14 12:39:57 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Tue Apr 17 07:49:11 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
 ;*=====================================================================*/
@@ -40,7 +40,6 @@
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_pairs_and_lists_6_3
-	    __r4_input_6_10_2
 	    __r4_control_features_6_9
 	    __r5_control_features_6_4
 	    __r4_vectors_6_8

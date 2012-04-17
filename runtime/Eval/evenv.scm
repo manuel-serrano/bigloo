@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Mon Nov 14 11:13:10 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:47:01 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -36,7 +36,6 @@
 	    __r4_booleans_6_1
 	    __r4_strings_6_7
 	    __r4_pairs_and_lists_6_3
-	    __r4_input_6_10_2
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1

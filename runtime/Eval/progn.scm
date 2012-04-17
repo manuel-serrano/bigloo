@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:07:31 1994                          */
-;*    Last change :  Tue Apr  5 09:10:16 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:47:08 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La normalisation des formes `begin'                              */
 ;*=====================================================================*/
@@ -35,7 +35,6 @@
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_pairs_and_lists_6_3
-	    __r4_input_6_10_2
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1

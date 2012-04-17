@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 26 09:34:19 2007                          */
-;*    Last change :  Thu Sep  3 11:53:49 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 07:52:39 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CRC16 encoding                                                   */
 ;*    -------------------------------------------------------------    */
@@ -22,6 +22,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

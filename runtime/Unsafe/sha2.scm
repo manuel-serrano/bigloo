@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Fri Feb 18 15:13:46 2011 (serrano)                */
-;*    Copyright   :  2008-11 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Tue Apr 17 07:52:57 2012 (serrano)                */
+;*    Copyright   :  2008-12 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -55,6 +55,7 @@
 	   __bexit
 	   __object
 	   __thread
+	   __rgc
 	   __bit
 	   __bignum
 	   __r4_numbers_6_5

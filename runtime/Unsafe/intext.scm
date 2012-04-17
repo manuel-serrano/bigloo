@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Mar 21 19:32:50 2012 (serrano)                */
+;*    Last change :  Tue Apr 17 07:52:03 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -39,7 +39,7 @@
 	    __unicode
 	    __bignum
 	    __regexp
-	    
+	    __rgc
 	    __process
 	    __custom
 	    __date

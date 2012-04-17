@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Fri Feb 18 15:02:51 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:38:05 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -104,7 +104,7 @@
 				    "rgc_buffer_eol_p")
 	    (_rgc-buffer-bof?::bool (::input-port)
 				    "rgc_buffer_bof_p")
-	    (_rgc-buffer-eof?::bool (::input-port)
+	    ($rgc-buffer-eof?::bool (::input-port)
 				    "rgc_buffer_eof_p")
 	    ($rgc-blit-string!::long (::input-port ::string ::long ::long)
 				    "bgl_rgc_blit_string"))
@@ -168,7 +168,7 @@
 		       "rgc_buffer_eol_p")
 	       (method static _rgc-buffer-bof?::bool (::input-port)
 		       "rgc_buffer_bof_p")
-	       (method static _rgc-buffer-eof?::bool (::input-port)
+	       (method static $rgc-buffer-eof?::bool (::input-port)
 		       "rgc_buffer_eof_p")
 	       (method static $rgc-blit-string!::long (::input-port ::string ::long ::long)
 		       "bgl_rgc_blit_string")))
@@ -407,7 +407,7 @@
 ;*    rgc-buffer-eof? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-eof?::bool input-port::input-port)
-   (_rgc-buffer-eof? input-port))
+   ($rgc-buffer-eof? input-port))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-the-submatch ...                                             */

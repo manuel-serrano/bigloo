@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Fri Sep 30 06:48:31 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:38:14 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -73,7 +73,7 @@
 	    (read-of-strings::obj #!optional (ip (current-input-port)))
 	    (read-chars::obj ::obj #!optional (ip (current-input-port)))
 	    (read-chars!::obj ::bstring ::obj #!optional (ip (current-input-port)))
-	    (read-fill-string!::obj ::bstring ::long ::long #!optional (ip (current-input-port)))
+	    (inline read-fill-string!::obj ::bstring ::long ::long #!optional (ip (current-input-port)))
 	    (unread-char! ::char #!optional (ip (current-input-port)))
 	    (unread-string! ::bstring #!optional (ip (current-input-port)))
 	    (unread-substring! ::bstring ::long ::long #!optional (ip (current-input-port)))
@@ -367,17 +367,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-fill-string! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (read-fill-string! s o len::long #!optional (ip (current-input-port)))
-   (if (<=fx len 0)
-       (if (=fx len 0)
-	   0
-	   (raise
-	      (instantiate::&io-error
-		 (proc 'read-chars)
-		 (msg "Illegal negative length")
-		 (obj len))))
-       (let ((n ($rgc-blit-string! ip s o (minfx len (-fx (string-length s) o)))))
-	  (if (and (=fx n 0) (rgc-buffer-eof? ip)) beof n))))
+(define-inline (read-fill-string! s o len::long #!optional (ip (current-input-port)))
+   (cond-expand
+      (bigloo-unsafe-range
+       ;;; disable range all array bound checking
+       (let ((n ($rgc-blit-string! ip s o len)))
+	  (if (and (=fx n 0) ($rgc-buffer-eof? ip)) beof n)))
+      (else
+       ;; default, full testing
+       (if (<=fx len 0)
+	   (if (=fx len 0)
+	       0
+	       (raise
+		  (instantiate::&io-error
+		     (proc 'read-chars)
+		     (msg "Illegal negative length")
+		     (obj len))))
+	   (let ((n ($rgc-blit-string! ip s o
+		       (minfx len (-fx (string-length s) o)))))
+	      (if (and (=fx n 0) ($rgc-buffer-eof? ip)) beof n))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unread-char! ...                                                 */

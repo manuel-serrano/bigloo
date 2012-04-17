@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Jul 19 08:05:04 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 07:48:13 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -34,6 +34,7 @@
 	    __evenv
 	    __evmodule
 	    __structure
+	    __rgc
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

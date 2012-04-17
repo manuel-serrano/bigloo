@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Sat Nov  5 08:58:29 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:43:47 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __tvector
 	    __structure
 	    __tvector
+	    __rgc
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

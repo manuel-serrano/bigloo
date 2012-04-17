@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Mar 29 13:58:25 2012 (serrano)                */
+;*    Last change :  Tue Apr 17 07:56:33 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -27,6 +27,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __rgc
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

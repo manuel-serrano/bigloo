@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 11 16:36:03 1998                          */
-;*    Last change :  Fri Feb 18 15:01:31 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:40:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    From the set of followpos (see the tree construction) and the    */
 ;*    association position x character, we build the DFA.              */
@@ -32,6 +32,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

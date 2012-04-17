@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 17:51:46 1998                          */
-;*    Last change :  Fri Feb 18 15:01:56 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:39:50 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the tree from the list representation.       */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

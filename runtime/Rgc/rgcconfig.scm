@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:10:07 1998                          */
-;*    Last change :  Fri Feb 18 15:02:07 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:39:24 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The configuration file for the new regular expression package.   */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

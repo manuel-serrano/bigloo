@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olin Shivers                                      */
 ;*    Creation    :  Fri Sep 18 14:40:45 1998                          */
-;*    Last change :  Fri Feb 18 15:02:38 2011 (serrano)                */
+;*    Last change :  Tue Apr 17 07:39:38 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Parse Spencer-style regexps into a Bigloo RGC expressions.       */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __rgc
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
