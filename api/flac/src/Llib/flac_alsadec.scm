@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Apr 17 06:49:02 2012 (serrano)                */
+;*    Last change :  Tue Apr 17 13:59:28 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -214,7 +214,7 @@
 	    (define (debug-inc-tail)
 	       (when (>=fx (flac-debug) 2)
 		  (let ((p (buffer-percentage-filled)))
-		     (when (or (< p 80)
+		     (when (or (< p 75)
 			       %has-been-empty-once
 			       (>=fx (flac-debug) 3))
 			(tprint "--- FLAC_DECODER, buffer: "
