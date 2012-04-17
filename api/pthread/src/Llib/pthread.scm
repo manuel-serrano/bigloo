@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Mon Nov 21 09:47:55 2011 (serrano)                */
-;*    Copyright   :  2002-11 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 17:06:29 2012 (serrano)                */
+;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -40,6 +40,11 @@
 	   (class terminated-thread-exception::&exception)
 
 	   ($pthread-nil::$pthread)))
+
+;*---------------------------------------------------------------------*/
+;*    pthread-timedjoin property                                       */
+;*---------------------------------------------------------------------*/
+(cond-expand (bigloo-jvm (register-srfi! 'pthread-timedjoin)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::uncaught-exception ...                            */
@@ -137,7 +142,7 @@
 		    (msg "detached thread")
 		    (obj t)))
 	  (begin
-	     ($pthread-join! $builtin)
+	     ($pthread-join! $builtin (if (pair? timeout) (car timeout) #f))
 	     (if (isa? end-exception &exception)
 		 (raise end-exception)
 		 end-result)))))

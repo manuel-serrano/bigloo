@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sun Feb 14 09:50:32 2010 (serrano)                */
-/*    Copyright   :  2002-10 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 17:26:42 2012 (serrano)                */
+/*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
 /*=====================================================================*/
@@ -128,9 +128,13 @@ public class bglpthread extends Thread {
    }
    
    // Join
-   public static void dojoin( bglpthread t ) {
+   public static void dojoin( bglpthread t, Object tmt ) {
       try {
-	 t.join();
+	 if( bigloo.foreign.INTEGERP( tmt ) ) {
+	    t.join( bigloo.foreign.CINT( (bint)tmt ) );
+	 } else {
+	    t.join();
+	 }
       } catch( Throwable e ) {
 	 try {
 	    foreign.internalerror( e );

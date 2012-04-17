@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Apr 11 09:48:37 2012 (serrano)                */
+#*    Last change :  Tue Apr 17 17:16:46 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1659,7 +1659,12 @@ else
     pthreadtimedlock=`$autoconf pthreadlock --lib="$pthreadlibs"` || exit 1;
   fi
 
-  # pthread_mutex_timedlock
+  # pthread_timedjoin_np
+  if [ "$pthreadlibs" != "no" ]; then
+    pthreadtimedjoin=`$autoconf pthreadtimedjoin --lib="$pthreadlibs"` || exit 1;
+  fi
+
+  # pthread local storage
   if [ "$pthreadlibs" != "no" -a "$pthreadlocalstorage " = " " ]; then
     pthreadlocalstorage=`$autoconf pthreadlocalstorage --lib="$pthreadlibs"` || exit 1;
   fi
@@ -2737,6 +2742,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@GC_HAVE_BLOCKING@|$gchaveblocking|" \
               -e "s|@GC_HAVE_DO_BLOCKING@|$gchavedoblocking|" \
               -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
+              -e "s|@PTHREAD_HAVE_TIMEDJOIN@|$pthreadtimedjoin|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
@@ -3095,6 +3101,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       fi
     fi
 
+    if [ "$pthreadtimedjoin " = "1 " ]; then
+       srfitimedjoin=pthread-timedjoin;
+    fi
+
     cat api/fthread/src/Misc/fthread.init.in \
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
@@ -3102,6 +3112,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     cat api/pthread/src/Misc/pthread.init.in \
         | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
+        | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
+        | sed -e "s|@PTHREAD_TIMEDJOIN@|$srfitimedjoin|g" \
         >  api/pthread/src/Misc/pthread.init
   else
     napis=;

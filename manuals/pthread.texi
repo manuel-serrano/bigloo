@@ -104,7 +104,7 @@ Here are the possible types for @var{timeout}.
 Terminates @var{thread} as soon as possible.
 @end deffn
 
-@deffn {SRFI-18 function} thread-join! @var{thread}
+@deffn {SRFI-18 function} thread-join! @var{thread} [@var{timeout}]
 The current thread waits until the @var{thread} terminates. If @var{thread}
 terminates, @code{thread-join!} returns the end-result of the @var{thread}
 or the end-exception if that thread terminates abnormally.
@@ -112,6 +112,14 @@ or the end-exception if that thread terminates abnormally.
 It is possible to wait for the termination of the a thread if and only if
 it has been started with @code{thread-start-joinable!}. In particular,
 threads started with @code{thread-start!} cannot be joined.
+
+The optional argument @var{timeout}, forces to wait at for
+@var{timeout} milli-seconds for the thread to terminate. Note that not
+all systems support this facility. When supported, the
+@code{cond-expand} (see @pxref{SRFIs}) @code{pthread-timedjoin} is
+defined. When the timeout expires some systems, raise an error. Other
+systems abort silently.
+
 @end deffn
 
 @deffn {SRFI-18 function} terminated-thread-exception? @var{obj}

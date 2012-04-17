@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Thu Sep 16 07:29:40 2010 (serrano)                */
-/*    Copyright   :  2002-10 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 17:25:58 2012 (serrano)                */
+/*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -258,14 +258,30 @@ bglpth_current_thread() {
 /*    bglpth_thread_join ...                                           */
 /*---------------------------------------------------------------------*/
 void
-bglpth_thread_join( bglpthread_t t ) {
+bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
+   int joinret;
+   
+   /* wait for the thread to be started */
    pthread_mutex_lock( &(t->mutex) );
    if( !t->status ) {
       pthread_cond_wait( &(t->condvar), &(t->mutex) );
    }
    pthread_mutex_unlock( &(t->mutex) );
 
-   if( pthread_join( t->pthread, 0L ) ) {
+   /* wait for its termination */
+#if( BGL_HAVE_PTHREAD_TIMEDJOIN )
+   if( INTEGERP( tmt ) ) {
+      struct timespec tm;
+      
+      tm.tv_sec = CINT( tmt ) / 1000;
+      tm.tv_nsec = CINT( tmt ) % 1000;
+
+      joinret = pthread_timedjoin_np( t->pthread, 0L, &tm );
+   } else 
+#endif
+      joinret = pthread_join( t->pthread, 0L );
+
+   if( joinret ) {
       FAILURE( string_to_bstring( "thread-join!" ),
 	       string_to_bstring( "Cannot join thread" ),
 	       string_to_bstring( strerror( errno ) ) );
