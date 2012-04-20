@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Mar 22 15:31:47 2012 (serrano)                */
+/*    Last change :  Thu Apr 19 19:17:33 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -167,8 +167,12 @@ sslread( obj_t port, char *ptr, long len ) {
 
 loop:   
    if( (r = SSL_read( ssl, ptr, len )) <= 0 ) {
-      if( (SSL_get_error( ssl, r ) == SSL_ERROR_SSL) && (errno == EINTR) )
-	 goto loop;
+      if( r == 0 ) {
+	 INPUT_PORT( port ).eof = 1;
+      } else {
+	 if( (SSL_get_error( ssl, r ) == SSL_ERROR_SSL) && (errno == EINTR) )
+	    goto loop;
+      }
    }
    
    return r;

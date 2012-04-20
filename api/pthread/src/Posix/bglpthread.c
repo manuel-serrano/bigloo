@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Apr 17 17:25:58 2012 (serrano)                */
+/*    Last change :  Tue Apr 17 17:36:03 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -284,7 +284,7 @@ bglpth_thread_join( bglpthread_t t, obj_t tmt ) {
    if( joinret ) {
       FAILURE( string_to_bstring( "thread-join!" ),
 	       string_to_bstring( "Cannot join thread" ),
-	       string_to_bstring( strerror( errno ) ) );
+	       string_to_bstring( strerror( joinret ) ) );
    }
 }
 

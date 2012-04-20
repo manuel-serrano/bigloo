@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Thu May  5 10:31:55 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Thu Apr 19 20:48:22 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
 ;*    Gallesio's IMAP Scheme library                                   */

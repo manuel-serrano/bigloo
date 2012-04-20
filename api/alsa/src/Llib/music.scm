@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Apr 17 07:11:59 2012 (serrano)                */
+;*    Last change :  Thu Apr 19 08:00:36 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -223,7 +223,7 @@
 ;*---------------------------------------------------------------------*/
 (define (open-file url o::alsamusic)
    (with-access::alsamusic o (timeout)
-      (open-input-file url #t timeout)))
+      (open-input-file url #f timeout)))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::alsamusic ...                                       */

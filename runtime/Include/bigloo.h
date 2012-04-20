@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Apr 10 14:08:59 2012 (serrano)                */
+/*    Last change :  Thu Apr 19 08:27:56 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -333,7 +333,7 @@ typedef union scmobj {
       union scmobj *chook;       /*    - the close hook                */
       void *timeout;             /*    - a timeout structure           */
       void *userdata;            /*    - a user data (see SSL sockets) */
-      int (*sysclose)();         /*   - the system close              */
+      int (*sysclose)();         /*    - the system close              */
       long (*sysseek)();         /*    - the system seek               */
    } port_t;
       
@@ -343,7 +343,7 @@ typedef union scmobj {
       long cnt;                  /*    - the number of char left       */
       char *ptr;                 /*    - the next char position        */
       int bufmode;               /*    - the buffering mode            */
-      size_t (*syswrite)();      /*   - the system write              */
+      size_t (*syswrite)();      /*    - the system write              */
       union scmobj *(*sysflush)();/*   - the system flush              */
       union scmobj *fhook;       /*    - the flush hook                */
       union scmobj *flushbuf;    /*    - the flush buffer              */
@@ -352,7 +352,7 @@ typedef union scmobj {
    struct input_port {           /*  an input_port:                    */
       struct port port;          /*    - a regular port                */
       long filepos;              /*    - the position in the file      */
-      long fillbarrier;          /*   - the fill barrier position     */
+      long fillbarrier;          /*    - the fill barrier position     */
       long (*sysread)();         /*    - the system reader             */
       bool_t eof;                /*    - have we seen an end-of-file   */
       long matchstart;           /*    - the start of a match position */
@@ -638,7 +638,7 @@ typedef struct BgL_objectz00_bgl {
 /* bgl_input_timeout_t */
 struct bgl_input_timeout {
    long timeout;
-   long (*sysread)( void *, size_t, size_t, obj_t );
+   long (*sysread)();
    int (*sysclose)( obj_t );
 };
    
@@ -1932,7 +1932,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define INPUT_PORT_FILEPOS( o ) (INPUT_PORT( o ).filepos)
 
 #define INPUT_PORT_TOKENPOS( o ) \
-    (INPUT_PORT_FILEPOS( o ) - RGC_BUFFER_LENGTH( o ))
+    (INPUT_PORT_FILEPOS( o ) - RGC_BUFFER_MATCH_LENGTH( o ))
 
 #define INPUT_PORT_ON_FILEP( o ) (PORT( o ).kindof == KINDOF_FILE)
 
@@ -1943,13 +1943,10 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define BGL_INPUT_GZIP_PORT_INPUT_PORT( o ) ((obj_t)(INPUT_GZIP_PORT( o ).gzip))
    
-#define INPUT_PORT_BUFL( o ) \
-   (INPUT_PORT( o ).bufpos - INPUT_PORT( o ).matchstop - 1)
-   
 #define INPUT_PORT_FILLBARRIER( o ) \
    (INPUT_PORT( o ).fillbarrier)
 #define INPUT_PORT_FILLBARRIER_SET( o, v ) \
-   (INPUT_PORT_FILLBARRIER( o ) = (v - INPUT_PORT_BUFL( o )))
+   (INPUT_PORT_FILLBARRIER( o ) = (v - RGC_BUFFER_AVAILABLE( o )))
 
 #define INPUT_PORT_CLOSEP( o ) \
     (PORT( o ).kindof == KINDOF_CLOSED)
@@ -2030,24 +2027,25 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #   define assert( exp ) ;
 #endif
 
-#if defined( RGC_DEBUG )
-#  define RGC_CHECK_BUFFER_REF( p, o, expr ) \
-   ((((o) < 0) || ((o) >= STRING_LENGTH(BGL_INPUT_PORT_BUFFER( p )))) ? \
-    fprintf( stderr, "*** RGC_CHECK_BUFFER_REF_FAILED( %s: %d ) o=%d bufsiz=%d\n", __FILE__, __LINE__, (o), STRING_LENGTH( BGL_INPUT_PORT_BUFFER( p ) ) ) : (expr))
+#if (defined( RGC_DEBUG ) && (RGC_DEBUG > 1))
+#define RGC_BUFFER_EMPTY( p ) \
+   (printf( "rgc_buffer_empty forward=%d bufpos=%d size=%d\n", INPUT_PORT( p ).forward, INPUT_PORT( p ).bufpos, INPUT_PORT( p ).length), \
+    INPUT_PORT( p ).forward >= INPUT_PORT( p ).bufpos)
 #else
-#  define RGC_CHECK_BUFFER_REF( p, o, expr ) expr
+#define RGC_BUFFER_EMPTY( p ) \
+   (INPUT_PORT( p ).forward >= INPUT_PORT( p ).bufpos)
 #endif
-   
+
 #define RGC_BUFFER_REF( p, o ) \
-   RGC_CHECK_BUFFER_REF( p, o, STRING_REF( BGL_INPUT_PORT_BUFFER( p ), o ) )
+   STRING_REF( BGL_INPUT_PORT_BUFFER( p ), o )
 #define RGC_BUFFER_SET( p, o, c ) \
-   RGC_CHECK_BUFFER_REF( p, o, STRING_SET( BGL_INPUT_PORT_BUFFER( p ), o, c ) )
+   STRING_SET( BGL_INPUT_PORT_BUFFER( p ), o, c )
 
 #if (defined( RGC_DEBUG ) && (RGC_DEBUG > 1))
 #define RGC_BUFFER_GET_CHAR( i ) \
    (printf( "get_char: %d %c forward: %d \n", \
-	    (unsigned int)(RGC_BUFFER( i )[ INPUT_PORT( i ).forward ]), \
-	    RGC_BUFFER( i )[ INPUT_PORT( i ).forward ], \
+	    RGC_BUFFER_REF( i, INPUT_PORT( i ).forward ), \
+	    RGC_BUFFER_REF( i, INPUT_PORT( i ).forward ), \
             INPUT_PORT( i ).forward ), \
     (unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward++ )))
 #else
@@ -2068,9 +2066,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    ((int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).matchstart + offset )))
    
 #define RGC_SET_FILEPOS( p ) \
-   (INPUT_PORT( p ).filepos += RGC_BUFFER_LENGTH( p ))
-   
-#define RGC_START_MATCH( p ) \
+   (INPUT_PORT( p ).filepos += RGC_BUFFER_MATCH_LENGTH( p ))
+
+#define RGC_START_MATCH( p )  \
    (INPUT_PORT( p ).forward = \
      INPUT_PORT( p ).matchstart = \
       INPUT_PORT( p ).matchstop)
@@ -2078,16 +2076,16 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define RGC_STOP_MATCH( p ) \
    (INPUT_PORT( p ).matchstop = INPUT_PORT( p ).forward)
 
-#define RGC_BUFFER_EMPTY( p ) \
-   (INPUT_PORT( p ).forward == INPUT_PORT( p ).bufpos)
-
 #define RGC_MATCH_FAIL( p ) \
    (INPUT_PORT( p ).matchstart++)
 
 #define RGC_FAILING_CHAR( p ) \
-   ((unsigned int)(RGC_BUFFER( p )[ INPUT_PORT( p ).matchstart ]))
+   ((unsigned int)(RGC_BUFFER_REF( p, INPUT_PORT( p ).matchstart ]))
 
-#define RGC_BUFFER_LENGTH( p ) \
+#define RGC_BUFFER_AVAILABLE( o ) \
+   (INPUT_PORT( o ).bufpos - INPUT_PORT( o ).matchstop)
+   
+#define RGC_BUFFER_MATCH_LENGTH( p ) \
    (INPUT_PORT( p ).matchstop - INPUT_PORT( p ).matchstart)
 
 #define RGC_BUFFER_POSITION( p ) \

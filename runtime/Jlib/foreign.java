@@ -5160,7 +5160,7 @@ public final class foreign
 
    public static int INPUT_PORT_TOKENPOS(input_port p)
       {
-	 return INPUT_PORT_FILEPOS(p)-RGC_BUFFER_LENGTH(p);
+	 return INPUT_PORT_FILEPOS(p)-RGC_BUFFER_MATCH_LENGTH(p);
       }
 
    public static int OUTPUT_PORT_FILEPOS(output_port p)
@@ -5295,7 +5295,7 @@ public final class foreign
 	 return (p.filepos += (p.matchstop - p.matchstart));
       }
 
-   public static int RGC_BUFFER_LENGTH(input_port p)
+   public static int RGC_BUFFER_MATCH_LENGTH(input_port p)
       {
 	 return (p.matchstop - p.matchstart);
       }

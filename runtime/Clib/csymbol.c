@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Wed Feb  1 10:46:16 2012 (serrano)                */
+/*    Last change :  Wed Apr 18 16:09:07 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -118,50 +118,21 @@ bstring_to_symbol( obj_t name ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_string_to_symbol_len ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_string_to_symbol_len( char *cname, long len ) {
+   return bstring_to_symbol( string_to_bstring_len( cname, len ) );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    string_to_symbol ...                                             */
-/*    char * --> obj_t                                                 */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 string_to_symbol( char *cname ) {
-   long hash_number;
-   obj_t bucket;
-
-   hash_number = get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
-   
-   bgl_mutex_lock( symbol_mutex );
-   bucket = VECTOR_REF( c_symtab, hash_number );
-   
-   if( NULLP( bucket ) ) {
-      obj_t symbol = make_symbol( string_to_bstring( cname ) );
-      obj_t pair   = MAKE_PAIR( symbol, BNIL );
-      
-      VECTOR_SET( c_symtab, hash_number, pair );
-      
-      bgl_mutex_unlock( symbol_mutex );
-      return symbol;
-   } else {
-      obj_t run = bucket, back = bucket;
-      
-      while( !NULLP( run ) &&
-	     SYMBOL( CAR( run ) ).string &&
-	     strcmp( (char *)BSTRING_TO_STRING( SYMBOL( CAR( run ) ).string ),
-		     cname ) )
-         back = run, run = CDR( run );
-       
-      if( !NULLP( run ) ) {
-	 bgl_mutex_unlock( symbol_mutex );
-         return CAR( run );
-      }
-      else {
-         obj_t symbol = make_symbol( string_to_bstring( cname ) );
-	 obj_t pair   = MAKE_PAIR( symbol, BNIL );
-	 
-         SET_CDR( back, pair );
-
-	 bgl_mutex_unlock( symbol_mutex );
-         return symbol;
-      }
-   }
+   return bstring_to_symbol( string_to_bstring( cname ) );
 }
 
 /*---------------------------------------------------------------------*/

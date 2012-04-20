@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Tue Apr 17 07:38:14 2012 (serrano)                */
+;*    Last change :  Wed Apr 18 18:54:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -236,7 +236,7 @@
 			 (else
 			  (the-failure)))))
 	  (read/rp grammar ip))
-       ;; IOs are unbufferized, uses read-char to get the
+       ;; std IOs are unbufferized, uses read-char to get the
        ;; characters one by one
        (let loop ((c (read-char ip))
 		  (w 0)

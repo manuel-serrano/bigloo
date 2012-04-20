@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Wed Nov 16 12:10:04 2011 (serrano)                */
+;*    Last change :  Wed Apr 18 21:08:27 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -373,10 +373,10 @@
 ;*---------------------------------------------------------------------*/
 (define (test-input-port)
    (test-module "test-input-port" "port.scm")
-   (test "input" (open-input-file "wrong") (input-port? #\space))
-   (test "input" (call-with-input-file "misc/input.txt" test1) #\.)
-   (test "input" (test2 "misc/input.txt" 10) #\.)
-   (test "input" (test2b "misc/input.txt" 10) #\.)
+   (test "input.1" (open-input-file "wrong") (input-port? #\space))
+   (test "input.2" (call-with-input-file "misc/input.txt" test1) #\.)
+   (test "input.3" (test2 "misc/input.txt" 10) #\.)
+   (test "input.4" (test2b "misc/input.txt" 10) #\.)
    (test "input-string" (test3 "(4 5 (3) #(1 2 3) \"toto\" titi)")
 	 '(4 5 (3) #(1 2 3) "toto" titi))
    (test "input-string" (test3b "(4 5 (3) #(1 2 3) \"toto\" titi)")

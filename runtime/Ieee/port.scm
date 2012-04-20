@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Apr 17 07:55:38 2012 (serrano)                */
+;*    Last change :  Wed Apr 18 18:55:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -284,7 +284,7 @@
 		       "INPUT_PORT_FILEPOS")
 
 	       (method static $input-port-fill-barrier::long (::input-port)
-		       "INPUT_PORT_FILLBARRIER")
+ 		       "INPUT_PORT_FILLBARRIER")
 	       (method static $input-port-fill-barrier-set!::void (::input-port ::long)
 		       "INPUT_PORT_FILLBARRIER_SET")
 	       
@@ -831,7 +831,7 @@
       ((string? bufinfo)
        bufinfo)
       ((fixnum? bufinfo)
-       (if (>fx bufinfo 0)
+       (if (>=fx bufinfo 2)
 	   ($make-string/wo-fill bufinfo)
 	   ($make-string/wo-fill 2)))
       (else

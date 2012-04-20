@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  8 11:03:03 1994                          */
-;*    Last change :  Thu Nov  3 14:20:09 2011 (serrano)                */
+;*    Last change :  Wed Apr 18 18:55:04 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Quelques tests d'rgc                                             */
 ;*=====================================================================*/
@@ -68,6 +68,13 @@
       ((: (submatch (* digit)) "." (submatch (* digit)))
        (cons (string->integer (the-submatch 1))
 	     (string->integer (the-submatch 2))))))
+
+(define *symbol*
+   (regular-grammar ()
+      ((+ (in ("az")))
+       (the-subsymbol 1 (-fx (the-length) 1)))
+      ((: (in ("09")) (+ (in ("az"))))
+       (the-symbol))))
 
 (define (recette-suffix string)
    (string-case string
@@ -232,22 +239,24 @@
 (define (test-rgc)
    (test-module "rgc" "rgc.scm")
    (test "submatch+"
-	 (read/rp *number* (open-input-string "3.1415"))
-	 '(3 . 1415))
+      (read/rp *number* (open-input-string "3.1415")) '(3 . 1415))
    (test "submatch*"
-	 (read/rp *number2* (open-input-string "3.1415"))
-	 '(3 . 1415))
+      (read/rp *number2* (open-input-string "3.1415")) '(3 . 1415))
+   (test "symbol.1"
+      (read/rp *symbol* (open-input-string "abcdefgh")) 'bcdefg)
+   (test "symbol.2"
+      (read/rp *symbol* (open-input-string "0abcdefgh")) '0abcdefgh)
    (test "string-case" (recette-suffix "toto.org.scm") "scm")
    (test "rgc ="
-	 (test-rgc= #";1line\n;2line\n;3line\n;4line\n")
-	 #";1line\n;2line\n")
+      (test-rgc= #";1line\n;2line\n;3line\n;4line\n")
+      #";1line\n;2line\n")
    (test "rgc substring"
-	 (test-rgc-substring "\"foo\"")
-	 #t)
+      (test-rgc-substring "\"foo\"")
+      #t)
    (let ((str #";1line\n;2line\n;3line\n;4line\n"))
       (test "rgc >="
-	    (test-rgc>= str)
-	    str))
+	 (test-rgc>= str)
+	 str))
    (test "rgc and" (rgc-and "aaaabbbbccc") "aaaabbbb")
    (test "rgc and" (rgc-and-2 "aaaabbbbccc") "")
    (test "rgc but" (rgc-but "aaaabbbbccc") "aaaabbbb")
@@ -255,11 +264,11 @@
    (test "rgc ..." (rgc-etc "begin") "beg")
    (test "rgc submatch" (rgc-submatch "   +++   ") "      ")
    (test "fixnum" (read/rp (regular-grammar () ((: digit) (the-fixnum)))
-			   (open-input-string "1234"))
-	 1)
+		     (open-input-string "1234"))
+      1)
    (test "fixnum" (read/rp (regular-grammar () ((+ digit) (the-fixnum)))
-			   (open-input-string "1234"))
-	 1234)
+		     (open-input-string "1234"))
+      1234)
    (test "bof" (test-bof) '((bof #\a) (char #\b) (char #\c) (eof #\d)))
    (let ((res (test-read-chars #f 8192)))
       (test "read-chars.1" (test-read-chars 10 1) res)
@@ -273,13 +282,13 @@
       (test "read-chars.8b" (test-read-chars2 3 3 3) 6)
       (test "read-chars.8c" (test-read-chars2 3 10 3) 6)
       (test "read-chars.9" (test-read-chars3 3 3 0)
-	    (test-read-chars4 6 3 0))
+	 (test-read-chars4 6 3 0))
       (test "read-chars.9b" (test-read-chars3 3 3 10)
-	    (test-read-chars4 6 3 10))
+	 (test-read-chars4 6 3 10))
       (test "read-chars.9c" (test-read-chars3 10 3 10)
-	    (test-read-chars4 20 3 10))
+	 (test-read-chars4 20 3 10))
       (test "read-chars.9d" (test-read-chars3 10 3 0)
-	    (test-read-chars4 20 3 0))
+	 (test-read-chars4 20 3 0))
       (test "read-chars.10" (test-read-chars5 "123") "3")
       (test "read-chars.11" (test-read-chars5 "12") "12")
       (test "read-chars.12" (test-read-chars5 "1") "1"))

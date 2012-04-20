@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Thu Aug 28 15:45:56 2008 (serrano)                */
+/*    Last change :  Thu Apr 19 17:08:45 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -90,7 +90,7 @@ bstring_to_keyword( obj_t name ) {
       }
       else {
          obj_t keyword = make_keyword( name );
-	 obj_t pair    = MAKE_PAIR( keyword, BNIL );
+	 obj_t pair = MAKE_PAIR( keyword, BNIL );
 	 
          SET_CDR( back, pair );
 
@@ -101,47 +101,19 @@ bstring_to_keyword( obj_t name ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_string_to_keyword_len ...                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_string_to_keyword_len( char *name, long len ) {
+   return bstring_to_keyword( string_to_bstring_len( name, len ) );
+}
+
+/*---------------------------------------------------------------------*/
 /*    string_to_keyword ...                                            */
 /*    char * --> obj_t                                                 */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 string_to_keyword( char *cname ) {
-   long hash_number;
-   obj_t bucket;
-
-   hash_number = get_hash_power_number( cname, KEYWORD_HASH_TABLE_SIZE_SHIFT );
-   
-   bgl_mutex_lock( keyword_mutex );
-   bucket = VECTOR_REF( c_keytab, hash_number );
-   
-   if( NULLP( bucket ) ) {
-      obj_t keyword = make_keyword( string_to_bstring( cname ) );
-      obj_t pair = MAKE_PAIR( keyword, BNIL );
-      
-      VECTOR_SET( c_keytab, hash_number, pair );
-      
-      bgl_mutex_unlock( keyword_mutex );
-      return keyword;
-   } else {
-      obj_t run = bucket, back = bucket;
-      
-      while( !NULLP( run ) &&
-	     strcmp( (const char *)BSTRING_TO_STRING( KEYWORD(CAR( run )).string ),
-		     (const char *)cname ) )
-         back = run, run = CDR( run );
-      
-      if( !NULLP( run ) ) {
-	 bgl_mutex_unlock( keyword_mutex );
-         return CAR( run );
-      }
-      else {
-         obj_t keyword = make_keyword( string_to_bstring( cname ) );
-	 obj_t pair = MAKE_PAIR( keyword, BNIL );
-	 
-         SET_CDR( back, pair );
-
-	 bgl_mutex_unlock( keyword_mutex );
-         return keyword;
-      }
-   }
+   return bstring_to_keyword( string_to_bstring( cname ) );
 }

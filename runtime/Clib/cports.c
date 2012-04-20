@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Mar 21 13:17:29 2012 (serrano)                */
+/*    Last change :  Thu Apr 19 16:40:30 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -197,6 +197,7 @@ static obj_t procflush( obj_t );
 static int procclose( obj_t );
 
 static obj_t output_flush( obj_t, char*, size_t, int, bool_t );
+static long sysread_with_timeout( obj_t, char *, long );
 
 /*---------------------------------------------------------------------*/
 /*    standard ports ...                                               */
@@ -286,8 +287,12 @@ bgl_read( obj_t port, char *ptr, long num ) {
    long n;
 
  loop:
-   if( (n = _READ( fileno( stream ), ptr, num ) ) < 0 ) {
-      if( errno == EINTR ) goto loop;
+   if( (n = _READ( fileno( stream ), ptr, num ) ) <= 0 ) {
+      if( n == 0 ) {
+	 INPUT_PORT( port ).eof = 1;
+      } else if( errno == EINTR ) {
+	 goto loop;
+      }
    }
 
    return n;
@@ -312,11 +317,17 @@ bgl_console_read( obj_t port, char *ptr, long num ) {
    output_flush( _stdout, 0, 0, 1, 1 );
 
    /* now stdout is flushed out, read the charcters */
-   while( ((c = getc( stream )) != EOF) ) {
-      *buf++ = c;
+   while( num > 0 ) {
+      int c = getc( stream );
 
-      if( c == '\n' ) break;
-      if( --num <= 0 ) break;
+      if( c == EOF ) {
+	 INPUT_PORT( port ).eof = 1;
+	 break;
+      } else {
+	 *buf++ = c;
+	 if( c == '\n' ) break;
+	 num--;
+      }
    }
 
    return (long)(buf - ptr);
@@ -398,6 +409,48 @@ timeout_set_port_blocking( char *fun, int fd, int bool ) {
 
 /*---------------------------------------------------------------------*/
 /*    static long                                                      */
+/*    timed_read ...                                                   */
+/*---------------------------------------------------------------------*/
+#if( defined( POSIX_FILE_OPS ) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL )
+static long
+posix_timed_read( obj_t port, char *ptr, long num ) {
+   struct bgl_input_timeout *tmt = PORT( port ).timeout;
+   int fd = fileno( (FILE *)PORT_STREAM( port ) );
+   fd_set readfds;
+   struct timeval timeout;
+   long n;
+
+loop:
+   FD_ZERO( &readfds );
+   FD_SET( fd, &readfds );
+
+   timeout.tv_sec = tmt->timeout / 1000000;
+   timeout.tv_usec = tmt->timeout % 1000000;
+
+   if( (n = select( fd + 1, &readfds, NULL, NULL, &timeout )) <= 0 ) {
+      if( n == 0 ) {
+	 C_SYSTEM_FAILURE(
+	    BGL_IO_TIMEOUT_ERROR,
+	    "read/timeout", "time limit exceeded", port );
+      } else {
+	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
+	 /* I'm not 100% sure that this new test is correct */
+	 if( errno == EINTR ) {
+	    goto loop;
+	 }
+	 
+	 C_SYSTEM_FAILURE(
+	    BGL_IO_READ_ERROR,
+	    "read/timeout", strerror( errno ), port );
+      }
+   } else {
+      return sysread_with_timeout( port, ptr, num );
+   }
+}
+#endif   
+
+/*---------------------------------------------------------------------*/
+/*    static long                                                      */
 /*    sysread_with_timeout ...                                         */
 /*    -------------------------------------------------------------    */
 /*    In constrast to read, this function does not block on input if   */
@@ -406,50 +459,25 @@ timeout_set_port_blocking( char *fun, int fd, int bool ) {
 static long
 sysread_with_timeout( obj_t port, char *ptr, long num ) {
 #if( defined( POSIX_FILE_OPS ) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL )
-   int fd = fileno( (FILE *)PORT_STREAM( port ) );
    struct bgl_input_timeout *tmt = PORT( port ).timeout;
-   long (*sysread)() = tmt->sysread;
-   long n, to;
-   fd_set readfds;
-   struct timeval timeout;
+   long n;
 
-   if( (n = sysread( port, ptr, num )) >= 0 ) {
+   if( (n = tmt->sysread( port, ptr, num )) > 0 ) {
+      return n;
+   } else if( n == 0 ) {
+      INPUT_PORT( port ).eof = 1;
       return n;
    } else {
-      if( errno != EAGAIN ) return n;
+      if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
+	 int e = (errno == BGL_ECONNRESET ?
+		  BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
+	 
+	 C_SYSTEM_FAILURE( e, "read/timeout", strerror( errno ), port );
+      }
    }
 
    /* wait for characters to be available */
-   to = tmt->timeout;
-   
-loop:
-   FD_ZERO( &readfds );
-   FD_SET( fd, &readfds );
-
-   timeout.tv_sec = to / 1000000;
-   timeout.tv_usec = to % 1000000;
-
-   if( (n = select( fd + 1, &readfds, NULL, NULL, &timeout )) <= 0 ) {
-      if( n == 0 ) {
-	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR,
-			   "read/timeout",
-			   "time limit exceeded",
-			   port );
-      } else {
-	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
-	 /* I'm not 100% sure that this new test is correct */
-	 if( errno == EINTR ) {
-	    goto loop;
-	 }
-	 
-	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
-			   "read/timeout",
-			   strerror( errno ),
-			   port );
-      }
-   } else {
-      return sysread( port, ptr, num );
-   }
+   return posix_timed_read( port, ptr, num );
 #else
    return INPUT_PORT( port ).sysread( port, ptr, num );
 #endif
@@ -478,7 +506,7 @@ strseek( void *port, long offset, int whence ) {
 /*    static void                                                      */
 /*    write_string ...                                                 */
 /*---------------------------------------------------------------------*/
-#define write_string( port, s, l, err ) {	\
+#define write_string( port, s, l, err ) { \
    void *_stream = PORT_STREAM( port ); \
    size_t (*_syswrite)(void *, void *, size_t) = OUTPUT_PORT( port ).syswrite; \
    long _n; \
@@ -985,7 +1013,7 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
    new_input_port->input_port_t.matchstart = 0;
    new_input_port->input_port_t.matchstop = 0;
    new_input_port->input_port_t.forward = 0;
-   new_input_port->input_port_t.bufpos = 1;
+   new_input_port->input_port_t.bufpos = 0;
    new_input_port->input_port_t.lastchar = '\n';
    new_input_port->input_port_t.buf = buf;
 
@@ -1050,7 +1078,7 @@ bgl_input_port_buffer_set( obj_t ip, obj_t buffer ) {
    INPUT_PORT( ip ).matchstart = 0;
    INPUT_PORT( ip ).matchstop = 0;
    INPUT_PORT( ip ).forward = 0;
-   INPUT_PORT( ip ).bufpos = 1;
+   INPUT_PORT( ip ).bufpos = 0;
    INPUT_PORT( ip ).lastchar = '\n';
 
    if( PORT( ip ).kindof != KINDOF_STRING ) {
@@ -1242,7 +1270,7 @@ bgl_open_input_string( obj_t string, int start ) {
 			       buffer );
 
    CREF( port )->input_port_t.eof = 1;
-   CREF( port )->input_port_t.bufpos = bufsiz + 1;
+   CREF( port )->input_port_t.bufpos = bufsiz;
    CREF( port )->input_port_t.length = bufsiz;
 
    return port;
@@ -1264,7 +1292,7 @@ bgl_open_input_string_bang( obj_t buffer ) {
 			       buffer );
 
    CREF( port )->input_port_t.eof = 1;
-   CREF( port )->input_port_t.bufpos = bufsiz + 1;
+   CREF( port )->input_port_t.bufpos = bufsiz;
    CREF( port )->input_port_t.length = bufsiz;
 
    return port;
@@ -1338,7 +1366,6 @@ bgl_open_input_c_string( char *c_string ) {
 			       buffer );
 
    CREF(port)->input_port_t.eof = 1;
-   /* MS 25 Aug 2008, used to be bufpos = bufsiz + 1 */
    CREF(port)->input_port_t.bufpos = bufsiz;
 
    return port;
@@ -1359,7 +1386,7 @@ bgl_reopen_input_c_string( obj_t port, char *c_string ) {
       CREF(port)->input_port_t.buf = make_string_sans_fill( bufsiz + 1 );
    }
 
-   CREF(port)->input_port_t.bufpos = bufsiz + 1;
+   CREF(port)->input_port_t.bufpos = bufsiz;
    CREF(port)->input_port_t.matchstart = 0;
    CREF(port)->input_port_t.matchstop = 0;
    CREF(port)->input_port_t.forward = 0;
@@ -1417,7 +1444,7 @@ bgl_input_port_seek( obj_t port, long pos ) {
       INPUT_PORT( port ).matchstart = 0;
       INPUT_PORT( port ).matchstop = 0;
       INPUT_PORT( port ).forward = 0;
-      INPUT_PORT( port ).bufpos = 1;
+      INPUT_PORT( port ).bufpos = 0;
       INPUT_PORT( port ).lastchar = '\n';
       RGC_BUFFER_SET( port, 0, '\0' );
 
@@ -1498,7 +1525,7 @@ bgl_input_port_reopen( obj_t port ) {
    INPUT_PORT( port ).matchstart = 0;
    INPUT_PORT( port ).matchstop = 0;
    INPUT_PORT( port ).forward = 0;
-   INPUT_PORT( port ).bufpos = 1;
+   INPUT_PORT( port ).bufpos = 0;
    INPUT_PORT( port ).lastchar = '\n';
    RGC_BUFFER_SET( port, 0, '\0' );
 
@@ -1518,7 +1545,7 @@ reset_console( obj_t port ) {
    if( PORT( port ).kindof == KINDOF_CONSOLE ) {
       INPUT_PORT( port ).matchstart = 0;
       INPUT_PORT( port ).matchstop = 0;
-      INPUT_PORT( port ).bufpos = 1;
+      INPUT_PORT( port ).bufpos = 0;
       INPUT_PORT( port ).lastchar = '\n';
       RGC_BUFFER_SET( port, 0, '\0' );
    }
@@ -1984,7 +2011,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       
    if( offset >= 0 ) bgl_input_port_seek( ip, offset );
 
-   dsz = inp.bufpos - inp.matchstop - 1;
+   dsz = RGC_BUFFER_AVAILABLE( ip );
 #ifdef DEBUG_SENDCHARS   
    fprintf( stderr, "bgl_sendchars.1: sz=%d offset=%d dsz=%d\n", sz, offset, dsz );
 #endif	 
