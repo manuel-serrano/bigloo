@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Apr 19 16:40:30 2012 (serrano)                */
+/*    Last change :  Fri Apr 20 07:32:11 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -471,7 +471,7 @@ sysread_with_timeout( obj_t port, char *ptr, long num ) {
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
-	 
+
 	 C_SYSTEM_FAILURE( e, "read/timeout", strerror( errno ), port );
       }
    }
