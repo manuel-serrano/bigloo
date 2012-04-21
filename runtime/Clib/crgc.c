@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Apr 20 06:55:51 2012 (serrano)                */
+/*    Last change :  Sat Apr 21 06:05:06 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -808,13 +808,9 @@ llong:
 }
 
 /*---------------------------------------------------------------------*/
-/*    TO BE REMOVED                                                    */
+/*    int                                                              */
+/*    rgc_debug_port ...                                               */
 /*---------------------------------------------------------------------*/
-long RGC_BUFFER_LENGTH( obj_t p ) {
-   return RGC_BUFFER_MATCH_LENGTH( p );
-}
-
-
 int rgc_debug_port( obj_t port, char *msg ) {
    long matchstart = INPUT_PORT( port ).matchstart;
    long matchstop = INPUT_PORT( port ).matchstop;
