@@ -50,7 +50,7 @@
 (define (mrg32k3a-unpack-state state)
   (list->vector (map inexact->exact (f64vector->list state))))
 
-(define (mrg32k3a-random-range)
+(define (mrg32k3a-random-range::obj)
   (if (fixnum? 4294967087)
       4294967087
        536870911)) ; 2^29-1

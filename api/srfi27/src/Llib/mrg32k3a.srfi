@@ -368,7 +368,7 @@
 ; k such that m-max^k >= n and then use the rejection method to choose
 ; uniformly from the range {0..n-1}.
 
-(define mrg32k3a-m-max
+(define mrg32k3a-m-max::obj
   (mrg32k3a-random-range))
 
 (define (mrg32k3a-random-power state k) ; n = m-max^k, k >= 1

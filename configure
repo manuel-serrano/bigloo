@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr 17 17:16:46 2012 (serrano)                */
+#*    Last change :  Wed Apr 25 07:42:34 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2230,28 +2230,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
   else
     havegmp=0;
-  fi
-
-  # srfi27 post check
-  if [ "$srfi27_is_enabled " = "yes " -a $alignment -ge 3 ]; then
-    if [ "$srfi27force " = "yes " ]; then
-      echo "*** WARNING:configure: SRFI-27 is known not to work on non-32 bits"
-      echo "architure. Use it cautiously on this platform."
-    else
-      echo "*** WARNING:configure: SRFI-27 requires a 32bits platform."
-      echo "Disabling SRFI27."
-      napis=;
-      for a in $apis; do
-         if [ $a != "srfi27" ]; then
-           if [ "$napis " = " " ]; then
-             napis="$a";
-           else
-             napis="$napis $a";
-           fi
-         fi
-      done
-      apis=$napis;
-    fi
   fi
 
   # Where to find the socket api

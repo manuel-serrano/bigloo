@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Fri Dec 17 11:16:02 2010 (serrano)                */
-/*    Copyright   :  2003-10 Manuel Serrano                            */
+/*    Last change :  Wed Apr 25 07:33:14 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -745,7 +745,7 @@ bgl_safe_minus_fx( long x, long y ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_mul_fx( long x, long y ) {
-   if( !y )
+   if( !y || !x )
       return BINT( 0 );
    else {
       long z = ((x * y) << PTR_ALIGNMENT) >> PTR_ALIGNMENT;
