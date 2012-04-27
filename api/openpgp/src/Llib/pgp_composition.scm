@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Mon Aug 30 09:36:17 2010                          */
-;*    Last change :  Wed Nov 16 08:55:30 2011 (serrano)                */
-;*    Copyright   :  2010-11 Florian Loitsch, Manuel Serrano           */
+;*    Last change :  Fri Apr 27 11:11:40 2012 (serrano)                */
+;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    RFC2440 encoding/decoding                                        */
 ;*=====================================================================*/

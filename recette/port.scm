@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Wed Apr 18 21:08:27 2012 (serrano)                */
+;*    Last change :  Fri Apr 27 12:21:48 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -394,6 +394,15 @@
    (let ((p (open-output-string)))
       (write #a179 p)
       (test "char.3" (close-output-port p) "#a179"))
+   (test "char.4"
+      (let* ((s "toto\000tutu\000\000")
+	     (p (open-input-string s)))
+	 (let loop ((i 0))
+	    (let ((c (read-char p)))
+	       (if (eof-object? c)
+		   (-fx (string-length s) i)
+		   (loop (+ i 1))))))
+      0)
    (let ((p (open-output-string)))
       (display '("toto" N'EST PAS CONTENT) p)
       (let ((s (get-output-string p)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Wed Nov 16 09:15:07 2011 (serrano)                */
-;*    Copyright   :  2010-11 Florian Loitsch, Manuel Serrano.          */
+;*    Last change :  Fri Apr 27 12:14:11 2012 (serrano)                */
+;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
 ;*    -------------------------------------------------------------    */
@@ -155,6 +155,7 @@
       (if (eof-object? c)
 	  '()
 	  (let ((packet (decode-packet p)))
+	     (tprint "packet=" (typeof packet))
 	     (cons packet
 		   (decode-packets p))))))
 
@@ -208,14 +209,17 @@
 				(fixnum->bignum (safe-read-octet p))))))))))
 
 (define (decode-scalar::long p::input-port len::long)
-   (let loop ((i 0)
-	      (n 0))
-      (cond
-	 ((=fx i len)
-	  n)
-	 (else (loop (+fx i 1)
-		     (+fx (*fx n 256)
-			  (safe-read-octet p)))))))
+   (with-trace 4 "decode-scalar"
+      (trace-item "len=" len)
+      (let loop ((i 0)
+		 (n 0))
+	 (cond
+	    ((=fx i len)
+	     n)
+	    (else
+	     (let ((o (safe-read-octet p)))
+		(trace-item "o=" o)
+		(loop (+fx i 1) (+fx (*fx n 256) o))))))))
 
 ;; ----------------------------------------------------------------------------
 ;; 5.1 Public-Key Encrypted Session Key Packets (Tag 1)
@@ -364,6 +368,7 @@
 	    (trace-item "sub-packet of type: " type-byte
 		   " " (subpacket-type->human-readable type))
 	    (trace-item "sub-packet is critical?: " critical?)
+	    (trace-item "type=" type)
 	    
 	    ;; currently the following
 	    (case type
@@ -524,11 +529,14 @@
 		   (data (safe-read-octets (-fx len 1) p)))))))))
 
 (define (decode-sub-packets p::input-port)
-   (let ((c (peek-char p)))
-      (if (eof-object? c)
-	  '()
-	  (let ((sub-packet (decode-sub-packet p)))
-	     (cons sub-packet (decode-sub-packets p))))))
+   (with-trace 3 "decode-sub-packets"
+      (let ((c (peek-char p)))
+	 (trace-item "c=" (char->integer c))
+	 (if (eof-object? c)
+	     '()
+	     (let ((sub-packet (decode-sub-packet p)))
+		(trace-item "sub-patch=" (typeof sub-packet))
+		(cons sub-packet (decode-sub-packets p)))))))
 
 ;; -------- 5.2.3
 (define (decode-signature-v4 p::input-port version)
@@ -567,9 +575,11 @@
 	     (hashed-spd-len-str (safe-read-octets 2 p))
 	     (hashed-spd-len (scalar->fixnum hashed-spd-len-str))
 	     (hashed-spd (safe-read-octets hashed-spd-len p))
-	     (dumm1 (trace-item "*- decoding hashed subpackets"))
+	     (dumm1 (trace-item "*- decoding hashed subpackets="
+		       (string-for-read hashed-spd)))
 	     (sps1 (decode-sub-packets (open-input-string hashed-spd)))
 	     (creation-date (find-creation-date sps1))
+	     (dumm2 (trace-item "creation-date=" creation-date))
 	     (unhashed-spd-len (decode-scalar p 2))
 	     (dumm1 (trace-item "*- decoding unhashed subpackets"))
 	     (sps2 (decode-sub-packets
@@ -746,7 +756,7 @@
 	    (set! creation-date cd)))
       (when (or (=fx version 2) (=fx version 3))
 	 (let ((vd (decode-scalar p 2))) ;; if 0 indefinite
-	    (trace-item "valid days: " bd)
+	    (trace-item "valid days: " vd)
 	    (with-access::PGP-Key-Packet kp (valid-days)
 	       (set! valid-days vd))))
       (let* ((algo-byte (safe-read-octet p))

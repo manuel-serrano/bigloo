@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 08:27:56 2012 (serrano)                */
+/*    Last change :  Fri Apr 27 12:29:38 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2030,10 +2030,10 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #if (defined( RGC_DEBUG ) && (RGC_DEBUG > 1))
 #define RGC_BUFFER_EMPTY( p ) \
    (printf( "rgc_buffer_empty forward=%d bufpos=%d size=%d\n", INPUT_PORT( p ).forward, INPUT_PORT( p ).bufpos, INPUT_PORT( p ).length), \
-    INPUT_PORT( p ).forward >= INPUT_PORT( p ).bufpos)
+    INPUT_PORT( p ).forward > INPUT_PORT( p ).bufpos)
 #else
 #define RGC_BUFFER_EMPTY( p ) \
-   (INPUT_PORT( p ).forward >= INPUT_PORT( p ).bufpos)
+   (INPUT_PORT( p ).forward > INPUT_PORT( p ).bufpos)
 #endif
 
 #define RGC_BUFFER_REF( p, o ) \

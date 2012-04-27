@@ -237,7 +237,8 @@
 	 (receive (algo key-string)
 	    (decrypt-public-key-session-key session-packet subkey password-provider)
 	    (trace-item "public-key-session-key decription succeeded, len="
-		   (string-length (PGP-Symmetrically-Encrypted-Packet-data encrypted)))
+	       (with-access::PGP-Symmetrically-Encrypted-Packet encrypted (data)
+		  (string-length data)))
 	    (symmetric-decrypt encrypted key-string algo))))
 
    (with-trace 2 "pubkey-decrypt"
@@ -290,8 +291,8 @@
 
    (with-trace 2 "pgp-decrypt"
       (with-access::PGP-Encrypted encrypted (session-keys encrypted-data)
-	 (trace-item "encrypted length="
-		     (string-length (PGP-Symmetrically-Encrypted-Packet-data encrypted-data)))
+	 (with-access::PGP-Symmetrically-Encrypted-Packet encrypted-data (data)
+	    (trace-item "encrypted length=" (string-length data)))
 	 (when (not (pair? session-keys))
 	    (trace-item "No session-key. Create a default one."))
 	 

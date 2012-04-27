@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Aug 13 08:28:04 2010                          */
-;*    Last change :  Wed Nov 16 09:50:00 2011 (serrano)                */
-;*    Copyright   :  2010-11 Florian Loitsch, Manuel Serrano           */
+;*    Last change :  Fri Apr 27 11:21:28 2012 (serrano)                */
+;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP logic                                                    */
 ;*=====================================================================*/
@@ -551,7 +551,7 @@
    (define (verify-user-id id::Signed-ID)
       (with-access::Signed-ID id (id sigs)
 	 (trace-item "Verifying user-id")
-	 (trace-item (PGP-ID-Packet-data id))
+	 (trace-item (with-access::PGP-ID-Packet id (data) data))
 	 (when (null? sigs)
 	    (trace-item "No signature for user-id"))
 	 (for-each
@@ -1060,13 +1060,14 @@
    (with-trace 5 "symmetric-decrypt"
       (trace-item "Key-string: " (str->hex-string key-string))
       (trace-item "Algo: " (symmetric-key-algo->human-readable algo))
-      (trace-item (let ((encrypted-str (PGP-Symmetrically-Encrypted-Packet-data encrypted)))
+      (trace-item (with-access::PGP-Symmetrically-Encrypted-Packet encrypted
+			((encrypted-str data))
 		     (format "encrypted data: len=~a data=~a"
-			     (string-length encrypted-str)
-			     (str->hex-string
-			      (substring encrypted-str
-					 0
-					 (min 50 (string-length encrypted-str)))))))
+			(string-length encrypted-str)
+			(str->hex-string
+			   (substring encrypted-str
+			      0
+			      (min 50 (string-length encrypted-str)))))))
       (if (isa? encrypted PGP-MDC-Symmetrically-Encrypted-Packet)
 	  (mdc-symmetric-decrypt encrypted key-string algo)
 	  (non-mdc-symmetric-decrypt encrypted key-string algo))))
