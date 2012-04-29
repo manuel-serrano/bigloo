@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Jan  6 09:42:10 2012 (serrano)                */
+;*    Last change :  Sun Apr 29 06:15:42 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -396,7 +396,7 @@
       (("-O?opt" (help "-O[2..6]" "Optimization modes"))
        (parse-optim-args opt))
       ;; cfa optimizations
-      (("-fcfa-arithmetic" (help "Enable arithmetic spec. (fixum and flonum)"))
+      (("-fcfa-arithmetic" (help "Enable arithmetic spec. (see -farithmetic-overflow)"))
        (set! *optim-cfa-fixnum-arithmetic?* #t)
        (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic" (help "Disable arithmetic spec."))
@@ -878,7 +878,7 @@
        (set! *init-mode* 'read))
       (("-init-intern")
        (set! *init-mode* 'intern))
-      (("-init-object-legacy" (help "init-object-[legacy|staged]" "Object system initialization"))
+      (("-init-object-legacy" (help "-init-object-[legacy|staged]" "Object system initialization"))
        (set! *object-init-mode* 'legacy))
       (("-init-object-staged")
        (set! *object-init-mode* 'staged))

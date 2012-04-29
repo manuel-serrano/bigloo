@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Fri Feb  3 14:34:42 2012 (serrano)                */
+;*    Last change :  Sun Apr 29 06:10:48 2012 (serrano)                */
 ;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -46,7 +46,9 @@
       (trace (cfa 4) "============= specialize arithmetic ===============\n")
       (for-each (lambda (spec)
 		   (apply install-specialize! (cdr spec)))
-		*specializations*)
+		(if *arithmetic-overflow*
+		    *specializations*
+		    (append *specializations-overflow* *specializations*)))
       (patch-tree! globals)
       (show-specialize)
       (uninstall-specializes!))
@@ -63,9 +65,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    arithmetic-spec-types ...                                        */
 ;*    -------------------------------------------------------------    */
-;*    In order to find on which types an arithmetic operator is        */
-;*    specialized, we inspect which modules defines its specialized    */
-;*    versions.                                                        */
+;*    In order to find the types an arithmetic operator is specialized */
+;*    for, we inspect which modules defines its specialized versions.  */
 ;*---------------------------------------------------------------------*/
 (define (arithmetic-spec-types global)
    (with-access::global global (id module)
@@ -95,64 +96,66 @@
 ;*---------------------------------------------------------------------*/
 (define *specializations*
    '((c-eq? (c-eq? foreign)
-	    (=fx __r4_numbers_6_5_fixnum)
-	    (=fl __r4_numbers_6_5_flonum))
+	(=fx __r4_numbers_6_5_fixnum)
+	(=fl __r4_numbers_6_5_flonum))
      (2= (2= __r4_numbers_6_5)
-	 (=fx __r4_numbers_6_5_fixnum)
-	 (=fl __r4_numbers_6_5_flonum))
+	(=fx __r4_numbers_6_5_fixnum)
+	(=fl __r4_numbers_6_5_flonum))
      (2< (2< __r4_numbers_6_5)
-	 (<fx __r4_numbers_6_5_fixnum)
-	 (<fl __r4_numbers_6_5_flonum))
+	(<fx __r4_numbers_6_5_fixnum)
+	(<fl __r4_numbers_6_5_flonum))
      (2> (2> __r4_numbers_6_5)
-	 (>fx __r4_numbers_6_5_fixnum)
-	 (>fl __r4_numbers_6_5_flonum))
+	(>fx __r4_numbers_6_5_fixnum)
+	(>fl __r4_numbers_6_5_flonum))
      (2<= (2<= __r4_numbers_6_5)
-	  (<=fx __r4_numbers_6_5_fixnum)
-	  (<=fl __r4_numbers_6_5_flonum))
+	(<=fx __r4_numbers_6_5_fixnum)
+	(<=fl __r4_numbers_6_5_flonum))
      (2>= (2>= __r4_numbers_6_5)
-	  (>=fx __r4_numbers_6_5_fixnum)
-	  (>=fl __r4_numbers_6_5_flonum))
+	(>=fx __r4_numbers_6_5_fixnum)
+	(>=fl __r4_numbers_6_5_flonum))
      (zero? (zero? __r4_numbers_6_5)
-	    (zerofx? __r4_numbers_6_5_fixnum)
-	    (zerofl? __r4_numbers_6_5_flonum))
+	(zerofx? __r4_numbers_6_5_fixnum)
+	(zerofl? __r4_numbers_6_5_flonum))
      (positive? (positive? __r4_numbers_6_5)
-		(positivefx? __r4_numbers_6_5_fixnum)
-		(positivefl? __r4_numbers_6_5_flonum))
+	(positivefx? __r4_numbers_6_5_fixnum)
+	(positivefl? __r4_numbers_6_5_flonum))
      (negative? (negative? __r4_numbers_6_5)
-		(negativefx? __r4_numbers_6_5_fixnum)
-		(negativefl? __r4_numbers_6_5_flonum))
-     (2+ (2+ __r4_numbers_6_5)
-	 (+fx __r4_numbers_6_5_fixnum)
-	 (+fl __r4_numbers_6_5_flonum))
-     (2- (2- __r4_numbers_6_5)
-	 (-fx __r4_numbers_6_5_fixnum)
-	 (-fl __r4_numbers_6_5_flonum))
-     (2* (2* __r4_numbers_6_5)
-	 (*fx __r4_numbers_6_5_fixnum)
-	 (*fl __r4_numbers_6_5_flonum))
-     (2/ (2/ __r4_numbers_6_5)
-	 (/fl __r4_numbers_6_5_flonum))
-     (abs (abs __r4_numbers_6_5)
-	  (absfx __r4_numbers_6_5_fixnum)
-	  (absfl __r4_numbers_6_5_flonum))
+	(negativefx? __r4_numbers_6_5_fixnum)
+	(negativefl? __r4_numbers_6_5_flonum))
      (log (log __r4_numbers_6_5)
-	  (logfl __r4_numbers_6_5_flonum))
+	(logfl __r4_numbers_6_5_flonum))
      (exp (exp __r4_numbers_6_5)
-	  (expfl __r4_numbers_6_5_flonum))
+	(expfl __r4_numbers_6_5_flonum))
      (sin (sin __r4_numbers_6_5)
-	  (sinfl __r4_numbers_6_5_flonum))
+	(sinfl __r4_numbers_6_5_flonum))
      (cos (cos __r4_numbers_6_5)
-	  (cosfl __r4_numbers_6_5_flonum))
+	(cosfl __r4_numbers_6_5_flonum))
      (tan (tan __r4_numbers_6_5)
-	  (tanfl __r4_numbers_6_5_flonum))
+	(tanfl __r4_numbers_6_5_flonum))
      (atan (atan __r4_numbers_6_5)
-	   (atanfl __r4_numbers_6_5_flonum))
+	(atanfl __r4_numbers_6_5_flonum))
      (asin (asin __r4_numbers_6_5)
-	   (asinfl __r4_numbers_6_5_flonum))
+	(asinfl __r4_numbers_6_5_flonum))
      (acos (acos __r4_numbers_6_5)
-	   (acosfl __r4_numbers_6_5_flonum))
+	(acosfl __r4_numbers_6_5_flonum))
      (sqrt (sqrt __r4_numbers_6_5)
-	   (sqrtfl __r4_numbers_6_5_flonum))))
+	(sqrtfl __r4_numbers_6_5_flonum))))
+
+(define *specializations-overflow*
+   '((2+ (2+ __r4_numbers_6_5)
+	(+fx __r4_numbers_6_5_fixnum)
+	(+fl __r4_numbers_6_5_flonum))
+     (2- (2- __r4_numbers_6_5)
+	(-fx __r4_numbers_6_5_fixnum)
+	(-fl __r4_numbers_6_5_flonum))
+     (2* (2* __r4_numbers_6_5)
+	(*fx __r4_numbers_6_5_fixnum)
+	(*fl __r4_numbers_6_5_flonum))
+     (2/ (2/ __r4_numbers_6_5)
+	(/fl __r4_numbers_6_5_flonum))
+     (abs (abs __r4_numbers_6_5)
+	(absfx __r4_numbers_6_5_fixnum)
+	(absfl __r4_numbers_6_5_flonum))))
 
 (define *c-eq?* #unspecified)
 
@@ -505,11 +508,13 @@
 ;*    specialize-app! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (specialize-app!::app node::app)
+   
    (define (normalize-get-type val)
       (let ((ty (get-type val)))
 	 (if (eq? ty *int*)
 	     *long*
 	     ty)))
+
    (with-access::app node (fun args)
       (if (null? args)
 	  node
