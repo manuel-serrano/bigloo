@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Mon Nov 21 14:28:01 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 30 09:03:49 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -58,7 +58,6 @@
 ;*---------------------------------------------------------------------*/
 (define (inline-app-labels node kfactor stack)
    (let* ((variable (var-variable (app-fun node)))
-	  (call-size (+fx 1 (length (app-args node))))
 	  (local (make-local-sfun (variable-id variable)
 		    (variable-type variable)
 		    (variable-value variable)))
@@ -132,7 +131,8 @@
 	     (shape (sfun-body (local-value local)))
 	     #\Newline)
       (inline-sfun! local new-kfactor stack)
-      (let ((new-call (remove-invariant-args! node)))
+      (let ((new-call (remove-invariant-args! node))
+	    (call-size (+fx 1 (length (app-args node)))))
 	 (if (and *optim-unroll-loop?*
 		  (is-loop? variable)
 		  ;; we disable (because we don't know how to do it

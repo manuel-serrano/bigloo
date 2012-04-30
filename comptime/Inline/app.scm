@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Fri Feb 17 15:45:42 2012 (serrano)                */
+;*    Last change :  Mon Apr 30 09:12:41 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -39,26 +39,38 @@
 	  (args   (app-args node))
 	  (loc    (node-loc node)))
       (trace (inline 3) "inline-app: " (shape node)
-	     " mode=" *inline-mode* #\Newline)
+	 " mode=" *inline-mode* #\Newline)
       (trace (inline+ 3) "inline-app: " (shape node)
-	     " mode=" *inline-mode* #\Newline)
-      (if (not (sfun? sfun))
-	  node
-	  (if (inline-app? var
-			   kfactor
-			   (+fx 1 (length (app-args node)))
-			   stack)
-	      (begin
-		 (if (not (eq? (sfun-class sfun) 'sifun))
-		     (set! *inlined-calls* (+fx *inlined-calls* 1)))
-		 (when (and (global? var) (global-library var))
-		    ;; MS 17feb2012, when inlining a library function,
-		    ;; marks that the module needs to be initialized
-		    (with-library-module! (global-module var)))
-		 (if (and *optim-loop-inlining?* (is-recursive? var))
-		     (inline-app-recursive node kfactor stack)
-		     (inline-app-simple node kfactor stack "simple")))
-	      node))))
+	 " mode=" *inline-mode* #\Newline)
+      (cond
+	 ((not (sfun? sfun))
+	  node)
+	 ((inline-app? var kfactor (call-size node) stack)
+	  (if (not (eq? (sfun-class sfun) 'sifun))
+	      (set! *inlined-calls* (+fx *inlined-calls* 1)))
+	  (when (and (global? var) (global-library var))
+	     ;; MS 17feb2012, when inlining a library function,
+	     ;; marks that its module needs to be initialized
+	     (with-library-module! (global-module var)))
+	  (if (and *optim-loop-inlining?* (is-recursive? var))
+	      (inline-app-recursive node kfactor stack)
+	      (inline-app-simple node kfactor stack "simple")))
+	 (else
+	  node))))
+
+;*---------------------------------------------------------------------*/
+;*    call-size ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (call-size node::app)
+   (with-access::app node (args)
+      (let* ((asize (length args))
+	     (csize (+fx 1 asize)))
+	 (if *optim-atom-inlining?*
+	     (let ((atoms (filter (lambda (x)
+				     (or (isa? x atom) (isa? x kwote)))
+			     args)))
+		(+fx csize (length atoms)))
+	     csize))))
 
 ;*---------------------------------------------------------------------*/
 ;*    contains-kwote? ...                                              */

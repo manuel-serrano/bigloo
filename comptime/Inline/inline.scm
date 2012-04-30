@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Mon Nov 14 16:54:35 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 30 08:36:52 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -182,9 +182,9 @@
 ;*    inline-node ::let-fun ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::let-fun kfactor stack)
-   ;; MS mar 2011, former versions where inlining the body of the let-fun
-   ;; before the defined functions. I think it should deliver better
-   ;; performance the other way around.
+   ;; MS mar 2011, former versions were inlining the body of the let-fun
+   ;; before the defined functions. I think it should give better
+   ;; results the other way around.
    (for-each (lambda (local)
 		(inline-sfun! local kfactor stack))
 	     (let-fun-locals node))

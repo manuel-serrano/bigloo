@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Jan  6 09:41:46 2012 (serrano)                */
+;*    Last change :  Mon Apr 30 09:01:00 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -61,6 +61,7 @@
 	    *optim*
 	    *optim-unroll-loop?*
 	    *optim-loop-inlining?*
+	    *optim-atom-inlining?*
 	    *optim-O-macro?*
 	    *optim-cfa-fixnum-arithmetic?*
 	    *optim-cfa-flonum-arithmetic?*
@@ -812,6 +813,9 @@
    #unspecified)
 (param-define *optim-loop-inlining?*
    "Loop inlining optimization"
+   #t)
+(param-define *optim-atom-inlining?*
+   "Skip atom in inlining parameter counting"
    #t)
 (param-define *optim-O-macro?*
    "Enable optimization by macro-expansion"
