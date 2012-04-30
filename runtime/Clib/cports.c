@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Apr 20 07:32:11 2012 (serrano)                */
+/*    Last change :  Mon Apr 30 17:38:56 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -429,9 +429,13 @@ loop:
 
    if( (n = select( fd + 1, &readfds, NULL, NULL, &timeout )) <= 0 ) {
       if( n == 0 ) {
+	 char buf[ 100 ];
+
+	 sprintf( buf, "time limit (%ld us) exceeded", tmt->timeout );
+	 
 	 C_SYSTEM_FAILURE(
 	    BGL_IO_TIMEOUT_ERROR,
-	    "read/timeout", "time limit exceeded", port );
+	    "read/timeout", buf, port );
       } else {
 	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
 	 /* I'm not 100% sure that this new test is correct */
