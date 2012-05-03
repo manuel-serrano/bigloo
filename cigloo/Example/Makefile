@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Dec  5 10:30:51 1995                          */
-#*    Last change :  Mon Jun  7 17:28:14 2010 (serrano)                */
+#*    Last change :  Wed May  2 12:25:29 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The `example' Makefile                                           */
 #*=====================================================================*/
@@ -20,7 +20,7 @@ BIGLOO		= $(BGLBUILDBIGLOO)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 CIFLAGS		= -open-includes 
 SHELL           = /bin/sh
-BFLAGS          = -O3 -cg
+BFLAGS          = -O3 -cg -w
 CFLAGS		= -w
 
 #*---------------------------------------------------------------------*/
