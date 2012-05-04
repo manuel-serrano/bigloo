@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Dec 31 12:21:13 2010 (serrano)                */
-/*    Copyright   :  2004-10 Manuel Serrano                            */
+/*    Last change :  Fri May  4 08:39:51 2012 (serrano)                */
+/*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -26,6 +26,8 @@
 #ifdef _MSC_VER
 #  include <sys/timeb.h>
 #endif
+
+#define MUTEX_DEBUG 1
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -60,22 +62,66 @@ bgl_mutex_symbols_init() {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    mutex_unlink ...                                                 */
+/*    register_mutex ...                                               */
+/*    -------------------------------------------------------------    */
+/*    It is mandatory that mutex does not allocate anything because    */
+/*    it might happen cases where bglpth_mutex_lock is called from     */
+/*    while the GC is already allocating something (because of Unix    */
+/*    signals, for instance raised on process termination).            */
 /*---------------------------------------------------------------------*/
 static void
-mutex_unlink( obj_t m ) {
-   obj_t prev = BGLPTH_MUTEX_BGLPMUTEX( m )->prev;
-   obj_t next = BGLPTH_MUTEX_BGLPMUTEX( m )->next;
+register_mutex( obj_t m, bglpthread_t thread ) {
+   if( thread->mutexes ) {
+      BGLPTH_MUTEX_BGLPMUTEX( m )->next = thread->mutexes;
+      BGLPTH_MUTEX_BGLPMUTEX( thread->mutexes )->prev = m;
+   }
+   thread->mutexes = m;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    unregister_mutex ...                                             */
+/*---------------------------------------------------------------------*/
+static void
+unregister_mutex( obj_t m ) {
+   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   obj_t prev = mut->prev;
+   obj_t next = mut->next;
 
    if( prev ) {
-      BGLPTH_MUTEX_BGLPMUTEX( m )->prev = 0;
+      mut->prev = 0;
       BGLPTH_MUTEX_BGLPMUTEX( prev )->next = next;
+   } else {
+      if( mut->thread ) {
+	 mut->thread->mutexes = next;
+      }
    }
 
    if( next ) {
-      BGLPTH_MUTEX_BGLPMUTEX( m )->next = 0;
+      mut->next = 0;
       BGLPTH_MUTEX_BGLPMUTEX( next )->prev = prev;
    }
+
+#if( MUTEX_DEBUG )
+   if( mut->thread ) {
+      obj_t w = mut->thread->mutexes;
+
+      if( mut->thread ) {
+	 obj_t w = mut->thread->mutexes;
+	 while( w ) {
+	    obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
+
+	    if( w == m ) {
+	       fprintf( stderr, "  unregister_mutex mutex %p:%p in thread list thread=%p/%p\n", w, BGLPTH_MUTEX_BGLPMUTEX( w ), mut->thread );
+	    }
+
+	    w = n;
+	 }
+      }
+   }
+#endif
+   
+   mut->thread = 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -84,11 +130,55 @@ mutex_unlink( obj_t m ) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
-   /* unlink the mutex */
-   mutex_unlink( m );
+   /* unregister the mutex */
+   unregister_mutex( m );
    
    /* mark the mutex has free */
    mut->locked = 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglpth_mutex_mark_locked ...                                     */
+/*---------------------------------------------------------------------*/
+void
+bglpth_mutex_mark_locked( obj_t m, bglpmutex_t mut, bglpthread_t thread ) {
+#if( MUTEX_DEBUG )
+   if( mut->locked ) {
+      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p already locked\n",
+	       m, mut );
+
+   }
+   if( mut->thread ) {
+      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p owned/abandonned by thread (mark-thread=%p)\n",
+	       m, mut, mut->thread, thread );
+   }
+   if( mut->next ) {
+      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p next none nil\n",
+	       m, mut, mut->next );
+   }
+   if( mut->prev ) {
+      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p prev none nil\n",
+	       m, mut, mut->prev );
+   }
+#endif
+
+   if( mut->locked ) {
+      if( mut->thread != thread ) {
+	 FAILURE( string_to_bstring( "mutex-lock" ),
+		  string_to_bstring( "mutex illegal locked" ),
+		  m );
+      }
+   } else {
+      mut->locked = 1;
+
+      if( mut->thread != thread ) {
+	 mut->thread = thread;
+	 if( thread ) {
+	    register_mutex( m, thread );
+	 }
+      }
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -98,9 +188,12 @@ bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
 static void
 bglpth_mutex_unlock_sans_thread( obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   bglpthread_t thread = mut->thread;
 
    /* mark the Bigloo state of the lock */
    bglpth_mutex_mark_unlocked( m, mut );
+   /* assign the thread field to mark the abandoned mutex state */
+   mut->thread = thread;
    
    /* physically unlock it */
    pthread_mutex_unlock( &(mut->pmutex) );
@@ -119,15 +212,15 @@ bglpth_mutex_state( obj_t m ) {
    if( mut->locked ) {
       if( mut->thread ) {
 	 return mut->thread->bglthread;
+      } else {
+	 return sym_not_owned;
       }
-      
-      return sym_not_owned;
    } else {
       if( mut->thread ) {
 	 return sym_abandoned;
-      }
-      else 
+      } else {
 	 return sym_not_abandoned;
+      }
    }
 }
 
@@ -157,14 +250,16 @@ bglpth_mutex_init( obj_t m ) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bglpth_mutexes_unlock ...                                        */
+/*    bglpth_mutexes_abandon ...                                       */
 /*---------------------------------------------------------------------*/
 void
-bglpth_mutexes_unlock( bglpthread_t thread ) {
+bglpth_mutexes_abandon( bglpthread_t thread ) {
    obj_t w = thread->mutexes;
-   
+
    while( w ) {
       obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
+
+      fprintf( stderr, "bglpth_mutexes_abandon w=%p:%p locked=%d thread=%p/%p\n", w, BGLPTH_MUTEX_BGLPMUTEX( w ), BGLPTH_MUTEX_BGLPMUTEX( w )->locked, BGLPTH_MUTEX_BGLPMUTEX( w )->thread, thread );
 
       bglpth_mutex_unlock_sans_thread( w );
       w = n;
@@ -172,51 +267,19 @@ bglpth_mutexes_unlock( bglpthread_t thread ) {
 }
    
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    register_mutex ...                                               */
-/*    -------------------------------------------------------------    */
-/*    It is mandatory that mutex does not allocate anything because    */
-/*    it might happen cases where bglpth_mutex_lock is called from     */
-/*    while the GC is already allocating something (because of Unix    */
-/*    signals, for instance raised on process termination).            */
-/*---------------------------------------------------------------------*/
-static void
-register_mutex( obj_t m, bglpthread_t thread ) {
-   if( thread->mutexes ) { 
-      BGLPTH_MUTEX_BGLPMUTEX( m )->next = thread->mutexes;
-      BGLPTH_MUTEX_BGLPMUTEX( thread->mutexes )->prev = m;
-   }
-   thread->mutexes = m;
-}
-   
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bglpth_mutex_mark_locked ...                                     */
-/*---------------------------------------------------------------------*/
-void
-bglpth_mutex_mark_locked( obj_t m, bglpmutex_t mut ) {
-   bglpthread_t cth = bglpth_current_pthread();
-
-   mut->locked = 1;
-   
-   if( cth && (mut->thread != cth) ) {
-      mut->thread = cth;
-      register_mutex( m, cth );
-   }
-}
-
-/*---------------------------------------------------------------------*/
 /*    bool_t                                                           */
 /*    bglpth_mutex_lock ...                                            */
 /*---------------------------------------------------------------------*/
 bool_t
 bglpth_mutex_lock( obj_t m ) {
-   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m ); 
-   bool_t res = !pthread_mutex_lock( &(mut->pmutex) );
-   
-   if( res ) bglpth_mutex_mark_locked( m, mut );
-   
-   return res;
+   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+
+   if( pthread_mutex_lock( &(mut->pmutex) ) ) {
+      return 0;
+   } else {
+      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
+      return 1;
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -242,15 +305,12 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
    gettimeofday( &now, 0 );
 #endif
 
-   res = !pthread_mutex_timedlock( &(mut->pmutex), &timeout );
-
-   if( res  ) {
-      bglpth_mutex_mark_locked( m, mut );
+   if( pthread_mutex_timedlock( &(mut->pmutex), &timeout ) ) {
+      return 0;
    } else {
-      mut->thread = 0L;
+      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
+      return 1;
    }
-
-   return res;
 #else
    int res;
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
@@ -261,9 +321,7 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
    }
 
    if( !res  ) {
-      bglpth_mutex_mark_locked( m, mut );
-   } else {
-      mut->thread = 0L;
+      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
    }
 
    return !res;
@@ -279,15 +337,19 @@ bglpth_mutex_unlock( obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
 
    if( mut->locked ) {
-      /* unlink the mutex */
-      mutex_unlink( m );
+      /* unregister the mutex, must done when locked */
+      bglpthread_t thread = mut->thread;
       
-      /* mark the mutex has free */
-      mut->thread = 0L;
-      mut->locked = 0;
-
+      bglpth_mutex_mark_unlocked( m, mut );
+      
       /* physically unlock it */
-      return !pthread_mutex_unlock( &(mut->pmutex) );
+      if( pthread_mutex_unlock( &(mut->pmutex) ) ) {
+	 /* unlock has failed, re-mark as locked */
+	 bglpth_mutex_mark_locked( m, mut, thread );
+	 return 0;
+      } else {
+	 return 1;
+      }
    } else {
       return 0;
    }

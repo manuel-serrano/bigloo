@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Apr 17 17:36:03 2012 (serrano)                */
+/*    Last change :  Fri May  4 07:09:07 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -118,8 +118,8 @@ bglpth_thread_cleanup( void *arg ) {
    /* mark the thread terminated */
    self->status = 2;
    
-   /* unlock all locked mutexes */
-   bglpth_mutexes_unlock( self );
+   /* abandon all locked mutexes */
+   bglpth_mutexes_abandon( self );
    
    /* unlock the internal state of the thread */
    pthread_mutex_unlock( &(self->mutex) );

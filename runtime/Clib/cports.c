@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Apr 30 17:38:56 2012 (serrano)                */
+/*    Last change :  Fri May  4 10:09:33 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1954,14 +1954,20 @@ gc_sendfile( struct sendfile_info_t *si ) {
    ssize_t res = 0;
    ssize_t n = 0;
    fd_set writefds;
-   
+
 #if DEBUG_SENDCHARS
-   fprintf(stderr, "gc_sendfile out=%p in=%p offset=%d sz=%d\n", si->out, si->in, offset ? *offset : 0, si->sz);
+   fprintf(stderr, "gc_sendfile(%s:%d) out=%p in=%p offset=%d sz=%d\n",
+	   __FILE__, __LINE__, si->out, si->in, offset ? *offset : 0, si->sz);
 #endif
 
    while( sz > 0 ) {
+      fprintf( stderr, "%s:%d si->out=%d si->int=%d offset=%d sz=%d\n",
+	       __FILE__, __LINE__, 
+	       si->out, si->in, offset, sz );
       if( (n = BGL_SENDFILE( si->out, si->in, offset, sz )) < 0 ) {
 	 si->errnum = errno;
+
+	 fprintf( stderr, "FAIL: %d:%s\n", errno, strerror( errno ) );
 	 
 	 if( errno == EAGAIN || errno == EINTR ) {
 	    FD_ZERO( &writefds );
@@ -1979,6 +1985,8 @@ gc_sendfile( struct sendfile_info_t *si ) {
 	 }
       } else {
 	 sz -= n;
+
+	 fprintf( stderr, "%s:%d SUCCESS: n=%d\n", __FILE__, __LINE__, n );
 	 
 #if DEBUG_SENDCHARS
 	 fprintf( stderr, "gc_sendfile read chars n=%d remaining=%d\n", n, sz );

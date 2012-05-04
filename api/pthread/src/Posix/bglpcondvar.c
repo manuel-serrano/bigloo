@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Nov 24 06:58:21 2010 (serrano)                */
-/*    Copyright   :  2004-10 Manuel Serrano                            */
+/*    Last change :  Fri May  4 08:26:18 2012 (serrano)                */
+/*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
 /*=====================================================================*/
@@ -58,13 +58,12 @@ bglpth_condvar_init( obj_t cv ) {
 bool_t
 bglpth_condvar_wait( obj_t cv, obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   bglpthread_t thread = mut->thread;
    bool_t res;
 
-   mut->thread = 0L;
    bglpth_mutex_mark_unlocked( m, mut );
    res = !pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
-
-   if( res ) bglpth_mutex_mark_locked( m, mut );
+   if( res ) bglpth_mutex_mark_locked( m, mut, thread );
    
    return res;
 }
@@ -76,6 +75,7 @@ bglpth_condvar_wait( obj_t cv, obj_t m ) {
 bool_t
 bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   bglpthread_t thread = mut->thread;
    struct timespec timeout;
    bool_t res;
    
@@ -95,8 +95,7 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    res = !pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
 				  &(mut->pmutex),
 				  &timeout );
-   
-   bglpth_mutex_mark_locked( m, mut );
+   if( res ) bglpth_mutex_mark_locked( m, mut, thread );
    
    return res;
 }
