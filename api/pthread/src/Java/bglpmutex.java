@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Fri Jun 18 11:34:45 2010 (serrano)                */
-/*    Copyright   :  2005-10 Manuel Serrano                            */
+/*    Last change :  Fri May  4 21:14:00 2012 (serrano)                */
+/*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
 /*=====================================================================*/
@@ -27,8 +27,7 @@ public class bglpmutex extends bigloo.mutex {
    }
 
    protected Object thread = null;
-   protected bglpcondvar condv = null;
-   private String state = "not-abandoned";
+   protected String state = "not-abandoned";
    
    private Object specific;
 
@@ -57,18 +56,16 @@ public class bglpmutex extends bigloo.mutex {
 	 w = foreign.CDR( (pair)w );
       }
    }
-   
-   public synchronized boolean acquire_lock( int ms ) {
-      Object th = bglpthread.current_thread();
-      
-      synchronized( this ) {
-	 bglpthread.debug( ">>> acquire_lock m=" + this + " thread=" + thread + " th=" + th );
 
-	 while( thread != null ) {
+   public boolean acquire_lock( int ms ) {
+      synchronized( this ) {
+	 Object th = bglpthread.current_thread();
+      
+	 while( thread != null && thread != th ) {
 	    try {
 	       if( ms > 0 ) {
 		  wait( ms );
-		  if( thread != null ) return false;
+		  if( thread != null && thread != th ) return false;
 	       } else {
 		  wait();
 	       }
@@ -78,37 +75,38 @@ public class bglpmutex extends bigloo.mutex {
 			     this );
 	    }
 	 }
-	 
+
+	 /* mark mutex owned */
 	 thread = th;
 	 state = null;
-	 bglpthread.debug( "<<< acquire_lock m=" + this + " thread=" + thread + " th=" + th );
+	 
 	 return true;
       }
    }
 
-   public synchronized boolean acquire_lock() {
+   public boolean acquire_lock() {
       return acquire_lock( 0 );
    }
    
-   public synchronized boolean acquire_timed_lock( int ms ) {
+   public boolean acquire_timed_lock( int ms ) {
       return acquire_lock( ms );
    }
 
-   public synchronized boolean release_lock() {
-      Object th = bglpthread.current_thread();
-      
+   public boolean release_lock() {
       synchronized( this ) {
-	 bglpthread.debug( "relase_lock m=" + this + " thread=" + thread + " th=" + bglpthread.current_thread() );
-
-	 /* assertion */
-	 if( thread != th ) {
-	    foreign.fail( "mutex-unlock!",
-			  "mutex not owned by current thread",
-			  this );
+	 Object th = bglpthread.current_thread();
+	 
+	 if( thread == th ) {
+	    /* mark mutex no longer owned */
+	    thread = null;
+	    state = "not-abandoned";
+	 
+	    notifyAll();
+	 } else {
+	   foreign.fail( "mutex-unlock!",
+			 "mutex not owned by thread",
+			 this );
 	 }
-	 thread = null;
-	 state = "not-abandoned";
-	 notify();
       }
       return true;
    }

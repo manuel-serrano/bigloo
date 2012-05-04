@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Thu Jul  2 10:40:48 2009 (serrano)                */
-/*    Copyright   :  2005-09 Manuel Serrano                            */
+/*    Last change :  Fri May  4 21:11:52 2012 (serrano)                */
+/*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Condvar implementation                                           */
 /*=====================================================================*/
@@ -14,18 +14,18 @@
 /*---------------------------------------------------------------------*/
 package bigloo.pthread;
 import java.lang.*;
+import java.util.*;
 import bigloo.*;
 
 /*---------------------------------------------------------------------*/
 /*    bglpcondvar                                                      */
 /*---------------------------------------------------------------------*/
 public class bglpcondvar extends bigloo.condvar {
-   public bglpmutex mutex = null;
+   ArrayList alist = new ArrayList();
    
    protected static void setup() {
       bigloo.condvar.acondvar = new bglpcondvar( bigloo.foreign.BUNSPEC );
    }
-   
    private Object specific;
    
    public bglpcondvar( Object n ) {
@@ -45,64 +45,41 @@ public class bglpcondvar extends bigloo.condvar {
    }
 
    public boolean wait( final bglpmutex m, final int ms ) {
-      Object th = bglpthread.current_thread();
+      boolean res = true;
       
-      synchronized( m ) {
-	 bglpthread.debug( ">>> pcondvar-wait cv=" + this + " m=" + m + " thread=" + m.thread + " th=" + th );
-	 
+      synchronized( this ) {
+	 Object th = bglpthread.current_thread();
+
 	 /* assertion */
 	 if( m.thread != th ) {
 	    foreign.fail( "condition-variable-wait!",
 			  "mutex not owned by current thread",
 			  m );
 	 }
-	 
-	 synchronized( this ) {
-	    /* assertion */
-	    if( mutex != null ) {
-	       foreign.fail( "condition-variable-wait!",
-			     "condition variable already bound to mutex",
-			     this );
-	    }
-
-	    mutex = m;
-	 }
 
 	 /* release the lock */
-	 m.thread = null;
-	 m.notify();
+	 m.release_lock();
 	 
-	 while( m.condv != this || m.thread != null ) {
-	    try {
-	       bglpthread.debug( "pcondvar-wait, loop cv=" + this + " m=" + m + " thread=" + m.thread + " th=" + th );
-
-	       if( ms > 0 ) {
-		  m.wait( ms );
-		  if( m.condv != this && m.thread == null ) {
-		     m.thread = th;
-		     m.condv = null;
-		     mutex = null;
-		     return false;
-		  }
-	       } else {
-		  m.wait();
+	 try {
+	    if( ms > 0 ) {
+	       alist.add( th );
+	       wait( ms );
+	       if( alist.contains( th ) ) {
+		  res = false;
+		  alist.remove( th );
 	       }
-	    } catch( Exception e ) {
-	       m.thread = th;
-	       m.condv = null;
-	       mutex = null;
-	       return false;
+	    } else {
+	       wait();
 	    }
+	 } catch( Exception e ) {
+	    return false;
 	 }
-
-	 /* re-acquire the lock */
-	 m.thread = th;
-	 m.condv = null;
-	 mutex = null;
-	 
-	 bglpthread.debug( "<<< pcondvar-wait cv=" + this + " m=" + m + " thread=" + m.thread + " th=" + th );
-	 return true;
       }
+      
+      /* release the condvar and re-acquire the lock */
+      m.acquire_lock();
+      
+      return res;
    }
 
       
@@ -128,18 +105,16 @@ public class bglpcondvar extends bigloo.condvar {
 
    public boolean cond_signal(boolean b) {
       synchronized( this ) {
-	 bglpthread.debug( "pcondvar-signal cv=" + this + " m=" + mutex+ " thread=" + (mutex == null ? "_" : mutex.thread) + " th=" + bglpthread.current_thread() );
 
-	 if( mutex != null ) {
-	    synchronized( mutex ) {
-	       mutex.condv = this;
-
-	       if( b )
-		  mutex.notifyAll();
-	       else
-		  mutex.notify();
-	    }
+	 if( b ) {
+	    alist.clear();
+	    notifyAll();
+	 } else {
+	    if( alist.size() > 0 ) alist.remove( 0 );
+	    
+	    notify();
 	 }
+	 
 	 return true;
       }
    }

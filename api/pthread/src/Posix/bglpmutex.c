@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri May  4 08:39:51 2012 (serrano)                */
+/*    Last change :  Fri May  4 20:49:25 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -28,6 +28,7 @@
 #endif
 
 #define MUTEX_DEBUG 1
+#undef MUTEX_DEBUG
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -258,9 +259,11 @@ bglpth_mutexes_abandon( bglpthread_t thread ) {
 
    while( w ) {
       obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
-
+      
+#if( MUTEX_DEBUG )
       fprintf( stderr, "bglpth_mutexes_abandon w=%p:%p locked=%d thread=%p/%p\n", w, BGLPTH_MUTEX_BGLPMUTEX( w ), BGLPTH_MUTEX_BGLPMUTEX( w )->locked, BGLPTH_MUTEX_BGLPMUTEX( w )->thread, thread );
-
+#endif
+      
       bglpth_mutex_unlock_sans_thread( w );
       w = n;
    }
