@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sat May  5 19:31:02 2012 (serrano)                */
+;*    Last change :  Sat May  5 20:13:48 2012 (serrano)                */
 ;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -45,8 +45,6 @@
    (when (specialize-optimization?)
       (trace (cfa 4) "============= specialize arithmetic ===============\n")
       (for-each install-specialize! (get-specializations))
-      (unless *arithmetic-overflow*
-	 (for-each install-specialize! *specializations-overflow*))
       (patch-tree! globals)
       (show-specialize)
       (uninstall-specializes!))
@@ -174,12 +172,16 @@
 
 (define *specializations-overflow*
    '((2+ (2+ __r4_numbers_6_5)
+	(+fl __r4_numbers_6_5_flonum)
 	(+fx __r4_numbers_6_5_fixnum))
      (2- (2- __r4_numbers_6_5)
+	(-fl __r4_numbers_6_5_flonum)
 	(-fx __r4_numbers_6_5_fixnum))
      (2* (2* __r4_numbers_6_5)
+	(*fl __r4_numbers_6_5_flonum)
 	(*fx __r4_numbers_6_5_fixnum))
      (abs (abs __r4_numbers_6_5)
+	(absfl __r4_numbers_6_5_flonum)
 	(absfx __r4_numbers_6_5_fixnum))))
 
 (define *c-eq?* #unspecified)
