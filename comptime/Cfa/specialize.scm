@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sun Apr 29 06:10:48 2012 (serrano)                */
+;*    Last change :  Sat May  5 19:31:02 2012 (serrano)                */
 ;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -33,7 +33,7 @@
 	    inline_inline
 	    inline_walk)
    (static  (wide-class specialized-global::global
-	       (fix read-only)))
+	       fix))
    (export  (specialize! globals)
 	    (arithmetic-operator? ::global)
 	    (arithmetic-spec-types ::global)))
@@ -44,11 +44,9 @@
 (define (specialize! globals)
    (when (specialize-optimization?)
       (trace (cfa 4) "============= specialize arithmetic ===============\n")
-      (for-each (lambda (spec)
-		   (apply install-specialize! (cdr spec)))
-		(if *arithmetic-overflow*
-		    *specializations*
-		    (append *specializations-overflow* *specializations*)))
+      (for-each install-specialize! (get-specializations))
+      (unless *arithmetic-overflow*
+	 (for-each install-specialize! *specializations-overflow*))
       (patch-tree! globals)
       (show-specialize)
       (uninstall-specializes!))
@@ -59,7 +57,7 @@
 ;*---------------------------------------------------------------------*/
 (define (arithmetic-operator? global)
    (with-access::global global (id module)
-      (let ((cell (assq id *specializations*)))
+      (let ((cell (assq id (get-specializations))))
 	 (and (pair? cell) (eq? (cadr (cadr cell)) module)))))
 	 
 ;*---------------------------------------------------------------------*/
@@ -70,7 +68,7 @@
 ;*---------------------------------------------------------------------*/
 (define (arithmetic-spec-types global)
    (with-access::global global (id module)
-      (let ((cell (assq id *specializations*)))
+      (let ((cell (assq id (get-specializations))))
 	 (if (not (pair? cell))
 	     '()
 	     (let loop ((spec (cddr cell))
@@ -90,12 +88,45 @@
 		    (loop (cdr spec) (cons *real* types)))
 		   (else
 		    (loop (cdr spec) types))))))))
-	 
+
+;*---------------------------------------------------------------------*/
+;*    get-specializations ...                                          */
+;*---------------------------------------------------------------------*/
+(define (get-specializations)
+   (cond
+      (*specializations*
+       ;;; already computed
+       *specializations*)
+      (*arithmetic-overflow*
+       ;;; compilation in a safe fixnum arithmetic mode
+       (set! *specializations* *specializations-sans-overflow*)
+       *specializations*)
+      (else
+       ;;; don't check fixnum overflow, deploy more aggressive optimizations
+       (set! *specializations*
+	  (append *specializations-overflow* *specializations-sans-overflow*))
+       *specializations*)))
+
 ;*---------------------------------------------------------------------*/
 ;*    *specializations* ...                                            */
 ;*---------------------------------------------------------------------*/
-(define *specializations*
-   '((c-eq? (c-eq? foreign)
+(define *specializations* #f)
+
+;*---------------------------------------------------------------------*/
+;*    *specializations-sans-overflow* ...                              */
+;*---------------------------------------------------------------------*/
+(define *specializations-sans-overflow*
+   '((2+ (2+ __r4_numbers_6_5)
+	(+fl __r4_numbers_6_5_flonum))
+     (2- (2- __r4_numbers_6_5)
+	(-fl __r4_numbers_6_5_flonum))
+     (2* (2* __r4_numbers_6_5)
+	(*fl __r4_numbers_6_5_flonum))
+     (2/ (2/ __r4_numbers_6_5)
+	(/fl __r4_numbers_6_5_flonum))
+     (abs (abs __r4_numbers_6_5)
+	(absfl __r4_numbers_6_5_flonum))
+     (c-eq? (c-eq? foreign)
 	(=fx __r4_numbers_6_5_fixnum)
 	(=fl __r4_numbers_6_5_flonum))
      (2= (2= __r4_numbers_6_5)
@@ -143,19 +174,13 @@
 
 (define *specializations-overflow*
    '((2+ (2+ __r4_numbers_6_5)
-	(+fx __r4_numbers_6_5_fixnum)
-	(+fl __r4_numbers_6_5_flonum))
+	(+fx __r4_numbers_6_5_fixnum))
      (2- (2- __r4_numbers_6_5)
-	(-fx __r4_numbers_6_5_fixnum)
-	(-fl __r4_numbers_6_5_flonum))
+	(-fx __r4_numbers_6_5_fixnum))
      (2* (2* __r4_numbers_6_5)
-	(*fx __r4_numbers_6_5_fixnum)
-	(*fl __r4_numbers_6_5_flonum))
-     (2/ (2/ __r4_numbers_6_5)
-	(/fl __r4_numbers_6_5_flonum))
+	(*fx __r4_numbers_6_5_fixnum))
      (abs (abs __r4_numbers_6_5)
-	(absfx __r4_numbers_6_5_fixnum)
-	(absfl __r4_numbers_6_5_flonum))))
+	(absfx __r4_numbers_6_5_fixnum))))
 
 (define *c-eq?* #unspecified)
 
@@ -214,28 +239,33 @@
 (define (add-specialized-eq-type! type)
    (let ((cell (assq type *specialized-eq-types*)))
       (if (not (pair? cell))
-	  (set! *specialized-eq-types* (cons (cons type 1)
-					     *specialized-eq-types*))
+	  (set! *specialized-eq-types*
+	     (cons (cons type 1) *specialized-eq-types*))
 	  (set-cdr! cell (+fx 1 (cdr cell))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-specialize! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (install-specialize! gen . fixes)
-   (let* ((gen-id (car gen))
+(define (install-specialize! spec)
+   (let* ((gen (cadr spec))
+	  (fixes (cddr spec))
+	  (gen-id (car gen))
 	  (gen-mod (cadr gen))
 	  (generic (find-global/module gen-id gen-mod)))
       (if (global? generic)
 	  (let loop ((fixes fixes)
-		     (res   '()))
+		     (res '()))
 	     (if (null? fixes)
-		 (begin
-		    (widen!::specialized-global generic
-		       (fix res))
-		    (set! *specialize* (cons generic *specialize*)))
-		 (let* ((fix    (car fixes))
-			(id     (car fix))
-			(mod    (cadr fix))
+		 (if (specialized-global? generic)
+		     (with-access::specialized-global generic (fix)
+			(set! fix (append fix res)))
+		     (begin
+			(widen!::specialized-global generic
+			   (fix res))
+			(set! *specialize* (cons generic *specialize*))))
+		 (let* ((fix (car fixes))
+			(id (car fix))
+			(mod (cadr fix))
 			(global (find-global/module id mod)))
 		    (if (global? global)
 			(let ((val (global-value global)))

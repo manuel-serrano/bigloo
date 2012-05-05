@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Apr 29 06:15:42 2012 (serrano)                */
+;*    Last change :  Sat May  5 18:00:30 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -377,6 +377,8 @@
       ;; arithmetic-overflow
       (("-farithmetic-overflow" (help "Suppress arithmetic overflow checks"))
        (set! *arithmetic-overflow* #f))
+      (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
+       (set! *arithmetic-overflow* #t))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))
@@ -397,12 +399,14 @@
        (parse-optim-args opt))
       ;; cfa optimizations
       (("-fcfa-arithmetic" (help "Enable arithmetic spec. (see -farithmetic-overflow)"))
+       (set! *arithmetic-overflow* #f)
        (set! *optim-cfa-fixnum-arithmetic?* #t)
        (set! *optim-cfa-flonum-arithmetic?* #t))
       (("-fno-cfa-arithmetic" (help "Disable arithmetic spec."))
        (set! *optim-cfa-fixnum-arithmetic?* #f)
        (set! *optim-cfa-flonum-arithmetic?* #f))
       (("-fcfa-arithmetic-fixnum" (help "Enable fixnum arithmetic spec."))
+       (set! *arithmetic-overflow* #f)
        (set! *optim-cfa-fixnum-arithmetic?* #t))
       (("-fno-cfa-arithmetic-fixnum" (help "Disable fixnum arithmetic spec."))
        (set! *optim-cfa-fixnum-arithmetic?* #f))
