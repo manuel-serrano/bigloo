@@ -77,9 +77,6 @@ main( int argc, char *argv[] ) {
     SSL_library_init();
     SSL_load_error_strings();
 
-    ctx = SSL_CTX_new( SSLv23_client_method() );
-    ctx = SSL_CTX_new( SSLv2_client_method() );
- 
     sbio = BIO_new_socket( 0, BIO_NOCLOSE );
     BIO_free( sbio );
 }
