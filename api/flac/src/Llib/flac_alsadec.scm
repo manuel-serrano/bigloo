@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Apr 20 11:28:54 2012 (serrano)                */
+;*    Last change :  Wed May  9 09:10:27 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -140,7 +140,7 @@
          (set! state st)
          (onstate am %status))))
 
-;;*---------------------------------------------------------------------*/
+;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-metadata o::flac-alsa total rate channels bps)
@@ -230,7 +230,8 @@
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
-		  (when (=fx ntail inlen) (set! ntail 0))
+		  (when (=fx ntail inlen)
+		     (set! ntail 0))
 		  ;; check buffer emptyness
 		  (when (=fx ntail %head)
 		     (set! %has-been-empty-once #t)

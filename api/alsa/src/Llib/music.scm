@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Apr 19 08:00:36 2012 (serrano)                */
+;*    Last change :  Wed May  9 09:30:22 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -632,9 +632,9 @@
 (define-method (alsabuffer-fill! buffer::alsammapbuffer o::alsamusic)
    (with-access::alsammapbuffer buffer (%head %empty %inbufp %eof mmap url %inlen)
       (set! %inbufp (mmap->string mmap))
-      (set! %head %inlen)
+      (set! %head 0)
       (set! %eof #t)
-      (set! %empty #f)
+      (set! %empty (=fx %inlen 0))
       (with-access::alsamusic o (onevent)
 	 (onevent o 'loaded url))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Apr 16 10:26:43 2012 (serrano)                */
+;*    Last change :  Wed May  9 09:11:01 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -153,7 +153,8 @@
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
-		  (when (=fx ntail inlen) (set! ntail 0))
+		  (when (=fx ntail inlen)
+		     (set! ntail 0))
 		  ;; check buffer emptyness
 		  (when (=fx ntail %head)
 		     (set! has-been-empty-once #t)

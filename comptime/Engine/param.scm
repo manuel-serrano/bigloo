@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon May  7 17:31:03 2012 (serrano)                */
+;*    Last change :  Tue May  8 06:48:09 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -816,7 +816,7 @@
    #t)
 (param-define *optim-atom-inlining?*
    "Skip atom in inlining parameter counting"
-   #f)
+   #t)
 (param-define *optim-O-macro?*
    "Enable optimization by macro-expansion"
    #f)

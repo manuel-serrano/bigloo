@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Mon Apr 30 09:12:41 2012 (serrano)                */
+;*    Last change :  Tue May  8 07:00:21 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -63,8 +63,7 @@
 ;*---------------------------------------------------------------------*/
 (define (call-size node::app)
    (with-access::app node (args)
-      (let* ((asize (length args))
-	     (csize (+fx 1 asize)))
+      (let ((csize (+fx 1 (length args))))
 	 (if *optim-atom-inlining?*
 	     (let ((atoms (filter (lambda (x)
 				     (or (isa? x atom) (isa? x kwote)))
