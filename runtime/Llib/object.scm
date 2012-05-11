@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jan  6 10:15:58 2012 (serrano)                */
+;*    Last change :  Fri May 11 12:24:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -584,32 +584,35 @@
    (vector-ref-ur class 11))
 
 ;*---------------------------------------------------------------------*/
+;*    class-nil-unsafe ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (class-nil-unsafe class)
+   (let ((c (vector-ref-ur class 12)))
+      (when (eq? (car c) #t)
+	 ;; no nil value is represented by #t
+	 (if (class-wide? class)
+	     (let* ((super (class-super class))
+		    (o ((class-allocator super)))
+		    (wo ((class-allocator class) o)))
+		(set-car! c wo)
+		((cdr c) wo))
+	     (let ((o ((class-allocator class))))
+		(set-car! c o)
+		((cdr c) o))))
+      (car c)))
+
+;*---------------------------------------------------------------------*/
 ;*    class-nil ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-nil class)
-   (if (class? class)
-       (let ((c (vector-ref-ur class 12)))
-	  (when (eq? (car c) #t)
-	     ;; no nil value is represented by #t
-	     (if (class-wide? class)
-		 ;; MS CARE 15nov2011, test + true to be removed after bootstrap
-		 (if (=fx (procedure-arity (class-allocator class)) 0)
-		     ;; old schema
-		     (set-car! c ((class-allocator class)))
-		     (let* ((super (class-super class))
-			    (o ((class-allocator super)))
-			    (wo ((class-allocator class) o)))
-			(set-car! c wo)
-			((cdr c) wo)))
-		 ;; MS CARE 15nov2011, test + true to be removed after bootstrap
-		 (if (=fx (procedure-arity (cdr c)) 0)
-		     ;; old schema
-		     (set-car! c ((cdr c)))
-		     (let ((o ((class-allocator class))))
-			(set-car! c o)
-			((cdr c) o)))))
-	  (car c))
-       (bigloo-type-error "class-nil" "class" class)))
+   (cond-expand
+      (bigloo-unsafe-type
+       ;;; disable type checking
+       (class-nil-unsafe class))
+      (else
+       (if (class? class)
+	   (class-nil-unsafe class)
+	   (bigloo-type-error "class-nil" "class" class)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-get-new-nil ...                                            */
