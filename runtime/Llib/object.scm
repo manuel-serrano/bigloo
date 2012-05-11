@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri May 11 14:20:09 2012 (serrano)                */
+;*    Last change :  Fri May 11 16:29:16 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -270,7 +270,7 @@
 	   alloc ha
 	   fd::vector allfd::vector
 	   constr virt new nil shrink evdata)
-   (let ((v ($create-vector-uncollectable 18)))
+   (let ((v ($create-vector-uncollectable 19)))
       ;; the class name
       (vector-set-ur! v 0 name)
       ;; the class number
@@ -296,7 +296,7 @@
       ;; the function that creates instances
       (vector-set-ur! v 11 new)
       ;; the function that return the NIL object
-      (vector-set-ur! v 12 (cons #t nil))
+      (vector-set-ur! v 12 nil)
       ;; the class shrink
       (vector-set-ur! v 13 shrink)
       ;; field used when declaring a class within eval
@@ -305,8 +305,10 @@
       (vector-set-ur! v 15 allfd)
       ;; class module
       (vector-set-ur! v 16 module)
+      ;; nil instance
+      (vector-set-ur! v 17 #f)
       ;;  a stamp to implement class?
-      (vector-set-ur! v 17 *class-key*)
+      (vector-set-ur! v 18 *class-key*)
       v))
 
 ;*---------------------------------------------------------------------*/
@@ -314,8 +316,8 @@
 ;*---------------------------------------------------------------------*/
 (define (class? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 18)
-	(eq? (vector-ref-ur obj 17) *class-key*)))
+	(=fx (vector-length obj) 19)
+	(eq? (vector-ref-ur obj 18) *class-key*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-exists ...                                                 */
@@ -585,20 +587,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-nil-unsafe ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (class-nil-unsafe class)
-   (let ((c (vector-ref-ur class 12)))
-      (when (eq? (car c) #t)
-	 ;; no nil value is represented by #t
-	 (if (class-wide? class)
-	     (let* ((super (class-super class))
-		    (o ((class-allocator super)))
-		    (wo ((class-allocator class) o)))
-		(set-car! c wo)
-		((cdr c) wo))
-	     (let ((o ((class-allocator class))))
-		(set-car! c o)
-		((cdr c) o))))
-      (car c)))
+(define (class-nil-unsafe class)
+   (or (vector-ref-ur class 17)
+       (let ((proc (vector-ref-ur class 12)))
+	  ;; no nil value is represented by #t
+	  (if (class-wide? class)
+	      (let* ((super (class-super class))
+		     (o ((class-allocator super)))
+		     (wo ((class-allocator class) o)))
+		 (vector-set-ur! class 17 wo)
+		 (proc wo)
+		 wo)
+	      (let ((o ((class-allocator class))))
+		 (vector-set-ur! class 17 o)
+		 (proc o)
+		 o)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-nil ...                                                    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Tue Mar 20 14:06:20 2012 (serrano)                */
+;*    Last change :  Fri May 11 16:17:27 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -240,7 +240,8 @@
 		 (edecl (if (epair? src-def)
 			    (econs (car decl) (cdr decl) (cer src-def))
 			    decl)))
-	     (set! *declared-classes* (cons edecl *declared-classes*))
+	     (set! *declared-classes*
+		(cons edecl *declared-classes*))
 	     '()))
        ;; the class is incorrect, an error has been signaled, keep going
        ;; as if everything is fine
@@ -382,7 +383,7 @@
        ;; class declarations that have to be added to the module object
        ;; initialization
        (let* ((body (force-class-accesses))
-	      (body (append (reverse! *declared-classes*) body))
+	      (body (append (reverse *declared-classes*) body))
 	      (body (if (and (>fx *debug-module* 0)
 			     (memq 'module
 				   (backend-debug-support (the-backend)))
@@ -432,7 +433,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-finalizer-add-static!)
    (let* ((body (force-class-accesses))
-	  (body (append (reverse! *declared-classes*) body)))
+	  (body (append (reverse *declared-classes*) body)))
       (if (unit? *object-unit*)
 	  (unit-sexp*-set! *object-unit*
 			   (append (unit-sexp* *object-unit*) body))
@@ -473,7 +474,7 @@
 ;*---------------------------------------------------------------------*/
 (define (force-class-accesses)
    ;; first we process the non wide classes
-   (let loop ((cur    (reverse! *class-accesses*))
+   (let loop ((cur    (reverse *class-accesses*))
 	      (next   '())
 	      (access '()))
       (if (null? cur)
