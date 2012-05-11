@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Wed May  9 12:01:14 2012 (serrano)                */
+#*    Last change :  Fri May 11 11:55:10 2012 (serrano)                */
 #*    Copyright   :  2002-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -188,7 +188,7 @@ install-shared-ln-lib:
 	  $(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX) && \
 	  (cd $(LIBDIR)/$(FILDIR) && \
            if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) && \
+             $(RM) -f $(LN).$(SHAREDSUFFIX) && \
              $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
@@ -197,7 +197,7 @@ install-shared-ln-lib:
            fi); \
 	  (cd $(LIBDIR) && \
            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+             $(RM) -f $(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
              $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
