@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri May 11 12:24:00 2012 (serrano)                */
+;*    Last change :  Fri May 11 14:20:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -152,7 +152,6 @@
 	    (class-allocator::procedure ::class)
 	    (class-creator::obj ::class)
 	    (class-nil::obj ::class)
-	    (class-get-new-nil::obj ::class)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
@@ -613,21 +612,6 @@
        (if (class? class)
 	   (class-nil-unsafe class)
 	   (bigloo-type-error "class-nil" "class" class)))))
-
-;*---------------------------------------------------------------------*/
-;*    class-get-new-nil ...                                            */
-;*---------------------------------------------------------------------*/
-(define (class-get-new-nil class)
-   (if (eq? class object)
-       ((class-allocator object))
-       (let ((c (vector-ref-ur class 12)))
-	  (if (class-wide? class)
-	      (let* ((super (class-super class))
-		     (o ((class-allocator super)))
-		     (wo ((class-allocator class) o)))
-		 ((cdr c) wo))
-	      (let ((o ((class-allocator class))))
-		 ((cdr c) o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-shrink ...                                                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Apr 17 07:48:22 2012 (serrano)                */
+;*    Last change :  Fri May 11 14:20:00 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -158,11 +158,10 @@
 ;*    eval-nil ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (eval-nil native length classnum)
-   (lambda ()
-      (let ((o (class-get-new-nil native)))
-	 (object-class-num-set! o (cell-ref classnum))
-	 (%object-widening-set! o (make-vector length #f))
-	 o)))
+   (lambda (o)
+      (object-class-num-set! o (cell-ref classnum))
+      (%object-widening-set! o (make-vector length #f))
+      o))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-register-class ...                                          */

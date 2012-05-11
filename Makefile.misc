@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Fri May 11 11:55:10 2012 (serrano)                */
+#*    Last change :  Fri May 11 14:10:31 2012 (serrano)                */
 #*    Copyright   :  2002-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -166,7 +166,8 @@ install-shared-lib:
                 $(LIB).$(SHAREDSUFFIX) \
                || \
                $(INSTALL) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX)); \
+                $(LIB).$(SHAREDSUFFIX)) \
+               || exit 1; \
             fi \
           fi \
         fi;
@@ -185,24 +186,25 @@ install-link-lib:
 
 install-shared-ln-lib:
 	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
-	  $(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX) && \
 	  (cd $(LIBDIR)/$(FILDIR) && \
            if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(LN).$(SHAREDSUFFIX) && \
+             $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
              $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
              $(INSTALL) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX); \
+                $(LIB).$(SHAREDSUFFIX) \
+             || exit 1; \
            fi); \
 	  (cd $(LIBDIR) && \
            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
+             $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
              $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                    $(LIB).$(SHAREDSUFFIX) \
              || \
              $(INSTALL) $(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX); \
+                $(LIB).$(SHAREDSUFFIX) \
+             || exit 1; \
            fi) \
         fi
 
