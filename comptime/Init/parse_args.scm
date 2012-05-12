@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat May  5 18:00:30 2012 (serrano)                */
+;*    Last change :  Sat May 12 08:46:45 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -42,7 +42,7 @@
 ;*    Global parse args parameters ...                                 */
 ;*---------------------------------------------------------------------*/
 (define *extended-done?* #f)
-(define *library-init* '())
+(define *libraries* '())
 (define *trace-level* 0)
 (define *user-load-path* (list "." (bigloo-config 'library-directory)))
 (define *force-saw* #unspecified)
@@ -138,7 +138,7 @@
       (when (eq? *init-mode* 'read)
 	 (set! *early-with-modules* (cons '__reader *early-with-modules*)))
       ;; initialize the libraries
-      (for-each setup-library-values *library-init*)
+      (for-each use-library! *libraries*)
       ;; we check with back-end we are using for defining the correct
       ;; srfi ressources
       (case *target-language*
@@ -253,9 +253,9 @@
        (set! *include-multiple* #t))
       ;; Bigloo libary
       (("-library" ?library (help "Compile/link with additional Bigloo library"))
-       (set! *library-init*
-	     (cons (use-library! (string->symbol library) 'delay)
-		   *library-init*)))
+       (set! *libraries* (cons (string->symbol library) *libraries*)))
+;* 	     (cons (use-library! (string->symbol library) 'delay)      */
+;* 		   *library-init*)))                                   */
       ;; srfi support
       (("-srfi" ?srfi (help "Declares srfi support"))
        (register-srfi! (string->symbol srfi)))
@@ -1105,10 +1105,10 @@
       (set! *bdb-debug* 3))
    (if (bigloo-config 'have-bdb)
        (begin 
-	  (set! *additional-heap-names*
-		(cons "bdb" *additional-heap-names*))
-	  (set! *library-init*
-		(cons (use-library! 'bdb 'delay) *library-init*))
+;* 	  (set! *additional-heap-names*                                */
+;* 		(cons "bdb" *additional-heap-names*))                  */
+	  (set! *libraries* (cons 'bdb *libraries*))
+;* 		(cons (use-library! 'bdb 'delay) *library-init*))      */
 	  
 	  (set! *user-heap-size* 1)
 	  (set! *bdb-debug* 1)

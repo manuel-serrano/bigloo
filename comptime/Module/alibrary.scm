@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Wed Oct 20 07:50:34 2010 (serrano)                */
-;*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat May 12 09:28:10 2012 (serrano)                */
+;*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
 ;*=====================================================================*/
@@ -17,36 +17,65 @@
    (include "Module/libinfo.sch")
    (import  module_module
 	    tools_error
+	    tools_speek
 	    engine_param
 	    backend_backend
-	    (setup-library-values init_setrc)
 	    ast_var
 	    type_type
 	    ast_glo-decl
 	    ast_ident
 	    ast_env)
    (export  (make-alibrary-compiler)
-	    (use-library! library::symbol mode)
-	    (get-alibrary-inits)))
+            (load-library-init)
+	    (use-library! library::symbol)
+	    (get-alibrary-inits))
+   (eval    (export use-library!)))
+
+;*---------------------------------------------------------------------*/
+;*    *library-init* ...                                               */
+;*    -------------------------------------------------------------    */
+;*    The list of init file that will have to be loaded for libraries. */
+;*---------------------------------------------------------------------*/
+(define *library-init* '())
+
+;*---------------------------------------------------------------------*/
+;*    load-library-init ...                                            */
+;*    -------------------------------------------------------------    */
+;*    loading an init file may demand other libraries to be loaded.    */
+;*    This function iterates until the fix point is reached.           */
+;*---------------------------------------------------------------------*/
+(define (load-library-init)
+   (let loop ()
+      (when (pair? *library-init*)
+	 (let ((l *library-init*))
+	    (set! *library-init* '())
+	    (for-each (lambda (fname)
+			 (verbose 2 "      [reading " fname "]" #\Newline)
+			 (loadq fname))
+	       l))
+	 (loop))))
+
+;*---------------------------------------------------------------------*/
+;*    register-library-init! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (register-library-init! library)
+   (let* ((init-name (string-append (symbol->string library) ".init"))
+	  (fname (find-file/path init-name *lib-dir*)))
+      (when fname
+	 (set! *library-init* (cons fname *library-init*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-library! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (use-library! library mode)
-   (if (not (member library *additional-bigloo-libraries*))
-       (begin
-	  (set! *additional-bigloo-libraries*
-		(cons library *additional-bigloo-libraries*))
-	  (let ((heap-name (symbol->string library)))
-	     ;; when use-library is called from the argument parsing we have
-	     ;; to delay the library initialization until all arguments have
-	     ;; been parsed. In consequence setup-library-values is called
-	     ;; only when use-library is not called from argument parsing
-	     ;; (which is denotes by the 'now mode value)
-	     (if (eq? mode 'now) (setup-library-values library))
-	     (set! *additional-heap-names*
-		   (cons heap-name *additional-heap-names*))
-	     library))))
+(define (use-library! library)
+   (unless (member library *additional-bigloo-libraries*)
+      (set! *additional-bigloo-libraries*
+	 (cons library *additional-bigloo-libraries*))
+      (let ((heap-name (symbol->string library)))
+	 (register-library-init! library)
+	 (set! *additional-heap-names*
+	    (cons heap-name *additional-heap-names*))
+	 library)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-alibrary-compiler ...                                       */
@@ -64,7 +93,7 @@
       ((?- . ?protos)
        (for-each (lambda (x)
 		    (if (symbol? x)
-			(use-library! x 'now)
+			(use-library! x)
 			(error 'library "Illegal prototype" x)))
 		 protos)
        '())

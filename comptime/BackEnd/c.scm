@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Mar 17 18:27:58 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Sat May 12 08:46:28 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -264,9 +264,7 @@
 		     (for-each (lambda (lib)
 				  (match-case lib
 				     ((library . ?libs)
-				      (for-each (lambda (lib)
-						   (use-library! lib 'now))
-						libs))))
+				      (for-each use-library! libs))))
 			       libraries)
 		     ;; we load the library init files.
 		     (load-library-init)

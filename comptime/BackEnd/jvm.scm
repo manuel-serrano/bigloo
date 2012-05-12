@@ -258,9 +258,7 @@
 		     (for-each (lambda (lib)
 				  (match-case lib
 				     ((library . ?libs)
-				      (for-each (lambda (lib)
-						   (use-library! lib 'now))
-						libs))))
+				      (for-each use-library! libs))))
 			       libraries)
 		     ;; we load the library init files.
 		     (load-library-init)
