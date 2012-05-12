@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Feb  1 09:48:08 2012 (serrano)                */
+;*    Last change :  Sat May 12 16:18:16 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -247,22 +247,24 @@
 (define (mpg123-volume-get m::mpg123-handle)
    (with-access::mpg123-handle m ($builtin)
       (let ((vol ($bgl-mpg123-getvolume $builtin)))
-	 (if (<fx vol 0)
+	 (if (<fl vol 0.)
 	     (raise (instantiate::&mpg123-error
 		   (proc "mpg123")
-		   (msg ($mpg123-plain-strerror vol))
+		   (msg "Cannot get volume")
 		   (obj m)))
-	     vol))))
+	     (flonum->fixnum (roundfl (*fl 100. (sqrtfl vol))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-volume-set! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (mpg123-volume-set! m::mpg123-handle vol)
    (with-access::mpg123-handle m ($builtin)
-      (let ((err ($mpg123-volume $builtin (/ (fixnum->flonum vol) 100.))))
-	 (when (<fx err 0)
-	    (raise (instantiate::&mpg123-error
-		      (proc "mpg123")
-		      (msg ($mpg123-plain-strerror err))
-		      (obj m)))))))
+      (let* ((v (/fl (fixnum->flonum vol) 100.))
+	     (v2 (*fl v v)))
+	 (let ((err ($mpg123-volume $builtin v2)))
+	    (when (<fx err 0)
+	       (raise (instantiate::&mpg123-error
+			 (proc "mpg123")
+			 (msg ($mpg123-plain-strerror err))
+			 (obj m))))))))
 

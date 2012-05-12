@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Tue Nov 15 20:47:51 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Sat May 12 16:16:24 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
 ;*=====================================================================*/
@@ -64,7 +64,7 @@
        (::$mpg123-handle) "bgl_mpg123_position")
     ($bgl-mpg123-info::long
        (::$mpg123-handle) "bgl_mpg123_info")
-    ($bgl-mpg123-getvolume::long
+    ($bgl-mpg123-getvolume::double
        (::$mpg123-handle) "bgl_mpg123_getvolume")
     ($bgl-mpg123-param::obj
        (::$mpg123-handle ::$mpg123-params ::long ::double) "bgl_mpg123_param")

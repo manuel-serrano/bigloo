@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 21 08:20:23 2011                          */
-/*    Last change :  Mon Sep 19 05:23:09 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Sat May 12 16:18:32 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 C prototypes                                              */
 /*=====================================================================*/
@@ -16,6 +16,6 @@ extern int bgl_mpg123_decode( obj_t, char *, long, long, char *, long );
 extern mpg123_handle *bgl_mpg123_new( const char * );
 extern long bgl_mpg123_getformat( mpg123_handle * );
 extern long bgl_mpg123_info( mpg123_handle * );
-extern long bgl_mpg123_getvolume( mpg123_handle * );
+extern double bgl_mpg123_getvolume( mpg123_handle * );
 
 #endif

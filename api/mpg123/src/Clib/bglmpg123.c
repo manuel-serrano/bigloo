@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Oct 24 12:17:08 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Sat May 12 16:17:55 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
 /*=====================================================================*/
@@ -133,10 +133,10 @@ bgl_mpg123_info( mpg123_handle *m ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    long                                                             */
+/*    double                                                           */
 /*    bgl_mpg123_getvolume ...                                         */
 /*---------------------------------------------------------------------*/
-long
+double
 bgl_mpg123_getvolume( mpg123_handle *m ) {
    double base, really, rva_db;
    int err;
@@ -144,11 +144,9 @@ bgl_mpg123_getvolume( mpg123_handle *m ) {
    err = mpg123_getvolume( m, &base, &really, &rva_db );
 
    if( err < 0 ) {
-      return err;
+      return -1;
    } else {
-      fprintf( stderr, "vol base=%d really=%d rva_db=%d\n",
-	       (int)(base * 100), (int)(really * 100), (int)(rva_db * 100) );
-      return (long)(base * 100);
+      return base;
    }
 }
 

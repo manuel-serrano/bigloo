@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Apr  4 15:39:03 2012 (serrano)                */
+;*    Last change :  Sat May 12 16:21:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -247,7 +247,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-volume-get m::flac-decoder)
    (with-access::flac-decoder m (%volume)
-      (flonum->fixnum (*fl %volume 100.))))
+      (flonum->fixnum (*fl (sqrtfl %volume) 100.))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-volume-set! ...                                             */
@@ -255,7 +255,8 @@
 (define-generic (flac-volume-set! m::flac-decoder vol)
    (with-access::flac-decoder m (%volume)
       (when (and (>=fx vol 0) (<=fx vol 100))
-	 (set! %volume (/fl (fixnum->flonum vol) 100.)))))
+	 (let ((v (/fl (fixnum->flonum vol) 100.)))
+	    (set! %volume (*fl v v))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-error ...                                                   */
