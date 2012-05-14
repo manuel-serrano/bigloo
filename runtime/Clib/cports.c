@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri May  4 12:34:44 2012 (serrano)                */
+/*    Last change :  Mon May 14 08:55:12 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -163,6 +163,12 @@ static int bsd_sendfile(int out_fd, int in_fd, off_t *offset, size_t count) {
 /*---------------------------------------------------------------------*/
 #define DEBUG_SENDCHARS 1
 #undef DEBUG_SENDCHARS
+
+/*---------------------------------------------------------------------*/
+/*    DEBUG_TIMED_READ                                                 */
+/*---------------------------------------------------------------------*/
+#define DEBUG_TIMED_READ 1
+//#undef DEBUG_TIMED_READ
 
 /*---------------------------------------------------------------------*/
 /*    isascii                                                          */
@@ -419,7 +425,15 @@ posix_timed_read( obj_t port, char *ptr, long num ) {
    fd_set readfds;
    struct timeval timeout;
    long n;
+#if( defined( DEBUG_TIMED_READ ) )
+   extern obj_t bgl_debug();
+   bool_t debug = CBOOL( bgl_debug() );
+   struct timeval tv1, tv2;
 
+   if( debug ) gettimeofday( &tv1, 0 );
+   
+#endif
+	 
 loop:
    FD_ZERO( &readfds );
    FD_SET( fd, &readfds );
@@ -448,6 +462,19 @@ loop:
 	    "read/timeout", strerror( errno ), port );
       }
    } else {
+#if( defined( DEBUG_TIMED_READ ) )    
+      if( debug ) {
+	 long mu;
+	 
+	 gettimeofday( &tv2, 0 );
+
+	 mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
+
+	 fprintf( stderr, "%s:%d posix_timed_read: %dms\n",
+		  __FILE__, __LINE__, (mu * 1000) );
+      }
+#endif
+      
       return sysread_with_timeout( port, ptr, num );
    }
 }
@@ -458,7 +485,7 @@ loop:
 /*    sysread_with_timeout ...                                         */
 /*    -------------------------------------------------------------    */
 /*    In constrast to read, this function does not block on input if   */
-/*    insufficient characters are available.                           */
+/*    no characters are available.                                     */
 /*---------------------------------------------------------------------*/
 static long
 sysread_with_timeout( obj_t port, char *ptr, long num ) {

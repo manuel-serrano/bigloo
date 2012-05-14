@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri May 11 16:29:16 2012 (serrano)                */
+;*    Last change :  Mon May 14 08:37:15 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -151,7 +151,8 @@
 	    (class-constructor::obj ::class)
 	    (class-allocator::procedure ::class)
 	    (class-creator::obj ::class)
-	    (class-nil::obj ::class)
+	    (inline class-nil::obj ::class)
+	    (class-nil-init!::obj ::class)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
@@ -585,35 +586,34 @@
    (vector-ref-ur class 11))
 
 ;*---------------------------------------------------------------------*/
-;*    class-nil-unsafe ...                                             */
+;*    class-nil-init! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (class-nil-unsafe class)
-   (or (vector-ref-ur class 17)
-       (let ((proc (vector-ref-ur class 12)))
-	  ;; no nil value is represented by #t
-	  (if (class-wide? class)
-	      (let* ((super (class-super class))
-		     (o ((class-allocator super)))
-		     (wo ((class-allocator class) o)))
-		 (vector-set-ur! class 17 wo)
-		 (proc wo)
-		 wo)
-	      (let ((o ((class-allocator class))))
-		 (vector-set-ur! class 17 o)
-		 (proc o)
-		 o)))))
+(define (class-nil-init! class)
+   (let ((proc (vector-ref-ur class 12)))
+      ;; no nil value is represented by #t
+      (if (class-wide? class)
+	  (let* ((super (class-super class))
+		 (o ((class-allocator super)))
+		 (wo ((class-allocator class) o)))
+	     (vector-set-ur! class 17 wo)
+	     (proc wo)
+	     wo)
+	  (let ((o ((class-allocator class))))
+	     (vector-set-ur! class 17 o)
+	     (proc o)
+	     o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-nil ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (class-nil class)
+(define-inline (class-nil class)
    (cond-expand
       (bigloo-unsafe-type
        ;;; disable type checking
-       (class-nil-unsafe class))
+       (or (vector-ref-ur class 17) (class-nil-init! class)))
       (else
        (if (class? class)
-	   (class-nil-unsafe class)
+	   (or (vector-ref-ur class 17) (class-nil-init! class))
 	   (bigloo-type-error "class-nil" "class" class)))))
 
 ;*---------------------------------------------------------------------*/
