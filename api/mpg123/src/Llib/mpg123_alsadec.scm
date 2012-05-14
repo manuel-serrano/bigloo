@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat May 12 16:13:01 2012 (serrano)                */
+;*    Last change :  Mon May 14 09:16:54 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -145,10 +145,19 @@
 	    
 	    (define (debug-inc-tail)
 	       (when (>=fx (mpg123-debug) 2)
-		  (tprint "--- MPG123_DECODER, buffer: "
-		     (buffer-percentage-filled) "%"
-		     (if %eof " EOF" "")
-		     " url=" url)))
+		  (let ((p (buffer-percentage-filled)))
+		     (when (or (and (or (< p 75) has-been-empty-once)
+				    (not %eof))
+			       (>=fx (mpg123-debug) 3))
+			(tprint "--- MPG123_DECODER, buffer: "
+			   (cond
+			      ((>= p 80) "")
+			      ((> p 25) "[0m[1;33m")
+			      (else "[0m[1;32m"))
+			   p
+			   "%[0m"
+			   (if %eof " EOF" "")
+			   " url=" url)))))
 
 	    (define (inc-tail! size)
 	       ;; increment the tail

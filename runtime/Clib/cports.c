@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon May 14 08:55:12 2012 (serrano)                */
+/*    Last change :  Mon May 14 09:12:52 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -426,11 +426,11 @@ posix_timed_read( obj_t port, char *ptr, long num ) {
    struct timeval timeout;
    long n;
 #if( defined( DEBUG_TIMED_READ ) )
-   extern obj_t bgl_debug();
-   bool_t debug = CBOOL( bgl_debug() );
+   extern int bgl_debug();
+   int debug = CINT( bgl_debug() );
    struct timeval tv1, tv2;
 
-   if( debug ) gettimeofday( &tv1, 0 );
+   if( debug >= 2 ) gettimeofday( &tv1, 0 );
    
 #endif
 	 
@@ -463,7 +463,7 @@ loop:
       }
    } else {
 #if( defined( DEBUG_TIMED_READ ) )    
-      if( debug ) {
+      if( debug >= 2 ) {
 	 long mu;
 	 
 	 gettimeofday( &tv2, 0 );
