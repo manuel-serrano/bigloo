@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat May  5 09:06:12 2012 (serrano)                */
+#*    Last change :  Mon May 21 15:04:48 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2298,7 +2298,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     llabs=abs
     have_strtoll=0
     strtoll=strtol
-    strtoull=0
+    strtoull=strtoull
   else
     havelonglong=1
 
