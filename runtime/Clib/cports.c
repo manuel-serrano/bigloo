@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon May 14 09:12:52 2012 (serrano)                */
+/*    Last change :  Wed May 16 09:48:29 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -470,7 +470,7 @@ loop:
 
 	 mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
 
-	 fprintf( stderr, "%s:%d posix_timed_read: %dms\n",
+	 fprintf( stderr, "%s:%d posix_timed_read: [0m[1;33m%dms[0m\n",
 		  __FILE__, __LINE__, (mu * 1000) );
       }
 #endif
