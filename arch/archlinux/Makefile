@@ -1,37 +1,27 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/Makefile                        */
+#*    serrano/prgm/project/bigloo/arch/archlinux/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
-#*    Creation    :  Sun Feb  7 07:40:11 2010                          */
-#*    Last change :  Wed May 23 10:16:51 2012 (serrano)                */
+#*    Creation    :  Sun Feb  7 07:41:50 2010                          */
+#*    Last change :  Wed May 23 14:20:31 2012 (serrano)                */
 #*    Copyright   :  2010-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The Makefile that handles arch specific parts.                   */
+#*    The Makefile that handles ARCHLINUX specific files               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
-include ../Makefile.config
+include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    DIRECTORIES                                                      */
+#*    Variables                                                        */
 #*---------------------------------------------------------------------*/
-DIRECTORIES= macosx debian archlinux android
+POPULATION = Makefile PKGBUILD bigloo.install
 
 #*---------------------------------------------------------------------*/
-#*    Populating the ARCHs                                             */
+#*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
-pop: 
-	@ for d in $(DIRECTORIES) ; do \
-             for f in `cd $$d && $(MAKE) -s pop;`; do \
-                echo arch/$$f; \
-             done; \
-          done;
-	@ echo arch/Makefile
+pop:
+	@ echo $(POPULATION:%=archlinux/%)
 
-
-#*---------------------------------------------------------------------*/
-#*    distrib                                                          */
-#*---------------------------------------------------------------------*/
-distrib:
