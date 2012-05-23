@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Apr 11 09:45:01 2012 (serrano)                */
+#*    Last change :  Wed May 23 07:34:04 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -708,13 +708,13 @@ jvm-test:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install install-progs install-devel install-libs install-runtime
+.PHONY: install install-progs install-devel install-libs install-apis
 
 .PHONY: uninstall
 
 install: install-progs install-docs
 
-install-progs: install-devel install-libs
+install-progs: install-devel install-libs install-apis
 
 install-devel: install-dirs
 	$(MAKE) -C comptime install
@@ -744,6 +744,8 @@ install-libs: install-dirs
          fi)
 	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.misc)
+
+install-apis: install-dirs
 	$(MAKE) -C api install
 
 install-docs: install-dirs

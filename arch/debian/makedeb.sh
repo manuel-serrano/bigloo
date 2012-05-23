@@ -1,16 +1,52 @@
 #!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/arch/debian/makedeb.sh               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed May 23 05:45:55 2012                          */
+#*    Last change :  Wed May 23 07:24:41 2012 (serrano)                */
+#*    Copyright   :  2012 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Script to build the debian Bigloo packages                       */
+#*=====================================================================*/
 
 # configuration and variables
 version=3.8c
 minor=
+
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
-bglconfigureopt=$*
+bglconfigureopt=
 
-#* bglpcre=libpcre3                                                    */
-#* bglpcredev=libpcre3-dev                                             */
-bglpcre=
-bglpcredev=
+#* depend=libpcre3                                                    */
+#* builddepend=libpcre3-dev                                           */
+builddepend=
+depend=
+
+libs="ssl alsa flac mpg123 gstreamer avahi"
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+    -h|--help)
+      echo "usage makedeb.sh [-l LIB] [--depend DEP] [--builddepend DEP] opt1 opt2 ...";
+      exit 1;;
+    -l|--lib)
+      shift;
+      libs="$1 $libs";;
+    --depend)
+      shift;
+      depend="$1 $depend";;
+    --builddepend)
+      shift;
+      builddepend="$1 $builddepend";;
+    *)
+      bglconfigureopt="$1 $bglconfigureopt";;
+
+  esac
+  shift
+done
 
 if [ "$REPODIR " != " " ]; then
   repodir=$REPODIR;
@@ -50,40 +86,48 @@ if [ ! -f $basedir/makedeb.sh ]; then
   echo "current directory is: $PWD" >&2
   echo "exiting..." >&2;
 fi
-  
-# debian specific
+
+# configure debian files
+configure() {
+  src=$1
+  dest=$2
+
+  cat $src \
+    | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
+    | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
+    | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
+    | sed -e "s|@EXTRADEPEND@|$depend|g" \
+    | sed -e "s|@EXTRABUILDDEPEND@|$builddepend|g" \
+    > $dest.tmp
+  for l in $libs; do
+    cond="@IF`echo $l | tr [:lower:] [:upper:]`@"
+
+    cat $dest.tmp \
+      | sed -e "s|$cond ||" \
+      > $dest.tmp2 \
+      && mv $dest.tmp2 $dest.tmp
+  done
+
+  cat $dest.tmp \
+      | sed -e "s|@[A-Z0-9]*@.*$||" \
+      > $dest && /bin/rm $dest.tmp
+}  
+
+# debian specific configuration
 for p in control rules postinst changelog; do
   if [ -f $basedir/$p.in ]; then
-    cat $basedir/$p.in \
-      | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
-      | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
-      | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
-      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
-      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
-      > debian/$p
+    configure $basedir/$p.in debian/$p
   elif [ -f $basedir/$p.$pkg ]; then
-    cat $basedir/$p.$pkg \
-      | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
-      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
-      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
-      | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
-      > debian/$p
+    configure $basedir/$p.$pkg debian/$p
   elif [ -f $basedir/$p ]; then
-    cat $basedir/$p \
-      | sed -e "s/@BIGLOOVERSION@/$version$minor/g" \
-      | sed -e "s|@EXTRADEPEND@|$bglpcre|g" \
-      | sed -e "s|@EXTRABUILDDEPEND@|$bglpcredev|g" \
-      | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
-      > debian/$p
+    configure $basedir/$p debian/$p
   fi
 done
 
 dpkg-buildpackage -rfakeroot && 
 
 if [ -d $repodir/$debian ]; then
-  for subpkg in bigloo libbigloo-full bigloo-doc; do
-    cp ../"$subpkg"_"$version""$minor"_*.deb $repodir/$debian
-  done
+  cp ../*_"$version""$minor"_*.deb $repodir/$debian
 fi
 
 cd $curdir

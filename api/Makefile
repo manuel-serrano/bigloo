@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Tue Mar 27 12:03:07 2012 (serrano)                */
+#*    Last change :  Wed May 23 07:49:13 2012 (serrano)                */
 #*    Copyright   :  2005-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -101,7 +101,18 @@ install:
          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api)
 	if [ "$(APIS) " != " " ]; then \
           for d in $(APIS) ; do \
-            $(MAKE) -C $$d install || exit 1; \
+            install=true; \
+	    if [ "$(NOAPIS) " != " " ]; then \
+              for n in $(NOAPIS) ; do \
+                if [ "$$n " = "$$d " ]; then \
+                  install=false; \
+                  break; \
+                fi; \
+              done; \
+            fi; \
+            if [ "$$install " = "true " ]; then \
+              $(MAKE) -C $$d install || exit 1; \
+            fi; \
           done \
         fi
 

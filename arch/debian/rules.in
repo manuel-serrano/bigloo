@@ -59,7 +59,15 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/bigloo.
-	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/libbigloo-full
+	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/bigloo-libs
+	$(MAKE) install-apis NOAPIS=" ssl alsa flac mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
+	@IFSSL@ $(MAKE) install-apis APIS=ssl DESTDIR=$(CURDIR)/debian/bigloo-libssl
+	@IFALSA@ $(MAKE) install-apis APIS=alsa DESTDIR=$(CURDIR)/debian/bigloo-libalsa
+	@IFFLAC@ $(MAKE) install-apis APIS=flac DESTDIR=$(CURDIR)/debian/bigloo-libflac
+	@IFMPG123@ $(MAKE) install-apis APIS=mpg123 DESTDIR=$(CURDIR)/debian/bigloo-libmpg123
+	@IFAVAHI@ $(MAKE) install-apis APIS=avahi DESTDIR=$(CURDIR)/debian/bigloo-libavahi
+	@IFGSTREAMER@ $(MAKE) install-apis APIS=gstreamer DESTDIR=$(CURDIR)/debian/bigloo-libgstreamer
+	@IFPHIDGET@ $(MAKE) install-apis APIS=phidget DESTDIR=$(CURDIR)/debian/bigloo-libphidget
 	$(MAKE) install-devel DESTDIR=$(CURDIR)/debian/bigloo
 	$(MAKE) install-docs DESTDIR=$(CURDIR)/debian/bigloo-doc
 

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 21 15:04:48 2012 (serrano)                */
+#*    Last change :  Wed May 23 07:43:04 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3562,6 +3562,7 @@ echo >> $makefile_cfg
 
 # APIs
 echo "APIS=$apis" >> $makefile_cfg
+echo "NOAPIS=" >> $makefile_cfg
 echo >> $makefile_cfg
 
 # Android specific
