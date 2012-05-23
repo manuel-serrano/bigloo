@@ -16,12 +16,13 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
 CFLAGS = 
+LDFLAGS =
 
 config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
 	# CFLAGS="$(CFLAGS) -g" ./configure --prefix=/usr --stack-check=no --debug2
-	CFLAGS="$(CFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage @BGLCONFIGUREOPT@
+	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage @BGLCONFIGUREOPT@
 
 
 build: build-stamp
