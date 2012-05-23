@@ -57,6 +57,10 @@ bglprefix=/opt/bigloo
 
 maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 
+if [ -f /usr/include/phidget21.h -o -f /usr/local/include/phidget21.h ]; then
+  libs="phidget $libs";
+fi
+
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`
 else
