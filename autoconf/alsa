@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Mon Jul  4 13:46:04 2011 (serrano)                */
-#*    Copyright   :  2007-11 Manuel Serrano                            */
+#*    Last change :  Thu May 24 21:25:30 2012 (serrano)                */
+#*    Copyright   :  2007-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if ALSA is available.                                      */
 #*=====================================================================*/
@@ -42,10 +42,10 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    cflags                                                           */
 #*---------------------------------------------------------------------*/
-cflags=`pkg-config --cflags --libs alsa` > /dev/null
+lflags=`pkg-config --cflags --libs alsa` > /dev/null
 
 if [ $? != 0 ]; then
-  cflags=`pkg-config --cflags --libs alsa` > /dev/null
+  lflags=`pkg-config --cflags --libs alsa` > /dev/null
   if [ $? != 0 ]; then
     echo "no"
     exit 0
@@ -55,7 +55,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout >/dev/null"
+compile="$CC $cflags $file.c $lflags -o $aout >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
