@@ -13,43 +13,36 @@ Description: Bigloo core Libraries
 
 @IFSSL@ Package: libssl-bigloo
 @IFSSL@ Architecture: any
-@IFSSL@ Build-Depends: libssl-dev
 @IFSSL@ Depends: libssl, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
 @IFSSL@ Description: Bigloo bindings for OpenSSL.
 
 @IFALSA@ Package: libalsa-bigloo
 @IFALSA@ Architecture: any
-@IFALSA@ Build-Depends: libasound2-dev
 @IFALSA@ Depends: libasound2, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SSLDEPEND@, @EXTRADEPEND@
 @IFALSA@ Description: Bigloo bindings for the ALSA library
 
 @IFFLAC@ Package: libflac-bigloo
 @IFFLAC@ Architecture: any
-@IFFLAC@ Build-Depends: libflac-dev
 @IFFLAC@ Depends: libflac, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
-@IFMPG123@ Build-Depends: libflac-dev
 @IFMPG123@ Depends: libmpg123, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
 @IFMPG123@ Description: Bigloo bindings for the MPG123 library
 
 @IFAVAHI@ Package: libavahi-bigloo
 @IFAVAHI@ Architecture: any
-@IFAVAHI@ Build-Depends: libavahi-dev
 @IFAVAHI@ Depends: libavahi, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
 @IFAVAHI@ Description: Bigloo bindings for the AVAHI library
 
 @IFGSTREAMER@ Package: libgstreamer-bigloo
 @IFGSTREAMER@ Architecture: any
-@IFGSTREAMER@ Build-Depends: libgstreamer-0.10-dev
 @IFGSTREAMER@ Depends: libgstreamer-0.10, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @GSTREAMERDEPEND@, @EXTRADEPEND@
 @IFGSTREAMER@ Description: Bigloo bindings for the GSTREAMER library
 
 @IFPHIDGET@ Package: libphidget-bigloo
 @IFPHIDGET@ Architecture: any
-@IFPHIDGET@ Build-Depends: libphidget-dev
 @IFPHIDGET@ Depends: libphidget, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @PHIDGETDEPEND@, @EXTRADEPEND@
 @IFPHIDGET@ Description: Bigloo bindings for the PHIDGET library
 @IFPHIDGET@  The Phidget debian packages repository is located at:
