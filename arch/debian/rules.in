@@ -18,7 +18,7 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 CFLAGS = 
 LDFLAGS =
 
-LD_LIBRARY_PATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libphidget-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@
+LD_LIBRARY_PATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libphidget-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$$LD_LIBRARY_PATH
 
 config.status: configure
 	dh_testdir
