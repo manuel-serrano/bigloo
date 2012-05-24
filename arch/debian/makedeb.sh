@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu May 24 09:28:02 2012 (serrano)                */
+#*    Last change :  Thu May 24 17:38:30 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -132,7 +132,8 @@ for p in control rules postinst changelog; do
   fi
 done
 
-dpkg-buildpackage -rfakeroot && 
+#dpkg-buildpackage -rfakeroot && 
+dpkg-buildpackage && 
 
 if [ -d $repodir/$debian ]; then
   cp ../*_"$version""$minor"_*.deb $repodir/$debian
