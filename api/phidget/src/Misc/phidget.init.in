@@ -35,5 +35,4 @@
    (bigloo-eval
     (let ((file (make-file-name "@PHIDGETLIBDIR@" "libphidget@PHIDGETVERSION@.so")))
        (when (file-exists? file)
-          (dynamic-load lib #f)))))
-
+          (dynamic-load file #f)))))

@@ -293,8 +293,8 @@
 	 (::$pdg-advanced-servo ::int ::double ::double ::double ::double)
 	 "CPhidgetAdvancedServo_setServoParameters")
 
-      ($pdg-phidget-advanced-get-current::int
-	 (::$pdg-advanced-servo ::int ::double ::obj)
+      ($pdg-phidget-advanced-servo-get-current::double
+	 (::$pdg-advanced-servo ::int ::obj)
 	 "bgl_phidget_advanced_servo_get_current")
       
       ($pdg-phidget-advanced-servo-add-event-listener!::int

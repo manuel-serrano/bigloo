@@ -76,6 +76,9 @@
       (phidget-advanced-servo-stopped::bool
 	 ::phidget-advanced-servo ::int)
       
+      (phidget-advanced-servo-current::double
+	 ::phidget-advanced-servo ::int)
+
       (phidget-advanced-servo-parameters-set!
 	 ::phidget-advanced-servo ::int ::double ::double ::double ::double)
 
@@ -277,6 +280,15 @@
 (define (phidget-advanced-servo-stopped o i)
    (with-access::phidget o ($builtin)
       ($pdg-phidget-advanced-servo-get-stopped
+	 ($pdg-phidget->advanced-servo $builtin)
+	 i o)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-advanced-servo-current ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-advanced-servo-current o i)
+   (with-access::phidget o ($builtin)
+      ($pdg-phidget-advanced-servo-get-current
 	 ($pdg-phidget->advanced-servo $builtin)
 	 i o)))
 
