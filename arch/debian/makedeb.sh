@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu May 24 17:41:33 2012 (serrano)                */
+#*    Last change :  Thu May 24 17:45:12 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -24,6 +24,8 @@ bglconfigureopt=
 #* builddepend=libpcre3-dev                                           */
 builddepend=
 depend=
+
+fakeroot=fakeroot
 
 libs="sqlite ssl alsa flac mpg123 gstreamer avahi"
 
@@ -45,7 +47,10 @@ while : ; do
       builddepend="$1 $builddepend";;
     --prefix)
       shift;
-      bglprefix==$1;;
+      bglprefix=$1;;
+    --fakeroot)
+      shift;
+      fakeroot=$1;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -132,7 +137,7 @@ for p in control rules postinst changelog; do
   fi
 done
 
-dpkg-buildpackage -rfakeroot && 
+dpkg-buildpackage -r$fakeroot && 
 
 if [ -d $repodir/$debian ]; then
   cp ../*_"$version""$minor"_*.deb $repodir/$debian
