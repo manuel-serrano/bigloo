@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed May 23 07:24:41 2012 (serrano)                */
+#*    Last change :  Thu May 24 08:21:20 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -23,7 +23,7 @@ bglconfigureopt=
 builddepend=
 depend=
 
-libs="ssl alsa flac mpg123 gstreamer avahi"
+libs="sqlite ssl alsa flac mpg123 gstreamer avahi"
 
 while : ; do
   case $1 in
