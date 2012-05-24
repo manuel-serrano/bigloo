@@ -13,7 +13,7 @@ Description: Bigloo core Libraries
 
 @IFSSL@ Package: libssl-bigloo
 @IFSSL@ Architecture: any
-@IFSSL@ Depends: libssl, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
+@IFSSL@ Depends: libssl0.9.8, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
 @IFSSL@ Description: Bigloo bindings for OpenSSL.
 
 @IFALSA@ Package: libalsa-bigloo
@@ -23,22 +23,22 @@ Description: Bigloo core Libraries
 
 @IFFLAC@ Package: libflac-bigloo
 @IFFLAC@ Architecture: any
-@IFFLAC@ Depends: libflac, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
+@IFFLAC@ Depends: libflac8, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
-@IFMPG123@ Depends: libmpg123, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
+@IFMPG123@ Depends: libmpg123-0, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
 @IFMPG123@ Description: Bigloo bindings for the MPG123 library
 
 @IFAVAHI@ Package: libavahi-bigloo
 @IFAVAHI@ Architecture: any
-@IFAVAHI@ Depends: libavahi, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
+@IFAVAHI@ Depends: libavahi-core7, libavahi-common3, libavahi-client3bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
 @IFAVAHI@ Description: Bigloo bindings for the AVAHI library
 
 @IFSQLITE@ Package: libsqlite-bigloo
 @IFSQLITE@ Architecture: any
-@IFSQLITE@ Depends: libsqlite3, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SQLITEDEPEND@, @EXTRADEPEND@
+@IFSQLITE@ Depends: libsqlite3-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SQLITEDEPEND@, @EXTRADEPEND@
 @IFSQLITE@ Description: Bigloo bindings for the SQLITE library
 
 @IFPKGLIB@ Package: libpkglib-bigloo
