@@ -23,12 +23,12 @@ Description: Bigloo core Libraries
 
 @IFFLAC@ Package: libflac-bigloo
 @IFFLAC@ Architecture: any
-@IFFLAC@ Depends: libflac, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
+@IFFLAC@ Depends: libflac, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
-@IFMPG123@ Depends: libmpg123, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
+@IFMPG123@ Depends: libmpg123, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
 @IFMPG123@ Description: Bigloo bindings for the MPG123 library
 
 @IFAVAHI@ Package: libavahi-bigloo
