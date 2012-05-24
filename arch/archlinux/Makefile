@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Wed May 23 14:20:31 2012 (serrano)                */
+#*    Last change :  Thu May 24 16:18:13 2012 (serrano)                */
 #*    Copyright   :  2010-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles ARCHLINUX specific files               */
@@ -17,7 +17,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
-POPULATION = Makefile PKGBUILD bigloo.install
+POPULATION = Makefile PKGBUILD.in bigloo.install
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

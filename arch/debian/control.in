@@ -33,7 +33,7 @@ Description: Bigloo core Libraries
 
 @IFAVAHI@ Package: libavahi-bigloo
 @IFAVAHI@ Architecture: any
-@IFAVAHI@ Depends: libavahi-core7, libavahi-common3, libavahi-client3bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
+@IFAVAHI@ Depends: libavahi-core7, libavahi-common3, libavahi-client3, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
 @IFAVAHI@ Description: Bigloo bindings for the AVAHI library
 
 @IFSQLITE@ Package: libsqlite-bigloo
@@ -48,7 +48,7 @@ Description: Bigloo core Libraries
 
 @IFGSTREAMER@ Package: libgstreamer-bigloo
 @IFGSTREAMER@ Architecture: any
-@IFGSTREAMER@ Depends: libgstreamer-0.10, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @GSTREAMERDEPEND@, @EXTRADEPEND@
+@IFGSTREAMER@ Depends: libgstreamer0.10-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @GSTREAMERDEPEND@, @EXTRADEPEND@
 @IFGSTREAMER@ Description: Bigloo bindings for the GSTREAMER library
 
 @IFPHIDGET@ Package: libphidget-bigloo
