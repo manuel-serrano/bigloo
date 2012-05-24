@@ -104,7 +104,7 @@ binary-arch: build install
 #	dh_python
 #	dh_makeshlibs
 	dh_installdeb
-	LD_LIBRARY_PATH=$(CURDIR)/debian/libbigloo-full@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@ dh_shlibdeps -X bmem.so
+	LD_LIBRARY_PATH=$(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@ dh_shlibdeps -X bmem.so
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

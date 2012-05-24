@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu May 24 08:21:20 2012 (serrano)                */
+#*    Last change :  Thu May 24 09:28:02 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -13,6 +13,8 @@
 # configuration and variables
 version=3.8c
 minor=
+
+bglprefix=/opt/bigloo
 
 repodir=/users/serrano/prgm/distrib
 basedir=`dirname $0`
@@ -41,6 +43,9 @@ while : ; do
     --builddepend)
       shift;
       builddepend="$1 $builddepend";;
+    --prefix)
+      shift;
+      bglprefix==$1;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -53,7 +58,6 @@ if [ "$REPODIR " != " " ]; then
 fi
 
 pkg=bigloo
-bglprefix=/opt/bigloo
 
 maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 
