@@ -61,8 +61,9 @@ install: build
 
 	# Add here commands to install the package into debian/bigloo.
 	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/bigloo-libs
-	$(MAKE) install-apis NOAPIS="sqlite ssl alsa flac mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
+	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl alsa flac mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
 	@IFSQLITE@ $(MAKE) install-apis APIS=sqlite DESTDIR=$(CURDIR)/debian/bigloo-libsqlite
+	@IFPKGLIB@ $(MAKE) install-apis APIS=pkglib DESTDIR=$(CURDIR)/debian/bigloo-libpkglib
 	@IFSSL@ $(MAKE) install-apis APIS=ssl DESTDIR=$(CURDIR)/debian/bigloo-libssl
 	@IFALSA@ $(MAKE) install-apis APIS=alsa DESTDIR=$(CURDIR)/debian/bigloo-libalsa
 	@IFFLAC@ $(MAKE) install-apis APIS=flac DESTDIR=$(CURDIR)/debian/bigloo-libflac
