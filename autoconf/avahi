@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Wed Dec 14 08:09:20 2011 (serrano)                */
-#*    Copyright   :  2007-11 Manuel Serrano                            */
+#*    Last change :  Fri May 25 06:51:15 2012 (serrano)                */
+#*    Copyright   :  2007-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if AVAHI is available.                                     */
 #*=====================================================================*/
@@ -43,7 +43,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $libs $file.c -o $aout >/dev/null"
+compile="$CC $cflags $file.c -o $aout $libs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
