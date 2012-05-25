@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed May 23 07:43:04 2012 (serrano)                */
+#*    Last change :  Fri May 25 06:59:11 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3589,6 +3589,7 @@ echo "Release features:" >> $configurelog
 echo "  Bigloo release number................. $release" >> $configurelog
 echo "  Bigloo supported backends............. $bcke" >> $configurelog
 echo "  Bigloo default backend................ $defaultbackend" >> $configurelog
+echo "  APIs.................................. $apis" >> $configurelog
 if [ $customgc = "yes" ];then
    echo "  Bigloo gc............................. custom ($gclib $gcversion)" >> $configurelog
 else
@@ -3678,7 +3679,6 @@ if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
   echo "  jar................................... $jar" >> $configurelog
 fi
 echo >> $configurelog
-echo >> $configurelog
 echo "GC configuration:" >> $configurelog
 if [ $customgc = "yes" ]; then
   echo "  options for compiling the collector... $cgcflags $cgcfinalflags $gcspecial" >> $configurelog
@@ -3731,7 +3731,7 @@ if [ "$summary" = "yes" ]; then
   echo "  release number.............. $release"
   echo "  supported backends.......... $bcke"
   echo "  default backend............. $defaultbackend"
-  echo "  additional APIs............. $apis"
+  echo "  APIs........................ $apis"
   if [ "$pthreadlibs" = "no" ]; then
     echo "  native threads support...... no"
   else
