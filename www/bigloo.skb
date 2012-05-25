@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  4 01:28:40 2001                          */
-;*    Last change :  Fri Mar 23 08:59:07 2012 (serrano)                */
+;*    Last change :  Fri May 25 11:41:21 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo web page                                              */
@@ -194,12 +194,12 @@ between 2 and 4 times slower than their C counterpart.])])
 ;*--- Downloading -----------------------------------------------------*/
 (section :title "Downloading Bigloo" :number #f :toc #f [
 
-You may download the Bigloo distribution in
+You may download the Bigloo ,(bold "source") distribution in
 ,(ref :url (format "ftp://~a~a/~a" *ftp-host* *ftp-dir* *bigloo.tar.gz*)
       :text "tar.gz") format.
 
-,(paragraph [You may download pre-compiled versions (MacOS X bundle,
-Debian package, Win32 installer, JVM), old distributions, or get
+,(paragraph [You may download ,(bold "pre-compiled binary") versions (ArchLinux, Debian,
+MacOS X bundle, Win32 installer), old distributions, or get
 information on systems where Bigloo has been ported to by following
 this ,(ref :ident "Downloading" :text "link").])])
 

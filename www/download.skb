@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Tue Feb 28 08:45:11 2012 (serrano)                */
+;*    Last change :  Fri May 25 12:02:40 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -90,6 +90,17 @@ Bigloo is available on the ftp server
 			     (cdr title.files))))))
       `((,[The source file distribution that can be used for ,(bold "Unix") systems and ,(bold "Win32/Cygwin") is]
  	 ,(format "ftp://~a~a/~a" *ftp-host* *ftp-dir* *bigloo.tar.gz*))
+	(,[,(bold "ArchLinux") package]
+	 ,[To access the Arch Bigloo packages, add the following to the ,(tt "/etc/pacman.conf") file:
+,(pre "[hop]
+Server = ftp://ftp-sop.inria.fr/indes/fp/Hop/archlinux/$arch")])
+	(,[,(bold "Debian") package]
+	 ,[To access the Debian Bigloo packages, add the following to the ,(tt "/etc/apt/sources.list") file:
+,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/debian squeeze hop")
+Currently, x86 and armel platforms are supported.])
+	(,[,(bold "Ubuntu") package]
+	 ,[To access the Ubuntu Bigloo packages, add the following the ,(tt "/etc/apt/sources.list") file:
+,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/ubuntu tls hop")])
 	(,[,(bold "MacOS X") bundle]
 	 ,*bigloo.macosx*)
 	(,[,(bold "MinGW") installer version (full back-ends support)]
@@ -98,10 +109,6 @@ Bigloo is available on the ftp server
 	 ,*bigloo.win32b* ,*bigloo.win32*)
 	(,[,(bold "Arm(el)") package]
 	 ,@(string-split *bigloo.arm* " \n"))
-	(,[,(bold "GNU-Linux Debian") package]
-	 ,*bigloo.deb*)
-	(,[,(bold "Fedora") package]
-	 ,*bigloo.fdr*)
 	(,[,(bold "Android")]
 	 [Providing and Android for Bigloo won't make much sense. However, the process 
 the compiling the compiler and the libraries is described in a README file that is
