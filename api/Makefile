@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Wed May 23 07:49:13 2012 (serrano)                */
+#*    Last change :  Fri May 25 09:14:39 2012 (serrano)                */
 #*    Copyright   :  2005-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -94,11 +94,9 @@ distclean:
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: install
+.PHONY: install install-devel uninstall uninstall-devel
 
 install:
-	(cp Makefile.api $(LIBDIR)/$(FILDIR)/Makefile.api && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api)
 	if [ "$(APIS) " != " " ]; then \
           for d in $(APIS) ; do \
             install=true; \
@@ -116,13 +114,19 @@ install:
           done \
         fi
 
+install-devel:
+	(cp Makefile.api $(LIBDIR)/$(FILDIR)/Makefile.api && \
+         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api)
+
 uninstall:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api
 	if [ "$(APIS) " != " " ]; then \
           for d in $(APIS) ; do \
             $(MAKE) -C $$d uninstall; \
           done \
         fi
+
+uninstall-devel:
+	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api
 
 #*---------------------------------------------------------------------*/
 #*    Populating the APIs                                              */

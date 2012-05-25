@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed May 23 07:34:04 2012 (serrano)                */
+#*    Last change :  Fri May 25 09:14:24 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -727,6 +727,7 @@ install-devel: install-dirs
 	  $(MAKE) -C bglpkg install; \
 	fi
 	$(MAKE) -C autoconf install
+	$(MAKE) -C apis install-devel
 
 install-libs: install-dirs
 	$(MAKE) -C runtime install
@@ -813,6 +814,7 @@ uninstall: uninstall-bee
 	$(RM) -f $(LIBDIR)/Makefile.config
 	$(RM) -f $(LIBDIR)/Makefile.misc
 	$(MAKE) -C bglpkg uninstall
+	$(MAKE) -C apis uninstall-devel
 
 uninstall-bee0:
 	$(MAKE) -C cigloo uninstall
