@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Tue Apr 17 07:47:51 2012 (serrano)                */
+;*    Last change :  Wed May 30 09:11:16 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -93,25 +93,21 @@
 			       (error (car a) "Illegal option" "see -help"))))
 	  (descrs (filter (lambda (x) x) (map make-help clauses))))
       `(let* ((args-parse-usage
-	       (args-parse-usage
-		,(list (if (any? (lambda (f)
-				    (and (pair? f)
-					 (pair? (cdr f))
-					 (eq? (cadr f) 'unquote)))
-				 descrs)
-			   'quasiquote
-			   'quote)
-		      descrs)))
+		 (args-parse-usage
+		    ,(list (if (any? (lambda (f)
+					(and (pair? f)
+					     (pair? (cdr f))
+					     (eq? (cadr f) 'unquote)))
+				  descrs)
+			       'quasiquote
+			       'quote)
+			descrs)))
 	      (p* (list ,last-parser))
 	      (a* ,exp))
 	  ,@(map (lambda (p) `(set! p* (cons ,p p*)))
-		 (reverse! (filter pair? parsers)))
-	  (cond
-	     ((null? a*)
-	      #unspecified)
-	     ((not (pair? a*))
-	      (error 'args-parse "Illegal argument list" a*))
-	     (else
+	       (reverse! (filter pair? parsers)))
+	  (if (not (list? a*))
+	      (error 'args-parse "Illegal argument list" a*)
 	      (let loop ((a* a*)
 			 (v #f))
 		 (let liip ((p* p*))
@@ -123,7 +119,7 @@
 			  ((fail)
 			   (liip (cdr p*)))
 			  ((end)
-			   nv))))))))))
+			   nv)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-help ...                                                    */
