@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Wed Aug 18 10:24:37 2010                          */
-;*    Last change :  Fri Apr 27 12:14:11 2012 (serrano)                */
+;*    Last change :  Fri Jun  1 11:50:22 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Florian Loitsch, Manuel Serrano.          */
 ;*    -------------------------------------------------------------    */
 ;*    OpenPGP decode                                                   */
@@ -155,7 +155,6 @@
       (if (eof-object? c)
 	  '()
 	  (let ((packet (decode-packet p)))
-	     (tprint "packet=" (typeof packet))
 	     (cons packet
 		   (decode-packets p))))))
 

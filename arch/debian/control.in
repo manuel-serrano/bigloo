@@ -53,7 +53,7 @@ Description: Bigloo core Libraries
 
 @IFPHIDGET@ Package: libphidget-bigloo
 @IFPHIDGET@ Architecture: any
-@IFPHIDGET@ Depends: libphidget, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @PHIDGETDEPEND@, @EXTRADEPEND@
+@IFPHIDGET@ Depends: libphidget21-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @PHIDGETDEPEND@, @EXTRADEPEND@
 @IFPHIDGET@ Description: Bigloo bindings for the PHIDGET library
 @IFPHIDGET@  The Phidget debian packages repository is located at:
 @IFPHIDGET@  deb http://www.phidgets.com/debian squeeze main
