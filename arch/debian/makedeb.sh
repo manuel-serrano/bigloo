@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Tue May 29 08:48:05 2012 (serrano)                */
+#*    Last change :  Thu May 31 18:42:28 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
