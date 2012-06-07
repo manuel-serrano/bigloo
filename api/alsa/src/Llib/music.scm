@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed May  9 09:30:22 2012 (serrano)                */
+;*    Last change :  Thu Jun  7 08:30:30 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -203,6 +203,7 @@
 ;*    music-seek ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::alsamusic pos . song)
+   (tprint "MUSIC-SEEK pos=" pos " song=" song)
    (with-access::alsamusic o (%amutex %decoder %toseek)
       (with-lock %amutex
 	 (lambda ()
