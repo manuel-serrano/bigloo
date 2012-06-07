@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Fri May 25 12:02:40 2012 (serrano)                */
+;*    Last change :  Sat Jun  2 20:00:12 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
@@ -98,9 +98,14 @@ Server = ftp://ftp-sop.inria.fr/indes/fp/Hop/archlinux/$arch")])
 	 ,[To access the Debian Bigloo packages, add the following to the ,(tt "/etc/apt/sources.list") file:
 ,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/debian squeeze hop")
 Currently, x86 and armel platforms are supported.])
+	(,[,(bold "Gentoo") package]
+	 ,[To access the Gentoo Bigloo packages, proceeds as follows:
+,(pre "emerge -n layman    # Install layman overlay manager
+layman -a lisp      # Add and fetch the lisp overlay
+emerge bigloo::lisp # Install bigloo from lisp overlay")])
 	(,[,(bold "Ubuntu") package]
 	 ,[To access the Ubuntu Bigloo packages, add the following the ,(tt "/etc/apt/sources.list") file:
-,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/ubuntu tls hop")])
+,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/ubuntu precise hop")])
 	(,[,(bold "MacOS X") bundle]
 	 ,*bigloo.macosx*)
 	(,[,(bold "MinGW") installer version (full back-ends support)]
