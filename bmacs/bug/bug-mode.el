@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May  4 14:36:12 2002                          */
-;*    Last change :  Fri Nov 29 17:54:33 2002 (serrano)                */
-;*    Copyright   :  2002 Manuel Serrano                               */
+;*    Last change :  Fri Jun 15 18:32:25 2012 (serrano)                */
+;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo debugger mode.                                        */
 ;*=====================================================================*/
@@ -49,7 +49,6 @@
   ;; the mouse shape when flying over non text
   (ude-set-nontext-pointer "left_ptr")
   ;; we set up kill buffer hook
-;*   (make-local-hook 'kill-buffer-hook)                               */
 ;*   (add-hook 'kill-buffer-hook 'bug-quit)                            */
   ;; the modeline
   (ude-set-root-modeline)

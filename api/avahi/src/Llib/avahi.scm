@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jan 16 09:22:39 2012 (serrano)                */
+;*    Last change :  Wed Jun 20 08:14:31 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -13,7 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __avahi_avahi
-   
+
+   (library pthread)
+    
    (include
       "avahi.sch")
    
@@ -37,7 +39,10 @@
       (export avahi-lookup-flags->symbol
 	 "bgl_avahi_lookup_flags_to_symbol")
       (export avahi-lookup-result-flags->symbol
-	 "bgl_avahi_lookup_result_flags_to_symbol"))
+	 "bgl_avahi_lookup_result_flags_to_symbol")
+      (export %avahi-lock! "bgl_avahi_lock")
+      (export %avahi-unlock! "bgl_avahi_unlock")
+      (export %avahi-signal "bgl_avahi_signal"))
    
    (export
       (class &avahi-error::&error
@@ -46,13 +51,19 @@
       
       (abstract-class avahi-object
 	 (avahi-init))
+
+      (abstract-class avahi-poll::avahi-object
+	 ($ctype::int (default -1)))
       
-      (class avahi-simple-poll::avahi-object
+      (class avahi-simple-poll::avahi-poll
 	 ($builtin::$avahi-simple-poll read-only (default ($avahi-simple-poll-nil))))
+      
+      (class avahi-threaded-poll::avahi-poll
+	 ($builtin::$avahi-threaded-poll read-only (default ($avahi-threaded-poll-nil))))
       
       (class avahi-client::avahi-object
 	 ($builtin::$avahi-client read-only (default ($avahi-client-nil)))
-	 (poll::avahi-simple-poll read-only)
+	 (poll::avahi-poll read-only)
 	 (flags::symbol read-only (default 'none))
 	 (proc::procedure read-only)
 	 (version::bstring
@@ -127,12 +138,24 @@
 
       (generic avahi-init ::avahi-object)
       
+      (%avahi-thread-init!)
+      (%avahi-lock!)
+      (%avahi-unlock!)
+      (%avahi-signal)
+      
       (avahi-error ::string ::string ::obj ::int)
       
       (avahi-simple-poll-close ::avahi-simple-poll)
       (avahi-simple-poll-loop ::avahi-simple-poll)
       (avahi-simple-poll-quit ::avahi-simple-poll)
       (avahi-simple-poll-timeout ::avahi-simple-poll ::long ::procedure)
+      
+      (avahi-threaded-poll-close ::avahi-threaded-poll)
+      (avahi-threaded-poll-loop ::avahi-threaded-poll)
+      (avahi-threaded-poll-lock! ::avahi-threaded-poll)
+      (avahi-threaded-poll-unlock! ::avahi-threaded-poll)
+      (avahi-threaded-poll-quit ::avahi-threaded-poll)
+      (avahi-threaded-poll-timeout ::avahi-threaded-poll ::long ::procedure)
       
       (avahi-client-close ::avahi-client)
       (avahi-client-error-message::bstring ::avahi-client)
@@ -163,6 +186,17 @@
       ))
 
 ;*---------------------------------------------------------------------*/
+;*    *avahi-mutex* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *avahi-mutex* (make-mutex 'avahireamer))
+(define *avahi-condv* (make-condition-variable 'avahireamer))
+
+;*---------------------------------------------------------------------*/
+;*    *avahi-thread* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *avahi-thread* #unspecified)
+
+;*---------------------------------------------------------------------*/
 ;*    avahi-error ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (avahi-error proc obj msg errno)
@@ -172,6 +206,49 @@
 	 (obj obj)
 	 (msg msg)
 	 (errno errno))))
+
+;*---------------------------------------------------------------------*/
+;*    %avahi-lock! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (%avahi-lock!)
+   (mutex-lock! *avahi-mutex*))
+
+;*---------------------------------------------------------------------*/
+;*    %avahi-unlock! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (%avahi-unlock!)
+   (mutex-unlock! *avahi-mutex*))
+
+;*---------------------------------------------------------------------*/
+;*    %avahi-signal ...                                                */
+;*---------------------------------------------------------------------*/
+(define (%avahi-signal)
+   (condition-variable-signal! *avahi-condv*))
+
+;*---------------------------------------------------------------------*/
+;*    %avahi-thread-init! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (%avahi-thread-init!)
+   (unless (isa? *avahi-thread* thread)
+      ;; the thread in charge of executing all callbacks
+      (let ((lk (make-mutex))
+	    (cv (make-condition-variable)))
+      (set! *avahi-thread*
+	 (instantiate::pthread
+	    (name "avahi")
+	    (body (lambda ()
+		     (mutex-lock! lk)
+		     (condition-variable-signal! cv)
+		     (mutex-unlock! lk)
+		     (let loop ()
+			(mutex-lock! *avahi-mutex*)
+			(condition-variable-wait! *avahi-condv* *avahi-mutex*)
+			(mutex-unlock! *avahi-mutex*)
+			($avahi-invoke-callbacks)
+			(loop))))))
+      (mutex-lock! lk)
+      (thread-start! *avahi-thread*)
+      (condition-variable-wait! cv lk))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-init ::avahi-object ...                                    */
@@ -184,6 +261,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-simple-poll)
    ($bgl-avahi-simple-poll-new o)
+   (with-access::avahi-simple-poll o ($ctype)
+      (set! $ctype 1))
    o)
 
 ;*---------------------------------------------------------------------*/
@@ -217,6 +296,65 @@
 (define (avahi-simple-poll-quit o::avahi-simple-poll)
    (with-access::avahi-simple-poll o ($builtin)
       ($avahi-simple-poll-quit $builtin)
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-init ::avahi-threaded-poll ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (avahi-init o::avahi-threaded-poll)
+   ($bgl-avahi-threaded-poll-new o)
+   (with-access::avahi-threaded-poll o ($ctype)
+      (set! $ctype 2))
+   (%avahi-thread-init!)
+   o)
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-close ...                                    */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-close o::avahi-threaded-poll)
+   ($bgl-avahi-threaded-poll-close o)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-loop ...                                     */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-loop o::avahi-threaded-poll)
+   (with-access::avahi-threaded-poll o ($builtin)
+      ($avahi-threaded-poll-loop $builtin)
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-lock! ...                                    */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-lock! o::avahi-threaded-poll)
+   (with-access::avahi-threaded-poll o ($builtin)
+      ($avahi-threaded-poll-lock $builtin)
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-unlock! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-unlock! o::avahi-threaded-poll)
+   (with-access::avahi-threaded-poll o ($builtin)
+      ($avahi-threaded-poll-unlock $builtin)
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-timeout ...                                  */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-timeout o::avahi-threaded-poll t::long proc::procedure)
+   (if (correct-arity? proc 0)
+       (with-access::avahi-threaded-poll o ($builtin)
+	  ($bgl-avahi-threaded-poll-timeout $builtin t proc))
+       (avahi-error "avahi-client-init" "Illegal callback" proc
+	  $avahi-err-invalid-object)))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-threaded-poll-quit ...                                     */
+;*---------------------------------------------------------------------*/
+(define (avahi-threaded-poll-quit o::avahi-threaded-poll)
+   (with-access::avahi-threaded-poll o ($builtin)
+      ($avahi-threaded-poll-quit $builtin)
       o))
 
 ;*---------------------------------------------------------------------*/

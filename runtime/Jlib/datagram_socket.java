@@ -3,13 +3,14 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Sun May  1 07:24:56 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Fri Jun 22 17:53:28 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
 /*=====================================================================*/
 package bigloo;
 
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -67,38 +68,13 @@ public abstract class datagram_socket extends obj {
    public Object receive( int len ) {
       return foreign.fail( "receive", "not a datagram-server socket", this );
    }
+   
+   public Object getsockopt( keyword se ) throws IOException {
+      return foreign.BUNSPEC;
+   }
+   
+   public Object setsockopt( keyword se, Object val ) throws IOException {
+      return foreign.BFALSE;
+   }
+      
 }
-
-/* import java.net.*;                                                  */
-/*                                                                     */
-/* import java.util.*;                                                 */
-/*                                                                     */
-/*                                                                     */
-/*                                                                     */
-/*                                                                     */
-/*                                                                     */
-/* class EchoClient {                                                  */
-/*                                                                     */
-/*   public static void main( String args[] ) throws Exception {       */
-/*                                                                     */
-/*     DatagramSocket socket = new DatagramSocket();                   */
-/*                                                                     */
-/*     socket.setSoTimeout( 5000 );                                    */
-/*                                                                     */
-/*     byte[] buffer = args[1].getBytes();                             */
-/*                                                                     */
-/*     DatagramPacket packet = new DatagramPacket(buffer,buffer.length,InetAddress.getByName(args[0]),7); */
-/*                                                                     */
-/*     socket.send( packet );                                          */
-/*                                                                     */
-/*     Date timeSent = new Date();                                     */
-/*                                                                     */
-/*     socket.receive( packet );                                       */
-/*                                                                     */
-/*     Date timeReceived = new Date();                                 */
-/*                                                                     */
-/*     System.out.println( ""+(timeReceived.getTime()-timeSent.getTime())+" ms "+new String(packet.getData(),0,packet.getLength()) ); */
-/*                                                                     */
-/*   }                                                                 */
-/*                                                                     */
-/* }                                                                   */

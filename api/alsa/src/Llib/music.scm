@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jun  7 08:30:30 2012 (serrano)                */
+;*    Last change :  Thu Jun  7 09:11:40 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -80,6 +80,7 @@
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
 
 	    (generic alsabuffer-available::long ::alsabuffer)
+	    (generic alsabuffer-seek ::alsabuffer ::long)
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
@@ -203,7 +204,6 @@
 ;*    music-seek ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::alsamusic pos . song)
-   (tprint "MUSIC-SEEK pos=" pos " song=" song)
    (with-access::alsamusic o (%amutex %decoder %toseek)
       (with-lock %amutex
 	 (lambda ()
@@ -701,7 +701,20 @@
 	 ((<fx %head %tail) (+fx (-fx %inlen (-fx %tail 1)) %head))
 	 (%empty 0)
 	 (else %inlen))))
-	 
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-seek ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-seek o::alsabuffer offset::long))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-seek ::alsammapbuffer ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-seek o::alsammapbuffer offset)
+   (with-access::alsammapbuffer o (%head)
+      (tprint ">>> ALSA: alsabuffer-seek offset=" offset)
+      (set! %head offset)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
 ;*---------------------------------------------------------------------*/

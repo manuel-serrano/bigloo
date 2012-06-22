@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Wed Nov 16 11:11:48 2011 (serrano)                */
-;*    Copyright   :  2009-11 Manuel Serrano                            */
+;*    Last change :  Fri Jun 15 14:55:04 2012 (serrano)                */
+;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
 ;*=====================================================================*/

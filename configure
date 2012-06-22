@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jun  7 08:05:54 2012 (serrano)                */
+#*    Last change :  Fri Jun  8 15:16:05 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2249,6 +2249,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   unix_socket=`$autoconf unixsocket --lib="$socketlibs"` || exit 1
   getaddrinfo=`$autoconf getaddrinfo --lib="$socketlibs"` || exit 1
+  getifaddrs=`$autoconf getifaddrs --lib="$socketlibs"` || exit 1
 
   # Are the static constants aligned?
   cnstalign=`$autoconf cnstalign --alignment=$alignment` || exit 1
@@ -2660,6 +2661,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_INET_PTON@|$inet_pton|" \
               -e "s|@BGL_HAVE_UNIX_SOCKET@|$unix_socket|" \
               -e "s|@BGL_HAVE_GETADDRINFO@|$getaddrinfo|" \
+              -e "s|@BGL_HAVE_GETIFADDRS@|$getifaddrs|" \
               -e "s|@BGL_AUTO_FINALIZER@|$gcfinalizer|" \
               -e "s|@SHELL@|$shell|" \
               -e "s|@SHELL_MV@|$bgl_shell_mv|" \

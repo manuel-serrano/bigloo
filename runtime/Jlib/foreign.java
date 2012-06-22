@@ -4901,6 +4901,25 @@ public final class foreign
       return s.receive( len );
    }
 
+   public static Object bgl_dgetsockopt( datagram_socket s, keyword se )
+      {
+	 try {
+	    return s.getsockopt( se );
+	 } catch( IOException _ ) {
+	    return BFALSE;
+	 }
+      }
+
+
+   public static Object bgl_dsetsockopt( datagram_socket s, keyword se, Object flag )
+      {
+	 try {
+	    return s.setsockopt( se, flag );
+	 } catch( IOException _ ) {
+	    return BUNSPEC;
+	 }
+      }
+
    //////
    // REGEXP
    //////
@@ -6202,6 +6221,13 @@ public final class foreign
 	 return "localhost".getBytes();
       }
    }
+
+   public static Object bgl_gethostinterfaces() {
+      // to be implemented
+      System.err.println( "foreign.java: bgl_hostinterfaces not implemented" );
+      return BNIL;
+   }
+
    
    //////
    // MUTEX and CONDITION VARIABLE

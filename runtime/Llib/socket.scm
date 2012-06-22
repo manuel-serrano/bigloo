@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Apr 10 14:47:52 2012 (serrano)                */
+;*    Last change :  Fri Jun 22 17:29:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -68,12 +68,16 @@
 	    ($hostinfo::pair-nil (::bstring) "bgl_hostinfo")
 	    
 	    ($gethostname::bstring () "bgl_gethostname")
+	    ($gethostinterfaces::pair-nil () "bgl_gethostinterfaces")
 	    ($getprotoents::pair-nil () "bgl_getprotoents")
 	    ($getprotobyname::obj (::string) "bgl_getprotobyname")
 	    ($getprotobynumber::obj (::long) "bgl_getprotobynumber")
 	    
 	    ($getsockopt::obj (::socket ::keyword) "bgl_getsockopt")
 	    ($setsockopt!::obj (::socket ::keyword ::obj) "bgl_setsockopt")
+
+	    ($dgetsockopt::obj (::datagram-socket ::keyword) "bgl_getsockopt")
+	    ($dsetsockopt!::obj (::datagram-socket ::keyword ::obj) "bgl_setsockopt")
 
 	    (macro $datagram-socket?::bool (::obj)
 		   "BGL_DATAGRAM_SOCKETP")
@@ -138,6 +142,9 @@
 		  "bgl_hostinfo")
 	       (method static $gethostname::bstring ()
 		  "bgl_gethostname")
+	       (method static $gethostinterfaces::pair-nil ()
+		  "bgl_gethostinterfaces")
+
 	       (method static $getprotoents::pair-nil ()
 		  "bgl_getprotoents")
 	       (method static $getprotobyname::obj (::string)
@@ -170,7 +177,11 @@
 	       (method static $datagram-socket-close::obj (::datagram-socket)
 		  "bgl_datagram_socket_close")
 	       (method static $datagram-socket-receive::obj (::datagram-socket ::long)
-		  "bgl_datagram_socket_receive")))
+		  "bgl_datagram_socket_receive")
+	       (method static $dgetsockopt::obj (::datagram-socket ::keyword)
+		  "bgl_dgetsockopt")
+	       (method static $dsetsockopt!::obj (::datagram-socket ::keyword ::obj)
+		  "bgl_dsetsockopt")))
 	       
    (export  (%socket-init!)
 	    (inline socket?::bool ::obj)
@@ -198,6 +209,7 @@
 	    (inline host::bstring ::bstring)
 	    (inline hostinfo::pair-nil ::bstring)
 	    (inline hostname::bstring)
+	    (inline get-interfaces::pair-nil)
 	    (inline get-protocols::pair-nil)
 	    (get-protocol ::obj)
 	    (inline socket-option ::socket ::keyword)
@@ -212,6 +224,8 @@
 	    (inline datagram-socket-port-number::bint ::datagram-socket)
 	    (inline datagram-socket-close ::datagram-socket)
 	    (inline datagram-socket-receive ::datagram-socket ::int)
+	    (inline datagram-socket-option ::datagram-socket ::keyword)
+	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj)
 	    (datagram-socket-output-port::output-port ::datagram-socket))
    
    (pragma  (c-socket? nesting)
@@ -405,6 +419,14 @@
       ($gethostname)))
 
 ;*---------------------------------------------------------------------*/
+;*    get-interfaces ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (get-interfaces)
+   (begin
+      (%socket-init!)
+      ($gethostinterfaces)))
+
+;*---------------------------------------------------------------------*/
 ;*    get-protocols ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (get-protocols)
@@ -502,4 +524,16 @@
       (unless (output-port? p)
 	 (error "datagram-socket-ouput-port" "Not a datagram-client" dsocket))
       p))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-option ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-option dsocket option)
+   ($dgetsockopt dsocket option))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-option-set! ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-option-set! dsocket option val)
+   ($dsetsockopt! dsocket option val))
 

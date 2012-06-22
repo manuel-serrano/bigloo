@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Tue Apr 17 07:46:45 2012 (serrano)                */
+;*    Last change :  Fri Jun 22 17:30:43 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -140,6 +140,21 @@
 			(evcompile sinon env genv
 				   where tail
 				   (get-location sinon loc)
+				   lkp #f)
+			loc)))
+      ((if ?si ?alors)
+       (let ((loc (get-location exp loc)))
+	  (evcompile-if (evcompile si env genv
+				   where #f
+				   (get-location si loc)
+				   lkp #f)
+			(evcompile alors env genv
+				   where tail
+				   (get-location alors loc)
+				   lkp #f)
+			(evcompile #f env genv
+				   where tail
+				   (get-location exp loc)
 				   lkp #f)
 			loc)))
       (((kwote or) . ?rest)

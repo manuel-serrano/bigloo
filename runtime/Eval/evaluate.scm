@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Apr 17 07:48:51 2012 (serrano)                */
+;*    Last change :  Sun Jun 17 17:38:19 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -357,9 +357,14 @@
 	  (value v)) )
       ((if ?p ?t ?o)
        (instantiate::ev_if
-	  (p (uconv/loc p (get-location (cdr e) loc)))
-	  (t (rconv/loc t (get-location (cddr e) loc)))
-	  (e (rconv/loc o (get-location (cdddr e) loc)))) )
+	  (p (uconv/loc p (get-location p loc)))
+	  (t (rconv/loc t (get-location t loc)))
+	  (e (rconv/loc o (get-location o loc)))) )
+      ((if ?p ?t)
+       (instantiate::ev_if
+	  (p (uconv/loc p (get-location p loc)))
+	  (t (rconv/loc t (get-location t loc)))
+	  (e (rconv/loc e (get-location #f loc)))) )
       (((kwote or) . ?args)
        (instantiate::ev_or
 	  (args (uconv* args))) )

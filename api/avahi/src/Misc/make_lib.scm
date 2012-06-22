@@ -21,5 +21,7 @@
            (class &avahi-error)
            (class &avahi-collision-error)
 
+	   (class avahi-poll)
 	   (class avahi-simple-poll)
+	   (class avahi-threaded-poll)
 	   (class avahi-client)))

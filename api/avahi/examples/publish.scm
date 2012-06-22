@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 14 08:42:43 2011                          */
-;*    Last change :  Thu Dec 15 18:46:41 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Tue Jun 19 11:05:09 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Publish an AVAHI service mimicking the avahi-publish.c example.  */
 ;*=====================================================================*/
@@ -40,7 +40,7 @@
 		      (body (lambda ()
 			       (avahi-simple-poll-loop poll))))))
 	    (thread-start-joinable! th)
-	    (sleep 10000000)
+	    (sleep 10000000)	
 	    (modify client)
 	    (thread-join! th))
 	 (begin
@@ -73,13 +73,13 @@
 ;*    create-services ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (create-services client)
-   
+
    (unless group
       (set! group
 	 (instantiate::avahi-entry-group
 	    (proc entry-group-callback)
 	    (client client))))
-   
+
    (when (avahi-entry-group-empty? group)
       (with-handler
 	 (lambda (e)
@@ -135,7 +135,9 @@
 ;*---------------------------------------------------------------------*/
 (define (modify client::avahi-client)
    (set! name "Modified MegaPrinter")
+   (tprint "state=" (-> client state))
    (when (eq? (-> client state) 'avahi-client-running)
+      (tprint "GROUP=" group)
       (when group
 	 (avahi-entry-group-reset! group)
 	 (create-services client))))

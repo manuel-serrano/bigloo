@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Sat May 12 16:16:24 2012 (serrano)                */
+;*    Last change :  Fri Jun 22 15:59:08 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C mpg123 functions                                               */
@@ -36,16 +36,24 @@
        (::$mpg123-handle) "mpg123_current_decoder")
     (macro $mpg123-plain-strerror::string
        (::int) "(char *)mpg123_plain_strerror")
+    (macro $mpg123-strerror::string
+       (::$mpg123-handle) "(char *)mpg123_strerror")
     (macro $mpg123-length::long
        (::$mpg123-handle) "mpg123_length")
     (macro $mpg123-tpf::double
        (::$mpg123-handle) "mpg123_tpf")
     (macro $mpg123-tell::long
        (::$mpg123-handle) "mpg123_tell")
+    (macro $mpg123-tellframe::long
+       (::$mpg123-handle) "mpg123_tellframe")
+    (macro $mpg123-tell-stream::long
+       (::$mpg123-handle) "mpg123_tell_stream")
     (macro $mpg123-timeframe::long
        (::$mpg123-handle ::double) "mpg123_timeframe")
     (macro $mpg123-seek-frame::long
        (::$mpg123-handle ::long ::int) "mpg123_seek_frame")
+    (macro $mpg123-seek::long
+       (::$mpg123-handle ::long ::int) "mpg123_seek")
     (macro $mpg123-volume::int
        (::$mpg123-handle ::double) "mpg123_volume")
     (macro $mpg123-param::int

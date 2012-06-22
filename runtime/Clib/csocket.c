@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Apr 10 17:26:18 2012 (serrano)                */
+/*    Last change :  Fri Jun 22 17:26:17 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -64,13 +64,18 @@ typedef int socklen_t;
 #if( BGL_HAVE_SOCKET_TCP_NODELAY \
      || BGL_HAVE_SOCKET_TCP_CORK \
      || BGL_HAVE_SOCKET_TCP_QUICKACK )
-#  include <sys/socket.h>
-#  include <netinet/in.h>
-#  include <netinet/tcp.h>
+#   include <sys/socket.h>
+#   include <netinet/in.h>
+#   include <netinet/tcp.h>
 #endif
 
 #if( BGL_HAVE_UNIX_SOCKET )
-#include <sys/un.h>
+#   include <sys/un.h>
+#endif
+
+#if( BGL_HAVE_GETIFADDRS )
+#   include <arpa/inet.h>
+#   include <ifaddrs.h>
 #endif
 
 long opensocket;
@@ -142,6 +147,7 @@ static obj_t so_sndtimeo;
 static obj_t tcp_nodelay;
 static obj_t tcp_cork;
 static obj_t tcp_quickack;
+static obj_t ip_multicast_ttl;
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -172,6 +178,7 @@ bgl_init_socket() {
       tcp_nodelay = string_to_keyword( "TCP_NODELAY" );
       tcp_cork = string_to_keyword( "TCP_CORK" );
       tcp_quickack = string_to_keyword( "TCP_QUICKACK" );
+      ip_multicast_ttl = string_to_keyword( "IP_MULTICAST_TTL" );
    }
 }
 
@@ -875,6 +882,56 @@ bgl_gethostname() {
 
    return res;
 #undef MAXHOSTNAME
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_gethostinterfaces ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_gethostinterfaces() {
+#if( BGL_HAVE_GETIFADDRS )
+   struct ifaddrs *ifAddrStruct = 0L;
+   struct ifaddrs *ifa = 0L;
+   void *tmpAddrPtr = 0L;
+   obj_t res = BNIL;
+
+   getifaddrs( &ifAddrStruct );
+
+   for( ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next ) {
+      obj_t tmp;
+       
+      if( ifa->ifa_addr->sa_family == AF_INET ) {
+	 char addressBuffer[ INET_ADDRSTRLEN ];
+	 /* a valid IPv4 addr */
+	 tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+	 inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
+
+	 tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), BNIL );
+	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
+	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
+			  
+	 res = MAKE_PAIR( tmp, res );
+      } else if( ifa->ifa_addr->sa_family == AF_INET6 ) {
+	 char addressBuffer[ INET6_ADDRSTRLEN ];
+	 /* a valid IPv6 addr */
+	 tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+	 
+	 inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
+	 tmp = MAKE_PAIR( string_to_bstring( "ipv6" ), BNIL );
+	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
+	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
+
+	 res = MAKE_PAIR( tmp, res );
+      }
+   }
+   
+   if( ifAddrStruct != 0L ) freeifaddrs( ifAddrStruct );
+    
+   return res;
+#else
+   return BNIL;
+#endif
 }
 
 /*---------------------------------------------------------------------*/
@@ -1727,6 +1784,9 @@ bgl_getprotobynumber( int number ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_getsockopt( obj_t socket, obj_t option ) {
+   /* This require socket_t and datagram_socket_t to be compatible */
+   assert( SOCKET( socket ).fd == DATAGRAM_SOCKET( socket ).fd );
+   
    if( option == tcp_nodelay ) {
 #if BGL_HAVE_SOCKET_TCP_NODELAY
       GETSOCKOPT( socket, IPPROTO_TCP, TCP_NODELAY, int, BBOOL );
@@ -1817,6 +1877,14 @@ bgl_getsockopt( obj_t socket, obj_t option ) {
 #endif
    }
    
+   if( option == ip_multicast_ttl ) {
+#if( defined( IP_MULTICAST_TTL ) )
+      GETSOCKOPT( socket, SOL_SOCKET, IP_MULTICAST_TTL, int, BINT );
+#else
+      return BINT( 0 );
+#endif
+   }
+   
     return BUNSPEC;
 }
 
@@ -1850,6 +1918,9 @@ set_timeval( struct timeval *timeout, obj_t val ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
+   /* This require socket_t and datagram_socket_t to be compatible */
+   assert( SOCKET( socket ).fd == DATAGRAM_SOCKET( socket ).fd );
+   
    if( option == tcp_nodelay ) {
 #if BGL_HAVE_SOCKET_TCP_NODELAY
       SETSOCKOPT( socket, IPPROTO_TCP, TCP_NODELAY, int, CBOOL( val ) );
@@ -1944,6 +2015,14 @@ bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
 #endif
    }
    
+   if( option == ip_multicast_ttl ) {
+#if IP_MULTICAST_TTL
+      SETSOCKOPT( socket, IPPROTO_TCP, IP_MULTICAST_TTL, int, CINT( val ) );
+#else
+      return BFALSE;
+#endif
+   }
+
    return BFALSE;
 }
 

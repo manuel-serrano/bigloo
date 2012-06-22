@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon May 14 09:16:57 2012 (serrano)                */
+;*    Last change :  Thu Jun  7 09:52:07 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -179,7 +179,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
    
-   (with-access::flac-alsa o (port %flacbuf %buffer (am %alsamusic) %decoder
+   (with-access::flac-alsa o (%flacbuf %buffer (am %alsamusic) %decoder
 				%has-been-empty-once)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 

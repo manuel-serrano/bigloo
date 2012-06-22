@@ -23,12 +23,16 @@
 ;*---------------------------------------------------------------------*/
 (cond-expand
    (bigloo-compile
+      ;; required pthread
+      (set! *additional-bigloo-libraries*
+          (cons* 'pthread *additional-bigloo-libraries*))
       ;; avahi includes
       (set! *additional-include-foreign*
 	 (cons* "avahi-client/client.h"
 	    "avahi-client/lookup.h"
 	    "avahi-client/publish.h"
 	    "avahi-common/simple-watch.h"
+	    "avahi-common/thread-watch.h"
 	    "avahi-common/error.h"
 	    *additional-include-foreign*))
       ;; avahi libraries

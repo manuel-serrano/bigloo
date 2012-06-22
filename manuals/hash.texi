@@ -31,7 +31,7 @@ argument is the searched key. By default
 hash tables rely on @code{hashtable-equal?}, which is defined as:
 
 @smalllisp
-(define (hashtable-equal? table obj1 obj2)
+(define (hashtable-equal? obj1 obj2)
    (or (eq? obj1 obj2)
        (and (string? obj1)
             (string? obj2)

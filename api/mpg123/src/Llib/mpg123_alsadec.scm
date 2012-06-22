@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon May 14 09:16:54 2012 (serrano)                */
+;*    Last change :  Sun Jun 17 18:24:27 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -37,7 +37,7 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (begin (bigloo-compiler-debug) 1))
+   (begin (bigloo-compiler-debug) 4))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-debug ...                                                 */
@@ -94,7 +94,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-seek dec::mpg123-alsadecoder ms)
    (with-access::mpg123-alsadecoder dec (%mpg123)
-      (mpg123-seek %mpg123 ms)))
+      (when (>=fx (mpg123-debug) 2)
+	 (tprint "*** MPG123_SEEK, seek=" ms))
+      (with-handler
+	 (lambda (e)
+	    (exception-notify e)
+	    -1)
+	 (mpg123-seek %mpg123 ms))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-volume-set! ::mpg123-alsadecoder ...                 */
@@ -249,10 +255,17 @@
 			    (inc-tail! s))
 			 (cond
 			    ((>fx %!dseek 0)
-			     (alsadecoder-seek dec %!dseek)
-			     (with-access::musicstatus %status (songpos)
-				(set! songpos %!dseek))
-			     (set! %!dseek -1))
+			     (let* ((ms (*fx 1000 %!dseek))
+				    (offset (alsadecoder-seek dec ms)))
+				(if (>=fx offset 0)
+				    (begin
+				       (alsabuffer-seek buffer offset)
+				       (with-access::musicstatus %status (songpos)
+					  (set! songpos %!dseek)))
+				    (begin
+				       (tprint "ONERROR...")
+				       (onerror am "Cannot seek to position")))
+				(set! %!dseek -1)))
 			    ((=fx status $mpg123-ok)
 			     ;; play and keep decoding
 			     (with-access::mpg123-handle %mpg123 (size)
@@ -288,7 +301,7 @@
 ;*    new-format ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (new-format dec am buffer)
-   (with-access::alsamusic am (%toseek %status pcm)
+   (with-access::alsamusic am (%status pcm)
       (with-access::mpg123-alsadecoder dec (%mpg123
 					      buffer-time-near
 					      buffer-size-near-ratio

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Apr 17 17:11:04 2012 (serrano)                */
+#*    Last change :  Fri Jun  8 15:15:37 2012 (serrano)                */
 #*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -35,7 +35,8 @@ POPULATION	= Makefile \
                   sigchld sigaction \
                   doubleprec xemacspath ldstaticopt ldsharedopt \
                   readline ldextraopt \
-                  socket getaddrinfo socklen setsockopt inet_aton inet_pton \
+                  socket getaddrinfo getifaddrs socklen setsockopt \
+                  inet_aton inet_pton \
                   unixsocket info cctest ccoptim ccdiv0 \
                   ccprof termio termios installinfo installinfodir dlopen \
                   user xemacsbin gmaketest ccpic ccpic2 \

@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/avahi.scm)                                                        */
 /*   Bigloo (3.8d)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Thu Jun 7 08:27:37 CEST 2012        */
+/*   Inria -- Sophia Antipolis (c)       Fri Jun 22 17:58:57 CEST 2012       */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/3.8d -unsafe -safee -srfi avahi -copt -D_REENTRANT -copt -fPIC -copt -IClib -copt  Llib/avahi.scm -o Clib/bglavahi.h -hgen)*/
 
@@ -35,17 +35,31 @@ typedef struct BgL_avahizd2objectzd2_bgl {
    obj_t widening;
 } *BgL_avahizd2objectzd2_bglt;
 
+typedef struct BgL_avahizd2pollzd2_bgl {
+   header_t header;
+   obj_t widening;
+   int BgL_z42ctypez42;
+} *BgL_avahizd2pollzd2_bglt;
+
 typedef struct BgL_avahizd2simplezd2pollz00_bgl {
    header_t header;
    obj_t widening;
+   int BgL_z42ctypez42;
    AvahiSimplePoll * BgL_z42builtinz42;
 } *BgL_avahizd2simplezd2pollz00_bglt;
+
+typedef struct BgL_avahizd2threadedzd2pollz00_bgl {
+   header_t header;
+   obj_t widening;
+   int BgL_z42ctypez42;
+   AvahiThreadedPoll * BgL_z42builtinz42;
+} *BgL_avahizd2threadedzd2pollz00_bglt;
 
 typedef struct BgL_avahizd2clientzd2_bgl {
    header_t header;
    obj_t widening;
    AvahiClient * BgL_z42builtinz42;
-   struct BgL_avahizd2simplezd2pollz00_bgl * BgL_pollz00;
+   struct BgL_avahizd2pollzd2_bgl * BgL_pollz00;
    obj_t BgL_flagsz00;
    obj_t BgL_procz00;
 } *BgL_avahizd2clientzd2_bglt;

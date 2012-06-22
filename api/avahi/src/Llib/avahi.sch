@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Tue Dec 20 10:29:15 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Tue Jun 19 08:11:02 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
       (include "avahi-client/lookup.h")
       (include "avahi-client/publish.h")
       (include "avahi-common/simple-watch.h")
+      (include "avahi-common/thread-watch.h")
       (include "avahi-common/error.h")
       (include "avahi-common/alternative.h")
 
@@ -28,7 +29,8 @@
       (infix macro $string-null::string
 	 ()
 	 "(char *)0L")
-
+      
+      ($avahi-invoke-callbacks::void () "bgl_avahi_invoke_callbacks")
       (macro $avahi-alternative-host-name::string
 	 (::string)
 	 "avahi_alternative_host_name")
@@ -112,6 +114,32 @@
       (macro $bgl-avahi-simple-poll-timeout::void
 	 (::$avahi-simple-poll ::elong ::procedure)
 	 "bgl_avahi_simple_poll_timeout")
+
+      ;; avahi-threaded-poll
+      (type $avahi-threaded-poll void* "AvahiThreadedPoll *")
+      (infix macro $avahi-threaded-poll-nil::$avahi-threaded-poll () "0L")
+      
+      (macro $bgl-avahi-threaded-poll-new::void
+	 (::avahi-threaded-poll)
+	 "bgl_avahi_threaded_poll_new")
+      (macro $bgl-avahi-threaded-poll-close::void
+	 (::avahi-threaded-poll)
+	 "bgl_avahi_threaded_poll_close")
+      (macro $avahi-threaded-poll-loop::void
+	 (::$avahi-threaded-poll)
+	 "avahi_threaded_poll_start")
+      (macro $avahi-threaded-poll-quit::void
+	 (::$avahi-threaded-poll)
+	 "avahi_threaded_poll_stop")
+      (macro $bgl-avahi-threaded-poll-timeout::void
+	 (::$avahi-threaded-poll ::elong ::procedure)
+	 "bgl_avahi_threaded_poll_timeout")
+      (macro $avahi-threaded-poll-lock::void
+	 (::$avahi-threaded-poll)
+	 "avahi_threaded_poll_lock")
+      (macro $avahi-threaded-poll-unlock::void
+	 (::$avahi-threaded-poll)
+	 "avahi_threaded_poll_unlock")
 
       ;; avahi-client
       (type $avahi-client void* "AvahiClient *")
