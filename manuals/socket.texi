@@ -323,11 +323,7 @@ DNS caching can be control by the means of two parameters:
 
 @deffn {bigloo procedure} get-interfaces
 Returns the list of configured interfaces and their associated IP addresses.
-Example:
-
-@smalllisp
-@end smalllisp
-@end deffn 
+@end deffn
 
 @deffn {bigloo procedure} get-protocols
 Reads all the entries from the protocols database and returns a list
