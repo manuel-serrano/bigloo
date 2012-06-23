@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri May 11 16:12:06 2012 (serrano)                */
+;*    Last change :  Sat Jun 23 08:00:11 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -185,7 +185,9 @@
 		    ;; name
 		    id
 		    ;; module name
-		    (evmodule-name module)
+		    (if (evmodule? module)
+			(evmodule-name module)
+			'||)
 		    ;; super class
 		    super
 		    ;; hash number
@@ -265,10 +267,12 @@
 
    (list->vector
       (append
-	 (filter-map (lambda (slot index)
-			(unless (slot-virtual? slot)
-			   (make-class-field-plain slot index class)))
-	    slots (iota size offset))
+	 ;; cannot combine map and filter otherwise the slot list
+	 ;; and the iota list dont have the same length
+	 (map (lambda (slot index)
+		 (make-class-field-plain slot index class))
+	    (filter (lambda (slot) (not (slot-virtual? slot))) slots)
+	    (iota size offset))
 	 (filter-map (lambda (slot)
 			(when (slot-virtual? slot)
 			   (make-class-field-virtual slot)))
