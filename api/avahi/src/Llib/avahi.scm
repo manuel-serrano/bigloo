@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Jun 20 08:14:31 2012 (serrano)                */
+;*    Last change :  Sat Jun 30 09:41:59 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -66,6 +66,7 @@
 	 (poll::avahi-poll read-only)
 	 (flags::symbol read-only (default 'none))
 	 (proc::procedure read-only)
+	 (groups::pair-nil (default '()))
 	 (version::bstring
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -371,7 +372,9 @@
 ;*    avahi-client-close ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (avahi-client-close o::avahi-client)
-   ($bgl-avahi-client-close o))
+   ($bgl-avahi-client-close o)
+   (with-access::avahi-client o (groups)
+      (set! groups '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-client-error-message ...                                   */
@@ -403,9 +406,12 @@
 ;*    avahi-init ::avahi-entry-group ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-entry-group)
-   (with-access::avahi-entry-group o (proc)
+   (with-access::avahi-entry-group o (proc client)
       (if (correct-arity? proc 2)
-	  ($bgl-avahi-entry-group-new o)
+	  (begin
+	     (with-access::avahi-client client (groups)
+		(set! groups (cons o groups)))
+	     ($bgl-avahi-entry-group-new o))
 	  (avahi-error "avahi-entry-group" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
 

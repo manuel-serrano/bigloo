@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Fri Feb 18 15:20:15 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Sat Jun 30 07:25:36 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -527,7 +527,7 @@
 		   :timezone zone
 		   :dst 0)))))
       (else
-       (parse-error 'rfc2822-parse-date
+       (parse-error "rfc2822-parse-date"
 		    "Illegal day of week"
 		    (the-failure) (the-port)))))
 
@@ -541,7 +541,7 @@
       ((+ digit)
        (the-fixnum))
       (else
-       (parse-error 'rfc2822-parse-date
+       (parse-error "rfc2822-parse-date"
 		    "Illegal integer"
 		    (the-failure) (the-port)))))
       
@@ -566,11 +566,11 @@
 	  ((Oct) 10)
 	  ((Nov) 11)
 	  ((Dec) 12)
-	  (else (parse-error 'rfc2822-parse-date
+	  (else (parse-error "rfc2822-parse-date"
 			     "Illegal month"
 			     (the-string) (the-port)))))
       (else
-       (parse-error 'rfc2822-parse-date "Illegal month"
+       (parse-error "rfc2822-parse-date" "Illegal month"
 		    (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
@@ -627,7 +627,7 @@
 		  0
 		  (+fx (*fx 10 13) b2))))
       (else
-       (parse-error 'rfc2822-parse-date "Illegal time"
+       (parse-error "rfc2822-parse-date" "Illegal time"
 		    (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
@@ -676,5 +676,5 @@
 	      (*fx 3600 (cdr c))
 	      0)))
       (else
-       (parse-error 'rfc2822-parse-date "Illegal zone"
+       (parse-error "rfc2822-parse-date" "Illegal zone"
 		    (the-failure) (the-port)))))

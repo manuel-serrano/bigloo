@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Tue Nov 15 20:20:22 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Sat Jun 30 07:28:36 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -494,7 +494,10 @@
 (define-method (mailbox-folder-dates m::maildir)
    (map (lambda (d)
 	   (if (string? (cdr d))
-	       (set-cdr! d (rfc2822-date->date (cdr d)))
+	       (set-cdr! d (with-handler
+			      (lambda (e)
+				 (current-date))
+			      (rfc2822-date->date (cdr d))))
 	       (set-cdr! d (current-date)))
 	   d)
 	(mailbox-folder-header-fields m "date")))
