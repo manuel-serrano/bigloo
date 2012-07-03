@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Mon Feb 13 10:27:36 2012 (serrano)                */
+;*    Last change :  Mon Jul  2 19:22:07 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
@@ -241,7 +241,7 @@
 ;*---------------------------------------------------------------------*/
 (define (rm-rf path)
    (when (file-exists? path)
-      (if (directory? path)
+      (if (and (directory? path) (not (eq? (file-type path) 'link)))
 	  (let ((files (directory->list path)))
 	     (for-each (lambda (f) (rm-rf (make-file-name path f))) files)
 	     (delete-directory path))
@@ -296,6 +296,8 @@
 		   ((symlink)
 		    (with-access::tar-header h (linkname)
 		       (let ((path (make-file-name base name)))
+			  (when (file-exists? path)
+			     (delete-file path))
 			  (make-symlink linkname path)
 			  (loop (cons path lst)))))
 		   (else

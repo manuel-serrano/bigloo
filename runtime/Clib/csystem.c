@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu Mar 22 15:35:24 2012 (serrano)                */
+/*    Last change :  Mon Jul  2 19:20:42 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -264,7 +264,7 @@ obj_t
 bgl_file_type( char *file ) {
    struct stat _stat;
 
-   if( stat( file, &_stat ) ) {
+   if( lstat( file, &_stat ) ) {
       return string_to_symbol( "does-not-exist" );
    }
 

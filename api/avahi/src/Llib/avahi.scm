@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat Jun 30 09:41:59 2012 (serrano)                */
+;*    Last change :  Mon Jul  2 08:41:53 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -200,7 +200,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    avahi-error ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (avahi-error proc obj msg errno)
+(define (avahi-error proc msg obj errno)
    (raise
       (instantiate::&avahi-error
 	 (proc proc)
@@ -225,6 +225,31 @@
 ;*---------------------------------------------------------------------*/
 (define (%avahi-signal)
    (condition-variable-signal! *avahi-condv*))
+
+;*---------------------------------------------------------------------*/
+;*    *avahi-gc-roots* ...                                             */
+;*    -------------------------------------------------------------    */
+;*    The *avahi-gc-roots list is used to mark Bigloo objects          */
+;*    to prevent the GC to collect them while only held by avahi.      */
+;*---------------------------------------------------------------------*/
+(define *avahi-gc-roots* '())
+(define *avahi-gc-mutex* (make-mutex))
+   
+;*---------------------------------------------------------------------*/
+;*    avahi-gc-mark! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (avahi-gc-mark! obj)
+   (mutex-lock! *avahi-gc-mutex*)
+   (set! *avahi-gc-roots* (cons obj *avahi-gc-roots*))
+   (mutex-unlock! *avahi-gc-mutex*))
+
+;*---------------------------------------------------------------------*/
+;*    avahi-gc-unmark! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (avahi-gc-unmark! o)
+   (mutex-lock! *avahi-gc-mutex*)
+   (set! *avahi-gc-roots* (delete! o *avahi-gc-roots*))
+   (mutex-unlock! *avahi-gc-mutex*))
 
 ;*---------------------------------------------------------------------*/
 ;*    %avahi-thread-init! ...                                          */
@@ -288,7 +313,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-simple-poll o ($builtin)
 	  ($bgl-avahi-simple-poll-timeout $builtin t proc))
-       (avahi-error "avahi-client-init" "Illegal callback" proc
+       (avahi-error "avahi-simple-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 
 ;*---------------------------------------------------------------------*/
@@ -347,7 +372,7 @@
    (if (correct-arity? proc 0)
        (with-access::avahi-threaded-poll o ($builtin)
 	  ($bgl-avahi-threaded-poll-timeout $builtin t proc))
-       (avahi-error "avahi-client-init" "Illegal callback" proc
+       (avahi-error "avahi-threaded-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
 
 ;*---------------------------------------------------------------------*/
@@ -364,7 +389,9 @@
 (define-method (avahi-init o::avahi-client)
    (with-access::avahi-client o (proc)
       (if (correct-arity? proc 2)
-	  ($bgl-avahi-client-new o)
+	  (begin
+	     (avahi-gc-mark! o)
+	     ($bgl-avahi-client-new o))
 	  (avahi-error "avahi-client-init" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
 
@@ -546,38 +573,13 @@
    ($avahi-alternative-service-name name))
 
 ;*---------------------------------------------------------------------*/
-;*    avahi-browsers                                                   */
-;*    -------------------------------------------------------------    */
-;*    The *avahi-browsers* list is used to mark Bigloo objects         */
-;*    to prevent the GC to collect them while only held by avahi.      */
-;*---------------------------------------------------------------------*/
-(define *avahi-browsers* '())
-(define *avahi-browsers-mutex* (make-mutex))
-
-;*---------------------------------------------------------------------*/
-;*    avahi-mark! ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (avahi-mark! o)
-   (mutex-lock! *avahi-browsers-mutex*)
-   (set! *avahi-browsers* (cons o *avahi-browsers*))
-   (mutex-unlock! *avahi-browsers-mutex*))
-
-;*---------------------------------------------------------------------*/
-;*    avahi-unmark! ...                                                */
-;*---------------------------------------------------------------------*/
-(define (avahi-unmark! o)
-   (mutex-lock! *avahi-browsers-mutex*)
-   (set! *avahi-browsers* (delete! o *avahi-browsers*))
-   (mutex-unlock! *avahi-browsers-mutex*))
-   
-;*---------------------------------------------------------------------*/
 ;*    avahi-init ::avahi-service-browser ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-service-browser)
    (with-access::avahi-service-browser o (proc)
       (if (correct-arity? proc 8)
 	  (begin
-	     (avahi-mark! o)
+	     (avahi-gc-mark! o)
 	     ($bgl-avahi-service-browser-new o))
 	  (avahi-error "avahi-service-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -587,7 +589,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-service-browser-close o::avahi-service-browser)
    ($bgl-avahi-service-browser-close o)
-   (avahi-unmark! o)
+   (avahi-gc-unmark! o)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -597,7 +599,7 @@
    (with-access::avahi-service-type-browser o (proc)
       (if (correct-arity? proc 7)
 	  (begin
-	     (avahi-mark! o)
+	     (avahi-gc-mark! o)
 	     ($bgl-avahi-service-type-browser-new o))
 	  (avahi-error "avahi-service-type-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -607,7 +609,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-service-type-browser-close o::avahi-service-type-browser)
    ($bgl-avahi-service-type-browser-close o)
-   (avahi-unmark! o)
+   (avahi-gc-unmark! o)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -617,7 +619,7 @@
    (with-access::avahi-domain-browser o (proc btype)
       (if (correct-arity? proc 5)
 	  (begin
-	     (avahi-mark! o)
+	     (avahi-gc-mark! o)
 	     ($bgl-avahi-domain-browser-new o (avahi-symbol->domain-browser-type btype)))
 	  (avahi-error "avahi-domain-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -627,7 +629,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-domain-browser-close o::avahi-domain-browser)
    ($bgl-avahi-domain-browser-close o)
-   (avahi-unmark! o)
+   (avahi-gc-unmark! o)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -637,7 +639,7 @@
    (with-access::avahi-service-resolver o (proc)
       (if (correct-arity? proc 12)
 	  (begin
-	     (avahi-mark! o)
+	     (avahi-gc-mark! o)
 	     ($bgl-avahi-service-resolver-new o))
 	  (avahi-error "avahi-service-resolver" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -647,7 +649,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-service-resolver-close o::avahi-service-resolver)
    ($bgl-avahi-service-resolver-close o)
-   (avahi-unmark! o)
+   (avahi-gc-unmark! o)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/

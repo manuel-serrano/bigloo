@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Jun 30 09:26:31 2012 (serrano)                */
+/*    Last change :  Tue Jul  3 07:58:06 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -602,6 +602,7 @@ bgl_avahi_client_callback( AvahiClient *client,
    obj_t o = (obj_t)udata;
    callback_t cb = make_callback( BGL_AVAHI_CLIENT_PROC( o ), 2 );
 
+   fprintf( stderr, "BGL_AVAHI_CLIENT_CALLBACK: %d\n", state );
    if( !BGL_AVAHI_CLIENT_BUILTIN( o ) )
       BGL_AVAHI_CLIENT_BUILTIN( o ) = client;
 
@@ -626,12 +627,16 @@ bgl_avahi_client_new( bgl_avahi_client_t o ) {
    AvahiPoll *poll;
    
    if( bgl_avahi_threaded_pollp( (obj_t)bpoll ) ) {
+      fprintf( stderr, "threaded_poll...\n" );
       poll = avahi_threaded_poll_get( BGL_AVAHI_THREADED_POLL_BUILTIN( bpoll ) );
    } else {
+      fprintf( stderr, "simple_poll...\n" );
       poll = avahi_simple_poll_get( BGL_AVAHI_SIMPLE_POLL_BUILTIN( bpoll ) );
    }
-      
+
+   fprintf( stderr, ">>> client_new...\n" );
    client = avahi_client_new( poll, 0, bgl_avahi_client_callback, o, &error );
+   fprintf( stderr, "<<< client_new...\n" );
 
    if( !client ) {
       bgl_avahi_error( "avahi-client-new",
