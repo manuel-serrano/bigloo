@@ -170,7 +170,8 @@ value for the @code{Connection} HTTP connection.
 	 (with-handler
 	    (lambda (e)
 	       (if (isa? e &http-redirection)
-		   (wget (&http-redirection-url e))
+                   (with-access::&http-redirection e (url)
+		      (wget url))
 		   (raise e)))
 	    (read-string (http-parse-response ip op parser))))))
 @end smalllisp

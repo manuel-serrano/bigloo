@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Mon Jul  2 08:41:53 2012 (serrano)                */
+;*    Last change :  Wed Jul  4 08:37:21 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -189,8 +189,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-mutex* ...                                                */
 ;*---------------------------------------------------------------------*/
-(define *avahi-mutex* (make-mutex 'avahireamer))
-(define *avahi-condv* (make-condition-variable 'avahireamer))
+(define *avahi-mutex* (make-mutex 'avahi))
+(define *avahi-condv* (make-condition-variable 'avahi))
 
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-thread* ...                                               */

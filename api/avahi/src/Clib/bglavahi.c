@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Jul  3 07:58:06 2012 (serrano)                */
+/*    Last change :  Wed Jul  4 09:21:58 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -372,18 +372,22 @@ bgl_avahi_apply_callback( callback_t cb ) {
 /*---------------------------------------------------------------------*/
 void
 bgl_avahi_invoke_callbacks() {
-   while( callback_index > 0 ) {
-      bgl_avahi_lock();
+   callback_t *tmpcb;
+   int index = callback_index;
+   int size = index * sizeof( callback_t );
+   
+   bgl_avahi_lock();
 
-      if( callback_index > 0 ) {
-	 callback_t cb = callbacks[ --callback_index ];
+   tmpcb = alloca( size );
+   memcpy( tmpcb, callbacks, size );
 
-	 bgl_avahi_unlock();
-	 bgl_avahi_apply_callback( cb );
-	 free( cb );
-      } else {
-	 bgl_avahi_unlock();
-      }
+   callback_index = 0;
+   
+   bgl_avahi_unlock();
+   
+   while( index > 0 ) {
+      bgl_avahi_apply_callback( tmpcb[ --index ] );
+      free( tmpcb[ index ] );
    }
 }
 
@@ -561,6 +565,8 @@ bgl_avahi_threaded_poll_new( bgl_avahi_threaded_poll_t o ) {
 static void
 threaded_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
    callback_t cb = make_callback( (obj_t)udata, 0 );
+   fprintf( stderr, "threaded_poll_timeout(%s:%d) e=%p udata=%p cb=%p\n",
+	    __FILE__, __LINE__, e, udata, cb );
    bgl_avahi_register_async_callback( cb );
 }
 
@@ -573,6 +579,8 @@ bgl_avahi_threaded_poll_timeout( AvahiThreadedPoll *o, long t, obj_t proc ) {
    struct timeval tv;
    const AvahiPoll *poll = avahi_threaded_poll_get( o );
 
+   fprintf( stderr, "bgl_avahi_threaded_poll_timeout(%s:%d) o=%p proc=%p\n",
+	    __FILE__, __LINE__, o, proc );
    poll->timeout_new( poll,
 		      avahi_elapse_time( &tv, t, 0 ),
 		      threaded_poll_timeout_callback,
@@ -602,7 +610,6 @@ bgl_avahi_client_callback( AvahiClient *client,
    obj_t o = (obj_t)udata;
    callback_t cb = make_callback( BGL_AVAHI_CLIENT_PROC( o ), 2 );
 
-   fprintf( stderr, "BGL_AVAHI_CLIENT_CALLBACK: %d\n", state );
    if( !BGL_AVAHI_CLIENT_BUILTIN( o ) )
       BGL_AVAHI_CLIENT_BUILTIN( o ) = client;
 
@@ -612,7 +619,7 @@ bgl_avahi_client_callback( AvahiClient *client,
    cb->args[ 1 ].convert = (obj_t (*)(void*))&bgl_avahi_client_state_to_symbol;
    cb->args[ 1 ].value = (void *)state;
 
-   bgl_avahi_call_or_register_callback( o, cb );
+   bgl_avahi_call_or_register_callback( (bgl_avahi_client_t)o, cb );
 }
 
 /*---------------------------------------------------------------------*/
@@ -627,16 +634,12 @@ bgl_avahi_client_new( bgl_avahi_client_t o ) {
    AvahiPoll *poll;
    
    if( bgl_avahi_threaded_pollp( (obj_t)bpoll ) ) {
-      fprintf( stderr, "threaded_poll...\n" );
       poll = avahi_threaded_poll_get( BGL_AVAHI_THREADED_POLL_BUILTIN( bpoll ) );
    } else {
-      fprintf( stderr, "simple_poll...\n" );
       poll = avahi_simple_poll_get( BGL_AVAHI_SIMPLE_POLL_BUILTIN( bpoll ) );
    }
 
-   fprintf( stderr, ">>> client_new...\n" );
    client = avahi_client_new( poll, 0, bgl_avahi_client_callback, o, &error );
-   fprintf( stderr, "<<< client_new...\n" );
 
    if( !client ) {
       bgl_avahi_error( "avahi-client-new",

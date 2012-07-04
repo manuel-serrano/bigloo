@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 14 08:42:43 2011                          */
-;*    Last change :  Tue Jun 19 11:05:09 2012 (serrano)                */
+;*    Last change :  Wed Jul  4 08:40:37 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Publish an AVAHI service mimicking the avahi-publish.c example.  */
@@ -137,7 +137,7 @@
    (set! name "Modified MegaPrinter")
    (tprint "state=" (-> client state))
    (when (eq? (-> client state) 'avahi-client-running)
-      (tprint "GROUP=" group)
+      (tprint "GROUP=" (typeof group))
       (when group
 	 (avahi-entry-group-reset! group)
 	 (create-services client))))
