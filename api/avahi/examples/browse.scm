@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 14 14:28:34 2011                          */
-;*    Last change :  Wed Jun 20 08:16:05 2012 (serrano)                */
+;*    Last change :  Thu Jul 12 14:46:03 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Browse an AVAHI server mimicking the avahi-browse.c example.     */

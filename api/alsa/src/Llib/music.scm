@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jun  7 09:11:40 2012 (serrano)                */
+;*    Last change :  Thu Jul 12 08:24:03 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -313,11 +313,7 @@
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-reset! d)
-		   (with-handler
-		      (lambda (e)
-			 (exception-notify e)
-			 (raise e))
-		      (alsadecoder-decode d o buffer))))
+		   (alsadecoder-decode d o buffer)))
 	     (with-access::alsamusic o (onerror %amutex)
 		(mutex-unlock! %amutex)
 		(onerror o
@@ -394,12 +390,26 @@
 			    (set! %decoder decoder)
 			    (update-song-status! o n)
 			    ;; play-url unlocks %amutex
-			    (play-url o decoder url l notify)
+			    (with-handler
+			       (lambda (e)
+				  (if (isa? e &error)
+				      (with-access::&error e (msg proc)
+					 (raise
+					    (instantiate::&io-error
+					       (proc proc)
+					       (msg msg)
+					       (obj url))))
+				      (raise e)))
+			       (play-url o decoder url l notify))
 			    (mutex-lock! %amutex)
 			    (loop (cdr l) (+fx 1 n) #f))
 			 (begin
 			    (mutex-unlock! %amutex)
-			    (onerror o (format "Illegal format \"~a\"" url))
+			    (onerror o
+			       (instantiate::&io-parse-error
+				  (proc "music-play")
+				  (msg "Illegal format")
+				  (obj url)))
 			    (mutex-lock! %amutex)))))))))
 
    (define (play-playlist n)

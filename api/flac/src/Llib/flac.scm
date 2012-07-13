@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat May 12 16:21:32 2012 (serrano)                */
+;*    Last change :  Thu Jul 12 08:15:25 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -59,12 +59,6 @@
 
 	   (flac-error::int ::string ::string ::obj)))
 
-;*---------------------------------------------------------------------*/
-;*    object-print ::flac-decoder ...                                  */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::flac-decoder port print-slot)
-   (display "#|flac-decoder|" port))
-   
 ;*---------------------------------------------------------------------*/
 ;*    %$flac-decoder-new ...                                           */
 ;*---------------------------------------------------------------------*/

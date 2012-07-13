@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Jun  7 09:52:07 2012 (serrano)                */
+;*    Last change :  Wed Jul 11 23:08:43 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -54,12 +54,6 @@
    (when (>fx ($compiler-debug) 0)
       (bigloo-debug)))
 
-;*---------------------------------------------------------------------*/
-;*    object-print ::flac-alsadecoder ...                              */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::flac-alsadecoder port print-slot)
-   (display "#|flac-alsadecoder|" port))
-   
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Jul  4 08:37:21 2012 (serrano)                */
+;*    Last change :  Thu Jul 12 16:26:53 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -183,8 +183,12 @@
 	 #!rest txt)
       
       (avahi-alternative-host-name::bstring ::bstring)
-      (avahi-alternative-service-name::bstring ::bstring)
-      ))
+      (avahi-alternative-service-name::bstring ::bstring))
+
+   (pragma
+      (%avahi-lock! no-trace)
+      (%avahi-unlock! no-trace)
+      (%avahi-signal no-trace)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-mutex* ...                                                */
@@ -286,6 +290,7 @@
 ;*    avahi-init ::avahi-simple-poll ...                               */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-simple-poll)
+   (avahi-gc-mark! o)
    ($bgl-avahi-simple-poll-new o)
    (with-access::avahi-simple-poll o ($ctype)
       (set! $ctype 1))
@@ -296,6 +301,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-simple-poll-close o::avahi-simple-poll)
    ($bgl-avahi-simple-poll-close o)
+   (avahi-gc-unmark! o)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -328,6 +334,7 @@
 ;*    avahi-init ::avahi-threaded-poll ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-threaded-poll)
+   (avahi-gc-mark! o)
    ($bgl-avahi-threaded-poll-new o)
    (with-access::avahi-threaded-poll o ($ctype)
       (set! $ctype 2))
@@ -339,6 +346,7 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-threaded-poll-close o::avahi-threaded-poll)
    ($bgl-avahi-threaded-poll-close o)
+   (avahi-gc-unmark! o)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -401,7 +409,8 @@
 (define (avahi-client-close o::avahi-client)
    ($bgl-avahi-client-close o)
    (with-access::avahi-client o (groups)
-      (set! groups '())))
+      (set! groups '()))
+   (avahi-gc-unmark! o))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-client-error-message ...                                   */

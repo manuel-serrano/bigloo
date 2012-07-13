@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon May 14 08:37:15 2012 (serrano)                */
+;*    Last change :  Thu Jul 12 15:11:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1309,16 +1309,16 @@
 	 (equal? (get-value obj1) (get-value obj2))))
    (let ((class1 (object-class obj1))
 	 (class2 (object-class obj2)))
-      (when (eq? class1 class2))
-      (let ((fields (class-all-fields class1)))
-	 (let loop ((i (-fx (vector-length fields) 1)))
-	    (cond
-	       ((=fx i -1)
-		#t)
-	       ((class-field-equal? (vector-ref-ur fields i))
-		(loop (-fx i 1)))
-	       (else
-		#f))))))
+      (when (eq? class1 class2)
+	 (let ((fields (class-all-fields class1)))
+	    (let loop ((i (-fx (vector-length fields) 1)))
+	       (cond
+		  ((=fx i -1)
+		   #t)
+		  ((class-field-equal? (vector-ref-ur fields i))
+		   (loop (-fx i 1)))
+		  (else
+		   #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::obj ...                                       */
