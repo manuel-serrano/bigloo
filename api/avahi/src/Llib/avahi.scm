@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Thu Jul 12 16:26:53 2012 (serrano)                */
+;*    Last change :  Wed Jul 18 06:39:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -455,7 +455,10 @@
 ;*    avahi-entry-group-close ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (avahi-entry-group-close o::avahi-entry-group)
-   ($bgl-avahi-entry-group-close o))
+   ($bgl-avahi-entry-group-close o)
+   (with-access::avahi-entry-group o ($builtin client)
+      (with-access::avahi-client client (groups)
+	 (set! groups (remq! o groups)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-entry-group-empty? ...                                     */
@@ -471,16 +474,18 @@
    (with-access::avahi-entry-group o ($builtin)
       (let ((n ($avahi-entry-group-commit $builtin)))
 	 (unless (>=fx n 0)
-	    (avahi-error "avahit-entry-group" ($avahi-strerror n) o n)))))
+	    (avahi-error "avahi-entry-group" ($avahi-strerror n) o n)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-entry-group-reset! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (avahi-entry-group-reset! o::avahi-entry-group)
-   (with-access::avahi-entry-group o ($builtin)
+   (with-access::avahi-entry-group o ($builtin client)
+      (with-access::avahi-client client (groups)
+	 (set! groups (remq! o groups)))
       (let ((n ($avahi-entry-group-reset $builtin)))
 	 (unless (>=fx n 0)
-	    (avahi-error "avahit-entry-group" ($avahi-strerror n) o n)))))
+	    (avahi-error "avahi-entry-group" ($avahi-strerror n) o n)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-entry-group-add-service! ...                               */
@@ -494,12 +499,12 @@
 	 (raise
 	    (if (=fx n $avahi-err-collision)
 		(instantiate::&avahi-collision-error
-		   (proc "avahit-entry-group-add-service")
+		   (proc "avahi-entry-group-add-service")
 		   (msg ($avahi-strerror n))
 		   (obj o)
 		   (errno n))
 		(instantiate::&avahi-error
-		   (proc "avahit-entry-group-add-service")
+		   (proc "avahi-entry-group-add-service")
 		   (msg ($avahi-strerror n))
 		   (obj o)
 		   (errno n))))))

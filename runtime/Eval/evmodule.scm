@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Jun 23 07:47:48 2012 (serrano)                */
+;*    Last change :  Sat Jul 14 09:08:28 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -77,7 +77,8 @@
 	    (eval-find-module ::symbol)
 	    (eval-module)
 	    (eval-module-set! ::obj)
-	    (evmodule-static-class ::pair-nil))
+	    (evmodule-static-class ::pair-nil)
+	    (call-with-eval-module ::obj ::procedure))
 
    (option  (set! *unsafe-type* #f)))
 
@@ -779,3 +780,13 @@
 		     ((define-abstract-class)
 		      (evepairify `(static (abstract-class ,@rest)) x)))))
       (evmodule-static mod clause (get-source-location x) #t)))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-eval-module ...                                        */
+;*---------------------------------------------------------------------*/
+(define (call-with-eval-module newm proc)
+   (let ((oldm (eval-module)))
+      (eval-module-set! newm)
+      (unwind-protect
+	 (proc)
+	 (eval-module-set! oldm))))
