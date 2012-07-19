@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Jul 11 18:07:40 2012 (serrano)                */
+/*    Last change :  Thu Jul 19 19:01:24 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -151,8 +151,8 @@ static FLAC__StreamDecoderSeekStatus
 bgl_seek_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 offset,
 		   void *client_data ) {
+//   fprintf( stderr, "BGL_SEEK_CALLBACK(%s:%d): offset=%ld\n", __FILE__, __LINE__, offset );
    obj_t obj = (obj_t)client_data;
-
    obj_t res = bgl_flac_decoder_seek( (BgL_flaczd2decoderzd2_bglt)obj, (BGL_LONGLONG_T)offset );
 
    if( BOOLEANP( res ) ) {
@@ -170,10 +170,18 @@ static FLAC__StreamDecoderTellStatus
 bgl_tell_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 *offset,
 		   void *client_data ) {
+//   fprintf( stderr, ">>> BGL_TELL_CALLBACK(%s:%d)\n", __FILE__, __LINE__ );
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_tell( (BgL_flaczd2decoderzd2_bglt)obj );
 
-   if( INTEGERP( res ) ) {
+//   fprintf( stderr, "<<< BGL_TELL_CALLBACK(%s:%d): %s\n", __FILE__, __LINE__,
+//	    BSTRING_TO_STRING( bgl_typeof( res ) ) );
+   if( ELONGP( res ) ) {
+      fprintf( stderr, "TELL: %d\n", CINT( res ) );
+      *offset = BELONG_TO_LONG( res );
+      return FLAC__STREAM_DECODER_TELL_STATUS_OK;
+   } else if( INTEGERP( res ) ) {
+      fprintf( stderr, "TELL: %d\n", CINT( res ) );
       *offset = CINT( res );
       return FLAC__STREAM_DECODER_TELL_STATUS_OK;
    } else {
@@ -196,9 +204,12 @@ bgl_length_callback( const FLAC__StreamDecoder *decoder,
 		   void *client_data ) {
 
    obj_t obj = (obj_t)client_data;
-   obj_t res = bgl_flac_decoder_tell( (BgL_flaczd2decoderzd2_bglt)obj );
+   obj_t res = bgl_flac_decoder_length( (BgL_flaczd2decoderzd2_bglt)obj );
 
-   if( INTEGERP( res ) ) {
+   if( ELONGP( res ) ) {
+      *offset = BELONG_TO_LONG( res );
+      return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
+   } else if( INTEGERP( res ) ) {
       *offset = CINT( res );
       return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
    } else {

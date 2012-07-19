@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jul 12 08:24:03 2012 (serrano)                */
+;*    Last change :  Thu Jul 19 19:00:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -79,8 +79,10 @@
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
 
+	    (generic alsabuffer-length::obj ::alsabuffer)
 	    (generic alsabuffer-available::long ::alsabuffer)
-	    (generic alsabuffer-seek ::alsabuffer ::long)
+	    (generic alsabuffer-tell::obj ::alsabuffer)
+	    (generic alsabuffer-seek ::alsabuffer ::obj)
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
@@ -204,7 +206,7 @@
 ;*    music-seek ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::alsamusic pos . song)
-   (with-access::alsamusic o (%amutex %decoder %toseek)
+   (with-access::alsamusic o (%amutex %decoder %toseek %buffer)
       (with-lock %amutex
 	 (lambda ()
 	    (if (pair? song)
@@ -214,8 +216,7 @@
 		   (set! %toseek pos)
 		   (music-play o song))
 		(when (isa? %decoder alsadecoder)
-		   (with-access::alsadecoder %decoder (%!dseek)
-		      (set! %!dseek pos))))))))
+		   (alsadecoder-seek %decoder pos)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-file ...                                                    */
@@ -702,6 +703,48 @@
       (member mime mimetypes)))
 
 ;*---------------------------------------------------------------------*/
+;*    alsabuffer-length ::alsabuffer ...                               */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-length o::alsabuffer)
+   o)
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-length ::alsaportbuffer ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-length o::alsaportbuffer)
+   (with-access::alsaportbuffer o (port)
+      (if (file-exists? (input-port-name port))
+	  (file-size (input-port-name port))
+	  #t)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-length ::alsammapbuffer ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-length o::alsammapbuffer)
+   (with-access::alsammapbuffer o (mmap)
+      (mmap-length mmap)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-tell ::alsabuffer ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-tell o::alsabuffer)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-tell ::alsaportbuffer ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-tell o::alsaportbuffer)
+   (with-access::alsaportbuffer o (port)
+      (input-port-position port)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-tell ::alsammapbuffer ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-tell o::alsammapbuffer)
+   (with-access::alsammapbuffer o (%tail)
+      (fixnum->elong %tail)))
+
+;*---------------------------------------------------------------------*/
 ;*    alsabuffer-available ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-available o::alsabuffer)
@@ -715,15 +758,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-seek ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsabuffer-seek o::alsabuffer offset::long))
+(define-generic (alsabuffer-seek o::alsabuffer offset))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-seek ::alsammapbuffer ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek o::alsammapbuffer offset)
-   (with-access::alsammapbuffer o (%head)
-      (tprint ">>> ALSA: alsabuffer-seek offset=" offset)
-      (set! %head offset)))
+   (with-access::alsammapbuffer o (%tail)
+      (set! %tail (if (llong? offset) (llong->fixnum offset) offset))))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
@@ -738,7 +780,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-seek ::alsadecoder ...                               */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsadecoder-seek o::alsadecoder ms::long))
+(define-generic (alsadecoder-seek o::alsadecoder ms::long)
+   (with-access::alsadecoder o (%!dseek)
+      (set! %!dseek ms)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-volume-set! ::alsadecoder ...                        */

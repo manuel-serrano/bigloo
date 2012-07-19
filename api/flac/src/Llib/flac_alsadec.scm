@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Jul 11 23:08:43 2012 (serrano)                */
+;*    Last change :  Thu Jul 19 19:00:23 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -103,10 +103,44 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-seek ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-seek o::flac-alsadecoder ms)
+(define-method (alsadecoder-seek o::flac-alsadecoder sec)
    (with-access::flac-alsadecoder o (%flac)
-      (flac-decoder-seek %flac ms)))
+      (with-access::flac-alsa %flac ($builtin %eof)
+	 (let ((bps ($flac-decoder-get-bits-per-sample $builtin))
+	       (srate ($flac-decoder-get-sample-rate $builtin)))
+	    ($flac-decoder-seek-absolute $builtin
+	       (*llong (fixnum->llong srate) (fixnum->llong sec)))))))
 
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-tell ::flac-alsa ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (flac-decoder-tell o::flac-alsa)
+   (with-access::flac-alsa o (%decoder)
+      (with-access::flac-alsadecoder %decoder (%flac)
+	 (with-access::flac-alsa %flac (%buffer)
+	    (when (isa? %buffer alsabuffer)
+	       (alsabuffer-tell %buffer))))))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-seek ::flac-alsa ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (flac-decoder-seek o::flac-alsa off)
+   (with-access::flac-alsa o (%decoder)
+      (with-access::flac-alsadecoder %decoder (%flac)
+	 (with-access::flac-alsa %flac (%buffer)
+	    (when (isa? %buffer alsabuffer)
+	       (alsabuffer-seek %buffer off)
+	       #t)))))
+
+;*---------------------------------------------------------------------*/
+;*    flac-decoder-length ::flac-alsa ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (flac-decoder-length o::flac-alsa)
+   (with-access::flac-alsa o (%decoder)
+      (with-access::flac-alsadecoder %decoder (%flac)
+	 (with-access::flac-alsa %flac (%buffer)
+	    (alsabuffer-length %buffer)))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-decode ::flac-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
