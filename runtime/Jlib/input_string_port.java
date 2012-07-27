@@ -7,7 +7,8 @@ public class input_string_port extends input_port {
       super( "[string]", new byte[ s.length+1 - start ] );
 
       final int size = s.length - start;
-
+      length = size;
+      
       for ( int i= 0 ; i < size ; ++i ) buffer[i] = s[i + start];
       
       buffer[size] = 0;

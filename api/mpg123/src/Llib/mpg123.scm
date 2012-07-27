@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Jun 22 16:00:31 2012 (serrano)                */
+;*    Last change :  Tue Jul 24 15:57:13 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -236,10 +236,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-seek ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (mpg123-seek m::mpg123-handle ms)
+(define (mpg123-seek m::mpg123-handle sec)
    (with-access::mpg123-handle m ($builtin)
-      (let ((f ($mpg123-timeframe $builtin (/fl (fixnum->flonum ms) 1000.))))
+      (let ((f ($mpg123-timeframe $builtin (fixnum->flonum sec))))
+	 (tprint "MPG123-SEEK, f=" f)
 	 (let ((o ($mpg123-seek-frame $builtin f $mpg123-seek-set)))
+	    (tprint "MPG123-SEEK, o=" o)
 	    (if (<fx o 0)
 		(raise (instantiate::&mpg123-error
 			  (proc "mpg123")

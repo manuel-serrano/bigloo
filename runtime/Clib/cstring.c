@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Fri Jul 22 10:18:40 2011 (serrano)                */
+/*    Last change :  Sun Jul 22 20:13:51 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -32,10 +32,14 @@ string_to_bstring_len( char *c_string, int len ) {
    string->string_t.length = len;
 
    dst = BSTRING_TO_STRING( BSTRING( string ) );
-   for( ; len > 0; len-- )
-      *dst++ = *c_string++;
-  
-   *dst = '\0';
+
+   memcpy( dst, c_string, len );
+   dst[ len ] = '\0';
+   
+/*    for( ; len > 0; len-- )                                          */
+/*       *dst++ = *c_string++;                                         */
+/*                                                                     */
+/*    *dst = '\0';                                                     */
    
    return BSTRING( string );
 }
@@ -50,7 +54,7 @@ bgl_bstring_to_gc_cstring( obj_t str ) {
    char *ostr = BSTRING_TO_STRING( str );
    char *nstr =  (char *)GC_MALLOC_ATOMIC( STRING_LENGTH( ostr ) + 1);
 
-   strncpy( nstr, ostr, STRING_LENGTH( ostr ) );
+   memcpy( nstr, ostr, STRING_LENGTH( ostr ) );
 
    return nstr;
 }

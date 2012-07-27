@@ -1183,7 +1183,7 @@ If no character is found, @code{string-index} returns @code{#f}.
 @deffnx {bigloo procedure} string-skip-right string charset [start len-1]
 @cindex SRFI-13
 
-@code{string-index} (resp. @code{string-index-right}) searches through
+@code{string-skip} (resp. @code{string-skip-right}) searches through
 the @var{string} from the left (resp. right), returning the index of
 the first occurrence of a character which
 

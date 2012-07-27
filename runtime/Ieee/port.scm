@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Apr 18 18:55:09 2012 (serrano)                */
+;*    Last change :  Sat Jul 21 19:35:05 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -103,14 +103,14 @@
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
 	    ($close-input-port::obj (::obj) "bgl_close_input_port")
 	    (c-input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
-	    (c-set-input-port-position!::obj (::input-port ::long) "bgl_input_port_seek")
+	    ($set-input-port-position!::obj (::input-port ::long) "bgl_input_port_seek")
 	    (macro c-input-port-position::long (::input-port)
 		   "INPUT_PORT_FILEPOS")
 	    (macro $input-port-fill-barrier::long (::input-port)
 		   "INPUT_PORT_FILLBARRIER")
 	    (macro $input-port-fill-barrier-set!::void (::input-port ::long)
 		   "INPUT_PORT_FILLBARRIER_SET")
-	    (macro $input-port-size::elong (::input-port)
+	    (macro $input-port-length::elong (::input-port)
 		   "BGL_INPUT_PORT_LENGTH")
 	    (macro $input-port-length-set!::void (::input-port ::elong)
 		   "BGL_INPUT_PORT_LENGTH_SET")
@@ -247,7 +247,7 @@
 		       "bgl_close_input_port")
 	       (method static c-input-port-reopen!::obj (::input-port)
 		       "bgl_input_port_reopen")
-	       (method static c-set-input-port-position!::obj (::input-port ::long)
+	       (method static $set-input-port-position!::obj (::input-port ::long)
 		       "bgl_input_port_seek")
 	       (method static c-set-output-port-position!::obj (::output-port ::long)
 		       "bgl_output_port_seek")
@@ -411,6 +411,7 @@
 	    (inline input-port-last-token-position::long ::input-port)
 	    (inline input-port-reopen! ::input-port)
 	    (inline input-port-name::bstring ::input-port)
+	    (inline input-port-length::elong ::input-port)
 	    (inline output-port-close-hook::obj ::output-port)
 	    (output-port-close-hook-set! ::output-port ::procedure)
 	    (inline output-port-flush-hook::obj ::output-port)
@@ -562,7 +563,7 @@
 (define-inline (input-port-reopen! port::input-port)
    (if (not (c-input-port-reopen! port))
        (error/errno $errno-io-port-error
-		    'input-port-reopen! "Can't reopen port" port)))
+		    'input-port-reopen! "Cannot reopen port" port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-file@ ...                                 */
@@ -1087,10 +1088,10 @@
 ;*    set-input-port-position! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-input-port-position! port::input-port pos::long)
-   (if (not (c-set-input-port-position! port pos))
+   (if (not ($set-input-port-position! port pos))
        (error/errno $errno-io-port-error
 		    'set-input-port-position!
-		    "Can't seek port"
+		    "Cannot seek port"
 		    port)))
    
 ;*---------------------------------------------------------------------*/
@@ -1131,7 +1132,7 @@
    (if (not (c-set-output-port-position! port pos))
        (error/errno $errno-io-port-error
 		    'set-output-port-position!
-		    "Can't seek port"
+		    "Cannot seek port"
 		    port)))
    
 ;*---------------------------------------------------------------------*/
@@ -1145,6 +1146,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-name port)
    (c-input-port-name port))
+
+;*---------------------------------------------------------------------*/
+;*    input-port-length ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (input-port-length port)
+   ($input-port-length port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-close-hook ...                                       */

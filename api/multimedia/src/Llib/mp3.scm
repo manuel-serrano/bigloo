@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 25 08:37:41 2007                          */
-;*    Last change :  Tue Nov 15 18:25:23 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Tue Jul 24 16:31:35 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 info extractor                                               */
 ;*    -------------------------------------------------------------    */
@@ -30,7 +30,9 @@
 	      (length::elong (default #e0))
 	      (duration::float (default 0.)))
 
-	   (read-mp3-frame ::mmap ::elong ::mp3frame)))
+	   (read-mp3-frame-mmap ::mmap ::elong ::mp3frame)
+	   (read-mp3-frame-input-port ::input-port ::elong ::mp3frame)
+	   (read-mp3-frame ::obj ::elong ::mp3frame)))
 
 ;*---------------------------------------------------------------------*/
 ;*    frame-duration ...                                               */
@@ -40,21 +42,15 @@
       (*fl (fixnum->flonum bitrate) 125.)))
 
 ;*---------------------------------------------------------------------*/
-;*    mmap-ref-byte ...                                                */
-;*---------------------------------------------------------------------*/
-(define (mmap-ref-byte mm i)
-   (char->integer (mmap-ref mm i)))
-
-;*---------------------------------------------------------------------*/
 ;*    byte-bits ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (byte-bits byte lo mo)
    (bit-and (bit-rsh byte lo) (-fx (bit-lsh 1 (-fx (+fx 1 mo) lo)) 1)))
 
 ;*---------------------------------------------------------------------*/
-;*    read-mp3-frame ...                                               */
+;*    fill-mp3-frame! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (read-mp3-frame mm offset::elong frame)
+(define (fill-mp3-frame! frame i b1 b2 b3)
    
    (define bitrates-v1l1
       '#(0 32 64 96 128 160 192 224 256 288 320 352 384 416 448 -1))
@@ -84,6 +80,49 @@
 	       srate)
 	    padding)))
    
+   (let* ((bitver (byte-bits b1 3 4))
+	  (bitlayer (byte-bits b1 1 2))
+	  (crc (byte-bits b1 0 0))
+	  (bitbrate (byte-bits b2 4 7))
+	  (bitsrate (byte-bits b2 2 3))
+	  (pding (byte-bits b2 1 1))
+	  (bitchannels (byte-bits b3 6 7)))
+      (unless (or (=fx bitlayer 00) (=fx bitsrate 3) (=fx bitver 1))
+	 (let* ((layer (vector-ref '#(0 3 2 1) bitlayer) )
+		(version (vector-ref '#(2.5 0. 2. 1.) bitver))
+		(brate (bitrate bitbrate bitver bitlayer))
+		(srate (vector-ref
+			  (vector-ref '#(#(11025 12000 8000 0)
+					 #f
+					 #(22050 24000 16000 0)
+					 #(44100 48000 32000 0))
+			     bitver)
+			  bitsrate))
+		(len (frame-length bitlayer bitver brate srate pding)))
+	    (unless (<elong len #e21)
+	       (with-access::mp3frame frame (offset version layer crc
+					       bitrate samplerate padding
+					       channels length duration)
+		  (set! offset i)
+		  (set! version (vector-ref '#(2.5 0. 2. 1.) bitver))
+		  (set! layer layer)
+		  (set! crc crc)
+		  (set! bitrate brate)
+		  (set! samplerate srate)
+		  (set! padding pding)
+		  (set! channels (vector-ref '#(2 2 1 1) bitchannels))
+		  (set! length len)
+		  (set! duration (frame-duration len brate))
+		  frame))))))
+
+;*---------------------------------------------------------------------*/
+;*    read-mp3-frame-mmap ...                                          */
+;*---------------------------------------------------------------------*/
+(define (read-mp3-frame-mmap mm::mmap offset::elong frame)
+   
+   (define (mmap-ref-byte mm i)
+      (char->integer (mmap-ref mm i)))
+
    (let ((len (mmap-length mm)))
       (let loop ((i offset))
 	 (cond
@@ -95,55 +134,66 @@
 	     (let ((b1 (mmap-ref-byte mm (+ i #e1))))
 		(if (=fx (bit-and b1 #xe0) #xe0)
 		    (let* ((b2 (mmap-ref-byte mm (+ i #e2)))
-			   (b3 (mmap-ref-byte mm (+ i #e3)))
-			   (bitver (byte-bits b1 3 4))
-			   (bitlayer (byte-bits b1 1 2))
-			   (crc (byte-bits b1 0 0))
-			   (bitbrate (byte-bits b2 4 7))
-			   (bitsrate (byte-bits b2 2 3))
-			   (pding (byte-bits b2 1 1))
-			   (bitchannels (byte-bits b3 6 7)))
-		       (if (or (=fx bitlayer 00)
-			       (=fx bitsrate 3)
-			       (=fx bitver 1))
-			   (loop (+elong i 1))
-			   (let* ((layer (vector-ref '#(0 3 2 1) bitlayer) )
-				  (version (vector-ref '#(2.5 0. 2. 1.) bitver))
-				  (brate (bitrate bitbrate bitver bitlayer))
-				  (srate (vector-ref
-					    (vector-ref '#(#(11025 12000 8000 0)
-							   #f
-							   #(22050 24000 16000 0)
-							   #(44100 48000 32000 0))
-					       bitver)
-					    bitsrate))
-				  (len (frame-length bitlayer bitver brate srate pding)))
-			      (if (<elong len #e21)
-				  (loop (+elong i 1))
-				  (with-access::mp3frame frame (offset
-								  version
-								  layer
-								  crc
-								  bitrate
-								  samplerate
-								  padding
-								  channels
-								  length
-								  duration)
-				     (set! offset i)
-				     (set! version
-					(vector-ref '#(2.5 0. 2. 1.) bitver))
-				     (set! layer layer)
-				     (set! crc crc)
-				     (set! bitrate brate)
-				     (set! samplerate srate)
-				     (set! padding pding)
-				     (set! channels
-					(vector-ref '#(2 2 1 1) bitchannels))
-				     (set! length len)
-				     (set! duration
-					(frame-duration len brate))
-				     frame)))))
+			   (b3 (mmap-ref-byte mm (+ i #e3))))
+		       (or (fill-mp3-frame! frame i b1 b2 b3)
+			   (loop (+elong i 1))))
 		    (loop (+elong i 1)))))
 	    (else
 	     (loop (+elong i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    read-mp3-frame ...                                               */
+;*---------------------------------------------------------------------*/
+(define (read-mp3-frame-input-port ip::input-port offset::elong frame)
+
+   (define (skip-chars len)
+      (let loop ((len (elong->fixnum len)))
+	 (when (>fx len 0)
+	    (read-byte ip)
+	    (loop (-fx len 1)))))
+   
+   (let ((len (input-port-length ip))
+	 (buf (make-string 3)))
+      (when (>=elong len #e0)
+	 (let loop ((i offset))
+	    (cond
+	       ((>=elong i (-elong len #e4))
+		#f)
+	       ((>=elong (-elong i offset) #e8192)
+		#f)
+	       ((=fx (read-byte ip) 255)
+		(let ((b1 (read-byte ip)))
+		   (if (=fx (bit-and b1 #xe0) #xe0)
+		       (let* ((b2 (read-byte ip))
+			      (b3 (read-byte ip)))
+			  (if (fill-mp3-frame! frame i b1 b2 b3)
+			      (with-access::mp3frame frame (length)
+				 (skip-chars (-fx length 4))
+				 frame)
+			      (begin
+				 (string-set! buf 0 (integer->char b1))
+				 (string-set! buf 1 (integer->char b2))
+				 (string-set! buf 2 (integer->char b3))
+				 (unread-string! buf ip)
+				 (loop (+elong i 1)))))
+		       (begin
+			  (unread-char! (integer->char b1))
+			  (loop (+elong i 1))))))
+	       (else
+		(loop (+elong i 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    read-mp3-frame ...                                               */
+;*---------------------------------------------------------------------*/
+(define (read-mp3-frame obj offset::elong frame)
+   (cond
+      ((mmap? obj)
+       (read-mp3-frame-mmap obj offset frame))
+      ((input-port? obj)
+       (read-mp3-frame-input-port obj offset frame))
+      (else
+       (bigloo-type-error "read-mp3-frame" "input-port of mmap" obj))))
+      
+
+
+   

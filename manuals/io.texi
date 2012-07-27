@@ -65,6 +65,12 @@ See @ref{Ports,,r5rs.info,R5RS}, for more details.
 Returns the file name for which @var{obj} has been opened.
 @end deffn
 
+@deffn {bigloo (>=3.8d) procedure} input-port-length obj
+Returns the source number of bytes, i.e., the number characters contains
+in the source. Returns @code{-1} if that number is unknown (typically
+for a pipe).
+@end deffn
+
 @deffn {bigloo (>=2.8b) procedure} input-port-timeout-set! port time
 @deffnx {bigloo (>=2.8b) procedure} output-port-timeout-set! port time
 These two functions limit the time an read or write operation may last.

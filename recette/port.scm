@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Fri Apr 27 12:21:48 2012 (serrano)                */
+;*    Last change :  Fri Jul 20 06:28:04 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -422,6 +422,12 @@
 			   (close-input-port p)
 			   #f)
 	 #f)
+   (test "input-port-length.1"
+      (call-with-input-string (make-string 23) input-port-length)
+      23)
+   (test "input-port-length.2" 
+      (call-with-input-file "misc/input.txt" input-port-length)
+      (file-size "misc/input.txt"))
    (test "filepos" (filepos) '(0 1 6 8 12 16 24 26))
    (let ((l '((1 2 3) . (4 5 6))))
       (test "append" (test-append-port l) l))

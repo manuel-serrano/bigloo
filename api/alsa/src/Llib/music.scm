@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jul 19 19:00:35 2012 (serrano)                */
+;*    Last change :  Mon Jul 23 07:02:29 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -23,7 +23,8 @@
 	       (port::input-port read-only)
 	       (readsz::long read-only (default 8192))
 	       (%inbuf::bstring read-only)
-	       (%nexttail::long (default 0)))
+	       (%nexttail::long (default 0))
+	       (%seek::elong (default #e-1)))
 	    
 	    (class alsammapbuffer::alsabuffer
 	       (mmap::mmap read-only)))
@@ -40,7 +41,6 @@
 	       (%nextbuffer (default #f))
 	       
 	       (%playlist::pair-nil (default '()))
-	       (%toseek::long (default -1))
 	       (%aready::bool (default #t))
 	       (%amutex::mutex read-only (default (make-mutex)))
 	       (%!playid::int (default -1))
@@ -68,7 +68,6 @@
 	       (%!dpause::bool (default #f))
 	       (%!dabort::bool (default #f))
 	       (%!stop::bool (default #t))
-	       (%!dseek::long (default -1))
 	       (%dmutex::mutex read-only (default (make-mutex)))
 	       (%dcondv::condvar read-only (default (make-condition-variable)))
 	       (%doutcondv::condvar read-only (default (make-condition-variable))))
@@ -79,7 +78,7 @@
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
 
-	    (generic alsabuffer-length::obj ::alsabuffer)
+	    (generic alsabuffer-length::belong ::alsabuffer)
 	    (generic alsabuffer-available::long ::alsabuffer)
 	    (generic alsabuffer-tell::obj ::alsabuffer)
 	    (generic alsabuffer-seek ::alsabuffer ::obj)
@@ -206,14 +205,13 @@
 ;*    music-seek ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::alsamusic pos . song)
-   (with-access::alsamusic o (%amutex %decoder %toseek %buffer)
+   (with-access::alsamusic o (%amutex %decoder %buffer)
       (with-lock %amutex
 	 (lambda ()
 	    (if (pair? song)
 		(begin
 		   (unless (integer? (car song))
 		      (bigloo-type-error '|music-seek ::alsamusic| 'int (car song)))
-		   (set! %toseek pos)
 		   (music-play o song))
 		(when (isa? %decoder alsadecoder)
 		   (alsadecoder-seek %decoder pos)))))))
@@ -306,8 +304,10 @@
 			       (unwind-protect
 				  (alsabuffer-fill! buffer o)
 				  (close-input-port ip))
+			       ;; next song
 			       (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
 				  (when (isa? nbuffer alsabuffer)
+				     (tprint "NEXT-BUFFER...")
 				     (loop nbuffer (cdr playlist))))))
 			 "alsamusic-buffer"))
 		   (when notify
@@ -376,7 +376,7 @@
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!playid onerror %decoder %toseek)
+      (with-access::alsamusic o (%amutex %!playid onerror %decoder)
 	 (let ((playid %!playid))
 	    (let loop ((l urls)
 		       (n n)
@@ -385,9 +385,7 @@
 		  (let* ((url (car l))
 			 (decoder (find-decoder o url)))
 		     (if decoder
-			 (with-access::alsadecoder decoder (%!dseek)
-			    (set! %!dseek %toseek)
-			    (set! %toseek -1)
+			 (begin
 			    (set! %decoder decoder)
 			    (update-song-status! o n)
 			    ;; play-url unlocks %amutex
@@ -560,7 +558,7 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsaportbuffer o::alsamusic)
-   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %filled readsz port url)
+   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %filled %seek readsz port url)
       
       (define inlen %inlen)
 
@@ -619,11 +617,19 @@
 	       (%eof
 	        ;;; done looping
 		#unspecified)
+	       ((>=elong %seek #e0)
+		;; seek buffer
+		(tprint "ALSABUFFER-FILL! ::alsaportbuffer SEEK: "
+		   %seek "/" (input-port-length port)
+		   " head=" %head " tail=" %tail " inlen=" inlen)
+		(set-input-port-position! port %seek)
+		(set! %seek #e-1)
+		(loop))
 	       ((and (=fx %head %tail) (not %empty))
 		;; buffer full
 		(mutex-lock! %bmutex)
 		(when (>=fx (alsa-debug) 3)
-		   (tprint "!!! ALSA: wait buffer full url=" url))
+		   (tprint ">>> ALSA: wait buffer full url=" url))
 		(condition-variable-wait! %bcondv %bmutex)
 		(mutex-unlock! %bmutex)
 		(loop))
@@ -705,17 +711,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-length ::alsabuffer ...                               */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsabuffer-length o::alsabuffer)
-   o)
+(define-generic (alsabuffer-length::belong o::alsabuffer)
+   #e-1)
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-length ::alsaportbuffer ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-length o::alsaportbuffer)
    (with-access::alsaportbuffer o (port)
-      (if (file-exists? (input-port-name port))
-	  (file-size (input-port-name port))
-	  #t)))
+      (input-port-length port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-length ::alsammapbuffer ...                           */
@@ -734,16 +738,53 @@
 ;*    alsabuffer-tell ::alsaportbuffer ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-tell o::alsaportbuffer)
-   (with-access::alsaportbuffer o (port)
-      (input-port-position port)))
+   (with-access::alsaportbuffer o (port %head %tail)
+      (let ((tell (fixnum->elong (input-port-position port))))
+	 (tprint "ALSABUFFER-TELL ::alsaportbuffer: "
+	    (-elong tell (fixnum->elong (alsabuffer-available o))))
+	 (-elong tell (fixnum->elong (alsabuffer-available o))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-tell ::alsammapbuffer ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-tell o::alsammapbuffer)
    (with-access::alsammapbuffer o (%tail)
+      (tprint "ALSABUFFER-TELL ::alsammapbuffer: " %tail)
       (fixnum->elong %tail)))
 
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-seek ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-seek buffer::alsabuffer offset))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-seek ::alsaportbuffer ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-seek buffer::alsaportbuffer offset)
+   (with-access::alsaportbuffer buffer (%seek port %tail %head %empty
+					  %bmutex %bcondv %filled)
+      ;; only ports that support seek have a position length
+      (when (>fx (input-port-length port) 0)
+	 (mutex-lock! %bmutex)
+	 ;; mark the seek position
+	 (set! %empty #t)
+	 (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
+	 (set! %filled #f)
+	 (set! %head %tail)
+	 (condition-variable-broadcast! %bcondv)
+	 (mutex-unlock! %bmutex)
+	 ;; the seek succeeded
+	 #t)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-seek ::alsammapbuffer ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-seek buffer::alsammapbuffer offset)
+   (with-access::alsammapbuffer buffer (%tail)
+   (tprint "ALSABUFFER-SEEK ::alsammapbuffer offset=" offset)
+      (set! %tail (if (llong? offset) (llong->fixnum offset) offset))
+      #t))
+   
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-available ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -751,22 +792,10 @@
    (with-access::alsabuffer o (%head %tail %empty %inlen)
       (cond
 	 ((>fx %head %tail) (-fx %head %tail))
-	 ((<fx %head %tail) (+fx (-fx %inlen (-fx %tail 1)) %head))
+	 ((<fx %head %tail) (+fx (-fx %inlen %tail) %head))
 	 (%empty 0)
 	 (else %inlen))))
 
-;*---------------------------------------------------------------------*/
-;*    alsabuffer-seek ...                                              */
-;*---------------------------------------------------------------------*/
-(define-generic (alsabuffer-seek o::alsabuffer offset))
-
-;*---------------------------------------------------------------------*/
-;*    alsabuffer-seek ::alsammapbuffer ...                             */
-;*---------------------------------------------------------------------*/
-(define-method (alsabuffer-seek o::alsammapbuffer offset)
-   (with-access::alsammapbuffer o (%tail)
-      (set! %tail (if (llong? offset) (llong->fixnum offset) offset))))
-   
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-position ::alsadecoder ...                           */
 ;*---------------------------------------------------------------------*/
@@ -780,9 +809,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-seek ::alsadecoder ...                               */
 ;*---------------------------------------------------------------------*/
-(define-generic (alsadecoder-seek o::alsadecoder ms::long)
-   (with-access::alsadecoder o (%!dseek)
-      (set! %!dseek ms)))
+(define-generic (alsadecoder-seek o::alsadecoder ms::long))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-volume-set! ::alsadecoder ...                        */

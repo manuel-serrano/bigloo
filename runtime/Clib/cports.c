@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed May 16 09:48:29 2012 (serrano)                */
+/*    Last change :  Sat Jul 21 19:42:42 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1248,10 +1248,14 @@ bgl_open_input_file( obj_t name, obj_t buffer ) {
        if( !(file = fopen( cname, "rb" )) ) {
 	  return BFALSE;
        } else {
+	  obj_t port = bgl_make_input_port( name, file, KINDOF_FILE, buffer );
+	  
 	  /* we use our own buffer */
 	  setvbuf( file, NULL, _IONBF, 0 );  
-
-	  return bgl_make_input_port( name, file, KINDOF_FILE, buffer );
+	  /* set port size */
+	  BGL_INPUT_PORT_LENGTH_SET( port, bgl_file_size( cname ) );
+	  
+	  return port;
        }
    }
 }
@@ -1468,8 +1472,14 @@ bgl_close_input_port( obj_t port ) {
 BGL_RUNTIME_DEF obj_t
 bgl_input_port_seek( obj_t port, long pos ) {
    if( INPUT_PORT_ON_FILEP( port ) ) {
-      if( fseek( PORT_STREAM( port ), pos, SEEK_SET ) )
+      if( fseek( PORT_STREAM( port ), pos, SEEK_SET ) ) {
+	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			   "set-input-port-position!",
+			   strerror( errno ),
+			   port );
 	 return BFALSE;
+      }
+      
       INPUT_PORT( port ).filepos = pos;
       INPUT_PORT( port ).eof = 0;
       INPUT_PORT( port ).matchstart = 0;
@@ -1491,6 +1501,11 @@ bgl_input_port_seek( obj_t port, long pos ) {
       return BTRUE;
    }
 
+   fprintf( stderr, "PORT=%d FILE=%d\n", PORT(port).kindof, KINDOF_FILE);
+   C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+		     "set-input-port-position!",
+		     "input-port does not support seeking", port );
+   
    return BFALSE;
 }
 

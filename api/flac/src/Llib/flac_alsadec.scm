@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Jul 19 19:00:23 2012 (serrano)                */
+;*    Last change :  Mon Jul 23 07:00:19 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -32,7 +32,8 @@
    (cond-expand
       ((library alsa)
        (export (class flac-alsadecoder::alsadecoder
-	          (%flac::obj (default #unspecified)))))))
+	          (%flac::obj (default #unspecified))
+		  (%inseek (default #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
@@ -104,12 +105,14 @@
 ;*    alsadecoder-seek ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-seek o::flac-alsadecoder sec)
-   (with-access::flac-alsadecoder o (%flac)
-      (with-access::flac-alsa %flac ($builtin %eof)
-	 (let ((bps ($flac-decoder-get-bits-per-sample $builtin))
-	       (srate ($flac-decoder-get-sample-rate $builtin)))
-	    ($flac-decoder-seek-absolute $builtin
-	       (*llong (fixnum->llong srate) (fixnum->llong sec)))))))
+   (tprint "\n\nseek sec=" sec)
+   (with-access::flac-alsadecoder o (%flac %inseek)
+      (unless %inseek
+	 (with-access::flac-alsa %flac ($builtin %eof)
+	    (let ((bps ($flac-decoder-get-bits-per-sample $builtin))
+		  (srate ($flac-decoder-get-sample-rate $builtin)))
+	       ($flac-decoder-seek-absolute $builtin
+		  (*llong (fixnum->llong srate) (fixnum->llong sec))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-tell ::flac-alsa ...                                */
@@ -126,10 +129,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-seek o::flac-alsa off)
    (with-access::flac-alsa o (%decoder)
-      (with-access::flac-alsadecoder %decoder (%flac)
+      (with-access::flac-alsadecoder %decoder (%flac %inseek)
 	 (with-access::flac-alsa %flac (%buffer)
 	    (when (isa? %buffer alsabuffer)
 	       (alsabuffer-seek %buffer off)
+	       (set! %inseek #f)
 	       #t)))))
 
 ;*---------------------------------------------------------------------*/
@@ -206,7 +210,6 @@
 ;*    flac-decoder-read ::flac-alsa ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
-   
    (with-access::flac-alsa o (%flacbuf %buffer (am %alsamusic) %decoder
 				%has-been-empty-once)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
@@ -228,7 +231,8 @@
 	    
 	    (define (buffer-filled?)
 	       ;; filled when > 25%
-	       (>fx (*fx 4 (alsabuffer-available %buffer)) inlen))
+	       (and (not %empty)
+		    (>fx (*fx 4 (alsabuffer-available %buffer)) inlen)))
 	    
 	    (define (buffer-flushed?)
 	       ;; flushed when slow fill or buffer fill < 80%

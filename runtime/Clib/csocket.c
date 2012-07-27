@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Jul 19 19:14:30 2012 (serrano)                */
+/*    Last change :  Sat Jul 21 20:16:28 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2234,7 +2234,6 @@ BGL_RUNTIME_DEF obj_t
 bgl_datagram_socket_close( obj_t sock ) {
    int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
 
-   fprintf( stderr, "bgl_datagram_socket_close fd=%d\n", fd );
    if( fd > 0 ) {
       obj_t chook = BGL_DATAGRAM_SOCKET( sock ).chook;
 #if( !defined( SHUT_RDWR ) )

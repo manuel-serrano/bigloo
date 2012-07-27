@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Thu Jul 19 19:01:24 2012 (serrano)                */
+/*    Last change :  Sun Jul 22 21:23:46 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -170,18 +170,13 @@ static FLAC__StreamDecoderTellStatus
 bgl_tell_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 *offset,
 		   void *client_data ) {
-//   fprintf( stderr, ">>> BGL_TELL_CALLBACK(%s:%d)\n", __FILE__, __LINE__ );
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_tell( (BgL_flaczd2decoderzd2_bglt)obj );
 
-//   fprintf( stderr, "<<< BGL_TELL_CALLBACK(%s:%d): %s\n", __FILE__, __LINE__,
-//	    BSTRING_TO_STRING( bgl_typeof( res ) ) );
    if( ELONGP( res ) ) {
-      fprintf( stderr, "TELL: %d\n", CINT( res ) );
       *offset = BELONG_TO_LONG( res );
       return FLAC__STREAM_DECODER_TELL_STATUS_OK;
    } else if( INTEGERP( res ) ) {
-      fprintf( stderr, "TELL: %d\n", CINT( res ) );
       *offset = CINT( res );
       return FLAC__STREAM_DECODER_TELL_STATUS_OK;
    } else {
@@ -204,22 +199,12 @@ bgl_length_callback( const FLAC__StreamDecoder *decoder,
 		   void *client_data ) {
 
    obj_t obj = (obj_t)client_data;
-   obj_t res = bgl_flac_decoder_length( (BgL_flaczd2decoderzd2_bglt)obj );
 
-   if( ELONGP( res ) ) {
-      *offset = BELONG_TO_LONG( res );
-      return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
-   } else if( INTEGERP( res ) ) {
-      *offset = CINT( res );
-      return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
-   } else {
-      *offset = -1;
-      if( BOOLEANP( res ) ) {
-	 return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
-      } else {
-	 return FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR;
-      }
-   }
+   *offset = BELONG_TO_LONG( bgl_flac_decoder_length( (BgL_flaczd2decoderzd2_bglt)obj ) );
+
+   return ( *offset >= 0 ) ?
+      FLAC__STREAM_DECODER_LENGTH_STATUS_OK :
+      FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
 }
    
 /*---------------------------------------------------------------------*/
@@ -343,7 +328,6 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
    char *msg;
    obj_t res;
 
-   // fprintf( stderr, "!!!!!!!!!!!!!! bgl_error_callback: %d !!!!!!! pos=%d\n", status, pos );
    switch( status ) {
       case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
 	 msg = "lost sync"; break;
@@ -359,4 +343,3 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
    
    bgl_flac_error( "flac-decoder", msg, obj );
 }
-

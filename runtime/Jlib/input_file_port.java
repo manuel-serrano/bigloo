@@ -11,6 +11,7 @@ public class input_file_port extends input_port
   {
     super( new String( file ), buf );
     in = new RandomAccessFile( new String( file ), "r" );
+    length = foreign.bgl_file_size( file );
   }
 
    public void close() {

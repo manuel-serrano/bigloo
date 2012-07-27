@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sun Jun 17 18:24:27 2012 (serrano)                */
+;*    Last change :  Mon Jul 23 07:05:50 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -24,7 +24,8 @@
       ((library alsa)
        (export (class mpg123-alsadecoder::alsadecoder
 		  (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
-	          (%mpg123 read-only (default (instantiate::mpg123-handle))))))))
+	          (%mpg123 read-only (default (instantiate::mpg123-handle)))
+		  (%!dseek::long (default -1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
@@ -92,15 +93,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-seek ::mpg123-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
-(define-method (alsadecoder-seek dec::mpg123-alsadecoder ms)
+(define-method (alsadecoder-seek dec::mpg123-alsadecoder sec)
+   (tprint "\n\nseek sec=" sec)
    (with-access::mpg123-alsadecoder dec (%mpg123)
       (when (>=fx (mpg123-debug) 2)
-	 (tprint "*** MPG123_SEEK, seek=" ms))
+	 (tprint "*** MPG123_SEEK, seek=" sec))
       (with-handler
 	 (lambda (e)
 	    (exception-notify e)
 	    -1)
-	 (mpg123-seek %mpg123 ms))))
+	 (mpg123-seek %mpg123 sec))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-volume-set! ::mpg123-alsadecoder ...                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Thu Jul 19 18:27:15 2012 (serrano)                */
+;*    Last change :  Mon Jul 23 06:53:22 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -32,7 +32,6 @@
 	      (%eof::bool (default #f))
 	      (%sample::long (default 0))
 	      (%volume::double (default 1.))
-	      (input (default #f))
 	      (md5check::bool read-only (default #f)))
 
 	   (class &flac-error::&error)
@@ -59,6 +58,12 @@
 
 	   (flac-error::int ::string ::string ::obj)))
 
+;*---------------------------------------------------------------------*/
+;*    object-print ::flac-decoder ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::flac-decoder port print-slot)
+   (display "#|flac-decoder|" port))
+   
 ;*---------------------------------------------------------------------*/
 ;*    %$flac-decoder-new ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -145,31 +150,19 @@
 ;*    flac-decoder-tell ::flac-decoder ...                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-tell o::flac-decoder)
-   (tprint "FLAC-DECODER-TELL ::flac-decoder o=" (typeof o))
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-seek ::flac-decoder ...                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-seek o::flac-decoder offset)
-   (tprint "FLAC-DECODER-SEEK ::flac-decoder o=" (typeof o) " offset=" offset)
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-length ::flac-decoder ...                           */
 ;*---------------------------------------------------------------------*/
 (define-generic (flac-decoder-length o::flac-decoder)
-   (tprint "FLAC-DECODER-LENGTH ::flac-decoder o=" (typeof o))
-   (with-access::flac-decoder o (input)
-      (cond
-	 ((input-port? input)
-	  (if (file-exists? (input-port-name input))
-	      (file-size (input-port-name input))
-	      #t))
-	 ((mmap? input)
-	  (mmap-length input))
-	 (else
-	  #unspecified))))
+   -1)
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-info ::flac-decoder ...                             */
