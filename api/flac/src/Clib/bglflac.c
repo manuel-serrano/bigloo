@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sun Jul 22 21:23:46 2012 (serrano)                */
+/*    Last change :  Sat Jul 28 06:07:45 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -155,8 +155,10 @@ bgl_seek_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_seek( (BgL_flaczd2decoderzd2_bglt)obj, (BGL_LONGLONG_T)offset );
 
-   if( BOOLEANP( res ) ) {
+   if( res == BTRUE ) {
       return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+   } else if( res == BFALSE ) {
+      return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
    } else {
       return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
    }

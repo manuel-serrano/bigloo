@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Jul 23 07:00:19 2012 (serrano)                */
+;*    Last change :  Sat Jul 28 06:29:27 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -13,13 +13,13 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __flac_alsadec
-
+   
    (cond-expand
       ((library alsa)
        (library alsa)))
-
+   
    (import __flac_flac)
-
+   
    (extern (macro $flac-blit-string!::void
 	      (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING"))
    
@@ -28,7 +28,7 @@
 	      (%buffer (default #f))
 	      (%decoder (default #f))
 	      (%has-been-empty-once (default #f))))
-
+   
    (cond-expand
       ((library alsa)
        (export (class flac-alsadecoder::alsadecoder
@@ -105,14 +105,14 @@
 ;*    alsadecoder-seek ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-seek o::flac-alsadecoder sec)
-   (tprint "\n\nseek sec=" sec)
    (with-access::flac-alsadecoder o (%flac %inseek)
       (unless %inseek
+	 (set! %inseek #t)
 	 (with-access::flac-alsa %flac ($builtin %eof)
-	    (let ((bps ($flac-decoder-get-bits-per-sample $builtin))
-		  (srate ($flac-decoder-get-sample-rate $builtin)))
-	       ($flac-decoder-seek-absolute $builtin
-		  (*llong (fixnum->llong srate) (fixnum->llong sec))))))))
+	    (let* ((bps ($flac-decoder-get-bits-per-sample $builtin))
+		   (srate ($flac-decoder-get-sample-rate $builtin))
+		   (off (*llong (fixnum->llong srate) (fixnum->llong sec))))
+	       ($flac-decoder-seek-absolute $builtin off))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-tell ::flac-alsa ...                                */
@@ -128,13 +128,12 @@
 ;*    flac-decoder-seek ::flac-alsa ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-seek o::flac-alsa off)
-   (with-access::flac-alsa o (%decoder)
+   (with-access::flac-alsa o (%decoder %buffer)
       (with-access::flac-alsadecoder %decoder (%flac %inseek)
-	 (with-access::flac-alsa %flac (%buffer)
-	    (when (isa? %buffer alsabuffer)
-	       (alsabuffer-seek %buffer off)
-	       (set! %inseek #f)
-	       #t)))))
+	 (when (isa? %buffer alsabuffer)
+	    (alsabuffer-seek %buffer off)
+	    (set! %inseek #f)
+	    #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-length ::flac-alsa ...                              */

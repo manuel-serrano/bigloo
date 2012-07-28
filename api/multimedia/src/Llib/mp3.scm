@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 25 08:37:41 2007                          */
-;*    Last change :  Tue Jul 24 16:31:35 2012 (serrano)                */
+;*    Last change :  Sat Jul 28 06:50:31 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 info extractor                                               */
@@ -32,7 +32,9 @@
 
 	   (read-mp3-frame-mmap ::mmap ::elong ::mp3frame)
 	   (read-mp3-frame-input-port ::input-port ::elong ::mp3frame)
-	   (read-mp3-frame ::obj ::elong ::mp3frame)))
+	   (read-mp3-frame ::obj ::elong ::mp3frame)
+
+	   (mp3-index::elong ::obj ::elong)))
 
 ;*---------------------------------------------------------------------*/
 ;*    frame-duration ...                                               */
@@ -194,6 +196,37 @@
       (else
        (bigloo-type-error "read-mp3-frame" "input-port of mmap" obj))))
       
+;*---------------------------------------------------------------------*/
+;*    mp3-index ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    Returns the position in a stream (i.e., a byte number) of a      */
+;*    temporal position (i.e., a second number).                       */
+;*---------------------------------------------------------------------*/
+(define (mp3-index obj pos)
 
-
+   (define (mp3-index->offset obj)
+      (let ((f (instantiate::mp3frame)))
+	 (with-access::mp3frame f (offset length duration)
+	    (let loop ((pos (exact->inexact pos))
+		       (i #e0))
+	       (if (<=fl pos 0.)
+		   offset
+		   (begin
+		      (read-mp3-frame obj i f)
+		      (loop (-fl pos duration) (+ i length))))))))
    
+   (cond
+      ((mmap? obj)
+       (mp3-index->offset obj))
+      ((input-port? obj)
+       (mp3-index->offset obj))
+      ((string? obj)
+       (if (file-exists? obj)
+	   (let ((mm (open-mmap obj :read #t :write #f)))
+	      (unwind-protect
+		 (mp3-index->offset mm)
+		 (close-mmap mm)))
+	   (call-with-input-file obj mp3-index->offset)))
+      (else
+       (bigloo-type-error "mp3-offset" "string, mmap, or input-port" obj))))
+

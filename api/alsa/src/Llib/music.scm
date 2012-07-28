@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Jul 23 07:02:29 2012 (serrano)                */
+;*    Last change :  Sat Jul 28 06:30:00 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -307,7 +307,6 @@
 			       ;; next song
 			       (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
 				  (when (isa? nbuffer alsabuffer)
-				     (tprint "NEXT-BUFFER...")
 				     (loop nbuffer (cdr playlist))))))
 			 "alsamusic-buffer"))
 		   (when notify
@@ -740,8 +739,6 @@
 (define-method (alsabuffer-tell o::alsaportbuffer)
    (with-access::alsaportbuffer o (port %head %tail)
       (let ((tell (fixnum->elong (input-port-position port))))
-	 (tprint "ALSABUFFER-TELL ::alsaportbuffer: "
-	    (-elong tell (fixnum->elong (alsabuffer-available o))))
 	 (-elong tell (fixnum->elong (alsabuffer-available o))))))
 
 ;*---------------------------------------------------------------------*/
@@ -749,7 +746,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-tell o::alsammapbuffer)
    (with-access::alsammapbuffer o (%tail)
-      (tprint "ALSABUFFER-TELL ::alsammapbuffer: " %tail)
       (fixnum->elong %tail)))
 
 ;*---------------------------------------------------------------------*/
@@ -762,17 +758,18 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek buffer::alsaportbuffer offset)
    (with-access::alsaportbuffer buffer (%seek port %tail %head %empty
-					  %bmutex %bcondv %filled)
+					  %bmutex %bcondv %filled %eof)
       ;; only ports that support seek have a position length
       (when (>fx (input-port-length port) 0)
-	 (mutex-lock! %bmutex)
-	 ;; mark the seek position
-	 (set! %empty #t)
-	 (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
-	 (set! %filled #f)
-	 (set! %head %tail)
-	 (condition-variable-broadcast! %bcondv)
-	 (mutex-unlock! %bmutex)
+	 (unless %eof
+	    (mutex-lock! %bmutex)
+	    ;; mark the seek position
+	    (set! %empty #t)
+	    (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
+	    (set! %filled #f)
+	    (set! %head %tail)
+	    (condition-variable-broadcast! %bcondv)
+	    (mutex-unlock! %bmutex))
 	 ;; the seek succeeded
 	 #t)))
 
@@ -781,7 +778,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek buffer::alsammapbuffer offset)
    (with-access::alsammapbuffer buffer (%tail)
-   (tprint "ALSABUFFER-SEEK ::alsammapbuffer offset=" offset)
       (set! %tail (if (llong? offset) (llong->fixnum offset) offset))
       #t))
    
