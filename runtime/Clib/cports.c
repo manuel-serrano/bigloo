@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Jul 21 19:42:42 2012 (serrano)                */
+/*    Last change :  Sun Jul 29 09:54:38 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1471,6 +1471,7 @@ bgl_close_input_port( obj_t port ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_input_port_seek( obj_t port, long pos ) {
+   /* regular file */
    if( INPUT_PORT_ON_FILEP( port ) ) {
       if( fseek( PORT_STREAM( port ), pos, SEEK_SET ) ) {
 	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -1492,6 +1493,7 @@ bgl_input_port_seek( obj_t port, long pos ) {
       return BTRUE;
    }
 
+   /* string port */
    if( INPUT_PORT_ON_STRINGP( port ) && (pos < BGL_INPUT_PORT_BUFSIZ(port)) ) {
       INPUT_PORT( port ).filepos = pos;
       INPUT_PORT( port ).matchstart = pos;

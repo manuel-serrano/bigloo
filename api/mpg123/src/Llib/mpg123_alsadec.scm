@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Mon Jul 23 07:05:50 2012 (serrano)                */
+;*    Last change :  Sun Jul 29 07:39:32 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __mpg123_alsadec
 
+   (library multimedia)
+   
    (cond-expand
       ((library alsa)
        (library alsa)))
@@ -38,14 +40,15 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (begin (bigloo-compiler-debug) 4))
+   (bigloo-compiler-debug))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-debug ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (mpg123-debug)
-   (when (>fx ($compiler-debug) 0)
-      (bigloo-debug)))
+   (if (>fx ($compiler-debug) 0)
+       (bigloo-debug)
+       0))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::mpg123-alsadecoder ...                            */
@@ -94,15 +97,11 @@
 ;*    alsadecoder-seek ::mpg123-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-seek dec::mpg123-alsadecoder sec)
-   (tprint "\n\nseek sec=" sec)
-   (with-access::mpg123-alsadecoder dec (%mpg123)
+   (with-access::mpg123-alsadecoder dec (%mpg123 %!dseek)
       (when (>=fx (mpg123-debug) 2)
 	 (tprint "*** MPG123_SEEK, seek=" sec))
-      (with-handler
-	 (lambda (e)
-	    (exception-notify e)
-	    -1)
-	 (mpg123-seek %mpg123 sec))))
+      (when (<fx %!dseek 0)
+	 (set! %!dseek sec))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-volume-set! ::mpg123-alsadecoder ...                 */
@@ -217,11 +216,13 @@
 		  (%empty
 		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
-		       (onstate am 'ended)
+		       (begin
+			  (when (>=fx (mpg123-debug) 2)
+			     (tprint "!!! MPG123_DECODER, EOF url=" url))
+			  (onstate am 'ended))
 		       (begin
 			  (when (>=fx (mpg123-debug) 2)
 			     (tprint "!!! MPG123_DECODER, buffer empty "
-				(if %eof " EOF" " ")
 				" url=" url))
 			  (let ((d0 (current-microseconds)))
 			     (onstate am 'buffering)
@@ -257,26 +258,29 @@
 			    (inc-tail! s))
 			 (cond
 			    ((>fx %!dseek 0)
-			     (let* ((ms (*fx 1000 %!dseek))
-				    (offset (alsadecoder-seek dec ms)))
-				(if (>=fx offset 0)
-				    (begin
-				       (alsabuffer-seek buffer offset)
-				       (with-access::musicstatus %status (songpos)
-					  (set! songpos %!dseek)))
-				    (begin
-				       (tprint "ONERROR...")
-				       (onerror am "Cannot seek to position")))
-				(set! %!dseek -1)))
+			     (let ((offset (mp3-index (alsabuffer-stream buffer) %!dseek)))
+				(alsabuffer-seek buffer offset)
+				(mpg123-handle-reset! %mpg123)
+				(with-access::musicstatus %status (songpos)
+				   (set! songpos %!dseek)
+				   (set! %!dseek -1))
+				(loop)))
 			    ((=fx status $mpg123-ok)
 			     ;; play and keep decoding
 			     (with-access::mpg123-handle %mpg123 (size)
+				(when (>=fx (mpg123-debug) 5)
+				   (tprint "~~~ MPG123_DECODER, OK s=" s
+				      " size=" size))
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)
 				   (flush 0))))
 			    ((=fx status $mpg123-need-more)
 			     ;; play and loop to get more bytes
 			     (with-access::mpg123-handle %mpg123 (size)
+				(when (>=fx (mpg123-debug) 5)
+				   (tprint "~~~ MPG123_DECODER, NEED-MORE s=" s
+				      " size=" size " %empty=" %empty
+				      " tail=" %tail))
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)))
 			     (loop))

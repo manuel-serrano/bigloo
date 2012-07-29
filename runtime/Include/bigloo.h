@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 27 12:29:38 2012 (serrano)                */
+/*    Last change :  Sun Jul 29 20:27:28 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -354,6 +354,7 @@ typedef union scmobj {
       long filepos;              /*    - the position in the file      */
       long fillbarrier;          /*    - the fill barrier position     */
       long (*sysread)();         /*    - the system reader             */
+      int (*sysseek)();          /*    - the system seek               */
       bool_t eof;                /*    - have we seen an end-of-file   */
       long matchstart;           /*    - the start of a match position */
       long matchstop;            /*    - the end of the match          */

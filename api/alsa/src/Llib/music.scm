@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Jul 28 06:30:00 2012 (serrano)                */
+;*    Last change :  Sun Jul 29 09:05:22 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -78,6 +78,7 @@
 	    (generic alsadecoder-can-play-type? ::alsadecoder ::bstring)
 	    (generic alsadecoder-decode ::alsadecoder ::alsamusic ::alsabuffer)
 
+	    (generic alsabuffer-stream::obj ::alsabuffer)
 	    (generic alsabuffer-length::belong ::alsabuffer)
 	    (generic alsabuffer-available::long ::alsabuffer)
 	    (generic alsabuffer-tell::obj ::alsabuffer)
@@ -85,7 +86,7 @@
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
-	    (generic alsadecoder-seek::long ::alsadecoder ::long)
+	    (generic alsadecoder-seek ::alsadecoder ::long)
 	    (generic alsadecoder-volume-set! ::alsadecoder ::long)))
 
 ;*---------------------------------------------------------------------*/
@@ -708,6 +709,26 @@
       (member mime mimetypes)))
 
 ;*---------------------------------------------------------------------*/
+;*    alsabuffer-stream ::alsabuffer ...                               */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-stream o::alsabuffer)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-stream ::alsaportbuffer ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-stream o::alsaportbuffer)
+   (with-access::alsaportbuffer o (port)
+      port))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-stream ::alsammapbuffer ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-stream o::alsammapbuffer)
+   (with-access::alsammapbuffer o (mmap)
+      mmap))
+
+;*---------------------------------------------------------------------*/
 ;*    alsabuffer-length ::alsabuffer ...                               */
 ;*---------------------------------------------------------------------*/
 (define-generic (alsabuffer-length::belong o::alsabuffer)
@@ -777,8 +798,12 @@
 ;*    alsabuffer-seek ::alsammapbuffer ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek buffer::alsammapbuffer offset)
-   (with-access::alsammapbuffer buffer (%tail)
-      (set! %tail (if (llong? offset) (llong->fixnum offset) offset))
+   (with-access::alsammapbuffer buffer (%tail mmap %inlen)
+      (set! %tail
+	 (cond
+	    ((llong? offset) (llong->fixnum offset))
+	    ((elong? offset) (elong->fixnum offset))
+	    (else offset)))
       #t))
    
 ;*---------------------------------------------------------------------*/

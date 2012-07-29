@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Tue Jul 24 15:57:13 2012 (serrano)                */
+;*    Last change :  Sun Jul 29 06:13:45 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
@@ -243,10 +243,11 @@
 	 (let ((o ($mpg123-seek-frame $builtin f $mpg123-seek-set)))
 	    (tprint "MPG123-SEEK, o=" o)
 	    (if (<fx o 0)
-		(raise (instantiate::&mpg123-error
-			  (proc "mpg123")
-			  (msg ($mpg123-strerror $builtin))
-			  (obj m)))
+		0
+;* 		'(raise (instantiate::&mpg123-error                    */
+;* 			  (proc "mpg123")                              */
+;* 			  (msg ($mpg123-strerror $builtin))            */
+;* 			  (obj m)))                                    */
 		o)))))
    
 ;*---------------------------------------------------------------------*/
